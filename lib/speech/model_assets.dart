@@ -23,6 +23,9 @@ class ModelAssets {
   static const joinerFile = 'joiner-epoch-99-avg-1.int8.onnx';
   static const tokensFile = 'tokens.txt';
 
+  /// 핫워드를 BPE로 쪼갤 때 쓰는 어휘 파일. 저장소에 커밋되어 있다(내려받지 않는다).
+  static const bpeVocabFile = 'bpe.vocab';
+
   /// 번들 에셋의 알려진 바이트 크기. 대상 파일이 이미 있고 이 크기와 같으면
   /// 에셋을 메모리에 올리지 않고 건너뛴다. (크기가 다르면 실제 에셋과 비교)
   static const expectedSizes = <String, int>{
@@ -30,6 +33,7 @@ class ModelAssets {
     decoderFile: 11309084,
     joinerFile: 2581421,
     tokensFile: 60246,
+    bpeVocabFile: 132232,
   };
 
   static List<String> get files => expectedSizes.keys.toList();
@@ -59,8 +63,11 @@ class ModelAssets {
         data = await rootBundle.load('$dir/$name');
       } catch (_) {
         throw ModelMissingException(
-          '음성 인식 모델 파일($name)이 앱에 포함되어 있지 않습니다. '
-          '빌드 전에 scripts/fetch_model.sh 를 실행해 모델을 내려받아 주세요.',
+          name == bpeVocabFile
+              ? '$bpeVocabFile 이 앱에 포함되어 있지 않습니다. '
+                    '저장소에 커밋된 $dir/$bpeVocabFile 이 있는지 확인해 주세요.'
+              : '음성 인식 모델 파일($name)이 앱에 포함되어 있지 않습니다. '
+                    '빌드 전에 scripts/fetch_model.sh 를 실행해 모델을 내려받아 주세요.',
         );
       }
       if (!await target.exists() ||

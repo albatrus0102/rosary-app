@@ -35,6 +35,12 @@ abstract class DiagnosticAmenDetector implements AmenDetector {
   /// 마이크 입력 음량(0..1).
   ValueListenable<double> get inputLevel;
 
+  /// 마이크 입력의 실제 크기(AGC 적용 전 청크 RMS, dBFS). 무음이면 -90.
+  ValueListenable<double> get inputDbfs;
+
+  /// 현재 AGC 이득(dB).
+  ValueListenable<double> get currentGainDb;
+
   /// 가장 최근 인식 텍스트(부분 결과). 바뀔 때마다 알림.
   ValueListenable<String> get transcript;
 

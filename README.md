@@ -23,6 +23,7 @@ scripts/fetch_model.sh
 ```
 
 모델은 `assets/models/` 아래에 저장되며 git에는 포함되지 않습니다.
+단, 핫워드용 `bpe.vocab`(약 130 KB 텍스트)은 저장소에 커밋되어 있어 내려받지 않습니다.
 
 ## 빌드/실행
 

@@ -89,7 +89,20 @@ class _MicTestScreenState extends State<MicTestScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                if (diag != null) LevelBar(level: diag.inputLevel, height: 14),
+                if (diag != null) ...[
+                  LevelBar(level: diag.inputLevel, height: 14),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GainReadout(
+                      detector: diag,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontFamily: AppTheme.sansFamily,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Text(
                   '"아멘"이라고 말해 보세요',

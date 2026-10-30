@@ -51,4 +51,6 @@ app.*.map.json
 assets/models/**/*.onnx
 assets/models/**/tokens.txt
 assets/models/**/*.tar.bz2
+# bpe.vocab(약 130 KB 텍스트)은 핫워드용으로 저장소에 커밋한다. 위 패턴에 걸리지 않지만 명시해 둔다.
+!assets/models/**/bpe.vocab
 *.apk

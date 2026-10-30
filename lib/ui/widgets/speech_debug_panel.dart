@@ -49,6 +49,8 @@ class SpeechDebugPanel extends StatelessWidget {
                     children: [
                       Text('level: ', style: style),
                       Expanded(child: LevelBar(level: diag.inputLevel)),
+                      const SizedBox(width: 8),
+                      GainReadout(detector: diag, style: style),
                     ],
                   ),
                 Text(
@@ -92,6 +94,47 @@ class LevelBar extends StatelessWidget {
         child: LinearProgressIndicator(
           value: v.clamp(0.0, 1.0),
           minHeight: height,
+        ),
+      ),
+    );
+  }
+}
+
+/// 'AGC 이전 입력 크기(-42 dBFS)'와 '현재 이득(+18 dB)'을 한 줄로 보여준다.
+class GainReadout extends StatelessWidget {
+  const GainReadout({super.key, required this.detector, this.style});
+
+  final DiagnosticAmenDetector detector;
+  final TextStyle? style;
+
+  static String formatDbfs(double db) => '${db.round()} dBFS';
+
+  static String formatGain(double db) {
+    final r = db.round();
+    return '${r > 0 ? '+' : ''}$r dB';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final base =
+        style ??
+        TextStyle(
+          fontFamily: AppTheme.sansFamily,
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        detector.inputDbfs,
+        detector.currentGainDb,
+      ]),
+      builder: (context, _) => Text(
+        '${formatDbfs(detector.inputDbfs.value)}  '
+        '${formatGain(detector.currentGainDb.value)}',
+        key: const ValueKey('gain-readout'),
+        style: base.copyWith(
+          fontFamily: AppTheme.sansFamily,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
       ),
     );

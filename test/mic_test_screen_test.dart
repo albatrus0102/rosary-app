@@ -13,6 +13,8 @@ class _FakeDiag implements DiagnosticAmenDetector {
   final _amens = StreamController<int>.broadcast();
   final stateN = ValueNotifier(DetectorState.preparingModel);
   final levelN = ValueNotifier<double>(0);
+  final dbfsN = ValueNotifier<double>(-90);
+  final gainN = ValueNotifier<double>(20);
   final transcriptN = ValueNotifier<String>('');
   final phraseN = ValueNotifier<int>(0);
   final amenN = ValueNotifier<int>(0);
@@ -27,6 +29,10 @@ class _FakeDiag implements DiagnosticAmenDetector {
   ValueListenable<DetectorState> get state => stateN;
   @override
   ValueListenable<double> get inputLevel => levelN;
+  @override
+  ValueListenable<double> get inputDbfs => dbfsN;
+  @override
+  ValueListenable<double> get currentGainDb => gainN;
   @override
   ValueListenable<String> get transcript => transcriptN;
   @override
@@ -66,8 +72,11 @@ void main() {
     d.stateN.value = DetectorState.listening;
     d.transcriptN.value = '아 멘';
     d.amenN.value = 3;
+    d.dbfsN.value = -42.4;
+    d.gainN.value = 17.6;
     await tester.pump();
     expect(find.text('듣는 중'), findsOneWidget);
+    expect(find.text('-42 dBFS  +18 dB'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
     expect(find.text('아 멘'), findsOneWidget);
 
@@ -81,6 +90,8 @@ void main() {
     final d = _FakeDiag()..stateN.value = DetectorState.listening;
     d.transcriptN.value = '가' * 100;
     d.phraseN.value = 2;
+    d.dbfsN.value = -61.0;
+    d.gainN.value = -3.2;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(body: SpeechDebugPanel(detector: d)),
@@ -88,6 +99,11 @@ void main() {
     );
     expect(find.text('state: listening'), findsOneWidget);
     expect(find.text('phrases: 2'), findsOneWidget);
+    expect(find.text('-61 dBFS  -3 dB'), findsOneWidget);
+    d.dbfsN.value = -20;
+    d.gainN.value = 0;
+    await tester.pump();
+    expect(find.text('-20 dBFS  0 dB'), findsOneWidget);
     expect(find.text('text: ${'가' * 80}'), findsOneWidget);
   });
 }

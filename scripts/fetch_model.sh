@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 한국어 스트리밍 음성 인식 모델(sherpa-onnx zipformer)을 내려받아
 # assets/models/<모델명>/ 에 필요한 4개 파일만 복사한다. 이미 있으면 건너뛴다(멱등).
+# 참고: bpe.vocab(핫워드 BPE 분할용)은 저장소에 커밋되어 있어 여기서 내려받지 않는다.
 set -euo pipefail
 
 MODEL="sherpa-onnx-streaming-zipformer-korean-2024-06-16"

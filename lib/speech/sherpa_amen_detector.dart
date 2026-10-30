@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'amen_detector.dart';
 import 'amen_matcher.dart';
+import 'input_conditioner.dart';
 import 'mic_capture.dart';
 import 'model_assets.dart';
 import 'recognizer_worker.dart';
@@ -20,14 +21,17 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
   SherpaAmenDetector({
     MicCapture? mic,
     AmenMatcher? matcher,
+    InputConditioner? conditioner,
     this.config = const SpeechConfig(),
   }) : _mic = mic ?? MicCapture(),
-       _matcher = matcher ?? AmenMatcher();
+       _matcher = matcher ?? AmenMatcher(),
+       _conditioner = conditioner ?? InputConditioner();
 
   final SpeechConfig config;
 
   final MicCapture _mic;
   final AmenMatcher _matcher;
+  final InputConditioner _conditioner;
   final StreamController<int> _amenController =
       StreamController<int>.broadcast();
   final StreamController<String> _phraseController =
@@ -36,6 +40,10 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
   final ValueNotifier<String> _transcript = ValueNotifier('');
   final ValueNotifier<int> _phraseCount = ValueNotifier(0);
   final ValueNotifier<int> _amenCount = ValueNotifier(0);
+  final ValueNotifier<double> _inputDbfs = ValueNotifier(
+    InputConditioner.dbfsFloor,
+  );
+  late final ValueNotifier<double> _gainDb = ValueNotifier(_conditioner.gainDb);
 
   Isolate? _isolate;
   ReceivePort? _fromWorker;
@@ -70,6 +78,12 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
 
   @override
   ValueListenable<double> get inputLevel => _mic.level;
+
+  @override
+  ValueListenable<double> get inputDbfs => _inputDbfs;
+
+  @override
+  ValueListenable<double> get currentGainDb => _gainDb;
 
   @override
   ValueListenable<String> get transcript => _transcript;
@@ -108,7 +122,9 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
         return;
       }
 
-      _matcher.onEndpoint();
+      _matcher.reset();
+      _conditioner.reset();
+      _gainDb.value = _conditioner.gainDb;
       _toWorker?.send(['reset']);
       final samples = await _mic.start();
       if (_disposed) {
@@ -165,21 +181,27 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     var bpeVocab = '';
 
     if (config.usesHotwords) {
-      final tokens = SpeechConfig.parseTokens(
-        await File(tokensPath).readAsString(),
-      );
-      var lines = SpeechConfig.filterHotwords(
-        config.hotwords,
-        tokens,
-        onSkipped: (line, missing) => debugPrint(
-          '[amen] hotword skipped "$line": token "$missing" not in tokens.txt',
-        ),
-      );
-      final vocab = File('$dir/bpe.vocab');
-      if (await vocab.exists()) {
+      List<String> lines;
+      if (config.usesBpe) {
+        // bpe.vocab이 평문을 알아서 쪼갠다. 토큰 검증은 필요 없다.
         modelingUnit = 'bpe';
-        bpeVocab = vocab.path;
-        lines = [for (final l in lines) SpeechConfig.tokensToPlainWord(l)];
+        bpeVocab = '$dir/${ModelAssets.bpeVocabFile}';
+        lines = [
+          for (final h in config.hotwords)
+            if (h.trim().isNotEmpty) h.trim(),
+        ];
+      } else {
+        modelingUnit = config.modelingUnit;
+        final tokens = SpeechConfig.parseTokens(
+          await File(tokensPath).readAsString(),
+        );
+        lines = SpeechConfig.filterHotwords(
+          config.hotwords,
+          tokens,
+          onSkipped: (line, missing) => debugPrint(
+            '[amen] hotword skipped "$line": token "$missing" not in tokens.txt',
+          ),
+        );
       }
       if (lines.isNotEmpty) {
         final support = await getApplicationSupportDirectory();
@@ -204,6 +226,7 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
       decodingMethod: config.decodingMethod,
       hotwordsFile: hotwordsFile,
       hotwordsScore: config.hotwordsScore,
+      maxActivePaths: config.maxActivePaths,
       modelingUnit: modelingUnit,
       bpeVocab: bpeVocab,
       rule1: config.rule1,
@@ -226,8 +249,7 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
       case 'partial':
         _onPartial(raw[1] as String);
       case 'endpoint':
-        debugPrint('[amen] endpoint "${raw[1]}"');
-        _matcher.onEndpoint();
+        _onEndpoint(raw[1] as String);
       case 'error':
         _onWorkerError(raw[1] as String);
       default:
@@ -258,14 +280,22 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
       debugPrint('[amen] partial "$text"');
     }
 
-    final phrases = _matcher.onPartial(text);
+    _emit(_matcher.onPartial(text), text);
+  }
+
+  void _onEndpoint(String text) {
+    debugPrint('[amen] endpoint "$text"');
+    _emit(_matcher.onEndpoint(text), text);
+  }
+
+  void _emit(List<String> phrases, String text) {
     if (phrases.isEmpty) return;
     debugPrint('[amen] matched $phrases in "$text"');
     for (final p in phrases) {
       if (!_phraseController.isClosed) _phraseController.add(p);
     }
     _phraseCount.value += phrases.length;
-    final n = phrases.where((p) => p == '아멘').length;
+    final n = phrases.where((p) => p == AmenMatcher.amen).length;
     if (n > 0) {
       _amenCount.value += n;
       if (!_amenController.isClosed) _amenController.add(n);
@@ -276,15 +306,21 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     final port = _toWorker;
     if (port == null || _disposed) return;
     _chunks++;
+    // 인식기에는 AGC를 거친 샘플을 보낸다. 표시용 dBFS는 AGC 이전 값이다.
+    final conditioned = _conditioner.process(samples);
+    _inputDbfs.value = _conditioner.inputDbfs;
+    _gainDb.value = _conditioner.gainDb;
     final now = DateTime.now();
     if (now.difference(_lastLevelLog) >= const Duration(seconds: 2)) {
       _lastLevelLog = now;
       debugPrint(
         '[amen] mic level=${_mic.level.value.toStringAsFixed(2)} '
+        'dBFS=${_conditioner.inputDbfs.toStringAsFixed(1)} '
+        'gain=${_conditioner.gainDb.toStringAsFixed(1)}dB '
         'chunks=$_chunks (${samples.length} samples/chunk)',
       );
     }
-    port.send(['audio', packSamples(samples)]);
+    port.send(['audio', packSamples(conditioned)]);
   }
 
   Future<void> _fail(Object e) async {
@@ -333,7 +369,8 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     await _mic.stop();
     // await 사이에 dispose()가 끝났으면 해제된 상태를 건드리지 않는다.
     if (_disposed) return;
-    _matcher.onEndpoint();
+    _matcher.reset();
+    _inputDbfs.value = InputConditioner.dbfsFloor;
     _toWorker?.send(['reset']);
     _setState(DetectorState.stopped);
   }
@@ -361,5 +398,7 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     _transcript.dispose();
     _phraseCount.dispose();
     _amenCount.dispose();
+    _inputDbfs.dispose();
+    _gainDb.dispose();
   }
 }

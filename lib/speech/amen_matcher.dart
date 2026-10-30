@@ -1,3 +1,5 @@
+import 'fuzzy_amen.dart';
+
 /// 스트리밍 인식기의 부분 결과 텍스트에서 트리거 문구("아멘" 등)가
 /// 새로 등장한 횟수를 판정한다.
 ///
@@ -7,11 +9,13 @@
 ///
 /// 별칭(예: '아맨')은 정규 문구('아멘')로 합산·정규화해서 내보낸다.
 ///
-/// [fuzzy]가 켜져 있으면 '아멘'은 정확한 문자열 대신 음운 단위로 판정한다.
-/// 한글 음절을 초성/중성/종성으로 분해해,
-///  - 첫 음절: 초성 ㅇ/ㅎ, 중성 ㅏ/ㅐ/ㅑ, 종성 없음 또는 ㅇ
-///  - 둘째 음절: 초성 ㅁ, 중성 ㅔ/ㅐ/ㅓ/ㅣ/ㅖ, 종성 ㄴ/ㅇ/ㅁ/없음
-/// 이면 '아멘'으로 센다(아맨·아먼·아민·하멘·애멘·아멩 등 인식 오류 흡수).
+/// [fuzzy]가 켜져 있으면(기본 문구 목록일 때 기본값) 실험으로 검증된 음운 규칙을 쓴다.
+///  - 규칙 A([ruleA]): 부분 결과마다 '아멘'(아맨·라멘·엄멘·하멘·아멩 등) 횟수를 센다.
+///  - 규칙 T([ruleT]): 구간이 끝날 때([onEndpoint])만, 그 구간에서 규칙 A가 0건이었고
+///    마지막 텍스트가 '암', '밤에', '멘' 같은 느슨한 꼴이면 '아멘' 한 번으로 센다.
+///  - 규칙 F([ruleF]): 파티마 기도 끝맺음("버림받은 영혼을 돌보써서" 등)이 나오면
+///    구간당 한 번 '돌보소서'로 센다. 모델이 '돌보소서'를 그대로 적지 않기 때문이다.
+/// 사용자 정의 문구 목록은 정확 일치로만 판정한다.
 class AmenMatcher {
   AmenMatcher({
     List<String> patterns = defaultPatterns,
@@ -28,24 +32,27 @@ class AmenMatcher {
     }
     // 기본 문구 목록을 쓸 때만 기본으로 퍼지 매칭을 켠다(사용자 정의 목록은 정확 일치).
     final useFuzzy = fuzzy ?? identical(patterns, defaultPatterns);
-    if (useFuzzy && _max.containsKey(_amen)) _fuzzyCanonical = _amen;
+    if (useFuzzy) {
+      _fuzzyAmen = _max.containsKey(amen);
+      _fuzzyDolbo = _max.containsKey(dolbo);
+    }
   }
 
-  static const _amen = '아멘';
-  String? _fuzzyCanonical;
+  static const amen = '아멘';
+  static const dolbo = '돌보소서';
 
-  static const defaultPatterns = ['아멘', '아맨', '돌보소서'];
-  static const defaultAliases = {'아맨': '아멘'};
+  bool _fuzzyAmen = false;
+  bool _fuzzyDolbo = false;
+
+  static const defaultPatterns = [amen, '아맨', dolbo];
+  static const defaultAliases = {'아맨': amen};
 
   final List<({String pattern, String canonical})> _patterns = [];
   // 정규 문구 → 이번 구간에서 관측한 최대 등장 횟수 (삽입 순서 유지)
   final Map<String, int> _max = {};
 
-  // 공백, 문장부호, 기호를 모두 제거한다.
-  static final RegExp _noise = RegExp(r'[\s\p{P}\p{S}\p{Z}]', unicode: true);
-
   /// 공백과 문장부호를 모두 제거한 텍스트.
-  static String normalize(String text) => text.replaceAll(_noise, '');
+  static String normalize(String text) => norm(text);
 
   /// 부분 결과가 들어올 때마다 호출한다.
   /// 이번 호출로 새로 확정된 문구(정규 문구)를 등장 횟수만큼 반복해 반환한다.
@@ -54,13 +61,16 @@ class AmenMatcher {
     final t = normalize(text);
     final counts = <String, int>{};
     for (final p in _patterns) {
-      // 퍼지 매칭 대상 문구는 아래에서 음운 규칙으로 센다(정확 일치를 포함한다).
-      if (p.canonical == _fuzzyCanonical) continue;
+      // 퍼지 대상 문구는 아래 음운 규칙으로 센다(정확 일치는 그 규칙에 포함되거나 따로 더한다).
+      if (p.canonical == amen && _fuzzyAmen) continue;
       counts[p.canonical] =
           (counts[p.canonical] ?? 0) + _countNonOverlapping(t, p.pattern);
     }
-    final fuzzyKey = _fuzzyCanonical;
-    if (fuzzyKey != null) counts[fuzzyKey] = countFuzzyAmen(t);
+    if (_fuzzyAmen) counts[amen] = ruleA(t);
+    if (_fuzzyDolbo) {
+      // 규칙 F: 구간당 최대 한 번.
+      counts[dolbo] = (counts[dolbo] ?? 0) > 0 || ruleF(t) ? 1 : 0;
+    }
     final added = <String>[];
     for (final entry in counts.entries) {
       final prev = _max[entry.key] ?? 0;
@@ -74,55 +84,24 @@ class AmenMatcher {
     return added;
   }
 
-  /// 인식기가 endpoint를 감지하면 호출한다. 구간 상태를 리셋한다.
-  void onEndpoint() {
+  /// 인식기가 endpoint를 감지하면 호출한다. [finalText]는 그 구간의 마지막 텍스트.
+  /// 구간 끝에서만 판정하는 규칙 T를 적용하고(구간의 규칙 A가 0건일 때), 구간 상태를
+  /// 리셋한다. 새로 확정된 문구를 [onPartial]과 같은 형식으로 반환한다.
+  List<String> onEndpoint(String finalText) {
+    // 마지막 텍스트도 부분 결과처럼 한 번 더 판정한다(이미 센 것은 중복되지 않는다).
+    final added = onPartial(finalText);
+    if (_fuzzyAmen && (_max[amen] ?? 0) == 0 && ruleT(finalText)) {
+      added.add(amen);
+    }
+    reset();
+    return added;
+  }
+
+  /// 구간 상태를 버린다(인식 시작/정지 때). 문구는 내보내지 않는다.
+  void reset() {
     for (final k in _max.keys.toList()) {
       _max[k] = 0;
     }
-  }
-
-  /// 이미 정규화된 텍스트에서 음운 규칙으로 '아멘'이 나온 횟수(겹치지 않게).
-  static int countFuzzyAmen(String normalized) {
-    final units = normalized.codeUnits;
-    var count = 0;
-    var i = 0;
-    while (i + 1 < units.length) {
-      if (_isFirstSyllable(units[i]) && _isSecondSyllable(units[i + 1])) {
-        count++;
-        i += 2;
-      } else {
-        i++;
-      }
-    }
-    return count;
-  }
-
-  static const _hangulBase = 0xAC00;
-  static const _hangulEnd = 0xD7A3;
-
-  // 초성 인덱스: ㅁ=6, ㅇ=11, ㅎ=18
-  // 중성 인덱스: ㅏ=0 ㅐ=1 ㅑ=2 ㅓ=4 ㅔ=5 ㅖ=7 ㅣ=20
-  // 종성 인덱스: 없음=0 ㄴ=4 ㅁ=16 ㅇ=21
-  static bool _isFirstSyllable(int c) {
-    if (c < _hangulBase || c > _hangulEnd) return false;
-    final code = c - _hangulBase;
-    final initial = code ~/ 588;
-    final vowel = (code % 588) ~/ 28;
-    final fin = code % 28;
-    return (initial == 11 || initial == 18) &&
-        (vowel == 0 || vowel == 1 || vowel == 2) &&
-        (fin == 0 || fin == 21);
-  }
-
-  static bool _isSecondSyllable(int c) {
-    if (c < _hangulBase || c > _hangulEnd) return false;
-    final code = c - _hangulBase;
-    final initial = code ~/ 588;
-    final vowel = (code % 588) ~/ 28;
-    final fin = code % 28;
-    return initial == 6 &&
-        (vowel == 5 || vowel == 1 || vowel == 4 || vowel == 20 || vowel == 7) &&
-        (fin == 0 || fin == 4 || fin == 16 || fin == 21);
   }
 
   static int _countNonOverlapping(String text, String pattern) {

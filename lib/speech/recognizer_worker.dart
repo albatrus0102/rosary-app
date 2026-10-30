@@ -26,6 +26,7 @@ class RecognizerParams {
     required this.decodingMethod,
     required this.hotwordsFile,
     required this.hotwordsScore,
+    required this.maxActivePaths,
     required this.modelingUnit,
     required this.bpeVocab,
     required this.rule1,
@@ -44,6 +45,7 @@ class RecognizerParams {
   /// 빈 문자열이면 핫워드를 쓰지 않는다.
   final String hotwordsFile;
   final double hotwordsScore;
+  final int maxActivePaths;
   final String modelingUnit;
   final String bpeVocab;
   final double rule1;
@@ -60,6 +62,7 @@ class RecognizerParams {
     decodingMethod,
     hotwordsFile,
     hotwordsScore,
+    maxActivePaths,
     modelingUnit,
     bpeVocab,
     rule1,
@@ -77,12 +80,13 @@ class RecognizerParams {
     decodingMethod: m[5] as String,
     hotwordsFile: m[6] as String,
     hotwordsScore: m[7] as double,
-    modelingUnit: m[8] as String,
-    bpeVocab: m[9] as String,
-    rule1: m[10] as double,
-    rule2: m[11] as double,
-    rule3: m[12] as double,
-    numThreads: m[13] as int,
+    maxActivePaths: m[8] as int,
+    modelingUnit: m[9] as String,
+    bpeVocab: m[10] as String,
+    rule1: m[11] as double,
+    rule2: m[12] as double,
+    rule3: m[13] as double,
+    numThreads: m[14] as int,
   );
 }
 
@@ -122,6 +126,7 @@ void recognizerWorkerMain(List<Object> message) {
             bpeVocab: hotwords ? params.bpeVocab : '',
           ),
           decodingMethod: decoding,
+          maxActivePaths: params.maxActivePaths,
           enableEndpoint: true,
           rule1MinTrailingSilence: params.rule1,
           rule2MinTrailingSilence: params.rule2,
