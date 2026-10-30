@@ -7,7 +7,7 @@ String norm(String t) => t.replaceAll(_noise, '');
 
 // Jamo index constants: initial ㄴ ㄹ ㅁ ㅂ ㅇ ㅎ, vowel ㅏ ㅐ ㅓ ㅔ, final none ㄴ ㅁ ㅇ.
 const _iN = 2, _iR = 5, _iM = 6, _iB = 7, _iO = 11, _iH = 18;
-const _vA = 0, _vAE = 1, _vEO = 4, _vE = 5; // ㅏ ㅐ ㅓ ㅔ
+const _vA = 0, _vAE = 1, _vEO = 4, _vE = 5, _vYEO = 6; // ㅏ ㅐ ㅓ ㅔ ㅕ
 const _fNone = 0, _fN = 4, _fM = 16, _fNG = 21; // (none) ㄴ ㅁ ㅇ
 
 /// (initial, vowel, final) indices, or null when [cu] is not a Hangul syllable.
@@ -38,7 +38,9 @@ int ruleA(String text) {
       final link =
           (af == _fNone && bi == _iM) ||
           (af == _fM && (bi == _iO || bi == _iM));
-      final s2 = (bv == _vE || bv == _vAE) && (bf == _fN || bf == _fNG);
+      // ㅕ: 기본 디코딩이 '아면'으로 적는 경우(실기기 녹음에서 관찰)
+      final s2 =
+          (bv == _vE || bv == _vAE || bv == _vYEO) && (bf == _fN || bf == _fNG);
       if (s1 && link && s2) {
         n++;
         i += 2;
@@ -56,7 +58,13 @@ bool ruleT(String segment) {
   final t = norm(segment).codeUnits;
   if (t.isEmpty) return false;
   final whole = String.fromCharCodes(t);
-  if (whole == '멘' || whole == '맨' || whole == '메' || whole == '멩') return true;
+  if (whole == '멘' ||
+      whole == '맨' ||
+      whole == '메' ||
+      whole == '멩' ||
+      whole == '면') {
+    return true;
+  }
   final last = dec(t.last);
   if (last == null) return false;
   bool tIni(int i) => i == _iO || i == _iR || i == _iN || i == _iB;

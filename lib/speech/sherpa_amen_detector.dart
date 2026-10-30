@@ -43,9 +43,12 @@ class SherpaAmenDetector implements CapturableAmenDetector {
     required String requestedMethod,
     required String method,
     required bool hotwords,
+    String reason = '',
   }) {
     if (method == 'greedy_search') {
-      return requestedMethod == 'greedy_search' ? 'greedy' : 'greedy(fallback)';
+      if (requestedMethod == 'greedy_search') return 'greedy';
+      final r = reason.length > 90 ? '${reason.substring(0, 90)}…' : reason;
+      return r.isEmpty ? 'greedy(fallback)' : 'greedy(fallback: $r)';
     }
     return hotwords ? 'beam+hotword' : 'beam';
   }
@@ -333,11 +336,14 @@ class SherpaAmenDetector implements CapturableAmenDetector {
         debugPrint(
           '[amen] recognizer ready: method=${raw[1]} hotwords=${raw[2]}',
         );
+        final reason = raw.length > 3 ? raw[3] as String : '';
         _recognizerInfo.value = describeRecognizer(
           requestedMethod: config.decodingMethod,
           method: raw[1] as String,
           hotwords: raw[2] as bool,
+          reason: reason,
         );
+        if (reason.isNotEmpty) _lastError = '빔서치 초기화 실패: $reason';
         if (_ready?.isCompleted == false) _ready!.complete();
       // stop() 뒤에 도착한 결과(작업자 큐에 남아 있던 오디오)는 버린다. 그렇지 않으면
       // 일시정지 직후에 '아멘'이 발생해 기도가 넘어갈 수 있다.

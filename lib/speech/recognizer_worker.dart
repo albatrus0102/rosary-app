@@ -11,7 +11,7 @@ import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa;
 ///   `['dispose']`                       자원 해제 후 종료
 /// 작업자 → 메인:
 ///   `['port', SendPort]`                작업자의 명령 포트(가장 먼저 온다)
-///   `['ready', String decodingMethod, bool hotwords]`  모델 로드 완료
+///   `['ready', String decodingMethod, bool hotwords, String fallbackReason]`  모델 로드 완료
 ///   `['partial', String text]`          부분 결과(바뀔 때만)
 ///   `['endpoint', String text]`         endpoint 감지(직후 스트림을 리셋함)
 ///   `['error', String message]`
@@ -103,6 +103,7 @@ void recognizerWorkerMain(List<Object> message) {
   sherpa.OnlineStream? stream;
   var method = params.decodingMethod;
   var withHotwords = params.hotwordsFile.isNotEmpty;
+  var fallbackReason = '';
 
   try {
     // 각 isolate는 네이티브 바인딩을 따로 초기화해야 한다.
@@ -143,12 +144,13 @@ void recognizerWorkerMain(List<Object> message) {
       if (method == 'greedy_search') rethrow;
       // modified_beam_search(핫워드 포함) 생성 실패 → 핫워드 없는 greedy로 대체.
       debugPrint('[amen] worker: $method init failed ($e); fallback greedy');
+      fallbackReason = '$e';
       method = 'greedy_search';
       withHotwords = false;
       recognizer = build(method, false);
     }
     stream = recognizer.createStream();
-    toMain.send(['ready', method, withHotwords]);
+    toMain.send(['ready', method, withHotwords, fallbackReason]);
   } catch (e) {
     toMain.send(['error', 'recognizer init failed: $e']);
     recognizer?.free();
