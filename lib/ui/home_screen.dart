@@ -6,6 +6,7 @@ import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
+import '../app/sound_player.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
 import '../app/theme.dart';
@@ -24,6 +25,7 @@ class HomeScreen extends StatefulWidget {
     required this.settings,
     this.leaderAudio,
     this.ttsVoice,
+    this.soundPlayer,
   });
 
   final AppSettings settings;
@@ -33,6 +35,9 @@ class HomeScreen extends StatefulWidget {
 
   /// '미리 듣기'와 한국어 음성 확인에 쓰는 TTS. 없으면 필요할 때 만든다(테스트용 주입).
   final TtsLeaderVoice? ttsVoice;
+
+  /// 신호음 크기 '들어보기'에 쓰는 재생기. 없으면 필요할 때 만든다(테스트용 주입).
+  final SoundPlayer? soundPlayer;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -48,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final bool _ownsLeaderStore;
   TtsLeaderVoice? _tts;
   bool _ownsTts = false;
+  SoundPlayer? _previewSound;
   Future<bool>? _koreanAvailable;
 
   AppSettings get settings => widget.settings;
@@ -87,7 +93,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _styleScroll.dispose();
     if (_ownsLeaderStore) _leaderStore.dispose();
     if (_ownsTts) unawaited(_tts?.dispose());
+    if (widget.soundPlayer == null) unawaited(_previewSound?.dispose());
     super.dispose();
+  }
+
+  /// 선택한 크기로 종소리를 한 번 들려 준다.
+  Future<void> _previewChime() async {
+    final sound = _previewSound ??= widget.soundPlayer ?? SoundPlayer();
+    await sound.init();
+    sound.volume = settings.chimeVolume;
+    await sound.playDecadeChime();
   }
 
   @override
@@ -423,6 +438,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: settings.showTranscript,
                   onChanged: (v) => settings.showTranscript = v,
                 ),
+                SwitchListTile(
+                  title: const Text('인식 민감도 높임'),
+                  subtitle: const Text(
+                    '"아"로만 끝나도 아멘으로 셉니다. 잘못 넘어갈 수 있으니 필요할 때만 켜세요.',
+                  ),
+                  value: settings.highSensitivity,
+                  onChanged: (v) => settings.highSensitivity = v,
+                ),
                 ListTile(
                   leading: const Icon(Icons.mic_none),
                   title: const Text('마이크 테스트'),
@@ -430,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const MicTestScreen(),
+                      builder: (_) => MicTestScreen(settings: settings),
                     ),
                   ),
                 ),
@@ -438,6 +461,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: const Text('성모송 10번이 끝나면 종소리'),
                   value: settings.chimeOnTenHailMarys,
                   onChanged: (v) => settings.chimeOnTenHailMarys = v,
+                ),
+                ListTile(
+                  title: const Text('신호음 크기'),
+                  subtitle: Slider(
+                    min: AppSettings.minChimeVolume,
+                    max: AppSettings.maxChimeVolume,
+                    divisions: 9,
+                    label: '${(settings.chimeVolume * 100).round()}%',
+                    value: settings.chimeVolume,
+                    onChanged: (v) => settings.chimeVolume = v,
+                  ),
+                  trailing: IconButton(
+                    tooltip: '들어보기',
+                    icon: const Icon(Icons.volume_up_outlined),
+                    onPressed: () => unawaited(_previewChime()),
+                  ),
                 ),
                 SwitchListTile(
                   title: const Text('구슬마다 짧은 소리'),

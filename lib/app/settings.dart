@@ -41,6 +41,9 @@ class AppSettings extends ChangeNotifier {
       PrayerFont.sans,
     );
     _showTranscript = _prefs.getBool(_kShowTranscript) ?? false;
+    _highSensitivity = _prefs.getBool(_kHighSensitivity) ?? false;
+    _chimeVolume = (_prefs.getDouble(_kChimeVolume) ?? defaultChimeVolume)
+        .clamp(minChimeVolume, maxChimeVolume);
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -54,10 +57,16 @@ class AppSettings extends ChangeNotifier {
   static const _kTtsRate = 'tts_rate';
   static const _kShowTranscript = 'show_transcript';
   static const _kPrayerFont = 'prayer_font';
+  static const _kHighSensitivity = 'high_sensitivity';
+  static const _kChimeVolume = 'chime_volume';
 
   static const double minTtsRate = 0.3;
   static const double maxTtsRate = 0.7;
   static const double defaultTtsRate = 0.45;
+
+  static const double minChimeVolume = 0.1;
+  static const double maxChimeVolume = 1.0;
+  static const double defaultChimeVolume = 0.5;
 
   final SharedPreferences _prefs;
 
@@ -71,6 +80,8 @@ class AppSettings extends ChangeNotifier {
   late double _ttsRate;
   late PrayerFont _prayerFont;
   late bool _showTranscript;
+  late bool _highSensitivity;
+  late double _chimeVolume;
   late MysterySet _mysterySet;
 
   static Future<AppSettings> load() async {
@@ -109,6 +120,12 @@ class AppSettings extends ChangeNotifier {
 
   /// 기도 화면에 음성 인식 진단 패널(인식 내용 등)을 보일지 여부.
   bool get showTranscript => _showTranscript;
+
+  /// 인식 민감도 높임: "아"로만 끝나는 발화도 아멘으로 센다.
+  bool get highSensitivity => _highSensitivity;
+
+  /// 종소리/구슬 소리 크기(0.1~1.0).
+  double get chimeVolume => _chimeVolume;
 
   /// 이번 세션에서 선택한 신비(저장하지 않음).
   MysterySet get mysterySet => _mysterySet;
@@ -181,6 +198,21 @@ class AppSettings extends ChangeNotifier {
     if (v == _showTranscript) return;
     _showTranscript = v;
     _prefs.setBool(_kShowTranscript, v);
+    notifyListeners();
+  }
+
+  set highSensitivity(bool v) {
+    if (v == _highSensitivity) return;
+    _highSensitivity = v;
+    _prefs.setBool(_kHighSensitivity, v);
+    notifyListeners();
+  }
+
+  set chimeVolume(double v) {
+    final clamped = v.clamp(minChimeVolume, maxChimeVolume);
+    if (clamped == _chimeVolume) return;
+    _chimeVolume = clamped;
+    _prefs.setDouble(_kChimeVolume, clamped);
     notifyListeners();
   }
 

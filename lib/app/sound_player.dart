@@ -3,9 +3,16 @@ import 'package:flutter/foundation.dart';
 
 /// 종소리/틱 소리 재생. 마이크 녹음과 동시에 재생되도록 오디오 컨텍스트를 설정한다.
 class SoundPlayer {
+  SoundPlayer({double volume = 0.5}) : _volume = volume.clamp(0.0, 1.0);
+
   AudioPlayer? _chime;
   AudioPlayer? _tick;
   bool _initialized = false;
+  double _volume;
+
+  /// 종소리와 구슬 소리 크기(0..1). 다음 재생부터 적용된다.
+  double get volume => _volume;
+  set volume(double v) => _volume = v.clamp(0.0, 1.0);
 
   /// 마이크 녹음과 동시에 재생되도록 전역 오디오 컨텍스트를 설정한다.
   static Future<void> configureGlobalAudioContext() {
@@ -48,6 +55,7 @@ class SoundPlayer {
     if (player == null) return;
     try {
       await player.stop();
+      await player.setVolume(_volume);
       await player.play(AssetSource(asset));
     } catch (e) {
       debugPrint('SoundPlayer.play($asset) failed: $e');

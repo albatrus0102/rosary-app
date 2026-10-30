@@ -4,6 +4,7 @@ import 'package:rosary_app/speech/amen_matcher.dart';
 import 'package:rosary_app/speech/fuzzy_amen.dart';
 
 void main() {
+  highSensitivityTests();
   late AmenMatcher m;
   setUp(() => m = AmenMatcher());
 
@@ -264,6 +265,25 @@ void main() {
         }
       }
       expect(lines, greaterThan(50));
+    });
+  });
+}
+
+void highSensitivityTests() {
+  group('high sensitivity', () {
+    test('off: a segment ending in 아 is not counted', () {
+      final m = AmenMatcher();
+      expect(m.onPartial('그러면 아'), isEmpty);
+      expect(m.onEndpoint('그러면 아'), isEmpty);
+    });
+
+    test('on: endpoint counts 아-endings once, only when A/T found nothing', () {
+      final m = AmenMatcher()..highSensitivity = true;
+      expect(m.onPartial('아'), isEmpty); // 부분 결과에서는 세지 않는다
+      expect(m.onEndpoint('아'), ['아멘']);
+      expect(m.onEndpoint('그러면 마멘'), ['아멘']);
+      expect(m.onEndpoint('아멘'), ['아멘']); // 규칙 A로 한 번만
+      expect(m.onEndpoint('안녕하세요'), isEmpty);
     });
   });
 }

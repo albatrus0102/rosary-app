@@ -44,6 +44,21 @@ class AmenMatcher {
   bool _fuzzyAmen = false;
   bool _fuzzyDolbo = false;
 
+  /// 민감도 높임: 구간이 끝날 때 규칙 A/T가 모두 아무것도 못 찾았으면, 정규화한 텍스트가
+  /// [looseEndings] 중 하나로 끝나는 구간도 '아멘'으로 센다(기본 문구 목록일 때만).
+  /// 실행 중에도 바꿀 수 있다.
+  bool highSensitivity = false;
+
+  /// 민감도 높임에서 '아멘'으로 보는 구간 끝 글자. 단독 '아'도 포함한다.
+  static const looseEndings = ['아', '맘엔', '마멘', '암멘', '아매', '하매', '아맹'];
+
+  /// [segment]가 [looseEndings] 중 하나로 끝나는지(정규화 후).
+  static bool endsLoosely(String segment) {
+    final t = normalize(segment);
+    if (t.isEmpty) return false;
+    return looseEndings.any(t.endsWith);
+  }
+
   static const defaultPatterns = [amen, '아맨', dolbo];
   static const defaultAliases = {'아맨': amen};
 
@@ -90,8 +105,10 @@ class AmenMatcher {
   List<String> onEndpoint(String finalText) {
     // 마지막 텍스트도 부분 결과처럼 한 번 더 판정한다(이미 센 것은 중복되지 않는다).
     final added = onPartial(finalText);
-    if (_fuzzyAmen && (_max[amen] ?? 0) == 0 && ruleT(finalText)) {
-      added.add(amen);
+    if (_fuzzyAmen && (_max[amen] ?? 0) == 0) {
+      if (ruleT(finalText) || (highSensitivity && endsLoosely(finalText))) {
+        added.add(amen);
+      }
     }
     reset();
     return added;

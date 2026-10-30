@@ -8,12 +8,44 @@ import 'package:record/record.dart';
 class MicCapture {
   MicCapture() : _recorder = AudioRecorder();
 
+  /// 녹음 샘플레이트(Hz).
+  static const sampleRate = 16000;
+
   final AudioRecorder _recorder;
   StreamSubscription<Uint8List>? _sub;
   StreamController<Float32List>? _out;
 
   final ValueNotifier<double> _level = ValueNotifier(0);
+  final ValueNotifier<double> _bytesPerSecond = ValueNotifier(0);
+  final Stopwatch _rate = Stopwatch();
+  int _rateBytes = 0;
   bool _disposed = false;
+
+  /// 플랫폼에서 실제로 들어오는 PCM 바이트 속도(바이트/초), 1초 창으로 측정한다.
+  /// 16 kHz mono PCM16이면 32000 근처여야 한다. 멈춰 있으면 0.
+  ValueListenable<double> get bytesPerSecond => _bytesPerSecond;
+
+  void _countBytes(int n) {
+    if (_disposed) return;
+    if (!_rate.isRunning) _rate.start();
+    _rateBytes += n;
+    final us = _rate.elapsedMicroseconds;
+    if (us >= 1000000) {
+      _bytesPerSecond.value = _rateBytes * 1000000 / us;
+      _rateBytes = 0;
+      _rate
+        ..reset()
+        ..start();
+    }
+  }
+
+  void _resetRate() {
+    _rate
+      ..stop()
+      ..reset();
+    _rateBytes = 0;
+    if (!_disposed) _bytesPerSecond.value = 0;
+  }
 
   /// 입력 음량(0..1). 청크마다 갱신된다. dBFS -60..0 구간을 0..1로 편 값이라
   /// 작은 목소리도 눈에 보이고, 완전 무음이면 0에 가깝다.
@@ -45,7 +77,7 @@ class MicCapture {
     // 왜곡할 수 있다).
     RecordConfig config(AndroidAudioSource src) => RecordConfig(
       encoder: AudioEncoder.pcm16bits,
-      sampleRate: 16000,
+      sampleRate: sampleRate,
       numChannels: 1,
       autoGain: true,
       echoCancel: false,
@@ -74,9 +106,11 @@ class MicCapture {
 
     final out = StreamController<Float32List>();
     _out = out;
+    _resetRate();
     final converter = _Pcm16Converter();
     _sub = source.listen(
       (chunk) {
+        _countBytes(chunk.length);
         final samples = converter.convert(chunk);
         if (samples.isEmpty) return;
         if (!_disposed) _level.value = levelOf(samples);
@@ -97,6 +131,7 @@ class MicCapture {
     if (await _recorder.isRecording()) {
       await _recorder.stop();
     }
+    _resetRate();
     if (!_disposed) _level.value = 0;
   }
 
@@ -105,6 +140,7 @@ class MicCapture {
     _disposed = true;
     await _recorder.dispose();
     _level.dispose();
+    _bytesPerSecond.dispose();
   }
 
   Future<void> _teardown() async {

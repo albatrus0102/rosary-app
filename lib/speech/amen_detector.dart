@@ -53,3 +53,20 @@ abstract class DiagnosticAmenDetector implements AmenDetector {
   /// 가장 최근 오류 메시지.
   String? get lastError;
 }
+
+/// 진단용 원본 오디오 녹음과 입력 속도 측정을 지원하는 감지기(마이크 테스트 화면용).
+abstract class CapturableAmenDetector implements DiagnosticAmenDetector {
+  /// 인식기 종류. 예: 'beam+hotword', 'beam', 'greedy', 'greedy(fallback)'. 준비 전엔 빈 문자열.
+  ValueListenable<String> get recognizerInfo;
+
+  /// 마이크에서 실제로 들어오는 PCM 바이트 속도(바이트/초, 1초 창). 16 kHz mono PCM16이면 약 32000.
+  ValueListenable<double> get bytesPerSecond;
+
+  /// AGC 이전의 원본 샘플 녹음을 시작한다(최대 [maxCaptureSeconds]초).
+  void startCapture();
+
+  /// 녹음을 끝내고 WAV(16 kHz mono PCM16)로 저장한 경로를 반환한다. 샘플이 없으면 null.
+  Future<String?> stopCapture();
+
+  static const maxCaptureSeconds = 8;
+}

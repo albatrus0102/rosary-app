@@ -84,7 +84,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _session = RosarySession(buildRosarySequence(widget.mysterySet));
 
     _ownsSound = widget.soundPlayer == null;
-    _sound = widget.soundPlayer ?? SoundPlayer();
+    _sound = widget.soundPlayer ?? SoundPlayer(volume: _settings.chimeVolume);
+    _sound.volume = _settings.chimeVolume;
     unawaited(_sound.init());
 
     unawaited(
@@ -100,7 +101,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
     }
 
     if (_settings.voiceEnabled) {
-      final detector = widget.detector ?? SherpaAmenDetector();
+      final detector =
+          widget.detector ??
+          SherpaAmenDetector(highSensitivity: _settings.highSensitivity);
       _detector = detector;
       _phraseSub = detector.phraseEvents.listen(_onPhrase);
       unawaited(detector.start());
@@ -174,9 +177,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
   void _onSessionEvent(SessionEvent e) {
     switch (e) {
       case SessionEvent.hailMarysCompleted:
+        _sound.volume = _settings.chimeVolume;
         if (_settings.chimeOnTenHailMarys) unawaited(_sound.playDecadeChime());
       case SessionEvent.bead:
       case SessionEvent.decadeCompleted:
+        _sound.volume = _settings.chimeVolume;
         if (_settings.tickPerBead) unawaited(_sound.playBeadTick());
       case SessionEvent.finished:
         unawaited(_detector?.stop());

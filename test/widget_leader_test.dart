@@ -296,7 +296,10 @@ void main() {
     expect(find.text('AI 음성'), findsOneWidget);
     expect(find.text('직접 녹음'), findsOneWidget);
     expect(find.text('말하기 속도'), findsOneWidget);
-    expect(find.byType(Slider), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is Slider && w.max == 0.7),
+      findsOneWidget,
+    );
     expect(find.text('미리 듣기'), findsOneWidget);
     expect(find.text('선창 녹음 관리'), findsNothing);
     // 플러그인이 없는 테스트 환경에서는 경고를 띄우지 않는다.
@@ -308,7 +311,10 @@ void main() {
     await tester.tap(find.text('직접 녹음'));
     await tester.pump();
     expect(settings.leaderVoiceSource, LeaderVoiceSource.recorded);
-    expect(find.byType(Slider), findsNothing);
+    expect(
+      find.byWidgetPredicate((w) => w is Slider && w.max == 0.7),
+      findsNothing,
+    );
     expect(find.text('선창 녹음 관리'), findsOneWidget);
   });
 }

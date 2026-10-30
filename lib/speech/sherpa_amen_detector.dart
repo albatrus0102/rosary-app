@@ -13,20 +13,42 @@ import 'mic_capture.dart';
 import 'model_assets.dart';
 import 'recognizer_worker.dart';
 import 'speech_config.dart';
+import 'wav.dart';
 
 /// sherpa_onnx 스트리밍 한국어 인식기로 "아멘"을 감지한다.
 ///
 /// 인식(모델 로드, 디코딩)은 백그라운드 isolate에서 돌고, 이 클래스는 마이크 샘플을
 /// 전달하고 부분 결과를 받아 [AmenMatcher]로 판정한다.
-class SherpaAmenDetector implements DiagnosticAmenDetector {
+class SherpaAmenDetector implements CapturableAmenDetector {
   SherpaAmenDetector({
     MicCapture? mic,
     AmenMatcher? matcher,
     InputConditioner? conditioner,
     this.config = const SpeechConfig(),
+    bool highSensitivity = false,
   }) : _mic = mic ?? MicCapture(),
        _matcher = matcher ?? AmenMatcher(),
-       _conditioner = conditioner ?? InputConditioner();
+       _conditioner = conditioner ?? InputConditioner() {
+    _matcher.highSensitivity = highSensitivity;
+  }
+
+  /// 민감도 높임("아"로만 끝나도 아멘). 실행 중에 바꿀 수 있다.
+  bool get highSensitivity => _matcher.highSensitivity;
+  set highSensitivity(bool v) => _matcher.highSensitivity = v;
+
+  /// 'ready' 응답의 방식 정보를 사람이 읽는 이름으로 바꾼다.
+  /// [requestedMethod]는 설정에 적은 디코딩 방식, [method]/[hotwords]는 실제로 만들어진 것.
+  @visibleForTesting
+  static String describeRecognizer({
+    required String requestedMethod,
+    required String method,
+    required bool hotwords,
+  }) {
+    if (method == 'greedy_search') {
+      return requestedMethod == 'greedy_search' ? 'greedy' : 'greedy(fallback)';
+    }
+    return hotwords ? 'beam+hotword' : 'beam';
+  }
 
   final SpeechConfig config;
 
@@ -54,6 +76,11 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     InputConditioner.dbfsFloor,
   );
   late final ValueNotifier<double> _gainDb = ValueNotifier(_conditioner.gainDb);
+  final ValueNotifier<String> _recognizerInfo = ValueNotifier('');
+
+  // 원본(AGC 이전) 샘플 녹음.
+  Float32List? _captureBuf;
+  int _captureLen = 0;
 
   Isolate? _isolate;
 
@@ -97,6 +124,44 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
 
   @override
   ValueListenable<double> get currentGainDb => _gainDb;
+
+  @override
+  ValueListenable<String> get recognizerInfo => _recognizerInfo;
+
+  @override
+  ValueListenable<double> get bytesPerSecond => _mic.bytesPerSecond;
+
+  @override
+  void startCapture() {
+    _captureBuf = Float32List(
+      CapturableAmenDetector.maxCaptureSeconds * MicCapture.sampleRate,
+    );
+    _captureLen = 0;
+  }
+
+  @override
+  Future<String?> stopCapture() async {
+    final buf = _captureBuf;
+    final len = _captureLen;
+    _captureBuf = null;
+    _captureLen = 0;
+    if (buf == null || len == 0) return null;
+    final docs = await getApplicationDocumentsDirectory();
+    final dir = Directory('${docs.path}/mic_capture');
+    await dir.create(recursive: true);
+    final t = DateTime.now();
+    String two(int n) => n.toString().padLeft(2, '0');
+    final stamp =
+        '${t.year}${two(t.month)}${two(t.day)}_'
+        '${two(t.hour)}${two(t.minute)}${two(t.second)}';
+    final file = File('${dir.path}/capture_$stamp.wav');
+    await file.writeAsBytes(
+      encodeWavPcm16(Float32List.sublistView(buf, 0, len)),
+      flush: true,
+    );
+    debugPrint('[amen] raw capture saved ${file.path} ($len samples)');
+    return file.path;
+  }
 
   @override
   ValueListenable<String> get transcript => _transcript;
@@ -268,6 +333,11 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
         debugPrint(
           '[amen] recognizer ready: method=${raw[1]} hotwords=${raw[2]}',
         );
+        _recognizerInfo.value = describeRecognizer(
+          requestedMethod: config.decodingMethod,
+          method: raw[1] as String,
+          hotwords: raw[2] as bool,
+        );
         if (_ready?.isCompleted == false) _ready!.complete();
       // stop() 뒤에 도착한 결과(작업자 큐에 남아 있던 오디오)는 버린다. 그렇지 않으면
       // 일시정지 직후에 '아멘'이 발생해 기도가 넘어갈 수 있다.
@@ -330,6 +400,12 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
   }
 
   void _onSamples(Float32List samples) {
+    final cap = _captureBuf;
+    if (cap != null && _captureLen < cap.length) {
+      final n = math.min(samples.length, cap.length - _captureLen);
+      cap.setRange(_captureLen, _captureLen + n, samples);
+      _captureLen += n;
+    }
     if (_toWorker == null || _disposed) return;
     var i = 0;
     while (i < samples.length) {
@@ -456,5 +532,6 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     _amenCount.dispose();
     _inputDbfs.dispose();
     _gainDb.dispose();
+    _recognizerInfo.dispose();
   }
 }
