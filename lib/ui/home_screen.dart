@@ -157,6 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.mic),
                       label: const Text('선창 녹음 관리'),
                       onPressed: () {
+                        _stopPreview();
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) =>
@@ -172,6 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  /// '미리 듣기'가 다음 화면의 기도/녹음과 겹치지 않도록 끊는다.
+  void _stopPreview() {
+    final tts = _tts;
+    if (tts != null) unawaited(tts.stop());
   }
 
   TtsLeaderVoice _ensureTts() {
@@ -352,6 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           onPressed: () {
+            _stopPreview();
             Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => PrayerScreen(

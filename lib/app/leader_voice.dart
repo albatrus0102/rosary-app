@@ -53,6 +53,10 @@ class TtsLeaderVoice implements LeaderVoice {
   int _gen = 0;
   bool _disposed = false;
 
+  /// 지금 말하는 한 마디를 끝낸 것으로 칠 때 완료한다(정지/다음 스텝/엔진 오류).
+  /// iOS는 stop()에도, Android는 엔진 오류에도 speak() Future를 끝내 주지 않기 때문이다.
+  Completer<void>? _utterance;
+
   @override
   ValueListenable<bool> get isSpeaking => _speaking;
 
@@ -63,6 +67,10 @@ class TtsLeaderVoice implements LeaderVoice {
     try {
       final tts = FlutterTts();
       _tts = tts;
+      tts.setErrorHandler((message) {
+        debugPrint('TtsLeaderVoice error: $message');
+        _endUtterance();
+      });
       await tts.setLanguage(_language);
       await tts.awaitSpeakCompletion(true);
       if (!kIsWeb && Platform.isIOS) {
@@ -111,6 +119,7 @@ class TtsLeaderVoice implements LeaderVoice {
 
   Future<void> _speakTexts(List<String> texts) async {
     final gen = ++_gen;
+    _endUtterance();
     await init();
     if (gen != _gen || _disposed) return;
     final tts = _tts;
@@ -126,13 +135,20 @@ class TtsLeaderVoice implements LeaderVoice {
       await tts.setSpeechRate(_rate());
       for (final text in texts) {
         if (gen != _gen || _disposed) return;
-        await tts.speak(text).timeout(_speakTimeout);
+        final done = _utterance = Completer<void>();
+        await Future.any([tts.speak(text), done.future]).timeout(_speakTimeout);
       }
     } catch (e) {
       debugPrint('TtsLeaderVoice.speak failed: $e');
     } finally {
       if (gen == _gen && !_disposed) _speaking.value = false;
     }
+  }
+
+  void _endUtterance() {
+    final done = _utterance;
+    _utterance = null;
+    if (done != null && !done.isCompleted) done.complete();
   }
 
   Future<void> _stopEngine() async {
@@ -144,6 +160,7 @@ class TtsLeaderVoice implements LeaderVoice {
   @override
   Future<void> stop() async {
     _gen++;
+    _endUtterance();
     if (!_disposed) _speaking.value = false;
     await _stopEngine();
   }
@@ -152,6 +169,7 @@ class TtsLeaderVoice implements LeaderVoice {
   Future<void> dispose() async {
     _gen++;
     _disposed = true;
+    _endUtterance();
     await _stopEngine();
     _speaking.dispose();
   }
@@ -250,8 +268,9 @@ class RecordedLeaderVoice implements LeaderVoice {
         }
       }
     } finally {
-      _watchdog?.cancel();
+      // 다음 스텝이 이미 시작했으면 그쪽 워치독을 건드리지 않는다.
       if (gen == _gen && !_disposed) {
+        _watchdog?.cancel();
         _cueDone = null;
         _speaking.value = false;
       }
