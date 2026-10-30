@@ -67,14 +67,21 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Text('묵주 모양', style: sectionStyle),
         const SizedBox(height: 8),
-        SegmentedButton<RosaryStyle>(
-          showSelectedIcon: false,
-          segments: [
-            for (final s in RosaryStyle.values)
-              ButtonSegment(value: s, label: Text(s.label)),
-          ],
-          selected: {settings.rosaryStyle},
-          onSelectionChanged: (v) => settings.rosaryStyle = v.first,
+        SizedBox(
+          height: 104,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: RosaryStyle.values.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final style = RosaryStyle.values[i];
+              return _StyleCard(
+                style: style,
+                selected: style == settings.rosaryStyle,
+                onTap: () => settings.rosaryStyle = style,
+              );
+            },
+          ),
         ),
         const SizedBox(height: 20),
         Text('기도 모드', style: sectionStyle),
@@ -244,6 +251,68 @@ class _MysteryCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StyleCard extends StatelessWidget {
+  const _StyleCard({
+    required this.style,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final RosaryStyle style;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        color: selected ? scheme.primaryContainer : null,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: selected ? scheme.primary : scheme.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          child: SizedBox(
+            width: 92,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Image.asset(style.unitImage, fit: BoxFit.contain),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    style.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: selected ? FontWeight.w700 : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
