@@ -170,6 +170,8 @@ class SherpaAmenDetector implements AmenDetector {
     await _micSub?.cancel();
     _micSub = null;
     await _mic.stop();
+    // await 사이에 dispose()가 끝났으면 해제된 인식기/상태를 건드리지 않는다.
+    if (_disposed) return;
     _matcher.onEndpoint();
     final stream = _stream;
     if (stream != null) _recognizer?.reset(stream);

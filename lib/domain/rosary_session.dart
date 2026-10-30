@@ -9,9 +9,17 @@ enum SessionEvent { bead, hailMarysCompleted, decadeCompleted, finished }
 
 /// 묵주기도 진행 상태 머신.
 class RosarySession extends ChangeNotifier {
-  RosarySession(this.steps) : assert(steps.isNotEmpty);
+  RosarySession(this.steps, {DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now,
+      assert(steps.isNotEmpty);
+
+  /// '돌보소서'처럼 아멘이 아닌 문구로 넘어간 직후, 사용자가 덧붙여 말한
+  /// '아멘'이 이 시간 안에 들어오면 한 번 무시한다(다음 기도까지 건너뛰지 않도록).
+  static const trailingAmenWindow = Duration(seconds: 3);
 
   final List<RosaryStep> steps;
+  final DateTime Function() _clock;
+  DateTime? _ignoreAmenUntil;
   final StreamController<SessionEvent> _events =
       StreamController<SessionEvent>.broadcast();
 
@@ -31,15 +39,24 @@ class RosarySession extends ChangeNotifier {
 
   void onPhrase(String phrase) {
     if (_isFinished) return;
+    if (phrase == '아멘') {
+      final until = _ignoreAmenUntil;
+      _ignoreAmenUntil = null;
+      if (until != null && !_clock().isAfter(until)) return;
+    }
     if (current.triggerPhrases.contains(phrase)) {
       _amenCount++;
       next();
+      if (phrase != '아멘') {
+        _ignoreAmenUntil = _clock().add(trailingAmenWindow);
+      }
     }
   }
 
   void onAmen() => onPhrase('아멘');
 
   void next() {
+    _ignoreAmenUntil = null;
     if (_isFinished) return;
     if (_index == steps.length - 1) {
       _isFinished = true;
@@ -66,6 +83,7 @@ class RosarySession extends ChangeNotifier {
   }
 
   void back() {
+    _ignoreAmenUntil = null;
     if (_isFinished) {
       _isFinished = false;
       notifyListeners();
@@ -77,6 +95,7 @@ class RosarySession extends ChangeNotifier {
   }
 
   void jumpTo(int index) {
+    _ignoreAmenUntil = null;
     final target = index.clamp(0, steps.length - 1);
     if (target == _index && !_isFinished) return;
     _index = target;
@@ -85,6 +104,7 @@ class RosarySession extends ChangeNotifier {
   }
 
   void restart() {
+    _ignoreAmenUntil = null;
     _index = 0;
     _isFinished = false;
     _amenCount = 0;

@@ -191,4 +191,41 @@ void main() {
     expect(s.index, 0);
     s.dispose();
   });
+
+  test('amen right after 돌보소서 does not skip the next prayer', () {
+    var now = DateTime(2026);
+    final s = RosarySession(
+      buildRosarySequence(MysterySet.joyful),
+      clock: () => now,
+    );
+    final fatima1 = s.steps.indexWhere((x) => x.kind == StepKind.fatima);
+    s.jumpTo(fatima1);
+    s.onPhrase('돌보소서');
+    expect(s.index, fatima1 + 1); // decade 2 our father
+    now = now.add(const Duration(seconds: 1));
+    s.onAmen(); // "...돌보소서. 아멘." trailing amen is ignored
+    expect(s.index, fatima1 + 1);
+    expect(s.amenCount, 1);
+    now = now.add(const Duration(seconds: 20));
+    s.onAmen(); // the our father's own amen advances
+    expect(s.index, fatima1 + 2);
+
+    // Last decade: trailing amen must not finish the rosary past the closing.
+    s.jumpTo(71);
+    s.onPhrase('돌보소서');
+    expect(s.current.kind, StepKind.closing);
+    s.onAmen();
+    expect(s.isFinished, isFalse);
+    expect(s.index, 72);
+    s.onAmen();
+    expect(s.isFinished, isTrue);
+
+    // Only the first amen is ignored, and only inside the window.
+    s.jumpTo(fatima1);
+    s.onPhrase('돌보소서');
+    now = now.add(RosarySession.trailingAmenWindow * 2);
+    s.onAmen();
+    expect(s.index, fatima1 + 2);
+    s.dispose();
+  });
 }
