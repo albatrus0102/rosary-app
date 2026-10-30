@@ -51,3 +51,4 @@ app.*.map.json
 assets/models/**/*.onnx
 assets/models/**/tokens.txt
 assets/models/**/*.tar.bz2
+*.apk
