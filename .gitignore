@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# 음성 인식 모델 파일 (scripts/fetch_model.sh 로 내려받음)
+assets/models/**/*.onnx
+assets/models/**/tokens.txt
+assets/models/**/*.tar.bz2
