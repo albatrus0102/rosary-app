@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:rosary_app/app/theme.dart';
 
 import '../../speech/amen_detector.dart';
 
@@ -18,7 +19,7 @@ class SpeechDebugPanel extends StatelessWidget {
     final d = detector;
     final diag = d is DiagnosticAmenDetector ? d : null;
     final style = TextStyle(
-      fontFamily: 'monospace',
+      fontFamily: AppTheme.sansFamily,
       fontSize: 12,
       height: 1.35,
       color: scheme.onSurfaceVariant,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:rosary_app/app/theme.dart';
 
 import '../speech/amen_detector.dart';
 import '../speech/sherpa_amen_detector.dart';
@@ -161,7 +162,7 @@ class _Transcript extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final d = detector;
     final style = TextStyle(
-      fontFamily: 'monospace',
+      fontFamily: AppTheme.sansFamily,
       fontSize: 18,
       color: scheme.onSurface,
     );
