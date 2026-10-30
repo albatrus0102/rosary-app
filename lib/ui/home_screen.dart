@@ -1,16 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../app/leader_audio_store.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
+import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
+import 'leader_record_screen.dart';
 import 'prayer_screen.dart';
 
 /// 시작 화면: 신비 선택, 묵주 모양/기도 모드/소리 설정, 시작 버튼.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.settings});
+  const HomeScreen({super.key, required this.settings, this.leaderAudio});
 
   final AppSettings settings;
+
+  /// 선창 음성 저장소. 없으면 화면이 직접 만든다(테스트에서는 가짜를 주입).
+  final LeaderAudioStore? leaderAudio;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -22,13 +30,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final ScrollController _styleScroll = ScrollController();
 
+  late final LeaderAudioStore _leaderStore;
+  late final bool _ownsLeaderStore;
+
   AppSettings get settings => widget.settings;
 
   @override
   void initState() {
     super.initState();
+    _ownsLeaderStore = widget.leaderAudio == null;
+    _leaderStore = widget.leaderAudio ?? LeaderAudioStore();
+    unawaited(_initLeaderStore());
     // 선택된 묵주 모양 카드가 보이도록 첫 프레임 뒤에 가로 스크롤을 옮긴다.
     WidgetsBinding.instance.addPostFrameCallback((_) => _revealSelectedStyle());
+  }
+
+  Future<void> _initLeaderStore() async {
+    try {
+      await _leaderStore.init();
+    } catch (e) {
+      debugPrint('LeaderAudioStore.init failed: $e');
+    }
   }
 
   void _revealSelectedStyle() {
@@ -46,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _styleScroll.dispose();
+    if (_ownsLeaderStore) _leaderStore.dispose();
     super.dispose();
   }
 
@@ -66,6 +89,53 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLeaderAudioCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Column(
+        children: [
+          SwitchListTile(
+            title: const Text('선창 음성'),
+            subtitle: const Text('뒷단 차례에 녹음해 둔 앞단을 들려줍니다'),
+            value: settings.leaderAudioEnabled,
+            onChanged: (v) => settings.leaderAudioEnabled = v,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: _leaderStore,
+                    builder: (context, _) => Text(
+                      '${allLeaderCues.length}개 중 '
+                      '${_leaderStore.recordedCount}개 녹음됨',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.mic),
+                  label: const Text('선창 녹음 관리'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => LeaderRecordScreen(store: _leaderStore),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -147,6 +217,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+        if (settings.prayerMode == PrayerMode.responder) ...[
+          const SizedBox(height: 12),
+          _buildLeaderAudioCard(context),
+        ],
         const SizedBox(height: 12),
         Card(
           margin: EdgeInsets.zero,
@@ -186,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (_) => PrayerScreen(
                   settings: settings,
                   mysterySet: settings.mysterySet,
+                  leaderAudio: _leaderStore,
                 ),
               ),
             );

@@ -21,6 +21,7 @@ class AppSettings extends ChangeNotifier {
       _prefs.getString(_kMode),
       PrayerMode.solo,
     );
+    _leaderAudioEnabled = _prefs.getBool(_kLeaderAudio) ?? true;
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -29,6 +30,7 @@ class AppSettings extends ChangeNotifier {
   static const _kTick = 'tick_bead';
   static const _kStyle = 'rosary_style';
   static const _kMode = 'prayer_mode';
+  static const _kLeaderAudio = 'leader_audio';
 
   final SharedPreferences _prefs;
 
@@ -37,6 +39,7 @@ class AppSettings extends ChangeNotifier {
   late bool _tickPerBead;
   late RosaryStyle _rosaryStyle;
   late PrayerMode _prayerMode;
+  late bool _leaderAudioEnabled;
   late MysterySet _mysterySet;
 
   static Future<AppSettings> load() async {
@@ -60,6 +63,9 @@ class AppSettings extends ChangeNotifier {
   bool get tickPerBead => _tickPerBead;
   RosaryStyle get rosaryStyle => _rosaryStyle;
   PrayerMode get prayerMode => _prayerMode;
+
+  /// 후창 모드에서 녹음된 선창(앞단) 음성을 재생할지 여부.
+  bool get leaderAudioEnabled => _leaderAudioEnabled;
 
   /// 이번 세션에서 선택한 신비(저장하지 않음).
   MysterySet get mysterySet => _mysterySet;
@@ -96,6 +102,13 @@ class AppSettings extends ChangeNotifier {
     if (v == _prayerMode) return;
     _prayerMode = v;
     _prefs.setString(_kMode, v.name);
+    notifyListeners();
+  }
+
+  set leaderAudioEnabled(bool v) {
+    if (v == _leaderAudioEnabled) return;
+    _leaderAudioEnabled = v;
+    _prefs.setBool(_kLeaderAudio, v);
     notifyListeners();
   }
 

@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../app/leader_audio_store.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../domain/prayer_data.dart';
@@ -22,6 +24,7 @@ class PrayerScreen extends StatefulWidget {
     required this.mysterySet,
     this.soundPlayer,
     this.detector,
+    this.leaderAudio,
   });
 
   final AppSettings settings;
@@ -32,6 +35,9 @@ class PrayerScreen extends StatefulWidget {
 
   /// 테스트용 주입. 없고 음성이 켜져 있으면 [SherpaAmenDetector]를 만든다.
   final AmenDetector? detector;
+
+  /// 선창 음성 저장소. 없으면 화면이 직접 만들고 정리한다.
+  final LeaderAudioStore? leaderAudio;
 
   @override
   State<PrayerScreen> createState() => _PrayerScreenState();
@@ -44,6 +50,27 @@ class _PrayerScreenState extends State<PrayerScreen> {
   AmenDetector? _detector;
   StreamSubscription<String>? _phraseSub;
   StreamSubscription<SessionEvent>? _eventSub;
+
+  // 선창 음성 재생(후창 모드 전용).
+  static const _muteAfterPlayback = Duration(milliseconds: 600);
+  static const _cueTimeoutFallback = Duration(seconds: 90);
+  late final LeaderAudioStore _leaderStore;
+  late final bool _ownsLeaderStore;
+  AudioPlayer? _leaderPlayer;
+  StreamSubscription<void>? _leaderCompleteSub;
+  StreamSubscription<Duration>? _leaderDurationSub;
+  Timer? _cueWatchdog;
+  final ValueNotifier<bool> _leaderPlaying = ValueNotifier(false);
+  List<String> _cuePaths = const [];
+  int _cuePos = 0;
+  int _playGeneration = 0;
+  int _lastIndex = 0;
+  DateTime _mutedUntil = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _disposed = false;
+
+  bool get _leaderAudioActive =>
+      _settings.prayerMode == PrayerMode.responder &&
+      _settings.leaderAudioEnabled;
 
   AppSettings get _settings => widget.settings;
 
@@ -64,12 +91,128 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
     _eventSub = _session.events.listen(_onSessionEvent);
 
+    _ownsLeaderStore = widget.leaderAudio == null;
+    _leaderStore = widget.leaderAudio ?? LeaderAudioStore();
+    if (_leaderAudioActive) {
+      _lastIndex = _session.index;
+      _session.addListener(_onSessionChanged);
+      unawaited(_initLeaderAudio());
+    }
+
     if (_settings.voiceEnabled) {
       final detector = widget.detector ?? SherpaAmenDetector();
       _detector = detector;
-      _phraseSub = detector.phraseEvents.listen(_session.onPhrase);
+      _phraseSub = detector.phraseEvents.listen(_onPhrase);
       unawaited(detector.start());
     }
+  }
+
+  /// 선창 음성이 재생 중이거나 막 끝난 직후에는 스피커 소리를 아멘으로 오인하지 않도록 무시한다.
+  void _onPhrase(String phrase) {
+    if (_leaderPlaying.value || DateTime.now().isBefore(_mutedUntil)) return;
+    _session.onPhrase(phrase);
+  }
+
+  Future<void> _initLeaderAudio() async {
+    try {
+      await _leaderStore.init();
+    } catch (e) {
+      debugPrint('LeaderAudioStore.init failed: $e');
+      return;
+    }
+    if (_disposed) return;
+    unawaited(_playLeaderCues());
+  }
+
+  void _onSessionChanged() {
+    // 음성/탭/이전/다음 어느 쪽으로든 스텝이 바뀌면 현재 재생을 끊고 새 스텝의 큐를 재생한다.
+    if (_session.index == _lastIndex &&
+        !(_session.isFinished && _leaderPlaying.value)) {
+      return;
+    }
+    _lastIndex = _session.index;
+    unawaited(_playLeaderCues());
+  }
+
+  AudioPlayer _ensureLeaderPlayer() {
+    final existing = _leaderPlayer;
+    if (existing != null) return existing;
+    final player = AudioPlayer();
+    _leaderPlayer = player;
+    _leaderCompleteSub = player.onPlayerComplete.listen(
+      (_) => _onCueFinished(_playGeneration),
+    );
+    _leaderDurationSub = player.onDurationChanged.listen((d) {
+      if (d > Duration.zero && _leaderPlaying.value) {
+        _armWatchdog(d + const Duration(seconds: 3));
+      }
+    });
+    return player;
+  }
+
+  void _armWatchdog(Duration after) {
+    final gen = _playGeneration;
+    _cueWatchdog?.cancel();
+    _cueWatchdog = Timer(after, () => _onCueFinished(gen));
+  }
+
+  /// 현재 재생을 멈추고, 현재 스텝의 녹음된 큐를 순서대로 재생한다.
+  Future<void> _playLeaderCues() async {
+    final gen = ++_playGeneration;
+    final wasPlaying = _leaderPlaying.value;
+    _cueWatchdog?.cancel();
+    _leaderPlaying.value = false;
+    if (wasPlaying) {
+      _mutedUntil = DateTime.now().add(_muteAfterPlayback);
+      try {
+        await _leaderPlayer?.stop();
+      } catch (e) {
+        debugPrint('leader stop failed: $e');
+      }
+      if (gen != _playGeneration || _disposed) return;
+    }
+    if (_session.isFinished) return;
+
+    _cuePaths = [
+      for (final id in _session.current.leaderCueIds)
+        if (_leaderStore.has(id)) _leaderStore.pathFor(id),
+    ];
+    _cuePos = 0;
+    if (_cuePaths.isEmpty) return;
+
+    _leaderPlaying.value = true;
+    try {
+      await SoundPlayer.configureGlobalAudioContext();
+    } catch (_) {}
+    if (gen != _playGeneration || _disposed) return;
+    await _playCurrentCue(gen);
+  }
+
+  Future<void> _playCurrentCue(int gen) async {
+    if (gen != _playGeneration || _disposed) return;
+    if (_cuePos >= _cuePaths.length) {
+      _endLeaderPlayback();
+      return;
+    }
+    try {
+      _armWatchdog(_cueTimeoutFallback);
+      await _ensureLeaderPlayer().play(DeviceFileSource(_cuePaths[_cuePos]));
+    } catch (e) {
+      debugPrint('leader play failed: $e');
+      _onCueFinished(gen);
+    }
+  }
+
+  void _onCueFinished(int gen) {
+    if (gen != _playGeneration || _disposed || !_leaderPlaying.value) return;
+    _cuePos++;
+    unawaited(_playCurrentCue(gen));
+  }
+
+  void _endLeaderPlayback() {
+    _cueWatchdog?.cancel();
+    _mutedUntil = DateTime.now().add(_muteAfterPlayback);
+    _leaderPlaying.value = false;
   }
 
   void _onSessionEvent(SessionEvent e) {
@@ -86,6 +229,18 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   @override
   void dispose() {
+    _disposed = true;
+    _playGeneration++;
+    _cueWatchdog?.cancel();
+    _session.removeListener(_onSessionChanged);
+    _leaderCompleteSub?.cancel();
+    _leaderDurationSub?.cancel();
+    final leaderPlayer = _leaderPlayer;
+    if (leaderPlayer != null) {
+      unawaited(leaderPlayer.stop().whenComplete(leaderPlayer.dispose));
+    }
+    _leaderPlaying.dispose();
+    if (_ownsLeaderStore) _leaderStore.dispose();
     _phraseSub?.cancel();
     _eventSub?.cancel();
     final detector = _detector;
@@ -205,6 +360,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (_leaderAudioActive)
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _leaderPlaying,
+                        builder: (context, playing, _) => playing
+                            ? const _LeaderPlayingBadge()
+                            : const SizedBox.shrink(),
+                      ),
                     if (step.heading != null)
                       _HeadingCard(heading: step.heading!),
                     Text(
@@ -269,6 +431,46 @@ class _PrayerScreenState extends State<PrayerScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LeaderPlayingBadge extends StatelessWidget {
+  const _LeaderPlayingBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.tertiaryContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.volume_up,
+                  size: 18,
+                  color: scheme.onTertiaryContainer,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '선창 재생 중',
+                  style: Theme.of(context).textTheme.labelLarge
+                      ?.copyWith(color: scheme.onTertiaryContainer),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -7,27 +7,32 @@ class SoundPlayer {
   AudioPlayer? _tick;
   bool _initialized = false;
 
+  /// 마이크 녹음과 동시에 재생되도록 전역 오디오 컨텍스트를 설정한다.
+  static Future<void> configureGlobalAudioContext() {
+    return AudioPlayer.global.setAudioContext(
+      AudioContext(
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playAndRecord,
+          options: const {
+            AVAudioSessionOptions.defaultToSpeaker,
+            AVAudioSessionOptions.allowBluetooth,
+          },
+        ),
+        android: const AudioContextAndroid(
+          usageType: AndroidUsageType.media,
+          contentType: AndroidContentType.sonification,
+          // 포커스를 요청하지 않아 마이크 녹음을 끊거나 낮추지 않는다.
+          audioFocus: AndroidAudioFocus.none,
+        ),
+      ),
+    );
+  }
+
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
     try {
-      await AudioPlayer.global.setAudioContext(
-        AudioContext(
-          iOS: AudioContextIOS(
-            category: AVAudioSessionCategory.playAndRecord,
-            options: const {
-              AVAudioSessionOptions.defaultToSpeaker,
-              AVAudioSessionOptions.allowBluetooth,
-            },
-          ),
-          android: const AudioContextAndroid(
-            usageType: AndroidUsageType.media,
-            contentType: AndroidContentType.sonification,
-            // 포커스를 요청하지 않아 마이크 녹음을 끊거나 낮추지 않는다.
-            audioFocus: AndroidAudioFocus.none,
-          ),
-        ),
-      );
+      await configureGlobalAudioContext();
       _chime = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
       _tick = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
     } catch (e) {

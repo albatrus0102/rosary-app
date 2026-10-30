@@ -1,4 +1,5 @@
 import 'prayer_data.dart';
+import 'leader_cues.dart';
 import 'prayer_splits.dart';
 
 /// 묵주기도 한 스텝의 종류.
@@ -24,9 +25,11 @@ class RosaryStep {
     this.triggerPhrases = const ['아멘'],
     this.decade,
     this.beadIndex,
+    this.leaderCueIds = const [],
   });
 
   /// 기도문에서 만든 스텝. 앞단/뒷단은 [splitPrayer]로 나눈다.
+  /// [leaderCueIds]를 생략하면 그 기도의 큐 하나로 채운다.
   factory RosaryStep.fromPrayer({
     required StepKind kind,
     required String title,
@@ -35,6 +38,7 @@ class RosaryStep {
     List<String> triggerPhrases = const ['아멘'],
     int? decade,
     int? beadIndex,
+    List<String>? leaderCueIds,
   }) {
     final parts = splitPrayer(prayer);
     return RosaryStep(
@@ -47,6 +51,7 @@ class RosaryStep {
       triggerPhrases: triggerPhrases,
       decade: decade,
       beadIndex: beadIndex,
+      leaderCueIds: leaderCueIds ?? [prayerCueId(prayer)],
     );
   }
 
@@ -75,6 +80,10 @@ class RosaryStep {
 
   /// 성모송 1..10(단) 또는 1..3(서두). 그 외 null.
   final int? beadIndex;
+
+  /// 후창 모드에서 이 스텝에 들어갈 때 순서대로 재생할 선창 큐 id들.
+  /// 신비 묵상 문구가 있으면 [신비 큐, 기도 큐], 아니면 [기도 큐].
+  final List<String> leaderCueIds;
 
   bool get advancesByVoice => triggerPhrases.isNotEmpty;
 }
@@ -121,6 +130,7 @@ List<RosaryStep> buildRosarySequence(MysterySet set) {
         heading: '${mystery.title}\n${mystery.meditation}',
         prayer: Prayers.ourFather,
         decade: d,
+        leaderCueIds: [mysteryCueId(mystery), prayerCueId(Prayers.ourFather)],
       ),
     );
     for (var n = 1; n <= 10; n++) {
