@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/leader_audio_store.dart';
+import '../app/leader_voice.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../domain/prayer_data.dart';
@@ -25,6 +25,7 @@ class PrayerScreen extends StatefulWidget {
     this.soundPlayer,
     this.detector,
     this.leaderAudio,
+    this.leaderVoice,
   });
 
   final AppSettings settings;
@@ -39,6 +40,10 @@ class PrayerScreen extends StatefulWidget {
   /// 선창 음성 저장소. 없으면 화면이 직접 만들고 정리한다.
   final LeaderAudioStore? leaderAudio;
 
+  /// 테스트용 주입. 없으면 설정의 소스(AI 음성/직접 녹음)에 맞게 만든다.
+  /// 주입한 객체는 화면이 정리하지 않는다(말하기만 멈춘다).
+  final LeaderVoice? leaderVoice;
+
   @override
   State<PrayerScreen> createState() => _PrayerScreenState();
 }
@@ -51,21 +56,15 @@ class _PrayerScreenState extends State<PrayerScreen> {
   StreamSubscription<String>? _phraseSub;
   StreamSubscription<SessionEvent>? _eventSub;
 
-  // 선창 음성 재생(후창 모드 전용).
+  // 선창 음성(후창 모드 전용).
   static const _muteAfterPlayback = Duration(milliseconds: 600);
-  static const _cueTimeoutFallback = Duration(seconds: 90);
-  late final LeaderAudioStore _leaderStore;
-  late final bool _ownsLeaderStore;
-  AudioPlayer? _leaderPlayer;
-  StreamSubscription<void>? _leaderCompleteSub;
-  StreamSubscription<Duration>? _leaderDurationSub;
-  Timer? _cueWatchdog;
-  final ValueNotifier<bool> _leaderPlaying = ValueNotifier(false);
-  List<String> _cuePaths = const [];
-  int _cuePos = 0;
-  int _playGeneration = 0;
+  LeaderVoice? _voice;
+  LeaderAudioStore? _ownedStore;
+  bool _ownsVoice = false;
   int _lastIndex = 0;
-  DateTime _mutedUntil = DateTime.fromMillisecondsSinceEpoch(0);
+  Timer? _muteTimer;
+  bool _muted = false;
+  bool _wasSpeaking = false;
   bool _disposed = false;
 
   bool get _leaderAudioActive =>
@@ -91,12 +90,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
     _eventSub = _session.events.listen(_onSessionEvent);
 
-    _ownsLeaderStore = widget.leaderAudio == null;
-    _leaderStore = widget.leaderAudio ?? LeaderAudioStore();
     if (_leaderAudioActive) {
-      _lastIndex = _session.index;
-      _session.addListener(_onSessionChanged);
-      unawaited(_initLeaderAudio());
+      _setUpLeaderVoice();
     }
 
     if (_settings.voiceEnabled) {
@@ -107,112 +102,68 @@ class _PrayerScreenState extends State<PrayerScreen> {
     }
   }
 
-  /// 선창 음성이 재생 중이거나 막 끝난 직후에는 스피커 소리를 아멘으로 오인하지 않도록 무시한다.
+  void _setUpLeaderVoice() {
+    var voice = widget.leaderVoice;
+    if (voice == null) {
+      _ownsVoice = true;
+      voice = switch (_settings.leaderVoiceSource) {
+        LeaderVoiceSource.tts => TtsLeaderVoice(rate: () => _settings.ttsRate),
+        LeaderVoiceSource.recorded => RecordedLeaderVoice(
+          widget.leaderAudio ?? (_ownedStore = LeaderAudioStore()),
+        ),
+      };
+    }
+    _voice = voice;
+    _lastIndex = _session.index;
+    voice.isSpeaking.addListener(_onSpeakingChanged);
+    _session.addListener(_onSessionChanged);
+    unawaited(_startLeaderVoice(voice));
+  }
+
+  Future<void> _startLeaderVoice(LeaderVoice voice) async {
+    try {
+      await voice.init();
+      if (_disposed) return;
+      await voice.speakStep(_session.current);
+    } catch (e) {
+      debugPrint('leader voice failed: $e');
+    }
+  }
+
+  /// 말이 끝나면 그 뒤 잠시 동안도 음성 이벤트를 무시한다(스피커 소리가 마이크에 남아 있을 수 있다).
+  void _onSpeakingChanged() {
+    final speaking = _voice?.isSpeaking.value ?? false;
+    if (_wasSpeaking && !speaking) {
+      _muted = true;
+      _muteTimer?.cancel();
+      _muteTimer = Timer(_muteAfterPlayback, () => _muted = false);
+    }
+    _wasSpeaking = speaking;
+    if (mounted) setState(() {});
+  }
+
+  /// 선창이 말하는 중이거나 막 끝난 직후에는 스피커 소리를 아멘으로 오인하지 않도록 무시한다.
   void _onPhrase(String phrase) {
-    if (_leaderPlaying.value || DateTime.now().isBefore(_mutedUntil)) return;
+    final speaking = _voice?.isSpeaking.value ?? false;
+    if (speaking || _muted) return;
     _session.onPhrase(phrase);
   }
 
-  Future<void> _initLeaderAudio() async {
-    try {
-      await _leaderStore.init();
-    } catch (e) {
-      debugPrint('LeaderAudioStore.init failed: $e');
-      return;
-    }
-    if (_disposed) return;
-    unawaited(_playLeaderCues());
-  }
-
   void _onSessionChanged() {
-    // 음성/탭/이전/다음 어느 쪽으로든 스텝이 바뀌면 현재 재생을 끊고 새 스텝의 큐를 재생한다.
-    if (_session.index == _lastIndex &&
-        !(_session.isFinished && _leaderPlaying.value)) {
+    // 음성/탭/이전/다음 어느 쪽으로든 스텝이 바뀌면 현재 말을 끊고 새 스텝을 말한다.
+    final voice = _voice;
+    if (voice == null) return;
+    if (_session.isFinished) {
+      unawaited(voice.stop());
       return;
     }
+    if (_session.index == _lastIndex) return;
     _lastIndex = _session.index;
-    unawaited(_playLeaderCues());
-  }
-
-  AudioPlayer _ensureLeaderPlayer() {
-    final existing = _leaderPlayer;
-    if (existing != null) return existing;
-    final player = AudioPlayer();
-    _leaderPlayer = player;
-    _leaderCompleteSub = player.onPlayerComplete.listen(
-      (_) => _onCueFinished(_playGeneration),
+    unawaited(
+      voice.speakStep(_session.current).catchError((Object e) {
+        debugPrint('leader voice failed: $e');
+      }),
     );
-    _leaderDurationSub = player.onDurationChanged.listen((d) {
-      if (d > Duration.zero && _leaderPlaying.value) {
-        _armWatchdog(d + const Duration(seconds: 3));
-      }
-    });
-    return player;
-  }
-
-  void _armWatchdog(Duration after) {
-    final gen = _playGeneration;
-    _cueWatchdog?.cancel();
-    _cueWatchdog = Timer(after, () => _onCueFinished(gen));
-  }
-
-  /// 현재 재생을 멈추고, 현재 스텝의 녹음된 큐를 순서대로 재생한다.
-  Future<void> _playLeaderCues() async {
-    final gen = ++_playGeneration;
-    final wasPlaying = _leaderPlaying.value;
-    _cueWatchdog?.cancel();
-    _leaderPlaying.value = false;
-    if (wasPlaying) {
-      _mutedUntil = DateTime.now().add(_muteAfterPlayback);
-      try {
-        await _leaderPlayer?.stop();
-      } catch (e) {
-        debugPrint('leader stop failed: $e');
-      }
-      if (gen != _playGeneration || _disposed) return;
-    }
-    if (_session.isFinished) return;
-
-    _cuePaths = [
-      for (final id in _session.current.leaderCueIds)
-        if (_leaderStore.has(id)) _leaderStore.pathFor(id),
-    ];
-    _cuePos = 0;
-    if (_cuePaths.isEmpty) return;
-
-    _leaderPlaying.value = true;
-    try {
-      await SoundPlayer.configureGlobalAudioContext();
-    } catch (_) {}
-    if (gen != _playGeneration || _disposed) return;
-    await _playCurrentCue(gen);
-  }
-
-  Future<void> _playCurrentCue(int gen) async {
-    if (gen != _playGeneration || _disposed) return;
-    if (_cuePos >= _cuePaths.length) {
-      _endLeaderPlayback();
-      return;
-    }
-    try {
-      _armWatchdog(_cueTimeoutFallback);
-      await _ensureLeaderPlayer().play(DeviceFileSource(_cuePaths[_cuePos]));
-    } catch (e) {
-      debugPrint('leader play failed: $e');
-      _onCueFinished(gen);
-    }
-  }
-
-  void _onCueFinished(int gen) {
-    if (gen != _playGeneration || _disposed || !_leaderPlaying.value) return;
-    _cuePos++;
-    unawaited(_playCurrentCue(gen));
-  }
-
-  void _endLeaderPlayback() {
-    _cueWatchdog?.cancel();
-    _mutedUntil = DateTime.now().add(_muteAfterPlayback);
-    _leaderPlaying.value = false;
   }
 
   void _onSessionEvent(SessionEvent e) {
@@ -230,17 +181,18 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void dispose() {
     _disposed = true;
-    _playGeneration++;
-    _cueWatchdog?.cancel();
+    _muteTimer?.cancel();
     _session.removeListener(_onSessionChanged);
-    _leaderCompleteSub?.cancel();
-    _leaderDurationSub?.cancel();
-    final leaderPlayer = _leaderPlayer;
-    if (leaderPlayer != null) {
-      unawaited(leaderPlayer.stop().whenComplete(leaderPlayer.dispose));
+    final voice = _voice;
+    if (voice != null) {
+      voice.isSpeaking.removeListener(_onSpeakingChanged);
+      if (_ownsVoice) {
+        unawaited(voice.dispose());
+      } else {
+        unawaited(voice.stop());
+      }
     }
-    _leaderPlaying.dispose();
-    if (_ownsLeaderStore) _leaderStore.dispose();
+    _ownedStore?.dispose();
     _phraseSub?.cancel();
     _eventSub?.cancel();
     final detector = _detector;
@@ -360,13 +312,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_leaderAudioActive)
-                      ValueListenableBuilder<bool>(
-                        valueListenable: _leaderPlaying,
-                        builder: (context, playing, _) => playing
-                            ? const _LeaderPlayingBadge()
-                            : const SizedBox.shrink(),
-                      ),
+                    if (_voice?.isSpeaking.value ?? false)
+                      const _LeaderPlayingBadge(),
                     if (step.heading != null)
                       _HeadingCard(heading: step.heading!),
                     Text(

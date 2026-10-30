@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/leader_audio_store.dart';
+import '../app/leader_voice.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
 import '../domain/leader_cues.dart';
@@ -13,12 +14,20 @@ import 'prayer_screen.dart';
 
 /// 시작 화면: 신비 선택, 묵주 모양/기도 모드/소리 설정, 시작 버튼.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.settings, this.leaderAudio});
+  const HomeScreen({
+    super.key,
+    required this.settings,
+    this.leaderAudio,
+    this.ttsVoice,
+  });
 
   final AppSettings settings;
 
   /// 선창 음성 저장소. 없으면 화면이 직접 만든다(테스트에서는 가짜를 주입).
   final LeaderAudioStore? leaderAudio;
+
+  /// '미리 듣기'와 한국어 음성 확인에 쓰는 TTS. 없으면 필요할 때 만든다(테스트용 주입).
+  final TtsLeaderVoice? ttsVoice;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -32,6 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late final LeaderAudioStore _leaderStore;
   late final bool _ownsLeaderStore;
+  TtsLeaderVoice? _tts;
+  bool _ownsTts = false;
+  Future<bool>? _koreanAvailable;
 
   AppSettings get settings => widget.settings;
 
@@ -69,6 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _styleScroll.dispose();
     if (_ownsLeaderStore) _leaderStore.dispose();
+    if (_ownsTts) unawaited(_tts?.dispose());
     super.dispose();
   }
 
@@ -95,44 +108,128 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildLeaderAudioCard(BuildContext context) {
     final theme = Theme.of(context);
+    final source = settings.leaderVoiceSource;
+    final dim = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
     return Card(
       margin: EdgeInsets.zero,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SwitchListTile(
             title: const Text('선창 음성'),
-            subtitle: const Text('뒷단 차례에 녹음해 둔 앞단을 들려줍니다'),
+            subtitle: const Text('뒷단 차례에 앞단을 들려줍니다'),
             value: settings.leaderAudioEnabled,
             onChanged: (v) => settings.leaderAudioEnabled = v,
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ListenableBuilder(
-                    listenable: _leaderStore,
-                    builder: (context, _) => Text(
-                      '${allLeaderCues.length}개 중 '
-                      '${_leaderStore.recordedCount}개 녹음됨',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+          if (settings.leaderAudioEnabled) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: SegmentedButton<LeaderVoiceSource>(
+                showSelectedIcon: false,
+                segments: [
+                  for (final v in LeaderVoiceSource.values)
+                    ButtonSegment(value: v, label: Text(v.label)),
+                ],
+                selected: {source},
+                onSelectionChanged: (v) => settings.leaderVoiceSource = v.first,
+              ),
+            ),
+            if (source == LeaderVoiceSource.tts)
+              _buildTtsControls(context, dim)
+            else
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ListenableBuilder(
+                        listenable: _leaderStore,
+                        builder: (context, _) => Text(
+                          '${allLeaderCues.length}개 중 '
+                          '${_leaderStore.recordedCount}개 녹음됨',
+                          style: dim,
+                        ),
                       ),
                     ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.mic),
+                      label: const Text('선창 녹음 관리'),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                LeaderRecordScreen(store: _leaderStore),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  TtsLeaderVoice _ensureTts() {
+    final existing = _tts;
+    if (existing != null) return existing;
+    final injected = widget.ttsVoice;
+    if (injected != null) return _tts = injected;
+    _ownsTts = true;
+    return _tts = TtsLeaderVoice(rate: () => settings.ttsRate);
+  }
+
+  Widget _buildTtsControls(BuildContext context, TextStyle? dim) {
+    final theme = Theme.of(context);
+    final tts = _ensureTts();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FutureBuilder<bool>(
+            future: _koreanAvailable ??= tts.koreanAvailable(),
+            builder: (context, snap) {
+              // 알 수 없으면(아직 확인 중이거나 오류) 경고하지 않는다.
+              if (snap.data != false) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  '기기에 한국어 음성이 설치되어 있지 않습니다. '
+                  '설정 > 텍스트 음성 변환에서 한국어 음성을 받아 주세요.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                    height: 1.4,
                   ),
                 ),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.mic),
-                  label: const Text('선창 녹음 관리'),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => LeaderRecordScreen(store: _leaderStore),
-                      ),
-                    );
-                  },
+              );
+            },
+          ),
+          Row(
+            children: [
+              Text('말하기 속도', style: dim),
+              Expanded(
+                child: Slider(
+                  min: AppSettings.minTtsRate,
+                  max: AppSettings.maxTtsRate,
+                  divisions: 8,
+                  label: settings.ttsRate.toStringAsFixed(2),
+                  value: settings.ttsRate,
+                  onChanged: (v) => settings.ttsRate = v,
                 ),
-              ],
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.tonalIcon(
+              icon: const Icon(Icons.volume_up),
+              label: const Text('미리 듣기'),
+              onPressed: () => unawaited(tts.preview()),
             ),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
+import 'leader_voice.dart';
 import 'rosary_style.dart';
 
 /// 앱 설정. `shared_preferences`에 저장된다(신비 선택은 제외).
@@ -22,6 +23,15 @@ class AppSettings extends ChangeNotifier {
       PrayerMode.solo,
     );
     _leaderAudioEnabled = _prefs.getBool(_kLeaderAudio) ?? true;
+    _leaderVoiceSource = _enumByName(
+      LeaderVoiceSource.values,
+      _prefs.getString(_kLeaderVoiceSource),
+      LeaderVoiceSource.tts,
+    );
+    _ttsRate = (_prefs.getDouble(_kTtsRate) ?? defaultTtsRate).clamp(
+      minTtsRate,
+      maxTtsRate,
+    );
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -31,6 +41,12 @@ class AppSettings extends ChangeNotifier {
   static const _kStyle = 'rosary_style';
   static const _kMode = 'prayer_mode';
   static const _kLeaderAudio = 'leader_audio';
+  static const _kLeaderVoiceSource = 'leader_voice_source';
+  static const _kTtsRate = 'tts_rate';
+
+  static const double minTtsRate = 0.3;
+  static const double maxTtsRate = 0.7;
+  static const double defaultTtsRate = 0.45;
 
   final SharedPreferences _prefs;
 
@@ -40,6 +56,8 @@ class AppSettings extends ChangeNotifier {
   late RosaryStyle _rosaryStyle;
   late PrayerMode _prayerMode;
   late bool _leaderAudioEnabled;
+  late LeaderVoiceSource _leaderVoiceSource;
+  late double _ttsRate;
   late MysterySet _mysterySet;
 
   static Future<AppSettings> load() async {
@@ -66,6 +84,12 @@ class AppSettings extends ChangeNotifier {
 
   /// 후창 모드에서 녹음된 선창(앞단) 음성을 재생할지 여부.
   bool get leaderAudioEnabled => _leaderAudioEnabled;
+
+  /// 후창 모드의 선창 소스(기본: AI 음성).
+  LeaderVoiceSource get leaderVoiceSource => _leaderVoiceSource;
+
+  /// AI 음성 말하기 속도(0.3~0.7).
+  double get ttsRate => _ttsRate;
 
   /// 이번 세션에서 선택한 신비(저장하지 않음).
   MysterySet get mysterySet => _mysterySet;
@@ -109,6 +133,21 @@ class AppSettings extends ChangeNotifier {
     if (v == _leaderAudioEnabled) return;
     _leaderAudioEnabled = v;
     _prefs.setBool(_kLeaderAudio, v);
+    notifyListeners();
+  }
+
+  set leaderVoiceSource(LeaderVoiceSource v) {
+    if (v == _leaderVoiceSource) return;
+    _leaderVoiceSource = v;
+    _prefs.setString(_kLeaderVoiceSource, v.name);
+    notifyListeners();
+  }
+
+  set ttsRate(double v) {
+    final clamped = v.clamp(minTtsRate, maxTtsRate);
+    if (clamped == _ttsRate) return;
+    _ttsRate = clamped;
+    _prefs.setDouble(_kTtsRate, clamped);
     notifyListeners();
   }
 
