@@ -1,21 +1,30 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa;
+import 'package:path_provider/path_provider.dart';
 
 import 'amen_detector.dart';
 import 'amen_matcher.dart';
 import 'mic_capture.dart';
 import 'model_assets.dart';
+import 'recognizer_worker.dart';
+import 'speech_config.dart';
 
 /// sherpa_onnx 스트리밍 한국어 인식기로 "아멘"을 감지한다.
-class SherpaAmenDetector implements AmenDetector {
-  SherpaAmenDetector({MicCapture? mic, AmenMatcher? matcher})
-    : _mic = mic ?? MicCapture(),
-      _matcher = matcher ?? AmenMatcher();
+///
+/// 인식(모델 로드, 디코딩)은 백그라운드 isolate에서 돌고, 이 클래스는 마이크 샘플을
+/// 전달하고 부분 결과를 받아 [AmenMatcher]로 판정한다.
+class SherpaAmenDetector implements DiagnosticAmenDetector {
+  SherpaAmenDetector({
+    MicCapture? mic,
+    AmenMatcher? matcher,
+    this.config = const SpeechConfig(),
+  }) : _mic = mic ?? MicCapture(),
+       _matcher = matcher ?? AmenMatcher();
 
-  static bool _bindingsReady = false;
-  static const int _sampleRate = 16000;
+  final SpeechConfig config;
 
   final MicCapture _mic;
   final AmenMatcher _matcher;
@@ -24,15 +33,24 @@ class SherpaAmenDetector implements AmenDetector {
   final StreamController<String> _phraseController =
       StreamController<String>.broadcast();
   final ValueNotifier<DetectorState> _state = ValueNotifier(DetectorState.idle);
+  final ValueNotifier<String> _transcript = ValueNotifier('');
+  final ValueNotifier<int> _phraseCount = ValueNotifier(0);
+  final ValueNotifier<int> _amenCount = ValueNotifier(0);
 
-  sherpa.OnlineRecognizer? _recognizer;
-  sherpa.OnlineStream? _stream;
+  Isolate? _isolate;
+  ReceivePort? _fromWorker;
+  SendPort? _toWorker;
+  Completer<void>? _ready;
   StreamSubscription<Float32List>? _micSub;
   Future<void>? _starting;
   bool _disposed = false;
 
   String? _lastTranscript;
   String? _lastError;
+
+  DateTime _lastPartialLog = DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime _lastLevelLog = DateTime.fromMillisecondsSinceEpoch(0);
+  int _chunks = 0;
 
   @override
   Stream<int> get amenEvents => _amenController.stream;
@@ -47,7 +65,26 @@ class SherpaAmenDetector implements AmenDetector {
   String? get lastTranscript => _lastTranscript;
 
   /// state가 [DetectorState.error]일 때의 오류 메시지.
+  @override
   String? get lastError => _lastError;
+
+  @override
+  ValueListenable<double> get inputLevel => _mic.level;
+
+  @override
+  ValueListenable<String> get transcript => _transcript;
+
+  @override
+  ValueListenable<int> get phraseCount => _phraseCount;
+
+  @override
+  ValueListenable<int> get amenCount => _amenCount;
+
+  void _setState(DetectorState s) {
+    if (_disposed || _state.value == s) return;
+    debugPrint('[amen] state ${_state.value.name} -> ${s.name}');
+    _state.value = s;
+  }
 
   @override
   Future<void> start() {
@@ -60,94 +97,199 @@ class SherpaAmenDetector implements AmenDetector {
   Future<void> _doStart() async {
     try {
       _lastError = null;
-      _state.value = DetectorState.preparingModel;
+      _setState(DetectorState.preparingModel);
 
-      if (!_bindingsReady) {
-        sherpa.initBindings();
-        _bindingsReady = true;
-      }
-
-      if (_recognizer == null) {
-        final dir = await ModelAssets.ensureCopied();
-        final config = sherpa.OnlineRecognizerConfig(
-          feat: const sherpa.FeatureConfig(
-            sampleRate: _sampleRate,
-            featureDim: 80,
-          ),
-          model: sherpa.OnlineModelConfig(
-            transducer: sherpa.OnlineTransducerModelConfig(
-              encoder: '$dir/${ModelAssets.encoderFile}',
-              decoder: '$dir/${ModelAssets.decoderFile}',
-              joiner: '$dir/${ModelAssets.joinerFile}',
-            ),
-            tokens: '$dir/${ModelAssets.tokensFile}',
-            modelType: 'zipformer',
-            numThreads: 2,
-            debug: false,
-          ),
-          decodingMethod: 'greedy_search',
-          enableEndpoint: true,
-          rule1MinTrailingSilence: 1.5,
-          rule2MinTrailingSilence: 0.8,
-          rule3MinUtteranceLength: 20,
-        );
-        _recognizer = sherpa.OnlineRecognizer(config);
-      }
-      _stream ??= _recognizer!.createStream();
+      if (_isolate == null) await _spawnWorker();
       if (_disposed) return;
 
       if (!await _mic.hasPermission()) {
-        _state.value = DetectorState.permissionDenied;
+        debugPrint('[amen] microphone permission denied');
+        _setState(DetectorState.permissionDenied);
         return;
       }
 
       _matcher.onEndpoint();
+      _toWorker?.send(['reset']);
       final samples = await _mic.start();
       if (_disposed) {
         await _mic.stop();
         return;
       }
       await _micSub?.cancel();
+      _chunks = 0;
       _micSub = samples.listen(
         _onSamples,
         onError: (Object e, StackTrace st) => _fail(e),
       );
-      _state.value = DetectorState.listening;
+      _setState(DetectorState.listening);
     } catch (e) {
       await _fail(e);
     }
   }
 
-  void _onSamples(Float32List samples) {
-    final recognizer = _recognizer;
-    final stream = _stream;
-    if (recognizer == null || stream == null || _disposed) return;
-    try {
-      stream.acceptWaveform(samples: samples, sampleRate: _sampleRate);
-      while (recognizer.isReady(stream)) {
-        recognizer.decode(stream);
-      }
-      final text = recognizer.getResult(stream).text;
-      _lastTranscript = text;
-      final phrases = _matcher.onPartial(text);
-      if (phrases.isNotEmpty) {
-        for (final p in phrases) {
-          if (!_phraseController.isClosed) _phraseController.add(p);
-        }
-        final n = phrases.where((p) => p == '아멘').length;
-        if (n > 0 && !_amenController.isClosed) _amenController.add(n);
-      }
-      if (recognizer.isEndpoint(stream)) {
-        _matcher.onEndpoint();
-        recognizer.reset(stream);
-      }
-    } catch (e) {
-      _fail(e);
+  /// 모델 파일/핫워드 파일을 준비하고 인식 isolate를 띄운 뒤 'ready'를 기다린다.
+  Future<void> _spawnWorker() async {
+    final dir = await ModelAssets.ensureCopied();
+    final params = await _buildParams(dir);
+    if (_disposed) return;
+
+    final port = ReceivePort();
+    final ready = Completer<void>();
+    _fromWorker = port;
+    _ready = ready;
+    port.listen(_onWorkerMessage);
+
+    debugPrint('[amen] spawning recognizer isolate: $config');
+    final isolate = await Isolate.spawn<List<Object>>(
+      recognizerWorkerMain,
+      [port.sendPort, params.toMessage()],
+      debugName: 'amen-recognizer',
+      onError: port.sendPort, // 처리되지 않은 오류도 ['msg', 'stack'] 리스트로 받는다.
+    );
+    if (_disposed) {
+      isolate.kill(priority: Isolate.immediate);
+      return;
     }
+    _isolate = isolate;
+    // 모델 로드는 오래 걸릴 수 있어 넉넉히 기다린다.
+    await ready.future.timeout(
+      const Duration(seconds: 90),
+      onTimeout: () => throw TimeoutException('음성 인식 모델 로드 시간 초과'),
+    );
+  }
+
+  Future<RecognizerParams> _buildParams(String dir) async {
+    final tokensPath = '$dir/${ModelAssets.tokensFile}';
+    var hotwordsFile = '';
+    var modelingUnit = '';
+    var bpeVocab = '';
+
+    if (config.usesHotwords) {
+      final tokens = SpeechConfig.parseTokens(
+        await File(tokensPath).readAsString(),
+      );
+      var lines = SpeechConfig.filterHotwords(
+        config.hotwords,
+        tokens,
+        onSkipped: (line, missing) => debugPrint(
+          '[amen] hotword skipped "$line": token "$missing" not in tokens.txt',
+        ),
+      );
+      final vocab = File('$dir/bpe.vocab');
+      if (await vocab.exists()) {
+        modelingUnit = 'bpe';
+        bpeVocab = vocab.path;
+        lines = [for (final l in lines) SpeechConfig.tokensToPlainWord(l)];
+      }
+      if (lines.isNotEmpty) {
+        final support = await getApplicationSupportDirectory();
+        final file = File('${support.path}/hotwords.txt');
+        await file.writeAsString('${lines.join('\n')}\n', flush: true);
+        hotwordsFile = file.path;
+        debugPrint(
+          '[amen] hotwords file ${file.path}: $lines '
+          '(unit: ${modelingUnit.isEmpty ? 'tokens' : modelingUnit})',
+        );
+      } else {
+        debugPrint('[amen] no usable hotwords; running without');
+      }
+    }
+
+    return RecognizerParams(
+      modelDir: dir,
+      encoder: '$dir/${ModelAssets.encoderFile}',
+      decoder: '$dir/${ModelAssets.decoderFile}',
+      joiner: '$dir/${ModelAssets.joinerFile}',
+      tokens: tokensPath,
+      decodingMethod: config.decodingMethod,
+      hotwordsFile: hotwordsFile,
+      hotwordsScore: config.hotwordsScore,
+      modelingUnit: modelingUnit,
+      bpeVocab: bpeVocab,
+      rule1: config.rule1,
+      rule2: config.rule2,
+      rule3: config.rule3,
+      numThreads: config.numThreads,
+    );
+  }
+
+  void _onWorkerMessage(dynamic raw) {
+    if (_disposed || raw is! List || raw.isEmpty) return;
+    switch (raw[0]) {
+      case 'port':
+        _toWorker = raw[1] as SendPort;
+      case 'ready':
+        debugPrint(
+          '[amen] recognizer ready: method=${raw[1]} hotwords=${raw[2]}',
+        );
+        if (_ready?.isCompleted == false) _ready!.complete();
+      case 'partial':
+        _onPartial(raw[1] as String);
+      case 'endpoint':
+        debugPrint('[amen] endpoint "${raw[1]}"');
+        _matcher.onEndpoint();
+      case 'error':
+        _onWorkerError(raw[1] as String);
+      default:
+        // Isolate.spawn(onError:)의 ['오류', '스택'] 형태.
+        if (raw.length == 2 && raw[0] is String && raw[1] is String) {
+          _onWorkerError('isolate: ${raw[0]}');
+        }
+    }
+  }
+
+  void _onWorkerError(String message) {
+    debugPrint('[amen] worker error: $message');
+    final ready = _ready;
+    if (ready != null && !ready.isCompleted) {
+      ready.completeError(StateError(message));
+    } else {
+      unawaited(_fail(message));
+    }
+  }
+
+  void _onPartial(String text) {
+    _lastTranscript = text;
+    _transcript.value = text;
+
+    final now = DateTime.now();
+    if (now.difference(_lastPartialLog) >= const Duration(milliseconds: 500)) {
+      _lastPartialLog = now;
+      debugPrint('[amen] partial "$text"');
+    }
+
+    final phrases = _matcher.onPartial(text);
+    if (phrases.isEmpty) return;
+    debugPrint('[amen] matched $phrases in "$text"');
+    for (final p in phrases) {
+      if (!_phraseController.isClosed) _phraseController.add(p);
+    }
+    _phraseCount.value += phrases.length;
+    final n = phrases.where((p) => p == '아멘').length;
+    if (n > 0) {
+      _amenCount.value += n;
+      if (!_amenController.isClosed) _amenController.add(n);
+    }
+  }
+
+  void _onSamples(Float32List samples) {
+    final port = _toWorker;
+    if (port == null || _disposed) return;
+    _chunks++;
+    final now = DateTime.now();
+    if (now.difference(_lastLevelLog) >= const Duration(seconds: 2)) {
+      _lastLevelLog = now;
+      debugPrint(
+        '[amen] mic level=${_mic.level.value.toStringAsFixed(2)} '
+        'chunks=$_chunks (${samples.length} samples/chunk)',
+      );
+    }
+    port.send(['audio', packSamples(samples)]);
   }
 
   Future<void> _fail(Object e) async {
     _lastError = e is ModelMissingException ? e.message : e.toString();
+    debugPrint('[amen] error: $_lastError');
     try {
       await _micSub?.cancel();
       _micSub = null;
@@ -155,7 +297,26 @@ class SherpaAmenDetector implements AmenDetector {
     } catch (_) {
       // 정리 중 오류는 무시한다.
     }
-    if (!_disposed) _state.value = DetectorState.error;
+    _killWorker();
+    _setState(DetectorState.error);
+  }
+
+  /// 작업자 isolate를 종료한다. 다음 start()에서 새로 띄운다.
+  void _killWorker() {
+    // 네이티브 자원을 풀 시간을 잠깐 준 뒤 isolate를 확실히 끝낸다.
+    _toWorker?.send(['dispose']);
+    final isolate = _isolate;
+    if (isolate != null) {
+      Timer(
+        const Duration(seconds: 1),
+        () => isolate.kill(priority: Isolate.immediate),
+      );
+    }
+    _isolate = null;
+    _toWorker = null;
+    _fromWorker?.close();
+    _fromWorker = null;
+    _ready = null;
   }
 
   @override
@@ -170,12 +331,11 @@ class SherpaAmenDetector implements AmenDetector {
     await _micSub?.cancel();
     _micSub = null;
     await _mic.stop();
-    // await 사이에 dispose()가 끝났으면 해제된 인식기/상태를 건드리지 않는다.
+    // await 사이에 dispose()가 끝났으면 해제된 상태를 건드리지 않는다.
     if (_disposed) return;
     _matcher.onEndpoint();
-    final stream = _stream;
-    if (stream != null) _recognizer?.reset(stream);
-    _state.value = DetectorState.stopped;
+    _toWorker?.send(['reset']);
+    _setState(DetectorState.stopped);
   }
 
   @override
@@ -188,17 +348,18 @@ class SherpaAmenDetector implements AmenDetector {
       } catch (_) {}
     }
     _disposed = true;
+    debugPrint('[amen] dispose');
     await _micSub?.cancel();
     _micSub = null;
     try {
       await _mic.dispose();
     } catch (_) {}
-    _stream?.free();
-    _stream = null;
-    _recognizer?.free();
-    _recognizer = null;
+    _killWorker();
     await _amenController.close();
     await _phraseController.close();
     _state.dispose();
+    _transcript.dispose();
+    _phraseCount.dispose();
+    _amenCount.dispose();
   }
 }

@@ -6,6 +6,9 @@ import '../domain/prayer_mode.dart';
 import 'leader_voice.dart';
 import 'rosary_style.dart';
 
+/// 기도문 본문 글꼴: 고딕(Pretendard) 또는 명조(Noto Serif KR).
+enum PrayerFont { sans, serif }
+
 /// 앱 설정. `shared_preferences`에 저장된다(신비 선택은 제외).
 class AppSettings extends ChangeNotifier {
   AppSettings._(this._prefs) {
@@ -32,6 +35,12 @@ class AppSettings extends ChangeNotifier {
       minTtsRate,
       maxTtsRate,
     );
+    _prayerFont = _enumByName(
+      PrayerFont.values,
+      _prefs.getString(_kPrayerFont),
+      PrayerFont.sans,
+    );
+    _showTranscript = _prefs.getBool(_kShowTranscript) ?? false;
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -43,6 +52,8 @@ class AppSettings extends ChangeNotifier {
   static const _kLeaderAudio = 'leader_audio';
   static const _kLeaderVoiceSource = 'leader_voice_source';
   static const _kTtsRate = 'tts_rate';
+  static const _kShowTranscript = 'show_transcript';
+  static const _kPrayerFont = 'prayer_font';
 
   static const double minTtsRate = 0.3;
   static const double maxTtsRate = 0.7;
@@ -58,6 +69,8 @@ class AppSettings extends ChangeNotifier {
   late bool _leaderAudioEnabled;
   late LeaderVoiceSource _leaderVoiceSource;
   late double _ttsRate;
+  late PrayerFont _prayerFont;
+  late bool _showTranscript;
   late MysterySet _mysterySet;
 
   static Future<AppSettings> load() async {
@@ -90,6 +103,12 @@ class AppSettings extends ChangeNotifier {
 
   /// AI 음성 말하기 속도(0.3~0.7).
   double get ttsRate => _ttsRate;
+
+  /// 기도 화면 본문 글꼴.
+  PrayerFont get prayerFont => _prayerFont;
+
+  /// 기도 화면에 음성 인식 진단 패널(인식 내용 등)을 보일지 여부.
+  bool get showTranscript => _showTranscript;
 
   /// 이번 세션에서 선택한 신비(저장하지 않음).
   MysterySet get mysterySet => _mysterySet;
@@ -148,6 +167,20 @@ class AppSettings extends ChangeNotifier {
     if (clamped == _ttsRate) return;
     _ttsRate = clamped;
     _prefs.setDouble(_kTtsRate, clamped);
+    notifyListeners();
+  }
+
+  set prayerFont(PrayerFont v) {
+    if (v == _prayerFont) return;
+    _prayerFont = v;
+    _prefs.setString(_kPrayerFont, v.name);
+    notifyListeners();
+  }
+
+  set showTranscript(bool v) {
+    if (v == _showTranscript) return;
+    _showTranscript = v;
+    _prefs.setBool(_kShowTranscript, v);
     notifyListeners();
   }
 

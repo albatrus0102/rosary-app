@@ -7,6 +7,8 @@ import 'package:record/record.dart';
 import '../app/leader_audio_store.dart';
 import '../app/sound_player.dart';
 import '../domain/leader_cues.dart';
+import 'widgets/section_header.dart';
+import 'widgets/soft_card.dart';
 
 /// 선창(앞단) 음성 녹음 관리 화면. 큐 26개를 하나씩 녹음/듣기/삭제한다.
 class LeaderRecordScreen extends StatefulWidget {
@@ -221,12 +223,12 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
                   itemCount: itemCount,
                   itemBuilder: (context, i) {
                     if (i == 0) return _buildHeader(context, cues.length);
-                    if (i == 1) return const _SectionTitle('기도');
+                    if (i == 1) return const SectionHeader('기도');
                     if (i <= 1 + leaderPrayerCueCount) {
                       return _buildRow(context, cues[i - 2]);
                     }
                     if (i == 2 + leaderPrayerCueCount) {
-                      return const _SectionTitle('신비');
+                      return const SectionHeader('신비');
                     }
                     return _buildRow(context, cues[i - 3]);
                   },
@@ -243,31 +245,34 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
     final theme = Theme.of(context);
     final count = _store.recordedCount;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$total개 중 $count개 녹음됨',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: SoftCard(
+        color: theme.colorScheme.surfaceContainer,
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$total개 중 $count개 녹음됨',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: total == 0 ? 0 : count / total,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _guidance,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              height: 1.5,
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: total == 0 ? 0 : count / total,
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            Text(
+              _guidance,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -280,10 +285,12 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
     final playing = _playingId == cue.id;
     final otherRecording = _recordingId != null && !recording;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SoftCard(
+        borderColor: recording ? scheme.error : null,
+        borderWidth: recording ? 2 : 1,
+        padding: const EdgeInsets.fromLTRB(16, 14, 12, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -299,7 +306,7 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
                   color: recording
                       ? scheme.error
                       : has
-                      ? scheme.primary
+                      ? scheme.secondary
                       : scheme.outline,
                   semanticLabel: recording
                       ? '녹음 중'
@@ -363,24 +370,6 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 12, 2, 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleLarge
-            ?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }

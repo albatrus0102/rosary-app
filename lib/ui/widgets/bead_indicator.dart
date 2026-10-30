@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../app/rosary_style.dart';
@@ -37,26 +39,38 @@ class BeadIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final layout = layoutFor(step);
     if (layout == null) return const SizedBox.shrink();
-    final primary = Theme.of(context).colorScheme.primary;
+    final scheme = Theme.of(context).colorScheme;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         const gap = 4.0;
+        const arc = 8.0;
         final maxCell =
             (constraints.maxWidth - gap * (layout.count - 1)) / layout.count;
-        final cell = maxCell.clamp(16.0, 44.0);
+        final cell = maxCell.clamp(16.0, 40.0);
         return Semantics(
           label: layout.current != null
               ? '${layout.count}개 중 ${layout.current}번째 구슬'
               : '구슬 ${layout.count}개',
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 1; i <= layout.count; i++) ...[
-                if (i > 1) const SizedBox(width: gap),
-                _bead(i, layout, cell, primary),
+          child: SizedBox(
+            height: cell + arc,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (var i = 1; i <= layout.count; i++) ...[
+                  if (i > 1) const SizedBox(width: gap),
+                  // 가운데가 살짝 위로 올라오는 완만한 호.
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom:
+                          arc * math.sin(math.pi * (i - 0.5) / layout.count),
+                    ),
+                    child: _bead(i, layout, cell, scheme),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         );
       },
@@ -67,26 +81,41 @@ class BeadIndicator extends StatelessWidget {
     int i,
     ({int count, int done, int? current}) layout,
     double cell,
-    Color primary,
+    ColorScheme scheme,
   ) {
     final isCurrent = i == layout.current;
     final isDone = i <= layout.done;
-    final opacity = isCurrent ? 1.0 : (isDone ? 0.5 : 0.25);
-    return Opacity(
-      opacity: opacity,
-      child: Container(
-        key: ValueKey('bead_$i'),
-        width: cell,
-        height: cell,
-        padding: const EdgeInsets.all(2),
+    final Color fill;
+    if (isCurrent) {
+      fill = scheme.primaryContainer;
+    } else if (isDone) {
+      fill = scheme.secondaryContainer;
+    } else {
+      fill = scheme.surfaceContainer;
+    }
+    return SizedBox(
+      key: ValueKey('bead_$i'),
+      width: cell,
+      height: cell,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.all(cell * 0.12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          shape: BoxShape.circle,
+          color: fill,
           border: Border.all(
-            color: isCurrent ? primary : Colors.transparent,
-            width: 2,
+            color: isCurrent
+                ? scheme.primary
+                : isDone
+                ? scheme.secondary.withValues(alpha: 0.5)
+                : Colors.transparent,
+            width: isCurrent ? 2 : 1,
           ),
         ),
-        child: Image.asset(style.unitImage, fit: BoxFit.contain),
+        child: Opacity(
+          opacity: isCurrent ? 1 : (isDone ? 0.85 : 0.4),
+          child: Image.asset(style.unitImage, fit: BoxFit.contain),
+        ),
       ),
     );
   }

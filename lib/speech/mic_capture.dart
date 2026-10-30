@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
 
 /// `record` 패키지로 16kHz mono PCM16 스트림을 받아 Float32 샘플로 변환한다.
@@ -11,6 +12,27 @@ class MicCapture {
   StreamSubscription<Uint8List>? _sub;
   StreamController<Float32List>? _out;
 
+  final ValueNotifier<double> _level = ValueNotifier(0);
+  bool _disposed = false;
+
+  /// 입력 음량(0..1). 청크마다 갱신된다. dBFS -60..0 구간을 0..1로 편 값이라
+  /// 작은 목소리도 눈에 보이고, 완전 무음이면 0에 가깝다.
+  ValueListenable<double> get level => _level;
+
+  /// 청크의 RMS를 0..1 눈금으로 바꾼다.
+  @visibleForTesting
+  static double levelOf(Float32List samples) {
+    if (samples.isEmpty) return 0;
+    var sum = 0.0;
+    for (final v in samples) {
+      sum += v * v;
+    }
+    final rms = math.sqrt(sum / samples.length);
+    if (rms <= 0) return 0;
+    final db = 20 * math.log(rms) / math.ln10;
+    return ((db + 60) / 60).clamp(0.0, 1.0);
+  }
+
   /// 마이크 권한 확인(없으면 요청).
   Future<bool> hasPermission() => _recorder.hasPermission();
 
@@ -18,12 +40,37 @@ class MicCapture {
   Future<Stream<Float32List>> start() async {
     await _teardown();
 
-    const config = RecordConfig(
+    // 음성 인식용 설정: 안드로이드는 VOICE_RECOGNITION 소스(기기 제조사의
+    // 음성 인식용 전처리), 자동 이득 켬, 에코 제거·잡음 억제는 끔(인식기 입력을
+    // 왜곡할 수 있다).
+    RecordConfig config(AndroidAudioSource src) => RecordConfig(
       encoder: AudioEncoder.pcm16bits,
       sampleRate: 16000,
       numChannels: 1,
+      autoGain: true,
+      echoCancel: false,
+      noiseSuppress: false,
+      androidConfig: AndroidRecordConfig(audioSource: src),
+      iosConfig: const IosRecordConfig(
+        categoryOptions: [
+          IosAudioCategoryOption.defaultToSpeaker,
+          IosAudioCategoryOption.allowBluetooth,
+        ],
+      ),
     );
-    final source = await _recorder.startStream(config);
+
+    Stream<Uint8List> source;
+    try {
+      source = await _recorder.startStream(
+        config(AndroidAudioSource.voiceRecognition),
+      );
+    } catch (e) {
+      // 일부 기기는 VOICE_RECOGNITION 소스를 거부한다. 기본 소스로 한 번 더 시도한다.
+      debugPrint('[amen] voiceRecognition source failed ($e); using default');
+      source = await _recorder.startStream(
+        config(AndroidAudioSource.defaultSource),
+      );
+    }
 
     final out = StreamController<Float32List>();
     _out = out;
@@ -31,7 +78,9 @@ class MicCapture {
     _sub = source.listen(
       (chunk) {
         final samples = converter.convert(chunk);
-        if (samples.isNotEmpty && !out.isClosed) out.add(samples);
+        if (samples.isEmpty) return;
+        if (!_disposed) _level.value = levelOf(samples);
+        if (!out.isClosed) out.add(samples);
       },
       onError: (Object e, StackTrace st) {
         if (!out.isClosed) out.addError(e, st);
@@ -48,11 +97,14 @@ class MicCapture {
     if (await _recorder.isRecording()) {
       await _recorder.stop();
     }
+    if (!_disposed) _level.value = 0;
   }
 
   Future<void> dispose() async {
     await _teardown();
+    _disposed = true;
     await _recorder.dispose();
+    _level.dispose();
   }
 
   Future<void> _teardown() async {

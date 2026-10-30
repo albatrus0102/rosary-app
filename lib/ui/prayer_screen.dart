@@ -7,6 +7,7 @@ import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
+import '../app/theme.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
@@ -15,6 +16,9 @@ import '../speech/amen_detector.dart';
 import '../speech/sherpa_amen_detector.dart';
 import 'widgets/bead_indicator.dart';
 import 'widgets/mic_status_chip.dart';
+import 'widgets/pill.dart';
+import 'widgets/soft_card.dart';
+import 'widgets/speech_debug_panel.dart';
 
 /// 기도 진행 화면.
 class PrayerScreen extends StatefulWidget {
@@ -255,6 +259,22 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     : _appBarTitle(_session.current),
               ),
               centerTitle: true,
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(16),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+                  child: Semantics(
+                    label: '진행률',
+                    child: LinearProgressIndicator(
+                      value: finished
+                          ? 1
+                          : _session.index / _session.steps.length,
+                      minHeight: 5,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
             ),
             body: SafeArea(
               child: finished ? _buildFinished(context) : _buildPrayer(context),
@@ -267,14 +287,31 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   Widget _buildFinished(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.favorite, size: 56, color: theme.colorScheme.primary),
-            const SizedBox(height: 16),
+            Container(
+              width: 112,
+              height: 112,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: scheme.secondaryContainer,
+                border: Border.all(
+                  color: scheme.secondary.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
+              ),
+              child: Icon(
+                Icons.check_rounded,
+                size: 64,
+                color: scheme.secondary,
+              ),
+            ),
+            const SizedBox(height: 28),
             Text(
               '묵주기도를 마쳤습니다',
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -282,9 +319,19 @@ class _PrayerScreenState extends State<PrayerScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            if (_settings.voiceEnabled) ...[
+              const SizedBox(height: 10),
+              Text(
+                '음성으로 ${_session.amenCount}번 넘어갔습니다',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            const SizedBox(height: 40),
             FilledButton(
-              style: FilledButton.styleFrom(minimumSize: const Size(200, 56)),
+              style: FilledButton.styleFrom(minimumSize: const Size(220, 56)),
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('처음으로'),
             ),
@@ -306,56 +353,67 @@ class _PrayerScreenState extends State<PrayerScreen> {
             behavior: HitTestBehavior.opaque,
             onTap: _session.next,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_voice?.isSpeaking.value ?? false)
-                      const _LeaderPlayingBadge(),
-                    if (step.heading != null)
-                      _HeadingCard(heading: step.heading!),
-                    Text(
-                      step.title,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_voice?.isSpeaking.value ?? false)
+                          const _LeaderPlayingBadge(),
+                        if (step.heading != null)
+                          _HeadingCard(heading: step.heading!),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
+                          child: Text(
+                            step.title,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: scheme.secondary,
+                              letterSpacing: 1,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        _PrayerText(
+                          step: step,
+                          mode: _settings.prayerMode,
+                          font: _settings.prayerFont,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    _PrayerText(step: step, mode: _settings.prayerMode),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+        _ControlBar(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               BeadIndicator(step: step, style: _settings.rosaryStyle),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(56),
-                        textStyle: const TextStyle(fontSize: 18),
-                      ),
+                    flex: 2,
+                    child: FilledButton.tonal(
                       onPressed: _session.index == 0 ? null : _session.back,
                       child: const Text('이전'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
+                    flex: 3,
                     child: FilledButton(
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(56),
-                        textStyle: const TextStyle(fontSize: 18),
+                        minimumSize: const Size.fromHeight(60),
+                        textStyle: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       onPressed: _session.next,
                       child: const Text('다음'),
@@ -364,7 +422,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 ],
               ),
               if (_detector != null) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 MicStatusChip(
                   enabled: _settings.voiceEnabled,
                   state: _detector!.state,
@@ -373,11 +431,47 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     return d is SherpaAmenDetector ? d.lastError : null;
                   },
                 ),
+                if (_settings.showTranscript) ...[
+                  const SizedBox(height: 8),
+                  SpeechDebugPanel(detector: _detector!),
+                ],
               ],
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 아래쪽 컨트롤 영역: 윗부분만 둥근 크림색 판.
+class _ControlBar extends StatelessWidget {
+  const _ControlBar({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(color: scheme.outlineVariant),
+          left: BorderSide(color: scheme.outlineVariant),
+          right: BorderSide(color: scheme.outlineVariant),
+        ),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -389,33 +483,14 @@ class _LeaderPlayingBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.tertiaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.volume_up,
-                  size: 18,
-                  color: scheme.onTertiaryContainer,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '선창 재생 중',
-                  style: Theme.of(context).textTheme.labelLarge
-                      ?.copyWith(color: scheme.onTertiaryContainer),
-                ),
-              ],
-            ),
-          ),
+        child: Pill(
+          label: '선창 재생 중',
+          icon: Icons.volume_up,
+          background: scheme.tertiaryContainer,
+          foreground: scheme.onTertiaryContainer,
         ),
       ),
     );
@@ -432,12 +507,12 @@ class _HeadingCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final lines = heading.split('\n');
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      color: scheme.primaryContainer,
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: SoftCard(
+        color: scheme.secondaryContainer,
+        borderColor: Colors.transparent,
+        padding: const EdgeInsets.all(18),
         child: SizedBox(
           width: double.infinity,
           child: Column(
@@ -446,7 +521,7 @@ class _HeadingCard extends StatelessWidget {
               Text(
                 lines.first,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: scheme.onPrimaryContainer,
+                  color: scheme.onSecondaryContainer,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -455,7 +530,7 @@ class _HeadingCard extends StatelessWidget {
                 Text(
                   lines.skip(1).join('\n'),
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: scheme.onPrimaryContainer,
+                    color: scheme.onSecondaryContainer,
                     height: 1.5,
                   ),
                 ),
@@ -469,13 +544,15 @@ class _HeadingCard extends StatelessWidget {
 }
 
 class _PrayerText extends StatelessWidget {
-  const _PrayerText({required this.step, required this.mode});
+  const _PrayerText({
+    required this.step,
+    required this.mode,
+    required this.font,
+  });
 
   final RosaryStep step;
   final PrayerMode mode;
-
-  static const double _big = 22;
-  static const double _small = 17;
+  final PrayerFont font;
 
   @override
   Widget build(BuildContext context) {
@@ -483,16 +560,20 @@ class _PrayerText extends StatelessWidget {
     final onSurface = scheme.onSurface;
     final dim = onSurface.withValues(alpha: 0.45);
     final split = step.responderText.isNotEmpty;
+    final big = font == PrayerFont.serif ? 25.0 : 24.0;
+    final small = big - 6;
 
-    TextStyle style(double size, Color color, {bool bold = false}) => TextStyle(
-      fontSize: size,
-      height: 1.7,
-      color: color,
-      fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-    );
+    TextStyle style(double size, Color color, {bool bold = false}) =>
+        AppTheme.prayerStyle(
+          context,
+          font,
+          size: size,
+          color: color,
+          bold: bold,
+        );
 
     if (mode == PrayerMode.solo) {
-      return Text(step.text, style: style(_big, onSurface));
+      return Text(step.text, style: style(big, onSurface));
     }
 
     // 나뉘지 않는 기도(성호경 등)는 모두 함께 바친다.
@@ -500,8 +581,8 @@ class _PrayerText extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _RoleLabel(text: '모두 함께'),
-          Text(step.text, style: style(_big, onSurface, bold: true)),
+          const _RoleLabel(text: '모두 함께'),
+          Text(step.text, style: style(big, onSurface, bold: true)),
         ],
       );
     }
@@ -514,14 +595,14 @@ class _PrayerText extends StatelessWidget {
         Text(
           step.leaderText,
           style: leaderMine
-              ? style(_big, onSurface, bold: true)
-              : style(_small, dim),
+              ? style(big, onSurface, bold: true)
+              : style(small, dim),
         ),
         Text(
           step.responderText,
           style: leaderMine
-              ? style(_small, dim)
-              : style(_big, onSurface, bold: true),
+              ? style(small, dim)
+              : style(big, onSurface, bold: true),
         ),
       ],
     );
@@ -537,19 +618,14 @@ class _RoleLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.secondaryContainer,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.labelMedium
-                ?.copyWith(color: scheme.onSecondaryContainer),
-          ),
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Pill(
+          label: text,
+          dense: true,
+          background: scheme.secondaryContainer,
+          foreground: scheme.onSecondaryContainer,
         ),
       ),
     );

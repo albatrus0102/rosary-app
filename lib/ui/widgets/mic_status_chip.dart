@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 
 import '../../speech/amen_detector.dart';
+import 'pulsing_dot.dart';
 
 /// 음성 인식 상태를 보여주는 칩.
 class MicStatusChip extends StatelessWidget {
@@ -34,31 +35,38 @@ class MicStatusChip extends StatelessWidget {
     final (String label, Widget icon, VoidCallback? onTap) = switch (s) {
       DetectorState.idle => (
         '음성 꺼짐',
-        Icon(Icons.mic_off, size: 18, color: scheme.outline),
+        Icon(Icons.mic_off, size: 18, color: scheme.onSurfaceVariant),
         null,
       ),
       DetectorState.preparingModel => (
         '모델 준비 중…',
-        const SizedBox(
+        SizedBox(
           width: 16,
           height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: scheme.secondary,
+          ),
         ),
         null,
       ),
       DetectorState.listening => (
         '듣는 중',
-        Icon(Icons.mic, size: 18, color: scheme.primary),
+        PulsingDot(color: scheme.primary),
         null,
       ),
       DetectorState.stopped => (
         '정지',
-        Icon(Icons.stop_circle_outlined, size: 18, color: scheme.outline),
+        Icon(
+          Icons.stop_circle_outlined,
+          size: 18,
+          color: scheme.onSurfaceVariant,
+        ),
         null,
       ),
       DetectorState.permissionDenied => (
         '마이크 권한 없음',
-        Icon(Icons.mic_off, size: 18, color: scheme.error),
+        Icon(Icons.mic_off, size: 18, color: scheme.onErrorContainer),
         () => _snack(
           context,
           '마이크 권한이 없어 음성 인식을 쓸 수 없습니다. '
@@ -68,26 +76,46 @@ class MicStatusChip extends StatelessWidget {
       ),
       DetectorState.error => (
         '음성 인식 오류',
-        Icon(Icons.error_outline, size: 18, color: scheme.error),
+        Icon(Icons.error_outline, size: 18, color: scheme.onErrorContainer),
         () => _snack(context, lastError?.call() ?? '알 수 없는 오류가 발생했습니다.'),
       ),
     };
 
     final listening = s == DetectorState.listening;
-    final bg = listening ? scheme.primaryContainer : null;
-    if (onTap == null) {
-      return Chip(
-        avatar: icon,
-        label: Text(label),
-        backgroundColor: bg,
-        visualDensity: VisualDensity.compact,
-      );
+    final problem =
+        s == DetectorState.permissionDenied || s == DetectorState.error;
+    final Color bg;
+    final Color fg;
+    if (listening) {
+      bg = scheme.primaryContainer;
+      fg = scheme.onPrimaryContainer;
+    } else if (problem) {
+      bg = scheme.errorContainer;
+      fg = scheme.onErrorContainer;
+    } else {
+      bg = scheme.surfaceContainer;
+      fg = scheme.onSurfaceVariant;
     }
-    return ActionChip(
-      avatar: icon,
-      label: Text(label),
-      onPressed: onTap,
-      visualDensity: VisualDensity.compact,
+
+    final pill = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(width: 18, height: 18, child: Center(child: icon)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: fg),
+          ),
+        ],
+      ),
+    );
+    return Material(
+      color: bg,
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: onTap == null ? pill : InkWell(onTap: onTap, child: pill),
     );
   }
 
