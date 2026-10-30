@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 /// 묵주 모양(이미지) 스타일.
 enum RosaryStyle {
   bead,
@@ -45,6 +47,38 @@ extension RosaryStyleAssets on RosaryStyle {
     RosaryStyle.penal => 'assets/images/penal.png',
     RosaryStyle.stuart => 'assets/images/stuart.png',
     RosaryStyle.jp2 => 'assets/images/jp2.png',
+  };
+
+  /// 묵주 전체 지도에서 이미지가 없을 때 그리는 구슬 색.
+  Color get beadColor => switch (this) {
+    RosaryStyle.bead => const Color(0xFF2E4A7A),
+    RosaryStyle.knot => const Color(0xFF2E4A7A),
+    RosaryStyle.rosewood => const Color(0xFF7A4B2E),
+    RosaryStyle.crystal => const Color(0xFF8EC2F0),
+    RosaryStyle.pearl => const Color(0xFFF2EFE8),
+    RosaryStyle.jade => const Color(0xFF8FBF9A),
+    RosaryStyle.pastel => const Color(0xFFF7B7C8),
+    RosaryStyle.lourdes => const Color(0xFFFFFFFF),
+    RosaryStyle.fatima => const Color(0xFFF5F2EC),
+    RosaryStyle.penal => const Color(0xFF5A3A28),
+    RosaryStyle.stuart => const Color(0xFFD4A33D),
+    RosaryStyle.jp2 => const Color(0xFF1F3A8A),
+  };
+
+  /// 사슬, 메달, 십자가에 쓰는 금속 색(금, 은, 청동 등).
+  Color get accentColor => switch (this) {
+    RosaryStyle.bead => const Color(0xFFC9A04A),
+    RosaryStyle.knot => const Color(0xFFC9A04A),
+    RosaryStyle.rosewood => const Color(0xFFA9743F),
+    RosaryStyle.crystal => const Color(0xFF9CA6B3),
+    RosaryStyle.pearl => const Color(0xFF9CA6B3),
+    RosaryStyle.jade => const Color(0xFFC9A04A),
+    RosaryStyle.pastel => const Color(0xFFD9A38F),
+    RosaryStyle.lourdes => const Color(0xFFC9A04A),
+    RosaryStyle.fatima => const Color(0xFF9CA6B3),
+    RosaryStyle.penal => const Color(0xFF6B7078),
+    RosaryStyle.stuart => const Color(0xFFB8892E),
+    RosaryStyle.jp2 => const Color(0xFF9CA6B3),
   };
 
   String get label => switch (this) {

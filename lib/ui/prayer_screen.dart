@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -14,9 +15,9 @@ import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
 import '../speech/amen_detector.dart';
 import '../speech/sherpa_amen_detector.dart';
-import 'widgets/bead_indicator.dart';
 import 'widgets/mic_status_chip.dart';
 import 'widgets/pill.dart';
+import 'widgets/rosary_map.dart';
 import 'widgets/soft_card.dart';
 import 'widgets/speech_debug_panel.dart';
 
@@ -341,6 +342,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
+  /// 화면 높이의 약 34%(170..300). 가로로 눕힌 낮은 화면에서는 본문이 남도록 줄인다.
+  double _mapHeight(BuildContext context) {
+    final screen = MediaQuery.sizeOf(context).height;
+    final min = math.min(170.0, screen * 0.4);
+    return (screen * 0.34).clamp(min, 300.0);
+  }
+
   Widget _buildPrayer(BuildContext context) {
     final step = _session.current;
     final theme = Theme.of(context);
@@ -394,7 +402,19 @@ class _PrayerScreenState extends State<PrayerScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BeadIndicator(step: step, style: _settings.rosaryStyle),
+              SizedBox(
+                height: _mapHeight(context),
+                width: double.infinity,
+                child: RosaryMap(
+                  step: step,
+                  style: _settings.rosaryStyle,
+                  onTap: () => showRosaryMapSheet(
+                    context,
+                    session: _session,
+                    style: _settings.rosaryStyle,
+                  ),
+                ),
+              ),
               const SizedBox(height: 14),
               Row(
                 children: [
