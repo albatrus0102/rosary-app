@@ -1,4 +1,5 @@
 import 'prayer_data.dart';
+import 'prayer_splits.dart';
 
 /// 묵주기도 한 스텝의 종류.
 enum StepKind {
@@ -17,11 +18,37 @@ class RosaryStep {
     required this.kind,
     required this.title,
     required this.text,
+    required this.leaderText,
+    required this.responderText,
     this.heading,
     this.triggerPhrases = const ['아멘'],
     this.decade,
     this.beadIndex,
   });
+
+  /// 기도문에서 만든 스텝. 앞단/뒷단은 [splitPrayer]로 나눈다.
+  factory RosaryStep.fromPrayer({
+    required StepKind kind,
+    required String title,
+    required Prayer prayer,
+    String? heading,
+    List<String> triggerPhrases = const ['아멘'],
+    int? decade,
+    int? beadIndex,
+  }) {
+    final parts = splitPrayer(prayer);
+    return RosaryStep(
+      kind: kind,
+      title: title,
+      text: prayer.text,
+      leaderText: parts.leader,
+      responderText: parts.responder,
+      heading: heading,
+      triggerPhrases: triggerPhrases,
+      decade: decade,
+      beadIndex: beadIndex,
+    );
+  }
 
   final StepKind kind;
 
@@ -33,6 +60,12 @@ class RosaryStep {
 
   /// 기도문 본문.
   final String text;
+
+  /// 앞단(선창). 나뉘지 않는 기도(성호경)는 [text] 전체.
+  final String leaderText;
+
+  /// 뒷단(후창). 나뉘지 않으면 ''.
+  final String responderText;
 
   /// 이 스텝에서 음성으로 다음으로 넘어가는 정규화된 문구들.
   final List<String> triggerPhrases;
@@ -49,32 +82,32 @@ class RosaryStep {
 /// 선택한 신비에 대한 전체 묵주기도 스텝 목록(73개)을 만든다.
 List<RosaryStep> buildRosarySequence(MysterySet set) {
   final steps = <RosaryStep>[
-    RosaryStep(
+    RosaryStep.fromPrayer(
       kind: StepKind.signOfCross,
       title: Prayers.signOfCross.title,
-      text: Prayers.signOfCross.text,
+      prayer: Prayers.signOfCross,
     ),
-    RosaryStep(
+    RosaryStep.fromPrayer(
       kind: StepKind.apostlesCreed,
       title: Prayers.apostlesCreed.title,
-      text: Prayers.apostlesCreed.text,
+      prayer: Prayers.apostlesCreed,
     ),
-    RosaryStep(
+    RosaryStep.fromPrayer(
       kind: StepKind.ourFather,
       title: Prayers.ourFather.title,
-      text: Prayers.ourFather.text,
+      prayer: Prayers.ourFather,
     ),
     for (var n = 1; n <= 3; n++)
-      RosaryStep(
+      RosaryStep.fromPrayer(
         kind: StepKind.hailMary,
         title: '${Prayers.hailMary.title} $n/3',
-        text: Prayers.hailMary.text,
+        prayer: Prayers.hailMary,
         beadIndex: n,
       ),
-    RosaryStep(
+    RosaryStep.fromPrayer(
       kind: StepKind.gloryBe,
       title: Prayers.gloryBe.title,
-      text: Prayers.gloryBe.text,
+      prayer: Prayers.gloryBe,
     ),
   ];
 
@@ -82,38 +115,38 @@ List<RosaryStep> buildRosarySequence(MysterySet set) {
   for (var d = 1; d <= 5; d++) {
     final mystery = mysteries[d - 1];
     steps.add(
-      RosaryStep(
+      RosaryStep.fromPrayer(
         kind: StepKind.ourFather,
         title: Prayers.ourFather.title,
         heading: '${mystery.title}\n${mystery.meditation}',
-        text: Prayers.ourFather.text,
+        prayer: Prayers.ourFather,
         decade: d,
       ),
     );
     for (var n = 1; n <= 10; n++) {
       steps.add(
-        RosaryStep(
+        RosaryStep.fromPrayer(
           kind: StepKind.hailMary,
           title: '${Prayers.hailMary.title} $n/10',
-          text: Prayers.hailMary.text,
+          prayer: Prayers.hailMary,
           decade: d,
           beadIndex: n,
         ),
       );
     }
     steps.add(
-      RosaryStep(
+      RosaryStep.fromPrayer(
         kind: StepKind.gloryBe,
         title: Prayers.gloryBe.title,
-        text: Prayers.gloryBe.text,
+        prayer: Prayers.gloryBe,
         decade: d,
       ),
     );
     steps.add(
-      RosaryStep(
+      RosaryStep.fromPrayer(
         kind: StepKind.fatima,
         title: Prayers.fatima.title,
-        text: Prayers.fatima.text,
+        prayer: Prayers.fatima,
         triggerPhrases: const ['아멘', '돌보소서'],
         decade: d,
       ),
@@ -121,10 +154,10 @@ List<RosaryStep> buildRosarySequence(MysterySet set) {
   }
 
   steps.add(
-    RosaryStep(
+    RosaryStep.fromPrayer(
       kind: StepKind.closing,
       title: '마침 ${Prayers.signOfCross.title}',
-      text: Prayers.signOfCross.text,
+      prayer: Prayers.signOfCross,
     ),
   );
   return steps;
