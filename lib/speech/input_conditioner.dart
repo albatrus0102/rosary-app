@@ -44,6 +44,10 @@ class InputConditioner {
   static const _minSpeechRms = 3e-5;
   static final double _speechRatio = _fromDb(10);
 
+  /// 잡음 바닥 추정의 하한(약 -101 dBFS). 이보다 낮은 값은 말소리 판정에 영향이 없다
+  /// (판정 문턱이 이미 [_minSpeechRms]로 막혀 있다).
+  static const _minNoise = 9e-6; // × 10 dB < [_minSpeechRms]
+
   /// 이 값 미만의 RMS는 [dbfsFloor]로 표시한다.
   static const dbfsFloor = -90.0;
 
@@ -90,7 +94,13 @@ class InputConditioner {
         : math.max(dbfsFloor, 20 * math.log(rms) / math.ln10);
 
     // 잡음 바닥: 아래로는 즉시, 위로는 청크당 2%씩만 따라간다.
-    _noise = rms < _noise ? rms : math.min(_noise * 1.02, rms);
+    // 완전 무음(안드로이드 녹음 시작 직후의 0 버퍼 등) 뒤에도 다시 올라올 수 있게
+    // [_minNoise] 아래로는 내리지 않는다. (0이 되면 곱셈으로는 영영 회복되지 않아
+    // 이후 모든 잡음을 말소리로 보고 이득을 +30 dB까지 올려 버린다.)
+    _noise = math.max(
+      _minNoise,
+      rms < _noise ? rms : math.min(_noise * 1.02, rms),
+    );
     final isSpeech = rms > math.max(_noise * _speechRatio, _minSpeechRms);
 
     if (rms * _gain > _target * _tolerance) {

@@ -123,6 +123,35 @@ void main() {
     expect(_dbOf(last!), lessThan(-30));
   });
 
+  test('noise floor recovers after digital silence (no endless pumping)', () {
+    // 녹음 시작 직후의 완전 무음 버퍼가 잡음 바닥 추정을 0에 묶어 두면 이후 모든
+    // 잡음이 말소리로 판정되어 이득이 계속 오른다.
+    final c = InputConditioner();
+    final rnd = math.Random(2);
+    Float32List noise() {
+      final x = Float32List(_chunk);
+      for (var i = 0; i < _chunk; i++) {
+        x[i] = (rnd.nextDouble() * 2 - 1) * 3e-4; // ≈ -75 dBFS
+      }
+      return x;
+    }
+
+    for (var i = 0; i < 3; i++) {
+      c.process(Float32List(_chunk));
+    }
+    for (var i = 0; i < 300; i++) {
+      c.process(noise()); // 30 s: 잡음 바닥 추정이 다시 따라 올라온다.
+    }
+    for (final x in _sine(-6, 0.1)) {
+      c.process(x); // 큰 소리로 이득을 깎는다.
+    }
+    final cut = c.gainDb;
+    for (var i = 0; i < 50; i++) {
+      c.process(noise());
+    }
+    expect(c.gainDb, closeTo(cut, 1e-9));
+  });
+
   test('output never exceeds +/-1, even for full-scale and clipped input', () {
     final c = InputConditioner();
     for (final level in [0.0, -3.0, -6.0, -20.0, -45.0]) {

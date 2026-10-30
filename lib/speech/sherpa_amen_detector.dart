@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -32,6 +33,15 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
   final MicCapture _mic;
   final AmenMatcher _matcher;
   final InputConditioner _conditioner;
+
+  /// AGC와 인식기에 넘기는 청크 크기(100 ms). 실험실 Conditioner의 시정수(이득 +0.5 dB/청크,
+  /// 잡음 바닥 +2%/청크)는 100 ms 청크로 검증됐는데, 플랫폼이 주는 청크는 iOS 약 21 ms,
+  /// 안드로이드는 기기마다 다르다. 그래서 크기를 여기서 맞춘다.
+  static const chunkSamples = 1600;
+
+  final Float32List _pending = Float32List(chunkSamples);
+  int _pendingLen = 0;
+
   final StreamController<int> _amenController =
       StreamController<int>.broadcast();
   final StreamController<String> _phraseController =
@@ -46,6 +56,9 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
   late final ValueNotifier<double> _gainDb = ValueNotifier(_conditioner.gainDb);
 
   Isolate? _isolate;
+
+  /// 종료 중인 작업자의 수신 포트 → 마무리 콜백('disposed' 응답 또는 시간 제한).
+  final Map<ReceivePort, void Function()> _retiring = {};
   ReceivePort? _fromWorker;
   SendPort? _toWorker;
   Completer<void>? _ready;
@@ -133,6 +146,7 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
       }
       await _micSub?.cancel();
       _chunks = 0;
+      _pendingLen = 0;
       _micSub = samples.listen(
         _onSamples,
         onError: (Object e, StackTrace st) => _fail(e),
@@ -153,7 +167,7 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     final ready = Completer<void>();
     _fromWorker = port;
     _ready = ready;
-    port.listen(_onWorkerMessage);
+    port.listen((raw) => _onWorkerMessage(port, raw));
 
     debugPrint('[amen] spawning recognizer isolate: $config');
     final isolate = await Isolate.spawn<List<Object>>(
@@ -236,8 +250,17 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
     );
   }
 
-  void _onWorkerMessage(dynamic raw) {
-    if (_disposed || raw is! List || raw.isEmpty) return;
+  void _onWorkerMessage(ReceivePort from, dynamic raw) {
+    if (raw is! List || raw.isEmpty) return;
+    if (!identical(from, _fromWorker)) {
+      // 종료 중인 작업자: 네이티브 자원 해제 완료 응답만 받는다.
+      if (raw[0] == 'disposed') {
+        debugPrint('[amen] worker disposed');
+        _retiring.remove(from)?.call();
+      }
+      return;
+    }
+    if (_disposed) return;
     switch (raw[0]) {
       case 'port':
         _toWorker = raw[1] as SendPort;
@@ -246,15 +269,19 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
           '[amen] recognizer ready: method=${raw[1]} hotwords=${raw[2]}',
         );
         if (_ready?.isCompleted == false) _ready!.complete();
-      case 'partial':
+      // stop() 뒤에 도착한 결과(작업자 큐에 남아 있던 오디오)는 버린다. 그렇지 않으면
+      // 일시정지 직후에 '아멘'이 발생해 기도가 넘어갈 수 있다.
+      case 'partial' when _state.value == DetectorState.listening:
         _onPartial(raw[1] as String);
-      case 'endpoint':
+      case 'endpoint' when _state.value == DetectorState.listening:
         _onEndpoint(raw[1] as String);
+      case 'partial' || 'endpoint':
+        break;
       case 'error':
         _onWorkerError(raw[1] as String);
       default:
         // Isolate.spawn(onError:)의 ['오류', '스택'] 형태.
-        if (raw.length == 2 && raw[0] is String && raw[1] is String) {
+        if (raw.length == 2 && raw[0] is String && raw[1] is String?) {
           _onWorkerError('isolate: ${raw[0]}');
         }
     }
@@ -303,8 +330,24 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
   }
 
   void _onSamples(Float32List samples) {
+    if (_toWorker == null || _disposed) return;
+    var i = 0;
+    while (i < samples.length) {
+      final n = math.min(chunkSamples - _pendingLen, samples.length - i);
+      _pending.setRange(_pendingLen, _pendingLen + n, samples, i);
+      _pendingLen += n;
+      i += n;
+      if (_pendingLen == chunkSamples) {
+        _pendingLen = 0;
+        _onChunk(_pending);
+      }
+    }
+  }
+
+  /// 100 ms 청크 하나를 AGC에 통과시켜 인식 isolate로 보낸다.
+  void _onChunk(Float32List samples) {
     final port = _toWorker;
-    if (port == null || _disposed) return;
+    if (port == null) return;
     _chunks++;
     // 인식기에는 AGC를 거친 샘플을 보낸다. 표시용 dBFS는 AGC 이전 값이다.
     final conditioned = _conditioner.process(samples);
@@ -339,20 +382,33 @@ class SherpaAmenDetector implements DiagnosticAmenDetector {
 
   /// 작업자 isolate를 종료한다. 다음 start()에서 새로 띄운다.
   void _killWorker() {
-    // 네이티브 자원을 풀 시간을 잠깐 준 뒤 isolate를 확실히 끝낸다.
-    _toWorker?.send(['dispose']);
     final isolate = _isolate;
-    if (isolate != null) {
-      Timer(
-        const Duration(seconds: 1),
-        () => isolate.kill(priority: Isolate.immediate),
-      );
-    }
+    final port = _fromWorker;
+    final toWorker = _toWorker;
     _isolate = null;
     _toWorker = null;
-    _fromWorker?.close();
     _fromWorker = null;
     _ready = null;
+
+    var done = false;
+    void finish() {
+      if (done) return;
+      done = true;
+      _retiring.remove(port);
+      port?.close();
+      isolate?.kill(priority: Isolate.immediate);
+    }
+
+    if (port == null || toWorker == null) {
+      finish();
+      return;
+    }
+    // 작업자가 네이티브 자원(모델)을 풀고 'disposed'를 보내면 isolate를 끝낸다.
+    // 'dispose'는 큐에 밀린 오디오 뒤에 처리되므로, 해제 전에 죽여 네이티브 메모리가
+    // 새지 않게 응답을 기다리되 응답이 없으면(초기화 실패 등) 시간 제한 뒤 끝낸다.
+    _retiring[port] = finish;
+    toWorker.send(['dispose']);
+    Timer(const Duration(seconds: 10), finish);
   }
 
   @override
