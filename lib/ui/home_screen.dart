@@ -7,10 +7,47 @@ import '../domain/prayer_mode.dart';
 import 'prayer_screen.dart';
 
 /// 시작 화면: 신비 선택, 묵주 모양/기도 모드/소리 설정, 시작 버튼.
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.settings});
 
   final AppSettings settings;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  static const double _cardWidth = 92;
+  static const double _cardGap = 8;
+
+  final ScrollController _styleScroll = ScrollController();
+
+  AppSettings get settings => widget.settings;
+
+  @override
+  void initState() {
+    super.initState();
+    // 선택된 묵주 모양 카드가 보이도록 첫 프레임 뒤에 가로 스크롤을 옮긴다.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _revealSelectedStyle());
+  }
+
+  void _revealSelectedStyle() {
+    if (!mounted || !_styleScroll.hasClients) return;
+    final position = _styleScroll.position;
+    final index = RosaryStyle.values.indexOf(settings.rosaryStyle);
+    final center = index * (_cardWidth + _cardGap) + _cardWidth / 2;
+    final target = (center - position.viewportDimension / 2).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    _styleScroll.jumpTo(target);
+  }
+
+  @override
+  void dispose() {
+    _styleScroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +107,10 @@ class HomeScreen extends StatelessWidget {
         SizedBox(
           height: 104,
           child: ListView.separated(
+            controller: _styleScroll,
             scrollDirection: Axis.horizontal,
             itemCount: RosaryStyle.values.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: _cardGap),
             itemBuilder: (context, i) {
               final style = RosaryStyle.values[i];
               return _StyleCard(
@@ -83,6 +121,8 @@ class HomeScreen extends StatelessWidget {
             },
           ),
         ),
+        const SizedBox(height: 8),
+        _StyleDescription(style: settings.rosaryStyle),
         const SizedBox(height: 20),
         Text('기도 모드', style: sectionStyle),
         const SizedBox(height: 8),
@@ -290,7 +330,7 @@ class _StyleCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: SizedBox(
-            width: 92,
+            width: _HomeScreenState._cardWidth,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
               child: Column(
@@ -315,6 +355,42 @@ class _StyleCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _StyleDescription extends StatelessWidget {
+  const _StyleDescription({required this.style});
+
+  final RosaryStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            style.label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            style.description,
+            key: const ValueKey('style_description'),
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+          ),
+        ],
       ),
     );
   }

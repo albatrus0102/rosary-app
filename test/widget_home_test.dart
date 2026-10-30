@@ -20,13 +20,23 @@ void main() {
     for (final set in MysterySet.values) {
       expect(find.text(set.koreanName), findsOneWidget);
     }
-    expect(find.text('구슬 묵주'), findsOneWidget);
+    // 선택된 모양의 이름은 설명 카드에도 나타나므로 최소 1개.
     for (final style in RosaryStyle.values) {
       final finder = find.text(style.label);
-      await tester.ensureVisible(finder);
+      await tester.ensureVisible(finder.first);
       await tester.pump();
-      expect(finder, findsOneWidget);
+      expect(finder, findsAtLeastNWidgets(1));
     }
+    expect(find.text(RosaryStyle.bead.description), findsOneWidget);
+
+    final fatima = find.text(RosaryStyle.fatima.label);
+    await tester.ensureVisible(fatima);
+    await tester.pump();
+    await tester.tap(fatima);
+    await tester.pump();
+    expect(find.text(RosaryStyle.fatima.description), findsOneWidget);
+    expect(find.text(RosaryStyle.bead.description), findsNothing);
+    expect(settings.rosaryStyle, RosaryStyle.fatima);
     expect(find.text('혼자'), findsOneWidget);
   });
 }
