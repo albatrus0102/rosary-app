@@ -43,7 +43,12 @@ class AppSettings extends ChangeNotifier {
     _leaderVoiceSource = _enumByName(
       LeaderVoiceSource.values,
       _prefs.getString(_kLeaderVoiceSource),
-      LeaderVoiceSource.tts,
+      LeaderVoiceSource.bundled,
+    );
+    _leaderPersona = _enumByName(
+      LeaderVoicePersona.values,
+      _prefs.getString(_kLeaderPersona),
+      LeaderVoicePersona.sister,
     );
     _ttsRate = (_prefs.getDouble(_kTtsRate) ?? defaultTtsRate).clamp(
       minTtsRate,
@@ -69,6 +74,7 @@ class AppSettings extends ChangeNotifier {
   static const _kMode = 'prayer_mode';
   static const _kLeaderAudio = 'leader_audio';
   static const _kLeaderVoiceSource = 'leader_voice_source';
+  static const _kLeaderPersona = 'leader_persona';
   static const _kTtsRate = 'tts_rate';
   static const _kPrayerFont = 'prayer_font';
   static const _kChimeVolume = 'chime_volume';
@@ -117,6 +123,7 @@ class AppSettings extends ChangeNotifier {
   late PrayerMode _prayerMode;
   late bool _leaderAudioEnabled;
   late LeaderVoiceSource _leaderVoiceSource;
+  late LeaderVoicePersona _leaderPersona;
   late double _ttsRate;
   late PrayerFont _prayerFont;
   late double _chimeVolume;
@@ -146,10 +153,13 @@ class AppSettings extends ChangeNotifier {
   /// 후창 모드에서 녹음된 선창(앞단) 음성을 재생할지 여부.
   bool get leaderAudioEnabled => _leaderAudioEnabled;
 
-  /// 후창 모드의 선창 소스(기본: AI 음성).
+  /// 후창 모드의 선창 소스(기본: 자연스러운 음성).
   LeaderVoiceSource get leaderVoiceSource => _leaderVoiceSource;
 
-  /// AI 음성 말하기 속도(0.3~0.7).
+  /// 'AI 음성(고품질)'의 화자(기본: 수녀님).
+  LeaderVoicePersona get leaderPersona => _leaderPersona;
+
+  /// 기기 음성 말하기 속도(0.3~0.7).
   double get ttsRate => _ttsRate;
 
   /// 기도 화면 본문 글꼴.
@@ -200,6 +210,13 @@ class AppSettings extends ChangeNotifier {
     if (v == _leaderVoiceSource) return;
     _leaderVoiceSource = v;
     _prefs.setString(_kLeaderVoiceSource, v.name);
+    notifyListeners();
+  }
+
+  set leaderPersona(LeaderVoicePersona v) {
+    if (v == _leaderPersona) return;
+    _leaderPersona = v;
+    _prefs.setString(_kLeaderPersona, v.name);
     notifyListeners();
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../app/bundled_leader_voice.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/settings.dart';
@@ -43,7 +44,7 @@ class PrayerScreen extends StatefulWidget {
   /// 선창 음성 저장소. 없으면 화면이 직접 만들고 정리한다.
   final LeaderAudioStore? leaderAudio;
 
-  /// 테스트용 주입. 없으면 설정의 소스(AI 음성/직접 녹음)에 맞게 만든다.
+  /// 테스트용 주입. 없으면 설정의 소스(AI 음성/기기 음성/직접 녹음)에 맞게 만든다.
   /// 주입한 객체는 화면이 정리하지 않는다(말하기만 멈춘다).
   final LeaderVoice? leaderVoice;
 
@@ -109,6 +110,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
     if (voice == null) {
       _ownsVoice = true;
       voice = switch (_settings.leaderVoiceSource) {
+        LeaderVoiceSource.bundled => BundledLeaderVoice(
+          persona: _settings.leaderPersona,
+          fallback: TtsLeaderVoice(rate: () => _settings.ttsRate),
+          disposeFallback: true,
+        ),
         LeaderVoiceSource.tts => TtsLeaderVoice(rate: () => _settings.ttsRate),
         LeaderVoiceSource.recorded => RecordedLeaderVoice(
           widget.leaderAudio ?? (_ownedStore = LeaderAudioStore()),

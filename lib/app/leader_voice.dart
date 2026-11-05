@@ -12,15 +12,44 @@ import '../domain/rosary_sequence.dart';
 import 'leader_audio_store.dart';
 import 'sound_player.dart';
 
-/// 후창 모드에서 앞단(선창)을 들려주는 소스.
-enum LeaderVoiceSource { tts, recorded }
+/// 후창 모드에서 앞단(선창)을 들려주는 소스. 선언 순서가 설정 화면 순서다.
+enum LeaderVoiceSource { bundled, tts, recorded }
 
 extension LeaderVoiceSourceInfo on LeaderVoiceSource {
   String get label => switch (this) {
-    LeaderVoiceSource.tts => 'AI 음성',
+    LeaderVoiceSource.bundled => 'AI 음성(고품질)',
+    LeaderVoiceSource.tts => '기기 음성',
     LeaderVoiceSource.recorded => '직접 녹음',
   };
 }
+
+/// 미리 만들어 앱에 넣은 음성의 화자. 파일은 `assets/leader_voice/<이름>/`에 있다.
+enum LeaderVoicePersona { sister, priest }
+
+extension LeaderVoicePersonaInfo on LeaderVoicePersona {
+  /// 선택 단추에 쓰는 이름.
+  String get label => switch (this) {
+    LeaderVoicePersona.sister => '수녀님',
+    LeaderVoicePersona.priest => '신부님',
+  };
+
+  /// 설정 화면의 선택 단추 문구.
+  String get voiceLabel => '$label 목소리';
+}
+
+/// 합성 음성임을 알리는 문구(설정 화면, 정보).
+const String aiVoiceDisclosure = 'AI로 합성한 음성이며, 사람이 녹음한 것이 아닙니다.';
+
+/// 큐 하나([cueId])만 말하게 하는 스텝. [LeaderVoice.speakStep]에는
+/// `leaderCueIds`만 쓰이므로 나머지 필드는 자리만 채운다.
+RosaryStep leaderCueStep(String cueId) => RosaryStep(
+  kind: StepKind.hailMary,
+  title: cueId,
+  text: '',
+  leaderText: '',
+  responderText: '',
+  leaderCueIds: [cueId],
+);
 
 /// 스텝의 앞단을 말하거나 재생하는 객체.
 abstract class LeaderVoice {

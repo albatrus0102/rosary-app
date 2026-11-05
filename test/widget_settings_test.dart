@@ -7,6 +7,7 @@ import 'package:rosary_app/app/licenses.dart';
 import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
+import 'package:rosary_app/domain/rosary_sequence.dart';
 import 'package:rosary_app/ui/rosary_style_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,6 +37,30 @@ class _NoKoreanTts extends TtsLeaderVoice {
 
   @override
   Future<void> preview() async {}
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Future<void> dispose() async {}
+}
+
+class _FakeBundledVoice implements LeaderVoice {
+  _FakeBundledVoice(this.persona, this.spoken);
+
+  final LeaderVoicePersona persona;
+  final List<String> spoken;
+  final _speaking = ValueNotifier<bool>(false);
+
+  @override
+  ValueListenable<bool> get isSpeaking => _speaking;
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<void> speakStep(RosaryStep step) async =>
+      spoken.add('${persona.name}:${step.leaderCueIds.join(',')}');
 
   @override
   Future<void> stop() async {}
@@ -147,10 +172,10 @@ void main() {
     expect(settings.prayerFont, PrayerFont.serif);
   });
 
-  testWidgets('settings: leader voice card (AI source then recorded)', (
+  testWidgets('settings: leader voice card (device TTS then recorded)', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'leader_voice_source': 'tts'});
     final settings = await AppSettings.load();
     expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
     tester.view.physicalSize = const Size(800, 3200);
@@ -167,7 +192,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('AI 음성'), findsOneWidget);
+    expect(find.text('AI 음성(고품질)'), findsOneWidget);
+    expect(find.text('기기 음성'), findsOneWidget);
     expect(find.text('직접 녹음'), findsOneWidget);
     expect(find.text('말하기 속도'), findsOneWidget);
     expect(
@@ -198,6 +224,141 @@ void main() {
     expect(find.text('성호경'), findsWidgets);
   });
 
+  test('settings: defaults to bundled voice with the sister persona', () async {
+    SharedPreferences.setMockInitialValues({});
+    final settings = await AppSettings.load();
+    expect(settings.leaderVoiceSource, LeaderVoiceSource.bundled);
+    expect(settings.leaderPersona, LeaderVoicePersona.sister);
+  });
+
+  test(
+    'settings: stored source and persona names load; unknown -> default',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'leader_voice_source': 'recorded',
+        'leader_persona': 'priest',
+      });
+      var settings = await AppSettings.load();
+      expect(settings.leaderVoiceSource, LeaderVoiceSource.recorded);
+      expect(settings.leaderPersona, LeaderVoicePersona.priest);
+
+      SharedPreferences.setMockInitialValues({'leader_voice_source': 'tts'});
+      settings = await AppSettings.load();
+      expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
+
+      SharedPreferences.setMockInitialValues({
+        'leader_voice_source': 'nonsense',
+        'leader_persona': 'nonsense',
+      });
+      settings = await AppSettings.load();
+      expect(settings.leaderVoiceSource, LeaderVoiceSource.bundled);
+      expect(settings.leaderPersona, LeaderVoicePersona.sister);
+    },
+  );
+
+  test('settings: persona persists across loads', () async {
+    SharedPreferences.setMockInitialValues({});
+    var settings = await AppSettings.load();
+    settings.leaderPersona = LeaderVoicePersona.priest;
+    settings = await AppSettings.load();
+    expect(settings.leaderPersona, LeaderVoicePersona.priest);
+  });
+
+  testWidgets('settings: bundled voice with 0 clips (default source)', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final settings = await AppSettings.load();
+    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final spoken = <String>[];
+
+    await tester.pumpWidget(
+      _app(
+        SettingsScreen(
+          settings: settings,
+          leaderAudio: _FakeStore(),
+          ttsVoice: _NoKoreanTts(),
+          bundledClipCount: (_) async => 0,
+          bundledVoiceFactory: (persona, _) =>
+              _FakeBundledVoice(persona, spoken),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 선택 단추 3개, 순서대로.
+    final labels = ['AI 음성(고품질)', '기기 음성', '직접 녹음'];
+    for (final l in labels) {
+      expect(find.text(l), findsOneWidget, reason: l);
+    }
+    final xs = [for (final l in labels) tester.getTopLeft(find.text(l)).dx];
+    expect(xs, orderedEquals([...xs]..sort()));
+    expect(find.byType(SegmentedButton<LeaderVoiceSource>), findsOneWidget);
+
+    // 화자 선택 단추와 안내 문구.
+    expect(find.text('수녀님 목소리'), findsOneWidget);
+    expect(find.text('신부님 목소리'), findsOneWidget);
+    expect(find.text(aiVoiceDisclosure), findsNWidgets(2)); // 설명 + 정보
+    expect(find.text('자연스러운 음성 파일 0개 / 26개'), findsOneWidget);
+    expect(find.text('아직 음성 파일이 없어 기기 음성으로 읽어 드려요'), findsOneWidget);
+    expect(find.text('26개 미만이면', skipOffstage: false), findsNothing);
+    // 말하기 속도는 기기 음성에서만.
+    expect(find.text('말하기 속도'), findsNothing);
+    // 클립이 없어 기기 음성으로 읽는데 한국어 음성이 없다면 경고.
+    expect(find.textContaining('한국어 음성이 설치되어'), findsOneWidget);
+
+    await tester.tap(find.text('미리 듣기'));
+    await tester.pump();
+    expect(spoken, ['sister:hail_mary']);
+
+    await tester.tap(find.text('신부님 목소리'));
+    await tester.pumpAndSettle();
+    expect(settings.leaderPersona, LeaderVoicePersona.priest);
+    await tester.tap(find.text('미리 듣기'));
+    await tester.pump();
+    expect(spoken, ['sister:hail_mary', 'priest:hail_mary']);
+  });
+
+  testWidgets('settings: bundled voice with some clips shows count and note', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final settings = await AppSettings.load();
+    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _app(
+        SettingsScreen(
+          settings: settings,
+          leaderAudio: _FakeStore(),
+          bundledClipCount: (p) async =>
+              p == LeaderVoicePersona.sister ? 10 : 26,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('자연스러운 음성 파일 10개 / 26개'), findsOneWidget);
+    expect(find.text('아직 음성 파일이 없어 기기 음성으로 읽어 드려요'), findsNothing);
+    expect(find.text('26개 미만이면 부족한 부분은 기기 음성으로 읽어요'), findsOneWidget);
+
+    // 신부님은 26개가 다 있다: 개수만 보이고 안내는 사라진다.
+    await tester.tap(find.text('신부님 목소리'));
+    await tester.pumpAndSettle();
+    expect(find.text('자연스러운 음성 파일 26개 / 26개'), findsOneWidget);
+    expect(find.text('26개 미만이면 부족한 부분은 기기 음성으로 읽어요'), findsNothing);
+
+    // 기기 음성으로 바꾸면 말하기 속도가 보인다.
+    await tester.tap(find.text('기기 음성'));
+    await tester.pumpAndSettle();
+    expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
+    expect(find.text('말하기 속도'), findsOneWidget);
+    expect(find.text('수녀님 목소리'), findsNothing);
+  });
+
   testWidgets('settings: leader voice switch hides controls', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
@@ -212,13 +373,13 @@ void main() {
     await tester.tap(find.text('후창 모드에서 뒷단 차례에 앞단을 들려줍니다'));
     await tester.pumpAndSettle();
     expect(settings.leaderAudioEnabled, isFalse);
-    expect(find.text('AI 음성'), findsNothing);
+    expect(find.text('기기 음성'), findsNothing);
   });
 
   testWidgets('settings: warns when Korean TTS voice is missing', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'leader_voice_source': 'tts'});
     final settings = await AppSettings.load();
     tester.view.physicalSize = const Size(800, 3200);
     tester.view.devicePixelRatio = 1;
@@ -264,6 +425,14 @@ void main() {
     await tester.pumpAndSettle();
     for (var i = 0; i < 12; i++) {
       await tester.drag(find.byType(CustomScrollView), const Offset(0, 400));
+      await tester.pump();
+    }
+    expect(tester.takeException(), isNull);
+
+    settings.leaderVoiceSource = LeaderVoiceSource.bundled;
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 12; i++) {
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
       await tester.pump();
     }
     expect(tester.takeException(), isNull);

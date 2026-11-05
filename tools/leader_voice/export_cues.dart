@@ -8,13 +8,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../../lib/domain/leader_cues.dart';
+import 'package:rosary_app/domain/leader_cues.dart';
 
 void main() {
   final scriptDir = File.fromUri(Platform.script).parent;
   final out = File('${scriptDir.path}/cues.json');
   final list = [
-    for (final c in allLeaderCues) {'id': c.id, 'title': c.title, 'text': c.text},
+    for (final c in allLeaderCues)
+      {'id': c.id, 'title': c.title, 'text': c.text},
   ];
   final ids = list.map((e) => e['id']).toSet();
   if (list.length != 26 || ids.length != list.length) {

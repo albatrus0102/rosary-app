@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/bundled_leader_voice.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../domain/leader_cues.dart';
+import '../domain/prayer_data.dart';
 import 'leader_record_screen.dart';
 
 /// 설정 화면: 소리·진동, 기도문 표시, 선창 음성, 정보.
@@ -18,6 +20,8 @@ class SettingsScreen extends StatefulWidget {
     this.leaderAudio,
     this.ttsVoice,
     this.soundPlayer,
+    this.bundledClipCount,
+    this.bundledVoiceFactory,
   });
 
   final AppSettings settings;
@@ -30,6 +34,15 @@ class SettingsScreen extends StatefulWidget {
 
   /// 신호음 크기 '들어보기'에 쓰는 재생기. 없으면 필요할 때 만든다(테스트용 주입).
   final SoundPlayer? soundPlayer;
+
+  /// 'AI 음성(고품질)' 클립이 몇 개 들어 있는지 세는 함수(테스트용 주입).
+  /// 없으면 [BundledLeaderVoice.availableClipCount]를 쓴다.
+  final Future<int> Function(LeaderVoicePersona persona)? bundledClipCount;
+
+  /// 'AI 음성(고품질)' 미리 듣기에 쓰는 음성을 만든다(테스트용 주입).
+  /// 없으면 [BundledLeaderVoice]를 만든다. [fallback]은 클립이 없을 때 읽을 기기 음성.
+  final LeaderVoice Function(LeaderVoicePersona persona, LeaderVoice fallback)?
+  bundledVoiceFactory;
 
   /// 미리보기에 쓰는 문장.
   static const previewSentence = '은총이 가득하신 마리아님, 기뻐하소서!';
@@ -49,6 +62,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _ownsTts = false;
   SoundPlayer? _previewSound;
   Future<bool>? _koreanAvailable;
+  final Map<LeaderVoicePersona, Future<int>> _clipCounts = {};
+  LeaderVoice? _bundled;
+  LeaderVoicePersona? _bundledPersona;
 
   AppSettings get settings => widget.settings;
 
@@ -71,6 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     if (_ownsLeaderStore) _leaderStore.dispose();
+    unawaited(_bundled?.dispose());
     if (_ownsTts) unawaited(_tts?.dispose());
     if (widget.soundPlayer == null) unawaited(_previewSound?.dispose());
     super.dispose();
@@ -92,6 +109,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _stopPreview() {
     final tts = _tts;
     if (tts != null) unawaited(tts.stop());
+    final bundled = _bundled;
+    if (bundled != null) unawaited(bundled.stop());
+  }
+
+  Future<int> _clipCountFor(LeaderVoicePersona persona) =>
+      _clipCounts[persona] ??=
+          (widget.bundledClipCount ?? BundledLeaderVoice.availableClipCount)(
+            persona,
+          );
+
+  /// 고른 화자의 음성으로 성모송 앞단을 들려 준다(클립이 없으면 기기 음성).
+  Future<void> _previewBundled() async {
+    try {
+      final persona = settings.leaderPersona;
+      var voice = _bundled;
+      if (voice == null || _bundledPersona != persona) {
+        unawaited(voice?.dispose());
+        final tts = _ensureTts();
+        voice = _bundled =
+            widget.bundledVoiceFactory?.call(persona, tts) ??
+            BundledLeaderVoice(persona: persona, fallback: tts);
+        _bundledPersona = persona;
+      }
+      await voice.speakStep(leaderCueStep(prayerCueId(Prayers.hailMary)));
+    } catch (e) {
+      debugPrint('bundled preview failed: $e');
+    }
   }
 
   TtsLeaderVoice _ensureTts() {
@@ -318,11 +362,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             for (final v in LeaderVoiceSource.values)
                               ButtonSegment(
                                 value: v,
-                                icon: Icon(
-                                  v == LeaderVoiceSource.tts
-                                      ? Icons.smart_toy_outlined
-                                      : Icons.mic,
-                                ),
+                                icon: Icon(switch (v) {
+                                  LeaderVoiceSource.bundled =>
+                                    Icons.auto_awesome,
+                                  LeaderVoiceSource.tts =>
+                                    Icons.smart_toy_outlined,
+                                  LeaderVoiceSource.recorded => Icons.mic,
+                                }),
                                 label: Text(v.label),
                               ),
                           ],
@@ -332,7 +378,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
-                    if (source == LeaderVoiceSource.tts)
+                    if (source == LeaderVoiceSource.bundled)
+                      _buildBundledControls(context)
+                    else if (source == LeaderVoiceSource.tts)
                       _buildTtsControls(context)
                     else
                       Padding(
@@ -373,6 +421,113 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// 기기에 한국어 음성이 없을 때만 보이는 경고. 알 수 없으면 아무것도 보이지 않는다.
+  Widget _koreanWarning(BuildContext context, TtsLeaderVoice tts) {
+    final theme = Theme.of(context);
+    return FutureBuilder<bool>(
+      future: _koreanAvailable ??= tts.koreanAvailable(),
+      builder: (context, snap) {
+        // 알 수 없으면(아직 확인 중이거나 오류) 경고하지 않는다.
+        if (snap.data != false) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '기기에 한국어 음성이 설치되어 있지 않습니다. '
+                  '설정 > 텍스트 음성 변환에서 한국어 음성을 받아 주세요.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 'AI 음성(고품질)': 화자 선택, 클립 개수, 미리 듣기, 안내 문구.
+  Widget _buildBundledControls(BuildContext context) {
+    final theme = Theme.of(context);
+    final dim = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+      height: 1.4,
+    );
+    final persona = settings.leaderPersona;
+    final total = allLeaderCues.length;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: FutureBuilder<int>(
+        key: ValueKey('bundled_clips_${persona.name}'),
+        future: _clipCountFor(persona),
+        builder: (context, snap) {
+          final count = snap.data;
+          final usesFallback = count != null && count < total;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<LeaderVoicePersona>(
+                  segments: [
+                    for (final p in LeaderVoicePersona.values)
+                      ButtonSegment(
+                        value: p,
+                        icon: Icon(
+                          p == LeaderVoicePersona.sister
+                              ? Icons.female
+                              : Icons.male,
+                        ),
+                        label: Text(p.voiceLabel),
+                      ),
+                  ],
+                  selected: {persona},
+                  onSelectionChanged: (v) {
+                    _stopPreview();
+                    settings.leaderPersona = v.first;
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(aiVoiceDisclosure, style: dim),
+              const SizedBox(height: 12),
+              if (usesFallback) _koreanWarning(context, _ensureTts()),
+              if (count != null) ...[
+                Text('자연스러운 음성 파일 $count개 / $total개', style: dim),
+                if (count == 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text('아직 음성 파일이 없어 기기 음성으로 읽어 드려요', style: dim),
+                  )
+                else if (usesFallback)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text('$total개 미만이면 부족한 부분은 기기 음성으로 읽어요', style: dim),
+                  ),
+              ],
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton.tonalIcon(
+                  icon: const Icon(Icons.volume_up),
+                  label: const Text('미리 듣기'),
+                  onPressed: () => unawaited(_previewBundled()),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildTtsControls(BuildContext context) {
     final theme = Theme.of(context);
     final tts = _ensureTts();
@@ -381,36 +536,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FutureBuilder<bool>(
-            future: _koreanAvailable ??= tts.koreanAvailable(),
-            builder: (context, snap) {
-              // 알 수 없으면(아직 확인 중이거나 오류) 경고하지 않는다.
-              if (snap.data != false) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: theme.colorScheme.error,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '기기에 한국어 음성이 설치되어 있지 않습니다. '
-                        '설정 > 텍스트 음성 변환에서 한국어 음성을 받아 주세요.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.error,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+          _koreanWarning(context, tts),
           Row(
             children: [
               Text('말하기 속도', style: theme.textTheme.bodyLarge),
@@ -448,6 +574,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           leading: const Icon(Icons.menu_book_outlined),
           title: const Text('기도문 출처'),
           subtitle: const Text(SettingsScreen.prayerSourceNote),
+        ),
+        const ListTile(
+          leading: Icon(Icons.record_voice_over_outlined),
+          title: Text('합성 음성 안내'),
+          subtitle: Text(aiVoiceDisclosure),
         ),
         ListTile(
           leading: const Icon(Icons.description_outlined),

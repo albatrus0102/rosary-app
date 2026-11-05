@@ -65,7 +65,10 @@ void main() {
   testWidgets('responder mode with no recordings still renders and advances', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({'prayer_mode': 'responder'});
+    SharedPreferences.setMockInitialValues({
+      'prayer_mode': 'responder',
+      'leader_voice_source': 'recorded',
+    });
     final settings = await AppSettings.load();
     expect(settings.leaderAudioEnabled, isTrue);
 
@@ -117,7 +120,7 @@ void main() {
   ) async {
     SharedPreferences.setMockInitialValues({'prayer_mode': 'responder'});
     final settings = await AppSettings.load();
-    expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
+    expect(settings.leaderVoiceSource, LeaderVoiceSource.bundled);
     final voice = FakeLeaderVoice();
 
     await tester.pumpWidget(

@@ -45,5 +45,7 @@ flutter:
   assets:
     - assets/images/
     - assets/sounds/
+    - assets/leader_voice/sister/
+    - assets/leader_voice/priest/
     - assets/fonts/OFL-Pretendard.txt
     - assets/fonts/OFL-NotoSerifKR.txt
