@@ -308,29 +308,49 @@ double rippleAlpha(double u) => 0.35 * (1 - u.clamp(0.0, 1.0));
 
 /// 손가락으로 위아래로 끄는 거리를 구슬 한 칸씩의 걸음(step)으로 바꾸는 계산.
 ///
-/// [stride]만큼 아래로 끌 때마다 +1, 위로 끌 때마다 -1이 되고, 남은 거리는
-/// [fraction](-1..1, 한 걸음에 대한 비율)로 남아 구슬이 손가락을 따라 미끄러지게 한다.
+/// [stride]만큼 끌면 한 걸음(아래 +1, 위 -1)이 된다. 실제 묵주를 넘기듯이 **한 번 끄는 동안은
+/// 최대 [maxSteps]걸음**(기본 1)만 넘어가고, 길게 끌어도 더 넘어가지 않는다. 손을 떼고 다시
+/// 끌어야([reset]) 다음 걸음이 된다. [maxSteps]가 0이면 제한 없이 거리만큼 넘어간다.
+/// 아직 한 걸음이 되지 못한 거리는 [fraction](-1..1)으로 남아 구슬이 손가락을 따라 미끄러지게 한다.
 class ScrubTracker {
-  ScrubTracker({required this.stride}) : assert(stride > 0);
+  ScrubTracker({required this.stride, this.maxSteps = 1})
+    : assert(stride > 0),
+      assert(maxSteps >= 0);
 
   final double stride;
+  final int maxSteps;
   double _remainder = 0;
+  int _fired = 0;
 
   /// 아직 한 걸음이 되지 못한 거리의 비율. (-1, 1).
   double get fraction => _remainder / stride;
 
+  /// 이번 끌기에서 이미 넘긴 걸음 수.
+  int get fired => _fired;
+
   /// 세로 이동량 [dy]를 더하고, 새로 넘은 걸음 수(부호 있음)를 돌려준다.
   int addDy(double dy) {
+    final limited = maxSteps > 0;
+    if (limited && _fired >= maxSteps) return 0; // 한 칸 넘겼으면 손을 뗄 때까지 무시
     _remainder += dy;
-    final steps = (_remainder / stride).truncate();
+    var steps = (_remainder / stride).truncate();
+    if (limited) {
+      final left = maxSteps - _fired;
+      steps = steps.clamp(-left, left);
+    }
     _remainder -= steps * stride;
+    _fired += steps.abs();
+    if (limited && _fired >= maxSteps) _remainder = 0;
     return steps;
   }
 
   /// 가로 이동은 무시하고 세로만 쓴다.
   int add(Offset delta) => addDy(delta.dy);
 
-  void reset() => _remainder = 0;
+  void reset() {
+    _remainder = 0;
+    _fired = 0;
+  }
 }
 
 /// 초점 이동 곡선: 아주 조금 지나쳤다가 돌아오는 easeOutBack.

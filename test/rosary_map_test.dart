@@ -382,31 +382,49 @@ void main() {
   });
 
   group('ScrubTracker', () {
-    test('100px down with stride 40 gives 2 steps and fraction 0.5', () {
+    test('a long drag still moves only one step; the rest is ignored', () {
       final t = ScrubTracker(stride: 40);
-      expect(t.addDy(100), 2);
-      expect(t.fraction, closeTo(0.5, 1e-9));
+      expect(t.addDy(100), 1);
+      expect(t.fraction, 0);
+      expect(t.addDy(500), 0);
+      expect(t.fired, 1);
     });
 
-    test('accumulates small moves and fires once per stride', () {
+    test('small moves accumulate into one step, then stop', () {
       final t = ScrubTracker(stride: 40);
       var total = 0;
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 20; i++) {
         total += t.addDy(7);
       }
-      expect(total, 1); // 70px
-      expect(t.fraction, closeTo(0.75, 1e-9));
+      expect(total, 1); // 140px을 끌어도 한 걸음
     });
 
-    test('reversing direction mid-drag steps back', () {
+    test('fraction follows the finger before the step fires', () {
       final t = ScrubTracker(stride: 40);
-      expect(t.addDy(50), 1);
-      expect(t.fraction, closeTo(0.25, 1e-9));
+      expect(t.addDy(20), 0);
+      expect(t.fraction, closeTo(0.5, 1e-9));
       expect(t.addDy(-30), 0);
-      expect(t.fraction, closeTo(-0.5, 1e-9));
-      expect(t.addDy(-30), -1);
       expect(t.fraction, closeTo(-0.25, 1e-9));
-      expect(t.fraction.abs(), lessThan(1));
+    });
+
+    test('upward drag steps back once', () {
+      final t = ScrubTracker(stride: 40);
+      expect(t.addDy(-90), -1);
+      expect(t.addDy(-90), 0);
+    });
+
+    test('reset (finger lifted) allows the next step', () {
+      final t = ScrubTracker(stride: 40);
+      expect(t.addDy(60), 1);
+      expect(t.addDy(60), 0);
+      t.reset();
+      expect(t.addDy(60), 1);
+    });
+
+    test('maxSteps: 0 keeps the unlimited behaviour', () {
+      final t = ScrubTracker(stride: 40, maxSteps: 0);
+      expect(t.addDy(100), 2);
+      expect(t.fraction, closeTo(0.5, 1e-9));
     });
 
     test('ignores horizontal movement', () {
@@ -444,8 +462,7 @@ void main() {
       }
       await g.up();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(calls, isNotEmpty);
-      expect(calls.every((d) => d == 1), isTrue);
+      expect(calls, [1]); // 120px을 끌어도 한 칸만
       calls.clear();
       final g2 = await tester.startGesture(
         tester.getCenter(find.byType(RosaryMap)),
@@ -456,8 +473,7 @@ void main() {
       }
       await g2.up();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(calls, isNotEmpty);
-      expect(calls.every((d) => d == -1), isTrue);
+      expect(calls, [-1]);
     });
   });
 }

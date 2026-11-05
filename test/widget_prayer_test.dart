@@ -289,9 +289,7 @@ void main() {
     expect(sizeOfText(), closeTo(before * 1.5, 0.01));
   });
 
-  testWidgets('dragging on the map in wide layout scrubs beads one by one', (
-    tester,
-  ) async {
+  testWidgets('a long drag on the map moves exactly one bead', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(900, 700);
     addTearDown(tester.view.resetPhysicalSize);
@@ -299,30 +297,31 @@ void main() {
     final settings = await loadSettings({'haptic_on_advance': false});
     await tester.pumpWidget(app(settings, initialIndex: 10));
     await tester.pump();
-    // initialIndex 10에서 시작: 저장 위치는 아직 없다(스텝이 바뀌어야 저장).
     final mapFinder = find.byType(RosaryMap);
     int shown() => settings.savedPrayer?.stepIndex ?? 10;
 
-    // 아래로 약 160px: stride(180 단변/8 -> 28 이상)로 3칸 이상 앞으로.
-    final gesture = await tester.startGesture(tester.getCenter(mapFinder));
-    for (var i = 0; i < 8; i++) {
-      await gesture.moveBy(const Offset(0, 20));
-      await tester.pump(const Duration(milliseconds: 16));
+    Future<void> drag(double dy, {int moves = 12}) async {
+      final g = await tester.startGesture(tester.getCenter(mapFinder));
+      for (var i = 0; i < moves; i++) {
+        await g.moveBy(Offset(0, dy));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await g.up();
+      await tester.pump(const Duration(milliseconds: 400));
     }
-    await gesture.up();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(shown(), greaterThanOrEqualTo(13));
+
+    // 아래로 길게(240px) 끌어도 한 칸만 앞으로.
+    await drag(20);
+    expect(shown(), 11);
     expect(tester.takeException(), isNull);
 
-    final after = shown();
-    final up = await tester.startGesture(tester.getCenter(mapFinder));
-    for (var i = 0; i < 8; i++) {
-      await up.moveBy(const Offset(0, -20));
-      await tester.pump(const Duration(milliseconds: 16));
-    }
-    await up.up();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(shown(), lessThan(after));
+    // 손을 떼고 다시 끌면 또 한 칸.
+    await drag(20);
+    expect(shown(), 12);
+
+    // 위로 길게 끌어도 한 칸만 뒤로.
+    await drag(-20);
+    expect(shown(), 11);
     expect(tester.takeException(), isNull);
   });
 
