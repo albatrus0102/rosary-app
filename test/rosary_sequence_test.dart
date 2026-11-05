@@ -54,17 +54,11 @@ void main() {
     }
   });
 
-  test('fatima triggers include 돌보소서; all others only 아멘', () {
+  test('each decade has one fatima step', () {
     final fatima = steps.where((s) => s.kind == StepKind.fatima).toList();
     expect(fatima, hasLength(5));
     for (final s in fatima) {
-      expect(s.triggerPhrases, contains('돌보소서'));
-      expect(s.triggerPhrases, contains('아멘'));
       expect(s.title, Prayers.fatima.title);
-    }
-    for (final s in steps.where((s) => s.kind != StepKind.fatima)) {
-      expect(s.triggerPhrases, ['아멘']);
-      expect(s.advancesByVoice, isTrue);
     }
   });
 

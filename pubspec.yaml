@@ -1,5 +1,5 @@
 name: rosary_app
-description: "음성 인식으로 \"아멘\"을 듣고 자동으로 넘겨 주는 묵주기도 도우미 앱."
+description: "묵주기도문을 보여 주고 버튼·탭·스와이프로 넘겨 주는 묵주기도 도우미 앱."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  sherpa_onnx: ^2.0.1
   record: ^7.1.2
   path_provider: ^2.1.6
   wakelock_plus: ^1.2.0
@@ -18,7 +17,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_tts: ^4.2.5
-  share_plus: ^13.3.1
 
 dev_dependencies:
   flutter_test:
@@ -45,7 +43,6 @@ flutter:
         - asset: assets/fonts/NotoSerifKR-Medium.otf
           weight: 500
   assets:
-    - assets/models/sherpa-onnx-streaming-zipformer-korean-2024-06-16/
     - assets/images/
     - assets/sounds/
     - assets/fonts/OFL-Pretendard.txt

@@ -162,10 +162,7 @@ void main() {
     });
 
     testWidgets('이어서 기도 opens PrayerScreen at the saved index', (tester) async {
-      final settings = await _load({
-        'voice_enabled': false,
-        'onboarding_done': true,
-      });
+      final settings = await _load();
       settings.saveProgress(MysterySet.sorrowful, 13);
       await _pumpHome(tester, settings);
 
@@ -180,10 +177,7 @@ void main() {
     testWidgets('처음부터 clears progress and starts from the beginning', (
       tester,
     ) async {
-      final settings = await _load({
-        'voice_enabled': false,
-        'onboarding_done': true,
-      });
+      final settings = await _load();
       settings.saveProgress(MysterySet.glorious, 20);
       await _pumpHome(tester, settings);
 
@@ -196,52 +190,15 @@ void main() {
     });
   });
 
-  group('onboarding sheet', () {
-    testWidgets('appears on first start and dismissing does not start', (
-      tester,
-    ) async {
-      final settings = await _load();
-      await _pumpHome(tester, settings);
+  testWidgets('기도 시작 starts the prayer directly', (tester) async {
+    final settings = await _load();
+    await _pumpHome(tester, settings);
 
-      await tester.tap(find.text('기도 시작'));
-      await tester.pumpAndSettle();
-      expect(find.text('"아멘"으로 자동으로 넘겨 드려요'), findsOneWidget);
-      expect(find.text('음성으로 넘기기 사용'), findsOneWidget);
-      expect(find.text('버튼으로만 사용'), findsOneWidget);
+    await tester.tap(find.text('기도 시작'));
+    await _pumpRoute(tester);
 
-      // 바깥을 눌러 닫는다.
-      await tester.tapAt(const Offset(10, 10));
-      await tester.pumpAndSettle();
-      expect(find.text('"아멘"으로 자동으로 넘겨 드려요'), findsNothing);
-      expect(find.byType(PrayerScreen), findsNothing);
-      expect(settings.onboardingDone, isFalse);
-      expect(settings.voiceEnabled, isTrue);
-    });
-
-    testWidgets('버튼으로만 사용 turns voice off and starts the prayer', (
-      tester,
-    ) async {
-      final settings = await _load();
-      await _pumpHome(tester, settings);
-
-      await tester.tap(find.text('기도 시작'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('버튼으로만 사용'));
-      await _pumpRoute(tester);
-
-      expect(settings.voiceEnabled, isFalse);
-      expect(settings.onboardingDone, isTrue);
-      expect(find.byType(PrayerScreen), findsOneWidget);
-    });
-
-    testWidgets('not shown when voice is off or already done', (tester) async {
-      final settings = await _load({'voice_enabled': false});
-      await _pumpHome(tester, settings);
-      await tester.tap(find.text('기도 시작'));
-      await _pumpRoute(tester);
-      expect(find.text('음성으로 넘기기 사용'), findsNothing);
-      expect(find.byType(PrayerScreen), findsOneWidget);
-    });
+    expect(find.byType(PrayerScreen), findsOneWidget);
+    expect(find.text('성호경'), findsWidgets);
   });
 
   testWidgets('no overflow at 360x640 with text scale 1.5', (tester) async {

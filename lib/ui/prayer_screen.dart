@@ -15,13 +15,9 @@ import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
-import '../speech/amen_detector.dart';
-import '../speech/sherpa_amen_detector.dart';
-import 'widgets/mic_status_chip.dart';
 import 'widgets/pill.dart';
 import 'widgets/rosary_map.dart';
 import 'widgets/soft_card.dart';
-import 'widgets/speech_debug_panel.dart';
 
 /// 기도 진행 화면.
 class PrayerScreen extends StatefulWidget {
@@ -31,7 +27,6 @@ class PrayerScreen extends StatefulWidget {
     required this.mysterySet,
     this.initialIndex = 0,
     this.soundPlayer,
-    this.detector,
     this.leaderAudio,
     this.leaderVoice,
   });
@@ -44,9 +39,6 @@ class PrayerScreen extends StatefulWidget {
 
   /// 테스트용 주입. 없으면 화면이 직접 만들고 정리한다.
   final SoundPlayer? soundPlayer;
-
-  /// 테스트용 주입. 없고 음성이 켜져 있으면 [SherpaAmenDetector]를 만든다.
-  final AmenDetector? detector;
 
   /// 선창 음성 저장소. 없으면 화면이 직접 만들고 정리한다.
   final LeaderAudioStore? leaderAudio;
@@ -69,23 +61,14 @@ class _PrayerScreenState extends State<PrayerScreen> {
   late final RosarySession _session;
   late final SoundPlayer _sound;
   late final bool _ownsSound;
-  AmenDetector? _detector;
-  StreamSubscription<String>? _phraseSub;
   StreamSubscription<SessionEvent>? _eventSub;
 
   // 선창 음성(후창 모드 전용).
-  static const _muteAfterPlayback = Duration(milliseconds: 600);
   LeaderVoice? _voice;
   LeaderAudioStore? _ownedStore;
   bool _ownsVoice = false;
   int _lastIndex = 0;
-  Timer? _muteTimer;
-  bool _muted = false;
-  bool _wasSpeaking = false;
   bool _disposed = false;
-
-  /// 마이크 오류 안내를 한 번만 띄우기 위한 표시.
-  bool _micWarned = false;
 
   bool get _leaderAudioActive =>
       _settings.prayerMode == PrayerMode.responder &&
@@ -119,16 +102,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
     if (_leaderAudioActive) {
       _setUpLeaderVoice();
     }
-
-    if (_settings.voiceEnabled) {
-      final detector =
-          widget.detector ??
-          SherpaAmenDetector(highSensitivity: _settings.highSensitivity);
-      _detector = detector;
-      _phraseSub = detector.phraseEvents.listen(_onPhrase);
-      detector.state.addListener(_onDetectorState);
-      unawaited(detector.start());
-    }
   }
 
   void _setUpLeaderVoice() {
@@ -159,27 +132,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
     }
   }
 
-  /// 말이 끝나면 그 뒤 잠시 동안도 음성 이벤트를 무시한다(스피커 소리가 마이크에 남아 있을 수 있다).
   void _onSpeakingChanged() {
-    final speaking = _voice?.isSpeaking.value ?? false;
-    if (_wasSpeaking && !speaking) {
-      _muted = true;
-      _muteTimer?.cancel();
-      _muteTimer = Timer(_muteAfterPlayback, () => _muted = false);
-    }
-    _wasSpeaking = speaking;
     if (mounted) setState(() {});
   }
 
-  /// 선창이 말하는 중이거나 막 끝난 직후에는 스피커 소리를 아멘으로 오인하지 않도록 무시한다.
-  void _onPhrase(String phrase) {
-    final speaking = _voice?.isSpeaking.value ?? false;
-    if (speaking || _muted) return;
-    _session.onPhrase(phrase);
-  }
-
   void _onSessionChanged() {
-    // 음성/탭/이전/다음 어느 쪽으로든 스텝이 바뀌면 현재 말을 끊고 새 스텝을 말한다.
+    // 탭/이전/다음/스와이프 어느 쪽으로든 스텝이 바뀌면 현재 말을 끊고 새 스텝을 말한다.
     final voice = _voice;
     if (voice == null) return;
     if (_session.isFinished) {
@@ -215,25 +173,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
-  void _onDetectorState() {
-    final s = _detector?.state.value;
-    if (_micWarned ||
-        (s != DetectorState.permissionDenied && s != DetectorState.error)) {
-      return;
-    }
-    _micWarned = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: const Text('마이크를 쓸 수 없어 음성 인식이 꺼졌어요. 버튼이나 화면 탭으로 넘겨 주세요.'),
-          action: SnackBarAction(label: '확인', onPressed: () {}),
-        ),
-      );
-    });
-  }
-
   void _onSessionEvent(SessionEvent e) {
     switch (e) {
       case SessionEvent.hailMarysCompleted:
@@ -250,17 +189,14 @@ class _PrayerScreenState extends State<PrayerScreen> {
         if (_settings.tickPerBead) unawaited(_sound.playBeadTick());
       case SessionEvent.finished:
         _haptic(HapticFeedback.heavyImpact);
-        unawaited(_detector?.stop());
     }
   }
 
   @override
   void dispose() {
     _disposed = true;
-    _muteTimer?.cancel();
     _session.removeListener(_onSessionChanged);
     _session.removeListener(_onProgress);
-    _detector?.state.removeListener(_onDetectorState);
     final voice = _voice;
     if (voice != null) {
       voice.isSpeaking.removeListener(_onSpeakingChanged);
@@ -271,12 +207,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
       }
     }
     _ownedStore?.dispose();
-    _phraseSub?.cancel();
     _eventSub?.cancel();
-    final detector = _detector;
-    if (detector != null) {
-      unawaited(detector.stop().then((_) => detector.dispose()));
-    }
     _session.dispose();
     if (_ownsSound) unawaited(_sound.dispose());
     unawaited(
@@ -305,46 +236,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
       ),
     );
     if (leave == true && mounted) Navigator.of(context).pop();
-  }
-
-  /// 음성 인식 상태·입력 음량·인식된 글자를 아래에서 올라오는 시트로 보여준다.
-  void _showVoiceSheet(BuildContext context) {
-    final d = _detector;
-    if (d == null) return;
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '음성 인식',
-                style: Theme.of(sheetContext).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              MicStatusChip(
-                enabled: _settings.voiceEnabled,
-                state: d.state,
-                lastError: () => d is SherpaAmenDetector ? d.lastError : null,
-              ),
-              const SizedBox(height: 12),
-              SpeechDebugPanel(detector: d),
-              const SizedBox(height: 12),
-              Text(
-                '"아멘"이 넘어가지 않으면 \'다음\' 버튼이나 화면 탭으로 넘길 수 있습니다.',
-                style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   String _appBarTitle(RosaryStep step) {
@@ -461,11 +352,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     icon: const Icon(Icons.text_fields),
                     onPressed: () => _showTextSizeSheet(context),
                   ),
-                if (_detector != null && !finished)
-                  _MicAppBarButton(
-                    detector: _detector!,
-                    onPressed: () => _showVoiceSheet(context),
-                  ),
               ],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(16),
@@ -507,7 +393,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   void _restartPrayer() {
     _session.restart();
-    if (_settings.voiceEnabled) unawaited(_detector?.start());
   }
 
   Widget _buildFinished(BuildContext context) {
@@ -551,9 +436,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                _settings.voiceEnabled
-                    ? '${widget.mysterySet.koreanName} · 음성으로 ${_session.amenCount}번 넘어갔습니다'
-                    : widget.mysterySet.koreanName,
+                widget.mysterySet.koreanName,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
@@ -828,43 +711,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// 앱바의 작은 마이크 아이콘. 평소엔 상태만 색으로 알리고, 누르면 자세한 내용이 올라온다.
-class _MicAppBarButton extends StatelessWidget {
-  const _MicAppBarButton({required this.detector, required this.onPressed});
-
-  final AmenDetector detector;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return ValueListenableBuilder<DetectorState>(
-      valueListenable: detector.state,
-      builder: (context, s, _) {
-        final Widget icon = switch (s) {
-          DetectorState.listening => Icon(Icons.mic, color: scheme.primary),
-          DetectorState.preparingModel => SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: scheme.secondary,
-            ),
-          ),
-          DetectorState.permissionDenied ||
-          DetectorState.error => Icon(Icons.mic_off, color: scheme.error),
-          _ => Icon(Icons.mic_off, color: scheme.onSurfaceVariant),
-        };
-        return IconButton(
-          tooltip: '음성 인식 상태',
-          icon: icon,
-          onPressed: onPressed,
-        );
-      },
     );
   }
 }

@@ -55,18 +55,13 @@ Widget _app(Widget home, {double textScale = 1.0}) => MaterialApp(
 );
 
 void main() {
-  testWidgets('registerFontLicenses adds font and sherpa-onnx licenses', (
-    tester,
-  ) async {
+  testWidgets('registerFontLicenses adds the font licenses', (tester) async {
     registerFontLicenses();
     final packages = <String>{};
     await for (final entry in LicenseRegistry.licenses) {
       packages.addAll(entry.packages);
     }
-    expect(
-      packages,
-      containsAll(['Pretendard', 'Noto Serif KR', 'sherpa-onnx']),
-    );
+    expect(packages, containsAll(['Pretendard', 'Noto Serif KR']));
   });
 
   testWidgets('settings: section headers and basic switches', (tester) async {
@@ -81,7 +76,7 @@ void main() {
     );
     await tester.pump();
 
-    for (final title in ['음성 인식', '소리 · 진동', '기도문 표시', '선창 음성', '정보']) {
+    for (final title in ['소리 · 진동', '기도문 표시', '선창 음성', '정보']) {
       expect(find.text(title), findsWidgets, reason: title);
     }
     expect(find.text('설정'), findsWidgets);
@@ -93,10 +88,8 @@ void main() {
     await tester.pump();
     expect(settings.hapticOnAdvance, isFalse);
 
-    expect(settings.voiceEnabled, isTrue);
-    await tester.tap(find.text('"아멘" 음성 인식'));
-    await tester.pump();
-    expect(settings.voiceEnabled, isFalse);
+    expect(find.text('음성 인식'), findsNothing);
+    expect(find.text('마이크 테스트'), findsNothing);
   });
 
   testWidgets('settings: text size slider updates settings and preview', (

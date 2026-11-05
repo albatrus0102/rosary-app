@@ -23,7 +23,7 @@ class LeaderRecordScreen extends StatefulWidget {
 class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
   static const _guidance =
       '본당에서 선창하시는 분의 목소리를 녹음해 두면 후창 모드에서 앞단을 들려줍니다. '
-      "뒷단을 따라 바치고 '아멘'을 하면 다음으로 넘어갑니다.";
+      "뒷단을 따라 바치고 '다음' 버튼이나 화면 탭으로 넘깁니다.";
 
   // 화면당 하나씩, 처음 필요할 때 만든다.
   AudioRecorder? _recorder;

@@ -6,44 +6,15 @@ import 'package:rosary_app/domain/rosary_session.dart';
 RosarySession newSession() =>
     RosarySession(buildRosarySequence(MysterySet.joyful));
 
-void advanceVoice(RosarySession s) {
-  if (s.current.kind == StepKind.fatima) {
-    s.onPhrase('돌보소서');
-  } else {
-    s.onAmen();
-  }
-}
-
 void main() {
-  test('onAmen advances through intro', () {
+  test('next advances through intro', () {
     final s = newSession();
     for (var i = 0; i < 7; i++) {
       expect(s.index, i);
-      s.onAmen();
+      s.next();
     }
     expect(s.index, 7);
     expect(s.current.decade, 1);
-    expect(s.amenCount, 7);
-    s.dispose();
-  });
-
-  test('돌보소서 advances from fatima but not from hail mary', () {
-    final s = newSession();
-    s.onPhrase('돌보소서');
-    expect(s.index, 0);
-    expect(s.amenCount, 0);
-
-    s.jumpTo(3); // hail mary
-    s.onPhrase('돌보소서');
-    expect(s.index, 3);
-
-    final fatimaIdx = s.steps.indexWhere((x) => x.kind == StepKind.fatima);
-    s.jumpTo(fatimaIdx);
-    s.onPhrase('돌보소서');
-    expect(s.index, fatimaIdx + 1);
-    s.jumpTo(fatimaIdx);
-    s.onAmen();
-    expect(s.index, fatimaIdx + 1);
     s.dispose();
   });
 
@@ -53,7 +24,7 @@ void main() {
     final sub = s.events.listen(collected.add);
 
     while (!s.isFinished) {
-      advanceVoice(s);
+      s.next();
     }
     await Future<void>.delayed(Duration.zero);
 
@@ -65,10 +36,9 @@ void main() {
     expect(collected.last, SessionEvent.finished);
     expect(collected, hasLength(73));
     expect(s.index, 72);
-    expect(s.amenCount, 73);
 
     // Further input after finishing is ignored.
-    s.onAmen();
+    s.next();
     await Future<void>.delayed(Duration.zero);
     expect(collected.where((e) => e == SessionEvent.finished), hasLength(1));
 
@@ -88,18 +58,18 @@ void main() {
         (x) => x.decade == 1 && x.beadIndex == 10,
       );
       while (s.index < tenth) {
-        s.onAmen();
+        s.next();
       }
       await Future<void>.delayed(Duration.zero);
       expect(collected, isNot(contains(SessionEvent.hailMarysCompleted)));
-      s.onAmen();
+      s.next();
       await Future<void>.delayed(Duration.zero);
       expect(collected.last, SessionEvent.hailMarysCompleted);
       expect(s.current.kind, StepKind.gloryBe);
       expect(s.current.decade, 1);
 
       while (!s.isFinished) {
-        advanceVoice(s);
+        s.next();
       }
       await Future<void>.delayed(Duration.zero);
       expect(
@@ -176,11 +146,10 @@ void main() {
   test('restart resets', () {
     final s = newSession();
     for (var i = 0; i < 20; i++) {
-      advanceVoice(s);
+      s.next();
     }
     s.restart();
     expect(s.index, 0);
-    expect(s.amenCount, 0);
     expect(s.isFinished, isFalse);
 
     s.jumpTo(72);
@@ -192,40 +161,22 @@ void main() {
     s.dispose();
   });
 
-  test('amen right after 돌보소서 does not skip the next prayer', () {
-    var now = DateTime(2026);
-    final s = RosarySession(
-      buildRosarySequence(MysterySet.joyful),
-      clock: () => now,
-    );
-    final fatima1 = s.steps.indexWhere((x) => x.kind == StepKind.fatima);
-    s.jumpTo(fatima1);
-    s.onPhrase('돌보소서');
-    expect(s.index, fatima1 + 1); // decade 2 our father
-    now = now.add(const Duration(seconds: 1));
-    s.onAmen(); // "...돌보소서. 아멘." trailing amen is ignored
-    expect(s.index, fatima1 + 1);
-    expect(s.amenCount, 1);
-    now = now.add(const Duration(seconds: 20));
-    s.onAmen(); // the our father's own amen advances
-    expect(s.index, fatima1 + 2);
-
-    // Last decade: trailing amen must not finish the rosary past the closing.
-    s.jumpTo(71);
-    s.onPhrase('돌보소서');
-    expect(s.current.kind, StepKind.closing);
-    s.onAmen();
-    expect(s.isFinished, isFalse);
-    expect(s.index, 72);
-    s.onAmen();
-    expect(s.isFinished, isTrue);
-
-    // Only the first amen is ignored, and only inside the window.
-    s.jumpTo(fatima1);
-    s.onPhrase('돌보소서');
-    now = now.add(RosarySession.trailingAmenWindow * 2);
-    s.onAmen();
-    expect(s.index, fatima1 + 2);
-    s.dispose();
-  });
+  test(
+    'next() through the whole sequence emits the completion events',
+    () async {
+      final s = newSession();
+      final events = <SessionEvent>[];
+      final sub = s.events.listen(events.add);
+      while (!s.isFinished) {
+        s.next();
+      }
+      await Future<void>.delayed(Duration.zero);
+      int count(SessionEvent e) => events.where((x) => x == e).length;
+      expect(count(SessionEvent.hailMarysCompleted), 5);
+      expect(count(SessionEvent.decadeCompleted), 5);
+      expect(count(SessionEvent.finished), 1);
+      await sub.cancel();
+      s.dispose();
+    },
+  );
 }

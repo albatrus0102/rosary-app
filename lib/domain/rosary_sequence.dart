@@ -22,7 +22,6 @@ class RosaryStep {
     required this.leaderText,
     required this.responderText,
     this.heading,
-    this.triggerPhrases = const ['아멘'],
     this.decade,
     this.beadIndex,
     this.leaderCueIds = const [],
@@ -35,7 +34,6 @@ class RosaryStep {
     required String title,
     required Prayer prayer,
     String? heading,
-    List<String> triggerPhrases = const ['아멘'],
     int? decade,
     int? beadIndex,
     List<String>? leaderCueIds,
@@ -48,7 +46,6 @@ class RosaryStep {
       leaderText: parts.leader,
       responderText: parts.responder,
       heading: heading,
-      triggerPhrases: triggerPhrases,
       decade: decade,
       beadIndex: beadIndex,
       leaderCueIds: leaderCueIds ?? [prayerCueId(prayer)],
@@ -72,9 +69,6 @@ class RosaryStep {
   /// 뒷단(후창). 나뉘지 않으면 ''.
   final String responderText;
 
-  /// 이 스텝에서 음성으로 다음으로 넘어가는 정규화된 문구들.
-  final List<String> triggerPhrases;
-
   /// 1..5. 서두/마침은 null.
   final int? decade;
 
@@ -84,8 +78,6 @@ class RosaryStep {
   /// 후창 모드에서 이 스텝에 들어갈 때 순서대로 재생할 선창 큐 id들.
   /// 신비 묵상 문구가 있으면 [신비 큐, 기도 큐], 아니면 [기도 큐].
   final List<String> leaderCueIds;
-
-  bool get advancesByVoice => triggerPhrases.isNotEmpty;
 }
 
 /// 선택한 신비에 대한 전체 묵주기도 스텝 목록(73개)을 만든다.
@@ -157,7 +149,6 @@ List<RosaryStep> buildRosarySequence(MysterySet set) {
         kind: StepKind.fatima,
         title: Prayers.fatima.title,
         prayer: Prayers.fatima,
-        triggerPhrases: const ['아멘', '돌보소서'],
         decade: d,
       ),
     );

@@ -24,9 +24,8 @@ void main() {
   testWidgets('PrayerScreen shows first step and advances on 다음', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({'voice_enabled': false});
+    SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
-    expect(settings.voiceEnabled, isFalse);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -55,7 +54,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    SharedPreferences.setMockInitialValues({'voice_enabled': false});
+    SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
 
     await tester.pumpWidget(
@@ -103,7 +102,7 @@ void main() {
   Future<AppSettings> loadSettings([
     Map<String, Object> extra = const {},
   ]) async {
-    SharedPreferences.setMockInitialValues({'voice_enabled': false, ...extra});
+    SharedPreferences.setMockInitialValues({...extra});
     return AppSettings.load();
   }
 

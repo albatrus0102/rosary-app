@@ -22,17 +22,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: 한국어 음성 모델 다운로드 (캐시)
-        id: model-cache
-        uses: actions/cache@v4
-        with:
-          path: assets/models/sherpa-onnx-streaming-zipformer-korean-2024-06-16
-          key: sherpa-korean-2024-06-16-v1
-
-      - name: 모델 받기
-        if: steps.model-cache.outputs.cache-hit != 'true'
-        run: bash scripts/fetch_model.sh
-
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test

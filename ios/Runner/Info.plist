@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>묵주기도 중 '아멘'을 듣고 다음 구슬로 넘기기 위해 마이크를 사용합니다.</string>
+	<string>선창 목소리를 녹음하기 위해 마이크를 사용합니다.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

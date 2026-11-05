@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +7,6 @@ import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
-import 'package:rosary_app/speech/amen_detector.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,29 +50,6 @@ class FakeLeaderVoice implements LeaderVoice {
   Future<void> dispose() async {}
 }
 
-class FakeDetector implements AmenDetector {
-  final _phrases = StreamController<String>.broadcast();
-  final _amens = StreamController<int>.broadcast();
-  final _state = ValueNotifier(DetectorState.listening);
-
-  void say(String phrase) => _phrases.add(phrase);
-
-  @override
-  Stream<String> get phraseEvents => _phrases.stream;
-  @override
-  Stream<int> get amenEvents => _amens.stream;
-  @override
-  ValueListenable<DetectorState> get state => _state;
-  @override
-  String? get lastTranscript => null;
-  @override
-  Future<void> start() async {}
-  @override
-  Future<void> stop() async {}
-  @override
-  Future<void> dispose() async {}
-}
-
 class _SilentSoundPlayer extends SoundPlayer {
   @override
   Future<void> init() async {}
@@ -91,10 +65,7 @@ void main() {
   testWidgets('responder mode with no recordings still renders and advances', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({
-      'voice_enabled': false,
-      'prayer_mode': 'responder',
-    });
+    SharedPreferences.setMockInitialValues({'prayer_mode': 'responder'});
     final settings = await AppSettings.load();
     expect(settings.leaderAudioEnabled, isTrue);
 
@@ -121,7 +92,6 @@ void main() {
 
   testWidgets('leader audio disabled ignores recordings', (tester) async {
     SharedPreferences.setMockInitialValues({
-      'voice_enabled': false,
       'prayer_mode': 'responder',
       'leader_audio': false,
     });
@@ -142,14 +112,13 @@ void main() {
     expect(find.text('선창 재생 중'), findsNothing);
   });
 
-  testWidgets('responder: speaks each step and mutes phrases while speaking', (
+  testWidgets('responder: speaks each step and shows the playing badge', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({'prayer_mode': 'responder'});
     final settings = await AppSettings.load();
     expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
     final voice = FakeLeaderVoice();
-    final detector = FakeDetector();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -159,7 +128,6 @@ void main() {
           soundPlayer: _SilentSoundPlayer(),
           leaderAudio: FakeLeaderAudioStore(),
           leaderVoice: voice,
-          detector: detector,
         ),
       ),
     );
@@ -170,31 +138,22 @@ void main() {
     await tester.pump();
     expect(voice.spoken, ['성호경', '사도신경']);
 
-    // 말하는 동안의 아멘은 무시한다.
     voice.speaking.value = true;
     await tester.pump();
     expect(find.text('선창 재생 중'), findsOneWidget);
-    detector.say('아멘');
-    await tester.pump(const Duration(milliseconds: 10));
-    expect(find.text('사도신경'), findsOneWidget);
 
-    // 끝난 직후 600ms 동안도 무시한다.
     voice.speaking.value = false;
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
     expect(find.text('선창 재생 중'), findsNothing);
-    detector.say('아멘');
-    await tester.pump(const Duration(milliseconds: 10));
-    expect(find.text('사도신경'), findsOneWidget);
 
-    await tester.pump(const Duration(milliseconds: 700));
-    detector.say('아멘');
-    await tester.pump(const Duration(milliseconds: 10));
+    await tester.tap(find.text('다음'));
+    await tester.pump();
     expect(find.text('주님의 기도'), findsOneWidget);
     expect(voice.spoken, ['성호경', '사도신경', '주님의 기도']);
   });
 
   testWidgets('solo mode never calls the leader voice', (tester) async {
-    SharedPreferences.setMockInitialValues({'voice_enabled': false});
+    SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
     final voice = FakeLeaderVoice();
     await tester.pumpWidget(

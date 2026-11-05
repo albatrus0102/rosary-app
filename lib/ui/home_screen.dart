@@ -9,7 +9,6 @@ import '../app/sound_player.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
-import 'onboarding_sheet.dart';
 import 'prayer_screen.dart';
 import 'widgets/pill.dart';
 import 'widgets/section_header.dart';
@@ -73,13 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     int initialIndex = 0,
     bool clearSaved = false,
   }) async {
-    if (settings.voiceEnabled && !settings.onboardingDone) {
-      final useVoice = await showOnboardingSheet(context);
-      if (useVoice == null || !mounted) return; // 그냥 닫으면 시작하지 않는다.
-      settings.voiceEnabled = useVoice;
-      settings.onboardingDone = true;
-    }
-    if (!mounted) return;
     if (clearSaved) settings.clearProgress();
     final target = set ?? settings.mysterySet;
     await Navigator.of(context).push(

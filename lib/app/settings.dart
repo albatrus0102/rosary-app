@@ -27,7 +27,6 @@ class SavedPrayer {
 /// 앱 설정. `shared_preferences`에 저장된다(신비 선택은 제외).
 class AppSettings extends ChangeNotifier {
   AppSettings._(this._prefs) {
-    _voiceEnabled = _prefs.getBool(_kVoice) ?? true;
     _chimeOnTenHailMarys = _prefs.getBool(_kChime) ?? true;
     _tickPerBead = _prefs.getBool(_kTick) ?? false;
     _rosaryStyle = _enumByName(
@@ -55,19 +54,15 @@ class AppSettings extends ChangeNotifier {
       _prefs.getString(_kPrayerFont),
       PrayerFont.sans,
     );
-    _showTranscript = _prefs.getBool(_kShowTranscript) ?? false;
-    _highSensitivity = _prefs.getBool(_kHighSensitivity) ?? false;
     _chimeVolume = (_prefs.getDouble(_kChimeVolume) ?? defaultChimeVolume)
         .clamp(minChimeVolume, maxChimeVolume);
     _hapticOnAdvance = _prefs.getBool(_kHaptic) ?? true;
     _prayerTextScale = (_prefs.getDouble(_kTextScale) ?? defaultTextScale)
         .clamp(minTextScale, maxTextScale);
-    _onboardingDone = _prefs.getBool(_kOnboardingDone) ?? false;
     _savedPrayer = _readSavedPrayer();
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
-  static const _kVoice = 'voice_enabled';
   static const _kChime = 'chime_ten';
   static const _kTick = 'tick_bead';
   static const _kStyle = 'rosary_style';
@@ -75,13 +70,10 @@ class AppSettings extends ChangeNotifier {
   static const _kLeaderAudio = 'leader_audio';
   static const _kLeaderVoiceSource = 'leader_voice_source';
   static const _kTtsRate = 'tts_rate';
-  static const _kShowTranscript = 'show_transcript';
   static const _kPrayerFont = 'prayer_font';
-  static const _kHighSensitivity = 'high_sensitivity';
   static const _kChimeVolume = 'chime_volume';
   static const _kHaptic = 'haptic';
   static const _kTextScale = 'prayer_text_scale';
-  static const _kOnboardingDone = 'onboarding_done';
   static const _kResumeSet = 'resume_set';
   static const _kResumeIndex = 'resume_index';
   static const _kResumeAt = 'resume_at';
@@ -103,7 +95,6 @@ class AppSettings extends ChangeNotifier {
 
   late bool _hapticOnAdvance;
   late double _prayerTextScale;
-  late bool _onboardingDone;
   SavedPrayer? _savedPrayer;
 
   SavedPrayer? _readSavedPrayer() {
@@ -120,7 +111,6 @@ class AppSettings extends ChangeNotifier {
     );
   }
 
-  late bool _voiceEnabled;
   late bool _chimeOnTenHailMarys;
   late bool _tickPerBead;
   late RosaryStyle _rosaryStyle;
@@ -129,8 +119,6 @@ class AppSettings extends ChangeNotifier {
   late LeaderVoiceSource _leaderVoiceSource;
   late double _ttsRate;
   late PrayerFont _prayerFont;
-  late bool _showTranscript;
-  late bool _highSensitivity;
   late double _chimeVolume;
   late MysterySet _mysterySet;
 
@@ -150,7 +138,6 @@ class AppSettings extends ChangeNotifier {
     return fallback;
   }
 
-  bool get voiceEnabled => _voiceEnabled;
   bool get chimeOnTenHailMarys => _chimeOnTenHailMarys;
   bool get tickPerBead => _tickPerBead;
   RosaryStyle get rosaryStyle => _rosaryStyle;
@@ -168,24 +155,11 @@ class AppSettings extends ChangeNotifier {
   /// 기도 화면 본문 글꼴.
   PrayerFont get prayerFont => _prayerFont;
 
-  /// 기도 화면에 음성 인식 진단 패널(인식 내용 등)을 보일지 여부.
-  bool get showTranscript => _showTranscript;
-
-  /// 인식 민감도 높임: "아"로만 끝나는 발화도 아멘으로 센다.
-  bool get highSensitivity => _highSensitivity;
-
   /// 종소리/구슬 소리 크기(0.1~1.0).
   double get chimeVolume => _chimeVolume;
 
   /// 이번 세션에서 선택한 신비(저장하지 않음).
   MysterySet get mysterySet => _mysterySet;
-
-  set voiceEnabled(bool v) {
-    if (v == _voiceEnabled) return;
-    _voiceEnabled = v;
-    _prefs.setBool(_kVoice, v);
-    notifyListeners();
-  }
 
   set chimeOnTenHailMarys(bool v) {
     if (v == _chimeOnTenHailMarys) return;
@@ -244,20 +218,6 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  set showTranscript(bool v) {
-    if (v == _showTranscript) return;
-    _showTranscript = v;
-    _prefs.setBool(_kShowTranscript, v);
-    notifyListeners();
-  }
-
-  set highSensitivity(bool v) {
-    if (v == _highSensitivity) return;
-    _highSensitivity = v;
-    _prefs.setBool(_kHighSensitivity, v);
-    notifyListeners();
-  }
-
   set chimeVolume(double v) {
     final clamped = v.clamp(minChimeVolume, maxChimeVolume);
     if (clamped == _chimeVolume) return;
@@ -278,9 +238,6 @@ class AppSettings extends ChangeNotifier {
   /// 기도문 글자 크기 배율 (minTextScale..maxTextScale).
   double get prayerTextScale => _prayerTextScale;
 
-  /// 첫 실행 안내를 이미 봤는지.
-  bool get onboardingDone => _onboardingDone;
-
   /// 중단한 기도가 있으면 그 상태, 없으면 null.
   SavedPrayer? get savedPrayer => _savedPrayer;
 
@@ -296,13 +253,6 @@ class AppSettings extends ChangeNotifier {
     if (clamped == _prayerTextScale) return;
     _prayerTextScale = clamped;
     _prefs.setDouble(_kTextScale, clamped);
-    notifyListeners();
-  }
-
-  set onboardingDone(bool v) {
-    if (v == _onboardingDone) return;
-    _onboardingDone = v;
-    _prefs.setBool(_kOnboardingDone, v);
     notifyListeners();
   }
 

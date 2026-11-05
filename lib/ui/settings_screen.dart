@@ -9,9 +9,8 @@ import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../domain/leader_cues.dart';
 import 'leader_record_screen.dart';
-import 'mic_test_screen.dart';
 
-/// 설정 화면: 음성 인식, 소리·진동, 기도문 표시, 선창 음성, 정보.
+/// 설정 화면: 소리·진동, 기도문 표시, 선창 음성, 정보.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
@@ -125,7 +124,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildVoiceSection(context),
                           _buildSoundSection(context),
                           _buildDisplaySection(context),
                           _buildLeaderSection(context),
@@ -143,45 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // (a) 음성 인식
-  Widget _buildVoiceSection(BuildContext context) {
-    return _Section(
-      title: '음성 인식',
-      children: [
-        SwitchListTile(
-          secondary: const Icon(Icons.mic_none),
-          title: const Text('"아멘" 음성 인식'),
-          subtitle: const Text(
-            '"아멘"이라고 말하면 자동으로 넘어갑니다. 기기 안에서만 인식하며 서버로 전송하지 않습니다.',
-          ),
-          value: settings.voiceEnabled,
-          onChanged: (v) => settings.voiceEnabled = v,
-        ),
-        SwitchListTile(
-          secondary: const Icon(Icons.hearing),
-          title: const Text('인식 민감도 높임'),
-          subtitle: const Text('"아"로만 끝나도 아멘으로 셉니다. 잘못 넘어갈 수 있으니 필요할 때만 켜세요.'),
-          value: settings.highSensitivity,
-          onChanged: settings.voiceEnabled
-              ? (v) => settings.highSensitivity = v
-              : null,
-        ),
-        ListTile(
-          leading: const Icon(Icons.graphic_eq),
-          title: const Text('마이크 테스트'),
-          subtitle: const Text('"아멘"이 어떻게 들리는지 확인합니다'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => MicTestScreen(settings: settings),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // (b) 소리·진동
+  // (a) 소리·진동
   Widget _buildSoundSection(BuildContext context) {
     return _Section(
       title: '소리 · 진동',
@@ -227,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // (c) 기도문 표시
+  // (b) 기도문 표시
   Widget _buildDisplaySection(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -323,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // (d) 선창 음성
+  // (c) 선창 음성
   Widget _buildLeaderSection(BuildContext context) {
     final theme = Theme.of(context);
     final source = settings.leaderVoiceSource;
@@ -479,7 +439,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // (e) 정보
+  // (d) 정보
   Widget _buildAboutSection(BuildContext context) {
     return _Section(
       title: '정보',

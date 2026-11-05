@@ -74,7 +74,7 @@ class TtsLeaderVoice implements LeaderVoice {
       await tts.setLanguage(_language);
       await tts.awaitSpeakCompletion(true);
       if (!kIsWeb && Platform.isIOS) {
-        // 마이크 인식과 동시에 말할 수 있도록 오디오 세션을 맞춘다.
+        // 녹음 기능과 같은 오디오 세션(재생+녹음)으로 맞춘다.
         await tts.setIosAudioCategory(
           IosTextToSpeechAudioCategory.playAndRecord,
           const [
