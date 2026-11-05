@@ -9,6 +9,21 @@ import 'rosary_style.dart';
 /// 기도문 본문 글꼴: 고딕(Pretendard) 또는 명조(Noto Serif KR).
 enum PrayerFont { sans, serif }
 
+/// 이어서 기도하기를 위해 저장해 두는 진행 상태.
+class SavedPrayer {
+  const SavedPrayer({
+    required this.mysterySet,
+    required this.stepIndex,
+    required this.savedAt,
+  });
+
+  final MysterySet mysterySet;
+
+  /// `buildRosarySequence(mysterySet)`의 스텝 인덱스.
+  final int stepIndex;
+  final DateTime savedAt;
+}
+
 /// 앱 설정. `shared_preferences`에 저장된다(신비 선택은 제외).
 class AppSettings extends ChangeNotifier {
   AppSettings._(this._prefs) {
@@ -44,6 +59,11 @@ class AppSettings extends ChangeNotifier {
     _highSensitivity = _prefs.getBool(_kHighSensitivity) ?? false;
     _chimeVolume = (_prefs.getDouble(_kChimeVolume) ?? defaultChimeVolume)
         .clamp(minChimeVolume, maxChimeVolume);
+    _hapticOnAdvance = _prefs.getBool(_kHaptic) ?? true;
+    _prayerTextScale = (_prefs.getDouble(_kTextScale) ?? defaultTextScale)
+        .clamp(minTextScale, maxTextScale);
+    _onboardingDone = _prefs.getBool(_kOnboardingDone) ?? false;
+    _savedPrayer = _readSavedPrayer();
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -59,6 +79,17 @@ class AppSettings extends ChangeNotifier {
   static const _kPrayerFont = 'prayer_font';
   static const _kHighSensitivity = 'high_sensitivity';
   static const _kChimeVolume = 'chime_volume';
+  static const _kHaptic = 'haptic';
+  static const _kTextScale = 'prayer_text_scale';
+  static const _kOnboardingDone = 'onboarding_done';
+  static const _kResumeSet = 'resume_set';
+  static const _kResumeIndex = 'resume_index';
+  static const _kResumeAt = 'resume_at';
+
+  /// 기도문 글자 크기 배율(1.0이 기본 24sp).
+  static const double minTextScale = 0.85;
+  static const double maxTextScale = 1.6;
+  static const double defaultTextScale = 1.0;
 
   static const double minTtsRate = 0.3;
   static const double maxTtsRate = 0.7;
@@ -69,6 +100,25 @@ class AppSettings extends ChangeNotifier {
   static const double defaultChimeVolume = 0.5;
 
   final SharedPreferences _prefs;
+
+  late bool _hapticOnAdvance;
+  late double _prayerTextScale;
+  late bool _onboardingDone;
+  SavedPrayer? _savedPrayer;
+
+  SavedPrayer? _readSavedPrayer() {
+    final set = _prefs.getString(_kResumeSet);
+    final index = _prefs.getInt(_kResumeIndex);
+    final at = _prefs.getInt(_kResumeAt);
+    if (set == null || index == null || at == null) return null;
+    final match = MysterySet.values.where((m) => m.name == set);
+    if (match.isEmpty) return null;
+    return SavedPrayer(
+      mysterySet: match.first,
+      stepIndex: index,
+      savedAt: DateTime.fromMillisecondsSinceEpoch(at),
+    );
+  }
 
   late bool _voiceEnabled;
   late bool _chimeOnTenHailMarys;
@@ -219,6 +269,62 @@ class AppSettings extends ChangeNotifier {
   set mysterySet(MysterySet v) {
     if (v == _mysterySet) return;
     _mysterySet = v;
+    notifyListeners();
+  }
+
+  /// 다음으로 넘어갈 때 가볍게 진동한다.
+  bool get hapticOnAdvance => _hapticOnAdvance;
+
+  /// 기도문 글자 크기 배율 (minTextScale..maxTextScale).
+  double get prayerTextScale => _prayerTextScale;
+
+  /// 첫 실행 안내를 이미 봤는지.
+  bool get onboardingDone => _onboardingDone;
+
+  /// 중단한 기도가 있으면 그 상태, 없으면 null.
+  SavedPrayer? get savedPrayer => _savedPrayer;
+
+  set hapticOnAdvance(bool v) {
+    if (v == _hapticOnAdvance) return;
+    _hapticOnAdvance = v;
+    _prefs.setBool(_kHaptic, v);
+    notifyListeners();
+  }
+
+  set prayerTextScale(double v) {
+    final clamped = v.clamp(minTextScale, maxTextScale);
+    if (clamped == _prayerTextScale) return;
+    _prayerTextScale = clamped;
+    _prefs.setDouble(_kTextScale, clamped);
+    notifyListeners();
+  }
+
+  set onboardingDone(bool v) {
+    if (v == _onboardingDone) return;
+    _onboardingDone = v;
+    _prefs.setBool(_kOnboardingDone, v);
+    notifyListeners();
+  }
+
+  /// 기도 중 위치를 저장한다(이어서 기도하기). 화면을 다시 그리지 않도록 알림은 보내지 않는다.
+  void saveProgress(MysterySet set, int stepIndex) {
+    _savedPrayer = SavedPrayer(
+      mysterySet: set,
+      stepIndex: stepIndex,
+      savedAt: DateTime.now(),
+    );
+    _prefs.setString(_kResumeSet, set.name);
+    _prefs.setInt(_kResumeIndex, stepIndex);
+    _prefs.setInt(_kResumeAt, _savedPrayer!.savedAt.millisecondsSinceEpoch);
+  }
+
+  /// 저장된 진행 상태를 지운다(기도를 마쳤거나 처음부터 다시 할 때).
+  void clearProgress() {
+    if (_savedPrayer == null) return;
+    _savedPrayer = null;
+    _prefs.remove(_kResumeSet);
+    _prefs.remove(_kResumeIndex);
+    _prefs.remove(_kResumeAt);
     notifyListeners();
   }
 }
