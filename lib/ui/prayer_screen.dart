@@ -54,6 +54,12 @@ class PrayerScreen extends StatefulWidget {
 }
 
 class _PrayerScreenState extends State<PrayerScreen> {
+  /// 아래 묵주 패널이 위로 펼쳐진(크게 보는) 상태인지.
+  bool _mapExpanded = false;
+
+  /// 손가락으로 끌고 있는 동안의 묵주 높이. 끌지 않을 때는 null.
+  double? _mapDragHeight;
+
   late final RosarySession _session;
   late final SoundPlayer _sound;
   late final bool _ownsSound;
@@ -402,9 +408,47 @@ class _PrayerScreenState extends State<PrayerScreen> {
   }
 
   Widget _buildPrayer(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minH = _mapHeight(context);
+        // 펼쳤을 때: 버튼·손잡이를 빼고도 본문이 최소한 보이도록 남긴다.
+        final maxH = math.max(
+          minH,
+          math.min(constraints.maxHeight * 0.72, constraints.maxHeight - 260),
+        );
+        return _buildPrayerBody(context, minH, maxH);
+      },
+    );
+  }
+
+  Widget _buildPrayerBody(BuildContext context, double minH, double maxH) {
     final step = _session.current;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final dragging = _mapDragHeight != null;
+    final mapH = (_mapDragHeight ?? (_mapExpanded ? maxH : minH)).clamp(
+      minH,
+      maxH,
+    );
+
+    void dragStart(DragStartDetails _) => setState(() => _mapDragHeight = mapH);
+    void dragUpdate(DragUpdateDetails d) => setState(
+      () => _mapDragHeight = ((_mapDragHeight ?? mapH) - d.delta.dy).clamp(
+        minH,
+        maxH,
+      ),
+    );
+    void dragEnd(DragEndDetails d) {
+      final h = _mapDragHeight ?? mapH;
+      final v = d.primaryVelocity ?? 0;
+      setState(() {
+        // 빠르게 위로 끌면 펼치고, 아래로 끌면 접는다. 느리면 가까운 쪽으로.
+        _mapExpanded = v < -300
+            ? true
+            : (v > 300 ? false : h > (minH + maxH) / 2);
+        _mapDragHeight = null;
+      });
+    }
 
     return Column(
       children: [
@@ -454,17 +498,40 @@ class _PrayerScreenState extends State<PrayerScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: _mapHeight(context),
-                width: double.infinity,
-                child: RosaryMap(
-                  step: step,
-                  style: _settings.rosaryStyle,
-                  onTap: () => showRosaryMapSheet(
-                    context,
-                    session: _session,
-                    style: _settings.rosaryStyle,
-                  ),
+              // 손잡이와 묵주를 위아래로 끌면 묵주 크기가 따라서 커지고 작아진다.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onVerticalDragStart: dragStart,
+                onVerticalDragUpdate: dragUpdate,
+                onVerticalDragEnd: dragEnd,
+                child: Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: scheme.outline,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: dragging
+                          ? Duration.zero
+                          : const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      height: mapH,
+                      width: double.infinity,
+                      child: RosaryMap(
+                        step: step,
+                        style: _settings.rosaryStyle,
+                        onTap: () =>
+                            setState(() => _mapExpanded = !_mapExpanded),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 10),

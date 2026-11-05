@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../app/rosary_style.dart';
 import '../../app/theme.dart';
 import '../../domain/rosary_sequence.dart';
-import '../../domain/rosary_session.dart';
 
 // ---------------------------------------------------------------------------
 // 구슬 배치(순수 함수)
@@ -762,73 +761,4 @@ class _RosaryMapPainter extends CustomPainter {
       old.accentColor != accentColor ||
       old.primary != primary ||
       old.secondary != secondary;
-}
-
-// ---------------------------------------------------------------------------
-// 전체 화면 지도
-// ---------------------------------------------------------------------------
-
-/// 지도를 크게 보여 주는 전체 화면 시트. 세션이 바뀌면 함께 갱신된다.
-Future<void> showRosaryMapSheet(
-  BuildContext context, {
-  required RosarySession session,
-  required RosaryStyle style,
-}) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    builder: (context) => SizedBox.expand(
-      child: _RosaryMapSheet(session: session, style: style),
-    ),
-  );
-}
-
-class _RosaryMapSheet extends StatelessWidget {
-  const _RosaryMapSheet({required this.session, required this.style});
-
-  final RosarySession session;
-  final RosaryStyle style;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ListenableBuilder(
-      listenable: session,
-      builder: (context, _) {
-        final step = session.current;
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 8, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      step.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: '닫기',
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: RosaryMap(step: step, style: style),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

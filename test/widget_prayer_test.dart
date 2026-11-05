@@ -81,18 +81,19 @@ void main() {
     }
     expect(find.text('1단 · 5/10'), findsOneWidget);
 
-    // 지도를 탭하면 전체 화면 시트가 열리고 닫을 수 있다.
-    await tester.tap(map);
+    // 묵주를 위로 끌어올리면 묵주가 커지고, 다시 내리면 원래 크기로 돌아온다.
+    await tester.fling(map, const Offset(0, -300), 1000);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byTooltip('닫기'), findsOneWidget);
-    expect(find.byType(RosaryMap), findsNWidgets(2));
+    await tester.pump(const Duration(milliseconds: 400));
+    final expanded = tester.getSize(find.byType(RosaryMap)).height;
+    expect(expanded, greaterThan(height * 1.5));
     expect(tester.takeException(), isNull);
-    await tester.tap(find.byTooltip('닫기'));
+    expect(find.text('다음'), findsOneWidget);
+
+    await tester.fling(find.byType(RosaryMap), const Offset(0, 300), 1000);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byTooltip('닫기'), findsNothing);
-    expect(find.byType(RosaryMap), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.getSize(find.byType(RosaryMap)).height, closeTo(height, 0.5));
     expect(tester.takeException(), isNull);
   });
 }
