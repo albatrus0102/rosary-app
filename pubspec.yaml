@@ -48,3 +48,5 @@ flutter:
     - assets/models/sherpa-onnx-streaming-zipformer-korean-2024-06-16/
     - assets/images/
     - assets/sounds/
+    - assets/fonts/OFL-Pretendard.txt
+    - assets/fonts/OFL-NotoSerifKR.txt
