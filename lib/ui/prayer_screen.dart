@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/leader_audio_store.dart';
@@ -9,6 +10,7 @@ import '../app/leader_voice.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
+import '../app/window_class.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
@@ -27,6 +29,7 @@ class PrayerScreen extends StatefulWidget {
     super.key,
     required this.settings,
     required this.mysterySet,
+    this.initialIndex = 0,
     this.soundPlayer,
     this.detector,
     this.leaderAudio,
@@ -35,6 +38,9 @@ class PrayerScreen extends StatefulWidget {
 
   final AppSettings settings;
   final MysterySet mysterySet;
+
+  /// 이어서 기도할 때 시작할 스텝 인덱스. 범위를 벗어나면 0.
+  final int initialIndex;
 
   /// 테스트용 주입. 없으면 화면이 직접 만들고 정리한다.
   final SoundPlayer? soundPlayer;
@@ -78,6 +84,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
   bool _wasSpeaking = false;
   bool _disposed = false;
 
+  /// 마이크 오류 안내를 한 번만 띄우기 위한 표시.
+  bool _micWarned = false;
+
   bool get _leaderAudioActive =>
       _settings.prayerMode == PrayerMode.responder &&
       _settings.leaderAudioEnabled;
@@ -88,6 +97,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
   void initState() {
     super.initState();
     _session = RosarySession(buildRosarySequence(widget.mysterySet));
+    if (widget.initialIndex > 0 &&
+        widget.initialIndex < _session.steps.length) {
+      _session.jumpTo(widget.initialIndex);
+    }
 
     _ownsSound = widget.soundPlayer == null;
     _sound = widget.soundPlayer ?? SoundPlayer(volume: _settings.chimeVolume);
@@ -101,6 +114,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
 
     _eventSub = _session.events.listen(_onSessionEvent);
+    _session.addListener(_onProgress);
 
     if (_leaderAudioActive) {
       _setUpLeaderVoice();
@@ -112,6 +126,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
           SherpaAmenDetector(highSensitivity: _settings.highSensitivity);
       _detector = detector;
       _phraseSub = detector.phraseEvents.listen(_onPhrase);
+      detector.state.addListener(_onDetectorState);
       unawaited(detector.start());
     }
   }
@@ -180,16 +195,61 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
+  /// 이어서 기도하기를 위해 스텝이 바뀔 때마다 위치를 저장하고, 마치면 지운다.
+  void _onProgress() {
+    final settings = _settings;
+    if (_session.isFinished || _session.index == 0) {
+      settings.clearProgress();
+    } else {
+      settings.saveProgress(widget.mysterySet, _session.index);
+    }
+  }
+
+  /// 설정이 켜져 있을 때만 진동한다. 실패해도 기도 진행에는 영향이 없다.
+  void _haptic(Future<void> Function() feedback) {
+    if (!_settings.hapticOnAdvance) return;
+    unawaited(
+      feedback().catchError((Object e) {
+        debugPrint('haptic failed: $e');
+      }),
+    );
+  }
+
+  void _onDetectorState() {
+    final s = _detector?.state.value;
+    if (_micWarned ||
+        (s != DetectorState.permissionDenied && s != DetectorState.error)) {
+      return;
+    }
+    _micWarned = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: const Text('마이크를 쓸 수 없어 음성 인식이 꺼졌어요. 버튼이나 화면 탭으로 넘겨 주세요.'),
+          action: SnackBarAction(label: '확인', onPressed: () {}),
+        ),
+      );
+    });
+  }
+
   void _onSessionEvent(SessionEvent e) {
     switch (e) {
       case SessionEvent.hailMarysCompleted:
+        _haptic(HapticFeedback.mediumImpact);
         _sound.volume = _settings.chimeVolume;
         if (_settings.chimeOnTenHailMarys) unawaited(_sound.playDecadeChime());
       case SessionEvent.bead:
+        _haptic(HapticFeedback.selectionClick);
+        _sound.volume = _settings.chimeVolume;
+        if (_settings.tickPerBead) unawaited(_sound.playBeadTick());
       case SessionEvent.decadeCompleted:
+        _haptic(HapticFeedback.mediumImpact);
         _sound.volume = _settings.chimeVolume;
         if (_settings.tickPerBead) unawaited(_sound.playBeadTick());
       case SessionEvent.finished:
+        _haptic(HapticFeedback.heavyImpact);
         unawaited(_detector?.stop());
     }
   }
@@ -199,6 +259,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _disposed = true;
     _muteTimer?.cancel();
     _session.removeListener(_onSessionChanged);
+    _session.removeListener(_onProgress);
+    _detector?.state.removeListener(_onDetectorState);
     final voice = _voice;
     if (voice != null) {
       voice.isSpeaking.removeListener(_onSpeakingChanged);
@@ -292,12 +354,93 @@ class _PrayerScreenState extends State<PrayerScreen> {
     return decade == null ? '$name · 서두' : '$name · $decade단';
   }
 
+  /// 기도문 글자 크기를 바로 바꿔 볼 수 있는 시트.
+  void _showTextSizeSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: ListenableBuilder(
+            listenable: _settings,
+            builder: (context, _) {
+              final theme = Theme.of(context);
+              final scale = _settings.prayerTextScale;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('글자 크기', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  Card.filled(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        '은총이 가득하신 마리아님, 기뻐하소서!',
+                        style: AppTheme.prayerStyle(
+                          context,
+                          _settings.prayerFont,
+                          size: 20 * scale,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.text_decrease,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: scale,
+                          min: AppSettings.minTextScale,
+                          max: AppSettings.maxTextScale,
+                          divisions: 15,
+                          label: '${(scale * 100).round()}%',
+                          semanticFormatterCallback: (v) =>
+                              '글자 크기 ${(v * 100).round()}%',
+                          onChanged: (v) => _settings.prayerTextScale =
+                              (v * 100).roundToDouble() / 100,
+                        ),
+                      ),
+                      Icon(
+                        Icons.text_increase,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: scale == AppSettings.defaultTextScale
+                          ? null
+                          : () => _settings.prayerTextScale =
+                                AppSettings.defaultTextScale,
+                      child: const Text('기본 크기'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: _session,
+      listenable: Listenable.merge([_session, _settings]),
       builder: (context, _) {
         final finished = _session.isFinished;
+        final progress = finished
+            ? 1.0
+            : _session.index / _session.steps.length;
         return PopScope(
           canPop: finished,
           onPopInvokedWithResult: (didPop, _) {
@@ -312,6 +455,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
               ),
               centerTitle: true,
               actions: [
+                if (!finished)
+                  IconButton(
+                    tooltip: '글자 크기',
+                    icon: const Icon(Icons.text_fields),
+                    onPressed: () => _showTextSizeSheet(context),
+                  ),
                 if (_detector != null && !finished)
                   _MicAppBarButton(
                     detector: _detector!,
@@ -323,13 +472,15 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
                   child: Semantics(
+                    container: true,
                     label: '진행률',
-                    child: LinearProgressIndicator(
-                      value: finished
-                          ? 1
-                          : _session.index / _session.steps.length,
-                      minHeight: 5,
-                      borderRadius: BorderRadius.circular(3),
+                    value: '${(progress * 100).round()}%',
+                    child: ExcludeSemantics(
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 5,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
                 ),
@@ -344,57 +495,85 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
+  /// 지도를 손가락으로 끌어 구슬을 한 칸씩 넘긴다. 끌다가 기도가 끝나 버리지 않도록
+  /// 마지막 스텝에서는 앞으로 넘기지 않는다(마치려면 '다음' 버튼).
+  void _scrubStep(int delta) {
+    if (delta > 0) {
+      if (_session.index < _session.steps.length - 1) _session.next();
+    } else if (delta < 0) {
+      _session.back();
+    }
+  }
+
+  void _restartPrayer() {
+    _session.restart();
+    if (_settings.voiceEnabled) unawaited(_detector?.start());
+  }
+
   Widget _buildFinished(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 112,
-              height: 112,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: scheme.secondaryContainer,
-                border: Border.all(
-                  color: scheme.secondary.withValues(alpha: 0.4),
-                  width: 1.5,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 112,
+                  height: 112,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: scheme.secondaryContainer,
+                    border: Border.all(
+                      color: scheme.secondary.withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.check_rounded,
+                    size: 64,
+                    color: scheme.secondary,
+                  ),
                 ),
               ),
-              child: Icon(
-                Icons.check_rounded,
-                size: 64,
-                color: scheme.secondary,
+              const SizedBox(height: 28),
+              Text(
+                '묵주기도를 마쳤습니다',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              '묵주기도를 마쳤습니다',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (_settings.voiceEnabled) ...[
               const SizedBox(height: 10),
               Text(
-                '음성으로 ${_session.amenCount}번 넘어갔습니다',
+                _settings.voiceEnabled
+                    ? '${widget.mysterySet.koreanName} · 음성으로 ${_session.amenCount}번 넘어갔습니다'
+                    : widget.mysterySet.koreanName,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 36),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('처음으로'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(64, 56),
+                ),
+                onPressed: _restartPrayer,
+                child: const Text('다시 기도하기'),
+              ),
             ],
-            const SizedBox(height: 40),
-            FilledButton(
-              style: FilledButton.styleFrom(minimumSize: const Size(220, 56)),
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('처음으로'),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -408,6 +587,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
   }
 
   Widget _buildPrayer(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final wide =
+        windowClassOf(context).isWide || size.width > size.height * 1.1;
+    if (wide) return _buildWide(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final minH = _mapHeight(context);
@@ -421,10 +604,152 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
-  Widget _buildPrayerBody(BuildContext context, double minH, double maxH) {
+  /// 탭하면 다음으로 넘어가는 기도문 영역. 스텝이 바뀌면 짧게 페이드인하고 맨 위에서 시작한다.
+  Widget _buildStepText(BuildContext context) {
     final step = _session.current;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final scale = _settings.prayerTextScale;
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    final titleStyle = theme.textTheme.titleSmall;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _session.next,
+      child: TweenAnimationBuilder<double>(
+        key: ValueKey(_session.index),
+        tween: Tween(begin: 0.25, end: 1),
+        duration: reduce ? Duration.zero : const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        builder: (context, value, child) =>
+            Opacity(opacity: value, child: child),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_voice?.isSpeaking.value ?? false)
+                      const _LeaderPlayingBadge(),
+                    if (step.heading != null)
+                      _HeadingCard(heading: step.heading!, scale: scale),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
+                      child: Text(
+                        step.title,
+                        style: titleStyle?.copyWith(
+                          fontSize: (titleStyle.fontSize ?? 14) * scale,
+                          color: scheme.secondary,
+                          letterSpacing: 1,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    _PrayerText(
+                      step: step,
+                      mode: _settings.prayerMode,
+                      font: _settings.prayerFont,
+                      scale: scale,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavButtons(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: FilledButton.tonal(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(64, 56),
+              textStyle: theme.textTheme.titleMedium,
+            ),
+            onPressed: _session.index == 0 ? null : _session.back,
+            child: const Text('이전'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 3,
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(56),
+              textStyle: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            onPressed: _session.next,
+            child: const Text('다음'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 넓은 화면: 왼쪽에 기도문, 오른쪽에 항상 큰 묵주 지도와 버튼.
+  Widget _buildWide(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final step = _session.current;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(flex: 5, child: _buildStepText(context)),
+        Expanded(
+          flex: 4,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 16, 16),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: scheme.outlineVariant),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      RosaryMap.labelFor(step),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: RosaryMap(
+                        step: step,
+                        style: _settings.rosaryStyle,
+                        showLabel: false,
+                        onStep: _scrubStep,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildNavButtons(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrayerBody(BuildContext context, double minH, double maxH) {
+    final step = _session.current;
+    final scheme = Theme.of(context).colorScheme;
     final dragging = _mapDragHeight != null;
     final mapH = (_mapDragHeight ?? (_mapExpanded ? maxH : minH)).clamp(
       minH,
@@ -452,114 +777,53 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
     return Column(
       children: [
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _session.next,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(18, 8, 18, 20),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_voice?.isSpeaking.value ?? false)
-                          const _LeaderPlayingBadge(),
-                        if (step.heading != null)
-                          _HeadingCard(heading: step.heading!),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
-                          child: Text(
-                            step.title,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: scheme.secondary,
-                              letterSpacing: 1,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        _PrayerText(
-                          step: step,
-                          mode: _settings.prayerMode,
-                          font: _settings.prayerFont,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        Expanded(child: _buildStepText(context)),
         _ControlBar(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 손잡이와 묵주를 위아래로 끌면 묵주 크기가 따라서 커지고 작아진다.
+              // 손잡이 띠를 위아래로 끌면 묵주 패널 크기가 따라서 커지고 작아진다.
+              // (지도 위에서 끄는 동작은 구슬 넘기기이므로 크기 조절은 이 띠만 맡는다.)
               GestureDetector(
+                key: const ValueKey('mapHandle'),
                 behavior: HitTestBehavior.opaque,
                 onVerticalDragStart: dragStart,
                 onVerticalDragUpdate: dragUpdate,
                 onVerticalDragEnd: dragEnd,
-                child: Column(
-                  children: [
-                    Center(
+                child: Semantics(
+                  label: '묵주 크기 조절',
+                  child: SizedBox(
+                    height: 36,
+                    width: double.infinity,
+                    child: Center(
                       child: Container(
                         width: 40,
                         height: 4,
-                        margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: scheme.outline,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
-                    AnimatedContainer(
-                      duration: dragging
-                          ? Duration.zero
-                          : const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      height: mapH,
-                      width: double.infinity,
-                      child: RosaryMap(
-                        step: step,
-                        style: _settings.rosaryStyle,
-                        onTap: () =>
-                            setState(() => _mapExpanded = !_mapExpanded),
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ),
+              AnimatedContainer(
+                duration: dragging
+                    ? Duration.zero
+                    : const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                height: mapH,
+                width: double.infinity,
+                child: RosaryMap(
+                  step: step,
+                  style: _settings.rosaryStyle,
+                  onTap: () => setState(() => _mapExpanded = !_mapExpanded),
+                  onStep: _scrubStep,
                 ),
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton.tonal(
-                      onPressed: _session.index == 0 ? null : _session.back,
-                      child: const Text('이전'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 3,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(54),
-                        textStyle: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      onPressed: _session.next,
-                      child: const Text('다음'),
-                    ),
-                  ),
-                ],
-              ),
+              _buildNavButtons(context),
             ],
           ),
         ),
@@ -659,9 +923,10 @@ class _LeaderPlayingBadge extends StatelessWidget {
 }
 
 class _HeadingCard extends StatelessWidget {
-  const _HeadingCard({required this.heading});
+  const _HeadingCard({required this.heading, required this.scale});
 
   final String heading;
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
@@ -682,6 +947,8 @@ class _HeadingCard extends StatelessWidget {
               Text(
                 lines.first,
                 style: theme.textTheme.titleMedium?.copyWith(
+                  fontSize:
+                      (theme.textTheme.titleMedium?.fontSize ?? 16) * scale,
                   color: scheme.onSecondaryContainer,
                   fontWeight: FontWeight.w700,
                 ),
@@ -691,6 +958,8 @@ class _HeadingCard extends StatelessWidget {
                 Text(
                   lines.skip(1).join('\n'),
                   style: theme.textTheme.bodyLarge?.copyWith(
+                    fontSize:
+                        (theme.textTheme.bodyLarge?.fontSize ?? 16) * scale,
                     color: scheme.onSecondaryContainer,
                     height: 1.5,
                   ),
@@ -709,11 +978,15 @@ class _PrayerText extends StatelessWidget {
     required this.step,
     required this.mode,
     required this.font,
+    required this.scale,
   });
 
   final RosaryStep step;
   final PrayerMode mode;
   final PrayerFont font;
+
+  /// 기도문 글자 크기 배율(설정).
+  final double scale;
 
   @override
   Widget build(BuildContext context) {
@@ -721,8 +994,8 @@ class _PrayerText extends StatelessWidget {
     final onSurface = scheme.onSurface;
     final dim = onSurface.withValues(alpha: 0.45);
     final split = step.responderText.isNotEmpty;
-    final big = font == PrayerFont.serif ? 25.0 : 24.0;
-    final small = big - 6;
+    final big = (font == PrayerFont.serif ? 25.0 : 24.0) * scale;
+    final small = big - 6 * scale;
 
     TextStyle style(double size, Color color, {bool bold = false}) =>
         AppTheme.prayerStyle(

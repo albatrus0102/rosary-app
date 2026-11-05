@@ -239,7 +239,19 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          // Android 14+의 예측형 뒤로가기(AndroidManifest의
+          // enableOnBackInvokedCallback과 함께 동작).
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        },
+      ),
       switchTheme: SwitchThemeData(
+        thumbIcon: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected)
+              ? Icon(Icons.check, size: 16, color: scheme.primary)
+              : null,
+        ),
         thumbColor: WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.selected)
               ? scheme.onPrimary

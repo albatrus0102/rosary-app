@@ -310,4 +310,154 @@ void main() {
       expect(taps, 1);
     });
   });
+
+  group('motion helpers', () {
+    test('fisheye falloff is 1 at the focus and fades smoothly', () {
+      expect(fisheyeFalloff(0), 1);
+      expect(fisheyeScale(0), closeTo(1.45, 1e-9));
+      expect(fisheyeNudge(0, 10), closeTo(3.5, 1e-9));
+      var prev = double.infinity;
+      for (var d = 0.0; d <= 8; d += 0.5) {
+        final f = fisheyeFalloff(d);
+        expect(f, lessThan(prev));
+        prev = f;
+      }
+      expect(fisheyeScale(8), closeTo(1.0, 1e-4));
+      expect(fisheyeNudge(8, 10), closeTo(0, 1e-3));
+    });
+
+    test('pop and squash settle back to 1', () {
+      expect(popScale(0), 1);
+      expect(popScale(1), 1);
+      final peak = popScale(0.35);
+      expect(peak, inInclusiveRange(1.12, 1.17));
+      expect(squashScale(0), closeTo(0.92, 1e-9));
+      expect(squashScale(1), 1);
+    });
+
+    test('ripple grows and fades; decade ripple is bigger', () {
+      expect(rippleRadiusFactor(0), closeTo(0.8, 1e-9));
+      expect(rippleRadiusFactor(1), closeTo(3, 1e-9));
+      expect(rippleRadiusFactor(1, big: true), closeTo(5, 1e-9));
+      expect(rippleAlpha(0), closeTo(0.35, 1e-9));
+      expect(rippleAlpha(1), 0);
+    });
+
+    test('rosaryFocusAt reaches the target with a small overshoot', () {
+      expect(rosaryFocusAt(10, 11, 0, 0), 10);
+      expect(rosaryFocusAt(10, 11, 0, 1), 11);
+      var maxV = 0.0;
+      for (var t = 0.0; t <= 0.4; t += 0.01) {
+        maxV = maxV < rosaryFocusAt(10, 11, 0, t)
+            ? rosaryFocusAt(10, 11, 0, t)
+            : maxV;
+      }
+      expect(maxV, greaterThan(11));
+      expect(maxV, lessThan(11.15));
+    });
+
+    test(
+      'pointAlongChain walks along the chain through intermediate slots',
+      () {
+        final slots = layoutBeads(const Size(360, 640));
+        final centers = [for (final s in slots) s.center];
+        expect(pointAlongChain(centers, 8), centers[8]);
+        final mid = pointAlongChain(centers, 8.5);
+        expect(
+          (mid - centers[8]).distance,
+          closeTo((centers[9] - centers[8]).distance / 2, 1e-6),
+        );
+        // 펜던트 끝에서 고리 첫 구슬로 갈 때는 메달을 거친다.
+        final viaMedal = pointAlongChain(
+          centers,
+          RosarySlots.pendantGlory + 0.5,
+        );
+        expect(viaMedal, centers[RosarySlots.medal]);
+        expect(pointAlongChain(centers, 6), centers[6]);
+        // 범위를 벗어난 초점은 끝에 붙는다.
+        expect(pointAlongChain(centers, -3), centers.first);
+        expect(pointAlongChain(centers, 999), centers.last);
+      },
+    );
+  });
+
+  group('ScrubTracker', () {
+    test('100px down with stride 40 gives 2 steps and fraction 0.5', () {
+      final t = ScrubTracker(stride: 40);
+      expect(t.addDy(100), 2);
+      expect(t.fraction, closeTo(0.5, 1e-9));
+    });
+
+    test('accumulates small moves and fires once per stride', () {
+      final t = ScrubTracker(stride: 40);
+      var total = 0;
+      for (var i = 0; i < 10; i++) {
+        total += t.addDy(7);
+      }
+      expect(total, 1); // 70px
+      expect(t.fraction, closeTo(0.75, 1e-9));
+    });
+
+    test('reversing direction mid-drag steps back', () {
+      final t = ScrubTracker(stride: 40);
+      expect(t.addDy(50), 1);
+      expect(t.fraction, closeTo(0.25, 1e-9));
+      expect(t.addDy(-30), 0);
+      expect(t.fraction, closeTo(-0.5, 1e-9));
+      expect(t.addDy(-30), -1);
+      expect(t.fraction, closeTo(-0.25, 1e-9));
+      expect(t.fraction.abs(), lessThan(1));
+    });
+
+    test('ignores horizontal movement', () {
+      final t = ScrubTracker(stride: 40);
+      expect(t.add(const Offset(200, 0)), 0);
+      expect(t.fraction, 0);
+      expect(t.add(const Offset(-90, 45)), 1);
+    });
+  });
+
+  group('RosaryMap scrubbing', () {
+    testWidgets('drag down/up calls onStep; semantics adjust', (tester) async {
+      final calls = <int>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 240,
+              height: 240,
+              child: RosaryMap(
+                step: steps[8],
+                style: RosaryStyle.bead,
+                onStep: calls.add,
+              ),
+            ),
+          ),
+        ),
+      );
+      final g = await tester.startGesture(
+        tester.getCenter(find.byType(RosaryMap)),
+      );
+      for (var i = 0; i < 8; i++) {
+        await g.moveBy(const Offset(0, 15));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await g.up();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(calls, isNotEmpty);
+      expect(calls.every((d) => d == 1), isTrue);
+      calls.clear();
+      final g2 = await tester.startGesture(
+        tester.getCenter(find.byType(RosaryMap)),
+      );
+      for (var i = 0; i < 8; i++) {
+        await g2.moveBy(const Offset(0, -15));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await g2.up();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(calls, isNotEmpty);
+      expect(calls.every((d) => d == -1), isTrue);
+    });
+  });
 }
