@@ -70,7 +70,7 @@ void main() {
     final map = find.byType(RosaryMap);
     expect(map, findsOneWidget);
     final height = tester.getSize(map).height;
-    expect(height, closeTo(640 * 0.34, 0.01));
+    expect(height, closeTo(640 * 0.22, 0.01));
     expect(find.text('서두'), findsOneWidget);
 
     // 서두, 1단 시작(긴 묵상 문구), 성모송, 영광송까지 넘겨 본다.

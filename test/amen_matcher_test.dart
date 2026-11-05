@@ -271,6 +271,15 @@ void main() {
 
 void highSensitivityTests() {
   group('high sensitivity', () {
+    test('흔한 말(그러면/하면/이러면)은 아멘으로 세지 않고, 아면은 센다', () {
+      for (final t in ['그러면', '아그러면', '하면', '이러면', '나면']) {
+        final m = AmenMatcher();
+        expect(m.onPartial(t), isEmpty, reason: t);
+        expect(m.onEndpoint(t), isEmpty, reason: t);
+      }
+      expect(AmenMatcher().onPartial('아면'), ['아멘']);
+    });
+
     test('off: a segment ending in 아 is not counted', () {
       final m = AmenMatcher();
       expect(m.onPartial('그러면 아'), isEmpty);

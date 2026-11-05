@@ -433,12 +433,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   onChanged: (v) => settings.voiceEnabled = v,
                 ),
                 SwitchListTile(
-                  title: const Text('인식 내용 보기'),
-                  subtitle: const Text('기도 화면 아래에 인식된 글자와 마이크 상태를 보여줍니다'),
-                  value: settings.showTranscript,
-                  onChanged: (v) => settings.showTranscript = v,
-                ),
-                SwitchListTile(
                   title: const Text('인식 민감도 높임'),
                   subtitle: const Text(
                     '"아"로만 끝나도 아멘으로 셉니다. 잘못 넘어갈 수 있으니 필요할 때만 켜세요.',

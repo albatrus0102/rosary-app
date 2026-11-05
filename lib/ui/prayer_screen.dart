@@ -239,6 +239,46 @@ class _PrayerScreenState extends State<PrayerScreen> {
     if (leave == true && mounted) Navigator.of(context).pop();
   }
 
+  /// 음성 인식 상태·입력 음량·인식된 글자를 아래에서 올라오는 시트로 보여준다.
+  void _showVoiceSheet(BuildContext context) {
+    final d = _detector;
+    if (d == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '음성 인식',
+                style: Theme.of(sheetContext).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              MicStatusChip(
+                enabled: _settings.voiceEnabled,
+                state: d.state,
+                lastError: () => d is SherpaAmenDetector ? d.lastError : null,
+              ),
+              const SizedBox(height: 12),
+              SpeechDebugPanel(detector: d),
+              const SizedBox(height: 12),
+              Text(
+                '"아멘"이 넘어가지 않으면 \'다음\' 버튼이나 화면 탭으로 넘길 수 있습니다.',
+                style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String _appBarTitle(RosaryStep step) {
     final name = widget.mysterySet.koreanName;
     if (step.kind == StepKind.closing) return '$name · 마침';
@@ -265,6 +305,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     : _appBarTitle(_session.current),
               ),
               centerTitle: true,
+              actions: [
+                if (_detector != null && !finished)
+                  _MicAppBarButton(
+                    detector: _detector!,
+                    onPressed: () => _showVoiceSheet(context),
+                  ),
+              ],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(16),
                 child: Padding(
@@ -347,11 +394,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
-  /// 화면 높이의 약 34%(170..300). 가로로 눕힌 낮은 화면에서는 본문이 남도록 줄인다.
+  /// 화면 높이의 약 22%(120..190). 본문 칸을 넓게 쓰도록 작게 두고, 탭하면 크게 펼친다.
   double _mapHeight(BuildContext context) {
     final screen = MediaQuery.sizeOf(context).height;
-    final min = math.min(170.0, screen * 0.4);
-    return (screen * 0.34).clamp(min, 300.0);
+    final min = math.min(120.0, screen * 0.3);
+    return (screen * 0.22).clamp(min, 190.0);
   }
 
   Widget _buildPrayer(BuildContext context) {
@@ -366,7 +413,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
             behavior: HitTestBehavior.opaque,
             onTap: _session.next,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 20),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560),
@@ -420,7 +467,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -435,7 +482,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     flex: 3,
                     child: FilledButton(
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(60),
+                        minimumSize: const Size.fromHeight(54),
                         textStyle: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -446,25 +493,47 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   ),
                 ],
               ),
-              if (_detector != null) ...[
-                const SizedBox(height: 12),
-                MicStatusChip(
-                  enabled: _settings.voiceEnabled,
-                  state: _detector!.state,
-                  lastError: () {
-                    final d = _detector;
-                    return d is SherpaAmenDetector ? d.lastError : null;
-                  },
-                ),
-                if (_settings.showTranscript) ...[
-                  const SizedBox(height: 8),
-                  SpeechDebugPanel(detector: _detector!),
-                ],
-              ],
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 앱바의 작은 마이크 아이콘. 평소엔 상태만 색으로 알리고, 누르면 자세한 내용이 올라온다.
+class _MicAppBarButton extends StatelessWidget {
+  const _MicAppBarButton({required this.detector, required this.onPressed});
+
+  final AmenDetector detector;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ValueListenableBuilder<DetectorState>(
+      valueListenable: detector.state,
+      builder: (context, s, _) {
+        final Widget icon = switch (s) {
+          DetectorState.listening => Icon(Icons.mic, color: scheme.primary),
+          DetectorState.preparingModel => SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: scheme.secondary,
+            ),
+          ),
+          DetectorState.permissionDenied ||
+          DetectorState.error => Icon(Icons.mic_off, color: scheme.error),
+          _ => Icon(Icons.mic_off, color: scheme.onSurfaceVariant),
+        };
+        return IconButton(
+          tooltip: '음성 인식 상태',
+          icon: icon,
+          onPressed: onPressed,
+        );
+      },
     );
   }
 }
@@ -492,7 +561,7 @@ class _ControlBar extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
             child: child,
           ),
         ),

@@ -38,10 +38,17 @@ int ruleA(String text) {
       final link =
           (af == _fNone && bi == _iM) ||
           (af == _fM && (bi == _iO || bi == _iM));
-      // ㅕ: 기본 디코딩이 '아면'으로 적는 경우(실기기 녹음에서 관찰)
-      final s2 =
-          (bv == _vE || bv == _vAE || bv == _vYEO) && (bf == _fN || bf == _fNG);
-      if (s1 && link && s2) {
+      final s2 = (bv == _vE || bv == _vAE) && (bf == _fN || bf == _fNG);
+      // 기본 디코딩이 '아멘'을 '아면'으로 적는 경우(실기기 녹음에서 관찰).
+      // '그러면'·'하면' 같은 흔한 말과 섞이지 않도록 첫 음절이 정확히 '아'일 때만 인정한다.
+      final ahMyeon =
+          ai == _iO &&
+          av == _vA &&
+          af == _fNone &&
+          bi == _iM &&
+          bv == _vYEO &&
+          bf == _fN;
+      if ((s1 && link && s2) || ahMyeon) {
         n++;
         i += 2;
         continue;
