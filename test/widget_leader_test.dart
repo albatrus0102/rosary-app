@@ -10,7 +10,6 @@ import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
 import 'package:rosary_app/speech/amen_detector.dart';
-import 'package:rosary_app/ui/home_screen.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -143,65 +142,6 @@ void main() {
     expect(find.text('선창 재생 중'), findsNothing);
   });
 
-  testWidgets('home shows leader audio card only in responder mode', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({'leader_voice_source': 'recorded'});
-    final settings = await AppSettings.load();
-    final store = FakeLeaderAudioStore({'sign_of_cross', 'hail_mary'});
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: HomeScreen(settings: settings, leaderAudio: store),
-      ),
-    );
-    await tester.pump();
-    expect(find.text('선창 녹음 관리'), findsNothing);
-
-    final responder = find.text('후창(뒷단)');
-    await tester.ensureVisible(responder);
-    await tester.pump();
-    await tester.tap(responder);
-    await tester.pump();
-
-    expect(find.text('선창 음성'), findsOneWidget);
-    expect(find.text('26개 중 2개 녹음됨'), findsOneWidget);
-    expect(find.text('선창 녹음 관리'), findsOneWidget);
-
-    await tester.ensureVisible(find.text('선창 음성'));
-    await tester.pump();
-    await tester.tap(find.byType(Switch).first);
-    await tester.pump();
-    expect(settings.leaderAudioEnabled, isFalse);
-  });
-
-  testWidgets('선창 녹음 관리 opens the record screen', (tester) async {
-    SharedPreferences.setMockInitialValues({
-      'prayer_mode': 'responder',
-      'leader_voice_source': 'recorded',
-    });
-    final settings = await AppSettings.load();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: HomeScreen(
-          settings: settings,
-          leaderAudio: FakeLeaderAudioStore({'fatima'}),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    final button = find.text('선창 녹음 관리');
-    await tester.ensureVisible(button);
-    await tester.pump();
-    await tester.tap(button);
-    await tester.pumpAndSettle();
-
-    expect(find.text('26개 중 1개 녹음됨'), findsOneWidget);
-    expect(find.text('성호경'), findsWidgets);
-  });
-
   testWidgets('responder: speaks each step and mutes phrases while speaking', (
     tester,
   ) async {
@@ -271,50 +211,5 @@ void main() {
     await tester.tap(find.text('다음'));
     await tester.pump();
     expect(voice.spoken, isEmpty);
-  });
-
-  testWidgets('home: source segments and tts slider in responder mode', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({'prayer_mode': 'responder'});
-    final settings = await AppSettings.load();
-    expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
-    expect(settings.ttsRate, 0.45);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: HomeScreen(
-          settings: settings,
-          leaderAudio: FakeLeaderAudioStore(),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    await tester.ensureVisible(find.text('AI 음성'));
-    await tester.pump();
-    expect(find.text('AI 음성'), findsOneWidget);
-    expect(find.text('직접 녹음'), findsOneWidget);
-    expect(find.text('말하기 속도'), findsOneWidget);
-    expect(
-      find.byWidgetPredicate((w) => w is Slider && w.max == 0.7),
-      findsOneWidget,
-    );
-    expect(find.text('미리 듣기'), findsOneWidget);
-    expect(find.text('선창 녹음 관리'), findsNothing);
-    // 플러그인이 없는 테스트 환경에서는 경고를 띄우지 않는다.
-    expect(find.textContaining('한국어 음성이 설치되어'), findsNothing);
-
-    await tester.tap(find.text('미리 듣기'));
-    await tester.pump();
-
-    await tester.tap(find.text('직접 녹음'));
-    await tester.pump();
-    expect(settings.leaderVoiceSource, LeaderVoiceSource.recorded);
-    expect(
-      find.byWidgetPredicate((w) => w is Slider && w.max == 0.7),
-      findsNothing,
-    );
-    expect(find.text('선창 녹음 관리'), findsOneWidget);
   });
 }

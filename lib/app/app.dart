@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import '../ui/home_screen.dart';
+import '../ui/app_shell.dart';
 import 'settings.dart';
 import 'theme.dart';
 
@@ -25,7 +25,7 @@ class RosaryApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: HomeScreen(settings: settings),
+      home: AppShell(settings: settings),
     );
   }
 }
