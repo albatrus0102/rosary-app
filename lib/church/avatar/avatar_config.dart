@@ -72,10 +72,10 @@ class AvatarConfig {
 
   // assets/church/palette.js(window.ChurchPalette)와 같은 HEX 값.
   static const List<Color> skinColors = [
-    Color(0xFFF2D4BD),
-    Color(0xFFE0B393),
-    Color(0xFFB98259),
-    Color(0xFF70472F),
+    Color(0xFFF7D9C4),
+    Color(0xFFEDBE9A),
+    Color(0xFFC98E64),
+    Color(0xFF8A5738),
   ];
 
   static const List<String> skinNames = ['밝은 피부', '보통 피부', '구릿빛 피부', '짙은 피부'];
@@ -113,31 +113,47 @@ class AvatarConfig {
   ];
 
   static const List<Color> hairColors = [
-    Color(0xFF1C1917),
-    Color(0xFF3B2A20),
-    Color(0xFF5A3B28),
-    Color(0xFF7B4A2D),
-    Color(0xFF8F4A2A),
-    Color(0xFFA88B5A),
-    Color(0xFFD2B27A),
-    Color(0xFF8F8E8C),
-    Color(0xFFD9D9D6),
-    Color(0xFF6E2A1E),
+    Color(0xFF2B2320),
+    Color(0xFF4A2C1E),
+    Color(0xFF6B3A22),
+    Color(0xFF8C4B26),
+    Color(0xFFB5532A),
+    Color(0xFFC99A4B),
+    Color(0xFFEBC76A),
+    Color(0xFF9A9A9E),
+    Color(0xFFE3E1DA),
+    Color(0xFF8A2E28),
   ];
 
   static const List<Color> outfitColors = [
-    Color(0xFF26334F),
-    Color(0xFF3A3D42),
-    Color(0xFF1F1F22),
-    Color(0xFFB58A5B),
-    Color(0xFF6B6B3F),
-    Color(0xFF6A2433),
-    Color(0xFF2F5240),
-    Color(0xFFE4DAC3),
-    Color(0xFF8C7B6E),
-    Color(0xFF6F8CA6),
-    Color(0xFF5E3B5C),
-    Color(0xFFB35E45),
+    Color(0xFF2F4A8A),
+    Color(0xFF4A4E57),
+    Color(0xFF2A2A30),
+    Color(0xFFD09A55),
+    Color(0xFF8A9A3F),
+    Color(0xFF9A2F45),
+    Color(0xFF2F7A5A),
+    Color(0xFFF1E6CB),
+    Color(0xFFA58E7E),
+    Color(0xFF6FA0C8),
+    Color(0xFF8A4F8C),
+    Color(0xFFD9694B),
+  ];
+
+  /// 바지색(옷색과 같은 인덱스). palette.js의 `pants`와 같다.
+  static const List<Color> pantsColors = [
+    Color(0xFFBCA982),
+    Color(0xFF5C7FA8),
+    Color(0xFF7A7F8C),
+    Color(0xFF3E4F7A),
+    Color(0xFFE2D8C0),
+    Color(0xFF4A5470),
+    Color(0xFFBCA982),
+    Color(0xFF6B86AE),
+    Color(0xFF3E4F7A),
+    Color(0xFFE2D8C0),
+    Color(0xFF8A8E98),
+    Color(0xFF3E4F7A),
   ];
 
   final int skin;
@@ -146,6 +162,7 @@ class AvatarConfig {
   final int outfit;
   final int name;
 
+  Color get pantsColor => pantsColors[outfit.clamp(0, pantsColors.length - 1)];
   Color get skinColor => skinColors[skin.clamp(0, skinColors.length - 1)];
   Color get hairColor => hairColors[hair.clamp(0, hairColors.length - 1)];
   Color get outfitColor =>

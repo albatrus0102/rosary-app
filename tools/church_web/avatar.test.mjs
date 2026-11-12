@@ -1,4 +1,4 @@
-// 사용: node --test tools/church_web/avatar.test.mjs — 아바타 지오메트리 예산(삼각형 수)과 색상표 모양을 확인한다(DOM·WebGL 불필요).
+// 사용: node --test tools/church_web/avatar.test.mjs — 아바타(클레이 스타일) 지오메트리 예산(삼각형 수)과 색상표 모양을 확인한다(DOM·WebGL 불필요).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -17,7 +17,8 @@ test('palette sizes and HEX format', () => {
   assert.equal(P.styles.length, 4);
   assert.equal(P.hair.length, 10);
   assert.equal(P.outfit.length, 12);
-  for (const c of [...P.skin, ...P.hair, ...P.outfit]) assert.match(c, /^#[0-9A-F]{6}$/);
+  assert.equal(P.pants.length, 12);
+  for (const c of [...P.skin, ...P.hair, ...P.outfit, ...P.pants]) assert.match(c, /^#[0-9A-F]{6}$/);
 });
 
 test('avatar triangle budgets per LOD', () => {

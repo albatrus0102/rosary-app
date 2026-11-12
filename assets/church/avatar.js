@@ -13,7 +13,7 @@
   // ------------------------------------------------------------------ 상수
   var HEIGHT = 1.7;
   var SEAT_BACK = 0.14;          // 앉을 때 골반을 좌석 중심에서 뒤로 이동(m). 앞줄 등받이와 무릎이 부딪히지 않도록.
-  var SX = 0.18, HX = 0.095;     // 어깨/고관절 좌우 위치
+  var SX = 0.17, HX = 0.095;     // 어깨/고관절 좌우 위치
   var LEN_T = 0.39, LEN_S = 0.41, ANKLE = 0.08;   // 허벅지, 종아리, 발목 높이
   var ARM_A = 0.29, ARM_B = 0.26, SH_Y = 0.20;    // 위팔, 아래팔 길이, 어깨의 가슴 뼈대 기준 높이
   var HIP_JOINT = 0.88, HIPS_Y = 0.93;
@@ -203,8 +203,8 @@
     });
   }
 
-  // ------------------------------------------------------------------ 머리 형상 (클레이: 큼직하고 둥근 머리)
-  var HH = 0.160, WW = 0.136, DD = 0.130;       // 머리 반높이/반폭/반깊이
+  // ------------------------------------------------------------------ 머리 형상 (클레이: 매끈하고 둥근 머리, 현실적인 성인 비율)
+  var HH = 0.110, WW = 0.078, DD = 0.096;       // 머리 반높이/반폭/반깊이
   function headWD(y) {
     var t = clamp(y / HH, -1, 1), p = t < 0 ? 2.3 : 2.0, s = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(t), p)), 1 / p);
     var m = 1 + 0.025 * t - 0.12 * Math.pow(Math.max(0, -t - 0.15), 1.2);
@@ -222,80 +222,80 @@
     var d = headWD(y), t = clamp(Math.abs(x) / Math.max(d[0], 1e-5), 0, 0.999);
     return -d[1] * Math.pow(1 - Math.pow(t, HN), 1 / HN);
   }
-  // 머리 표면 위 점 + 표면 방향 오일러(y,x)
+  // 머리 표면 위 점 + 표면 방향(y축 회전)
   function onHead(x, y, off) {
     var z = headFrontZ(x, y), gx = x / (WW * WW), gy = y / (HH * HH), gz = z / (DD * DD), l = Math.sqrt(gx * gx + gy * gy + gz * gz) || 1;
-    return { p: [x + gx / l * off, y + gy / l * off, z + gz / l * off], ry: -Math.atan2(gx, -gz), rx: Math.atan2(gy, -gz) * 0.9 };
+    return { p: [x + gx / l * off, y + gy / l * off, z + gz / l * off], ry: -Math.atan2(gx, -gz) };
   }
   var HEADW = [[B.head, 1]];
   function hc(p) { return [p[0], p[1] + HC, p[2]]; }
 
-  var EYE_X = 0.060, EYE_Y = 0.002, BROW_Y = 0.056, NOSE_Y = -0.040, SMILE_Y = -0.088, CHEEK_X = 0.092, CHEEK_Y = -0.044;
+  var EYE_X = 0.032, EYE_Y = 0.002, BROW_Y = 0.039, NOSE_Y = -0.028, SMILE_Y = -0.060, CHEEK_X = 0.052, CHEEK_Y = -0.030;
 
   function buildHead(mb, q) {
-    var near = q === 0, nv = near ? 18 : 8, nu = near ? 24 : 12, ys = [], k;
-    for (k = 0; k <= nv; k++) { var tt = k / nv; ys.push(HH * Math.cos(PI * tt) * 0.9999); }
+    var near = q === 0, nv = near ? 22 : 8, nu = near ? 30 : 12, ys = [], k;
+    for (k = 0; k <= nv; k++) ys.push(HH * Math.cos(PI * k / nv) * 0.9999);
     surf(mb, {
       nu: nu, nv: nv, closed: true, inside: [0, HC, 0],
       pt: function (i, j) { var p = headPt(ys[j], dense(i / nu, 0.2), 0); return [p[0], p[1] + HC, p[2]]; },
       w: HEADW, reg: R.SKIN,
-      ao: function (i, j, p) { var y = p[1] - HC; return y < -0.12 ? 0.94 + 0.06 * sm((y + 0.16) / 0.04) : 1; }
+      ao: function (i, j, p) { var y = p[1] - HC; return y < -0.08 ? 0.94 + 0.06 * sm((y + 0.11) / 0.03) : 1; }
     });
   }
 
   function buildFace(mb, q) {
-    var near = q === 0, e, k, i, j;
+    var near = q === 0, e, k;
     // 눈: 납작한 짙은 타원 점
     for (e = -1; e <= 1; e += 2) {
-      var oh = onHead(e * EYE_X, EYE_Y, -0.0016);
-      blob(mb, hc(oh.p), [0.0125, 0.0155, 0.0075], [oh.rx * 0.0, oh.ry, 0], { nu: near ? 8 : 6, nv: near ? 4 : 3, w: HEADW, reg: R.EYE, ao: 1 });
+      var oh = onHead(e * EYE_X, EYE_Y, -0.0012);
+      blob(mb, hc(oh.p), [0.0085, 0.0108, 0.0052], [0, oh.ry, 0], { nu: near ? 8 : 6, nv: near ? 4 : 3, w: HEADW, reg: R.EYE, ao: 1 });
     }
     // 눈썹: 알약 모양
     for (e = -1; e <= 1; e += 2) {
-      if (!near) { var ob = onHead(0.063, BROW_Y + 0.002, 0.0), br = hc(ob.p); blob(mb, [e * br[0], br[1], br[2]], [0.030, 0.0068, 0.005], [0, -e * ob.ry, e * -0.08], { nu: 6, nv: 3, w: HEADW, reg: R.BROW, ao: 1 }); continue; }
+      if (!near) { var ob = onHead(0.037, BROW_Y + 0.001, 0.0), br = hc(ob.p); blob(mb, [e * br[0], br[1], br[2]], [0.021, 0.0050, 0.004], [0, -e * ob.ry, 0], { nu: 6, nv: 3, w: HEADW, reg: R.BROW, ao: 1 }); continue; }
       var pts = [], rad = [];
       for (k = 0; k < 4; k++) {
-        var tq = k / 3, bx = 0.034 + 0.058 * tq, by = BROW_Y + 0.007 * Math.sin(tq * PI) - 0.004 * tq;
-        var o2 = onHead(bx, by, 0.0006); pts.push([e * o2.p[0], o2.p[1] + HC, o2.p[2]]); rad.push(0.0068 * (k === 0 ? 0.92 : 1 - 0.12 * tq));
+        var tq = k / 3, bx = 0.020 + 0.036 * tq, by = BROW_Y + 0.005 * Math.sin(tq * PI) - 0.003 * tq;
+        var o2 = onHead(bx, by, 0.0004); pts.push([e * o2.p[0], o2.p[1] + HC, o2.p[2]]); rad.push(0.0050 * (k === 0 ? 0.92 : 1 - 0.12 * tq));
       }
-      tube(mb, pts, rad, { caps: 'both', nu: 6, flat: 0.55, w: HEADW, reg: R.BROW, ao: 1 });
+      tube(mb, pts, rad, { caps: 'both', nu: 6, flat: 0.6, w: HEADW, reg: R.BROW, ao: 1 });
     }
-    // 코: 둥근 혹
+    // 코: 작고 둥근 혹
     var nz = headFrontZ(0, NOSE_Y);
-    blob(mb, [0, NOSE_Y + HC, nz - 0.0045], [0.0185, 0.0165, 0.0215], [0.25, 0, 0], { nu: near ? 8 : 6, nv: near ? 5 : 4, w: HEADW, reg: R.SKIN, tn: function (ii, jj) { return 0.3; }, ao: 1 });
+    blob(mb, [0, NOSE_Y + HC, nz - 0.0030], [0.0115, 0.0105, 0.0135], [0.25, 0, 0], { nu: near ? 8 : 6, nv: near ? 5 : 4, w: HEADW, reg: R.SKIN, tn: function () { return 0.3; }, ao: 1 });
     if (!near) return;
     // 입: 가는 미소 선
     var mp = [], mr = [];
     for (k = 0; k < 6; k++) {
-      var u = k / 5 * 2 - 1, mx = 0.046 * u, my = SMILE_Y + 0.016 * u * u, o3 = onHead(mx, my, -0.0004);
-      mp.push([o3.p[0], o3.p[1] + HC, o3.p[2]]); mr.push(0.0019 * (1 - 0.3 * Math.abs(u)));
+      var u = k / 5 * 2 - 1, mx = 0.027 * u, my = SMILE_Y + 0.010 * u * u, o3 = onHead(mx, my, -0.0003);
+      mp.push([o3.p[0], o3.p[1] + HC, o3.p[2]]); mr.push(0.0014 * (1 - 0.3 * Math.abs(u)));
     }
     tube(mb, mp, mr, { caps: 'both', nu: 4, w: HEADW, reg: R.LIP, ao: 1 });
     // 볼터치(피부색에서 분홍으로 번지는 얇은 원판)
     for (e = -1; e <= 1; e += 2) {
-      var NR = 3, NS = 8, RAD = 0.038;
+      var NR = 3, NS = 8, RAD = 0.024;
       surf(mb, {
         nu: NS, nv: NR, closed: true, inside: [e * CHEEK_X, CHEEK_Y + HC, 0],
         pt: function (ii, jj) {
           var r = jj / NR, ph = TAU * ii / NS, x = e * CHEEK_X + Math.cos(ph) * RAD * r * 0.9, y = CHEEK_Y + Math.sin(ph) * RAD * r;
-          var d = headWD(y), xx = clamp(x, -d[0] * 0.96, d[0] * 0.96), o4 = onHead(xx, y, 0.0009);
+          var d = headWD(y), xx = clamp(x, -d[0] * 0.96, d[0] * 0.96), o4 = onHead(xx, y, 0.0006);
           return [o4.p[0], o4.p[1] + HC, o4.p[2]];
         },
         w: HEADW, reg: R.SKIN, ao: 1, tn: function (ii, jj) { var r = jj / NR; return 1 - r * r; }
       });
     }
     // 귀: 단순한 둥근 귀
-    for (e = -1; e <= 1; e += 2) blob(mb, [e * (WW + 0.001), -0.012 + HC, 0.006], [0.0125, 0.031, 0.025], [0.0, 0, e * 0.22], { nu: 8, nv: 4, w: HEADW, reg: R.SKIN, tn: function () { return 0.55; }, ao: 0.97 });
+    for (e = -1; e <= 1; e += 2) blob(mb, [e * (WW + 0.001), -0.008 + HC, 0.006], [0.0075, 0.0195, 0.0155], [0.0, 0, e * 0.22], { nu: 8, nv: 4, w: HEADW, reg: R.SKIN, tn: function () { return 0.55; }, ao: 0.97 });
   }
 
-  // 목 (짧고 굵게)
+  // 목 (가늘고 자연스럽게)
   function neckW(y) {
-    var t1 = sm((y - 1.385) / 0.05), t2 = sm((y - 1.435) / 0.05);
+    var t1 = sm((y - 1.40) / 0.05), t2 = sm((y - 1.455) / 0.05);
     return [[B.chest, 1 - t1], [B.neck, t1 * (1 - t2)], [B.head, t1 * t2]];
   }
   function buildNeck(mb, q) {
-    var ys = q === 0 ? [1.38, 1.42, 1.46, 1.50] : [1.38, 1.44, 1.50], rings = [];
-    ys.forEach(function (y) { rings.push({ c: [0, y, 0.006], ru: 0.060, rv: 0.058, w: neckW(y) }); });
+    var ys = q === 0 ? [1.37, 1.41, 1.45, 1.49, 1.52] : [1.37, 1.44, 1.52], rings = [];
+    ys.forEach(function (y) { rings.push({ c: [0, y, 0.008], ru: 0.047, rv: 0.050, w: neckW(y) }); });
     loft(mb, rings, { nu: q === 0 ? 12 : 6, dense: false, reg: R.SKIN, ao: function (i, j, p) { return 0.80 + 0.2 * sm((p[1] - 1.40) / 0.08); } });
   }
 
@@ -306,83 +306,78 @@
   function hairPatch(mb, o) {
     var nu = o.nu, nv = o.nv, ye = rimFn(o.rim), pw = o.pw || 1;
     surf(mb, {
-      nu: nu, nv: nv, closed: true, inside: [0, HC + 0.02, 0.01],
+      nu: nu, nv: nv, closed: true, inside: [0, HC + 0.01, 0.006],
       pt: function (i, j) {
         var a = dense(i / nu, 0.18), s = j / nv, f = fold(a), yEnd = ye(f), y = HH + (yEnd - HH) * Math.pow(s, pw), off = o.thick(y, a, s, f), p = o.shape ? o.shape(y, a, off, s, f) : headPt(Math.min(y, HH * 0.9999), a, off);
         return [p[0], p[1] + HC, p[2]];
       },
       w: o.w || HEADW, reg: R.HAIR,
-      ao: function (i, j, p) { var y = p[1] - HC, s = j / nv; return 0.86 + 0.16 * sm((y + 0.08) / 0.2) - 0.05 * sm((s - 0.8) / 0.2); }
+      ao: function (i, j, p) { var y = p[1] - HC, s = j / nv; return 0.88 + 0.14 * sm((y + 0.05) / 0.14) - 0.05 * sm((s - 0.8) / 0.2); }
     });
   }
   // 끝 가장자리를 둥글게 말아주는 두께 감쇠
   function roundEnd(s, s0) { if (s <= s0) return 1; var u = (s - s0) / (1 - s0); return Math.sqrt(Math.max(0, 1 - u * u)) * 0.92 + 0.08 * (1 - u); }
-  function spiral(mb, cx, cy, cz, R0, turns, rot, near) {   // 앞으로 말린 곱슬 한 줄기
+  function spiral(mb, cx, cy, cz, R0, turns, rot, tr, near) {   // 앞으로 말린 곱슬 한 줄기
     var pts = [], rad = [], n = near ? 14 : 9, k, cr = Math.cos(rot), sr = Math.sin(rot);
     for (k = 0; k < n; k++) {
-      var t = k / (n - 1), ang = t * TAU * turns, r = R0 * (1 - 0.78 * t), lx = Math.cos(ang) * r, lz = Math.sin(ang) * r, ly = 0.006 * t;
+      var t = k / (n - 1), ang = t * TAU * turns, r = R0 * (1 - 0.78 * t), lx = Math.cos(ang) * r, lz = Math.sin(ang) * r, ly = R0 * 0.18 * t;
       pts.push([cx + lx, cy + ly * cr - lz * sr, cz + ly * sr + lz * cr]);
-      rad.push(0.0125 * (1 - 0.55 * t));
+      rad.push(tr * (1 - 0.55 * t));
     }
     tube(mb, pts, rad, { caps: 'end', nu: near ? 6 : 5, w: HEADW, reg: R.HAIR, ao: 0.97 });
   }
+  function hairBlob(mb, c, r, rot, near, reg) {
+    blob(mb, [c[0], c[1] + HC, c[2]], r, rot, { nu: near ? 10 : 6, nv: near ? 6 : 3, w: HEADW, reg: reg === undefined ? R.HAIR : reg, ao: 1 });
+  }
   function buildHair(mb, style, q) {
-    var near = q === 0, nu = near ? 24 : 10;
+    var near = q === 0, nu = near ? 26 : 10;
     if (style === 0) {            // 짧은 머리 + 앞머리 컬/퀴프
       hairPatch(mb, {
         nu: nu, nv: near ? 8 : 4, pw: 0.95,
-        rim: [[0, 0.104], [0.45, 0.100], [0.8, 0.06], [1.1, 0.032], [1.7, 0.028], [2.15, 0.0], [2.6, -0.07], [PI, -0.085]],
-        thick: function (y, a, s, f) {
-          var t = 0.013 + 0.012 * sm((y - 0.05) / 0.1) + 0.006 * Math.exp(-Math.pow((f - 2.4) / 0.6, 2)); return t * roundEnd(s, 0.45);
-        }
+        rim: [[0, 0.072], [0.45, 0.069], [0.8, 0.042], [1.1, 0.022], [1.7, 0.019], [2.15, 0.0], [2.6, -0.056], [PI, -0.075]],
+        thick: function (y, a, s, f) { return (0.009 + 0.008 * sm((y - 0.035) / 0.07) + 0.004 * Math.exp(-Math.pow((f - 2.4) / 0.6, 2))) * roundEnd(s, 0.45); }
       });
-      blob(mb, [0.012, 0.152 + HC, -0.062], [0.088, 0.040, 0.074], [-0.55, 0.0, 0.12], { nu: near ? 10 : 6, nv: near ? 6 : 3, w: HEADW, reg: R.HAIR, ao: 1 });
-      if (near) spiral(mb, -0.024, 0.186 + HC, -0.098, 0.034, 1.55, -0.5, true);
+      hairBlob(mb, [0.006, 0.100, -0.040], [0.054, 0.027, 0.047], [-0.55, 0.0, 0.12], near);
+      if (near) spiral(mb, -0.016, 0.128 + HC, -0.062, 0.022, 1.55, -0.5, 0.0085, true);
     } else if (style === 1) {     // 단발 (귀 뒤로 넘기고 끝이 둥글게 부푼 보브)
       hairPatch(mb, {
-        nu: near ? 26 : 10, nv: near ? 10 : 5, pw: 1,
-        rim: [[0, 0.104], [0.5, 0.100], [0.85, 0.072], [1.15, 0.040], [1.55, 0.034], [1.9, -0.04], [2.3, -0.145], [2.8, -0.150], [PI, -0.150]],
-        thick: function (y, a, s, f) {
-          var flare = 0.038 * sm((0.0 - y) / 0.12) * sm((f - 1.5) / 0.4), t = 0.014 + 0.010 * sm((y - 0.05) / 0.1) + flare;
-          return t * roundEnd(s, 0.55);
-        }
+        nu: near ? 28 : 10, nv: near ? 10 : 5, pw: 1,
+        rim: [[0, 0.072], [0.5, 0.069], [0.85, 0.050], [1.15, 0.028], [1.55, 0.024], [1.9, -0.028], [2.3, -0.100], [2.8, -0.104], [PI, -0.104]],
+        thick: function (y, a, s, f) { return (0.010 + 0.007 * sm((y - 0.035) / 0.07) + 0.026 * sm((0.0 - y) / 0.085) * sm((f - 1.5) / 0.4)) * roundEnd(s, 0.55); }
       });
-      blob(mb, [0.0, 0.150 + HC, -0.050], [0.082, 0.034, 0.066], [-0.5, 0.0, 0.0], { nu: near ? 10 : 6, nv: near ? 6 : 3, w: HEADW, reg: R.HAIR, ao: 1 });
+      hairBlob(mb, [0.0, 0.100, -0.034], [0.052, 0.022, 0.044], [-0.5, 0.0, 0.0], near);
     } else if (style === 2) {     // 높이 올린 올림머리(쪽)
       hairPatch(mb, {
         nu: nu, nv: near ? 8 : 4, pw: 0.95,
-        rim: [[0, 0.104], [0.5, 0.100], [0.85, 0.060], [1.15, 0.034], [1.6, 0.034], [2.1, 0.026], [2.7, 0.012], [PI, 0.004]],
-        thick: function (y, a, s, f) { return (0.013 + 0.010 * sm((y - 0.05) / 0.1)) * roundEnd(s, 0.5); }
+        rim: [[0, 0.072], [0.5, 0.069], [0.85, 0.042], [1.15, 0.024], [1.6, 0.024], [2.1, 0.012], [2.7, -0.02], [PI, -0.03]],
+        thick: function (y, a, s, f) { return (0.009 + 0.007 * sm((y - 0.035) / 0.07)) * roundEnd(s, 0.5); }
       });
-      blob(mb, [0, 0.222 + HC, 0.040], [0.072, 0.066, 0.070], [0.25, 0, 0], { nu: near ? 10 : 7, nv: near ? 7 : 4, w: HEADW, reg: R.HAIR, ao: 1 });
-      blob(mb, [0, 0.168 + HC, 0.022], [0.056, 0.014, 0.054], [0.25, 0, 0], { nu: near ? 10 : 6, nv: near ? 4 : 3, w: HEADW, reg: R.TIE, ao: 1 });
-      blob(mb, [0.0, 0.150 + HC, -0.050], [0.074, 0.030, 0.060], [-0.5, 0.0, 0.0], { nu: near ? 10 : 6, nv: near ? 6 : 3, w: HEADW, reg: R.HAIR, ao: 1 });
+      hairBlob(mb, [0, 0.153, 0.028], [0.050, 0.046, 0.049], [0.25, 0, 0], near);
+      hairBlob(mb, [0, 0.116, 0.016], [0.039, 0.010, 0.038], [0.25, 0, 0], near, R.TIE);
+      hairBlob(mb, [0.0, 0.100, -0.034], [0.050, 0.021, 0.041], [-0.5, 0.0, 0.0], near);
     } else {                      // 길고 물결치는 곱슬
       var ph0 = 0.7;
       hairPatch(mb, {
-        nu: near ? 28 : 12, nv: near ? 14 : 7, pw: 1,
-        rim: [[0, 0.104], [0.5, 0.100], [0.85, 0.072], [1.15, 0.040], [1.6, 0.030], [1.95, -0.10], [2.3, -0.255], [2.8, -0.270], [PI, -0.270]],
-        thick: function (y, a, s, f) {
-          var lo = sm((0.0 - y) / 0.15), t = 0.014 + 0.010 * sm((y - 0.05) / 0.1) + 0.030 * lo * sm((f - 1.35) / 0.5);
-          return t * roundEnd(s, 0.7);
-        },
+        nu: near ? 30 : 12, nv: near ? 14 : 7, pw: 1,
+        rim: [[0, 0.072], [0.5, 0.069], [0.85, 0.050], [1.15, 0.028], [1.6, 0.021], [1.95, -0.055], [2.3, -0.150], [2.8, -0.160], [PI, -0.160]],
+        thick: function (y, a, s, f) { return (0.010 + 0.007 * sm((y - 0.035) / 0.07) + 0.020 * sm((0.0 - y) / 0.10) * sm((f - 1.35) / 0.5)) * roundEnd(s, 0.7); },
         shape: function (y, a, off, s, f) {
-          var yy = Math.max(y, -0.085), p = headPt(Math.min(yy, HH * 0.9999), a, off), lo = sm((-0.085 - y) / 0.18), k = f > 1.3 ? 1 : 0;
-          var wv = near ? 0.007 * Math.sin(y * 62 + a * 3 + ph0) * sm((0.04 - y) / 0.1) : 0;
-          p[0] *= 1 + 0.10 * lo * k + wv * 3; p[2] += (y < -0.085 ? 0.01 * lo : 0) + wv; p[1] = y;
+          var yy = Math.max(y, -0.06), p = headPt(Math.min(yy, HH * 0.9999), a, off), lo = sm((-0.06 - y) / 0.13), k = f > 1.3 ? 1 : 0;
+          var wv = near ? 0.0045 * Math.sin(y * 85 + a * 3 + ph0) * sm((0.03 - y) / 0.07) : 0;
+          p[0] *= 1 + 0.07 * lo * k + wv * 4; p[2] += (y < -0.06 ? 0.008 * lo : 0) + wv; p[1] = y;
           return p;
         },
-        w: function (i, j, p) { var y = p[1] - HC, t = sm((-0.09 - y) / 0.14); return [[B.head, 1 - t], [B.chest, t]]; }
+        w: function (i, j, p) { var y = p[1] - HC, t = sm((-0.065 - y) / 0.10); return [[B.head, 1 - t], [B.chest, t]]; }
       });
-      blob(mb, [0.0, 0.150 + HC, -0.050], [0.082, 0.034, 0.066], [-0.5, 0.0, 0.0], { nu: near ? 10 : 6, nv: near ? 6 : 3, w: HEADW, reg: R.HAIR, ao: 1 });
+      hairBlob(mb, [0.0, 0.100, -0.034], [0.052, 0.022, 0.044], [-0.5, 0.0, 0.0], near);
     }
   }
 
-  // ------------------------------------------------------------------ 몸통(후디/재킷)
+  // ------------------------------------------------------------------ 몸통(짧은 후디/재킷: 엉덩이 높이까지)
   var TORSO = profile([
-    [1.444, 0.064, 0.068, 0.012], [1.432, 0.084, 0.078, 0.011], [1.416, 0.130, 0.092, 0.008], [1.395, 0.178, 0.106, 0.004], [1.372, 0.190, 0.112, 0.002],
-    [1.300, 0.176, 0.120, -0.004], [1.200, 0.168, 0.126, -0.008], [1.080, 0.160, 0.120, -0.004], [0.980, 0.174, 0.124, 0.0],
-    [0.880, 0.192, 0.132, 0.002], [0.800, 0.198, 0.138, 0.003], [0.700, 0.205, 0.146, 0.005]
+    [1.444, 0.056, 0.060, 0.012], [1.432, 0.074, 0.071, 0.011], [1.416, 0.116, 0.086, 0.008], [1.395, 0.156, 0.098, 0.004], [1.372, 0.168, 0.104, 0.002],
+    [1.300, 0.160, 0.110, -0.002], [1.200, 0.152, 0.108, -0.005], [1.100, 0.150, 0.104, -0.004], [1.000, 0.158, 0.108, 0.0],
+    [0.920, 0.168, 0.114, 0.002], [0.850, 0.174, 0.118, 0.003], [0.790, 0.176, 0.120, 0.003]
   ]);
   var TORSO_N = 2.3;
   function torsoPt(y, a, off) {
@@ -391,55 +386,55 @@
   }
   function torsoW(p, y) {
     var cw = sm((y - 1.10) / 0.16), sw = sm((y - 0.98) / 0.13) * (1 - cw), hw = 1 - sm((y - 0.98) / 0.13);
-    var tw = sm((0.93 - y) / 0.12) * (1 - sm(p[2] / 0.12));
+    var tw = sm((0.93 - y) / 0.12) * (1 - 0.45 * sm(p[2] / 0.12));
     var sR = sm((p[0] + 0.07) / 0.14);
     var nk = sm((y - 1.43) / 0.03) * 0.25;
     var sk = sm((0.93 - y) / 0.15), rest = hw * (1 - tw);
     return [[B.chest, cw * (1 - nk)], [B.neck, cw * nk], [B.spine, sw], [B.hips, rest * (1 - sk)], [B.skirt, rest * sk], [B.ckR, hw * tw * sR], [B.ckL, hw * tw * (1 - sR)]];
   }
-  var COAT_YS = [1.446, 1.430, 1.410, 1.380, 1.320, 1.230, 1.130, 1.030, 0.940, 0.860, 0.790];
-  var COAT_YS_MID = [1.446, 1.400, 1.280, 1.100, 0.930, 0.790];
+  var HEM_Y = 0.79;   // 후디 아랫단(엉덩이 높이)
+  var COAT_YS = [1.446, 1.430, 1.410, 1.380, 1.320, 1.240, 1.150, 1.060, 0.970, 0.890, 0.830];
+  var COAT_YS_MID = [1.446, 1.400, 1.280, 1.120, 0.960, 0.830];
   function buildCoat(mb, q) {
     var ys = q === 0 ? COAT_YS : COAT_YS_MID, nu = q === 0 ? 18 : 10, rings = [];
     ys.forEach(function (y) { var d = TORSO(y); rings.push({ c: [0, y, d[2]], ru: d[0], rv: d[1], n: TORSO_N }); });
     loft(mb, rings, {
       nu: nu, inside: [0, 1.1, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COAT,
-      ao: function (i, j, p) { return 1.0 - 0.10 * sm((1.0 - p[1]) / 0.4); }
+      ao: function (i, j, p) { return 1.0 - 0.08 * sm((1.0 - p[1]) / 0.3); }
     });
     // 아랫단 밴드(둥글게 말린 리브)
-    var hy = q === 0 ? [0.752, 0.764, 0.791, 0.818, 0.830] : [0.752, 0.778, 0.830], ho = q === 0 ? [0.002, 0.014, 0.017, 0.014, 0.003] : [0.004, 0.016, 0.004], hr = [];
+    var hy = q === 0 ? [HEM_Y, HEM_Y + 0.012, HEM_Y + 0.038, HEM_Y + 0.064, HEM_Y + 0.076] : [HEM_Y, HEM_Y + 0.038, HEM_Y + 0.076], ho = q === 0 ? [0.002, 0.013, 0.016, 0.013, 0.002] : [0.004, 0.015, 0.004], hr = [];
     hy.forEach(function (y, k) { var d = TORSO(y); hr.push({ c: [0, y, d[2]], ru: d[0] + ho[k], rv: d[1] + ho[k], n: TORSO_N }); });
-    loft(mb, hr, { nu: q === 0 ? 18 : 10, inside: [0, 0.8, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COATIN, ao: 0.98 });
+    loft(mb, hr, { nu: q === 0 ? 18 : 10, inside: [0, 0.85, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COATIN, ao: 0.98 });
     // 목 칼라(둥글게 말린 후드 링) + 뒤 후드
-    var cy = 1.446, cnu = q === 0 ? 18 : 10, cnv = q === 0 ? 5 : 3, crx = 0.080, crz = 0.077, cr = 0.023;
+    var cy = 1.446, cnu = q === 0 ? 18 : 10, cnv = q === 0 ? 5 : 3, crx = 0.064, crz = 0.063, cr = 0.017;
     surf(mb, {
       nu: cnu, nv: cnv, closed: true, inside: [0, cy, 0.01],
       pt: function (i, j) {
         var a = dense(i / cnu, 0.15), ph = -0.55 * PI + 1.9 * PI * j / cnv, co = Math.cos(ph), si = Math.sin(ph);
-        return [(crx + cr * co) * S(Math.sin(a), 2.0), cy + cr * si * 0.9, 0.008 - (crz + cr * co) * S(Math.cos(a), 2.0)];
+        return [(crx + cr * co) * S(Math.sin(a), 2.0), cy + cr * si * 0.9, 0.010 - (crz + cr * co) * S(Math.cos(a), 2.0)];
       },
       w: function (i, j, p) { return torsoW(p, Math.min(1.446, p[1])); }, reg: R.COATIN, ao: 1
     });
-    blob(mb, [0, 1.412, 0.074], [0.092, 0.052, 0.050], [0.35, 0, 0], { nu: q === 0 ? 10 : 6, nv: q === 0 ? 5 : 3, w: torsoW([0, 1.41, 0.07], 1.41), reg: R.COAT, ao: 0.9 });
+    blob(mb, [0, 1.418, 0.070], [0.078, 0.042, 0.040], [0.35, 0, 0], { nu: q === 0 ? 10 : 6, nv: q === 0 ? 5 : 3, w: torsoW([0, 1.41, 0.07], 1.41), reg: R.COAT, ao: 0.9 });
     // 앞주머니(캥거루 포켓)
     if (q === 0) {
-      var PU = 7, PV = 4, yc = 0.935, hy2 = 0.075, ha = 0.52;
+      var PU = 7, PV = 4, yc = 0.995, hy2 = 0.062, ha = 0.50;
       surf(mb, {
         nu: PU, nv: PV, closed: false, inside: [0, yc, 0.0],
         pt: function (i, j) {
           var u = i / PU * 2 - 1, v = j / PV * 2 - 1, edge = Math.max(Math.pow(Math.abs(u), 4), Math.pow(Math.abs(v), 4)), m = Math.sqrt(Math.max(0, 1 - edge));
-          // 아래가 약간 좁은 사다리꼴
           var uu = u * (1 - 0.06 * (v + 1) * 0.5), y = yc + v * hy2, a = uu * ha * (0.96 + 0.04 * v);
-          return torsoPt(y, a, 0.002 + 0.017 * m);
+          return torsoPt(y, a, 0.002 + 0.014 * m);
         },
         w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.POCKET, ao: 1
       });
     }
   }
 
-  // 소매 + 말아올린 소맷부리
-  var SLV = [[1.405, 0.002, 0.002], [1.400, 0.030, 0.032], [1.389, 0.049, 0.052], [1.372, 0.056, 0.059], [1.33, 0.056, 0.058], [1.25, 0.054, 0.056], [1.17, 0.051, 0.054], [1.11, 0.049, 0.052],
-    [1.05, 0.048, 0.051], [0.96, 0.046, 0.049], [0.90, 0.045, 0.048], [0.870, 0.044, 0.047]];
+  // 소매 + 말아올린 소맷부리 (가늘고 자연스러운 팔)
+  var SLV = [[1.405, 0.002, 0.002], [1.400, 0.026, 0.028], [1.389, 0.043, 0.046], [1.372, 0.049, 0.051], [1.33, 0.048, 0.050], [1.25, 0.046, 0.048], [1.17, 0.044, 0.046], [1.11, 0.042, 0.045],
+    [1.05, 0.041, 0.044], [0.96, 0.040, 0.043], [0.90, 0.039, 0.042], [0.870, 0.038, 0.041]];
   function armW(side, y) {
     var ua = side > 0 ? B.uaR : B.uaL, fa = side > 0 ? B.faR : B.faL;
     var wt = sm((1.17 - y) / 0.13), wc = 0.55 * sm((y - 1.37) / 0.10);
@@ -452,23 +447,23 @@
         var rings = sel.map(function (s) { return { c: [side * SX, s[0], 0.0], ru: s[1], rv: s[2], y: s[0] }; });
         loft(mb, rings, {
           nu: q === 0 ? 8 : 6, dense: false, inside: [side * SX, 1.15, 0], w: function (i, j, p) { return armW(side, p[1]); },
-          reg: R.COAT, ao: function (i, j, p) { return 1.02 - 0.08 * sm((1.2 - p[1]) / 0.3); }
+          reg: R.COAT, ao: function (i, j, p) { return 1.02 - 0.06 * sm((1.2 - p[1]) / 0.3); }
         });
         // 소맷부리(말아올린 리브)
-        var cyv = q === 0 ? [0.842, 0.851, 0.872, 0.894, 0.903] : [0.842, 0.870, 0.903], cro = q === 0 ? [0.026, 0.044, 0.050, 0.044, 0.026] : [0.030, 0.050, 0.030], cr = cyv.map(function (y, k) { return { c: [side * SX, y, 0], ru: cro[k] * 0.98, rv: cro[k] }; });
+        var cyv = q === 0 ? [0.842, 0.851, 0.872, 0.894, 0.903] : [0.842, 0.870, 0.903], cro = q === 0 ? [0.026, 0.040, 0.046, 0.040, 0.026] : [0.028, 0.046, 0.028], cr = cyv.map(function (y, k) { return { c: [side * SX, y, 0], ru: cro[k] * 0.98, rv: cro[k] }; });
         loft(mb, cr, { nu: q === 0 ? 8 : 6, dense: false, inside: [side * SX, 0.87, 0], w: function (i, j, p) { return armW(side, p[1]); }, reg: R.CUFF, ao: 1 });
       })(side);
     }
   }
 
-  // 바지(통 넓은 와이드 팬츠) + 골반 + 말아올린 밑단
+  // 바지(통 넓은 일자 와이드 팬츠) + 골반 + 말아올린 밑단
   var PANT = profile([
-    [0.935, 0.088, 0.096, 0.003], [0.88, 0.094, 0.103, 0.003], [0.80, 0.092, 0.099, 0], [0.70, 0.087, 0.093, -0.002], [0.60, 0.080, 0.085, -0.003],
-    [0.50, 0.074, 0.079, -0.004], [0.43, 0.072, 0.076, 0.0], [0.35, 0.070, 0.075, 0.004], [0.26, 0.069, 0.073, 0.004], [0.17, 0.068, 0.072, 0.002], [0.12, 0.068, 0.072, 0.0]
+    [0.935, 0.060, 0.090, 0.003], [0.88, 0.068, 0.095, 0.003], [0.80, 0.077, 0.096, 0], [0.70, 0.082, 0.090, -0.002], [0.60, 0.078, 0.084, -0.003],
+    [0.50, 0.074, 0.080, -0.004], [0.43, 0.072, 0.077, 0.0], [0.35, 0.071, 0.076, 0.004], [0.26, 0.070, 0.075, 0.004], [0.17, 0.070, 0.075, 0.002], [0.12, 0.070, 0.075, 0.0]
   ]);
   function legW(side, y) {
     var ul = side > 0 ? B.ulR : B.ulL, ll = side > 0 ? B.llR : B.llL, ft = side > 0 ? B.ftR : B.ftL;
-    var th = sm((0.95 - y) / 0.10), kn = sm((0.55 - y) / 0.10), an = sm((0.13 - y) / 0.05) * 0.45;
+    var th = sm((0.86 - y) / 0.12), kn = sm((0.55 - y) / 0.10), an = sm((0.13 - y) / 0.05) * 0.45;
     var wh = 1 - th, wu = th * (1 - kn), wl = kn * (1 - an), wf = kn * an;
     return [[B.hips, wh], [ul, wu], [ll, wl], [ft, wf]];
   }
@@ -479,21 +474,18 @@
         var rings = ys.map(function (y) { var d = PANT(y); return { c: [side * HX, y, d[2]], ru: d[0], rv: d[1], y: y }; });
         loft(mb, rings, { nu: nl, dense: false, inside: [side * HX, 0.5, 0], w: function (i, j, p) { return legW(side, p[1]); }, reg: R.PANTS, ao: function (i, j, p) { return 0.93 + 0.07 * sm((p[1] - 0.2) / 0.5); } });
         // 말아올린 밑단
-        var cy2 = q === 0 ? [0.108, 0.118, 0.150, 0.182, 0.194] : [0.108, 0.150, 0.194], co = q === 0 ? [0.002, 0.014, 0.018, 0.014, 0.002] : [0.004, 0.018, 0.004];
+        var cy2 = q === 0 ? [0.108, 0.118, 0.150, 0.182, 0.194] : [0.108, 0.150, 0.194], co = q === 0 ? [0.002, 0.013, 0.017, 0.013, 0.002] : [0.004, 0.016, 0.004];
         loft(mb, cy2.map(function (y, k) { var d = PANT(y); return { c: [side * HX, y, d[2]], ru: d[0] + co[k], rv: d[1] + co[k] }; }),
           { nu: nl, dense: false, inside: [side * HX, 0.15, 0], w: function (i, j, p) { return legW(side, p[1]); }, reg: R.PCUFF, ao: 1 });
-        // 발목(피부)
-        if (q === 0) { var ar = [0.150, 0.110, 0.078].map(function (y) { return { c: [side * HX, y, 0.0], ru: 0.034, rv: 0.036, w: legW(side, y) }; });
-        loft(mb, ar, { nu: 8, dense: false, reg: R.SKIN, ao: 0.9 }); }
       })(side);
     }
-    var pr = [[1.00, 0.158, 0.118], [0.94, 0.172, 0.124], [0.86, 0.176, 0.124], [0.80, 0.11, 0.10]].map(function (r) { return { c: [0, r[0], 0], ru: r[1], rv: r[2] }; });
+    var pr = [[1.00, 0.138, 0.098], [0.94, 0.150, 0.104], [0.86, 0.156, 0.106], [0.80, 0.11, 0.09]].map(function (r) { return { c: [0, r[0], 0], ru: r[1], rv: r[2] }; });
     loft(mb, pr, { nu: q === 0 ? 10 : 6, dense: false, w: [[B.hips, 1]], reg: R.PANTS, ao: 0.85 });
   }
 
   // 신발: 통통한 스니커즈(길이 방향 = z). 밑창은 별도의 납작한 둥근 덩어리.
-  var SHOE = [[0.082, 0.0, 0.0], [0.078, 0.030, 0.030], [0.058, 0.046, 0.050], [0.020, 0.052, 0.058], [-0.030, 0.053, 0.056], [-0.090, 0.053, 0.050],
-    [-0.150, 0.050, 0.042], [-0.200, 0.040, 0.030], [-0.232, 0.0, 0.0]];
+  var SHOE = [[0.078, 0.0, 0.0], [0.074, 0.034, 0.034], [0.054, 0.049, 0.052], [0.016, 0.054, 0.060], [-0.032, 0.055, 0.058], [-0.090, 0.055, 0.052],
+    [-0.148, 0.052, 0.043], [-0.196, 0.042, 0.031], [-0.232, 0.0, 0.0]];
   function buildShoes(mb, q) {
     var side, sel = q === 0 ? SHOE : [SHOE[0], SHOE[2], SHOE[4], SHOE[6], SHOE[8]];
     for (side = -1; side <= 1; side += 2) {
@@ -503,23 +495,23 @@
         return { c: [side * HX, pole ? (k === 0 ? 0.046 : 0.040) : cy, s[0]], ru: Math.max(s[1], 0.001), rv: Math.max(s[2], 0.001), u: [1, 0, 0], v: [0, 1, 0], n: 2.2 };
       });
       loft(mb, rings, { nu: q === 0 ? 10 : 8, dense: false, inside: [side * HX, 0.05, -0.06], w: wf, reg: R.SHOE, ao: function (i, j, p) { return 0.88 + 0.14 * sm((p[1] - 0.03) / 0.08); } });
-      blob(mb, [side * HX, 0.017, -0.074], [0.058, 0.019, 0.170], [0, 0, 0], { nu: q === 0 ? 10 : 6, nv: q === 0 ? 5 : 3, w: wf, reg: R.SOLE, ao: 0.95 });
+      blob(mb, [side * HX, 0.018, -0.078], [0.059, 0.020, 0.172], [0, 0, 0], { nu: q === 0 ? 10 : 6, nv: q === 0 ? 5 : 3, w: wf, reg: R.SOLE, ao: 0.95 });
     }
   }
 
   // 손: 둥근 벙어리장갑 모양(엄지 혹 포함). side=+1 오른손.
-  var PALM = [[0.872, 0.021, 0.024, 0.0], [0.846, 0.022, 0.027, 0.0], [0.822, 0.026, 0.036, -0.002], [0.794, 0.028, 0.041, -0.002], [0.766, 0.026, 0.039, 0.0], [0.744, 0.019, 0.029, 0.0], [0.732, 0.008, 0.015, 0.0]];
+  var PALM = [[0.872, 0.019, 0.022, 0.0], [0.846, 0.021, 0.025, 0.0], [0.815, 0.025, 0.033, -0.002], [0.780, 0.028, 0.038, -0.002], [0.745, 0.028, 0.037, 0.0], [0.715, 0.023, 0.030, 0.0], [0.692, 0.012, 0.019, 0.0], [0.680, 0.004, 0.008, 0.0]];
   function handW(side, y) {
     var fa = side > 0 ? B.faR : B.faL, ha = side > 0 ? B.haR : B.haL, t = sm((0.866 - y) / 0.03);
     return [[fa, 1 - t], [ha, t]];
   }
   function buildHand(mb, side, q) {
     var ha = side > 0 ? B.haR : B.haL, near = q === 0;
-    var pal = near ? PALM : [PALM[0], PALM[3], PALM[5], PALM[6]];
+    var pal = near ? PALM : [PALM[0], PALM[3], PALM[5], PALM[7]];
     var rings = pal.map(function (r) { return { c: [side * SX, r[0], r[3]], ru: r[1], rv: r[2], y: r[0] }; });
     loft(mb, rings, { nu: near ? 8 : 5, dense: false, inside: [side * SX, 0.8, 0], w: function (i, j, p) { return handW(side, p[1]); }, reg: R.SKIN, ao: 0.98, tn: function () { return 0.1; } });
     // 엄지(둥근 혹, 앞쪽-안쪽)
-    blob(mb, [side * SX - side * 0.010, 0.800, -0.036], [0.015, 0.032, 0.016], [0.0, 0, side * 0.0], { nu: near ? 8 : 5, nv: near ? 5 : 3, w: [[ha, 1]], reg: R.SKIN, ao: 0.98 });
+    blob(mb, [side * SX - side * 0.009, 0.790, -0.034], [0.013, 0.032, 0.015], [0.0, 0, 0], { nu: near ? 8 : 5, nv: near ? 5 : 3, w: [[ha, 1]], reg: R.SKIN, ao: 0.98 });
   }
   // 근거리/중거리 조립 -----------------------------------------------------
   function assemble(q, style) {
@@ -535,15 +527,15 @@
   function buildFar(variant) {   // 0 서기, 1 앉기, 2 앉아 기도
     var m = new MB(), sit = variant > 0, dy = sit ? -0.351 : 0, dz = sit ? SEAT_BACK : 0, side;
     function Wn() { return [[0, 1]]; }
-    var yy = sit ? [1.455, 1.30, 1.10, 0.90] : [1.455, 1.30, 1.10, 0.90, 0.72], rings = [];
+    var yy = sit ? [1.455, 1.30, 1.10, 0.90] : [1.455, 1.30, 1.10, 0.90, 0.80], rings = [];
     yy.forEach(function (y) { var d = TORSO(y); rings.push({ c: [0, y + dy, d[2] + dz - (variant === 2 ? (y - 0.9) * 0.18 : 0)], ru: d[0], rv: d[1], n: 2.3 }); });
     loft(m, rings, { nu: 7, dense: false, w: Wn, reg: R.COAT, ao: 1, inside: [0, 1.1 + dy, dz] });
     for (side = -1; side <= 1; side += 2) {
       var pts = sit ? [[side * HX, 0.58, dz], [side * HX, 0.53, dz - 0.15], [side * HX, 0.50, dz - 0.36], [side * HX, 0.28, dz - 0.40], [side * HX, 0.07, dz - 0.40]]
         : [[side * HX, 0.90, 0], [side * HX, 0.60, 0], [side * HX, 0.35, 0], [side * HX, 0.07, 0]];
       tube(m, pts, sit ? [0.092, 0.08, 0.07, 0.07, 0.062] : [0.098, 0.078, 0.072, 0.068], { nu: 5, w: Wn, reg: R.PANTS, ao: 0.95, caps: 'end' });
-      var ap = variant === 2 ? [[side * 0.185, 1.40 + dy, dz], [side * 0.16, 1.25 + dy, dz - 0.10], [side * 0.03, 1.28 + dy, dz - 0.19]] : [[side * 0.185, 1.40 + dy, dz], [side * 0.205, 1.10 + dy, dz - 0.02], [side * 0.20, 0.86 + dy, dz - 0.05]];
-      if (sit && variant === 1) ap = [[side * 0.185, 1.40 + dy, dz], [side * 0.195, 1.12 + dy, dz - 0.03], [side * 0.10, 0.92 + dy, dz - 0.19]];
+      var ap = variant === 2 ? [[side * 0.175, 1.40 + dy, dz], [side * 0.16, 1.25 + dy, dz - 0.10], [side * 0.03, 1.28 + dy, dz - 0.19]] : [[side * 0.175, 1.40 + dy, dz], [side * 0.19, 1.10 + dy, dz - 0.02], [side * 0.20, 0.86 + dy, dz - 0.05]];
+      if (sit && variant === 1) ap = [[side * 0.175, 1.40 + dy, dz], [side * 0.195, 1.12 + dy, dz - 0.03], [side * 0.10, 0.92 + dy, dz - 0.19]];
       tube(m, ap, [0.062, 0.052, 0.045], { nu: 5, w: Wn, reg: R.COAT, ao: 1, caps: 'end' });
     }
     var hy = HC + dy, hz = dz + (variant === 2 ? -0.05 : 0), hyy = variant === 2 ? hy - 0.02 : hy, hr = variant === 2 ? 0.5 : 0;
@@ -844,7 +836,7 @@
     this.prayAmt += (this.prayTarget - this.prayAmt) * Math.min(1, dt * 5);
     var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa;
     // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 3.2*walkAmt m/s)
-    var A = (0.10 + 0.36 * w) * sm(w * 6);
+    var A = (0.09 + 0.27 * w) * sm(w * 6);
     if (w > 0.01) {
       var vReal = 3.2 * w, stepLen = Math.max(0.25, 2 * 0.84 * Math.sin(Math.min(0.9, A)) * 0.95);
       this.phase += dt * PI * vReal / stepLen;
@@ -869,7 +861,7 @@
     // ---- 다리 각도(서기: 보행/대기, 앉기: 90도 굽힘) ----
     function wrapA(a) { a = (a + PI) % TAU; if (a < 0) a += TAU; return a - PI; }
     function kneeFlex(th, Kmax) { var d1 = wrapA(th + 0.4) / 0.95, d2 = wrapA(th - PI / 2 - 0.55) / 0.5; return 0.06 + Kmax * Math.exp(-d1 * d1) + 0.22 * w * Math.exp(-d2 * d2); }
-    var Kmax = 0.30 + 0.8 * w;
+    var Kmax = 0.30 + 0.6 * w;
     var hR = A * Math.sin(thR) + 0.03 * w, hL = A * Math.sin(thL) + 0.03 * w;
     var kR = kneeFlex(thR, Kmax), kL = kneeFlex(thL, Kmax);
     var relax = Math.max(0, ws) * 0.06, relaxL = Math.max(0, -ws) * 0.06;
@@ -912,7 +904,7 @@
     setE(bs[B.head], -0.02 - 0.28 * pa - 0.10 * bow - nodv * 0.6 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
 
     // ---- 팔 ----
-    var armA = 0.12 + 0.5 * w, elb = 0.22 + 0.5 * w + 0.04 * br, side, qs = this.qs;
+    var armA = 0.10 + 0.34 * w, elb = 0.20 + 0.30 * w + 0.04 * br, side, qs = this.qs;
     var weightL = sa, weightP = pa;
     for (side = -1; side <= 1; side += 2) {
       var ua = bs[side > 0 ? B.uaR : B.uaL], fa = bs[side > 0 ? B.faR : B.faL], ha = bs[side > 0 ? B.haR : B.haL];

@@ -195,6 +195,7 @@ void main() {
       expect(AvatarConfig.skinColors.map(hex), section('skin'));
       expect(AvatarConfig.hairColors.map(hex), section('hair'));
       expect(AvatarConfig.outfitColors.map(hex), section('outfit'));
+      expect(AvatarConfig.pantsColors.map(hex), section('pants'));
     });
 
     test('style names, baptismal names and intentions', () {
