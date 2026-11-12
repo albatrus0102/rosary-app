@@ -21,26 +21,31 @@
       g.lineTo(x1, y1 - r); g.quadraticCurveTo(x1, y1, x1 - r, y1); g.lineTo(x0 + r, y1);
       g.quadraticCurveTo(x0, y1, x0, y1 - r); g.lineTo(x0, y0 + r); g.quadraticCurveTo(x0, y0, x0 + r, y0);
       g.closePath();
-      g.fillStyle = 'rgba(38,26,16,0.62)'; g.fill();
-      g.lineWidth = 2; g.strokeStyle = 'rgba(255,224,160,0.7)'; g.stroke();
-      g.font = '600 30px ' + FONT;
+      g.fillStyle = 'rgba(34,23,14,0.78)'; g.fill();
+      g.lineWidth = 2.5; g.strokeStyle = 'rgba(255,226,166,0.85)'; g.stroke();
+      g.font = '700 32px ' + FONT;
       g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.fillStyle = '#fff4da';
+      g.fillStyle = '#fffaf0';
       g.fillText(text, w / 2, h / 2 + 1);
     }, false, true);
     tex.minFilter = T.LinearFilter; tex.generateMipmaps = false;
     return { tex: tex, aspect: w / h };
   }
 
+  // 일반 블렌딩의 금색 고리(밝은 대리석 바닥에서도 보이게 바깥에 옅은 갈색 그림자 띠를 둔다).
   function ringTexture() {
     return G.canvasTexture(128, 128, function (g, w, h) {
       var c = w / 2;
-      var fill = g.createRadialGradient(c, c, 0, c, c, c * 0.75);
-      fill.addColorStop(0, 'rgba(255,226,150,0.16)'); fill.addColorStop(1, 'rgba(255,226,150,0.05)');
-      g.fillStyle = fill; g.fillRect(0, 0, w, h);
-      var ring = g.createRadialGradient(c, c, c * 0.62, c, c, c * 0.98);
-      ring.addColorStop(0, 'rgba(255,226,150,0)'); ring.addColorStop(0.45, 'rgba(255,230,160,0.95)'); ring.addColorStop(0.62, 'rgba(255,230,160,0.7)'); ring.addColorStop(1, 'rgba(255,226,150,0)');
-      g.fillStyle = ring; g.fillRect(0, 0, w, h);
+      g.clearRect(0, 0, w, h);
+      var fill = g.createRadialGradient(c, c, 0, c, c, c * 0.72);
+      fill.addColorStop(0, 'rgba(255,214,120,0.22)'); fill.addColorStop(1, 'rgba(255,214,120,0.08)');
+      g.fillStyle = fill; g.beginPath(); g.arc(c, c, c * 0.72, 0, Math.PI * 2); g.fill();
+      var sh = g.createRadialGradient(c, c, c * 0.6, c, c, c * 0.99);
+      sh.addColorStop(0, 'rgba(96,56,12,0)'); sh.addColorStop(0.5, 'rgba(96,56,12,0.5)'); sh.addColorStop(1, 'rgba(96,56,12,0)');
+      g.fillStyle = sh; g.beginPath(); g.arc(c, c, c, 0, Math.PI * 2); g.fill();
+      var ring = g.createRadialGradient(c, c, c * 0.56, c, c, c * 0.9);
+      ring.addColorStop(0, 'rgba(255,196,70,0)'); ring.addColorStop(0.2, 'rgba(255,196,70,1)'); ring.addColorStop(0.8, 'rgba(244,168,40,1)'); ring.addColorStop(1, 'rgba(244,168,40,0)');
+      g.fillStyle = ring; g.beginPath(); g.arc(c, c, c * 0.92, 0, Math.PI * 2); g.fill();
     }, false, true);
   }
 
@@ -49,8 +54,8 @@
     var st = stationsApi.stations();
     var items = [];
     var ringTex = ringTexture();
-    var ringGeo = new T.PlaneGeometry(1.7, 1.7);
-    var hitGeo = new T.PlaneGeometry(2.6, 2.6);
+    var ringGeo = new T.PlaneGeometry(2.1, 2.1);
+    var hitGeo = new T.PlaneGeometry(2.8, 2.8);
     var hitMat = new T.MeshBasicMaterial({ visible: false });
     var labelTexs = {};
     var holder = new T.Group(); holder.name = 'station-markers';
@@ -58,7 +63,7 @@
 
     function add(kind, s) {
       var floor = logic.floorY(s.x, s.z);
-      var ringMat = new T.MeshBasicMaterial({ map: ringTex, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false, opacity: 0, toneMapped: false });
+      var ringMat = new T.MeshBasicMaterial({ map: ringTex, transparent: true, depthWrite: false, fog: false, opacity: 0, toneMapped: false });
       var ring = new T.Mesh(ringGeo, ringMat);
       ring.rotation.x = -Math.PI / 2; ring.position.set(s.x, floor + 0.05, s.z); ring.renderOrder = 7;
       var hit = new T.Mesh(hitGeo, hitMat);
@@ -94,11 +99,11 @@
           it.ring.visible = vis; it.sp.visible = vis; it.hit.visible = vis;
           if (!vis) continue;
           var pulse = 0.5 + 0.5 * Math.sin(t * 2.2 + it.ph);
-          it.ring.material.opacity = it.a * (0.5 + 0.3 * pulse);
+          it.ring.material.opacity = it.a * (0.72 + 0.28 * pulse);
           var sc = 1 + 0.05 * pulse; it.ring.scale.set(sc, sc, 1);
           // 멀수록 이름표를 키워 읽히게 한다(상한 있음). 아주 멀면(>45m) 조금 흐리게.
           var cd = camera.position.distanceTo(it.sp.position);
-          var hgt = 0.32 * Math.max(1, Math.min(3.2, cd / 9));
+          var hgt = 0.46 * Math.max(1, Math.min(3.6, cd / 9));
           it.sp.scale.set(hgt * it.sp.userData.aspect, hgt, 1);
           it.sp.material.opacity = it.a * (cd > 45 ? 0.75 : 1);
         }

@@ -64,7 +64,7 @@
 ### 웹 → Flutter (JS 채널 이름 `FlutterChurch`, 메시지는 JSON 문자열 한 개)
 ```
 {"e":"ready"}
-{"e":"near","seat":"L03-2"|null,"candle":5|null}       // 가장 가까운 앉을 수 있는(비어 있고 반경 1.3m) 좌석, 반경 1.8m 안 촛불 슬롯. 값이 바뀔 때만
+{"e":"near","seat":"L03-2"|null,"candle":5|null,"station":"altar"|"font"|null}   // 가장 가까운 앉을 수 있는(비어 있고 반경 1.3m) 좌석, 반경 1.8m 안 촛불 슬롯, 제대 앞/성수대에 서 있는지(들어갈 때 1.3m, 나갈 때 2.0m). 값이 바뀔 때만
 {"e":"seated","seat":"L03-2"}                            // 앉는 애니메이션이 끝났을 때
 {"e":"stood"}
 {"e":"pos","x":..,"z":..,"r":..,"m":0|1}                // 10Hz 이하, 멈추면 한 번 m:0
@@ -204,3 +204,37 @@ abstract class ChurchNet {
 ## 16. 남기는 장치(제한이 아니라 안전장치)
 - 위치 경계 클램프(벽), 최대 이동 속도 검증(클라이언트 최대 속도의 2배 이상), 한 사람 한 좌석(물리적 의미), 좌석 중복 점유 방지, 값 범위 검증(인덱스·좌표), 서버 안전 상한 2000, 로그인과 동의.
 - **자유 입력(닉네임·채팅)은 이번 요청 범위에 넣지 않는다.** 이는 이용 제한이 아니라 신고·차단·운영 책임이 따르는 기능이라 사용자의 별도 결정이 필요하다.
+
+---
+# v4: 가서 행동하기 (InPeace 식 스테이션)
+사용자 요청: 촛불 봉헌 같은 동작은 성당 안 **그 자리에 직접 가서** 한다. 구현은 `assets/church/stations.js`(순수 로직, `tools/church_web/stations.test.mjs`가 8개 성당 전부 시험), `markers.js`(표식), `main.js`(걷기), Flutter `church_go_sheet.dart`.
+
+## 18. 스테이션 (빌더를 고치지 않고 레이아웃·충돌체에서 일반적으로 유도)
+- `candle[i]` = `layout.candles.stands[i]`. 서는 자리는 스탠드 `face` 쪽(걸을 수 있는 쪽) 0.6~1.6m, 충돌 없음·입구에서 닿음·`reach` 안에 슬롯이 있는 자리 중 스탠드 정면에 가장 가까운 곳.
+- `altar` = 신랑 축(좌석 `yaw` 방향 평균, 입구 스폰에서 출발)을 따라 걸을 수 있는 한 가장 멀리 간 지점(제대·난간·발다키노 바로 앞). 축이 전체의 30%도 못 가서 막히면 축 좌우 1.2m 띠에서 가장 먼 닿는 칸. 바라보는 방향은 좌석 방향. 이 규칙으로 8개 성당 모두 제대(또는 성소 단) 앞에 선다. `layout.stations.altar:{x,z}`로 직접 지정할 수도 있다.
+- `entrance` = `layout.spawn`. `seat` = 비어 있는 좌석 중 걷는 거리가 가장 짧은 곳의 `standPos`(좌석 뒤 통로).
+- `font[i]` = `layout.fonts:[{x,z,face?,reach?}]`가 있을 때만(성수대). 현재 8개 성당 레이아웃에는 없다.
+- 경로: 충돌체(`moveCircle`과 같은 것)로 만든 걷기 격자(칸 0.5m, 막히면 0.25m로 재시도) 위 A* + 직선 시야 단순화. 걷기는 평소 속도·걷기 동작이며 1초에 0.15m도 못 가면 두 번까지 길을 다시 찾고, 그래도 안 되면 `walkFail`.
+
+## 19. 브리지 추가
+웹 → Flutter:
+```
+{"e":"stations","church":"basic","candle":1,"altar":1,"font":0,"entrance":1}   // 성당을 불러온 뒤 한 번
+{"e":"walkStart","kind":"candle","m":23}                                      // 경로 길이(m, 반올림)
+{"e":"walkDone","kind":"candle","index":0,"seat":null}                        // 도착(직전에 near 가 먼저 온다). seat 는 kind=seat 일 때 좌석 id
+{"e":"walkFail","kind":"font","why":"none|nopath|stuck"}
+{"e":"walkCancel","kind":"candle","why":"input|touch|sit|api"}               // 스틱·키보드·이동 영역 터치·앉기·cancelWalk
+```
+Flutter → 웹:
+```
+walkTo({kind:'candle'|'altar'|'seat'|'entrance'|'font', index?, seat?})   // index: 스탠드/성수대 번호(생략 시 걷기 가까운 쪽), seat: 특정 좌석(차 있으면 가까운 빈 자리)
+cancelWalk({})
+tapAt({x,y})     // 화면 좌표(CSS px). Flutter 가 가로챈 왼쪽 절반의 탭을 넘긴다. 표식에 맞으면 그곳으로 걷는다.
+```
+- 앉아 있을 때 `walkTo`를 부르면 먼저 일어선 뒤(`stood`) 걷는다. 걷는 중 `sit`을 부르면 걷기가 취소된다.
+- 표식(바닥의 빛 고리 + 떠 있는 이름표)은 도달 범위 안에서는 사라지고, 앉으면 모두 숨는다. 터치 판·이름표·고리를 레이캐스트하고, 못 맞히면 화면에서 36px 안의 표식을 고른다. `?markers=0`으로 끌 수 있다(썸네일은 자동으로 끔).
+- Flutter: 오른쪽 위 줄 아래의 **가기** 버튼 → '어디로 갈까요?' 시트(촛불 봉헌대·제대 앞·가까운 빈 자리·입구, 성수대는 `stations.font>0`일 때만) → `walkTo`. 걷는 동안 '걷는 중… (취소)' 칩, 실패하면 스낵바. 이동 영역에 손이 닿으면 걷기를 취소한다(`cancelWalk`).
+- **행동은 그 자리에서만**: 초 켜기는 `near.candle`이 있을 때만 버튼이 나오고(그 밖의 경로 없음, 시험으로 고정), 촛불 봉헌대에 도착(`walkDone candle`)하면 봉헌 시트가 한 번 저절로 열리며 '나중에'로 닫을 수 있다. 제대 앞(`near.station=altar`)에는 '기도하기'(고개 숙임 `emote 2`) 뒤 앉기가, 성수대(`font`)에는 '성호 긋기'(`emote 1`)가 나온다. 성사 흉내는 없다.
+- 분석: `church_gesture{church,e}` — 이모트는 `e`=0..2, 걷기 도착은 `e='walk_<kind>'`.
+- 첫 방문 안내: 첫 입장 뒤 6초 동안 '가기 버튼으로 …' 말풍선(처음 쓰면 바로 사라짐). `SharedPreferences` 키 `church_walk_hint_seen`.
+
