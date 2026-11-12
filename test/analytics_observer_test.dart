@@ -39,6 +39,37 @@ void main() {
     expect(AnalyticsObserver.screenIdFor(page('/${'a' * 60}'))!.length, 40);
   });
 
+  test('the root route takes the shell\'s current tab id', () {
+    expect(
+      AnalyticsObserver.screenIdFor(page('/'), root: 'glass_gallery'),
+      'glass_gallery',
+    );
+    expect(AnalyticsObserver.screenIdFor(page('/'), root: 'more'), 'more');
+    expect(
+      AnalyticsObserver.screenIdFor(page('settings'), root: 'more'),
+      'settings',
+    );
+    fakeAsync((fa) {
+      var tab = 'glass_gallery';
+      var t = DateTime.utc(2026, 11, 12);
+      final a = initIn(fa, uploader: FakeEventUploader());
+      final o = AnalyticsObserver(
+        analytics: a,
+        now: () => t,
+        rootScreen: () => tab,
+      );
+      final home = page('/');
+      final settings = page('settings');
+      o.didPush(home, null);
+      t = t.add(const Duration(seconds: 5));
+      tab = 'more';
+      o.didPush(settings, home);
+      t = t.add(const Duration(seconds: 5));
+      o.didPop(settings, home);
+      expect(screens(a), ['glass_gallery', 'settings', 'more']);
+    });
+  });
+
   test('closing a dialog does not record the screen underneath again', () {
     fakeAsync((fa) {
       var t = DateTime.utc(2026, 11, 12);

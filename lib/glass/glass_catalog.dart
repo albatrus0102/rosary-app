@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// 창 감상실에서 창 식별에 쓰는 id 규칙(분석 속성 `win`의 값 규칙과 같다).
@@ -245,12 +246,17 @@ class GlassWindow {
       if (p.kind == GlassPlacementKind.authentic) p.church,
   ];
 
-  GlassPlacementKind get placementKind => isAuthentic
-      ? GlassPlacementKind.authentic
-      : GlassPlacementKind.reference;
+  GlassPlacementKind get placementKind =>
+      isAuthentic ? GlassPlacementKind.authentic : GlassPlacementKind.reference;
 
   /// 제목 앞부분 외 '장소'(location에서 ' · '로 나눈 첫 토막).
   String get place => location.split(' · ').first.trim();
+
+  /// 괄호 안 부연을 뺀 짧은 장소('클리블랜드 미술관 소장'). 카드처럼 좁은 곳에서 쓴다.
+  String get shortPlace {
+    final t = place.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
+    return t.isEmpty ? place : t;
+  }
 
   /// 사진 윤곽이 길쭉하다(랜싯류).
   bool get isTall => aspect < 0.75;
@@ -511,11 +517,7 @@ class GlassCatalog {
         w = _parseWindow(raw.cast<String, Object?>());
       } catch (e) {
         issues.add(
-          GlassIssue(
-            GlassIssueLevel.error,
-            '${raw['id']}',
-            '읽을 수 없음: $e',
-          ),
+          GlassIssue(GlassIssueLevel.error, '${raw['id']}', '읽을 수 없음: $e'),
         );
         continue;
       }
@@ -526,7 +528,10 @@ class GlassCatalog {
       issues.addAll(found);
       if (!found.any((i) => i.isError)) windows.add(w);
     }
-    return GlassCatalog._(List.unmodifiable(windows), List.unmodifiable(issues));
+    return GlassCatalog._(
+      List.unmodifiable(windows),
+      List.unmodifiable(issues),
+    );
   }
 
   static Future<GlassCatalog>? _shared;
@@ -536,7 +541,13 @@ class GlassCatalog {
       _shared ??= (bundle ?? rootBundle).loadString(assetPath).then(parse);
 
   /// 시험용: 공유 캐시를 비운다.
+  @visibleForTesting
   static void debugResetShared() => _shared = null;
+
+  /// 시험용: 자산 읽기 대신 이 카탈로그를 쓴다(위젯 시험에서 자산 읽기는 비동기라
+  /// `pumpAndSettle`이 불러오기 표시를 기다리다 멈춘다).
+  @visibleForTesting
+  static void debugSetShared(Future<GlassCatalog> f) => _shared = f;
 
   // --- 질의 ---
 

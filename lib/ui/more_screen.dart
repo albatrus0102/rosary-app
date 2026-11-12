@@ -10,6 +10,8 @@ import '../app/theme.dart';
 import '../auth/account_screen.dart';
 import '../auth/legal_screen.dart';
 import '../auth/legal_texts.dart';
+import '../glass/glass_catalog.dart';
+import '../glass/glass_licenses_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 
@@ -22,9 +24,13 @@ class MoreScreen extends StatelessWidget {
     required this.settings,
     required this.onOpenStyles,
     required this.onOpenSettings,
+    this.glassCatalog,
   });
 
   final AppSettings settings;
+
+  /// 시험용 주입: 스테인드글라스 출처 화면이 쓸 카탈로그.
+  final Future<GlassCatalog>? glassCatalog;
 
   /// 묵주 스타일 화면(라우트 `rosary_styles`)을 연다.
   final VoidCallback onOpenStyles;
@@ -121,6 +127,24 @@ class MoreScreen extends StatelessWidget {
                       leading: Icon(Icons.info_outline),
                       title: Text('공식 서비스가 아닙니다'),
                       subtitle: Text(appUnofficialNotice),
+                    ),
+                    ListTile(
+                      key: const ValueKey('more-glass-credits'),
+                      leading: const Icon(Icons.window_outlined),
+                      title: const Text('스테인드글라스 출처'),
+                      subtitle: const Text('창 사진의 작가·라이선스, 이용 안내'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            settings: const RouteSettings(
+                              name: GlassLicensesScreen.routeName,
+                            ),
+                            builder: (_) =>
+                                GlassLicensesScreen(catalog: glassCatalog),
+                          ),
+                        ),
+                      ),
                     ),
                     const ListTile(
                       leading: Icon(Icons.menu_book_outlined),

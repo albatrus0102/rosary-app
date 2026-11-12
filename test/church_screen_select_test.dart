@@ -5,9 +5,11 @@ import 'package:rosary_app/church/church_catalog.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_select_screen.dart';
 import 'package:rosary_app/church/church_tab.dart';
+import 'package:rosary_app/glass/glass_tab.dart';
 import 'package:rosary_app/ui/app_shell.dart';
 
 import 'church_screen_fakes.dart';
+import 'glass_test_support.dart';
 
 Future<void> _pumpSelect(
   WidgetTester tester, {
@@ -544,7 +546,12 @@ void main() {
   });
 
   group('app shell', () {
-    testWidgets('has a 4th 성당 destination that builds lazily', (tester) async {
+    Finder segment(String label) => find.descendant(
+      of: find.byKey(const ValueKey('glass-segment')),
+      matching: find.text(label),
+    );
+
+    testWidgets('성당은 유리화 탭의 [창 | 성당] 전환 안에서 게으르게 만들어진다', (tester) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings();
       var built = 0;
@@ -553,6 +560,7 @@ void main() {
         wrapApp(
           AppShell(
             settings: settings,
+            glassCatalog: testGlassCatalogFuture(),
             churchBuilder: (context) {
               built++;
               return _Probe(onDispose: () => disposed++);
@@ -563,14 +571,15 @@ void main() {
       await tester.pumpAndSettle();
       final bar = find.byType(NavigationBar);
       expect(tester.widget<NavigationBar>(bar).destinations, hasLength(4));
+      // 탭 줄에는 더 이상 '성당'이 없다.
+      expect(find.descendant(of: bar, matching: find.text('성당')), findsNothing);
       expect(
-        find.descendant(of: bar, matching: find.text('성당')),
+        find.descendant(of: bar, matching: find.text('유리화')),
         findsOneWidget,
       );
-      expect(find.byIcon(Icons.church_outlined), findsOneWidget);
       expect(built, 0);
 
-      await tester.tap(find.descendant(of: bar, matching: find.text('성당')));
+      await tester.tap(segment('성당'));
       await tester.pumpAndSettle();
       expect(built, greaterThan(0));
       expect(find.text('PROBE'), findsOneWidget);
@@ -582,41 +591,69 @@ void main() {
       expect(find.text('PROBE'), findsNothing);
     });
 
-    testWidgets('system back from the church tab returns to 기도', (
-      tester,
-    ) async {
+    testWidgets('시스템 뒤로가기: 성당 보기 → 창 보기', (tester) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings();
       await tester.pumpWidget(
         wrapApp(
           AppShell(
             settings: settings,
+            glassCatalog: testGlassCatalogFuture(),
             churchBuilder: (context) => const _Probe(),
           ),
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(
-          of: find.byType(NavigationBar),
-          matching: find.text('성당'),
-        ),
-      );
+      await tester.tap(segment('성당'));
       await tester.pumpAndSettle();
       expect(find.text('PROBE'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('PROBE'), findsNothing);
+      expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('wide layout rail shows 성당', (tester) async {
+    testWidgets('성당 장면 안에서는 전환 줄이 숨고 나오면 다시 보인다', (tester) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings();
+      final net = FakeChurchNet();
+      final scene = FakeChurchSceneController();
+      await tester.pumpWidget(
+        wrapApp(
+          GlassTab(
+            settings: settings,
+            catalog: testGlassCatalogFuture(),
+            initialSegment: GlassSegment.church,
+            churchBuilder: (context) => ChurchTab(
+              settings: settings,
+              net: net,
+              scene: scene,
+              availableIds: const {'basic', 'stpeter'},
+              onInChurchChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // 선택/입장 카드가 전환 줄 아래에 보인다.
+      expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
+    });
+
+    testWidgets('wide layout rail shows 유리화·오늘·기록·더보기', (tester) async {
       setView(tester, const Size(1000, 800));
       final settings = await loadSettings();
-      await tester.pumpWidget(wrapApp(AppShell(settings: settings)));
+      await tester.pumpWidget(
+        wrapApp(
+          AppShell(settings: settings, glassCatalog: testGlassCatalogFuture()),
+        ),
+      );
       await tester.pumpAndSettle();
       final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
       expect(rail.destinations, hasLength(4));
+      expect((rail.destinations.first.label as Text).data, '유리화');
+      expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
+      expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
     });
   });
 }

@@ -10,7 +10,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const assets = path.resolve(here, '../../assets/church');
 const outDir = path.resolve(here, '../../assets/church_thumbs');
 fs.mkdirSync(outDir, { recursive: true });
-const all = fs.readdirSync(assets).map((f) => /^ch_([a-z]+)\.js$/.exec(f)).filter(Boolean).map((m) => m[1]).sort();
+// ch_glass.js 는 감상실('glass_room', 성당 목록에 없음)이라 썸네일을 만들지 않는다
+const all = fs.readdirSync(assets).map((f) => /^ch_([a-z]+)\.js$/.exec(f)).filter(Boolean).map((m) => m[1]).filter((id) => id !== 'glass').sort();
 const lowFlag = process.argv.includes('--low');
 const ids = process.argv.slice(2).filter((a) => !a.startsWith('--')).length ? process.argv.slice(2).filter((a) => !a.startsWith('--')) : all;
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

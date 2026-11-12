@@ -70,7 +70,8 @@ class GlassFilters {
   List<GlassActiveFilter> get active => [
     for (final s in sites)
       GlassActiveFilter(GlassFilterKind.church, s, glassSiteKey(s)),
-    for (final e in eras) GlassActiveFilter(GlassFilterKind.era, e.label, e.name),
+    for (final e in eras)
+      GlassActiveFilter(GlassFilterKind.era, e.label, e.name),
     for (final f in shapes)
       GlassActiveFilter(GlassFilterKind.shape, f.label, f.name),
     for (final c in colors)
@@ -88,16 +89,18 @@ class GlassFilters {
     return switch (kind) {
       GlassFilterKind.church => copyWith(sites: flip(sites, value as String)),
       GlassFilterKind.era => copyWith(eras: flip(eras, value as GlassEra)),
-      GlassFilterKind.shape => copyWith(shapes: flip(shapes, value as GlassForm)),
-      GlassFilterKind.color =>
-        copyWith(colors: flip(colors, value as GlassColorTag)),
+      GlassFilterKind.shape => copyWith(
+        shapes: flip(shapes, value as GlassForm),
+      ),
+      GlassFilterKind.color => copyWith(
+        colors: flip(colors, value as GlassColorTag),
+      ),
     };
   }
 
   GlassFilters without(GlassActiveFilter f) {
     return switch (f.kind) {
-      GlassFilterKind.church =>
-        copyWith(sites: {...sites}..remove(f.label)),
+      GlassFilterKind.church => copyWith(sites: {...sites}..remove(f.label)),
       GlassFilterKind.era => copyWith(
         eras: {...eras}..removeWhere((e) => e.name == f.value),
       ),

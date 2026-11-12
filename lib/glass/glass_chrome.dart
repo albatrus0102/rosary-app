@@ -139,10 +139,7 @@ class _EdgeZone extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label: '조작 보이기',
-    child: GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: onTap,
-    ),
+    child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: onTap),
   );
 }
 

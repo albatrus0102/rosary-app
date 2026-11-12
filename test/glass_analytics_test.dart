@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/analytics/analytics.dart';
-import 'package:rosary_app/analytics/analytics_types.dart';
 
 Map<String, Object?> clean(String name, Map<String, Object?> p) =>
     PropsSanitizer.sanitize(name, p);
@@ -81,58 +80,56 @@ void main() {
         hasLength(6),
       );
       expect(
-        clean('glass_load', {
-          'win': 'x',
-          'tier': 't2',
-          'ms': 840,
-          'ok': true,
-        }),
+        clean('glass_load', {'win': 'x', 'tier': 't2', 'ms': 840, 'ok': true}),
         {'win': 'x', 'tier': 't2', 'ms': 840, 'ok': true},
       );
     });
 
-    test('sanitizer blocks free text, ids and unknown keys on glass events', () {
-      expect(
-        clean('glass_info', {
-          'win': '샤르트르 북쪽 장미창', // 한글 자유 글
-          'section': 'about',
-          'text': '묵상',
-          'note': 'x',
-          'name': 'y',
-          'id': 'z',
-        }),
-        {'section': 'about'},
-      );
-      expect(
-        clean('glass_open', {
-          'win': 'https://example.com/a',
-          'from': 'a b',
-          'view': 'x@y.com',
-        }),
-        isEmpty,
-      );
-      expect(clean('glass_open', {'win': 'a' * 41}), isEmpty);
-      expect(clean('glass_filter', {'kind': 'church', 'value': '샤르트르'}), {
-        'kind': 'church',
-      });
-      expect(clean('glass_pray', {'win': 'x', 'kind': 'rosary', 'user': 'u'}), {
-        'win': 'x',
-        'kind': 'rosary',
-      });
-      // 중첩 값·null은 버린다.
-      expect(
-        clean('glass_mem', {
-          'tex_mb': {'a': 1},
-          'budget_mb': null,
-          'downgraded': false,
-          'tier': 'low',
-        }),
-        {'downgraded': false, 'tier': 'low'},
-      );
-      expect(
-        utf8.encode(jsonEncode(clean('glass_open', {'win': 'ok'}))).length,
-        lessThan(PropsSanitizer.maxPropsBytes),
-      );
-    });
+    test(
+      'sanitizer blocks free text, ids and unknown keys on glass events',
+      () {
+        expect(
+          clean('glass_info', {
+            'win': '샤르트르 북쪽 장미창', // 한글 자유 글
+            'section': 'about',
+            'text': '묵상',
+            'note': 'x',
+            'name': 'y',
+            'id': 'z',
+          }),
+          {'section': 'about'},
+        );
+        expect(
+          clean('glass_open', {
+            'win': 'https://example.com/a',
+            'from': 'a b',
+            'view': 'x@y.com',
+          }),
+          isEmpty,
+        );
+        expect(clean('glass_open', {'win': 'a' * 41}), isEmpty);
+        expect(clean('glass_filter', {'kind': 'church', 'value': '샤르트르'}), {
+          'kind': 'church',
+        });
+        expect(
+          clean('glass_pray', {'win': 'x', 'kind': 'rosary', 'user': 'u'}),
+          {'win': 'x', 'kind': 'rosary'},
+        );
+        // 중첩 값·null은 버린다.
+        expect(
+          clean('glass_mem', {
+            'tex_mb': {'a': 1},
+            'budget_mb': null,
+            'downgraded': false,
+            'tier': 'low',
+          }),
+          {'downgraded': false, 'tier': 'low'},
+        );
+        expect(
+          utf8.encode(jsonEncode(clean('glass_open', {'win': 'ok'}))).length,
+          lessThan(PropsSanitizer.maxPropsBytes),
+        );
+      },
+    );
   });
 }

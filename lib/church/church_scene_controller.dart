@@ -616,6 +616,9 @@ class FakeChurchSceneController extends ChurchSceneController {
 
   void failLoad() => setLoadError();
 
+  /// 어떤 [SceneEvent]든 웹에서 온 것처럼 흉내 낸다.
+  void dispatchForTest(SceneEvent e) => dispatch(e);
+
   // --- 창 감상 ---
   void emitViewReady({String win = '', String tier = 't1', int ms = 300}) =>
       dispatch(ViewReady(win: win, tier: tier, ms: ms));

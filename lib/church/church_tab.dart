@@ -23,6 +23,7 @@ class ChurchTab extends StatefulWidget {
     this.scene,
     this.avatarEditorBuilder,
     this.availableIds,
+    this.onInChurchChanged,
   });
 
   final AppSettings settings;
@@ -32,6 +33,10 @@ class ChurchTab extends StatefulWidget {
   final ChurchSceneController? scene;
   final WidgetBuilder? avatarEditorBuilder;
   final Set<String>? availableIds;
+
+  /// 성당 장면 안에 들어갔는지(true)/나왔는지(false) 알린다. 유리화 탭이 이 값으로
+  /// [창 | 성당] 전환 줄을 장면 위에서는 숨긴다.
+  final ValueChanged<bool>? onInChurchChanged;
 
   @override
   State<ChurchTab> createState() => _ChurchTabState();
@@ -67,6 +72,7 @@ class _ChurchTabState extends State<ChurchTab> {
     if (picked) Track.church('church_pick', info.id);
     Track.screen('church');
     setState(() => _inChurch = info.id);
+    widget.onInChurchChanged?.call(true);
   }
 
   void _leave() {
@@ -75,6 +81,7 @@ class _ChurchTabState extends State<ChurchTab> {
       _inChurch = null;
       _browsing = true;
     });
+    widget.onInChurchChanged?.call(false);
   }
 
   @override

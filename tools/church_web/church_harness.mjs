@@ -41,6 +41,7 @@ export function loadChurches() {
   const out = [];
   for (const id of Object.keys(sb.ChurchBuilders)) {
     const b = sb.ChurchBuilders[id];
+    if (b.viewing) continue;   // 감상실(ch_glass, 'glass_room')은 성당이 아니다: 좌석·스테이션·서버 없음
     const ctx = sb.ChurchKit.createContext({ layout: b.layout, quality: 'low' });
     const ret = b.build(ctx);
     const S = ctx._;

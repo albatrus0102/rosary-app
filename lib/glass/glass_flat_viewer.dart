@@ -101,7 +101,7 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
 
   void _update(ScaleUpdateDetails d) {
     widget.onZoom?.call(_tc.value.getMaxScaleOnAxis());
-    if (d.scale == 1.0 && d.focalPointDelta != Offset.zero) widget.onPan?.call();
+    // 확대된 상태에서 한 손가락으로 끌면 이동이다.
     if (d.pointerCount == 1 && _tc.value.getMaxScaleOnAxis() > 1.0) {
       widget.onPan?.call();
     }
@@ -126,7 +126,11 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
         return child;
       },
       errorBuilder: (_, _, _) => const Center(
-        child: Icon(Icons.broken_image_outlined, color: kGlassOnStone, size: 48),
+        child: Icon(
+          Icons.broken_image_outlined,
+          color: kGlassOnStone,
+          size: 48,
+        ),
       ),
     );
     return ColoredBox(
@@ -175,8 +179,7 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
           ],
         ),
         child: Semantics(
-          label:
-              '${w.titleKo} 평면 원본. 두 손가락으로 확대하고, 두 번 누르면 처음으로 돌아갑니다.',
+          label: '${w.titleKo} 평면 원본. 두 손가락으로 확대하고, 두 번 누르면 처음으로 돌아갑니다.',
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _chrome.toggle,

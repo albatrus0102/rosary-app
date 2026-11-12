@@ -74,128 +74,131 @@ class GlassInfoContent extends StatelessWidget {
         ChurchCatalog.byId[id]?.nameKo ?? id,
     ];
 
-    return ListView(
+    return SingleChildScrollView(
       controller: controller,
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      children: [
-        Text(w.titleKo, style: theme.textTheme.titleLarge),
-        if (w.titleEn.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              w.titleEn,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        const SizedBox(height: 12),
-        _Fact('위치', w.location),
-        _Fact('연대 · 작가', '${w.dateText} · ${w.authorText}'),
-        _Fact('형태', glassFormText(w)),
-        _Fact(
-          '실제 크기',
-          glassSizeText(w),
-          trailing: glassSizeNeedsCheck(w) && !w.size.isUnknown
-              ? const _Tag('추정 · 확인 필요')
-              : null,
-        ),
-        const _Heading('이 창에 대해'),
-        if (w.hasVerify)
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: _Tag('확인 중', emphasized: true),
-          ),
-        if (w.hasVerify) const SizedBox(height: 6),
-        Text(
-          w.description.isEmpty ? '설명을 준비하고 있습니다.' : w.description,
-          style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
-        ),
-        if (w.hasVerify)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              '확인이 필요한 부분: ${w.verify}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        if (kWindowMeditationsEnabled) ...[
-          const _Heading('묵상'),
-          // 지도 신부 승인 전에는 이 구역이 만들어지지 않는다(kWindowMeditationsEnabled = false).
-          const Text('묵상 글은 승인 후 제공됩니다.'),
-        ],
-        const _Heading('보이는 모습'),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GlassPlacementBadge(w.placementKind),
-            const SizedBox(width: 10),
-            Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(w.titleKo, style: theme.textTheme.titleLarge),
+          if (w.titleEn.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
               child: Text(
-                authentic
-                    ? '이 창은 ${churchNames.join(' · ')}의 실제 창입니다.'
-                    : '같은 양식의 다른 성당 창을 참고 배치했습니다. '
-                          '이 창의 원래 자리는 ${w.place}입니다.',
-                style: theme.textTheme.bodyMedium,
+                w.titleEn,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          _Fact('위치', w.location),
+          _Fact('연대 · 작가', '${w.dateText} · ${w.authorText}'),
+          _Fact('형태', glassFormText(w)),
+          _Fact(
+            '실제 크기',
+            glassSizeText(w),
+            trailing: glassSizeNeedsCheck(w) && !w.size.isUnknown
+                ? const _Tag('추정 · 확인 필요')
+                : null,
+          ),
+          const _Heading('이 창에 대해'),
+          if (w.hasVerify)
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: _Tag('확인 중', emphasized: true),
+            ),
+          if (w.hasVerify) const SizedBox(height: 6),
+          Text(
+            w.description.isEmpty ? '설명을 준비하고 있습니다.' : w.description,
+            style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+          ),
+          if (w.hasVerify)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                '확인이 필요한 부분: ${w.verify}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          if (kWindowMeditationsEnabled) ...[
+            const _Heading('묵상'),
+            // 지도 신부 승인 전에는 이 구역이 만들어지지 않는다(kWindowMeditationsEnabled = false).
+            const Text('묵상 글은 승인 후 제공됩니다.'),
+          ],
+          const _Heading('보이는 모습'),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GlassPlacementBadge(w.placementKind),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  authentic
+                      ? '이 창은 ${churchNames.join(' · ')}의 실제 창입니다.'
+                      : '같은 양식의 다른 성당 창을 참고 배치했습니다. '
+                            '이 창의 원래 자리는 ${w.place}입니다.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+          if (w.heritage != GlassHeritage.none)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _Note(kGlassHeritageNote, icon: Icons.account_balance),
+            ),
+          const _Heading('보정 내역'),
+          Text(kGlassRetouchPolicy, style: theme.textTheme.bodyMedium),
+          if (w.limitations.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              w.limitations,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
               ),
             ),
           ],
-        ),
-        if (w.heritage != GlassHeritage.none)
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: _Note(kGlassHeritageNote, icon: Icons.account_balance),
-          ),
-        const _Heading('보정 내역'),
-        Text(kGlassRetouchPolicy, style: theme.textTheme.bodyMedium),
-        if (w.limitations.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            w.limitations,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-        if (w.restoration.isNotEmpty)
-          Theme(
-            data: theme.copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              key: const ValueKey('info-restoration'),
-              tilePadding: EdgeInsets.zero,
-              childrenPadding: const EdgeInsets.only(bottom: 8),
-              title: Text('보정 기록 자세히', style: theme.textTheme.labelLarge),
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    w.restoration,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
+          if (w.restoration.isNotEmpty)
+            Theme(
+              data: theme.copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                key: const ValueKey('info-restoration'),
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.only(bottom: 8),
+                title: Text('보정 기록 자세히', style: theme.textTheme.labelLarge),
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      w.restoration,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        const _Heading('사진 · 라이선스'),
-        _CreditBlock(window: w),
-        const _Heading('검토'),
-        _ReviewBlock(window: w),
-        const SizedBox(height: 16),
-        _Note(kGlassUnofficialNote, icon: Icons.info_outline),
-        if (onPray != null) ...[
+          const _Heading('사진 · 라이선스'),
+          _CreditBlock(window: w),
+          const _Heading('검토'),
+          _ReviewBlock(window: w),
           const SizedBox(height: 16),
-          FilledButton.tonalIcon(
-            key: const ValueKey('info-pray'),
-            onPressed: onPray,
-            icon: const Icon(Icons.self_improvement),
-            label: const Text('이 창 앞에서 기도'),
-          ),
+          _Note(kGlassUnofficialNote, icon: Icons.info_outline),
+          if (onPray != null) ...[
+            const SizedBox(height: 16),
+            FilledButton.tonalIcon(
+              key: const ValueKey('info-pray'),
+              onPressed: onPray,
+              icon: const Icon(Icons.self_improvement),
+              label: const Text('이 창 앞에서 기도'),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -210,9 +213,8 @@ class _Heading extends StatelessWidget {
       padding: const EdgeInsets.only(top: 20, bottom: 8),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(color: Theme.of(context).colorScheme.primary),
       ),
     );
   }
@@ -372,7 +374,9 @@ class _CreditBlock extends StatelessWidget {
             _Fact('라이선스', s.license),
             if (s.licenseUrl.isNotEmpty)
               _LinkRow(label: '라이선스 링크', url: s.licenseUrl),
-            if (required) _Fact('변경', kGlassChangeNote),
+            // 표시 문구에 변경 여부가 이미 들어 있으면 되풀이하지 않는다.
+            if (required && !s.credit.contains(kGlassChangeNote))
+              _Fact('변경', kGlassChangeNote),
             if (s.url.isNotEmpty)
               _LinkRow(
                 label: '원본 보기',
@@ -427,9 +431,8 @@ class _LinkRow extends StatelessWidget {
             onPressed: () {
               unawaited(Clipboard.setData(ClipboardData(text: url)));
               onCopy?.call();
-              ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                const SnackBar(content: Text('링크를 복사했습니다')),
-              );
+              ScaffoldMessenger.maybeOf(context)
+                  ?.showSnackBar(const SnackBar(content: Text('링크를 복사했습니다')));
             },
           ),
         ],

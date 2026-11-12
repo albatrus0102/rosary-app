@@ -27,6 +27,8 @@ import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
 import 'package:rosary_app/church/church_tab.dart';
+import 'package:rosary_app/glass/glass_catalog.dart';
+import 'package:rosary_app/glass/glass_tab.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
 import 'package:rosary_app/stats/prayer_stats_store.dart';
@@ -40,6 +42,7 @@ import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'church_screen_fakes.dart';
+import 'glass_test_support.dart';
 
 class _SilentSoundPlayer extends SoundPlayer {
   @override
@@ -158,8 +161,14 @@ Future<void> _nexts(WidgetTester tester, int count) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUp(Analytics.debugReset);
-  tearDown(Analytics.debugReset);
+  setUp(() {
+    Analytics.debugReset();
+    GlassCatalog.debugSetShared(testGlassCatalogFuture());
+  });
+  tearDown(() {
+    Analytics.debugReset();
+    GlassCatalog.debugResetShared();
+  });
 
   group('앱 서비스 묶음', () {
     test('백엔드 설정이 없으면 bootstrapServices는 가짜 서비스로 열고 아무것도 켜지 않는다', () async {
@@ -195,6 +204,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginScreen), findsNothing);
+      // 앱을 열면 유리화 탭이 먼저 나오고, 기도(오늘)는 한 번 눌러 간다.
+      expect(find.byType(GlassTab), findsOneWidget);
+      expect(find.textContaining('신비 시작'), findsNothing);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('오늘'),
+        ),
+      );
+      await tester.pumpAndSettle();
       expect(find.textContaining('신비 시작'), findsOneWidget);
       expect(find.byType(StatsSummaryCard), findsOneWidget);
 
@@ -235,6 +254,14 @@ void main() {
       expect(auth.calls, ['signInAnonymously']);
       expect(auth.current.isAnonymous, isTrue);
       expect(find.byType(ConsentScreen), findsNothing);
+      expect(find.byType(GlassTab), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('오늘'),
+        ),
+      );
+      await tester.pumpAndSettle();
       expect(find.textContaining('신비 시작'), findsOneWidget);
 
       // 게스트를 로그아웃하면 다시 동의부터(새 게스트).
@@ -359,7 +386,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(StatsScreen), findsOneWidget);
       expect(_screens(), [
-        'home', // '/' 라우트
+        'glass_gallery', // '/' 라우트(앱 셸의 첫 탭)
         'more',
         'stats',
         'home',

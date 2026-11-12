@@ -4,8 +4,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/glass/glass_catalog.dart';
 
-GlassCatalog _real() =>
-    GlassCatalog.parse(File('assets/church/glass_catalog.json').readAsStringSync());
+GlassCatalog _real() => GlassCatalog.parse(
+  File('assets/church/glass_catalog.json').readAsStringSync(),
+);
 
 Map<String, Object?> _win(String id, {Map<String, Object?>? patch}) {
   final m = <String, Object?>{
@@ -31,8 +32,16 @@ Map<String, Object?> _win(String id, {Map<String, Object?>? patch}) {
       'credit_required': true,
     },
     'files': {
-      '1k': {'path': 'assets/church/glass_$id\_1k.webp', 'px': [512, 1024], 'bundled': true},
-      '2k': {'path': 'assets/church/glass_$id\_2k.webp', 'px': [1024, 2048], 'bundled': true},
+      '1k': {
+        'path': 'assets/church/glass_${id}_1k.webp',
+        'px': [512, 1024],
+        'bundled': true,
+      },
+      '2k': {
+        'path': 'assets/church/glass_${id}_2k.webp',
+        'px': [1024, 2048],
+        'bundled': true,
+      },
       'master': {'path': 'art/glass_masters/glass_$id.webp', 'bundled': false},
     },
     'suggestedChurches': [
@@ -101,7 +110,12 @@ void main() {
         all.where((p) => p.kind == GlassPlacementKind.reference),
         hasLength(79),
       );
-      expect(c.byChurch('stpeter', kind: GlassPlacementKind.authentic).map((w) => w.id), ['dove_stpeter']);
+      expect(
+        c
+            .byChurch('stpeter', kind: GlassPlacementKind.authentic)
+            .map((w) => w.id),
+        ['dove_stpeter'],
+      );
       expect(c.byChurch('florence').first.isAuthentic, isTrue);
       expect(c.byChurch('nope'), isEmpty);
       expect(c.byId('dove_stpeter')!.isAuthentic, isTrue);
@@ -113,7 +127,10 @@ void main() {
         expect(w.colors, isNotEmpty, reason: '${w.id}: ${w.colorNote}');
         expect(w.shape, isNot(GlassForm.other), reason: '${w.id}: ${w.form}');
       }
-      final noEra = [for (final w in c.all) if (w.era == null) w.id];
+      final noEra = [
+        for (final w in c.all)
+          if (w.era == null) w.id,
+      ];
       // '미상'만 있는 창만 시대가 없다.
       expect(noEra, ['milan_apse_lower']);
     });
@@ -132,7 +149,10 @@ void main() {
     test('window of the day: deterministic, rotates, covers everything', () {
       final c = _real();
       final d = DateTime(2026, 11, 12, 3);
-      expect(c.windowOfTheDay(d)!.id, c.windowOfTheDay(DateTime(2026, 11, 12, 23))!.id);
+      expect(
+        c.windowOfTheDay(d)!.id,
+        c.windowOfTheDay(DateTime(2026, 11, 12, 23))!.id,
+      );
       final ids = <String>{};
       for (var i = 0; i < 46; i++) {
         ids.add(c.windowOfTheDay(DateTime(2026, 11, 12 + i))!.id);
@@ -156,12 +176,15 @@ void main() {
 
     test('license allow-list: CC0/PD/CC BY only', () {
       GlassCatalog withLicense(String l) => _of([
-        _win('x1', patch: {
-          'source': {
-            ...(_win('x1')['source'] as Map<String, Object?>),
-            'license': l,
+        _win(
+          'x1',
+          patch: {
+            'source': {
+              ...(_win('x1')['source'] as Map<String, Object?>),
+              'license': l,
+            },
           },
-        }),
+        ),
       ]);
       expect(withLicense('CC0 1.0').all, hasLength(1));
       expect(withLicense('Public domain').all, hasLength(1));
@@ -172,32 +195,47 @@ void main() {
     });
 
     test('aspect vs real size within 2% (only when both known)', () {
-      expect(_of([_win('ok', patch: {'aspect_w_over_h': 0.505})]).all, hasLength(1));
-      final bad = _of([_win('bad', patch: {'aspect_w_over_h': 0.55})]);
+      expect(
+        _of([
+          _win('ok', patch: {'aspect_w_over_h': 0.505}),
+        ]).all,
+        hasLength(1),
+      );
+      final bad = _of([
+        _win('bad', patch: {'aspect_w_over_h': 0.55}),
+      ]);
       expect(bad.all, hasLength(1)); // 창은 보이되 경고를 남긴다.
       expect(bad.issues.single.isError, isFalse);
       expect(bad.issues.single.message, contains('어긋남'));
       expect(bad.all.single.sizeMismatch, closeTo(0.1, 0.001));
       // 치수를 모르면 검사하지 않는다.
       final unknown = _of([
-        _win('unk', patch: {
-          'aspect_w_over_h': 0.9,
-          'real_size_m': {'width': null, 'height': null, 'status': 'unknown'},
-        }),
+        _win(
+          'unk',
+          patch: {
+            'aspect_w_over_h': 0.9,
+            'real_size_m': {'width': null, 'height': null, 'status': 'unknown'},
+          },
+        ),
       ]);
       expect(unknown.all, hasLength(1));
       final oneSided = _of([
-        _win('one', patch: {
-          'aspect_w_over_h': 0.9,
-          'real_size_m': {'width': 10.5, 'height': null, 'status': 'known'},
-        }),
+        _win(
+          'one',
+          patch: {
+            'aspect_w_over_h': 0.9,
+            'real_size_m': {'width': 10.5, 'height': null, 'status': 'known'},
+          },
+        ),
       ]);
       expect(oneSided.all, hasLength(1));
     });
 
     test('70-year rule applies when designer_death_year is present', () {
       expect(
-        _of([_win('old', patch: {'designer_death_year': 1907})], thisYear: 2026).all,
+        _of([
+          _win('old', patch: {'designer_death_year': 1907}),
+        ], thisYear: 2026).all,
         hasLength(1),
       );
       final fresh = _of([
@@ -207,7 +245,9 @@ void main() {
       expect(fresh.issues.single.message, contains('70'));
       // 경계: 정확히 70년째면 통과.
       expect(
-        _of([_win('edge', patch: {'designer_death_year': 1956})], thisYear: 2026).all,
+        _of([
+          _win('edge', patch: {'designer_death_year': 1956}),
+        ], thisYear: 2026).all,
         hasLength(1),
       );
     });
@@ -215,17 +255,24 @@ void main() {
     test('duplicate ids and unbundled files are errors', () {
       expect(_of([_win('dup'), _win('dup')]).all, hasLength(1));
       final unb = _win('unb');
-      (unb['files'] as Map)['1k'] = {'path': 'x.webp', 'px': [1, 1], 'bundled': false};
+      (unb['files'] as Map)['1k'] = {
+        'path': 'x.webp',
+        'px': [1, 1],
+        'bundled': false,
+      };
       expect(_of([unb]).all, isEmpty);
     });
 
     test('CC BY without credit_required is an error', () {
-      final w = _win('cb', patch: {
-        'source': {
-          ...(_win('cb')['source'] as Map<String, Object?>),
-          'credit_required': false,
+      final w = _win(
+        'cb',
+        patch: {
+          'source': {
+            ...(_win('cb')['source'] as Map<String, Object?>),
+            'credit_required': false,
+          },
         },
-      });
+      );
       expect(_of([w]).all, isEmpty);
     });
 
@@ -239,7 +286,12 @@ void main() {
       for (var i = 0; i < 10; i++) {
         expect(c.windowOfTheDay(DateTime(2026, 11, 1 + i))!.id, 'a1');
       }
-      expect(_of([_win('h', patch: {'hidden': true})]).windowOfTheDay(DateTime(2026)), isNull);
+      expect(
+        _of([
+          _win('h', patch: {'hidden': true}),
+        ]).windowOfTheDay(DateTime(2026)),
+        isNull,
+      );
     });
   });
 
@@ -261,13 +313,20 @@ void main() {
     });
 
     test('colors from notes', () {
-      expect(
-        glassColorsOf('깊은 파랑 바탕, 빨강·녹색·흰색.'),
-        {GlassColorTag.blue, GlassColorTag.red, GlassColorTag.green},
-      );
+      expect(glassColorsOf('깊은 파랑 바탕, 빨강·녹색·흰색.'), {
+        GlassColorTag.blue,
+        GlassColorTag.red,
+        GlassColorTag.green,
+      });
       expect(glassColorsOf('호박색·금색·갈색의 방사형 분할'), {GlassColorTag.gold});
-      expect(glassColorsOf('회백색 그리자유, 빨강·노랑 테두리.'), contains(GlassColorTag.clear));
-      expect(glassColorsOf('보라·파랑'), {GlassColorTag.purple, GlassColorTag.blue});
+      expect(
+        glassColorsOf('회백색 그리자유, 빨강·노랑 테두리.'),
+        contains(GlassColorTag.clear),
+      );
+      expect(glassColorsOf('보라·파랑'), {
+        GlassColorTag.purple,
+        GlassColorTag.blue,
+      });
     });
 
     test('sites, heritage and forms', () {
@@ -282,6 +341,8 @@ void main() {
       expect(c.byId('milan_apse_lower')!.heritage, GlassHeritage.italy);
       expect(c.byId('rose_chartres_north')!.heritage, GlassHeritage.none);
       expect(c.byId('dove_stpeter')!.authorText, contains('베르니니'));
+      expect(c.byId('leoben_magi')!.shortPlace, '클리블랜드 미술관 소장');
+      expect(c.byId('tiffany_hinds')!.shortPlace, '클리블랜드 미술관 소장');
       expect(c.byId('milan_apse_lower')!.authorText, '미상');
     });
   });

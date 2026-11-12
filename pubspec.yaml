@@ -55,6 +55,8 @@ flutter:
           weight: 500
   assets:
     - assets/images/
+    # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 창마다 1k·2k WebP(번들).
+    # 4096 마스터는 art/glass_masters/에 있고 번들하지 않는다(G2에서 CDN으로 내려받는다).
     - assets/church/
     - assets/church_thumbs/
     - assets/sounds/

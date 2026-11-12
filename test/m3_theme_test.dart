@@ -5,10 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/app.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
+import 'package:rosary_app/glass/glass_catalog.dart';
 import 'package:rosary_app/ui/home_screen.dart';
 import 'package:rosary_app/ui/rosary_style_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'glass_test_support.dart';
 
 Future<AppSettings> _settings([Map<String, Object> values = const {}]) async {
   SharedPreferences.setMockInitialValues(values);
@@ -105,6 +108,8 @@ void main() {
     final accent = const Color(0xFF3366CC);
 
     setUp(() {
+      // 유리화 탭(첫 탭)의 카탈로그는 자산 읽기 대신 동기 값을 쓴다.
+      GlassCatalog.debugSetShared(testGlassCatalogFuture());
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async {
             if (call.method == 'getAccentColor') return accent.toARGB32();
@@ -112,6 +117,7 @@ void main() {
           });
     });
     tearDown(() {
+      GlassCatalog.debugResetShared();
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, null);
     });
@@ -122,7 +128,7 @@ void main() {
       expect(settings.useDynamicColor, isFalse);
       await tester.pumpWidget(RosaryApp(settings));
       await tester.pump();
-      final ctx = tester.element(find.byType(HomeScreen));
+      final ctx = tester.element(find.byType(HomeScreen, skipOffstage: false));
       expect(
         Theme.of(ctx).colorScheme.primary,
         AppTheme.seedScheme(Theme.of(ctx).brightness).primary,
@@ -136,7 +142,7 @@ void main() {
       await tester.pumpWidget(RosaryApp(settings));
       await tester.pump();
       await tester.pumpAndSettle(); // 테마 전환 애니메이션이 끝날 때까지
-      final ctx = tester.element(find.byType(HomeScreen));
+      final ctx = tester.element(find.byType(HomeScreen, skipOffstage: false));
       final brightness = Theme.of(ctx).brightness;
       final expected = ColorScheme.fromSeed(
         seedColor: accent,
@@ -148,11 +154,13 @@ void main() {
       settings.useDynamicColor = false;
       await tester.pumpAndSettle();
       expect(
-        Theme.of(tester.element(find.byType(HomeScreen))).colorScheme.primary,
+        Theme.of(tester.element(find.byType(HomeScreen, skipOffstage: false)))
+            .colorScheme
+            .primary,
         AppTheme.seedScheme(brightness).primary,
       );
       // 내비게이터 상태가 유지된다(트리가 다시 만들어지지 않음).
-      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(HomeScreen, skipOffstage: false), findsOneWidget);
     });
 
     testWidgets('설정 화면 스위치가 useDynamicColor를 저장한다', (tester) async {

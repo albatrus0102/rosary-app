@@ -86,6 +86,7 @@
     var ray = new T.Raycaster(), ndc = new T.Vector2(), pv = new T.Vector3();
     var M = {
       items: items,
+      holder: holder,
       // active: {kind,index}|null — 걷는 중인 목적지. on: 걷는 중(앉지 않음)
       update: function (dt, t, me, camera, active, on) {
         var k = 1 - Math.exp(-dt * 6);

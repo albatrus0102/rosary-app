@@ -119,7 +119,9 @@ String glassSizeText(GlassWindow w) {
     return '가로 $approx${m(wd)}m × 세로 ${m(ht)}m';
   }
   if (wd != null) {
-    return w.shape == GlassForm.rose ? '지름 $approx${m(wd)}m' : '가로 $approx${m(wd)}m';
+    return w.shape == GlassForm.rose
+        ? '지름 $approx${m(wd)}m'
+        : '가로 $approx${m(wd)}m';
   }
   return '높이 $approx${m(ht!)}m';
 }

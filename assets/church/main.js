@@ -17,16 +17,26 @@
   function wrap(a) { while (a > PI) a -= PI * 2; while (a < -PI) a += PI * 2; return a; }
   function r2(v) { return Math.round(v * 100) / 100; }
 
-  function pixelRatio() { var d = root.devicePixelRatio || 1; return Math.min(d, App.quality === 'low' ? 1.5 : 2); }
+  function viewing() { return !!(App.view && App.view.active); }
+  // 창 감상 중에는 기기 화소 비율(최대 3, low 는 1.5)까지 올린다(GLASS_APP_PLAN §4.6: 정지 시 그리지 않으므로 부하가 오히려 적다)
+  function pixelRatio() { var d = root.devicePixelRatio || 1; return Math.min(d, App.quality === 'low' ? 1.5 : (viewing() ? 3 : 2)); }
   function resize() {
     if (!App.renderer) return;
     var w = root.innerWidth || 360, h = root.innerHeight || 640;
     App.R.resize(w, h, pixelRatio());
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     App.camera.aspect = w / h;
+    if (viewing()) { App.view.onResize(); App.camera.updateProjectionMatrix(); kick(); return; }
     // 세로 화면에서는 시야를 넓힌다
     App.camera.fov = w / h < 0.8 ? 62 : 52;
     App.camera.updateProjectionMatrix();
+    kick();
+  }
+  // 그리기 고리 다시 돌리기(감상 모드는 멈춰 있을 때 rAF 를 쉰다)
+  function kick() {
+    if (!App.started || App.rafOn) return;
+    App.rafOn = true; App.last = performance.now();
+    requestAnimationFrame(loop);
   }
   root.addEventListener('resize', resize);
   root.addEventListener('orientationchange', function () { setTimeout(resize, 150); });
@@ -41,13 +51,23 @@
 
   function isTaken(id) { return App.net.isTaken(id) || App.crowd.isTaken(id); }
 
-  function loadWorld(id) {
+  // vopts.view: 감상실(ch_glass) 매개변수. 감상실(builder.viewing)은 좌석·스테이션·표식·군중·서버 연결이 없다.
+  function loadWorld(id, vopts) {
     if (App.markers) { App.markers.dispose(); App.markers = null; }
     App.walkSt = null; App.pendingWalk = null; App.turn = null;
     if (App.world) { App.world.dispose(); App.world = null; }
-    var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer });
+    if (App.view) App.view.unpark();
+    var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer, view: vopts && vopts.view });
     if (App.R.envTex) w.setEnvironment(App.R.envTex);
     App.world = w; App.logic = w.logic; App.church = w.id;
+    kick();
+    if (w.builder.viewing) {
+      var vs = w.layout.spawn, vme = App.me;
+      vme.x = vs.x; vme.z = vs.z; vme.yaw = 0; vme.y = 0; vme.vx = vme.vz = 0; vme.mode = 'walk'; vme.seat = null;
+      App.stations = null; App.near.seat = App.near.candle = undefined; App.near.station = null;
+      if (console && console.log) console.log('[church] view room ' + w.id + ' stats', JSON.stringify(w.stats));
+      return;
+    }
     App.net.setLogic(w.logic); App.crowd.setLogic(w.logic);
     var sp = w.layout.spawn;
     var me = App.me;
@@ -92,13 +112,17 @@
       root.ChurchRenderUtil.markCaster(App.meAv.root);
       App.net = root.ChurchNetView.create(App.scene);
       App.crowd = root.ChurchNetView.createCrowd(App.scene);
+      App.view = root.ChurchGlassView.create(App, { start: start, loadWorld: loadWorld, kick: kick, post: post, resize: resize });
       resize();
+      App.rafOn = true;   // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다
       loadWorld(church);
       App.last = performance.now();
       var go = function () { App.last = performance.now(); requestAnimationFrame(loop); };
       if (root.ChurchPhotos) root.ChurchPhotos.whenReady(go, 2500); else go();
     } else {
       App.meAv.setConfig(App.cfg);
+      if (viewing() && !o.church) church = App.church;              // 감상 중 init 재호출: 장면을 바꾸지 않는다
+      else if (viewing() && church !== App.church) App.view.api.endView();
       if (church !== App.church) loadWorld(church);
       resize();
     }
@@ -143,7 +167,13 @@
 
   var api = {
     init: function (o) { start(o); },
-    setChurch: function (o) { if (o.church && o.church !== App.church) loadWorld(o.church); },
+    setChurch: function (o) { if (o.church && o.church !== App.church) { if (viewing()) App.view.api.endView(); if (o.church !== App.church) loadWorld(o.church); } },
+    // 창 감상(G-07, SPEC §22): 실제 처리는 glass_view.js
+    viewWindow: function (o) { if (!App.started) start({ church: 'glass_room', quality: o && o.quality }); App.view.api.viewWindow(o); },
+    endView: function () { if (App.view) App.view.api.endView(); },
+    setViewLight: function (o) { if (App.view) App.view.api.setViewLight(o); },
+    setViewTier: function (o) { if (App.view) App.view.api.setViewTier(o); },
+    resetView: function () { if (App.view) App.view.api.resetView(); },
     setJoystick: function (o) { if (App.ctl) App.ctl.setJoystick(o.x, o.y); },
     sit: function (o) {
       if (!App.started || App.me.mode !== 'walk') return;
@@ -239,6 +269,7 @@
     startWalk(o);
   }
   function tapAt(x, y) {
+    if (viewing()) return;
     if (!App.markers || !App.camera || App.me.mode !== 'walk' || !(x >= 0) || !(y >= 0)) return;
     var w = root.innerWidth || 360, h = root.innerHeight || 640;
     var hit = App.markers.pick(x / w * 2 - 1, -(y / h * 2 - 1), App.camera, w, h);
@@ -396,11 +427,18 @@
   }
 
   function loop(now) {
-    if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; return; }
-    requestAnimationFrame(loop);
+    if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
     App.frameCount = (App.frameCount || 0) + 1;
     var raw = (now - App.last) / 1000, dt = Math.min(0.05, raw);
     App.last = now; App.t += dt;
+    // 창 감상: 필요할 때만 그린다(입력·활강·페이드·빛 바꾸기). 할 일이 없으면 rAF 를 멈추고 kick() 이 다시 깨운다.
+    if (App.view && (App.view.active || App.view.parked)) {
+      var busy = false;
+      try { busy = App.view.frame(dt); } catch (e) { if (console && console.error) console.error('[church] view frame', e); }
+      if (busy) requestAnimationFrame(loop); else App.rafOn = false;
+      return;
+    }
+    requestAnimationFrame(loop);
     if (!App.world) return;
     App.ctl.setMoveZone(App.me.mode === 'walk');
     updateMe(dt, App.t);
@@ -426,6 +464,8 @@
     }
   }
 
+  // 시험용: ?view=<창 id>&vmode=room|church&tier=t1|t2&light=ref|sun|night&vhour=10
+  if (qs.view) setTimeout(function () { var t = setInterval(function () { if (!App.started) return; clearInterval(t); api.viewWindow({ win: qs.view, mode: qs.vmode || 'room', tier: qs.tier || 't2', light: qs.light || 'ref', hour: qs.vhour === undefined ? undefined : +qs.vhour }); }, 50); }, 0);
   root.ChurchAPI._bind({ api: api });
   function boot() {
     post({ e: 'ready' });

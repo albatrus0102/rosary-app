@@ -75,9 +75,7 @@ class _GlassGalleryState extends State<GlassGallery> {
     final side = math.max(margin, (width - 1100) / 2);
     final scale = MediaQuery.textScalerOf(context);
     final filtered = _filters.apply(_visible);
-    final today = widget.catalog.windowOfTheDay(
-      (widget.now ?? DateTime.now)(),
-    );
+    final today = widget.catalog.windowOfTheDay((widget.now ?? DateTime.now)());
     final cols = scale.scale(14) > 21 && wc.isCompact
         ? 1
         : switch (wc) {
@@ -92,7 +90,8 @@ class _GlassGalleryState extends State<GlassGallery> {
           child: CustomScrollView(
             key: const ValueKey('glass-gallery-scroll'),
             slivers: [
-              if (today != null)
+              // 필터를 켜면 결과가 바로 위에 보이도록 오늘의 창 카드는 접는다.
+              if (today != null && _filters.isEmpty)
                 SliverPadding(
                   padding: EdgeInsets.fromLTRB(side, 4, side, 8),
                   sliver: SliverToBoxAdapter(
@@ -111,7 +110,8 @@ class _GlassGalleryState extends State<GlassGallery> {
                   child: _FilterBar(
                     filters: _filters,
                     onOpenKind: _openFilterSheet,
-                    onRemove: (f) => setState(() => _filters = _filters.without(f)),
+                    onRemove: (f) =>
+                        setState(() => _filters = _filters.without(f)),
                     onClear: _clear,
                     shown: filtered.length,
                     total: _visible.length,
@@ -193,8 +193,7 @@ class _MasonryDelegate extends SliverGridDelegate {
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
-    final colW =
-        (constraints.crossAxisExtent - gap * (columns - 1)) / columns;
+    final colW = (constraints.crossAxisExtent - gap * (columns - 1)) / columns;
     return _MasonryLayout(
       colWidth: colW,
       gap: gap,
@@ -241,10 +240,12 @@ class _MasonryLayout extends SliverGridLayout {
       colBottom[c] += heights[i] + gap;
     }
     total = colBottom.fold<double>(0, math.max);
-    // 뒤쪽 카드의 바닥 중 가장 큰 값(스크롤 위치에서 처음 보이는 카드를 찾는 데 쓴다).
-    sufMaxBottom = List<double>.filled(heights.length + 1, 0);
-    for (var i = heights.length - 1; i >= 0; i--) {
-      sufMaxBottom[i] = math.max(sufMaxBottom[i + 1], tops[i] + heights[i]);
+    // 앞에서부터 본 바닥의 최댓값(스크롤 위치에서 처음 보이는 카드를 찾는 데 쓴다).
+    preMaxBottom = List<double>.filled(heights.length, 0);
+    var m = 0.0;
+    for (var i = 0; i < heights.length; i++) {
+      m = math.max(m, tops[i] + heights[i]);
+      preMaxBottom[i] = m;
     }
   }
 
@@ -254,19 +255,19 @@ class _MasonryLayout extends SliverGridLayout {
   final List<double> heights;
   late final List<double> tops;
   late final List<int> col;
-  late final List<double> sufMaxBottom;
+  late final List<double> preMaxBottom;
   late final double total;
 
   @override
   int getMinChildIndexForScrollOffset(double scrollOffset) {
-    // sufMaxBottom은 뒤로 갈수록 줄어드는 값이라, 처음으로 scrollOffset 이하가 되는 곳 앞까지.
+    // 바닥이 scrollOffset보다 아래인 첫 카드. preMaxBottom은 줄지 않으므로 이진 탐색한다.
     var lo = 0, hi = heights.length;
     while (lo < hi) {
       final mid = (lo + hi) >> 1;
-      if (sufMaxBottom[mid] > scrollOffset) {
-        lo = mid + 1;
-      } else {
+      if (preMaxBottom[mid] > scrollOffset) {
         hi = mid;
+      } else {
+        lo = mid + 1;
       }
     }
     return math.max(0, math.min(lo, heights.length - 1));
@@ -274,7 +275,7 @@ class _MasonryLayout extends SliverGridLayout {
 
   @override
   int getMaxChildIndexForScrollOffset(double scrollOffset) {
-    // tops는 앞에서 뒤로 줄지 않는다: scrollOffset 아래에서 시작하는 마지막 카드.
+    // 카드의 top은 앞에서 뒤로 줄지 않는다: scrollOffset 위에서 시작하는 마지막 카드.
     var lo = 0, hi = heights.length;
     while (lo < hi) {
       final mid = (lo + hi) >> 1;
@@ -284,7 +285,7 @@ class _MasonryLayout extends SliverGridLayout {
         hi = mid;
       }
     }
-    return math.max(0, math.min(lo, heights.length - 1));
+    return math.max(0, math.min(lo - 1, heights.length - 1));
   }
 
   @override
@@ -318,12 +319,12 @@ class GlassCard extends StatelessWidget {
   static const double _metaLine = 1.35;
   static const double _captionPad = 10;
 
-  /// 글자 크기 배율에 따른 글 칸 높이(제목 2줄 + 소재지 1줄).
+  /// 글자 크기 배율에 따른 글 칸 높이(제목 2줄 + 소재지·시대 2줄).
   static double captionHeight(TextScaler scaler) =>
       _captionPad +
       scaler.scale(_titleSize) * _titleLine * 2 +
       4 +
-      scaler.scale(_metaSize) * _metaLine +
+      scaler.scale(_metaSize) * _metaLine * 2 +
       4;
 
   @override
@@ -333,7 +334,7 @@ class GlassCard extends StatelessWidget {
     final w = window;
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final era = w.era?.label;
-    final meta = [w.place, ?era].join(' · ');
+    final meta = [w.shortPlace, ?era].join(' · ');
     return Semantics(
       button: true,
       excludeSemantics: true,
@@ -410,7 +411,7 @@ class GlassCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         meta,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         strutStyle: const StrutStyle(
                           fontSize: _metaSize,
@@ -460,7 +461,7 @@ class _TodayCard extends StatelessWidget {
         child: ColoredBox(
           color: kGlassStone,
           child: SizedBox(
-            height: wide ? 280 : 260,
+            height: wide ? 280 : 232,
             width: double.infinity,
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -479,17 +480,18 @@ class _TodayCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Icon(Icons.wb_twilight, size: 18, color: scheme.primary),
-              const SizedBox(width: 6),
               Text(
                 '오늘의 창',
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: scheme.primary,
                 ),
               ),
-              const SizedBox(width: 8),
               GlassPlacementBadge(w.placementKind),
             ],
           ),
@@ -531,13 +533,9 @@ class _TodayCard extends StatelessWidget {
       color: scheme.surfaceContainerLow,
       child: wide
           ? Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(flex: 5, child: image),
-                Expanded(
-                  flex: 4,
-                  child: Align(alignment: Alignment.centerLeft, child: info),
-                ),
+                Expanded(flex: 4, child: info),
               ],
             )
           : Column(
@@ -673,7 +671,13 @@ class _FilterSheetState extends State<_FilterSheet> {
     final theme = Theme.of(context);
     final all = widget.catalog.visible;
     final chips = <Widget>[];
-    void add(String label, int n, bool selected, VoidCallback onTap, String id) {
+    void add(
+      String label,
+      int n,
+      bool selected,
+      VoidCallback onTap,
+      String id,
+    ) {
       chips.add(
         FilterChip(
           key: ValueKey('opt-$id'),
@@ -699,21 +703,39 @@ class _FilterSheetState extends State<_FilterSheet> {
         for (final e in GlassEra.values) {
           final n = all.where((w) => w.era == e).length;
           if (n > 0) {
-            add(e.label, n, _f.eras.contains(e), () => _toggle(e, e.name), e.name);
+            add(
+              e.label,
+              n,
+              _f.eras.contains(e),
+              () => _toggle(e, e.name),
+              e.name,
+            );
           }
         }
       case GlassFilterKind.shape:
         for (final s in GlassForm.values) {
           final n = all.where((w) => w.shape == s).length;
           if (n > 0) {
-            add(s.label, n, _f.shapes.contains(s), () => _toggle(s, s.name), s.name);
+            add(
+              s.label,
+              n,
+              _f.shapes.contains(s),
+              () => _toggle(s, s.name),
+              s.name,
+            );
           }
         }
       case GlassFilterKind.color:
         for (final c in GlassColorTag.values) {
           final n = all.where((w) => w.colors.contains(c)).length;
           if (n > 0) {
-            add(c.label, n, _f.colors.contains(c), () => _toggle(c, c.name), c.name);
+            add(
+              c.label,
+              n,
+              _f.colors.contains(c),
+              () => _toggle(c, c.name),
+              c.name,
+            );
           }
         }
     }
@@ -725,7 +747,10 @@ class _FilterSheetState extends State<_FilterSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${widget.kind.label} 고르기', style: theme.textTheme.titleMedium),
+            Text(
+              '${widget.kind.label} 고르기',
+              style: theme.textTheme.titleMedium,
+            ),
             if (widget.kind == GlassFilterKind.color)
               Padding(
                 padding: const EdgeInsets.only(top: 4),

@@ -1,0 +1,261 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+
+import '../app/settings.dart';
+import '../app/track.dart';
+import '../church/church_scene_controller.dart';
+import '../church/church_tab.dart';
+import 'glass_catalog.dart';
+import 'glass_gallery.dart';
+import 'glass_view_screen.dart';
+
+/// 유리화 탭의 두 보기: 창(갤러리) | 성당(기존 성당 탭 내용).
+enum GlassSegment { window, church }
+
+/// '유리화' 탭(G-01): 위쪽 제목·[창 | 성당] 전환 아래에 갤러리 홈 또는 성당 흐름을 둔다.
+///
+/// 성당 보기는 [active]일 때만 만든다. 다른 탭으로 가면 [ChurchTab](WebView·소켓·타이머)이
+/// 사라져 배터리를 쓰지 않는다. 갤러리는 Flutter 화면이라 계속 둔다(필터·스크롤 유지).
+class GlassTab extends StatefulWidget {
+  const GlassTab({
+    super.key,
+    required this.settings,
+    this.active = true,
+    this.catalog,
+    this.churchBuilder,
+    this.sceneFactory,
+    this.onOpenPrayer,
+    this.initialSegment = GlassSegment.window,
+  });
+
+  final AppSettings settings;
+
+  /// 이 탭이 지금 보이는가.
+  final bool active;
+
+  /// 시험용 주입. 없으면 앱 번들의 카탈로그를 읽는다.
+  final Future<GlassCatalog>? catalog;
+
+  /// 시험용 주입: 성당 보기 내용을 대신 만든다.
+  final WidgetBuilder? churchBuilder;
+
+  /// 시험용 주입: 창 감상 장면 컨트롤러 공장.
+  final ChurchSceneController Function()? sceneFactory;
+
+  /// 오늘의 묵주기도(오늘 탭)로 간다.
+  final VoidCallback? onOpenPrayer;
+
+  final GlassSegment initialSegment;
+
+  @override
+  State<GlassTab> createState() => _GlassTabState();
+}
+
+class _GlassTabState extends State<GlassTab> {
+  late GlassSegment _segment = widget.initialSegment;
+  late final Future<GlassCatalog> _catalog =
+      widget.catalog ?? GlassCatalog.shared();
+  bool _inChurch = false;
+
+  @override
+  void didUpdateWidget(GlassTab old) {
+    super.didUpdateWidget(old);
+    if (old.active != widget.active) {
+      if (!widget.active) {
+        _inChurch = false; // 성당 보기는 사라지므로 입장 상태도 푼다.
+      } else if (_segment == GlassSegment.window) {
+        Track.screen('glass_gallery');
+      }
+    }
+  }
+
+  void _select(GlassSegment s) {
+    if (s == _segment) return;
+    setState(() {
+      _segment = s;
+      _inChurch = false;
+    });
+    if (s == GlassSegment.window) Track.screen('glass_gallery');
+  }
+
+  void _open(GlassWindow w, String from) {
+    unawaited(
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          settings: const RouteSettings(name: 'glass_view'),
+          builder: (_) => GlassViewScreen(
+            window: w,
+            settings: widget.settings,
+            from: from,
+            scene: widget.sceneFactory?.call(),
+            onPray: widget.onOpenPrayer == null
+                ? null
+                : () => widget.onOpenPrayer!(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _comingSoon() {
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(const SnackBar(content: Text('내 컬렉션은 다음 업데이트에서 만나요.')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final showHeader = !(_segment == GlassSegment.church && _inChurch);
+    final Widget body = switch (_segment) {
+      GlassSegment.window => FutureBuilder<GlassCatalog>(
+        future: _catalog,
+        builder: (context, snap) {
+          if (snap.hasError) {
+            return const _CatalogError();
+          }
+          final c = snap.data;
+          if (c == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return GlassGallery(
+            catalog: c,
+            onOpen: _open,
+            onOpenPrayer: widget.onOpenPrayer == null
+                ? null
+                : (_) => widget.onOpenPrayer!(),
+          );
+        },
+      ),
+      GlassSegment.church =>
+        !widget.active
+            ? const SizedBox.shrink()
+            : (widget.churchBuilder?.call(context) ??
+                  ChurchTab(
+                    key: const ValueKey('church-tab'),
+                    settings: widget.settings,
+                    onInChurchChanged: (v) {
+                      if (mounted && _inChurch != v) {
+                        setState(() => _inChurch = v);
+                      }
+                    },
+                  )),
+    };
+
+    return PopScope(
+      // 성당 보기에서 뒤로 가면 창 보기로 돌아온다(탭 자체의 뒤로는 셸이 처리한다).
+      canPop: _segment == GlassSegment.window,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _segment == GlassSegment.church) {
+          _select(GlassSegment.window);
+        }
+      },
+      child: Material(
+        color: scheme.surface,
+        child: Column(
+          children: [
+            if (showHeader)
+              _Header(
+                segment: _segment,
+                onSegment: _select,
+                onFavorites: _comingSoon,
+              ),
+            Expanded(
+              child: showHeader
+                  // 성당 화면들은 자기 앱 바가 있어 위쪽 안전 영역을 한 번만 쓰게 한다.
+                  ? MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: body,
+                    )
+                  : body,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({
+    required this.segment,
+    required this.onSegment,
+    required this.onFavorites,
+  });
+
+  final GlassSegment segment;
+  final ValueChanged<GlassSegment> onSegment;
+  final VoidCallback onFavorites;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text('스테인드글라스', style: theme.textTheme.titleLarge),
+                  ),
+                ),
+                // 내 컬렉션(즐겨찾기)은 G2. 자리만 둔다.
+                IconButton(
+                  key: const ValueKey('glass-favorites'),
+                  tooltip: '내 컬렉션',
+                  onPressed: onFavorites,
+                  icon: const Icon(Icons.favorite_border),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: SegmentedButton<GlassSegment>(
+                key: const ValueKey('glass-segment'),
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(
+                    value: GlassSegment.window,
+                    label: Text('창'),
+                    icon: Icon(Icons.window_outlined),
+                  ),
+                  ButtonSegment(
+                    value: GlassSegment.church,
+                    label: Text('성당'),
+                    icon: Icon(Icons.church_outlined),
+                  ),
+                ],
+                selected: {segment},
+                onSelectionChanged: (s) => onSegment(s.first),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CatalogError extends StatelessWidget {
+  const _CatalogError();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(32),
+        child: Text(
+          '창 목록을 불러오지 못했습니다. 앱을 다시 열어 주세요.',
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}

@@ -801,6 +801,7 @@
     opts = opts || {};
     var M = getMats();
     this.root = new T.Group();
+    this.root.userData.avatar = true;   // 창 감상 모드에서 숨길 대상(GlassView)
     this.bones = makeBones();
     this.skeleton = new T.Skeleton(this.bones, boneInverses());
     this.body = new T.Group(); this.body.add(this.bones[0]); this.root.add(this.body);

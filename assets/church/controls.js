@@ -1,7 +1,9 @@
 /* controls.js — 입력. 화면을 왼쪽/오른쪽 절반으로 나눈다(C-01, Roblox 규약).
    왼쪽 절반(걷는 중에만): 닿은 곳에 떠다니는 스틱이 생긴다. 앱에서는 Flutter 가 이 영역을 가로채 setJoystick 으로 값을 보내고,
    웹 단독(브라우저 미리보기/테스트)에서는 아래 웹 스틱이 같은 일을 한다.
-   오른쪽 절반(그리고 앉은 동안 화면 전체): 드래그 = 카메라 회전, 두 손가락 핀치/휠 = 줌. 키보드(WASD/화살표, Q/E)도 유지. */
+   오른쪽 절반(그리고 앉은 동안 화면 전체): 드래그 = 카메라 회전, 두 손가락 핀치/휠 = 줌. 키보드(WASD/화살표, Q/E)도 유지.
+   창 감상 모드(ctl.viewMode, G-07): 화면 전체가 감상 제스처 — 한 손가락 끌기 = onView('pan',{dx,dy}), 두 손가락 = onView('pinch',{k,cx,cy}),
+   휠 = pinch, 두 번 탭 = onView('dtap'), 탭 = onView('tap'). 걷기·카메라 회전 값은 건드리지 않는다. */
 (function (root) {
   'use strict';
   function create(canvas) {
@@ -24,8 +26,45 @@
       // 터치 x 가 왼쪽(이동) 절반인가
       inMoveZone: function (clientX) { return clientX < (root.innerWidth || canvas.clientWidth || 360) * 0.5; },
       // 걷는 중에만 왼쪽 절반이 이동 영역이다(앉으면 화면 전체가 카메라 영역).
-      setMoveZone: function (on) { on = !!on; if (ctl.moveZone === on) return; ctl.moveZone = on; if (!on) releaseMove(); }
+      setMoveZone: function (on) { on = !!on; if (ctl.moveZone === on) return; ctl.moveZone = on; if (!on) releaseMove(); },
+      // 창 감상 제스처
+      viewMode: false, onView: null,
+      setViewMode: function (on) { on = !!on; if (ctl.viewMode === on) return; ctl.viewMode = on; vpts = {}; vLast = 0; if (on) { releaseMove(); pts = {}; recount(); } }
     };
+    // ---- 감상 제스처(viewMode) ----
+    var vpts = {}, vLast = 0, vTap = null;
+    function vIds() { return Object.keys(vpts); }
+    function vGeom() { var k = vIds(), a = vpts[k[0]], b = vpts[k[1]]; return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 }; }
+    function vEmit(kind, o) { if (ctl.onView) { try { ctl.onView(kind, o || {}); } catch (e) { if (root.console) console.error('[church] view gesture', e); } } }
+    function vDown(e) {
+      vpts[e.pointerId] = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t0: Date.now(), moved: 0, alone: vIds().length === 0 };
+      if (vIds().length >= 2) { var g = vGeom(); vLast = g.d; for (var k in vpts) vpts[k].alone = false; }
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    }
+    function vMove(e) {
+      var p = vpts[e.pointerId];
+      if (!p) return;
+      var dx = e.clientX - p.x, dy = e.clientY - p.y;
+      p.x = e.clientX; p.y = e.clientY;
+      p.moved = Math.max(p.moved, Math.hypot(e.clientX - p.sx, e.clientY - p.sy));
+      var n = vIds().length;
+      if (n >= 2) {
+        var g = vGeom();
+        if (vLast > 0 && g.d > 0) vEmit('pinch', { k: g.d / vLast, cx: g.cx, cy: g.cy });
+        vLast = g.d;
+      } else if (n === 1) vEmit('pan', { dx: dx, dy: dy });
+    }
+    function vUp(e) {
+      var p = vpts[e.pointerId];
+      if (!p) return;
+      delete vpts[e.pointerId];
+      if (vIds().length >= 2) vLast = vGeom().d; else vLast = 0;
+      var isTap = e.type === 'pointerup' && p.alone && p.moved < 12 && Date.now() - p.t0 < 350;
+      if (!isTap) return;
+      var now = Date.now();
+      if (vTap && now - vTap.t < 330 && Math.hypot(e.clientX - vTap.x, e.clientY - vTap.y) < 40) { vTap = null; vEmit('dtap', { x: e.clientX, y: e.clientY }); }
+      else { vTap = { t: now, x: e.clientX, y: e.clientY }; vEmit('tap', { x: e.clientX, y: e.clientY }); }
+    }
     var keys = {};
     function recalc() {
       ctl.kx = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0);
@@ -65,6 +104,7 @@
     function orbitIds() { var o = []; for (var k in pts) if (pts[k].role === 'orbit') o.push(k); return o; }
     function pd() { var ks = orbitIds(); var a = pts[ks[0]], b = pts[ks[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
     canvas.addEventListener('pointerdown', function (e) {
+      if (ctl.viewMode) { vDown(e); return; }
       var role = 'orbit';
       if (ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX) && count < 2) role = 'move';
       pts[e.pointerId] = { x: e.clientX, y: e.clientY, role: role, sx: e.clientX, sy: e.clientY, t0: Date.now(), alone: countAll() === 0, moved: 0 };
@@ -80,6 +120,7 @@
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     });
     canvas.addEventListener('pointermove', function (e) {
+      if (ctl.viewMode) { vMove(e); return; }
       var p = pts[e.pointerId];
       if (!p) return;
       var dx = e.clientX - p.x, dy = e.clientY - p.y;
@@ -115,6 +156,7 @@
       ctl.lastDragT = ctl.now;
     });
     function up(e) {
+      if (ctl.viewMode) { vUp(e); return; }
       var p = pts[e.pointerId];
       if (!p) return;
       // 탭: 안 끌었고(10px 이하) 짧고(450ms 이하) 한 손가락일 때만(취소 이벤트는 제외)
@@ -127,7 +169,9 @@
     }
     canvas.addEventListener('pointerup', up);
     canvas.addEventListener('pointercancel', up);
-    canvas.addEventListener('wheel', function (e) { ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom * (1 + e.deltaY * 0.001))); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('wheel', function (e) {
+      if (ctl.viewMode) { vEmit('pinch', { k: Math.exp(-e.deltaY * 0.0015), cx: e.clientX, cy: e.clientY }); e.preventDefault(); return; }
+      ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom * (1 + e.deltaY * 0.001))); e.preventDefault(); }, { passive: false });
     return ctl;
   }
   root.ChurchControls = { create: create };

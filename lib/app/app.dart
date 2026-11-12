@@ -24,7 +24,9 @@ class RosaryApp extends StatefulWidget {
 class _RosaryAppState extends State<RosaryApp> {
   late final AppServices _services =
       widget.services ?? AppServices.inMemory(widget.settings);
-  final AnalyticsObserver _analyticsObserver = AnalyticsObserver();
+  final AnalyticsObserver _analyticsObserver = AnalyticsObserver(
+    rootScreen: () => AppShell.currentScreenId,
+  );
 
   AppSettings get settings => widget.settings;
 

@@ -1,4 +1,4 @@
-/* bridge.js — window.ChurchAPI (Flutter -> 웹) 와 FlutterChurch 채널 (웹 -> Flutter). SPEC §3 + v2/v3. */
+/* bridge.js — window.ChurchAPI (Flutter -> 웹) 와 FlutterChurch 채널 (웹 -> Flutter). SPEC §3 + v2/v3 + §22(창 감상). */
 (function (root) {
   'use strict';
   var queue = [], app = null;
@@ -22,7 +22,8 @@
 
   var METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap',
     'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality',
-    'emote', 'setSeatTaken', 'setChurch', 'walkTo', 'cancelWalk', 'tapAt'];
+    'emote', 'setSeatTaken', 'setChurch', 'walkTo', 'cancelWalk', 'tapAt',
+    'viewWindow', 'endView', 'setViewLight', 'setViewTier', 'resetView'];   // G1 창 감상(SPEC §22)
   var NO_QUEUE = { setJoystick: 1, tapAt: 1, cancelWalk: 1 };   // 오래되면 의미 없는 입력은 쌓지 않는다
   var API = {};
   METHODS.forEach(function (m) {
