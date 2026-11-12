@@ -11,13 +11,13 @@
   var PI = Math.PI, TAU = PI * 2;
 
   // ------------------------------------------------------------------ 상수
-  var HEIGHT = 1.82;
+  var HEIGHT = 1.7;
   var SEAT_BACK = 0.14;          // 앉을 때 골반을 좌석 중심에서 뒤로 이동(m). 앞줄 등받이와 무릎이 부딪히지 않도록.
   var SX = 0.18, HX = 0.095;     // 어깨/고관절 좌우 위치
   var LEN_T = 0.39, LEN_S = 0.41, ANKLE = 0.08;   // 허벅지, 종아리, 발목 높이
   var ARM_A = 0.29, ARM_B = 0.26, SH_Y = 0.20;    // 위팔, 아래팔 길이, 어깨의 가슴 뼈대 기준 높이
   var HIP_JOINT = 0.88, HIPS_Y = 0.93;
-  var HC = 1.64;                 // 머리 중심 y (클레이 비율: 머리 높이 0.32m, 약 5.6등신)
+  var HC = 1.5785;               // 머리 중심 y (현실적인 성인 비율 유지)
 
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
   function clamp01(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
@@ -51,7 +51,7 @@
   var BN = ['root', 'hips', 'spine', 'chest', 'neck', 'head', 'uaL', 'faL', 'haL', 'uaR', 'faR', 'haR', 'ulL', 'llL', 'ftL', 'ulR', 'llR', 'ftR', 'skirt', 'ckL', 'ckR'];
   var BI = {}; BN.forEach(function (n, i) { BI[n] = i; });
   var BPAR = [-1, 0, 1, 2, 3, 4, 3, 6, 7, 3, 9, 10, 1, 12, 13, 1, 15, 16, 1, 1, 1];
-  var BABS = [[0, 0, 0], [0, HIPS_Y, 0], [0, 1.03, 0], [0, 1.20, 0], [0, 1.42, 0.012], [0, 1.46, 0],
+  var BABS = [[0, 0, 0], [0, HIPS_Y, 0], [0, 1.03, 0], [0, 1.20, 0], [0, 1.42, 0.012], [0, 1.50, 0],
     [-SX, 1.40, 0], [-SX, 1.11, 0], [-SX, 0.85, 0], [SX, 1.40, 0], [SX, 1.11, 0], [SX, 0.85, 0],
     [-HX, HIP_JOINT, 0], [-HX, 0.49, 0], [-HX, ANKLE, 0], [HX, HIP_JOINT, 0], [HX, 0.49, 0], [HX, ANKLE, 0], [0, HIP_JOINT, 0], [-HX, HIP_JOINT, 0], [HX, HIP_JOINT, 0]];
   var B = BI;
@@ -773,7 +773,7 @@
     this.key = c.skin + '_' + c.style + '_' + c.hair + '_' + c.outfit;
     this._applyGeom();
     if (this.showTag) {
-      if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.name)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 2.03; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
+      if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.name)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 1.9; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
       else this.tag.material = tagMaterial(c.name);
     }
   };
@@ -959,7 +959,7 @@
       ua.quaternion.copy(qU); fa.quaternion.copy(qF); ha.quaternion.copy(qH);
     }
     // 이름표 높이
-    if (this.tag) this.tag.position.y = 2.02 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w;
+    if (this.tag) this.tag.position.y = 1.88 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w;
     this.shadow.position.y = 0.03;
   };
 
