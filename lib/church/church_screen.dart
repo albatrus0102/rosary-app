@@ -15,7 +15,6 @@ import 'avatar/avatar_config.dart';
 import 'avatar/avatar_editor_screen.dart';
 import 'church_candle_sheet.dart';
 import 'church_catalog.dart';
-import 'church_constants.dart';
 import 'church_go_sheet.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
@@ -58,7 +57,7 @@ class ChurchScreen extends StatefulWidget {
   /// '성당 바꾸기'. 호출 쪽이 이 화면을 닫고(=퇴장 처리) 선택 화면으로 돌아간다.
   final VoidCallback? onChangeChurch;
 
-  /// 첫 입장 때 세례명을 뽑는 난수(테스트용 주입).
+  /// 첫 입장 설정 화면의 미리 골라 두는 모습을 뽑는 난수(테스트용 주입).
   final Random? random;
 
   @override
@@ -184,11 +183,25 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_hintVisible && mounted) setState(() => _hintVisible = false);
   }
 
-  /// 접속한다. 처음 들어오는 사람에게는 편집기를 강제하지 않고 기본 아바타와
-  /// 무작위 세례명을 주며(O-02), 아바타 편집은 HUD의 얼굴 버튼으로 언제든 열 수 있다.
+  /// 접속한다. 처음 들어오는 사람에게는 한 페이지짜리 설정 화면(성별·머리 모양·머리색·
+  /// 피부색·세례명)을 전체 화면으로 먼저 보여 준다. 값은 미리 골라져 있어 '성당 들어가기'
+  /// 한 번이면 된다. 그동안 장면(WebView)은 뒤에서 불러온다. 아바타 편집은 HUD의 얼굴 버튼으로
+  /// 언제든 다시 열 수 있다.
   Future<void> _bootstrap() async {
     if (_disposed || !mounted) return;
-    if (!_settings.churchAvatarChosen) _assignFirstAvatar();
+    if (!_settings.churchAvatarChosen) {
+      final done = await _runFirstEntrySetup();
+      if (_disposed || !mounted) return;
+      if (!done) {
+        // 설정 화면에서 뒤로 가면 성당에 들어가지 않고 선택 화면으로 돌아간다.
+        // 돌아갈 곳이 없으면(테스트·단독 화면) 미리 골라진 모습으로 들어간다.
+        if (widget.onChangeChurch != null) {
+          widget.onChangeChurch!();
+          return;
+        }
+        _settings.churchAvatarChosen = true;
+      }
+    }
     _avatarReady = true;
     _maybeInit();
     try {
@@ -203,21 +216,20 @@ class _ChurchScreenState extends State<ChurchScreen>
     });
   }
 
-  void _assignFirstAvatar() {
-    final name = (widget.random ?? Random()).nextInt(baptismalNames.length);
-    _settings.churchAvatar = AvatarConfig.defaultConfig.copyWith(name: name);
-    _settings.churchAvatarChosen = true;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            "세례명은 '${baptismalNames[name]}'이에요. 위쪽 얼굴 버튼에서 바꿀 수 있어요.",
-          ),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
+  /// 첫 입장 설정 화면. 확인하면 true(설정과 '선택함' 표시는 화면이 저장한다).
+  Future<bool> _runFirstEntrySetup() async {
+    final result = await Navigator.of(context).push<AvatarConfig>(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: 'avatar_setup'),
+        fullscreenDialog: true,
+        builder: (context) => AvatarEditorScreen(
+          settings: _settings,
+          firstEntry: true,
+          random: widget.random,
         ),
-      );
+      ),
+    );
+    return result != null;
   }
 
   /// 앉은 시간을 센다(앉으면 true, 일어나면 false).

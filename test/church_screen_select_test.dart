@@ -368,6 +368,14 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, '입장'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      // 처음이라 한 페이지 설정 화면이 먼저 나온다.
+      expect(find.text('처음 오셨네요'), findsOneWidget);
+      expect(net.connectedIds, isEmpty);
+      await tester.tap(find.text('성당 들어가기'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
       scene.emit(const SceneReady());
       await tester.pump();
       expect(net.connectedIds, ['stpeter']);
@@ -379,6 +387,40 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(net.disconnects, 1);
+      expect(find.text('성당 고르기'), findsWidgets);
+    });
+  });
+
+  group('first entry setup in the church tab', () {
+    testWidgets('backing out of the setup returns to the church list', (
+      tester,
+    ) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings(avatarChosen: false);
+      final net = FakeChurchNet();
+      await tester.pumpWidget(
+        wrapApp(
+          ChurchTab(
+            settings: settings,
+            net: net,
+            scene: FakeChurchSceneController(),
+            availableIds: const {'basic', 'stpeter'},
+          ),
+        ),
+      );
+      await _reveal(tester, _card('stpeter'));
+      await tester.tap(_card('stpeter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, '입장'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('처음 오셨네요'), findsOneWidget);
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(net.connectedIds, isEmpty);
+      expect(settings.churchAvatarChosen, isFalse);
       expect(find.text('성당 고르기'), findsWidgets);
     });
   });

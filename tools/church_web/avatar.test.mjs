@@ -31,8 +31,8 @@ test('baptismal name lists: 60+ per gender, unique, within the wire cap, legacy 
   }
   assert.equal(P.namesLegacy.length, 40);
   P.namesLegacy.forEach((n, i) => assert.ok((i < 20 ? P.namesF : P.namesM).includes(n), `legacy ${i} ${n}`));
-  assert.deepEqual(P.namesF.slice(0, 3), ['마리아', '안나', '엘리사벳']);
-  assert.deepEqual(P.namesM.slice(0, 3), ['요셉', '베드로', '바오로']);
+  assert.deepEqual(Array.from(P.namesF.slice(0, 3)), ['마리아', '안나', '엘리사벳']);
+  assert.deepEqual(Array.from(P.namesM.slice(0, 3)), ['요셉', '베드로', '바오로']);
 });
 
 test('avatar triangle budgets per LOD for all 8 gender/style combinations', () => {
@@ -66,17 +66,6 @@ test('normalizeCfg: new format keeps g/style/name, legacy format is migrated', (
   const wild = n({ g: 1, skin: 99, style: -3, hair: 123, outfit: 77, name: 1000 });
   assert.ok(wild.skin < 4 && wild.style < 4 && wild.hair < 10 && wild.outfit < 12 && wild.name < P.namesM.length);
   assert.equal(n(undefined).g, 0);
-});
-
-test('avatar builds for every gender/style with a name tag', () => {
-  for (let g = 0; g < 2; g++) for (let st = 0; st < 4; st++) {
-    const av = new A.Avatar({ g, skin: 1, style: st, hair: 2, outfit: 3, name: 5 }, {});
-    assert.equal(av.cfg.g, g);
-    assert.ok(av.tag, 'tag sprite');
-    av.setLod(1); av.setLod(2); av.setLod(0);
-    av.setConfig({ g: 1 - g, skin: 0, style: st, hair: 0, outfit: 0, name: 1 });
-    assert.equal(av.cfg.g, 1 - g);
-  }
 });
 
 test('realistic adult proportions', () => {

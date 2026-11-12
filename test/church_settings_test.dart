@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
+import 'package:rosary_app/church/church_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -20,6 +21,7 @@ void main() {
     var notified = 0;
     s.addListener(() => notified++);
     const avatar = AvatarConfig(
+      gender: 1,
       skin: 2,
       style: 3,
       hair: 8,
@@ -66,14 +68,40 @@ void main() {
     expect(s.churchId, 'basic');
   });
 
-  test('out-of-range stored avatar is clamped', () async {
+  test('out-of-range stored avatar is clamped (new format with g)', () async {
     SharedPreferences.setMockInitialValues({
-      'church_avatar': '{"skin":9,"style":9,"hair":99,"outfit":99,"name":99}',
+      'church_avatar':
+          '{"skin":9,"style":9,"hair":99,"outfit":99,"name":999,"g":1}',
     });
     final s = await AppSettings.load();
     expect(
       s.churchAvatar,
-      const AvatarConfig(skin: 3, style: 3, hair: 9, outfit: 11, name: 39),
+      AvatarConfig(
+        gender: 1,
+        skin: 3,
+        style: 3,
+        hair: 9,
+        outfit: 11,
+        name: maleBaptismalNames.length - 1,
+      ),
     );
+  });
+
+  test('an avatar saved by an older version (no g) loads with a derived '
+      'gender, the same baptismal name and a mapped hair style', () async {
+    SharedPreferences.setMockInitialValues({
+      'church_avatar': '{"skin":3,"style":3,"hair":9,"outfit":11,"name":39}',
+      'church_avatar_chosen': true,
+    });
+    final s = await AppSettings.load();
+    expect(s.churchAvatar.gender, avatarMale);
+    expect(s.churchAvatar.nameText, '베네딕토');
+    expect(s.churchAvatar.style, 2);
+    expect([s.churchAvatar.skin, s.churchAvatar.hair], [3, 9]);
+    expect(s.churchAvatarChosen, isTrue);
+    // 다시 저장하면 새 형식(g 포함)으로 저장된다.
+    s.churchAvatar = s.churchAvatar.copyWith(hair: 1);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('church_avatar'), contains('"g":1'));
   });
 }

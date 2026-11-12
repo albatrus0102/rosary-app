@@ -600,14 +600,12 @@ void main() {
       expect(scene.reloads, 1);
     });
 
-    testWidgets('first visit goes straight in with a random baptismal name', (
-      tester,
-    ) async {
+    testWidgets('first visit shows the one-page setup before connecting; '
+        'one tap enters with the pre-selected avatar', (tester) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings(avatarChosen: false);
       final net = FakeChurchNet();
       final scene = FakeChurchSceneController();
-      var editorOpened = false;
       await tester.pumpWidget(
         wrapApp(
           ChurchScreen(
@@ -615,31 +613,118 @@ void main() {
             net: net,
             scene: scene,
             random: Random(7),
-            avatarEditorBuilder: (context) {
-              editorOpened = true;
-              return const Scaffold(body: Text('EDITOR'));
-            },
           ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      // 편집기는 강제로 열리지 않고 곧바로 접속한다.
-      expect(editorOpened, isFalse);
-      expect(find.text('EDITOR'), findsNothing);
-      expect(net.connectedIds, ['basic']);
-      // 기본 아바타 + 무작위 세례명이 저장된다.
-      final expectedName = Random(7).nextInt(baptismalNames.length);
-      expect(settings.churchAvatar.name, expectedName);
-      expect(
-        settings.churchAvatar.copyWith(name: 0),
-        AvatarConfig.defaultConfig,
-      );
-      expect(settings.churchAvatarChosen, isTrue);
-      expect(find.textContaining(baptismalNames[expectedName]), findsOneWidget);
+      // 설정 화면이 먼저 보이고 아직 접속하지 않는다. 장면은 뒤에서 준비된다.
+      expect(find.text('처음 오셨네요'), findsOneWidget);
+      expect(find.text('성당 들어가기'), findsOneWidget);
+      expect(net.connectedIds, isEmpty);
+      expect(settings.churchAvatarChosen, isFalse);
       scene.emit(const SceneReady());
       await tester.pump();
-      expect(scene.lastArgs('init')!['avatar'], settings.churchAvatar.toJson());
+      expect(scene.lastArgs('init'), isNull); // 아바타가 정해진 뒤에 init
+      // 미리 골라진 모습 그대로 한 번 눌러 들어간다. 세례명 안내 스낵바는 없다.
+      final expected = AvatarConfig.randomStart(Random(7));
+      await tester.tap(find.text('성당 들어가기'));
+      await tester.pumpAndSettle();
+      expect(find.text('처음 오셨네요'), findsNothing);
+      expect(find.textContaining('세례명은'), findsNothing);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(net.connectedIds, ['basic']);
+      expect(settings.churchAvatar, expected);
+      expect(settings.churchAvatarChosen, isTrue);
+      expect(scene.lastArgs('init')!['avatar'], expected.toJson());
+      expect((scene.lastArgs('init')!['avatar'] as Map)['g'], expected.gender);
+    });
+
+    testWidgets('first visit: choices made in the setup reach the scene', (
+      tester,
+    ) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings(avatarChosen: false);
+      final net = FakeChurchNet();
+      final scene = FakeChurchSceneController();
+      await tester.pumpWidget(
+        wrapApp(
+          ChurchScreen(
+            settings: settings,
+            net: net,
+            scene: scene,
+            random: Random(7),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      scene.emit(const SceneReady());
+      await tester.tap(find.text('남성'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('머리 모양, 가르마'));
+      await tester.pump();
+      await tester.tap(find.text('성당 들어가기'));
+      await tester.pumpAndSettle();
+      final avatar = scene.lastArgs('init')!['avatar'] as Map;
+      expect(avatar['g'], 1);
+      expect(avatar['style'], 1);
+      expect(settings.churchAvatar.gender, avatarMale);
+      expect(net.connectedIds, ['basic']);
+    });
+
+    testWidgets('backing out of the first-visit setup leaves the church', (
+      tester,
+    ) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings(avatarChosen: false);
+      final net = FakeChurchNet();
+      var left = 0;
+      await tester.pumpWidget(
+        wrapApp(
+          ChurchScreen(
+            settings: settings,
+            net: net,
+            scene: FakeChurchSceneController(),
+            onChangeChurch: () => left++,
+            random: Random(7),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('처음 오셨네요'), findsOneWidget);
+      final nav = tester.state<NavigatorState>(find.byType(Navigator));
+      nav.pop();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(left, 1);
+      expect(net.connectedIds, isEmpty);
+      expect(settings.churchAvatarChosen, isFalse);
+    });
+
+    testWidgets('backing out without a handler enters with the pre-selected '
+        'avatar', (tester) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings(avatarChosen: false);
+      final net = FakeChurchNet();
+      await tester.pumpWidget(
+        wrapApp(
+          ChurchScreen(
+            settings: settings,
+            net: net,
+            scene: FakeChurchSceneController(),
+            random: Random(7),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(net.connectedIds, ['basic']);
+      expect(settings.churchAvatarChosen, isTrue);
     });
 
     testWidgets('a returning visit keeps the saved avatar', (tester) async {
@@ -658,6 +743,7 @@ void main() {
       );
       await tester.pump();
       expect(settings.churchAvatar, const AvatarConfig(name: 9, hair: 2));
+      expect(find.text('처음 오셨네요'), findsNothing);
       expect(find.textContaining('세례명은'), findsNothing);
     });
   });

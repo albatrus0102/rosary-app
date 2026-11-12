@@ -22,7 +22,7 @@
 접속: `wss://<HOST>/ws?room=church-1&v=1`. 방 용량 30명. 가득 차면 서버가 `full`을 보내고 클라이언트는 `next` 방으로 재접속(`church-2`, …).
 
 ### 값 범위 (서버가 모두 검증, 범위 밖이면 거부/무시)
-- `avatar`: `{skin:0..3, style:0..3, hair:0..9, outfit:0..11, name:0..39}` — name은 세례명 목록 인덱스(아래 4절).
+- `avatar`: `{skin:0..3, style:0..3, hair:0..9, outfit:0..11, name:0..99, g:0..1}` — `g`는 성별(0 여성, 1 남성, **추가 필드**), `style`은 성별마다 따로 해석하는 머리 모양 0..3, `name`은 **성별 `g`별 세례명 목록 안의 인덱스**(아래 4절). `g`가 없으면(옛 클라이언트) 옛 형식으로 보고 `name`은 0..39(옛 목록 인덱스)만 허용하며, 서버는 그 값을 그대로 중계하고 받는 클라이언트가 옮겨 읽는다. `g`가 0/1이 아니면 거부(`bad_msg`).
 - 상태 `st`: `'w'`(서 있음/걷기) | `'s'`(앉음) | `'p'`(앉아서 기도 중).
 - `ms`: 0..3 — 기도 중인 신비 묵주기도 종류(환희, 빛, 고통, 영광), 기도 중이 아니면 -1.
 - `e`(이모트): 0 인사(손 흔들기), 1 성호경, 2 고개 숙임.
@@ -31,7 +31,7 @@
 
 ### 클라이언트 → 서버
 ```json
-{"t":"hello","id":"<uuid>","v":1,"avatar":{"skin":1,"style":0,"hair":3,"outfit":5,"name":7}}
+{"t":"hello","id":"<uuid>","v":1,"avatar":{"skin":1,"style":0,"hair":3,"outfit":5,"name":7,"g":0}}
 {"t":"pos","x":1.2,"z":8.4,"r":0.3,"m":1}            // 걷는 중에만 5Hz 이하, 멈추면 m:0으로 한 번
 {"t":"sit","seat":"L03-2"}
 {"t":"stand"}
@@ -92,14 +92,19 @@ emote({e})
 - 웹은 자체 테스트 페이지 `assets/church/test.html`(모의 브리지, 키보드 WASD 이동)을 제공한다. Playwright(headless chromium, `--use-gl=swiftshader --enable-unsafe-swiftshader`)로 스크린샷 검증한다.
 
 ## 4. 공용 상수 (웹·서버·Flutter가 같은 값 사용)
-- 세례명 목록(인덱스 0..39, 이 순서 고정): 마리아, 안나, 엘리사벳, 마르타, 데레사, 아녜스, 체칠리아, 클라라, 루치아, 막달레나, 소피아, 로사, 카타리나, 베로니카, 젬마, 모니카, 비비안나, 율리안나, 헬레나, 에밀리아, 베드로, 바오로, 요한, 요셉, 안드레아, 토마스, 프란치스코, 미카엘, 가브리엘, 라파엘, 스테파노, 마르코, 루카, 마태오, 야고보, 필립보, 시몬, 다미아노, 아우구스티노, 베네딕토.
-- 피부색 4, 머리 모양 4(짧은 머리, 단발, 올림머리, 곱슬), 머리색 10, 옷색 12 — 색상표는 `assets/church/palette.js`(웹)와 `lib/church/avatar/avatar_config.dart`(Flutter)가 **같은 HEX 값**을 가진다. 색상표 정의는 웹 에이전트가 `palette.js`를 먼저 만들고(첫 편집), Flutter 쪽은 그것을 복사해 쓴다.
+- **성별** `g`: 0 여성, 1 남성(아바타 체형·머리 모양·세례명 목록이 성별에 따라 달라진다).
+- **세례명 목록**(이 순서 고정, 앞쪽일수록 많이 쓰는 이름): 성별별로 따로 있고 와이어의 `name`은 그 성별 목록 안의 인덱스다. 상한은 서버 `NAME_MAX = 99`(= Flutter `baptismalNameMaxIndex`)이고 각 목록은 100개 이하다. 정의는 `lib/church/church_constants.dart`의 `femaleBaptismalNames`(65개: 마리아, 안나, 엘리사벳, 데레사, 아녜스, 루치아, 마르타, 클라라, 카타리나, 체칠리아, 비비안나, 율리안나, …)와 `maleBaptismalNames`(71개: 요셉, 베드로, 바오로, 요한, 안드레아, 토마스, 프란치스코, 미카엘, 가브리엘, 라파엘, 스테파노, 마르코, …)이며 웹 `palette.js`의 `namesF`/`namesM`이 같은 값이다(테스트가 일치를 확인). 목록을 늘릴 때는 뒤에만 추가한다(기존 인덱스 불변).
+- **옛 형식 호환**: `g`가 없는 값(옛 앱·옛 저장값)의 `name`은 옛 40개 목록(`legacyBaptismalNames` / `palette.js`의 `namesLegacy`: 0..19 여성 이름, 20..39 남성 이름)의 인덱스다. 읽을 때(Flutter `AvatarConfig.fromJson`, 웹 `ChurchAvatar.normalizeCfg`) 20 이상이면 남성으로 보고 같은 이름을 새 목록에서 찾으며, 옛 머리 모양(짧은 머리·단발·올림머리·곱슬)은 여성 [0,0,3,1], 남성 [1,0,0,2]로 옮긴다. 새 앱이 보내는 값에는 항상 `g`가 있다. 한계: 옛 앱은 `g`와 `name > 39`를 모르므로 새 앱 사용자의 이름표가 맞지 않게 보일 수 있고(옛 앱의 고정 40개 목록 기준), 서버가 새 검증으로 배포되기 전에는 새 앱의 `hello`가 거부된다 → **서버를 먼저 배포**한다.
+- 피부색 4, 머리색 10, 옷색 12 — 색상표는 `assets/church/palette.js`(웹)와 `lib/church/avatar/avatar_config.dart`(Flutter)가 **같은 HEX 값**을 가진다.
+- **머리 모양**(`style` 0..3, 성별별): 여성 단발, 어깨 길이, 포니테일, 낮은 쪽머리 / 남성 짧게 친 머리, 가르마, 웨이브, 넓은 이마(이마 선이 물러난 모양). 모두 매끈한 클레이 질감의 차분한 실제 머리 모양이다(`palette.js`의 `stylesF`/`stylesM`). 3D는 `avatar.js`(머리 껍질 + 작은 덩어리), 2D 미리보기는 `avatar_preview.dart`가 같은 비율로 그린다.
+- **체형**: 성별에 따라 어깨·가슴·허리·엉덩이 폭, 팔·다리 굵기, 턱선, 목 굵기, 눈썹 굵기만 조금 다르다(스케일만; 키·뼈 길이·좌석/기도 포즈는 같음). 삼각형 예산(근접 ≤6000, 중간 ≤1500, 원거리 ≤400)은 8가지 성별×머리 조합 모두에 적용된다(`ChurchAvatar.stats()`의 `g<성별>s<모양>`).
 - 촛불 지향 프리셋(인덱스 0..7): 가족과 이웃을 위해, 아픈 이들을 위해, 세상의 평화를 위해, 돌아가신 이들을 위해, 감사의 마음으로, 시험과 일을 위해, 통회와 용서를 위해, 나라와 교회를 위해.
 
 ## 5. Flutter 구조 (lib/church/)
-- `avatar/avatar_config.dart`, `avatar/avatar_editor_screen.dart`, `avatar/avatar_preview.dart`(2D CustomPaint 미리보기), `net/church_net.dart`(인터페이스·이벤트), `net/web_socket_church_net.dart`, `net/solo_church_net.dart`, `church_constants.dart`(세례명·지향 목록·좌석 id 규칙·ChurchConfig.serverUrl), 설정 필드는 `lib/app/settings.dart`에 추가.
+- `avatar/avatar_config.dart`, `avatar/avatar_editor_screen.dart`(첫 입장 설정과 편집 화면을 겸함), `avatar/avatar_pickers.dart`(성별·머리 모양·색·세례명 고르기 위젯), `avatar/avatar_preview.dart`(2D CustomPaint 미리보기), `net/church_net.dart`(인터페이스·이벤트), `net/web_socket_church_net.dart`, `net/solo_church_net.dart`, `church_constants.dart`(세례명·지향 목록·좌석 id 규칙·ChurchConfig.serverUrl), 설정 필드는 `lib/app/settings.dart`에 추가.
 - `church_screen.dart`(WebView + HUD), `church_scene_controller.dart`(브리지 추상화 + WebView 구현 + 테스트용 가짜), `church_hud.dart`, `church_prayer_card.dart`.
 - 앱 셸에 4번째 목적지 '성당'(`Icons.church`) 추가.
+- **첫 입장 설정**(`churchAvatarChosen`이 false일 때): 장면을 불러오는 동안 전체 화면 한 페이지 '처음 오셨네요'를 먼저 보여 준다. 성별(여성/남성 큰 선택, 무작위로 미리 선택), 머리 모양 4칩(작은 얼굴 그림), 머리색·피부색, 세례명(큰 칩 + '바꾸기' → 검색·인기 12개·가나다순 목록 시트, 성별 목록만, 한 번 누르면 선택), '성당 들어가기'(56dp) 한 번으로 시작한다. 성별을 바꾸면 세례명은 새 목록에 같은 이름이 있으면 유지하고 없으면 가장 인기 있는 이름으로 바꾼다. 확인하면 저장 후 `init`/`hello`가 나가고, 뒤로 가면 성당 선택 화면으로 돌아간다(O-02의 무작위 세례명·스낵바는 없어졌다). HUD의 얼굴 버튼은 같은 화면에 옷 색과 '무작위'가 더 붙은 편집 화면을 연다.
 
 ### ChurchNet 인터페이스 (W3b가 구현, W3a가 사용)
 ```dart

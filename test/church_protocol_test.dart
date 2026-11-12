@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
+import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/church/net/church_net.dart';
 import 'package:rosary_app/church/net/church_protocol.dart';
 import 'package:rosary_app/church/net/client_id.dart';
@@ -60,6 +61,9 @@ void main() {
         w.peers[0].avatar,
         const AvatarConfig(skin: 1, style: 0, hair: 3, outfit: 5, name: 7),
       );
+      // 옛 형식(g 없음, name 7 = 클라라)은 여성 목록의 같은 이름으로 읽힌다.
+      expect(w.peers[0].avatar.gender, avatarFemale);
+      expect(w.peers[0].avatar.nameText, '클라라');
       expect(w.peers[0].seat, isNull);
       expect(w.peers[0].ms, -1);
       expect(w.peers[1].seat, 'L03-2');
@@ -79,8 +83,20 @@ void main() {
       );
       expect(j, isA<Join>());
       expect((j as Join).peer.id, 'p9');
-      expect(j.peer.avatar.style, 1);
+      // 옛 형식: style 1(단발) → 여성 단발(0), name 4 = 데레사
+      expect(j.peer.avatar.style, 0);
+      expect(j.peer.avatar.nameText, '데레사');
       expect(j.n, 13);
+
+      // 새 형식(g 포함): 그대로 읽는다.
+      final j2 = parseChurchEvent(
+        '{"t":"join","peer":{"id":"p10","avatar":{"skin":0,"style":3,"hair":2,"outfit":3,"name":23,"g":1},"x":1,"z":2},"n":14}',
+      );
+      final a2 = (j2 as Join).peer.avatar;
+      expect(a2.gender, avatarMale);
+      expect(a2.style, 3);
+      expect(a2.nameText, '베네딕토');
+      expect(a2.toJson()['g'], 1);
 
       final l = parseChurchEvent('{"t":"leave","id":"p9","n":12}');
       expect(l, isA<Leave>());

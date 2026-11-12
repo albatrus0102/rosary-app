@@ -188,7 +188,14 @@ void main() {
           't': 'hello',
           'id': 'test-client-id',
           'v': 1,
-          'avatar': {'skin': 1, 'style': 0, 'hair': 3, 'outfit': 5, 'name': 7},
+          'avatar': {
+            'skin': 1,
+            'style': 0,
+            'hair': 3,
+            'outfit': 5,
+            'name': 7,
+            'g': 0,
+          },
         });
         h.welcome(room: 'stpeter-1', n: 12);
         expect(h.net.state.value, NetState.online);

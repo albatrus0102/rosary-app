@@ -3,13 +3,13 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import '../church_constants.dart';
 import 'avatar_config.dart';
 
 /// 3D 아바타와 같은 부드러운 "클레이/비닐 토이" 스타일의 2D 미리보기(상반신 + 이름표).
 ///
 /// 비율과 색은 웹(`assets/church/avatar.js`)과 같은 수치를 쓴다: 둥근 머리, 점 눈과 알약 눈썹,
 /// 둥근 코, 가는 미소, 볼터치, 매끈한 덩어리 머리카락, 말랑한 후디(둥근 칼라).
+/// 성별마다 머리 모양 4종, 어깨·허리·엉덩이 폭, 턱선, 목, 눈썹 굵기가 조금씩 다르다.
 class AvatarPreview extends StatelessWidget {
   const AvatarPreview({
     super.key,
@@ -27,15 +27,16 @@ class AvatarPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final name =
-        baptismalNames[config.name.clamp(0, baptismalNames.length - 1)];
+    final name = config.nameText;
     final figure = SizedBox(
       width: height * 0.8,
       height: height,
       child: CustomPaint(painter: AvatarPainter(config)),
     );
     return Semantics(
-      label: '아바타 미리보기, 세례명 $name',
+      label:
+          '아바타 미리보기, ${AvatarConfig.genderNames[config.gender]}, '
+          '${config.styleNameList[config.style]}, 세례명 $name',
       container: true,
       excludeSemantics: true,
       child: Column(
@@ -70,6 +71,25 @@ class AvatarPreview extends StatelessWidget {
   }
 }
 
+/// 머리 모양을 고르는 칩 안에 넣는 작은 얼굴 그림(머리·목·어깨 윗부분만 크게).
+class AvatarHeadThumb extends StatelessWidget {
+  const AvatarHeadThumb({super.key, required this.config, this.height = 64});
+
+  final AvatarConfig config;
+
+  /// 그림 높이. 가로는 높이의 0.8배.
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: SizedBox(
+      width: height * 0.8,
+      height: height,
+      child: CustomPaint(painter: AvatarPainter(config, headFocus: true)),
+    ),
+  );
+}
+
 Color _shade(Color c, double amount) {
   final hsl = HSLColor.fromColor(c);
   return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
@@ -80,37 +100,52 @@ Color _mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
 // 웹 avatar.js의 머리 형상과 같은 값(머리 중심 기준 m).
 const double _hh = 0.110, _ww = 0.078;
 
-/// 높이 y에서의 머리 반폭(웹 `headWD`와 같은 식).
-double _headHalfW(double y) {
+double _smooth(double t) {
+  final c = t.clamp(0.0, 1.0);
+  return c * c * (3 - 2 * c);
+}
+
+/// 높이 y에서의 머리 반폭(웹 `headWD`와 같은 식). 남성은 턱이 조금 각지고 여성은 갸름하다.
+double _headHalfW(double y, int gender) {
   final t = (y / _hh).clamp(-1.0, 1.0);
   final p = t < 0 ? 2.3 : 2.0;
   final s = math.pow(math.max(0.0, 1 - math.pow(t.abs(), p)), 1 / p).toDouble();
-  final m = 1 + 0.025 * t - 0.12 * math.pow(math.max(0.0, -t - 0.15), 1.2);
+  var m = 1 + 0.025 * t - 0.12 * math.pow(math.max(0.0, -t - 0.15), 1.2);
+  m *= 1 + (gender == 1 ? 0.045 : -0.035) * _smooth((-y - 0.035) / 0.075);
   return _ww * s * m;
 }
 
 /// 상반신 초상을 그린다. 그림 영역은 가로:세로 = 4:5.
 class AvatarPainter extends CustomPainter {
-  const AvatarPainter(this.config);
+  const AvatarPainter(this.config, {this.headFocus = false});
 
   final AvatarConfig config;
+
+  /// 머리와 어깨 윗부분만 크게 그린다(머리 모양 칩용).
+  final bool headFocus;
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(Offset.zero & size);
-    _Pen(size, config).paintAll(canvas);
+    _Pen(size, config, headFocus).paintAll(canvas);
   }
 
   @override
-  bool shouldRepaint(AvatarPainter oldDelegate) => oldDelegate.config != config;
+  bool shouldRepaint(AvatarPainter oldDelegate) =>
+      oldDelegate.config != config || oldDelegate.headFocus != headFocus;
 }
 
 class _Pen {
-  _Pen(this.size, this.config) {
+  _Pen(this.size, this.config, this.headFocus) {
     final h = size.height;
-    s = (h * 0.36) / 0.222; // m -> px
+    if (headFocus) {
+      s = h / 0.47;
+      cy = h * 0.44;
+    } else {
+      s = (h * 0.36) / 0.222; // m -> px
+      cy = h * 0.37; // 머리 중심
+    }
     cx = size.width * 0.5;
-    cy = h * 0.37; // 머리 중심
     skin = config.skinColor;
     hair = config.hairColor;
     outfit = config.outfitColor;
@@ -121,6 +156,8 @@ class _Pen {
 
   final Size size;
   final AvatarConfig config;
+  final bool headFocus;
+  int get g => config.gender;
   late final double s, cx, cy;
   late final Color skin, hair, outfit, skinDeep, blush, hairDark;
 
@@ -193,7 +230,7 @@ class _Pen {
 
   /// 머리 가장자리 점(표면에서 [d]만큼 바깥). sign=+1 오른쪽.
   Offset edge(double y, double sign, double d) {
-    final x = sign * _headHalfW(y);
+    final x = sign * _headHalfW(y, g);
     final gx = x / (_ww * _ww), gy = y / (_hh * _hh);
     final l = math.sqrt(gx * gx + gy * gy);
     if (l < 1e-9) return hp(0, y + d);
@@ -217,14 +254,16 @@ class _Pen {
   // ====================================================================
   void paintAll(Canvas canvas) {
     final w = size.width, h = size.height;
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(cx, h * 0.985),
-        width: w * 0.8,
-        height: h * 0.05,
-      ),
-      blurFill(const Color(0x14000000), 0.02),
-    );
+    if (!headFocus) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx, h * 0.985),
+          width: w * 0.8,
+          height: h * 0.05,
+        ),
+        blurFill(const Color(0x14000000), 0.02),
+      );
+    }
     _hairBack(canvas);
     _body(canvas);
     _neck(canvas);
@@ -246,6 +285,18 @@ class _Pen {
     [1.100, 0.150],
   ];
 
+  // 성별 체형 폭 배율(웹 avatar.js의 TORSO_K와 같은 값): [여성, 남성].
+  static const List<List<double>> _torsoK = [
+    [1.0, 1.0],
+    [1.0, 1.0],
+    [0.97, 1.02],
+    [0.95, 1.045],
+    [0.95, 1.045],
+    [0.97, 1.035],
+    [0.955, 1.015],
+    [0.94, 1.0],
+  ];
+
   void _body(Canvas canvas) {
     final bottom = size.height + 0.07 * s;
     // 뒤 후드(목 뒤로 둥글게 솟은 모자)
@@ -258,9 +309,11 @@ class _Pen {
 
     // 몸통 윤곽
     final right = <Offset>[], left = <Offset>[];
-    for (final r in _torso) {
-      right.add(bp(r[1], r[0]));
-      left.add(bp(-r[1], r[0]));
+    for (var k = 0; k < _torso.length; k++) {
+      final r = _torso[k];
+      final w = r[1] * _torsoK[k][g];
+      right.add(bp(w, r[0]));
+      left.add(bp(-w, r[0]));
     }
     final torso = smooth([...left.reversed, ...right], closed: false)
       ..lineTo(right.last.dx, bottom)
@@ -278,7 +331,7 @@ class _Pen {
     for (final sg in [-1.0, 1.0]) {
       final c = bp(sg * 0.176, 1.392);
       final armTop = c.dy - 0.045 * s;
-      final r = 0.050 * s;
+      final r = 0.050 * s * (g == 1 ? 1.045 : 0.95);
       final arm = RRect.fromLTRBR(
         c.dx - r,
         armTop,
@@ -305,10 +358,11 @@ class _Pen {
   }
 
   void _neck(Canvas canvas) {
+    final nw = 0.047 * (g == 1 ? 1.07 : 0.92);
     final r = Rect.fromLTRB(
-      bp(-0.047, 1.50).dx,
+      bp(-nw, 1.50).dx,
       bp(0, 1.50).dy,
-      bp(0.047, 1.50).dx,
+      bp(nw, 1.50).dx,
       bp(0, 1.425).dy,
     );
     canvas.drawRRect(
@@ -380,17 +434,18 @@ class _Pen {
           ]),
       );
     }
-    // 눈썹(알약)
+    // 눈썹(알약): 여성은 가늘고 부드러운 아치, 남성은 굵고 조금 곧게
+    final browArchY = g == 1 ? 0.0455 : 0.0495;
     for (final sg in [-1.0, 1.0]) {
       final path = Path()
         ..moveTo(hp(sg * 0.019, 0.037).dx, hp(sg * 0.019, 0.037).dy)
         ..quadraticBezierTo(
-          hp(sg * 0.038, 0.0475).dx,
-          hp(sg * 0.038, 0.0475).dy,
+          hp(sg * 0.038, browArchY).dx,
+          hp(sg * 0.038, browArchY).dy,
           hp(sg * 0.056, 0.036).dx,
           hp(sg * 0.056, 0.036).dy,
         );
-      canvas.drawPath(path, stroke(hairDark, 0.0105));
+      canvas.drawPath(path, stroke(hairDark, g == 1 ? 0.0128 : 0.0086));
     }
     // 코(둥근 혹)
     final nc = hp(0, -0.027);
@@ -455,175 +510,231 @@ class _Pen {
     canvas.restore();
   }
 
+  /// 둥근 끝을 가진 굵은 곡선(포니테일 꼬리). [pts]는 머리 좌표, [radii]는 m.
+  void _tube(Canvas canvas, List<Offset> pts, List<double> radii) {
+    final bounds = Rect.fromPoints(pts.first, pts.last).inflate(0.03 * s);
+    final paint = hairPaint(bounds);
+    const steps = 24;
+    final path = smooth(pts, closed: false);
+    final metrics = path.computeMetrics().toList();
+    if (metrics.isEmpty) return;
+    final m = metrics.first;
+    for (var k = 0; k <= steps; k++) {
+      final t = k / steps;
+      final pos = m.getTangentForOffset(m.length * t)?.position;
+      if (pos == null) continue;
+      final seg = t * (radii.length - 1);
+      final i = seg.floor().clamp(0, radii.length - 2);
+      final r = radii[i] + (radii[i + 1] - radii[i]) * (seg - i);
+      canvas.drawCircle(pos, r * s, paint);
+    }
+  }
+
   void _hairBack(Canvas canvas) {
+    if (g == 0) {
+      switch (config.style) {
+        case 0: // 단발: 턱선 길이, 끝이 안으로 살짝 말린 보브
+          final p = smooth([
+            hp(0, 0.130),
+            hp(0.080, 0.100),
+            hp(0.100, 0.030),
+            hp(0.102, -0.040),
+            hp(0.098, -0.082),
+            hp(0.080, -0.095),
+            hp(0, -0.098),
+            hp(-0.080, -0.095),
+            hp(-0.098, -0.082),
+            hp(-0.102, -0.040),
+            hp(-0.100, 0.030),
+            hp(-0.080, 0.100),
+          ]);
+          canvas.drawPath(p, hairPaint(p.getBounds()));
+        case 1: // 어깨 길이 생머리
+          final p = smooth([
+            hp(0, 0.130),
+            hp(0.082, 0.100),
+            hp(0.102, 0.030),
+            hp(0.104, -0.060),
+            hp(0.106, -0.130),
+            hp(0.096, -0.158),
+            hp(0.060, -0.164),
+            hp(0, -0.166),
+            hp(-0.060, -0.164),
+            hp(-0.096, -0.158),
+            hp(-0.106, -0.130),
+            hp(-0.104, -0.060),
+            hp(-0.102, 0.030),
+            hp(-0.082, 0.100),
+          ]);
+          canvas.drawPath(p, hairPaint(p.getBounds()));
+        case 2: // 포니테일: 목 옆으로 늘어진 꼬리
+          _tube(
+            canvas,
+            [
+              hp(0.008, 0.040),
+              hp(0.016, 0.004),
+              hp(0.036, -0.056),
+              hp(0.056, -0.110),
+              hp(0.068, -0.146),
+            ],
+            const [0.019, 0.025, 0.023, 0.017, 0.008],
+          );
+      }
+    }
+  }
+
+  // 앞머리 선(왼쪽 → 오른쪽). 성별·모양별로 이마가 드러나는 정도가 다르다.
+  List<Offset> _hairLine() {
+    List<Offset> mk(List<List<double>> v) => [
+      for (final p in v) hp(p[0], p[1]),
+    ];
+    if (g == 0) {
+      switch (config.style) {
+        case 0: // 단발: 이마를 반쯤 덮는 앞머리
+          return mk([
+            [-0.074, 0.000],
+            [-0.066, 0.040],
+            [-0.040, 0.057],
+            [0, 0.061],
+            [0.040, 0.057],
+            [0.066, 0.040],
+            [0.074, 0.000],
+          ]);
+        case 1:
+          return mk([
+            [-0.074, 0.010],
+            [-0.064, 0.050],
+            [-0.036, 0.064],
+            [0, 0.067],
+            [0.036, 0.064],
+            [0.064, 0.050],
+            [0.074, 0.010],
+          ]);
+        default: // 뒤로 묶은 머리: 이마가 시원하게 드러난다
+          return mk([
+            [-0.074, 0.022],
+            [-0.060, 0.056],
+            [-0.034, 0.068],
+            [0, 0.071],
+            [0.034, 0.068],
+            [0.060, 0.056],
+            [0.074, 0.022],
+          ]);
+      }
+    }
     switch (config.style) {
-      case 1: // 단발
-        final p = smooth([
-          hp(0, 0.126),
-          hp(0.088, 0.075),
-          hp(0.108, 0.0),
-          hp(0.116, -0.07),
-          hp(0.106, -0.106),
-          hp(0.06, -0.113),
-          hp(0, -0.108),
-          hp(-0.06, -0.113),
-          hp(-0.106, -0.106),
-          hp(-0.116, -0.07),
-          hp(-0.108, 0.0),
-          hp(-0.088, 0.075),
+      case 0: // 짧게 친 머리
+        return mk([
+          [-0.074, 0.030],
+          [-0.062, 0.066],
+          [-0.034, 0.078],
+          [0, 0.080],
+          [0.034, 0.078],
+          [0.062, 0.066],
+          [0.074, 0.030],
         ]);
-        canvas.drawPath(p, hairPaint(p.getBounds()));
-      case 2: // 올림머리
-        final c = hp(0, 0.150);
-        final r = Rect.fromCircle(center: c, radius: 0.052 * s);
-        canvas.drawOval(r, hairPaint(r));
-        _gloss(canvas, Path()..addOval(r), hp(-0.016, 0.168), 0.045, 0.022);
-      case 3: // 길고 물결치는 머리
-        final p = smooth([
-          hp(0, 0.126),
-          hp(0.088, 0.075),
-          hp(0.108, 0.0),
-          hp(0.113, -0.07),
-          hp(0.121, -0.13),
-          hp(0.108, -0.172),
-          hp(0.082, -0.190),
-          hp(0.050, -0.172),
-          hp(0.020, -0.190),
-          hp(-0.020, -0.172),
-          hp(-0.050, -0.190),
-          hp(-0.082, -0.172),
-          hp(-0.108, -0.190),
-          hp(-0.121, -0.13),
-          hp(-0.113, -0.07),
-          hp(-0.108, 0.0),
-          hp(-0.088, 0.075),
+      case 1: // 가르마
+        return mk([
+          [-0.074, 0.030],
+          [-0.060, 0.060],
+          [-0.034, 0.072],
+          [-0.010, 0.074],
+          [0.034, 0.072],
+          [0.060, 0.060],
+          [0.074, 0.030],
         ]);
-        canvas.drawPath(p, hairPaint(p.getBounds()));
+      case 2: // 웨이브
+        return mk([
+          [-0.074, 0.010],
+          [-0.062, 0.050],
+          [-0.034, 0.064],
+          [0, 0.067],
+          [0.034, 0.064],
+          [0.062, 0.050],
+          [0.074, 0.010],
+        ]);
+      default: // 넓은 이마: M자로 물러난 이마 선
+        return mk([
+          [-0.074, 0.030],
+          [-0.066, 0.056],
+          [-0.050, 0.076],
+          [-0.036, 0.086],
+          [-0.016, 0.078],
+          [0, 0.072],
+          [0.016, 0.078],
+          [0.036, 0.086],
+          [0.050, 0.076],
+          [0.066, 0.056],
+          [0.074, 0.030],
+        ]);
     }
   }
 
   void _hairFront(Canvas canvas) {
-    const d = 0.013;
+    // 머리카락 두께와 옆머리 내려오는 높이
+    final double d;
+    final double yb;
+    var wave = 0.0;
+    if (g == 0) {
+      d = const [0.014, 0.014, 0.012, 0.012][config.style];
+      yb = const [-0.040, -0.012, 0.012, 0.012][config.style];
+    } else {
+      d = const [0.007, 0.012, 0.017, 0.006][config.style];
+      yb = const [0.026, 0.024, 0.004, 0.022][config.style];
+      if (config.style == 2) wave = 0.0035;
+    }
     // 바깥 윤곽(옆머리 아래 끝에서 정수리를 지나 반대쪽까지)
     final outer = <Offset>[];
-    const yb = -0.012;
     final k0 = math.acos(yb / _hh);
     for (var k = 16; k >= 0; k--) {
-      outer.add(edge(_hh * math.cos(k0 * k / 16) * 0.9995, -1, d));
+      outer.add(
+        edge(
+          _hh * math.cos(k0 * k / 16) * 0.9995,
+          -1,
+          d + wave * math.sin(k * 1.9),
+        ),
+      );
     }
     for (var k = 1; k <= 16; k++) {
-      outer.add(edge(_hh * math.cos(k0 * k / 16) * 0.9995, 1, d));
+      outer.add(
+        edge(
+          _hh * math.cos(k0 * k / 16) * 0.9995,
+          1,
+          d + wave * math.sin(k * 1.9 + 1),
+        ),
+      );
     }
-    // 이마 선(왼쪽 → 오른쪽)
-    final List<Offset> line;
-    switch (config.style) {
-      case 1:
-        line = [
-          hp(-0.074, 0.022),
-          hp(-0.058, 0.060),
-          hp(-0.03, 0.074),
-          hp(0, 0.077),
-          hp(0.03, 0.074),
-          hp(0.058, 0.060),
-          hp(0.074, 0.022),
-        ];
-      case 3:
-        line = [
-          hp(-0.074, 0.022),
-          hp(-0.060, 0.056),
-          hp(-0.034, 0.082),
-          hp(0, 0.094),
-          hp(0.034, 0.082),
-          hp(0.060, 0.056),
-          hp(0.074, 0.022),
-        ];
-      case 0:
-        line = [
-          hp(-0.074, 0.022),
-          hp(-0.060, 0.062),
-          hp(-0.034, 0.082),
-          hp(0.000, 0.080),
-          hp(0.034, 0.072),
-          hp(0.060, 0.056),
-          hp(0.074, 0.022),
-        ];
-      default:
-        line = [
-          hp(-0.074, 0.022),
-          hp(-0.060, 0.056),
-          hp(-0.034, 0.076),
-          hp(0, 0.084),
-          hp(0.034, 0.076),
-          hp(0.060, 0.056),
-          hp(0.074, 0.022),
-        ];
-    }
+    final line = _hairLine();
     final all = <Offset>[...outer, ...line.reversed];
-    // 시계 방향을 맞춰 닫힌 곡선
     final path = smooth(all);
     canvas.drawPath(path, hairPaint(path.getBounds()));
     _gloss(canvas, path, hp(-0.030, 0.108), 0.07, 0.024);
 
-    switch (config.style) {
-      case 0:
-        // 위로 말아 올린 앞머리 덩어리 + 작은 컬
-        final q = Rect.fromCenter(
-          center: hp(0.008, 0.123),
-          width: 0.108 * s,
-          height: 0.056 * s,
-        );
-        canvas.save();
-        canvas.translate(q.center.dx, q.center.dy);
-        canvas.rotate(-0.12);
-        final local = Rect.fromCenter(
-          center: Offset.zero,
-          width: q.width,
-          height: q.height,
-        );
-        canvas.drawOval(local, hairPaint(local));
-        canvas.restore();
-        _gloss(
-          canvas,
-          Path()..addOval(
-            Rect.fromCenter(
-              center: hp(0.008, 0.123),
-              width: 0.108 * s,
-              height: 0.056 * s,
-            ),
-          ),
-          hp(-0.012, 0.133),
-          0.05,
-          0.016,
-          alpha: 0.26,
-        );
-        final curl = Path();
-        final c0 = hp(-0.018, 0.150);
-        for (var k = 0; k <= 22; k++) {
-          final t = k / 22;
-          final a = t * math.pi * 3.0 + 0.4;
-          final r = (0.020 * (1 - 0.8 * t)) * s;
-          final pt = Offset(
-            c0.dx + math.cos(a) * r,
-            c0.dy - math.sin(a) * r * 0.78,
-          );
-          if (k == 0) {
-            curl.moveTo(pt.dx, pt.dy);
-          } else {
-            curl.lineTo(pt.dx, pt.dy);
-          }
-        }
-        canvas.drawPath(curl, stroke(_shade(hair, 0.03), 0.0115));
-      case 2:
-        // 묶음 끈
-        final tie = Rect.fromCenter(
-          center: hp(0, 0.118),
-          width: 0.082 * s,
-          height: 0.022 * s,
-        );
-        canvas.drawOval(
-          tie,
-          clay(_mix(outfit, const Color(0xFFFFFFFF), 0.12), tie),
-        );
+    // 모양마다의 작은 덩어리
+    if (g == 1 && config.style == 1) {
+      // 옆으로 넘긴 앞머리 덩어리
+      final q = Rect.fromCenter(
+        center: hp(-0.016, 0.097),
+        width: 0.112 * s,
+        height: 0.040 * s,
+      );
+      canvas.save();
+      canvas.translate(q.center.dx, q.center.dy);
+      canvas.rotate(0.16);
+      final local = Rect.fromCenter(
+        center: Offset.zero,
+        width: q.width,
+        height: q.height,
+      );
+      canvas.drawOval(local, hairPaint(local));
+      canvas.restore();
+    } else if (g == 1 && config.style == 2) {
+      final q = Rect.fromCenter(
+        center: hp(0, 0.100),
+        width: 0.112 * s,
+        height: 0.048 * s,
+      );
+      canvas.drawOval(q, hairPaint(q));
     }
   }
 }

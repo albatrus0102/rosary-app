@@ -44,6 +44,7 @@ class _LocalServer {
                       'hair': 4,
                       'outfit': 6,
                       'name': 10,
+                      'g': 0,
                     },
                     'x': 1.5,
                     'z': 12,
@@ -141,7 +142,14 @@ void main() {
       't': 'hello',
       'id': 'me',
       'v': 1,
-      'avatar': {'skin': 1, 'style': 0, 'hair': 3, 'outfit': 5, 'name': 7},
+      'avatar': {
+        'skin': 1,
+        'style': 0,
+        'hair': 3,
+        'outfit': 5,
+        'name': 7,
+        'g': 0,
+      },
     });
 
     await waitFor(() => events.length >= 2);
