@@ -1,224 +1,5 @@
 {
  "sister": {
-  "files": {
-   "hail_mary": {
-    "bytes": 114775,
-    "sha256": "e4cc2f27e0b5123cf148330e73958e31f8766802bbd9bfe99104878d32249486",
-    "seconds": 9.52,
-    "text": "은총이 가득하신 마리아님 기뻐하소서 주님께서 함께 계시니 여인 중에 복되시며 태중의 아들 예수님 또한 복되시나이다.",
-    "joined": true
-   },
-   "mystery_joyful_1": {
-    "bytes": 65247,
-    "sha256": "e55f71518ce89c7b73a960f7807085c2e569a20990a7e22ec3f567b8935ea84a",
-    "seconds": 5.4,
-    "text": "환희의 신비 일 단. 마리아께서 예수님을 잉태하심을 묵상합시다.",
-    "joined": false
-   },
-   "sign_of_cross": {
-    "bytes": 32019,
-    "sha256": "0142f9035c6eedbb63682db95a8545797a3c0504382b6ae5c695c4ccafe0e388",
-    "seconds": 2.63,
-    "text": "성부와 성자와 성령의 이름으로 아멘.",
-    "joined": false
-   },
-   "apostles_creed": {
-    "bytes": 328247,
-    "sha256": "e496f58f17be3f8b72eaca1d9900b516e024552f65ca13fbf43df95898d55193",
-    "seconds": 27.31,
-    "text": "전능하신 천주 성부 천지의 창조주를 저는 믿나이다 그 외아들 우리 주 예수 그리스도님 성령으로 인하여 동정 마리아께 잉태되어 나시고 본시오 빌라도 통치 아래서 고난을 받으시고 십자가에 못 박혀 돌아가시고 묻히셨으며 저승에 가시어 사흗날에 죽은 이들 가운데서 부활하시고 하늘에 올라 전능하신 천주 성부 오른편에 앉으시며.",
-    "joined": false
-   },
-   "our_father": {
-    "bytes": 132643,
-    "sha256": "93270cf54dc1604828ca7fb87ba222b8805433a75eedb7996f50c0bd036245f4",
-    "seconds": 11.02,
-    "text": "하늘에 계신 우리 아버지 아버지의 이름이 거룩히 빛나시며 아버지의 나라가 오시며 아버지의 뜻이 하늘에서와 같이 땅에서도 이루어지소서.",
-    "joined": false
-   },
-   "glory_be": {
-    "bytes": 29511,
-    "sha256": "578700712bcced440fa0d555b33b4ca93fc16b957115da2dee1e49a7c66f400c",
-    "seconds": 2.42,
-    "text": "영광이 성부와 성자와 성령께.",
-    "joined": false
-   },
-   "fatima": {
-    "bytes": 56470,
-    "sha256": "5451e6d6ff67d84453026fd1bd2459cfe5b67d836d1bba97207bc06d6b77886c",
-    "seconds": 4.66,
-    "text": "예수님 저희 죄를 용서하시며 저희를 지옥 불에서 구하시고.",
-    "joined": false
-   },
-   "mystery_joyful_2": {
-    "bytes": 65560,
-    "sha256": "e22b8a6de1fc267eed99bfb06a07b10b43f46ccb620b27a13767f1d6a4ae5d8a",
-    "seconds": 5.42,
-    "text": "환희의 신비 이 단. 마리아께서 엘리사벳을 찾아보심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_joyful_3": {
-    "bytes": 59291,
-    "sha256": "3dc6f1ba0d9c080e8e0670c1c7c0d743ee4f2212e98b7d1ab946071d5219db07",
-    "seconds": 4.89,
-    "text": "환희의 신비 삼 단. 마리아께서 예수님을 낳으심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_joyful_4": {
-    "bytes": 66814,
-    "sha256": "79244e47e20eda1d332ab3d4c3b6c2a8bd7a8da93b9eb2456f4d3b86b22a03c1",
-    "seconds": 5.53,
-    "text": "환희의 신비 사 단. 마리아께서 예수님을 성전에 바치심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_joyful_5": {
-    "bytes": 67127,
-    "sha256": "fc7e2bdaa7bb71dfcd17af9235b3f53223e745f4770ad8085fc8be07952240ee",
-    "seconds": 5.56,
-    "text": "환희의 신비 오 단. 마리아께서 잃으셨던 예수님을 성전에서 찾으심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_luminous_1": {
-    "bytes": 51454,
-    "sha256": "08a8ce7861c24a77c763791516704c3899f3020f35135e4f5a17cf387a9f6a11",
-    "seconds": 4.25,
-    "text": "빛의 신비 일 단. 예수님께서 세례 받으심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_luminous_2": {
-    "bytes": 62425,
-    "sha256": "5d8855faacc6674f200cca0e3b525106b5163e4b98e48b35ef641782acbec07f",
-    "seconds": 5.16,
-    "text": "빛의 신비 이 단. 예수님께서 카나에서 첫 기적을 행하심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_luminous_3": {
-    "bytes": 58977,
-    "sha256": "32d98a1e2574181720247c859c82c6b26e5c21f5241d8559821fe0ba22e2f4f7",
-    "seconds": 4.88,
-    "text": "빛의 신비 삼 단. 예수님께서 하느님 나라를 선포하심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_luminous_4": {
-    "bytes": 56470,
-    "sha256": "6f42e969e6cfed1f79ca64f6bf31714acc5aac4b56d147a12396a912210a6653",
-    "seconds": 4.67,
-    "text": "빛의 신비 사 단. 예수님께서 거룩하게 변모하심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_luminous_5": {
-    "bytes": 61798,
-    "sha256": "3aa8f3206bb5b61d3e6d4e7e01e78c6cde1f025bdc6796d5cb445e200a19d57b",
-    "seconds": 5.11,
-    "text": "빛의 신비 오 단. 예수님께서 성체성사를 세우심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_sorrowful_1": {
-    "bytes": 65560,
-    "sha256": "ce23d8cbbfdc3959195735d63c6f54bfb3b6d35f45c74b135162fd3d695e6e4c",
-    "seconds": 5.41,
-    "text": "고통의 신비 일 단. 예수님께서 우리를 위하여 피땀 흘리심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_sorrowful_2": {
-    "bytes": 67127,
-    "sha256": "e93d99025ebfb11260b701e594e204b316f44552cd3e05aefa2168eb0a6a2a89",
-    "seconds": 5.55,
-    "text": "고통의 신비 이 단. 예수님께서 우리를 위하여 매 맞으심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_sorrowful_3": {
-    "bytes": 71830,
-    "sha256": "817ddf071f3a41d604feb503e2d63b7a78e9e2166f7c57d6eeb9ecc4e23c5199",
-    "seconds": 5.93,
-    "text": "고통의 신비 삼 단. 예수님께서 우리를 위하여 가시관 쓰심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_sorrowful_4": {
-    "bytes": 72143,
-    "sha256": "bac6f6ed499116569160e488d10e6e7327d703981416f42e040e06154ff9786a",
-    "seconds": 5.96,
-    "text": "고통의 신비 사 단. 예수님께서 우리를 위하여 십자가 지심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_sorrowful_5": {
-    "bytes": 82801,
-    "sha256": "aa7da3f0a678ecc506c223c2e625beb4582d88a557e6d4a5dd885c9d43e6acc8",
-    "seconds": 6.86,
-    "text": "고통의 신비 오 단. 예수님께서 우리를 위하여 십자가에 못 박혀 돌아가심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_glorious_1": {
-    "bytes": 57723,
-    "sha256": "1ed2584b2c27b8b0c47ef49e930a7bd72786e8857e233292c228b01b36b7042f",
-    "seconds": 4.76,
-    "text": "영광의 신비 일 단. 예수님께서 부활하심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_glorious_2": {
-    "bytes": 59291,
-    "sha256": "11c47de854c2e8842f0cb096f7aa4dbe54a615c58e96e7190c7902b1f934a464",
-    "seconds": 4.91,
-    "text": "영광의 신비 이 단. 예수님께서 승천하심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_glorious_3": {
-    "bytes": 59918,
-    "sha256": "410fd4ad22c6e97b5a458e328fe16807855e6dfae5130dc3cf79d777f675d94a",
-    "seconds": 4.96,
-    "text": "영광의 신비 삼 단. 예수님께서 성령을 보내심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_glorious_4": {
-    "bytes": 68381,
-    "sha256": "63d838f45cc5370899dc590546e96de5ae79bc57fde8acbde04fe2c9af39db85",
-    "seconds": 5.66,
-    "text": "영광의 신비 사 단. 예수님께서 마리아를 하늘에 불러올리심을 묵상합시다.",
-    "joined": false
-   },
-   "mystery_glorious_5": {
-    "bytes": 84055,
-    "sha256": "2a96c7240dcb5adf0bbb036e0b14c375890a9814b57e508a1c5c522e75d8c818",
-    "seconds": 6.95,
-    "text": "영광의 신비 오 단. 예수님께서 마리아께 천상 모후의 관을 씌우심을 묵상합시다.",
-    "joined": false
-   },
-   "resp_apostles_creed": {
-    "bytes": 203800,
-    "sha256": "f225019a3ae8d501f307be4f1fa5421397b59c01e8cde100e70d49c339bfa08e",
-    "seconds": 16.95,
-    "text": "그리로부터 산 이와 죽은 이를 심판하러 오시리라 믿나이다 성령을 믿으며 거룩하고 보편된 교회와 모든 성인의 통공을 믿으며 죄의 용서와 육신의 부활을 믿으며 영원한 삶을 믿나이다 아멘.",
-    "joined": false
-   },
-   "resp_our_father": {
-    "bytes": 147376,
-    "sha256": "89d60070a8c32c6489b204f3a432452925f046131e0327e6701f31343bfb23e3",
-    "seconds": 12.24,
-    "text": "오늘 저희에게 일용할 양식을 주시고 저희에게 잘못한 이를 저희가 용서하오니 저희 죄를 용서하시고 저희를 유혹에 빠지지 않게 하시고 악에서 구하소서 아멘.",
-    "joined": false
-   },
-   "resp_hail_mary": {
-    "bytes": 78412,
-    "sha256": "d90a6216d1992a11a2961eaaf7f2e36ec15806ad262abdf7878a07a96517a326",
-    "seconds": 6.48,
-    "text": "천주의 성모 마리아님 이제와 저희 죽을 때에 저희 죄인을 위하여 빌어 주소서 아멘.",
-    "joined": false
-   },
-   "resp_glory_be": {
-    "bytes": 35154,
-    "sha256": "6f663daa721c79d03916f54a73227f03a8344ddf1b99084899aa980caa053f78",
-    "seconds": 2.88,
-    "text": "처음과 같이 이제와 항상 영원히 아멘.",
-    "joined": false
-   },
-   "resp_fatima": {
-    "bytes": 51767,
-    "sha256": "ae9c6d86a2bf4d883721bcc7451f92c935d08711723b6dca578ff20355440480",
-    "seconds": 4.26,
-    "text": "연옥 영혼을 돌보시며 가장 버림받은 영혼을 돌보소서.",
-    "joined": false
-   }
-  },
   "provider": "elevenlabs",
   "voice": "yeieVCpNANUQm8gq7quR",
   "model": "eleven_multilingual_v2",
@@ -229,228 +10,229 @@
    "use_speaker_boost": true,
    "speed": 1.0
   },
-  "generatedAt": "2026-11-12T17:57:36.182668+00:00"
- },
- "priest": {
+  "method": "whole-prayer synthesis + line-end pause edit (v5)",
+  "generatedAt": "2026-11-12T19:09:28.918765+00:00",
   "files": {
    "sign_of_cross": {
-    "bytes": 30452,
-    "sha256": "388cc4253417c2794d4dd8e1cd243e1384eeceba284d9ea289e75a3d3363eae0",
-    "seconds": 2.5,
-    "text": "성부와 성자와 성령의 이름으로 아멘.",
-    "joined": false
+    "bytes": 40169,
+    "sha256": "62ed0d132c0ee68a684e0ba4fca2bfaa8e14f94360160ff81b6067227549210a",
+    "seconds": 3.31,
+    "text": "성부와 성자와 성령의 이름으로, 아멘.",
+    "flat_score": 1.1
    },
    "apostles_creed": {
-    "bytes": 289377,
-    "sha256": "00773a7cf1df24eb54a78625909df50632c43e695b4cdef4381b76b84ff7d333",
-    "seconds": 24.07,
-    "text": "전능하신 천주 성부 천지의 창조주를 저는 믿나이다 그 외아들 우리 주 예수 그리스도님 성령으로 인하여 동정 마리아께 잉태되어 나시고 본시오 빌라도 통치 아래서 고난을 받으시고 십자가에 못 박혀 돌아가시고 묻히셨으며 저승에 가시어 사흗날에 죽은 이들 가운데서 부활하시고 하늘에 올라 전능하신 천주 성부 오른편에 앉으시며.",
-    "joined": false
+    "bytes": 340159,
+    "sha256": "02777868271fcdfe830726b63c22ed3355ae5c1e57720e268cb150ea249a9dc9",
+    "seconds": 28.29,
+    "text": "전능하신 천주 성부, 천지의 창조주를 저는 믿나이다, 그 외아들 우리 주 예수 그리스도님, 성령으로 인하여 동정 마리아께 잉태되어 나시고, 본시오 빌라도 통치 아래서 고난을 받으시고, 십자가에 못 박혀 돌아가시고 묻히셨으며, 저승에 가시어 사흗날에 죽은 이들 가운데서 부활하시고, 하늘에 올라 전능하신 천주 성부 오른편에 앉으시며, 그리로부터 산 이와 죽은 이를 심판하러 오시리라 믿나이다.",
+    "flat_score": 1.44
    },
    "our_father": {
-    "bytes": 112894,
-    "sha256": "9c1c664169b37aa6b27cf4ef791d082ca5acf283ba6c9043313b7a91a594a92a",
-    "seconds": 9.36,
-    "text": "하늘에 계신 우리 아버지 아버지의 이름이 거룩히 빛나시며 아버지의 나라가 오시며 아버지의 뜻이 하늘에서와 같이 땅에서도 이루어지소서.",
-    "joined": false
+    "bytes": 125746,
+    "sha256": "b28d215e55353da53388b4126d8657e31594181bd0e95e04dad7e8c6e79f6c22",
+    "seconds": 10.45,
+    "text": "하늘에 계신 우리 아버지, 아버지의 이름이 거룩히 빛나시며, 아버지의 나라가 오시며, 아버지의 뜻이 하늘에서와 같이, 땅에서도 이루어지소서.",
+    "flat_score": 1.74
    },
    "hail_mary": {
-    "bytes": 103490,
-    "sha256": "2e81a98387e4eb909fc7e307e8893397111fc8e0d8337855d7ee1bd6098b7164",
-    "seconds": 8.59,
-    "text": "은총이 가득하신 마리아님 기뻐하소서 주님께서 함께 계시니 여인 중에 복되시며 태중의 아들 예수님 또한 복되시나이다.",
-    "joined": true
+    "bytes": 107252,
+    "sha256": "8ee83b42ab974a9fec22ad1eddea45265e609fb2a952d95a1e9ab9f81a0251ec",
+    "seconds": 8.89,
+    "text": "은총이 가득하신 마리아님 기뻐하소서, 주님께서 함께 계시니 여인 중에 복되시며, 태중의 아들 예수님 또한 복되시나이다.",
+    "flat_score": 1.83
    },
    "glory_be": {
-    "bytes": 29825,
-    "sha256": "27d83a1b7b1c37a9d00eada2a1a7fbef1e71309207e82599e1f46f71c26d4e1c",
-    "seconds": 2.45,
+    "bytes": 31705,
+    "sha256": "e766f8020ed83b7756b77740cf665042a82086e5c29789b45b5ebb84dd87e4d1",
+    "seconds": 2.6,
     "text": "영광이 성부와 성자와 성령께.",
-    "joined": false
+    "flat_score": 1.55
    },
    "fatima": {
-    "bytes": 47692,
-    "sha256": "7ca7cfe384dd18b07767d62044f3f789944f79bcb2420ba74dccf3fc40780199",
-    "seconds": 3.94,
-    "text": "예수님 저희 죄를 용서하시며 저희를 지옥 불에서 구하시고.",
-    "joined": false
+    "bytes": 57096,
+    "sha256": "16993aae78f25a83a28d4a037f5834caa0830f0579e987673b8afdc0e426d4e9",
+    "seconds": 4.71,
+    "text": "예수님 저희 죄를 용서하시며, 저희를 지옥 불에서 구하시고.",
+    "flat_score": 1.48
    },
    "mystery_joyful_1": {
-    "bytes": 58664,
-    "sha256": "e7c5e0b916c5b47c037fc9a9155ee0e26b19970d3e10a74a085fdc8e16e27702",
-    "seconds": 4.85,
-    "text": "환희의 신비 일 단. 마리아께서 예수님을 잉태하심을 묵상합시다.",
-    "joined": false
+    "bytes": 58977,
+    "sha256": "0b3d6b740ff4521c0687f366c7487e0b21578b268b73171a3bc4130a88d59181",
+    "seconds": 4.88,
+    "text": "환희의 신비 일 단, 마리아께서 예수님을 잉태하심을 묵상합시다.",
+    "flat_score": 2.0
    },
    "mystery_joyful_2": {
-    "bytes": 61798,
-    "sha256": "301764b1d83e4d841eea9da816308f53bd3bf17a695fd3b03fd54e914c6f1126",
-    "seconds": 5.1,
-    "text": "환희의 신비 이 단. 마리아께서 엘리사벳을 찾아보심을 묵상합시다.",
-    "joined": false
+    "bytes": 64306,
+    "sha256": "997e626f0aff34289f02a7643aea591a29c2f32f8622d1f34fc578f185d7381e",
+    "seconds": 5.31,
+    "text": "환희의 신비 이 단, 마리아께서 엘리사벳을 찾아보심을 묵상합시다.",
+    "flat_score": 1.91
    },
    "mystery_joyful_3": {
-    "bytes": 56470,
-    "sha256": "f6c61376e82e8eb61ab1316e858b42d24c9716590838cf0e07701f75a4f349a1",
-    "seconds": 4.66,
-    "text": "환희의 신비 삼 단. 마리아께서 예수님을 낳으심을 묵상합시다.",
-    "joined": false
+    "bytes": 58977,
+    "sha256": "6d6a77c776f2cfd76011bb85e95bc26dbfcff3f9636d9e7ec2585ed5d04d0558",
+    "seconds": 4.87,
+    "text": "환희의 신비 삼 단, 마리아께서 예수님을 낳으심을 묵상합시다.",
+    "flat_score": 1.94
    },
    "mystery_joyful_4": {
-    "bytes": 61798,
-    "sha256": "22da06149539389fc21b75774fd90a0e08603af7dac2fc0f591fb36bc020fbac",
-    "seconds": 5.11,
-    "text": "환희의 신비 사 단. 마리아께서 예수님을 성전에 바치심을 묵상합시다.",
-    "joined": false
+    "bytes": 63993,
+    "sha256": "963be9e8b65bdfabedb9f9e769da411d4249417030638a78e284e5a10ebe31b2",
+    "seconds": 5.3,
+    "text": "환희의 신비 사 단, 마리아께서 예수님을 성전에 바치심을 묵상합시다.",
+    "flat_score": 2.33
    },
    "mystery_joyful_5": {
-    "bytes": 64933,
-    "sha256": "614ee27af8337bc925a95e2235e38298a1afce72776e00e9cfe00f1c889ecc29",
-    "seconds": 5.36,
-    "text": "환희의 신비 오 단. 마리아께서 잃으셨던 예수님을 성전에서 찾으심을 묵상합시다.",
-    "joined": false
+    "bytes": 74964,
+    "sha256": "f818ce764dc6d9d5a185fff7d0a59d3411f324646364d0aa6ab37bd6120dac9b",
+    "seconds": 6.21,
+    "text": "환희의 신비 오 단, 마리아께서 잃으셨던 예수님을 성전에서 찾으심을 묵상합시다.",
+    "flat_score": 2.24
    },
    "mystery_luminous_1": {
-    "bytes": 53021,
-    "sha256": "da64ae47697e27a6760e80d2ef082f54ac11dc01afbef75de7a1a5b3a30e1332",
-    "seconds": 4.38,
-    "text": "빛의 신비 일 단. 예수님께서 세례 받으심을 묵상합시다.",
-    "joined": false
+    "bytes": 54275,
+    "sha256": "5d885351dd26dd80682fa6cf938812f1fdcdfd45992b962f73433268d4faac2a",
+    "seconds": 4.49,
+    "text": "빛의 신비 일 단, 예수님께서 세례 받으심을 묵상합시다.",
+    "flat_score": 2.57
    },
    "mystery_luminous_2": {
-    "bytes": 61798,
-    "sha256": "612b5c823215c4ca49e42eb8f21a14abab9bf755589f6ff82431945f0f588aa3",
-    "seconds": 5.1,
-    "text": "빛의 신비 이 단. 예수님께서 카나에서 첫 기적을 행하심을 묵상합시다.",
-    "joined": false
+    "bytes": 65247,
+    "sha256": "317144f59a114de920fd741d3f64d8b21806e3cabd6721e50bd0316c991ab308",
+    "seconds": 5.39,
+    "text": "빛의 신비 이 단, 예수님께서 카나에서 첫 기적을 행하심을 묵상합시다.",
+    "flat_score": 1.95
    },
    "mystery_luminous_3": {
-    "bytes": 62739,
-    "sha256": "24fcd9e1f38b6ad0fc3f43db7b0afd15248238f6dda98ca7de865c61e5dcb568",
-    "seconds": 5.18,
-    "text": "빛의 신비 삼 단. 예수님께서 하느님 나라를 선포하심을 묵상합시다.",
-    "joined": false
+    "bytes": 63052,
+    "sha256": "ef8d876d41f93c055976e3532f1ac75fb797def688e3b4ae9eaa0e99ec6a489d",
+    "seconds": 5.2,
+    "text": "빛의 신비 삼 단, 예수님께서 하느님 나라를 선포하심을 묵상합시다.",
+    "flat_score": 1.71
    },
    "mystery_luminous_4": {
-    "bytes": 60231,
-    "sha256": "6ddd51e8f4b16e0941027e9f23eb9d75958e5525c01bdc548efbdc2bf1a6776e",
-    "seconds": 4.98,
-    "text": "빛의 신비 사 단. 예수님께서 거룩하게 변모하심을 묵상합시다.",
-    "joined": false
+    "bytes": 60545,
+    "sha256": "1c98e89bcf8fe726cfc2030ce84e71adecf8946c347669eb3824e43e0231d2c3",
+    "seconds": 4.99,
+    "text": "빛의 신비 사 단, 예수님께서 거룩하게 변모하심을 묵상합시다.",
+    "flat_score": 1.79
    },
    "mystery_luminous_5": {
-    "bytes": 63366,
-    "sha256": "393a155ad3faa0ee3317d1ae25c56d38f4c799ba78e7891c1d1c0f04c6875b3a",
-    "seconds": 5.23,
-    "text": "빛의 신비 오 단. 예수님께서 성체성사를 세우심을 묵상합시다.",
-    "joined": false
+    "bytes": 62112,
+    "sha256": "bb034f908eaedbb3951cadf5903423bf637001b0024b489cb2f6fdd6c0f40383",
+    "seconds": 5.13,
+    "text": "빛의 신비 오 단, 예수님께서 성체성사를 세우심을 묵상합시다.",
+    "flat_score": 2.37
    },
    "mystery_sorrowful_1": {
-    "bytes": 64306,
-    "sha256": "70b2b858327448191499668c08ebc942d40fc191445156902af0a0477a86d053",
-    "seconds": 5.32,
-    "text": "고통의 신비 일 단. 예수님께서 우리를 위하여 피땀 흘리심을 묵상합시다.",
-    "joined": false
+    "bytes": 66501,
+    "sha256": "dba2bc36aef88e94aeb95594857f0ab94bcb2dd999c57cda3bf9ee13af172278",
+    "seconds": 5.5,
+    "text": "고통의 신비 일 단, 예수님께서 우리를 위하여 피땀 흘리심을 묵상합시다.",
+    "flat_score": 1.48
    },
    "mystery_sorrowful_2": {
-    "bytes": 65247,
-    "sha256": "50c6690df3a4fa1a9dd77d1737867d6c8650f82e451d4141a1c2f334feb67a90",
-    "seconds": 5.39,
-    "text": "고통의 신비 이 단. 예수님께서 우리를 위하여 매 맞으심을 묵상합시다.",
-    "joined": false
+    "bytes": 70262,
+    "sha256": "78db6705ee3bce2aaef211d86e15d186d3c02d6c74470e5347d072dd309834d6",
+    "seconds": 5.81,
+    "text": "고통의 신비 이 단, 예수님께서 우리를 위하여 매 맞으심을 묵상합시다.",
+    "flat_score": 1.96
    },
    "mystery_sorrowful_3": {
-    "bytes": 65874,
-    "sha256": "86b80186cf9350f5c17768e93efce36e8c39143597319d736901f6c033c98d43",
-    "seconds": 5.45,
-    "text": "고통의 신비 삼 단. 예수님께서 우리를 위하여 가시관 쓰심을 묵상합시다.",
-    "joined": false
+    "bytes": 68381,
+    "sha256": "ecb75689a361964e2dda5ce96c9a9984d391f17475708275e95f9c65af287bd5",
+    "seconds": 5.66,
+    "text": "고통의 신비 삼 단, 예수님께서 우리를 위하여 가시관 쓰심을 묵상합시다.",
+    "flat_score": 1.62
    },
    "mystery_sorrowful_4": {
-    "bytes": 65560,
-    "sha256": "8aca59366b12060bee36d06ac71f9e659e5348ea070a82ede643f2a4c0e0df29",
-    "seconds": 5.41,
-    "text": "고통의 신비 사 단. 예수님께서 우리를 위하여 십자가 지심을 묵상합시다.",
-    "joined": false
+    "bytes": 67441,
+    "sha256": "8957075395547eba9c3a26a0baaf5fec5e8c1db6edc06528ceab263782a1f681",
+    "seconds": 5.57,
+    "text": "고통의 신비 사 단, 예수님께서 우리를 위하여 십자가 지심을 묵상합시다.",
+    "flat_score": 1.94
    },
    "mystery_sorrowful_5": {
-    "bytes": 70576,
-    "sha256": "473c8e5f606ffb7b93590a28df6a13d9e7cc08fdceee98c7f07dfebb1d70ed55",
-    "seconds": 5.83,
-    "text": "고통의 신비 오 단. 예수님께서 우리를 위하여 십자가에 못 박혀 돌아가심을 묵상합시다.",
-    "joined": false
+    "bytes": 79980,
+    "sha256": "1b46b06cef938fa3e9ec0161307e4b0a8253ed469f39be7fa15cb8876972e174",
+    "seconds": 6.63,
+    "text": "고통의 신비 오 단, 예수님께서 우리를 위하여 십자가에 못 박혀 돌아가심을 묵상합시다.",
+    "flat_score": 1.94
    },
    "mystery_glorious_1": {
-    "bytes": 54275,
-    "sha256": "0fc9ac6fbe895de297b12682089132f2dfd7e5360d874231d94ef231e51c6321",
-    "seconds": 4.49,
-    "text": "영광의 신비 일 단. 예수님께서 부활하심을 묵상합시다.",
-    "joined": false
+    "bytes": 55843,
+    "sha256": "bbac62e4f954cd42410dab6a1abd41b8ec758e2729fba422cca4848ca9cdb5aa",
+    "seconds": 4.6,
+    "text": "영광의 신비 일 단, 예수님께서 부활하심을 묵상합시다.",
+    "flat_score": 1.63
    },
    "mystery_glorious_2": {
-    "bytes": 58037,
-    "sha256": "38cc5af736e9dee2a230bd9b0cbe142bc6fa3dd1114a779c6bbc267eba1165f5",
-    "seconds": 4.79,
-    "text": "영광의 신비 이 단. 예수님께서 승천하심을 묵상합시다.",
-    "joined": false
+    "bytes": 58977,
+    "sha256": "5ec0c827e816355c4bda4fa9dd851a0d0c1ba2210b74c79652093c7b456af958",
+    "seconds": 4.87,
+    "text": "영광의 신비 이 단, 예수님께서 승천하심을 묵상합시다.",
+    "flat_score": 1.54
    },
    "mystery_glorious_3": {
-    "bytes": 61485,
-    "sha256": "b525c51bcc84dac7b86f92da0a15942e4fff8e0d8170ba64433b53386dbc240a",
-    "seconds": 5.07,
-    "text": "영광의 신비 삼 단. 예수님께서 성령을 보내심을 묵상합시다.",
-    "joined": false
+    "bytes": 62425,
+    "sha256": "d086d5aa8919d7c529b009601eef1695fd1d0abeebd1fcc77b9cd7827e69f2fc",
+    "seconds": 5.16,
+    "text": "영광의 신비 삼 단, 예수님께서 성령을 보내심을 묵상합시다.",
+    "flat_score": 1.53
    },
    "mystery_glorious_4": {
-    "bytes": 67127,
-    "sha256": "e140b3d376a2aba41dd196b17f899185a386762cedd3325f63022631b27c2d38",
-    "seconds": 5.54,
-    "text": "영광의 신비 사 단. 예수님께서 마리아를 하늘에 불러올리심을 묵상합시다.",
-    "joined": false
+    "bytes": 68068,
+    "sha256": "542cf76a3e8980eeb019055ace735eebc0d2e9599e64e69bb8bd4ad5300660da",
+    "seconds": 5.63,
+    "text": "영광의 신비 사 단, 예수님께서 마리아를 하늘에 불러올리심을 묵상합시다.",
+    "flat_score": 1.78
    },
    "mystery_glorious_5": {
-    "bytes": 76845,
-    "sha256": "c2282ce0060345649301fe97900f2b3c259c967c0abe9fc58e439cd031cd687a",
-    "seconds": 6.37,
-    "text": "영광의 신비 오 단. 예수님께서 마리아께 천상 모후의 관을 씌우심을 묵상합시다.",
-    "joined": false
+    "bytes": 78099,
+    "sha256": "27ccabee256259b9f6b672d12d62693e6a8f93e7612b51b1573afad04922fb43",
+    "seconds": 6.46,
+    "text": "영광의 신비 오 단, 예수님께서 마리아께 천상 모후의 관을 씌우심을 묵상합시다.",
+    "flat_score": 1.75
    },
    "resp_apostles_creed": {
-    "bytes": 184365,
-    "sha256": "d35b499f94c51fa4479d6a5080681ac8b3b8d904c937e2dc31ba679840f52a85",
-    "seconds": 15.31,
-    "text": "그리로부터 산 이와 죽은 이를 심판하러 오시리라 믿나이다 성령을 믿으며 거룩하고 보편된 교회와 모든 성인의 통공을 믿으며 죄의 용서와 육신의 부활을 믿으며 영원한 삶을 믿나이다 아멘.",
-    "joined": false
+    "bytes": 141733,
+    "sha256": "ba3b4707c29fc087227bbb5670449d6482c04afb34a094fff40dd6d2d42641e1",
+    "seconds": 11.76,
+    "text": "성령을 믿으며, 거룩하고 보편된 교회와, 모든 성인의 통공을 믿으며, 죄의 용서와 육신의 부활을 믿으며, 영원한 삶을 믿나이다, 아멘.",
+    "flat_score": 1.3
    },
    "resp_our_father": {
-    "bytes": 142360,
-    "sha256": "dd21250efe6e28faa4bce424cbd744674528c7e14aee25996d3f0bb9dbe6b746",
-    "seconds": 11.82,
-    "text": "오늘 저희에게 일용할 양식을 주시고 저희에게 잘못한 이를 저희가 용서하오니 저희 죄를 용서하시고 저희를 유혹에 빠지지 않게 하시고 악에서 구하소서 아멘.",
-    "joined": false
+    "bytes": 147689,
+    "sha256": "c4c5471abb8d2e93915b3392d7a101740c4684516d79947a0804a79fe03b0e12",
+    "seconds": 12.25,
+    "text": "오늘 저희에게 일용할 양식을 주시고, 저희에게 잘못한 이를 저희가 용서하오니, 저희 죄를 용서하시고, 저희를 유혹에 빠지지 않게 하시고, 악에서 구하소서, 아멘.",
+    "flat_score": 1.16
    },
    "resp_hail_mary": {
-    "bytes": 64620,
-    "sha256": "b578adc7f57d88f3d073a794ecab59c09f519b60dc285c30e1a44ede95edbed9",
-    "seconds": 5.33,
-    "text": "천주의 성모 마리아님 이제와 저희 죽을 때에 저희 죄인을 위하여 빌어 주소서 아멘.",
-    "joined": false
+    "bytes": 81234,
+    "sha256": "fb22c7acfb4a0806ee4bee73503dc54ab93578b3b8cb69b3d407fdf02d00fb0d",
+    "seconds": 6.72,
+    "text": "천주의 성모 마리아님, 이제와 저희 죽을 때에, 저희 죄인을 위하여 빌어 주소서, 아멘.",
+    "flat_score": 1.49
    },
    "resp_glory_be": {
-    "bytes": 32646,
-    "sha256": "ee687aa9ae5666de3610d732fa5217eff77b345c746139104c7dc73892b1f8a7",
-    "seconds": 2.69,
-    "text": "처음과 같이 이제와 항상 영원히 아멘.",
-    "joined": false
+    "bytes": 41736,
+    "sha256": "fdeedf2f979e413b4a94c5ce9171bcffcb8815d0bd4916eaa6b26a0bb92b96b9",
+    "seconds": 3.42,
+    "text": "처음과 같이 이제와 항상 영원히, 아멘.",
+    "flat_score": 1.46
    },
    "resp_fatima": {
-    "bytes": 46438,
-    "sha256": "b7f5b699317752fd11486bb3d904079fb389250a8dbc10cad078549a13c9a421",
-    "seconds": 3.83,
-    "text": "연옥 영혼을 돌보시며 가장 버림받은 영혼을 돌보소서.",
-    "joined": false
+    "bytes": 54589,
+    "sha256": "17b82b2ee576086f1083eee51ca27be41359f286170929305941c900c779fdb2",
+    "seconds": 4.51,
+    "text": "연옥 영혼을 돌보시며, 가장 버림받은 영혼을 돌보소서.",
+    "flat_score": 1.82
    }
-  },
+  }
+ },
+ "priest": {
   "provider": "elevenlabs",
   "voice": "JL0iS7pVcKbJG6tHz7fn",
   "model": "eleven_multilingual_v2",
@@ -461,6 +243,226 @@
    "use_speaker_boost": true,
    "speed": 1.0
   },
-  "generatedAt": "2026-11-12T17:58:06.959030+00:00"
+  "method": "whole-prayer synthesis + line-end pause edit (v5)",
+  "generatedAt": "2026-11-12T19:12:10.898380+00:00",
+  "files": {
+   "sign_of_cross": {
+    "bytes": 39229,
+    "sha256": "dc6a4c99925a70d6bf5398c7138be79b48fb9b82090d28cb66242cd58ca6e260",
+    "seconds": 3.21,
+    "text": "성부와 성자와 성령의 이름으로, 아멘.",
+    "flat_score": 5.72
+   },
+   "apostles_creed": {
+    "bytes": 329501,
+    "sha256": "c66c53fbbd010ab37b618f5937119161a5be94df4b04349dd7d3c44217fc4566",
+    "seconds": 27.41,
+    "text": "전능하신 천주 성부, 천지의 창조주를 저는 믿나이다, 그 외아들 우리 주 예수 그리스도님, 성령으로 인하여 동정 마리아께 잉태되어 나시고, 본시오 빌라도 통치 아래서 고난을 받으시고, 십자가에 못 박혀 돌아가시고 묻히셨으며, 저승에 가시어 사흗날에 죽은 이들 가운데서 부활하시고, 하늘에 올라 전능하신 천주 성부 오른편에 앉으시며, 그리로부터 산 이와 죽은 이를 심판하러 오시리라 믿나이다.",
+    "flat_score": 0.72
+   },
+   "our_father": {
+    "bytes": 116656,
+    "sha256": "c19317b198b4d443d4ee4c94382f3319e03b7e0a1a819b56b77712ce388a5263",
+    "seconds": 9.67,
+    "text": "하늘에 계신 우리 아버지, 아버지의 이름이 거룩히 빛나시며, 아버지의 나라가 오시며, 아버지의 뜻이 하늘에서와 같이, 땅에서도 이루어지소서.",
+    "flat_score": 0.81
+   },
+   "hail_mary": {
+    "bytes": 101923,
+    "sha256": "ed4b9649ba08adb76cfcdccf7d38d531af9d695fc8f726c7a75b5a839a9caab5",
+    "seconds": 8.46,
+    "text": "은총이 가득하신 마리아님 기뻐하소서, 주님께서 함께 계시니 여인 중에 복되시며, 태중의 아들 예수님 또한 복되시나이다.",
+    "flat_score": 0.91
+   },
+   "glory_be": {
+    "bytes": 32332,
+    "sha256": "98da87a9ee439c231ac8df94ba0315fed9f19769b286fc29877143627b9aa93f",
+    "seconds": 2.64,
+    "text": "영광이 성부와 성자와 성령께.",
+    "flat_score": 0.53
+   },
+   "fatima": {
+    "bytes": 49887,
+    "sha256": "b6e0cca37ade1d0b2173c2e332d1a93d53a4c30bc39029fec8bf39acbe5b77bf",
+    "seconds": 4.11,
+    "text": "예수님 저희 죄를 용서하시며, 저희를 지옥 불에서 구하시고.",
+    "flat_score": 0.83
+   },
+   "mystery_joyful_1": {
+    "bytes": 57096,
+    "sha256": "b41c38d55784232ee94ec2385a3169dbd5cea419b2dd9c70e54d2429ac37eece",
+    "seconds": 4.72,
+    "text": "환희의 신비 일 단, 마리아께서 예수님을 잉태하심을 묵상합시다.",
+    "flat_score": 1.1
+   },
+   "mystery_joyful_2": {
+    "bytes": 63679,
+    "sha256": "4bf272191173b600df902396558a34d1ffe4a28774ad930d73bd195973b7b501",
+    "seconds": 5.26,
+    "text": "환희의 신비 이 단, 마리아께서 엘리사벳을 찾아보심을 묵상합시다.",
+    "flat_score": 1.22
+   },
+   "mystery_joyful_3": {
+    "bytes": 57096,
+    "sha256": "873f91d8448e4b1d563f014932a02b29f34ee25261c226aa6fa2fe07dbc6f335",
+    "seconds": 4.72,
+    "text": "환희의 신비 삼 단, 마리아께서 예수님을 낳으심을 묵상합시다.",
+    "flat_score": 1.44
+   },
+   "mystery_joyful_4": {
+    "bytes": 62739,
+    "sha256": "8439e9cfc498a886807c9743a4515504813b64c6b0e889bd42437784bdfcbf22",
+    "seconds": 5.19,
+    "text": "환희의 신비 사 단, 마리아께서 예수님을 성전에 바치심을 묵상합시다.",
+    "flat_score": 1.34
+   },
+   "mystery_joyful_5": {
+    "bytes": 73083,
+    "sha256": "c328f06915500fe0d4a4a00f5252c11c524bf5e5f2a5ce91b86d06ef954ac430",
+    "seconds": 6.04,
+    "text": "환희의 신비 오 단, 마리아께서 잃으셨던 예수님을 성전에서 찾으심을 묵상합시다.",
+    "flat_score": 1.34
+   },
+   "mystery_luminous_1": {
+    "bytes": 50514,
+    "sha256": "f87991c36fd1cded32d5cb5ef495b9440fda3d75bf25e0ac5e97943057079922",
+    "seconds": 4.17,
+    "text": "빛의 신비 일 단, 예수님께서 세례 받으심을 묵상합시다.",
+    "flat_score": 0.92
+   },
+   "mystery_luminous_2": {
+    "bytes": 63993,
+    "sha256": "75501f627ef65a1789c67e6b4722442b695aeb614a43e0002743fc1db5d01f6b",
+    "seconds": 5.3,
+    "text": "빛의 신비 이 단, 예수님께서 카나에서 첫 기적을 행하심을 묵상합시다.",
+    "flat_score": 0.89
+   },
+   "mystery_luminous_3": {
+    "bytes": 61172,
+    "sha256": "24270814c180734e1bea0c2317f9049623bc27a372f704d8c22175375bd227b5",
+    "seconds": 5.06,
+    "text": "빛의 신비 삼 단, 예수님께서 하느님 나라를 선포하심을 묵상합시다.",
+    "flat_score": 0.91
+   },
+   "mystery_luminous_4": {
+    "bytes": 58350,
+    "sha256": "37182f5d9c37afb04bcee50417981a4202e1a75ab3fe9583638ec67110649186",
+    "seconds": 4.83,
+    "text": "빛의 신비 사 단, 예수님께서 거룩하게 변모하심을 묵상합시다.",
+    "flat_score": 1.04
+   },
+   "mystery_luminous_5": {
+    "bytes": 59918,
+    "sha256": "77984824ec8a288a89bccb7d12cd575ffa7262a93943973f64d99f1306dc45f6",
+    "seconds": 4.94,
+    "text": "빛의 신비 오 단, 예수님께서 성체성사를 세우심을 묵상합시다.",
+    "flat_score": 1.18
+   },
+   "mystery_sorrowful_1": {
+    "bytes": 63993,
+    "sha256": "9cc02749f1aefd2587466dce33beab2a7c8fc1fd0bf051e984ea313ce07f8b20",
+    "seconds": 5.3,
+    "text": "고통의 신비 일 단, 예수님께서 우리를 위하여 피땀 흘리심을 묵상합시다.",
+    "flat_score": 1.25
+   },
+   "mystery_sorrowful_2": {
+    "bytes": 64306,
+    "sha256": "534938539358ac0f89196f81b2909710c539480af45e4a9a0099f2a06f0315a7",
+    "seconds": 5.31,
+    "text": "고통의 신비 이 단, 예수님께서 우리를 위하여 매 맞으심을 묵상합시다.",
+    "flat_score": 1.05
+   },
+   "mystery_sorrowful_3": {
+    "bytes": 65560,
+    "sha256": "826b202d2260391dd025a4aa60626f87c79933ea9064cc3a08d613c83a48bd77",
+    "seconds": 5.43,
+    "text": "고통의 신비 삼 단, 예수님께서 우리를 위하여 가시관 쓰심을 묵상합시다.",
+    "flat_score": 1.32
+   },
+   "mystery_sorrowful_4": {
+    "bytes": 63993,
+    "sha256": "05afe6a73fe6338b3b5a3719439d80d2bbbe422a312498dbaafe52229518d81e",
+    "seconds": 5.29,
+    "text": "고통의 신비 사 단, 예수님께서 우리를 위하여 십자가 지심을 묵상합시다.",
+    "flat_score": 1.19
+   },
+   "mystery_sorrowful_5": {
+    "bytes": 73083,
+    "sha256": "1cd34ba22eb49c42d0bde2f3e92bee65f830021513ddf4abad6aa5f21cc4b4a2",
+    "seconds": 6.04,
+    "text": "고통의 신비 오 단, 예수님께서 우리를 위하여 십자가에 못 박혀 돌아가심을 묵상합시다.",
+    "flat_score": 0.88
+   },
+   "mystery_glorious_1": {
+    "bytes": 51767,
+    "sha256": "00cf30bef32e4a6cfdaf2f2d0f883aecb5332ecb9673afd0dce201c3eaf8f51d",
+    "seconds": 4.27,
+    "text": "영광의 신비 일 단, 예수님께서 부활하심을 묵상합시다.",
+    "flat_score": 0.99
+   },
+   "mystery_glorious_2": {
+    "bytes": 56470,
+    "sha256": "1c32f8a6ba0e3954e5e35ec4a007b10d1deca5e68584391fb6096917ecae4ea1",
+    "seconds": 4.67,
+    "text": "영광의 신비 이 단, 예수님께서 승천하심을 묵상합시다.",
+    "flat_score": 1.04
+   },
+   "mystery_glorious_3": {
+    "bytes": 60231,
+    "sha256": "1f008e4cab361236d725f456e873efcfe08cb7e593727555cceacce464c9fa40",
+    "seconds": 4.97,
+    "text": "영광의 신비 삼 단, 예수님께서 성령을 보내심을 묵상합시다.",
+    "flat_score": 0.85
+   },
+   "mystery_glorious_4": {
+    "bytes": 65874,
+    "sha256": "d68d468406878b7ac950f8de6416279390b4eaf70f15f72d657c4c015eeb2271",
+    "seconds": 5.45,
+    "text": "영광의 신비 사 단, 예수님께서 마리아를 하늘에 불러올리심을 묵상합시다.",
+    "flat_score": 1.17
+   },
+   "mystery_glorious_5": {
+    "bytes": 69949,
+    "sha256": "ab934b489a842d42153a679334b1d82500602fb0f83bb13fc38142ca15525924",
+    "seconds": 5.79,
+    "text": "영광의 신비 오 단, 예수님께서 마리아께 천상 모후의 관을 씌우심을 묵상합시다.",
+    "flat_score": 1.07
+   },
+   "resp_apostles_creed": {
+    "bytes": 131702,
+    "sha256": "0cfa9a7ec673156c23393b22364294af98075adedb9bf0b462277bb3a2dea919",
+    "seconds": 10.93,
+    "text": "성령을 믿으며, 거룩하고 보편된 교회와, 모든 성인의 통공을 믿으며, 죄의 용서와 육신의 부활을 믿으며, 영원한 삶을 믿나이다, 아멘.",
+    "flat_score": 0.84
+   },
+   "resp_our_father": {
+    "bytes": 148316,
+    "sha256": "5d72a3c739a955a74995fb8a6730ad172657dadf22ca0fc2c8d58d009b08bef1",
+    "seconds": 12.32,
+    "text": "오늘 저희에게 일용할 양식을 주시고, 저희에게 잘못한 이를 저희가 용서하오니, 저희 죄를 용서하시고, 저희를 유혹에 빠지지 않게 하시고, 악에서 구하소서, 아멘.",
+    "flat_score": 4.5
+   },
+   "resp_hail_mary": {
+    "bytes": 77785,
+    "sha256": "dc0da8cd7862b4d70f7e1e5a4cecb2ebd97ff82a8ce8b326986a2eaf5fcb0352",
+    "seconds": 6.45,
+    "text": "천주의 성모 마리아님, 이제와 저희 죽을 때에, 저희 죄인을 위하여 빌어 주소서, 아멘.",
+    "flat_score": 1.03
+   },
+   "resp_glory_be": {
+    "bytes": 40483,
+    "sha256": "e5e023b6e8addae5238603ff610fe25f605066f6fae011723f692fb338518f47",
+    "seconds": 3.32,
+    "text": "처음과 같이 이제와 항상 영원히, 아멘.",
+    "flat_score": 1.15
+   },
+   "resp_fatima": {
+    "bytes": 54275,
+    "sha256": "f4288091d6dbfc8ac9e449f5c33fc4e42140a34a03bd40586c89a58069020423",
+    "seconds": 4.47,
+    "text": "연옥 영혼을 돌보시며, 가장 버림받은 영혼을 돌보소서.",
+    "flat_score": 0.71
+   }
+  }
  }
 }

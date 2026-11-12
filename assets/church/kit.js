@@ -268,6 +268,10 @@
     ctx.setSky = function (o) { S_.sky = o || {}; };
     ctx.onHour = function (fn) { S_.hourHooks.push(fn); };
     ctx.onUpdate = function (fn) { S_.updateHooks.push(fn); };
+    // 시간대 값(env)을 적용 직전에 고친다(감상실: 빛 상태별 실내 조명). fn(env, hour)
+    ctx.envOverride = function (fn) { S_.envOverride = fn; };
+    // 감상실의 창 자리 등록(GlassView 가 사진 창을 이 자리에 끼운다)
+    ctx.setViewSlot = function (o) { S_.viewSlot = o; };
     ctx.setAO = function (o) { if (o === false) S_.aoOn = false; else { S_.aoOn = true; S_.aoOpts = o || {}; } };
     ctx.addLight = function (o) {
       if (S_.lights.length >= 1) { if (root.console) console.warn('[church] only one builder point light allowed; ignored'); return null; }

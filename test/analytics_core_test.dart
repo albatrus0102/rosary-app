@@ -460,6 +460,14 @@ void main() {
         'novena_start',
         'novena_day',
         'widget_tap',
+        'glass_open',
+        'glass_view_end',
+        'glass_filter',
+        'glass_info',
+        'glass_fav',
+        'glass_capture',
+        'glass_pray',
+        'glass_download',
       ],
       'church': [
         'church_pick',
@@ -472,7 +480,7 @@ void main() {
         'church_mode',
         'church_report',
       ],
-      'diagnostics': ['error', 'perf'],
+      'diagnostics': ['error', 'perf', 'glass_load', 'glass_mem'],
     };
 
     test('every SPEC §4 name is accepted with the right category', () {

@@ -1,16 +1,41 @@
 /* render.js — 렌더러 설정(sRGB 출력·ACES 톤매핑·물리 기반 조명), PMREM 환경광, 후처리(AO·블룸·색보정), 화질 단계(high/low), 자동 하향.
+   프로필(G-04): 'walk'(성당 걷기, 예전 그대로) | 'view'(창 감상: 보정 끔·Neutral·SSAO 끔·블룸은 햇빛 HDR 만). R.setProfile(p, {bloom}).
    ChurchRender.create(canvas, {quality}) -> R. 다른 파일은 R.render(scene, camera, dt) 만 부르면 된다. */
 (function (root) {
   'use strict';
   var T = root.THREE, X = root.ThreeX || {};
 
+  // Khronos PBR Neutral (https://github.com/KhronosGroup/ToneMapping/tree/main/PBR_Neutral). glass_math.js neutral() 과 같은 식.
+  var NEUTRAL_GLSL = 'vec3 neutralTM(vec3 color){ const float startCompression = 0.8 - 0.04; const float desaturation = 0.15;\n' +
+    ' float x = min(color.r, min(color.g, color.b)); float offset = x < 0.08 ? x - 6.25 * x * x : 0.04; color -= offset;\n' +
+    ' float peak = max(color.r, max(color.g, color.b)); if (peak < startCompression) return color;\n' +
+    ' float d = 1.0 - startCompression; float newPeak = 1.0 - d * d / (peak + d - startCompression); color *= newPeak / peak;\n' +
+    ' float g = 1.0 - 1.0 / (desaturation * (peak - newPeak) + 1.0); return mix(color, vec3(newPeak), g); }\n';
+  // low 화질(후처리 없음)의 감상 프로필: three 의 CustomToneMapping 을 Neutral 로 바꾼다(재질별 toneMapped 가 그대로 동작).
+  if (T && T.ShaderChunk && T.ShaderChunk.tonemapping_pars_fragment && T.ShaderChunk.tonemapping_pars_fragment.indexOf('neutralTM') < 0) {
+    T.ShaderChunk.tonemapping_pars_fragment = T.ShaderChunk.tonemapping_pars_fragment.replace('vec3 CustomToneMapping( vec3 color ) { return color; }',
+      NEUTRAL_GLSL + 'vec3 CustomToneMapping( vec3 color ) { return neutralTM( color * toneMappingExposure ); }');
+  }
+
+  // 최종 패스(G-04): 성당 걷기 = 예전과 같은 색보정(채도 0.94·난색 +3%·비네트) + ACES(three r149 와 같은 식),
+  // 감상 프로필 = 보정 없음 + Khronos PBR Neutral(색상각 보존). 사진 창(GlassView 재질)은 알파 0 을 써서 표시하고,
+  // 그 화소는 어느 프로필에서든 보정·톤매핑을 건너뛴다(1.0 이하 항등, 넘치면 색상 보존 어깨) → 화면 값 = 사진 값.
   var FINAL_SHADER = {
-    uniforms: { tDiffuse: { value: null }, vignette: { value: 0.16 }, sat: { value: 0.94 }, warm: { value: 0.03 } },
+    uniforms: { tDiffuse: { value: null }, vignette: { value: 0.16 }, sat: { value: 0.94 }, warm: { value: 0.03 }, uExposure: { value: 1 }, curve: { value: 0 }, glassOn: { value: 1 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: 'uniform sampler2D tDiffuse; uniform float vignette; uniform float sat; uniform float warm; varying vec2 vUv;\n' +
-      'void main(){ vec3 c = texture2D(tDiffuse, vUv).rgb; float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); c = mix(vec3(l), c, sat); c *= vec3(1.0 + warm, 1.0, 1.0 - warm);\n' +
-      ' float d = distance(vUv, vec2(0.5)); c *= 1.0 - vignette * smoothstep(0.3, 0.9, d); gl_FragColor = vec4(c, 1.0);\n' +
-      '#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'
+    fragmentShader: 'uniform sampler2D tDiffuse; uniform float vignette; uniform float sat; uniform float warm; uniform float uExposure; uniform float curve; uniform float glassOn; varying vec2 vUv;\n' +
+      'vec3 acesFit(vec3 v){ vec3 a = v * (v + 0.0245786) - 0.000090537; vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081; return a / b; }\n' +
+      'vec3 acesTM(vec3 c){ const mat3 I = mat3(vec3(0.59719, 0.07600, 0.02840), vec3(0.35458, 0.90834, 0.13383), vec3(0.04823, 0.01566, 0.83777));\n' +
+      ' const mat3 O = mat3(vec3(1.60475, -0.10208, -0.00327), vec3(-0.53108, 1.10813, -0.07276), vec3(-0.07367, -0.00605, 1.07602));\n' +
+      ' c *= uExposure / 0.6; c = I * c; c = acesFit(c); c = O * c; return clamp(c, 0.0, 1.0); }\n' +
+      NEUTRAL_GLSL +
+      'vec3 glassTM(vec3 c){ float p = max(c.r, max(c.g, c.b)); if (p <= 1.0) return c; float w = 1.0 - 1.0 / (1.0 + 0.6 * (p - 1.0)); return mix(c / p, vec3(1.0), w); }\n' +
+      'void main(){ vec4 s = texture2D(tDiffuse, vUv); vec3 c = s.rgb; float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); vec3 g = mix(vec3(l), c, sat); g *= vec3(1.0 + warm, 1.0, 1.0 - warm);\n' +
+      ' float d = distance(vUv, vec2(0.5)); g *= 1.0 - vignette * smoothstep(0.3, 0.9, d);\n' +
+      ' vec3 sc = curve > 0.5 ? neutralTM(g * uExposure) : acesTM(g);\n' +
+      ' float m = glassOn * clamp(1.0 - s.a, 0.0, 1.0);\n' +
+      ' gl_FragColor = vec4(mix(sc, glassTM(max(c, vec3(0.0))), m), 1.0);\n' +
+      '#include <encodings_fragment>\n}'
   };
 
   function b64ToBuf(b64) {
@@ -100,8 +125,10 @@
       }
       if (X.UnrealBloomPass) { bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92); c.addPass(bloom); }
       finalPass = new X.ShaderPass(FINAL_SHADER);
+      finalPass.material.toneMapped = false;
       c.addPass(finalPass);
       R.composer = c;
+      applyProfile();
     }
     function disposeComposer() {
       if (!R.composer) return;
@@ -125,6 +152,26 @@
     };
     R.setExposure = function (e) { renderer.toneMappingExposure = e; };
 
+    // ---- 프로필(G-04) ----
+    R.profile = 'walk'; R.profileOpts = {};
+    function applyProfile() {
+      var v = R.profile === 'view', o = R.profileOpts || {};
+      if (finalPass) {
+        var u = finalPass.uniforms;
+        u.curve.value = v ? 1 : 0; u.sat.value = v ? 1 : 0.94; u.warm.value = v ? 0 : 0.03; u.vignette.value = v ? 0 : 0.16;
+      }
+      // 감상: SSAO 끔(유리·창틀이 어두워지지 않게, 8비트 beauty 타깃도 피한다). 블룸은 햇빛의 HDR(>1.6)만, 강도 0.15·반경 0.4.
+      if (ssao) ssao.enabled = !v;
+      if (bloom) {
+        bloom.enabled = !v || !!o.bloom;
+        if (v) { bloom.threshold = 1.6; bloom.strength = 0.15; bloom.radius = 0.4; } else { bloom.threshold = 0.92; bloom.strength = 0.3; bloom.radius = 0.55; }
+      }
+      var tm = v ? T.CustomToneMapping : T.ACESFilmicToneMapping;
+      if (renderer.toneMapping !== tm) renderer.toneMapping = tm;   // low 화질 경로(후처리 없음)만 영향. 사진 창은 toneMapped:false.
+    }
+    R.setProfile = function (p, o) { R.profile = p === 'view' ? 'view' : 'walk'; R.profileOpts = o || {}; applyProfile(); };
+    R.passes = function () { return { ssao: !!(ssao && ssao.enabled), bloom: !!(bloom && bloom.enabled), curve: finalPass ? finalPass.uniforms.curve.value : -1 }; };
+
     // 매 프레임: 렌더 + 프레임 시간 평균(3초)으로 자동 하향. 반환: 단계가 바뀌었으면 새 단계 문자열
     R.render = function (scene, camera, dt, world) {
       curScene = scene; curCam = camera;
@@ -135,6 +182,7 @@
         if (rpass) { rpass.scene = scene; rpass.camera = camera; }
         if (ssao) { ssao.scene = scene; ssao.camera = camera; }
         renderer.shadowMap.needsUpdate = true;
+        if (finalPass) finalPass.uniforms.uExposure.value = renderer.toneMappingExposure;
         R.composer.render(dt);
       } else {
         renderer.shadowMap.needsUpdate = false;

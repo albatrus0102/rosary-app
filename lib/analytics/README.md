@@ -157,6 +157,24 @@ void _select(int i) {
 | `setting_change` | `key`(예: `chime_ten`, `tick_bead`, `haptic`, `dynamic_color`, `tts_rate`, `prayer_font`, `chime_volume`, `leader_audio`, `church_ambient`, `church_quality`) | `settings_screen.dart`의 나머지 설정 변경 지점. 값은 보내지 않고 **어떤 설정인지**만 기록한다. |
 | `stats_open` | `range`(`week`/`month`/`year`/`all` 등 `StatsRange`의 name) | `stats_screen.dart`가 열릴 때와 기간 탭을 바꿀 때. |
 
+#### 스테인드글라스 감상(G-14, usage)
+
+창은 `win`(카탈로그 id, `^[a-z0-9_]{1,40}$`)으로만 가리킨다. 값은 열거형·숫자·bool만.
+
+| 이벤트 | 속성 | 호출 위치 |
+|--------|------|-----------|
+| `glass_open` | `win`, `from`(gallery/today/church/widget/collection), `view`(room/church/flat) | `GlassViewScreen`이 열릴 때. |
+| `glass_view_end` | `win`, `seconds`, `zoom_max`(1~32), `panned`, `light`(ref/sun/night), `photo_mode` | 감상 화면을 떠날 때(웹의 `ViewEnd`가 오면 그 값, 없으면 화면 쪽 값). |
+| `glass_filter` | `kind`(church/era/shape/color), `value`(영문 열거형 키) | 갤러리 필터 칩을 켤 때. |
+| `glass_info` | `win`, `section`(about/credit/review) | 창 정보 시트를 열 때(about), 출처·검토 항목을 누를 때. |
+| `glass_fav` | `win`, `on` | G2(내 컬렉션)에서 연결. |
+| `glass_capture` | `win`, `shared`, `saved` | G2(캡처·공유)에서 연결. |
+| `glass_pray` | `win`, `kind`(decade/rosary/meditation) | 창에서 기도로 넘어가는 버튼. |
+| `glass_download` | `scope`(win/all), `mb`, `ok`, `wifi` | G2(CDN 내려받기)에서 연결. |
+
+diagnostics: `glass_load{win,tier(t1/t2/t3/tile),ms,ok}`, `glass_mem{tex_mb,budget_mb,downgraded,tier(low/mid/high)}`.
+화면 id: `glass_gallery`(유리화 탭 '창'), `glass_view`(감상 라우트), `glass_info`(정보 시트), `glass_licenses`(출처 화면).
+
 ### church (동의 `church`)
 
 | 이벤트 | 속성 | 호출 위치 |

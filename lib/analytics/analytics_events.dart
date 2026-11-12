@@ -59,6 +59,28 @@ abstract final class AnalyticsEvents {
     'novena_start': EventSpec(ConsentKinds.usage, {'type', 'luminous'}),
     'novena_day': EventSpec(ConsentKinds.usage, {'type', 'day', 'makeup'}),
     'widget_tap': EventSpec(ConsentKinds.usage, {'action'}),
+    // 스테인드글라스 감상(GLASS_APP_PLAN §6 측정). 창은 `win`(카탈로그 키 규칙
+    // ^[a-z0-9_]{1,40}$)으로만 가리키고 값은 열거형·숫자·bool뿐이다.
+    'glass_open': EventSpec(ConsentKinds.usage, {'win', 'from', 'view'}),
+    'glass_view_end': EventSpec(ConsentKinds.usage, {
+      'win',
+      'seconds',
+      'zoom_max',
+      'panned',
+      'light',
+      'photo_mode',
+    }),
+    'glass_filter': EventSpec(ConsentKinds.usage, {'kind', 'value'}),
+    'glass_info': EventSpec(ConsentKinds.usage, {'win', 'section'}),
+    'glass_fav': EventSpec(ConsentKinds.usage, {'win', 'on'}),
+    'glass_capture': EventSpec(ConsentKinds.usage, {'win', 'shared', 'saved'}),
+    'glass_pray': EventSpec(ConsentKinds.usage, {'win', 'kind'}),
+    'glass_download': EventSpec(ConsentKinds.usage, {
+      'scope',
+      'mb',
+      'ok',
+      'wifi',
+    }),
     // church
     'church_pick': EventSpec(ConsentKinds.church, {'church'}),
     'church_enter': EventSpec(ConsentKinds.church, {'church', 'online'}),
@@ -80,6 +102,18 @@ abstract final class AnalyticsEvents {
       {'message': 200, 'stack': 1000},
     ),
     'perf': EventSpec(ConsentKinds.diagnostics, {'fps_avg', 'church', 'tier'}),
+    'glass_load': EventSpec(ConsentKinds.diagnostics, {
+      'win',
+      'tier',
+      'ms',
+      'ok',
+    }),
+    'glass_mem': EventSpec(ConsentKinds.diagnostics, {
+      'tex_mb',
+      'budget_mb',
+      'downgraded',
+      'tier',
+    }),
   };
 
   static bool isKnown(String name) => specs.containsKey(name);

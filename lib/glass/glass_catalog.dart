@@ -223,6 +223,18 @@ class GlassWindow {
 
   bool get hasVerify => verify.trim().isNotEmpty;
 
+  /// 실제 치수(가로·세로를 모두 아는 경우)의 비율이 사진 비율과 어긋나는 정도(0.02 = 2%).
+  /// 허용 범위 안이거나 비교할 수 없으면 null.
+  double? get sizeMismatch {
+    final sw = size.width, sh = size.height;
+    if (sw == null || sh == null || sw <= 0 || sh <= 0 || aspect <= 0) {
+      return null;
+    }
+    final real = sw / sh;
+    final diff = (real - aspect).abs() / real;
+    return diff > kAspectTolerance ? diff : null;
+  }
+
   /// 3D 성당 어딘가에 진본으로 놓이는 창인가.
   bool get isAuthentic =>
       placements.any((p) => p.kind == GlassPlacementKind.authentic);
@@ -278,34 +290,43 @@ class GlassWindow {
 // 분류 도우미(카탈로그 문구에서 읽는다). 단위 시험은 test/glass_catalog_test.dart.
 // ---------------------------------------------------------------------------
 
-/// 소재지 문구 → 갤러리 '성당' 필터 이름. 앞에서부터 처음 맞는 것을 쓴다.
-const List<(String keyword, String label)> _siteKeywords = [
-  ('생트샤펠', '파리 생트샤펠'),
-  ('샤르트르', '샤르트르'),
-  ('노트르담', '파리 노트르담'),
-  ('요크', '요크'),
-  ('캔터베리', '캔터베리'),
-  ('링컨', '링컨'),
-  ('베벌리', '베벌리'),
-  ('피렌체', '피렌체'),
-  ('시에나', '시에나'),
-  ('밀라노', '밀라노'),
-  ('성 바오로', '로마 성 바오로'),
-  ('성 베드로', '바티칸'),
-  ('클리블랜드', '클리블랜드 미술관'),
-  ('아우크스부르크', '아우크스부르크'),
-  ('쾰른', '쾰른'),
-  ('스트라스부르', '스트라스부르'),
+/// 소재지 문구 → (이름, 분석용 영문 키). 앞에서부터 처음 맞는 것을 쓴다.
+const List<(String keyword, String label, String key)> _siteKeywords = [
+  ('생트샤펠', '파리 생트샤펠', 'sainte_chapelle'),
+  ('샤르트르', '샤르트르', 'chartres'),
+  ('노트르담', '파리 노트르담', 'notre_dame'),
+  ('요크', '요크', 'york'),
+  ('캔터베리', '캔터베리', 'canterbury'),
+  ('링컨', '링컨', 'lincoln'),
+  ('베벌리', '베벌리', 'beverley'),
+  ('피렌체', '피렌체', 'florence'),
+  ('시에나', '시에나', 'siena'),
+  ('밀라노', '밀라노', 'milan'),
+  ('성 바오로', '로마 성 바오로', 'st_paul'),
+  ('성 베드로', '바티칸', 'vatican'),
+  ('클리블랜드', '클리블랜드 미술관', 'cleveland'),
+  ('아우크스부르크', '아우크스부르크', 'augsburg'),
+  ('쾰른', '쾰른', 'cologne'),
+  ('스트라스부르', '스트라스부르', 'strasbourg'),
 ];
 
 /// 어느 곳에도 묶이지 않은 창.
 const String kSiteOther = '그 밖';
+const String kSiteOtherKey = 'other';
 
 String glassSiteOf(String location) {
-  for (final (k, label) in _siteKeywords) {
+  for (final (k, label, _) in _siteKeywords) {
     if (location.contains(k)) return label;
   }
   return kSiteOther;
+}
+
+/// 소재지 이름 → 분석용 영문 키(`glass_filter{kind:church,value}`).
+String glassSiteKey(String label) {
+  for (final (_, l, key) in _siteKeywords) {
+    if (l == label) return key;
+  }
+  return kSiteOtherKey;
 }
 
 /// 카탈로그 id와 `form` 문구 → 형태.
@@ -419,17 +440,15 @@ List<GlassIssue> validateGlassWindow(GlassWindow w, {int? thisYear}) {
     err('2k 파일이 번들되지 않음');
   }
 
-  // 실제 치수의 가로세로비와 사진 비율이 2% 이내인가(둘 다 알 때만).
-  final sw = w.size.width, sh = w.size.height;
-  if (sw != null && sh != null && sw > 0 && sh > 0 && !w.size.isUnknown) {
-    final real = sw / sh;
-    final diff = (real - w.aspect).abs() / real;
-    if (diff > kAspectTolerance) {
-      err(
-        '치수 비율 ${real.toStringAsFixed(4)}과 사진 비율 '
-        '${w.aspect.toStringAsFixed(4)}가 ${(diff * 100).toStringAsFixed(1)}% 어긋남',
-      );
-    }
+  // 실제 치수의 가로세로비와 사진 비율이 2% 이내인가(둘 다 알 때만). 어긋나도 창은
+  // 보여 주되(사진 비율이 기준) 치수 표기를 '확인 필요'로 바꾸고 경고를 남긴다.
+  final mismatch = w.sizeMismatch;
+  if (mismatch != null) {
+    warn(
+      '치수 비율과 사진 비율이 ${(mismatch * 100).toStringAsFixed(1)}% 어긋남'
+      '(허용 ${(kAspectTolerance * 100).toStringAsFixed(0)}%): '
+      '${w.size.width}x${w.size.height}m vs ${w.aspect}',
+    );
   }
 
   // 70년 규칙: 사망 연도를 아는 디자이너만 검사한다. 필드가 없으면 검사할 수 없으므로

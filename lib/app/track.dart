@@ -110,4 +110,83 @@ abstract final class Track {
     String churchId, [
     Map<String, Object?>? more,
   ]) => event(name, {'church': churchId, ...?more});
+
+  // --- 스테인드글라스 감상(G-14). 창은 `win`(카탈로그 id)로만 가리킨다. ---
+
+  /// `glass_open{win,from,view}`: from = gallery|today|church|widget|collection,
+  /// view = room|church|flat.
+  static void glassOpen(String win, {required String from, String? view}) =>
+      event('glass_open', {'win': win, 'from': from, 'view': ?view});
+
+  /// `glass_view_end{win,seconds,zoom_max,panned,light,photo_mode}`: light = ref|sun|night.
+  static void glassViewEnd(
+    String win, {
+    required num seconds,
+    required num zoomMax,
+    required bool panned,
+    required String light,
+    bool photoMode = false,
+  }) => event('glass_view_end', {
+    'win': win,
+    'seconds': seconds.round(),
+    'zoom_max': zoomMax.round().clamp(1, 32),
+    'panned': panned,
+    'light': light,
+    'photo_mode': photoMode,
+  });
+
+  /// `glass_filter{kind,value}`: kind = church|era|shape|color, value는 영문 열거형 키.
+  static void glassFilter(String kind, String value) =>
+      event('glass_filter', {'kind': kind, 'value': value});
+
+  /// `glass_info{win,section}`: section = about|credit|review.
+  static void glassInfo(String win, String section) =>
+      event('glass_info', {'win': win, 'section': section});
+
+  static void glassFav(String win, {required bool on}) =>
+      event('glass_fav', {'win': win, 'on': on});
+
+  static void glassCapture(
+    String win, {
+    required bool shared,
+    required bool saved,
+  }) => event('glass_capture', {'win': win, 'shared': shared, 'saved': saved});
+
+  /// `glass_pray{win,kind}`: kind = decade|rosary|meditation.
+  static void glassPray(String win, String kind) =>
+      event('glass_pray', {'win': win, 'kind': kind});
+
+  /// `glass_load{win,tier,ms,ok}`: tier = t1|t2|t3|tile.
+  static void glassLoad(
+    String win, {
+    required String tier,
+    required int ms,
+    required bool ok,
+  }) => event('glass_load', {'win': win, 'tier': tier, 'ms': ms, 'ok': ok});
+
+  /// `glass_mem{tex_mb,budget_mb,downgraded,tier}`: tier = low|mid|high.
+  static void glassMem({
+    required num texMb,
+    required num budgetMb,
+    required bool downgraded,
+    required String tier,
+  }) => event('glass_mem', {
+    'tex_mb': texMb.round(),
+    'budget_mb': budgetMb.round(),
+    'downgraded': downgraded,
+    'tier': tier,
+  });
+
+  /// `glass_download{scope,mb,ok,wifi}`: scope = win|all.
+  static void glassDownload({
+    required String scope,
+    required num mb,
+    required bool ok,
+    required bool wifi,
+  }) => event('glass_download', {
+    'scope': scope,
+    'mb': mb.round(),
+    'ok': ok,
+    'wifi': wifi,
+  });
 }
