@@ -10,10 +10,21 @@ import 'stats_widgets.dart';
 enum _StatsRange { month, year, all }
 
 /// 기도 기록(통계) 화면: 이번 달 / 올해 / 전체.
+///
+/// 하단 '기록' 탭에 넣을 때는 [embedded]를 켠다(뒤로 가기 버튼 없음). 라우트로 열 때는
+/// 기본값 그대로 쓰면 앱바에 뒤로 가기가 생긴다.
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({super.key, required this.store, this.now});
+  const StatsScreen({
+    super.key,
+    required this.store,
+    this.now,
+    this.embedded = false,
+  });
 
   final PrayerStatsStore store;
+
+  /// 탭 안에 들어 있는지.
+  final bool embedded;
 
   /// 테스트용 시계 주입.
   final DateTime Function()? now;
@@ -68,7 +79,10 @@ class _StatsScreenState extends State<StatsScreen> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar.large(title: Text('기도 기록')),
+          SliverAppBar.large(
+            title: const Text('기도 기록'),
+            automaticallyImplyLeading: !widget.embedded,
+          ),
           ListenableBuilder(
             listenable: widget.store,
             builder: (context, _) {

@@ -21,3 +21,20 @@ export class CandleStore {
     return [...m.values()] as StoredCandle[];
   }
 }
+
+/** 오늘 켜진 초 카운터(`lit` 키 하나). 같은 슬롯을 교체해 촛불 행이 덮어써져도 켠 횟수는 그대로 센다. */
+export interface LitStorageLike {
+  get(key: string): Promise<unknown>;
+  put(key: string, value: unknown): Promise<void>;
+}
+
+export class LitCounterStore {
+  constructor(private readonly storage: LitStorageLike) {}
+  async load(): Promise<{ day: string; count: number } | null> {
+    const v = (await this.storage.get('lit')) as { day?: unknown; count?: unknown } | undefined;
+    return v && typeof v.day === 'string' && typeof v.count === 'number' ? { day: v.day, count: v.count } : null;
+  }
+  save(state: { day: string; count: number }): Promise<void> {
+    return this.storage.put('lit', state);
+  }
+}

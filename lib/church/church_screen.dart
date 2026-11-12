@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -9,9 +10,11 @@ import '../app/track.dart';
 import '../domain/prayer_data.dart';
 import '../domain/rosary_session.dart';
 import '../ui/prayer_screen.dart';
+import 'avatar/avatar_config.dart';
 import 'avatar/avatar_editor_screen.dart';
 import 'church_candle_sheet.dart';
 import 'church_catalog.dart';
+import 'church_constants.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
 import 'church_scene_controller.dart';
@@ -29,6 +32,7 @@ class ChurchScreen extends StatefulWidget {
     this.avatarEditorBuilder,
     this.prayerScreenBuilder,
     this.onChangeChurch,
+    @visibleForTesting this.random,
   });
 
   final AppSettings settings;
@@ -51,6 +55,9 @@ class ChurchScreen extends StatefulWidget {
 
   /// '성당 바꾸기'. 호출 쪽이 이 화면을 닫고(=퇴장 처리) 선택 화면으로 돌아간다.
   final VoidCallback? onChangeChurch;
+
+  /// 첫 입장 때 세례명을 뽑는 난수(테스트용 주입).
+  final Random? random;
 
   @override
   State<ChurchScreen> createState() => _ChurchScreenState();
@@ -86,7 +93,17 @@ class _ChurchScreenState extends State<ChurchScreen>
   bool _wasFinished = false;
 
   late bool _lastAmbient;
+  late ChurchQuality _lastQuality;
   String _lastAvatar = '';
+
+  // 성능(C-04): 입장 후 첫 표본이 이 값보다 느리면 간단 모드를 권한다.
+  static const double _slowFps = 15;
+  double _perfSum = 0;
+  int _perfN = 0;
+  String _perfTier = '';
+  bool _perfChecked = false;
+  bool _perfBanner = false;
+  Timer? _perfBannerTimer;
 
   // 분석(church_exit): 들어온 시각과 앉아 있던 시간.
   DateTime? _enteredAt;
@@ -102,6 +119,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _ownsScene = widget.scene == null;
     _scene = widget.scene ?? WebViewChurchSceneController();
     _lastAmbient = _settings.churchAmbient;
+    _lastQuality = _settings.churchQuality;
     _lastAvatar = _settings.churchAvatar.toJsonString();
     _sceneSub = _scene.events.listen(_onScene);
     _netSub = _net.events.listen(_onNet);
@@ -110,13 +128,11 @@ class _ChurchScreenState extends State<ChurchScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
   }
 
-  /// 처음이면 아바타 편집을 먼저 보여 주고, 그 뒤 접속한다.
+  /// 접속한다. 처음 들어오는 사람에게는 편집기를 강제하지 않고 기본 아바타와
+  /// 무작위 세례명을 주며(O-02), 아바타 편집은 HUD의 얼굴 버튼으로 언제든 열 수 있다.
   Future<void> _bootstrap() async {
     if (_disposed || !mounted) return;
-    if (!_settings.churchAvatarChosen) {
-      await _openAvatarEditor();
-      if (_disposed || !mounted) return;
-    }
+    if (!_settings.churchAvatarChosen) _assignFirstAvatar();
     _avatarReady = true;
     _maybeInit();
     try {
@@ -129,6 +145,23 @@ class _ChurchScreenState extends State<ChurchScreen>
     Track.church('church_enter', widget.churchId, {
       'online': _net.state.value == NetState.online,
     });
+  }
+
+  void _assignFirstAvatar() {
+    final name = (widget.random ?? Random()).nextInt(baptismalNames.length);
+    _settings.churchAvatar = AvatarConfig.defaultConfig.copyWith(name: name);
+    _settings.churchAvatarChosen = true;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            "세례명은 '${baptismalNames[name]}'이에요. 위쪽 얼굴 버튼에서 바꿀 수 있어요.",
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
+        ),
+      );
   }
 
   /// 앉은 시간을 센다(앉으면 true, 일어나면 false).
@@ -196,8 +229,54 @@ class _ChurchScreenState extends State<ChurchScreen>
       case ScenePos():
         if (!_background) _net.sendPos(e.x, e.z, e.r, e.moving);
       case ScenePerf():
-        break;
+        _onPerf(e);
     }
+  }
+
+  /// 성능 표본(C-04). 입장 직후 첫 표본이 너무 느리면 간단 모드를 '권한다'(강제하지 않는다).
+  void _onPerf(ScenePerf e) {
+    if (e.tier != null) _perfTier = e.tier!;
+    if (!e.auto) {
+      _perfSum += e.fps;
+      _perfN++;
+    }
+    if (_perfChecked) return;
+    _perfChecked = true;
+    final alreadyLow =
+        e.auto ||
+        e.tier == 'low' ||
+        _settings.churchQuality == ChurchQuality.low;
+    if (!alreadyLow && !e.auto && e.fps < _slowFps) {
+      setState(() => _perfBanner = true);
+      _perfBannerTimer = Timer(const Duration(seconds: 12), _hidePerfBanner);
+    }
+  }
+
+  void _hidePerfBanner() {
+    _perfBannerTimer?.cancel();
+    _perfBannerTimer = null;
+    if (_perfBanner && mounted) setState(() => _perfBanner = false);
+  }
+
+  void _switchToSimple() {
+    _hidePerfBanner();
+    _lastQuality = ChurchQuality.low;
+    _settings.churchQuality = ChurchQuality.low;
+    unawaited(_scene.setQuality(ChurchQuality.low.name));
+    Track.event('church_mode', {
+      'church': widget.churchId,
+      'mode': 'simple',
+      'on': true,
+    });
+  }
+
+  void _keepQuality() {
+    _hidePerfBanner();
+    Track.event('church_mode', {
+      'church': widget.churchId,
+      'mode': 'simple',
+      'on': false,
+    });
   }
 
   void _onSeated(String seat) {
@@ -366,6 +445,11 @@ class _ChurchScreenState extends State<ChurchScreen>
       _lastAmbient = ambient;
       if (!_background) unawaited(_scene.setAmbient(on: ambient));
     }
+    final quality = _settings.churchQuality;
+    if (quality != _lastQuality) {
+      _lastQuality = quality;
+      unawaited(_scene.setQuality(quality.name));
+    }
     final avatar = _settings.churchAvatar.toJsonString();
     if (avatar != _lastAvatar) {
       _lastAvatar = avatar;
@@ -507,6 +591,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   @override
   void dispose() {
     _disposed = true;
+    _perfBannerTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _settings.removeListener(_onSettings);
     _net.state.removeListener(_onNetState);
@@ -519,6 +604,14 @@ class _ChurchScreenState extends State<ChurchScreen>
       Track.church('church_exit', widget.churchId, {
         'seconds': DateTime.now().difference(enteredAt).inSeconds,
         'sat_seconds': _satTotal.inSeconds,
+      });
+    }
+    if (_perfN > 0) {
+      // 화질 단계(tier)는 분석 허용 목록에 키가 생기기 전까지는 정리기가 조용히 버린다.
+      Track.event('perf', {
+        'fps_avg': (_perfSum / _perfN).round(),
+        'church': widget.churchId,
+        if (_perfTier.isNotEmpty) 'tier': _perfTier,
       });
     }
     if (_mySeat != null || _pendingSeat != null) {
@@ -554,12 +647,28 @@ class _ChurchScreenState extends State<ChurchScreen>
     final scheme = Theme.of(context).colorScheme;
     final info = ChurchCatalog.resolve(widget.churchId);
     final seatedOrPending = _mySeat != null || _pendingSeat != null;
+    final cardOn = _prayerActive && _prayer != null;
+    final walking = !seatedOrPending && !cardOn;
+    final halfWidth = MediaQuery.sizeOf(context).width / 2;
     return Scaffold(
       backgroundColor: scheme.inverseSurface,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(child: _scene.buildView(context)),
+          // 왼쪽 절반: 떠다니는 이동 스틱(C-01). 오른쪽 절반은 아래 웹 장면이 받아 카메라를 돌린다.
+          // HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
+          if (walking)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: halfWidth,
+              child: ChurchMoveZone(
+                hint: '왼쪽 화면을 누르고 끌면 걸어요',
+                onChanged: (x, y) => unawaited(_scene.setJoystick(x, y)),
+              ),
+            ),
           Positioned.fill(child: _LoadOverlay(scene: _scene)),
           SafeArea(
             child: Padding(
@@ -595,8 +704,17 @@ class _ChurchScreenState extends State<ChurchScreen>
                       ),
                     ],
                   ),
+                  if (_perfBanner)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: ChurchPerfBanner(
+                        key: const ValueKey('perf-banner'),
+                        onSwitch: _switchToSimple,
+                        onKeep: _keepQuality,
+                      ),
+                    ),
                   const Spacer(),
-                  if (_prayerActive && _prayer != null)
+                  if (cardOn)
                     ChurchPrayerCard(
                       controller: _prayer!,
                       settings: _settings,
@@ -605,25 +723,18 @@ class _ChurchScreenState extends State<ChurchScreen>
                       onEnd: _endPrayer,
                       onFullScreen: _openFullScreenPrayer,
                     )
-                  else ...[
-                    if (!seatedOrPending)
-                      ChurchContextButtons(
-                        canSit: _near.seat != null,
-                        canLight: _near.candle != null,
-                        onSit: _onSit,
-                        onLight: _onLight,
-                      ),
-                    const SizedBox(height: 8),
+                  else if (!seatedOrPending)
+                    // 오른쪽 아래: 상황 버튼 하나(앉기 / 초 켜기), 없으면 숨는다.
                     Align(
                       alignment: Alignment.centerRight,
-                      child: seatedOrPending
-                          ? const SizedBox(height: 144)
-                          : ChurchJoystick(
-                              onChanged: (x, y) =>
-                                  unawaited(_scene.setJoystick(x, y)),
-                            ),
+                      child: ChurchContextAction(
+                        action: ChurchContextAction.forNear(
+                          canSit: _near.seat != null,
+                          canLight: _near.candle != null,
+                        ),
+                        onPressed: _near.seat != null ? _onSit : _onLight,
+                      ),
                     ),
-                  ],
                 ],
               ),
             ),

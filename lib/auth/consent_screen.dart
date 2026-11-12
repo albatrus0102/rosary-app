@@ -9,9 +9,10 @@ import 'consent_store.dart';
 import 'legal_screen.dart';
 import 'legal_texts.dart';
 
-/// 첫 로그인 직후(또는 동의 버전이 바뀐 뒤) 보이는 동의 화면.
-/// 필수 3개를 모두 체크해야 시작할 수 있고, 선택 4개는 기본 꺼짐이다.
-/// 어떤 항목도 미리 체크되어 있지 않다.
+/// 첫 실행(게스트 시작 전) 또는 동의 버전이 바뀐 뒤 보이는 동의 한 화면.
+/// 필수 3개를 모두 체크해야 시작할 수 있고, 선택 4개는 기본 꺼짐이며 따로 켠다.
+/// 어떤 항목도 미리 체크되어 있지 않다. 로그인은 필요 없다: 동의는 기기에 저장해 두었다가
+/// 게스트로 시작하는 순간 서버로 올라간다.
 class ConsentScreen extends StatefulWidget {
   const ConsentScreen({
     super.key,
@@ -123,13 +124,23 @@ class _ConsentScreenState extends State<ConsentScreen> {
                     ),
                     const SizedBox(height: AppSpace.xs),
                     Text(
-                      '약관과 개인정보 수집·이용에 동의해 주세요. 선택 항목은 동의하지 않아도 앱을 똑같이 쓸 수 있어요.',
+                      '로그인 없이 바로 시작해요. 약관과 개인정보 수집·이용에 동의해 주세요. '
+                      '선택 항목은 동의하지 않아도 앱을 똑같이 쓸 수 있어요.',
                       style: text.bodyLarge?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(height: AppSpace.sm),
-                    _NoticeCard(),
+                    const SizedBox(height: AppSpace.xs),
+                    Card.filled(
+                      child: CheckboxListTile(
+                        key: const Key('consent-all'),
+                        value: _allChecked,
+                        onChanged: (v) => _setAll(v ?? false),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: const Text('전체 동의'),
+                        subtitle: const Text('필수와 선택 항목을 한 번에 체크해요.'),
+                      ),
+                    ),
                     sectionTitle('필수 동의'),
                     Card.outlined(
                       child: Column(
@@ -174,16 +185,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpace.sm),
-                    Card.filled(
-                      child: CheckboxListTile(
-                        key: const Key('consent-all'),
-                        value: _allChecked,
-                        onChanged: (v) => _setAll(v ?? false),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        title: const Text('전체 동의'),
-                        subtitle: const Text('필수와 선택 항목을 한 번에 체크해요.'),
-                      ),
-                    ),
+                    _NoticeCard(),
                     const SizedBox(height: AppSpace.sm),
                     Text(
                       consentNotCollectedLine,
@@ -194,7 +196,9 @@ class _ConsentScreenState extends State<ConsentScreen> {
                     ),
                     const SizedBox(height: AppSpace.xs),
                     Text(
-                      '선택 동의는 언제든 설정 > 계정에서 철회할 수 있어요.',
+                      '선택 동의는 언제든 더보기 > 계정에서 철회할 수 있어요. '
+                      '게스트 기록은 이 기기의 로그인 정보에 묶여 있어서, 앱을 지우면 사라질 수 있어요. '
+                      '더보기 > 계정의 \'기록 지키기\'로 나중에 연결할 수 있어요.',
                       style: text.bodySmall?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
@@ -237,11 +241,12 @@ class _ConsentScreenState extends State<ConsentScreen> {
                         )
                       : const Text('동의하고 시작하기'),
                 ),
-                TextButton(
-                  key: const Key('consent-logout'),
-                  onPressed: _saving ? null : _logout,
-                  child: const Text('로그아웃'),
-                ),
+                if (widget.authService.state.value.isRealAccount)
+                  TextButton(
+                    key: const Key('consent-logout'),
+                    onPressed: _saving ? null : _logout,
+                    child: const Text('로그아웃'),
+                  ),
               ],
             ),
           ),

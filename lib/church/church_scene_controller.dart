@@ -44,7 +44,14 @@ sealed class SceneEvent {
           );
         case 'perf':
           final fps = j['fps'];
-          return fps is num ? ScenePerf(fps.toDouble()) : null;
+          if (fps is! num) return null;
+          final tier = j['tier'];
+          return ScenePerf(
+            fps.toDouble(),
+            tier: tier is String ? tier : null,
+            seated: j['sat'] == 1 || j['sat'] == true,
+            auto: j['a'] == 1 || j['a'] == true,
+          );
       }
     } catch (_) {}
     return null;
@@ -85,9 +92,20 @@ class ScenePos extends SceneEvent {
   final bool moving;
 }
 
+/// 웹의 성능 표본. [fps]는 구간 평균(첫 표본은 입장 4초 뒤, 이후 5초마다),
+/// [tier]는 화질 단계('low'|'high'), [seated]는 앉아 있었는지.
+/// [auto]가 true면 웹이 스스로 화질을 낮췄다는 알림이고 [fps]는 순간값이다.
 class ScenePerf extends SceneEvent {
-  const ScenePerf(this.fps);
+  const ScenePerf(
+    this.fps, {
+    this.tier,
+    this.seated = false,
+    this.auto = false,
+  });
   final double fps;
+  final String? tier;
+  final bool seated;
+  final bool auto;
 }
 
 /// 웹 장면의 로딩 상태.

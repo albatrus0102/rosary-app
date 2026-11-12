@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
@@ -6,6 +8,7 @@ import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
 import 'package:rosary_app/church/net/church_net.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
+import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/domain/rosary_session.dart';
 
 import 'church_screen_fakes.dart';
@@ -24,6 +27,14 @@ Future<void> _anim(WidgetTester tester) async {
 }
 
 MysterySet get _today => mysterySetForWeekday(DateTime.now().weekday);
+
+/// 기도 카드의 ⋮ 메뉴에서 항목을 고른다.
+Future<void> _menu(WidgetTester tester, String item) async {
+  await tester.tap(find.byTooltip('더보기'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(item));
+  await tester.pump();
+}
 
 Future<void> _sit(WidgetTester tester, ChurchHarness h) async {
   h.scene.emit(const SceneNear(seat: 'L03-2'));
@@ -132,21 +143,83 @@ void main() {
       expect(find.text('내 아바타'), findsWidgets);
     });
 
-    testWidgets('joystick sends values and a final zero on release', (
+    testWidgets('floating joystick appears where the left half is touched', (
       tester,
     ) async {
-      final h = await pumpChurch(tester);
-      final joy = find.byKey(const ValueKey('joystick-touch'));
-      expect(tester.getSize(joy).shortestSide, greaterThanOrEqualTo(48));
-      final g = await tester.startGesture(tester.getCenter(joy));
+      final h = await pumpChurch(tester); // 400x800
+      final zone = find.byKey(const ValueKey('move-zone'));
+      // 이동 영역은 왼쪽 절반이다.
+      expect(tester.getTopLeft(zone), Offset.zero);
+      expect(tester.getSize(zone).width, 200);
+      expect(find.byKey(const ValueKey('joystick-ring')), findsNothing);
+      expect(find.byKey(const ValueKey('move-hint')), findsOneWidget);
+
+      final g = await tester.startGesture(const Offset(80, 500));
+      await tester.pump();
+      // 닿은 자리에 스틱이 생긴다(고정된 오른쪽 스틱이 아니다).
+      final ring = find.byKey(const ValueKey('joystick-ring'));
+      expect(tester.getCenter(ring), const Offset(80, 500));
+      expect(find.byKey(const ValueKey('move-hint')), findsNothing);
       await g.moveBy(const Offset(0, -40));
       await tester.pump(const Duration(milliseconds: 50));
       final moved = h.scene.argsOf('setJoystick');
       expect(moved, isNotEmpty);
       expect(moved.last['y'] as double, greaterThan(0.5));
+      expect((moved.last['x'] as double).abs(), lessThan(0.05));
       await g.up();
       await tester.pump();
       expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
+      expect(ring, findsNothing);
+    });
+
+    testWidgets('right half touches never move the joystick', (tester) async {
+      final h = await pumpChurch(tester);
+      final before = h.scene.count('setJoystick');
+      final g = await tester.startGesture(const Offset(300, 500));
+      await g.moveBy(const Offset(0, -60));
+      await tester.pump(const Duration(milliseconds: 50));
+      await g.up();
+      await tester.pump();
+      expect(h.scene.count('setJoystick'), before);
+      expect(find.byKey(const ValueKey('joystick-ring')), findsNothing);
+    });
+
+    testWidgets('HUD buttons stay tappable above the move zone', (
+      tester,
+    ) async {
+      final h = await pumpChurch(tester);
+      // 왼쪽 위 칩(성당 바꾸기)과 소리 버튼은 이동 영역 위에 있다.
+      for (final tip in ['성당 바꾸기', '소리 끄기', '아바타 편집']) {
+        final r = tester.getRect(find.byTooltip(tip));
+        expect(r.shortestSide, greaterThanOrEqualTo(48), reason: tip);
+      }
+      await tester.tap(find.byTooltip('소리 끄기'));
+      await tester.pump();
+      expect(h.settings.churchAmbient, isFalse);
+      expect(h.scene.count('setJoystick'), 0);
+    });
+
+    testWidgets('the context button is one 64dp-high button on the right', (
+      tester,
+    ) async {
+      final h = await pumpChurch(tester); // 400x800
+      expect(find.byKey(const ValueKey('ctx-sit')), findsNothing);
+      h.scene.emit(const SceneNear(seat: 'L03-2'));
+      await _anim(tester);
+      final r = tester.getRect(find.byKey(const ValueKey('ctx-sit')));
+      expect(r.height, greaterThanOrEqualTo(64));
+      expect(r.center.dx, greaterThan(200)); // 오른쪽 절반
+      expect(r.bottom, greaterThan(600)); // 아래쪽
+      // 앉을 자리와 촛불대가 모두 가까워도 버튼은 하나(자리 우선).
+      h.scene.emit(const SceneNear(seat: 'L03-2', candle: 5));
+      await _anim(tester);
+      expect(find.byType(FilledButton), findsOneWidget);
+      expect(find.text('앉기'), findsOneWidget);
+      expect(find.text('초 켜기'), findsNothing);
+      h.scene.emit(const SceneNear(candle: 5));
+      await _anim(tester);
+      expect(find.text('초 켜기'), findsOneWidget);
+      expect(find.text('앉기'), findsNothing);
     });
 
     testWidgets('web pos events are forwarded to the net', (tester) async {
@@ -216,8 +289,9 @@ void main() {
       expect(find.text('00:00'), findsOneWidget);
       expect(h.scene.lastArgs('setPraying'), {'on': true, 'ms': _today.index});
       expect(h.net.prayings.last, (true, _today.index));
-      // 앉은 동안 조이스틱은 숨는다.
-      expect(find.byKey(const ValueKey('joystick-touch')), findsNothing);
+      // 앉은 동안 이동 영역은 사라지고(화면 전체가 카메라 영역) 상황 버튼도 없다.
+      expect(find.byKey(const ValueKey('move-zone')), findsNothing);
+      expect(find.byKey(const ValueKey('ctx-sit')), findsNothing);
 
       await tester.pump(const Duration(seconds: 5));
       expect(find.text('00:05'), findsOneWidget);
@@ -244,15 +318,13 @@ void main() {
 
       await tester.pump(const Duration(seconds: 3));
       expect(find.text('00:03'), findsOneWidget);
-      await tester.tap(find.text('잠깐 쉬기'));
-      await tester.pump();
+      expect(find.text('잠깐 쉬기'), findsNothing); // ⋮ 안에 있다
+      await _menu(tester, '잠깐 쉬기');
       expect(h.scene.lastArgs('setPraying'), {'on': false, 'ms': _today.index});
       expect(h.net.prayings.last, (false, _today.index));
       await tester.pump(const Duration(seconds: 10));
       expect(find.text('00:03'), findsOneWidget);
-      expect(find.text('이어 기도'), findsOneWidget);
-
-      await tester.tap(find.text('이어 기도'));
+      await _menu(tester, '이어 기도');
       await tester.pump(const Duration(seconds: 2));
       expect(find.text('00:05'), findsOneWidget);
       expect(h.scene.lastArgs('setPraying'), {'on': true, 'ms': _today.index});
@@ -273,7 +345,7 @@ void main() {
       expect(h.scene.count('stand'), 1);
       expect(h.net.stands, 1);
       expect(find.byKey(const ValueKey('prayer-card')), findsNothing);
-      expect(find.byKey(const ValueKey('joystick-touch')), findsOneWidget);
+      expect(find.byKey(const ValueKey('move-zone')), findsOneWidget);
     });
 
     testWidgets('sitting again resumes the saved progress', (tester) async {
@@ -305,8 +377,8 @@ void main() {
       await tester.tap(find.text('다음'));
       await tester.pump();
       expect(h.settings.savedPrayer, isNotNull);
-      await tester.tap(find.text('끝내기'));
-      await tester.pump();
+      expect(find.text('끝내기'), findsNothing); // ⋮ 안에 있다
+      await _menu(tester, '끝내기');
       await tester.pump(const Duration(milliseconds: 300));
       expect(h.settings.savedPrayer, isNull);
       expect(h.scene.count('stand'), 1);
@@ -333,8 +405,7 @@ void main() {
       await _sit(tester, h);
       await tester.tap(find.text('다음'));
       await tester.pump();
-      await tester.ensureVisible(find.text('전체 화면으로 기도'));
-      await tester.tap(find.text('전체 화면으로 기도'));
+      await _menu(tester, '전체 화면으로 기도');
       await tester.pumpAndSettle();
       expect(find.text('FULL-PRAYER'), findsOneWidget);
       expect(seen!.index, 1);
@@ -362,8 +433,7 @@ void main() {
         },
       );
       await _sit(tester, h);
-      await tester.ensureVisible(find.text('전체 화면으로 기도'));
-      await tester.tap(find.text('전체 화면으로 기도'));
+      await _menu(tester, '전체 화면으로 기도');
       await tester.pumpAndSettle();
       await tester.tap(find.text('BACK'));
       await tester.pumpAndSettle();
@@ -372,7 +442,7 @@ void main() {
       await tester.tap(find.text('다음'));
       await tester.pump();
       expect(find.text('기도를 마쳤습니다'), findsOneWidget);
-      expect(find.text('끝내기'), findsNothing);
+      expect(find.byTooltip('더보기'), findsNothing); // 끝나면 ⋮ 도 없다
       expect(h.settings.savedPrayer, isNull);
       expect(h.scene.lastArgs('setPraying'), {'on': false, 'ms': _today.index});
       await tester.tap(find.text('일어나기'));
@@ -525,40 +595,70 @@ void main() {
       expect(scene.reloads, 1);
     });
 
-    testWidgets('first visit shows the avatar editor before connecting', (
+    testWidgets('first visit goes straight in with a random baptismal name', (
       tester,
     ) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings(avatarChosen: false);
       final net = FakeChurchNet();
+      final scene = FakeChurchSceneController();
+      var editorOpened = false;
       await tester.pumpWidget(
         wrapApp(
           ChurchScreen(
             settings: settings,
             net: net,
-            scene: FakeChurchSceneController(),
-            avatarEditorBuilder: (context) => Scaffold(
-              body: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('EDITOR'),
-              ),
-            ),
+            scene: scene,
+            random: Random(7),
+            avatarEditorBuilder: (context) {
+              editorOpened = true;
+              return const Scaffold(body: Text('EDITOR'));
+            },
           ),
         ),
       );
       await tester.pump();
-      await tester.pump();
-      expect(find.text('EDITOR'), findsOneWidget);
-      expect(net.connectedIds, isEmpty);
-      await tester.tap(find.text('EDITOR'));
-      await tester.pump();
       await tester.pump(const Duration(seconds: 1));
+      // 편집기는 강제로 열리지 않고 곧바로 접속한다.
+      expect(editorOpened, isFalse);
+      expect(find.text('EDITOR'), findsNothing);
       expect(net.connectedIds, ['basic']);
+      // 기본 아바타 + 무작위 세례명이 저장된다.
+      final expectedName = Random(7).nextInt(baptismalNames.length);
+      expect(settings.churchAvatar.name, expectedName);
+      expect(
+        settings.churchAvatar.copyWith(name: 0),
+        AvatarConfig.defaultConfig,
+      );
+      expect(settings.churchAvatarChosen, isTrue);
+      expect(find.textContaining(baptismalNames[expectedName]), findsOneWidget);
+      scene.emit(const SceneReady());
+      await tester.pump();
+      expect(scene.lastArgs('init')!['avatar'], settings.churchAvatar.toJson());
+    });
+
+    testWidgets('a returning visit keeps the saved avatar', (tester) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings();
+      settings.churchAvatar = const AvatarConfig(name: 9, hair: 2);
+      await tester.pumpWidget(
+        wrapApp(
+          ChurchScreen(
+            settings: settings,
+            net: FakeChurchNet(),
+            scene: FakeChurchSceneController(),
+            random: Random(1),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(settings.churchAvatar, const AvatarConfig(name: 9, hair: 2));
+      expect(find.textContaining('세례명은'), findsNothing);
     });
   });
 
   group('no overflow at 360x640, text scale 1.5', () {
-    testWidgets('HUD with both context buttons, online', (tester) async {
+    testWidgets('HUD with the context button, online', (tester) async {
       final h = await pumpChurch(
         tester,
         size: const Size(360, 640),
@@ -568,7 +668,6 @@ void main() {
       h.scene.emit(const SceneNear(seat: 'L03-2', candle: 5));
       await _anim(tester);
       expect(find.text('앉기'), findsOneWidget);
-      expect(find.text('초 켜기'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -582,10 +681,87 @@ void main() {
       await _sit(tester, h);
       expect(find.byKey(const ValueKey('prayer-card')), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('잠깐 쉬기'));
-      await tester.pump();
+      await _menu(tester, '잠깐 쉬기');
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('일어나기'));
+      await tester.pump();
+    });
+
+    testWidgets('prayer card keeps full text, scrolls, at text scale 2.0', (
+      tester,
+    ) async {
+      final h = await pumpChurch(
+        tester,
+        size: const Size(360, 640),
+        textScale: 2.0,
+      );
+      h.settings.prayerTextScale = 2.0;
+      await _sit(tester, h);
+      // 가장 긴 기도문 단계로 간다.
+      for (var i = 0; i < 6; i++) {
+        await tester.tap(find.byKey(const ValueKey('prayer-next')));
+        await tester.pump();
+      }
+      expect(tester.takeException(), isNull);
+      final text = find.byKey(const ValueKey('prayer-text'));
+      expect(text, findsOneWidget);
+      // 잘림(maxLines/ellipsis)이 없다.
+      final w = tester.widget<Text>(text);
+      expect(w.maxLines, isNull);
+      expect(w.overflow, isNot(TextOverflow.ellipsis));
+      // 카드는 화면 높이의 62% 안에 있고, 주 버튼과 일어나기가 화면 안에 보인다.
+      final card = tester.getRect(find.byKey(const ValueKey('prayer-card')));
+      expect(card.height, lessThanOrEqualTo(640 * 0.62 + 0.5));
+      expect(card.bottom, lessThanOrEqualTo(640));
+      for (final k in ['prayer-next', 'prayer-stand']) {
+        final r = tester.getRect(find.byKey(ValueKey(k)));
+        expect(card.contains(r.center), isTrue, reason: k);
+        expect(r.height, greaterThanOrEqualTo(48), reason: k);
+      }
+      // 기도문 영역은 스크롤 가능하다(끝까지 내려 마지막 글자가 보인다).
+      final scroll = find.byKey(const ValueKey('prayer-text-scroll'));
+      final pos = tester.state<ScrollableState>(
+        find.descendant(of: scroll, matching: find.byType(Scrollable)),
+      );
+      await tester.drag(scroll, const Offset(0, -2000));
+      await tester.pump();
+      expect(pos.position.pixels, pos.position.maxScrollExtent);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byKey(const ValueKey('prayer-stand')));
+      await tester.pump();
+    });
+
+    testWidgets('every prayer step fits at 360x640 text scale 2.0', (
+      tester,
+    ) async {
+      final h = await pumpChurch(
+        tester,
+        size: const Size(360, 640),
+        textScale: 2.0,
+      );
+      h.settings.prayerTextScale = 2.0;
+      await _sit(tester, h);
+      var longSteps = 0;
+      for (var i = 0; i < 80; i++) {
+        if (find.byKey(const ValueKey('prayer-next')).evaluate().isEmpty) break;
+        await tester.tap(find.byKey(const ValueKey('prayer-next')));
+        await tester.pump();
+        expect(tester.takeException(), isNull, reason: 'step $i');
+        final card = tester.getRect(find.byKey(const ValueKey('prayer-card')));
+        expect(card.height, lessThanOrEqualTo(640 * 0.62 + 0.5));
+        final scrolls = find.descendant(
+          of: find.byKey(const ValueKey('prayer-text-scroll')),
+          matching: find.byType(Scrollable),
+        );
+        if (scrolls.evaluate().isNotEmpty &&
+            tester.state<ScrollableState>(scrolls).position.maxScrollExtent >
+                0) {
+          longSteps++;
+        }
+      }
+      // 큰 글자에서는 실제로 스크롤이 필요한 단계가 있고, 그래도 넘치지 않는다.
+      expect(longSteps, greaterThan(0));
+      await tester.tap(find.byKey(const ValueKey('prayer-stand')));
       await tester.pump();
     });
 
@@ -630,6 +806,15 @@ void main() {
         SceneEvent.parse('{"e":"pos","x":1,"z":2.5,"r":0.5,"m":1}') as ScenePos;
     expect([pos.x, pos.z, pos.r, pos.moving], [1.0, 2.5, 0.5, true]);
     expect((SceneEvent.parse('{"e":"perf","fps":58}') as ScenePerf).fps, 58);
+    final perf = SceneEvent.parse(
+      '{"e":"perf","fps":12,"tier":"low","sat":1,"a":1}',
+    ) as ScenePerf;
+    expect(
+      [perf.fps, perf.tier, perf.seated, perf.auto],
+      [12, 'low', true, true],
+    );
+    final plain = SceneEvent.parse('{"e":"perf","fps":30}') as ScenePerf;
+    expect([plain.tier, plain.seated, plain.auto], [null, false, false]);
     expect(SceneEvent.parse('not json'), isNull);
     expect(SceneEvent.parse('{"e":"x"}'), isNull);
   });

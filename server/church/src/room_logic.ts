@@ -26,6 +26,75 @@ export const MAX_MESSAGE_CHARS = 2048;
 export const AOI_RADIUS = 40;
 export const AOI_LEAVE_RADIUS = 44;
 
+// ---------------------------------------------------------------- 과부하 단계(S-01)
+// 방 하나가 바쁠수록 브로드캐스트 비용을 단계적으로 줄인다. 사용자에게 보이는 제한이 아니라
+// 멀리 있는 아바타부터 덜 자주/덜 멀리 보이게 하는 내부 조절이다. 모두 순수 함수/상수다.
+export interface LoadParams {
+  level: 0 | 1 | 2;
+  /** snap 전송 간격(ms). 단계 0은 알람(200ms)마다 그대로 보낸다. */
+  snapMs: number;
+  /** 가시 진입 반경(m)과 이탈 반경(m, 경계 깜박임 방지로 진입보다 약간 큼) */
+  aoiRadius: number;
+  aoiLeaveRadius: number;
+  /** 수신자 한 명이 동시에 보는 최대 아바타 수(가까운 순) */
+  maxVisible: number;
+}
+export const LOAD_LEVELS: readonly LoadParams[] = [
+  { level: 0, snapMs: 200, aoiRadius: AOI_RADIUS, aoiLeaveRadius: AOI_LEAVE_RADIUS, maxVisible: 80 },
+  { level: 1, snapMs: 400, aoiRadius: 28, aoiLeaveRadius: 31, maxVisible: 50 },
+  { level: 2, snapMs: 800, aoiRadius: 20, aoiLeaveRadius: 22, maxVisible: 30 },
+];
+/** 단계 i+1 로 올라가는 조건: 방 인원 > LOAD_UP_PEERS[i] 또는 초당 수신 메시지 > LOAD_UP_RATE[i]. */
+export const LOAD_UP_PEERS = [60, 120] as const;
+export const LOAD_UP_RATE = [500, 1000] as const;
+/** 내려올 때는 올라가는 문턱의 이 비율 아래로 떨어져야 한다(단계가 깜박이지 않게). */
+export const LOAD_DOWN_FACTOR = 0.85;
+/** 단계 > 0 일 때 가시 집합을 전체 재정렬하는 최소 간격(ms). 인원이 많으면 인원 * 10ms 로 늘린다. */
+export const REBALANCE_MS = 2000;
+
+/** 현재 인원과 초당 수신 메시지 수로 다음 과부하 단계를 정한다(올라갈 땐 즉시, 내려올 땐 히스테리시스). */
+export function nextLoadLevel(prev: 0 | 1 | 2, peers: number, msgRate: number): 0 | 1 | 2 {
+  let target = 0;
+  for (let i = 0; i < LOAD_UP_PEERS.length; i++) {
+    if (peers > LOAD_UP_PEERS[i] || msgRate > LOAD_UP_RATE[i]) target = i + 1;
+  }
+  if (target >= prev) return target as 0 | 1 | 2;
+  let l = prev as number;
+  while (l > target) {
+    const stay =
+      peers > LOAD_UP_PEERS[l - 1] * LOAD_DOWN_FACTOR || msgRate > LOAD_UP_RATE[l - 1] * LOAD_DOWN_FACTOR;
+    if (stay) break;
+    l--;
+  }
+  return l as 0 | 1 | 2;
+}
+
+export function loadParams(level: number): LoadParams {
+  return LOAD_LEVELS[Math.max(0, Math.min(LOAD_LEVELS.length - 1, level | 0))];
+}
+
+/** 한국 표준시(UTC+9) 기준 날짜 `YYYY-MM-DD`. 오늘 켜진 초를 00:00 KST 에 끊기 위해 쓴다. */
+export function kstDay(ms: number): string {
+  return new Date(ms + 9 * 3600_000).toISOString().slice(0, 10);
+}
+
+/** 성당 전체(모든 방) 합산 현황. 클라이언트가 '지금 N명 기도 중'을 그릴 때 쓴다. */
+export interface Presence {
+  n: number;
+  seated: number;
+  praying: number;
+  candlesToday: number;
+}
+/** 다른 방들의 합계(이 방 제외). */
+export interface OtherRooms {
+  peers: number;
+  seated: number;
+  praying: number;
+  candlesToday: number;
+}
+export const PRESENCE_MIN_MS = 10_000;
+export const PRESENCE_MAX_MS = 60_000;
+
 export type St = 'w' | 's' | 'p';
 
 export interface Avatar {
@@ -169,6 +238,20 @@ export class RoomLogic {
   private candles = new Map<number, StoredCandle>();
   private candleSeq = 0;
 
+  // 과부하 조절 상태
+  private level: 0 | 1 | 2 = 0;
+  private params: LoadParams = LOAD_LEVELS[0];
+  private rateCount = 0;
+  private rateWindowStart: number;
+  private msgRate = 0;
+  private lastFlushAt = -Infinity;
+  private lastRebalanceAt = 0;
+  // 성당 전체 현황(샤딩): 다른 방들의 합계는 ChurchDirectory 가 알려 준다.
+  private others: OtherRooms = { peers: 0, seated: 0, praying: 0, candlesToday: 0 };
+  private lit = { day: '', count: 0 };
+  private lastPresenceKey = '';
+  private lastPresenceAt = -Infinity;
+
   constructor(opts: LogicOptions) {
     this.layout = opts.layout;
     this.room = opts.room ?? `${opts.layout.id}-1`;
@@ -178,6 +261,8 @@ export class RoomLogic {
     this.closeFn = opts.close;
     this.persistFn = opts.persist;
     this.persistCandleFn = opts.persistCandle;
+    this.rateWindowStart = this.clock();
+    this.lastRebalanceAt = this.rateWindowStart;
   }
 
   // ---------------------------------------------------------------- 조회
@@ -187,6 +272,75 @@ export class RoomLogic {
   }
   connectionCount(): number {
     return this.conns.size;
+  }
+  /** 현재 과부하 단계(0 보통, 1 바쁨, 2 매우 바쁨). */
+  loadLevel(): 0 | 1 | 2 {
+    return this.level;
+  }
+  /** 최근 1초 창의 초당 수신 메시지 수(tick 에서 갱신). */
+  messageRate(): number {
+    return this.msgRate;
+  }
+  /** 이 방의 현황(ChurchDirectory 에 보고). */
+  localPresence(): { peers: number; seated: number; praying: number } {
+    let seated = 0;
+    let praying = 0;
+    for (const p of this.peersByConn.values()) {
+      if (p.st === 's') seated++;
+      else if (p.st === 'p') {
+        seated++;
+        praying++;
+      }
+    }
+    return { peers: this.peersByConn.size, seated, praying };
+  }
+  /** 이 방에서 오늘(KST) 켜진 초 수. */
+  candlesToday(now = this.clock()): number {
+    return this.lit.day === kstDay(now) ? this.lit.count : 0;
+  }
+  /** 저장소 보존용 오늘의 초 카운터. */
+  litState(): { day: string; count: number } {
+    return { ...this.lit };
+  }
+  restoreLit(state: { day?: unknown; count?: unknown } | null | undefined): void {
+    if (state && typeof state.day === 'string' && typeof state.count === 'number' && state.count >= 0) {
+      this.lit = { day: state.day, count: Math.floor(state.count) };
+    }
+  }
+  /** 다른 방들의 합계를 받는다(n 과 presence 계산에 쓴다). */
+  setOthers(o: OtherRooms): void {
+    this.others = {
+      peers: Math.max(0, o.peers | 0),
+      seated: Math.max(0, o.seated | 0),
+      praying: Math.max(0, o.praying | 0),
+      candlesToday: Math.max(0, o.candlesToday | 0),
+    };
+  }
+  /** 성당 전체(모든 방) 인원. 클라이언트가 보는 `n`. */
+  totalCount(): number {
+    return this.peersByConn.size + this.others.peers;
+  }
+  presence(now = this.clock()): Presence {
+    const l = this.localPresence();
+    return {
+      n: l.peers + this.others.peers,
+      seated: l.seated + this.others.seated,
+      praying: l.praying + this.others.praying,
+      candlesToday: this.candlesToday(now) + this.others.candlesToday,
+    };
+  }
+  /** 값이 바뀌었거나 오래됐을 때만(최소 10초 간격) 모두에게 `presence` 메시지를 보낸다. 보냈으면 true. */
+  maybeBroadcastPresence(now = this.clock()): boolean {
+    if (this.peersByConn.size === 0) return false;
+    const pr = this.presence(now);
+    const key = `${pr.n}|${pr.seated}|${pr.praying}|${pr.candlesToday}`;
+    const age = now - this.lastPresenceAt;
+    if (!(age >= PRESENCE_MAX_MS || (key !== this.lastPresenceKey && age >= PRESENCE_MIN_MS))) return false;
+    this.lastPresenceKey = key;
+    this.lastPresenceAt = now;
+    const msg = { t: 'presence', ...pr };
+    for (const p of this.peersByConn.values()) this.send(p.connId, msg);
+    return true;
   }
   /** 테스트/디버그용 피어 조회. */
   getPeer(connId: string): PeerView | null {
@@ -269,15 +423,37 @@ export class RoomLogic {
 
   /** 복원 직후, 알림 없이 모든 피어의 가시 집합을 현재 위치로 다시 계산한다. */
   rebuildVisibility(): void {
+    for (const p of this.peersByConn.values()) p.visible.clear();
+    this.rebalanceVisibility(false);
+  }
+
+  /**
+   * 모든 수신자의 가시 집합을 현재 단계의 반경·상한으로 다시 계산한다(가까운 순 최대 maxVisible).
+   * notify 가 true 면 차이를 join / leave{aoi:true} 로 알린다.
+   */
+  private rebalanceVisibility(notify: boolean): void {
+    const prm = this.params;
     const all = [...this.peersByConn.values()];
-    for (const p of all) p.visible.clear();
-    for (let i = 0; i < all.length; i++) {
-      for (let j = i + 1; j < all.length; j++) {
-        if (dist(all[i], all[j]) <= AOI_RADIUS) {
-          all[i].visible.add(all[j].id);
-          all[j].visible.add(all[i].id);
+    const n = this.totalCount();
+    for (const r of all) {
+      const cand: Array<{ p: Peer; d: number }> = [];
+      for (const o of all) {
+        if (o === r) continue;
+        const d = dist(r, o);
+        if (d <= (r.visible.has(o.id) ? prm.aoiLeaveRadius : prm.aoiRadius)) cand.push({ p: o, d });
+      }
+      cand.sort((a, b) => a.d - b.d);
+      const keepList = cand.length > prm.maxVisible ? cand.slice(0, prm.maxVisible) : cand;
+      const keep = new Set(keepList.map((c) => c.p.id));
+      if (notify) {
+        for (const id of r.visible) {
+          if (!keep.has(id)) this.send(r.connId, { t: 'leave', id, n, aoi: true });
+        }
+        for (const c of keepList) {
+          if (!r.visible.has(c.p.id)) this.send(r.connId, { t: 'join', peer: this.view(c.p), n });
         }
       }
+      r.visible = keep;
     }
   }
 
@@ -288,6 +464,7 @@ export class RoomLogic {
     const conn = this.conns.get(connId);
     if (!conn) return;
     const now = this.clock();
+    this.rateCount++;
 
     // 속도 제한: 최근 41개 수신 시각이 1초 안에 모두 들어 있으면 초과(초당 40개 초과).
     conn.recent.push(now);
@@ -411,24 +588,31 @@ export class RoomLogic {
       visible: new Set(),
     };
 
-    // AOI: 반경 안의 피어만 welcome 에 넣고(가까운 순), 그들에게만 join 을 보낸다.
-    const near: Array<{ p: Peer; d: number }> = [];
+    // AOI: 반경 안의 피어만(가까운 순, 최대 maxVisible) welcome 에 넣고, 그들에게만 join 을 보낸다.
+    // 이미 maxVisible 명을 보고 있는 피어에게는 join 을 보내지 않는다(다음 재정렬 때 가까운 순으로 정리됨).
+    const prm = this.params;
+    let near: Array<{ p: Peer; d: number }> = [];
     for (const other of this.peersByConn.values()) {
       const d = dist(peer, other);
-      if (d <= AOI_RADIUS) near.push({ p: other, d });
+      if (d <= prm.aoiRadius) near.push({ p: other, d });
     }
     near.sort((a, b) => a.d - b.d);
+    if (near.length > prm.maxVisible) near = near.slice(0, prm.maxVisible);
 
     this.peersByConn.set(conn.connId, peer);
     this.peersById.set(id, peer);
     conn.peerId = id;
-    const n = this.peersByConn.size;
+    const n = this.totalCount();
 
     const seatsObj: Record<string, string> = {};
     for (const [s, pid] of this.seats) seatsObj[s] = pid;
+    const joinTo: Peer[] = [];
     for (const { p } of near) {
       peer.visible.add(p.id);
-      p.visible.add(id);
+      if (p.visible.size < prm.maxVisible) {
+        p.visible.add(id);
+        joinTo.push(p);
+      }
     }
     this.send(conn.connId, {
       t: 'welcome',
@@ -439,9 +623,10 @@ export class RoomLogic {
       seats: seatsObj,
       candles: this.activeCandles(),
       now,
+      presence: this.presence(now),
     });
     const joinMsg = { t: 'join', peer: this.view(peer), n };
-    for (const { p } of near) this.send(p.connId, joinMsg);
+    for (const p of joinTo) this.send(p.connId, joinMsg);
     this.persist(peer);
   }
 
@@ -581,6 +766,9 @@ export class RoomLogic {
     }
     const c: StoredCandle = { slot: target, until: 0, intention: m.intention, seq: ++this.candleSeq };
     this.candles.set(target, c);
+    const day = kstDay(this.clock());
+    if (this.lit.day !== day) this.lit = { day, count: 0 };
+    this.lit.count++;
     this.persistCandleFn?.(c);
     const out = { t: 'candle', slot: target, until: 0, intention: c.intention };
     for (const p of this.peersByConn.values()) this.send(p.connId, out); // 촛불은 모두에게
@@ -601,7 +789,10 @@ export class RoomLogic {
    * (2) 변경된 피어를 수신자별(가시 집합 안, 본인 제외)로 snap 하나에 묶어 보낸다.
    */
   flush(now = this.clock()): void {
-    void now;
+    // 과부하 단계 > 0 이면 snap 을 snapMs 간격으로 묶는다(dirty 표시는 쌓이므로 최신 위치만 나간다).
+    const prm = this.params;
+    if (prm.level > 0 && now - this.lastFlushAt < prm.snapMs - 30) return;
+    this.lastFlushAt = now;
     const changed: Peer[] = [];
     for (const p of this.peersByConn.values()) {
       if (p.dirty) {
@@ -610,7 +801,7 @@ export class RoomLogic {
       }
     }
     if (changed.length === 0) return;
-    const n = this.peersByConn.size;
+    const n = this.totalCount();
 
     // 가시 집합 갱신 (변경된 피어 × 전체)
     const hide = new Map<Peer, Peer[]>(); // 수신자 → 숨길 피어
@@ -626,21 +817,21 @@ export class RoomLogic {
         const dd = dist(d, p);
         // p 가 d 를 보는가
         if (p.visible.has(d.id)) {
-          if (dd > AOI_LEAVE_RADIUS) {
+          if (dd > prm.aoiLeaveRadius) {
             p.visible.delete(d.id);
             push(hide, p, d);
           }
-        } else if (dd <= AOI_RADIUS) {
+        } else if (dd <= prm.aoiRadius && p.visible.size < prm.maxVisible) {
           p.visible.add(d.id);
           push(show, p, d);
         }
         // d 가 p 를 보는가
         if (d.visible.has(p.id)) {
-          if (dd > AOI_LEAVE_RADIUS) {
+          if (dd > prm.aoiLeaveRadius) {
             d.visible.delete(p.id);
             push(hide, d, p);
           }
-        } else if (dd <= AOI_RADIUS) {
+        } else if (dd <= prm.aoiRadius && d.visible.size < prm.maxVisible) {
           d.visible.add(p.id);
           push(show, d, p);
         }
@@ -675,6 +866,28 @@ export class RoomLogic {
         this.closeFn?.(conn.connId, 4003, 'hello_timeout');
       }
     }
+    this.updateLoad(now);
+  }
+
+  /** 수신 메시지 속도와 인원으로 과부하 단계를 갱신한다(알람마다). 단계가 바뀌면 가시 집합을 다시 정렬한다. */
+  private updateLoad(now: number): void {
+    const elapsed = now - this.rateWindowStart;
+    if (elapsed >= 1000) {
+      this.msgRate = (this.rateCount * 1000) / elapsed;
+      this.rateCount = 0;
+      this.rateWindowStart = now;
+    }
+    const peers = this.peersByConn.size;
+    const next = nextLoadLevel(this.level, peers, this.msgRate);
+    if (next !== this.level) {
+      this.level = next;
+      this.params = LOAD_LEVELS[next];
+      this.rebalanceVisibility(true);
+      this.lastRebalanceAt = now;
+    } else if (this.level > 0 && now - this.lastRebalanceAt >= Math.max(REBALANCE_MS, peers * 10)) {
+      this.rebalanceVisibility(true);
+      this.lastRebalanceAt = now;
+    }
   }
 
   // ---------------------------------------------------------------- 내부
@@ -683,7 +896,7 @@ export class RoomLogic {
     if (peer.seat !== null && this.seats.get(peer.seat) === peer.id) this.seats.delete(peer.seat);
     this.peersByConn.delete(peer.connId);
     if (this.peersById.get(peer.id) === peer) this.peersById.delete(peer.id);
-    const n = this.peersByConn.size;
+    const n = this.totalCount();
     // 진짜 퇴장은 모두에게(aoi 필드 없음): 수신자의 아바타 기록을 지우게 한다.
     for (const p of this.peersByConn.values()) {
       p.visible.delete(peer.id);

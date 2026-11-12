@@ -23,6 +23,8 @@ class AppWiring with WidgetsBindingObserver {
 
   StreamSubscription<ConsentChange>? _consentSub;
   AuthStatus? _prevStatus;
+  bool _prevAnonymous = false;
+  String? _prevUid;
   String? _lastUid;
   bool _started = false;
 
@@ -37,6 +39,8 @@ class AppWiring with WidgetsBindingObserver {
     _started = true;
     final s = services.auth.current;
     _prevStatus = s.status;
+    _prevAnonymous = s.isAnonymous;
+    _prevUid = s.isSignedIn ? s.userId : null;
     _lastUid = s.isSignedIn ? s.userId : null;
     services.auth.state.addListener(_onAuth);
     services.consent.addListener(_onConsentNotified);
@@ -82,8 +86,17 @@ class AppWiring with WidgetsBindingObserver {
   void _onAuth() {
     final s = services.auth.current;
     final uid = s.isSignedIn ? s.userId : null;
-    final becameSignedIn = s.isSignedIn && _prevStatus == AuthStatus.signedOut;
+    // 게스트 시작(익명 로그인)은 로그인이 아니다. 실제 계정(소셜·이메일)으로 들어온 경우만
+    // login_success: 로그아웃 상태에서 로그인했거나, 게스트에서 다른 계정으로 바뀐 경우.
+    final becameSignedIn =
+        s.isRealAccount &&
+        (_prevStatus == AuthStatus.signedOut ||
+            (_prevAnonymous && _prevUid != uid));
+    // 게스트를 연결: 같은 사용자 id가 익명 → 실제 계정이 되었다(데이터 그대로).
+    final linked = s.isRealAccount && _prevAnonymous && _prevUid == uid;
     _prevStatus = s.status;
+    _prevAnonymous = s.isAnonymous;
+    _prevUid = uid;
     if (uid != null) _lastUid = uid;
     // 사용자가 바뀌면(로그아웃 포함) 올라가지 않은 이전 사용자 이벤트는 버려진다.
     try {
@@ -93,6 +106,10 @@ class AppWiring with WidgetsBindingObserver {
       // 저장된 세션 복원(loading → signedIn)은 로그인이 아니다.
       final provider = s.provider?.id;
       Track.event('login_success', {'provider': ?provider});
+    }
+    if (linked) {
+      final provider = s.provider?.id;
+      Track.event('guest_link', {'provider': ?provider});
     }
     unawaited(_guardStatsOwner(uid).then((_) => _syncSoon()));
   }

@@ -6,7 +6,17 @@ compatibility_date = "2025-11-01"
 name = "CHURCH_ROOM"
 class_name = "ChurchRoom"
 
+# 성당별 방 디렉터리(S-01 샤딩): idFromName(churchId) 하나가 그 성당의 방 배정과 합산 현황을 맡는다.
+[[durable_objects.bindings]]
+name = "CHURCH_DIRECTORY"
+class_name = "ChurchDirectory"
+
 # 무료 플랜에서 쓰려면 SQLite 백엔드 클래스여야 한다.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ChurchRoom"]
+
+# S-01: 디렉터리 클래스 추가(이미 v1 이 배포된 계정에서는 v2 만 새로 적용된다).
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["ChurchDirectory"]

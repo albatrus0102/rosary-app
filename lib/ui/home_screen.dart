@@ -48,6 +48,7 @@ class HomeScreen extends StatefulWidget {
     this.soundPlayer,
     this.onOpenSettings,
     this.onOpenStyles,
+    this.onOpenStats,
   });
 
   final AppSettings settings;
@@ -63,6 +64,10 @@ class HomeScreen extends StatefulWidget {
 
   /// 상단 묵주 그림을 눌렀을 때(셸이 묵주 목적지로 이동시킨다).
   final VoidCallback? onOpenStyles;
+
+  /// 기록 요약 카드·완료 화면의 '기록 보기'를 눌렀을 때(셸이 '기록' 탭으로 이동시킨다).
+  /// 없으면 기록 화면을 새 라우트로 연다.
+  final VoidCallback? onOpenStats;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -90,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
           initialIndex: initialIndex,
           leaderAudio: widget.leaderAudio,
           soundPlayer: widget.soundPlayer,
+          onOpenStats: widget.onOpenStats,
         ),
       ),
     );
@@ -108,7 +114,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: _buildStartBar(context),
+      bottomNavigationBar: ListenableBuilder(
+        listenable: settings,
+        builder: (context, _) => _buildStartBar(context),
+      ),
       body: ListenableBuilder(
         listenable: settings,
         builder: (context, _) => CustomScrollView(
@@ -125,20 +134,32 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildStartBar(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final margin = windowClassOf(context).margin;
+    final today = mysterySetForWeekday(DateTime.now().weekday);
+    final set = settings.mysterySet;
+    // P-01: 무엇을 바칠지 버튼에 적는다. 오늘의 신비면 그렇게 밝히고, 바꿨으면 이름만.
+    final label = set == today
+        ? '오늘의 신비 · ${set.koreanName} 시작'
+        : '${set.koreanName} 시작';
+    // 큰 글씨에서는 두 줄이 되므로 막대 높이도 글자 배율을 따른다.
+    final scaler = MediaQuery.textScalerOf(context);
+    final twoLines = scaler.scale(18) * 1.4 * 2 + 2 * AppSpace.sm;
+    final buttonH = scaler.scale(18) > 24
+        ? twoLines
+        : AppTheme.largeButtonHeight;
     return BottomAppBar(
       color: scheme.surfaceContainerLow,
       elevation: 0,
-      height: AppTheme.largeButtonHeight + 2 * AppSpace.sm,
+      height: buttonH + 2 * AppSpace.sm,
       padding: EdgeInsets.symmetric(horizontal: margin, vertical: AppSpace.sm),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: _maxWidth),
           child: FilledButton.icon(
             style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(AppTheme.largeButtonHeight),
+              minimumSize: Size.fromHeight(buttonH),
             ),
             icon: const Icon(Icons.play_arrow),
-            label: const Text('기도 시작'),
+            label: Text(label, textAlign: TextAlign.center, maxLines: 2),
             onPressed: () => unawaited(_startPrayer()),
           ),
         ),
@@ -258,11 +279,21 @@ class _HomeScreenState extends State<HomeScreen> {
         if (AppServicesScope.maybeOf(context) case final services?) ...[
           StatsSummaryCard(
             store: services.stats,
-            onTap: () => unawaited(_openStats(services)),
+            onTap: widget.onOpenStats ?? () => unawaited(_openStats(services)),
           ),
           const SizedBox(height: AppSpace.md),
         ],
-        const SectionHeader('오늘의 신비'),
+        SectionHeader(
+          '오늘의 신비',
+          trailing: settings.mysterySet == today
+              ? null
+              : ActionChip(
+                  key: const ValueKey('reset-to-today'),
+                  avatar: const Icon(Icons.today, size: 18),
+                  label: const Text('오늘로'),
+                  onPressed: () => settings.mysterySet = today,
+                ),
+        ),
         for (var i = 0; i < sets.length; i += 2) ...[
           if (i > 0) const SizedBox(height: AppSpace.sm),
           IntrinsicHeight(

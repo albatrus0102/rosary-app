@@ -278,9 +278,10 @@
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; return; }
     requestAnimationFrame(loop);
     App.frameCount = (App.frameCount || 0) + 1;
-    var dt = Math.min(0.05, (now - App.last) / 1000);
+    var raw = (now - App.last) / 1000, dt = Math.min(0.05, raw);
     App.last = now; App.t += dt;
     if (!App.world) return;
+    App.ctl.setMoveZone(App.me.mode === 'walk');
     updateMe(dt, App.t);
     updateCamera(dt);
     App.net.setFocus(App.me.x, App.me.z);
@@ -289,11 +290,16 @@
     App.world.update(dt, App.t, App.me, App.camera);
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
-    if (chg) { App.quality = 'low'; post({ e: 'perf', fps: Math.round(1 / Math.max(dt, 0.001)), tier: App.R.tier }); }
-    App.frames++; App.perfT += dt;
-    if (App.perfT >= 5) {
+    // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).
+    var seatedNow = App.me.mode === 'seated' ? 1 : 0;
+    if (chg) { App.quality = 'low'; post({ e: 'perf', fps: Math.round(1 / Math.max(raw, 0.001)), tier: App.R.tier, sat: seatedNow, a: 1 }); }
+    // 시뮬레이션 dt 는 0.05초로 잘리므로 fps 는 실제 경과 시간(raw, 백그라운드 복귀 대비 1초 상한)으로 잰다.
+    App.frames++; App.perfT += Math.min(raw, 1);
+    // 첫 표본은 4초 뒤(입장 후 5초 안에 느린지 판단할 수 있게), 이후 5초마다.
+    if (App.perfT >= (App.perfSent ? 5 : 4)) {
       App.fps = Math.round(App.frames / App.perfT);
-      post({ e: 'perf', fps: App.fps, tier: App.R.tier });
+      App.perfSent = true;
+      post({ e: 'perf', fps: App.fps, tier: App.R.tier, sat: seatedNow });
       App.frames = 0; App.perfT = 0;
     }
   }

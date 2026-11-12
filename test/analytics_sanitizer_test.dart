@@ -30,6 +30,79 @@ void main() {
       );
     });
 
+    test('UX R1 events keep their enum/number/bool props only', () {
+      expect(clean('onboarding_step', {'step': 'text_size'}), {
+        'step': 'text_size',
+      });
+      expect(clean('guest_link', {'provider': 'kakao'}), {'provider': 'kakao'});
+      expect(clean('prayed_today', {'kind': 'beads'}), {'kind': 'beads'});
+      expect(
+        clean('reminder_change', {
+          'kind': 'angelus',
+          'on': true,
+          'hour': 18,
+          'name': 'x',
+        }),
+        {'kind': 'angelus', 'on': true, 'hour': 18},
+      );
+      expect(clean('reminder_open', {'kind': 'mercy'}), {'kind': 'mercy'});
+      expect(clean('novena_start', {'type': 'n54', 'luminous': false}), {
+        'type': 'n54',
+        'luminous': false,
+      });
+      expect(clean('novena_day', {'type': 'n9', 'day': 3, 'makeup': true}), {
+        'type': 'n9',
+        'day': 3,
+        'makeup': true,
+      });
+      expect(clean('widget_tap', {'action': 'resume'}), {'action': 'resume'});
+      expect(clean('church_gesture', {'church': 'basic', 'e': 2}), {
+        'church': 'basic',
+        'e': 2,
+      });
+      expect(
+        clean('church_mode', {
+          'church': 'basic',
+          'mode': 'silence',
+          'on': true,
+        }),
+        {'church': 'basic', 'mode': 'silence', 'on': true},
+      );
+      expect(
+        clean('church_report', {
+          'church': 'basic',
+          'reason': 'spam',
+          'text': '자유 글',
+          'id': 'abc',
+        }),
+        {'church': 'basic', 'reason': 'spam'},
+      );
+      // prayer_start 확장: with_intent(bool), pace, source=widget/reminder.
+      expect(
+        clean('prayer_start', {
+          'set': 'joyful',
+          'mode': 'solo',
+          'resumed': false,
+          'source': 'widget',
+          'with_intent': true,
+          'pace': 'silent',
+          'intention': '가족',
+        }),
+        {
+          'set': 'joyful',
+          'mode': 'solo',
+          'resumed': false,
+          'source': 'widget',
+          'with_intent': true,
+          'pace': 'silent',
+        },
+      );
+      expect(clean('screen_view', {'screen': 'church_select'}), {
+        'screen': 'church_select',
+      });
+      expect(clean('screen_view', {'screen': 'more'}), {'screen': 'more'});
+    });
+
     test('keys outside the per-event allow-list are dropped', () {
       expect(
         clean('screen_view', {'screen': 'home', 'extra': 'x', 'user': 'bob'}),

@@ -16,21 +16,49 @@ import 'backend_config.dart';
 AuthState authStateFromSession(Session? session) {
   final user = session?.user;
   if (user == null) return const AuthState.signedOut();
-  final providerId =
-      user.appMetadata['provider'] as String? ??
-      (user.identities?.isNotEmpty == true
-          ? user.identities!.first.provider
-          : null);
+  final anonymous = user.isAnonymous;
+  // 게스트를 연결하면 app_metadata.provider는 처음 값(anonymous)으로 남을 수 있으므로
+  // 연결된 identity도 함께 본다.
+  LoginProvider? provider;
+  if (!anonymous) {
+    for (final identity in user.identities ?? const <UserIdentity>[]) {
+      provider ??= LoginProvider.fromId(identity.provider);
+    }
+    provider ??= LoginProvider.fromId(user.appMetadata['provider'] as String?);
+    final providers = user.appMetadata['providers'];
+    if (provider == null && providers is List) {
+      for (final p in providers) {
+        provider ??= LoginProvider.fromId('$p');
+      }
+    }
+  }
   return AuthState.signedIn(
     userId: user.id,
     email: user.email != null && user.email!.isNotEmpty ? user.email : null,
-    provider: LoginProvider.fromId(providerId),
+    provider: provider,
+    isAnonymous: anonymous,
   );
 }
+
+/// 게스트 시작이 서버 설정 때문에 막혔을 때의 문구(설정 방법은 사용자에게 보이지 않는다).
+const String guestUnavailableMessage =
+    '지금은 게스트로 시작할 수 없어요. 잠시 후 다시 시도하거나, 이 기기에서만 쓰는 모드로 계속할 수 있어요.';
 
 /// 예외를 사용자에게 보여 줄 한국어 문구로 바꾼다(원문·토큰은 노출하지 않는다).
 String localizeAuthError(Object error) {
   if (error is AuthFailure) return error.message;
+  if (error is AuthException) {
+    final code = (error.code ?? '').toLowerCase();
+    switch (code) {
+      case 'anonymous_provider_disabled':
+      case 'captcha_failed':
+        return guestUnavailableMessage;
+      case 'identity_already_exists':
+        return '이미 다른 계정에 연결된 로그인이에요. 그 계정으로 로그인하려면 \'이미 계정이 있어요\'를 눌러 주세요.';
+      case 'manual_linking_disabled':
+        return '지금은 계정을 연결할 수 없어요. 잠시 후 다시 시도해 주세요.';
+    }
+  }
   if (error is SocketException || error is TimeoutException) {
     return '네트워크에 연결할 수 없어요. 연결을 확인하고 다시 시도해 주세요.';
   }
@@ -74,6 +102,22 @@ String localizeAuthError(Object error) {
     return '서버 요청에 실패했어요. 잠시 후 다시 시도해 주세요.';
   }
   return '문제가 생겼어요. 잠시 후 다시 시도해 주세요.';
+}
+
+/// 예외를 [AuthFailure]로 바꾸고 종류(오프라인·게스트 불가)를 붙인다.
+AuthFailure authFailureFrom(Object error) {
+  if (error is AuthFailure) return error;
+  final message = localizeAuthError(error);
+  final code = error is AuthException ? (error.code ?? '').toLowerCase() : '';
+  final kind =
+      error is SocketException ||
+          error is TimeoutException ||
+          error is AuthRetryableFetchException
+      ? AuthFailureKind.network
+      : (code == 'anonymous_provider_disabled' || code == 'captcha_failed')
+      ? AuthFailureKind.guestUnavailable
+      : AuthFailureKind.generic;
+  return AuthFailure(message, kind: kind);
 }
 
 /// Supabase 구현. [AuthBootstrap.init]이 설정됨(true)으로 끝난 뒤에만 만든다.
@@ -144,6 +188,68 @@ class SupabaseAuthService implements AuthService {
 
   @override
   Future<void> signInWithGoogle() => _oauth(OAuthProvider.google);
+
+  // ---- 게스트 시작 · 계정 연결 ------------------------------------------
+
+  @override
+  Future<void> signInAnonymously({String? captchaToken}) async {
+    if (_client.auth.currentSession != null) return;
+    try {
+      await _client.auth.signInAnonymously(captchaToken: captchaToken);
+    } catch (e) {
+      throw authFailureFrom(e);
+    }
+  }
+
+  void _requireGuest() {
+    final user = _client.auth.currentUser;
+    if (user == null || !user.isAnonymous) {
+      throw const AuthFailure('게스트로 쓰는 중일 때만 연결할 수 있어요.');
+    }
+  }
+
+  Future<void> _link(OAuthProvider provider) async {
+    _requireGuest();
+    try {
+      final launched = await _client.auth.linkIdentity(
+        provider,
+        redirectTo: redirectTo,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        throw const AuthFailure('브라우저를 열 수 없어요. 다시 시도해 주세요.');
+      }
+    } catch (e) {
+      throw authFailureFrom(e);
+    }
+  }
+
+  @override
+  Future<void> linkWithKakao() => _link(OAuthProvider.kakao);
+
+  @override
+  Future<void> linkWithGoogle() => _link(OAuthProvider.google);
+
+  @override
+  Future<EmailSignUpOutcome> linkWithEmail(
+    String email,
+    String password,
+  ) async {
+    _requireGuest();
+    try {
+      final res = await _client.auth.updateUser(
+        UserAttributes(email: email.trim(), password: password),
+        emailRedirectTo: redirectTo,
+      );
+      final linked = res.user?.isAnonymous == false;
+      _state.value = authStateFromSession(_client.auth.currentSession);
+      return linked
+          ? EmailSignUpOutcome.signedIn
+          : EmailSignUpOutcome.confirmationRequired;
+    } catch (e) {
+      throw authFailureFrom(e);
+    }
+  }
 
   // ---- 이메일 ----------------------------------------------------------
 

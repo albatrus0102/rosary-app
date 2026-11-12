@@ -17,6 +17,22 @@ abstract class AuthService {
   Future<void> signInWithKakao();
   Future<void> signInWithGoogle();
 
+  /// 게스트로 시작한다(Supabase 익명 로그인). 같은 기기의 세션이 복원되면 부르지 않는다.
+  /// 성공하면 [state]가 `isAnonymous` signedIn으로 바뀐다.
+  /// 실패는 [AuthFailure]: 오프라인이면 `kind == network`, 서버에서 익명 로그인이 꺼져
+  /// 있으면 `kind == guestUnavailable`.
+  Future<void> signInAnonymously({String? captchaToken});
+
+  /// 게스트를 소셜·이메일 계정에 연결한다('기록 지키기'). 사용자 id가 그대로 유지되어
+  /// 서버 데이터가 이어진다. 소셜은 [signInWithKakao]처럼 브라우저를 열고, 끝나면
+  /// [state]의 `isAnonymous`가 false로 바뀐다. 게스트가 아니면 [AuthFailure].
+  Future<void> linkWithKakao();
+  Future<void> linkWithGoogle();
+
+  /// 이메일·비밀번호를 연결한다. 확인 메일이 필요하면 [EmailSignUpOutcome.confirmationRequired]
+  /// (메일의 링크를 누르면 연결이 끝난다).
+  Future<EmailSignUpOutcome> linkWithEmail(String email, String password);
+
   Future<EmailSignUpOutcome> signUpWithEmail(String email, String password);
   Future<void> signInWithEmail(String email, String password);
   Future<void> resetPassword(String email);

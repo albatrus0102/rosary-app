@@ -33,6 +33,7 @@ import 'package:rosary_app/stats/prayer_stats_store.dart';
 import 'package:rosary_app/stats/stats_screen.dart';
 import 'package:rosary_app/stats/stats_widgets.dart';
 import 'package:rosary_app/ui/home_screen.dart';
+import 'package:rosary_app/ui/more_screen.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
 import 'package:rosary_app/ui/rosary_style_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
@@ -194,20 +195,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginScreen), findsNothing);
-      expect(find.text('기도 시작'), findsOneWidget);
+      expect(find.textContaining('신비 시작'), findsOneWidget);
       expect(find.byType(StatsSummaryCard), findsOneWidget);
 
       await tester.tap(
         find.descendant(
           of: find.byType(NavigationBar),
-          matching: find.text('설정'),
+          matching: find.text('더보기'),
         ),
       );
       await tester.pumpAndSettle();
-      // 백엔드가 없으면 '계정'은 숨기고 기도 기록만 보인다.
+      // 백엔드가 없으면 '계정'은 숨기고 설정·정보만 보인다.
       expect(find.text('계정'), findsNothing);
       expect(find.byType(AccountScreen), findsNothing);
-      expect(find.text('기도 기록'), findsOneWidget);
+      expect(find.byKey(const ValueKey('more-settings')), findsOneWidget);
     });
 
     testWidgets('백엔드가 설정되면 로그인 → 필수 동의 → 홈 순서로 보인다', (tester) async {
@@ -224,17 +225,17 @@ void main() {
       await tester.pumpWidget(RosaryApp(settings, services: services));
       await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.text('기도 시작'), findsNothing);
+      expect(find.textContaining('신비 시작'), findsNothing);
 
       auth.emitSignedIn(provider: LoginProvider.email);
       await tester.pumpAndSettle();
       expect(find.byType(ConsentScreen), findsOneWidget);
-      expect(find.text('기도 시작'), findsNothing);
+      expect(find.textContaining('신비 시작'), findsNothing);
 
       await services.consent.grantRequired();
       await tester.pumpAndSettle();
       expect(find.byType(ConsentScreen), findsNothing);
-      expect(find.text('기도 시작'), findsOneWidget);
+      expect(find.textContaining('신비 시작'), findsOneWidget);
 
       // 로그아웃하면 다시 로그인 화면.
       await auth.signOut();
@@ -242,7 +243,7 @@ void main() {
       expect(find.byType(LoginScreen), findsOneWidget);
     });
 
-    testWidgets('설정 > 계정 항목은 설정된 때만 보이고 제공자를 알려 준다', (tester) async {
+    testWidgets('더보기 > 계정 항목은 설정된 때만 보이고 제공자를 알려 준다', (tester) async {
       _size(tester);
       final settings = await _settings();
       final auth = FakeAuthService(
@@ -264,10 +265,10 @@ void main() {
           services: services,
           child: MaterialApp(
             navigatorObservers: [AnalyticsObserver()],
-            home: SettingsScreen(
+            home: MoreScreen(
               settings: settings,
-              leaderAudio: _FakeStore(),
-              ttsVoice: _QuietTts(),
+              onOpenStyles: () {},
+              onOpenSettings: () {},
             ),
           ),
         ),
@@ -349,15 +350,17 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      await tab('묵주');
-      await tab('설정');
-      await tab('기도');
+      await tab('더보기');
+      await tab('기록');
+      await tab('오늘');
+      // 요약 카드는 새 화면이 아니라 '기록' 탭으로 보낸다.
       await tester.tap(find.byType(StatsSummaryCard));
       await tester.pumpAndSettle();
+      expect(find.byType(StatsScreen), findsOneWidget);
       expect(_screens(), [
         'home', // '/' 라우트
-        'rosary_styles',
-        'settings',
+        'more',
+        'stats',
         'home',
         'stats',
       ]);
@@ -387,7 +390,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('기도 시작'));
+      await tester.tap(find.textContaining('신비 시작'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 

@@ -6,7 +6,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var NS = 'http://www.w3.org/2000/svg';
   var nf = new Intl.NumberFormat('ko-KR');
-  var state = { days: 30, client: null, data: {} };
+  var state = { days: 30, client: null, data: {}, tab: 'analytics' };
 
   var MYSTERY = [
     { key: 'joyful', label: '환희', css: '--c1' },
@@ -415,8 +415,25 @@
         return showNotAdmin();
       }
       showView('dash');
+      if (window.AdminRoadmap) window.AdminRoadmap.setClient(state.client);
+      selectTab(tabFromHash(), true);
       return loadAll();
     });
+  }
+
+  // ---------- 탭 (분석 / 로드맵)
+  function tabFromHash() { return /^#roadmap/.test(location.hash) ? 'roadmap' : 'analytics'; }
+  function selectTab(name, noHash) {
+    var rm = name === 'roadmap';
+    state.tab = name;
+    $('analytics-view').hidden = rm; $('roadmap-view').hidden = !rm;
+    $('range').hidden = rm;
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs .tab'), function (b) {
+      var on = b.getAttribute('data-tab') === name;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if (!noHash) { try { history.replaceState(null, '', rm ? '#roadmap' : location.pathname + location.search); } catch (e) { /* ignore */ } }
+    if (rm && window.AdminRoadmap) window.AdminRoadmap.show(false);
   }
 
   function signOut() {
@@ -451,7 +468,12 @@
     });
     $('logout').addEventListener('click', signOut);
     $('notice-btn').addEventListener('click', signOut);
-    $('refresh').addEventListener('click', function () { loadAll(); });
+    $('refresh').addEventListener('click', function () {
+      if (state.tab === 'roadmap' && window.AdminRoadmap) window.AdminRoadmap.show(true); else loadAll();
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs .tab'), function (b) {
+      b.addEventListener('click', function () { selectTab(b.getAttribute('data-tab')); });
+    });
     $('range').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-days]'); if (!b) return;
       state.days = Number(b.getAttribute('data-days'));

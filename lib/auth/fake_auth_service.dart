@@ -25,10 +25,17 @@ class FakeAuthService implements AuthService {
   /// 다음 작업을 이 메시지로 실패시킨다(한 번 쓰이고 비워진다).
   String? failNextWith;
 
+  /// [failNextWith]로 만드는 실패의 종류(예: 오프라인 흉내는 `network`).
+  AuthFailureKind failNextKind = AuthFailureKind.generic;
+
   /// 호출 기록. 예: `signInWithKakao`, `signUpWithEmail:a@b.co`.
   final List<String> calls = <String>[];
 
   EmailSignUpOutcome signUpOutcome = EmailSignUpOutcome.signedIn;
+
+  /// [linkWithEmail]의 결과. confirmationRequired이면 [completeLink]를 불러야 연결이 끝난다.
+  EmailSignUpOutcome linkEmailOutcome = EmailSignUpOutcome.signedIn;
+  int _guestCount = 0;
   String exportJson = '{\n  "profile": {},\n  "consents": []\n}';
   bool accountDeleted = false;
 
@@ -55,7 +62,9 @@ class FakeAuthService implements AuthService {
     final fail = failNextWith;
     if (fail != null) {
       failNextWith = null;
-      throw AuthFailure(fail);
+      final kind = failNextKind;
+      failNextKind = AuthFailureKind.generic;
+      throw AuthFailure(fail, kind: kind);
     }
   }
 
@@ -68,6 +77,65 @@ class FakeAuthService implements AuthService {
         provider: provider,
       );
     }
+  }
+
+  /// 게스트로 시작: 새 익명 사용자(`guest-1`, `guest-2`, …)로 로그인한다.
+  @override
+  Future<void> signInAnonymously({String? captchaToken}) async {
+    await _op('signInAnonymously');
+    if (current.isSignedIn) return;
+    if (autoCompleteSignIn) {
+      emit(
+        AuthState.signedIn(userId: 'guest-${++_guestCount}', isAnonymous: true),
+      );
+    }
+  }
+
+  Future<void> _link(
+    String call,
+    LoginProvider provider, {
+    String? email,
+    bool complete = true,
+  }) async {
+    await _op(call);
+    final s = current;
+    if (!s.isSignedIn || !s.isAnonymous) {
+      throw const AuthFailure('게스트로 쓰는 중일 때만 연결할 수 있어요.');
+    }
+    if (autoCompleteSignIn && complete) completeLink(provider, email: email);
+  }
+
+  /// 연결 완료를 흉내 낸다(실제로는 딥링크 복귀·메일 확인 뒤). 사용자 id는 그대로다.
+  void completeLink(LoginProvider provider, {String? email}) {
+    final s = current;
+    emit(
+      AuthState.signedIn(
+        userId: s.userId ?? 'guest-1',
+        email: email,
+        provider: provider,
+      ),
+    );
+  }
+
+  @override
+  Future<void> linkWithKakao() => _link('linkWithKakao', LoginProvider.kakao);
+
+  @override
+  Future<void> linkWithGoogle() =>
+      _link('linkWithGoogle', LoginProvider.google);
+
+  @override
+  Future<EmailSignUpOutcome> linkWithEmail(
+    String email,
+    String password,
+  ) async {
+    await _link(
+      'linkWithEmail:$email',
+      LoginProvider.email,
+      email: email,
+      complete: linkEmailOutcome == EmailSignUpOutcome.signedIn,
+    );
+    return linkEmailOutcome;
   }
 
   @override

@@ -40,6 +40,38 @@ const moving = pos.filter((p) => p.m === 1), stops = pos.filter((p) => p.m === 0
 check('pos events while walking (<=~12/s)', moving.length >= 2 && moving.length <= 25, { moving: moving.length });
 check('exactly one m:0 after stopping', stops.length === 1, { stops: stops.length });
 check('walked toward altar (z decreased)', moving.length && moving[moving.length - 1].z < 17);
+// C-01 터치 영역 분리(걷는 중). 800x450 뷰포트: 왼쪽 절반 x<400
+await page.evaluate(() => { window.__pe = (t, id, x, y) => document.getElementById('c').dispatchEvent(new PointerEvent(t, { pointerId: id, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' })); });
+check('walking: move zone on', await page.evaluate(() => __church.ctl.moveZone === true));
+const L = await page.evaluate(() => {
+  const c = __church.ctl, y0 = c.yaw, o = {}, mv = { x: 0, y: 0 };
+  __pe('pointerdown', 1, 200, 300); __pe('pointermove', 1, 200, 230);
+  c.getMove(mv); o.up = { x: mv.x, y: mv.y }; o.active = c.webActive; o.yawSame = c.yaw === y0;
+  const st = document.getElementById('stick'); o.stickShown = st.style.display === 'block'; o.stickAt = st.style.transform;
+  __pe('pointermove', 1, 260, 300); c.getMove(mv); o.right = { x: mv.x, y: mv.y };
+  __pe('pointerup', 1, 260, 300); c.getMove(mv); o.after = { x: mv.x, y: mv.y }; o.activeAfter = c.webActive; o.stickHidden = st.style.display === 'none';
+  return o;
+});
+check('left touch: floating stick at the touch point, forward drag = y 1, camera untouched', L.active && L.up.y > 0.95 && Math.abs(L.up.x) < 0.01 && L.yawSame && L.stickShown && /translate\(140px,\s*240px\)/.test(L.stickAt), L);
+check('left touch: right drag = x 1; release stops and hides the stick', L.right.x > 0.9 && L.after.x === 0 && L.after.y === 0 && !L.activeAfter && L.stickHidden, L);
+const R = await page.evaluate(() => {
+  const c = __church.ctl, y0 = c.yaw, mv = { x: 0, y: 0 };
+  __pe('pointerdown', 2, 600, 300); __pe('pointermove', 2, 500, 300);
+  c.getMove(mv); const o = { yawChanged: c.yaw !== y0, web: c.webActive, mv: { x: mv.x, y: mv.y } };
+  __pe('pointerup', 2, 500, 300); return o;
+});
+check('right touch: orbits the camera and never moves', R.yawChanged && !R.web && R.mv.x === 0 && R.mv.y === 0, R);
+const P = await page.evaluate(() => {
+  const c = __church.ctl, z0 = c.zoom, mv = { x: 0, y: 0 };
+  __pe('pointerdown', 3, 200, 300); __pe('pointermove', 3, 200, 240);          // 왼손: 스틱
+  __pe('pointerdown', 4, 500, 200); __pe('pointerdown', 5, 600, 200);          // 오른손 두 손가락: 핀치
+  __pe('pointermove', 5, 700, 200);
+  c.getMove(mv); const o = { zoomChanged: c.zoom !== z0, zoom: c.zoom, stick: c.webActive, y: mv.y };
+  __pe('pointerup', 5, 700, 200); __pe('pointerup', 4, 500, 200); __pe('pointerup', 3, 200, 240);
+  o.dragging = c.dragging; return o;
+});
+check('pinch on the right while the left stick is held: zoom changes, stick keeps walking', P.zoomChanged && P.stick && P.y > 0.9 && !P.dragging, P);
+await page.evaluate(() => { __church.ctl.zoom = 1; });
 // 가까운 좌석으로 이동 후 near/sit/seated/stood
 await page.evaluate(() => { const m = __church.me; m.x = -5.2; m.z = -10 + 1.9 * 3 + 1.0; });
 await page.waitForFunction(() => __church.near && __church.near.seat === 'L03-2', null, { timeout: 120000 }).catch(() => {});
@@ -52,6 +84,11 @@ check('seated event after sit animation', seated.length === 1 && seated[0].seat 
 await page.evaluate(() => { ChurchAPI.setJoystick({ x: 1, y: 1 }); ChurchAPI.setPraying({ on: true, ms: 1 }); });
 await page.waitForTimeout(1500);
 check('joystick ignored while seated', await page.evaluate(() => Math.abs(__church.me.x + 5.2) < 0.01));
+// C-02/C-01: 왼쪽 절반 = 떠다니는 스틱(걷는 중에만), 오른쪽 절반 = 카메라. 앉으면 화면 전체가 카메라 영역.
+await page.evaluate(() => { window.__pe = (t, id, x, y) => document.getElementById('c').dispatchEvent(new PointerEvent(t, { pointerId: id, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' })); });
+check('seated: move zone is off (whole screen orbits)', await page.evaluate(() => __church.ctl.moveZone === false));
+const seatYaw = await page.evaluate(() => { const c = __church.ctl, y0 = c.yaw; __pe('pointerdown', 6, 200, 300); __pe('pointermove', 6, 150, 300); const r = { moved: c.yaw !== y0, web: c.webActive }; __pe('pointerup', 6, 150, 300); return r; });
+check('seated: left-half drag orbits the camera, no stick', seatYaw.moved && !seatYaw.web, seatYaw);
 await page.evaluate(() => { ChurchAPI.setJoystick({ x: 0, y: 0 }); ChurchAPI.stand({}); });
 await page.waitForFunction(() => window.__ev.some((e) => e.e === 'stood'), null, { timeout: 150000 }).catch(() => {});
 const stood = await page.evaluate(() => window.__ev.filter((e) => e.e === 'stood').length);
@@ -115,6 +152,7 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
 await page.waitForTimeout(5500);
 const perf = await page.evaluate(() => window.__ev.filter((e) => e.e === 'perf'));
 check('perf event posted', perf.length >= 1, perf.slice(-1));
+check('perf event carries tier, avg fps and seated flag', perf.length >= 1 && perf.every((e) => typeof e.fps === 'number' && ['low', 'high'].includes(e.tier) && (e.sat === 0 || e.sat === 1)), perf.slice(-2));
 // 시간대/성당 변경, 이모트, 소리 켜기(헤드리스에서 오류 없이)
 await page.evaluate(() => { ChurchAPI.setHour({ hour: 18.5 }); ChurchAPI.setHour({ hour: 22 }); ChurchAPI.emote({ e: 1 }); ChurchAPI.peerEmote({ id: 'p8', e: 0 }); ChurchAPI.setAvatar({ avatar: { skin: 0, style: 1, hair: 9, outfit: 11, name: 39 } }); ChurchAPI.setAmbient({ on: true }); ChurchAPI.setQuality({ quality: 'high' }); });
 await page.waitForTimeout(1000);

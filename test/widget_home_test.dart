@@ -75,7 +75,7 @@ void main() {
     await _pumpHome(tester, settings);
 
     expect(find.text('묵주기도'), findsWidgets);
-    expect(find.text('기도 시작'), findsOneWidget);
+    expect(find.textContaining('신비 시작'), findsOneWidget);
     for (final set in MysterySet.values) {
       expect(find.text(set.koreanName), findsOneWidget);
     }
@@ -194,7 +194,7 @@ void main() {
     final settings = await _load();
     await _pumpHome(tester, settings);
 
-    await tester.tap(find.text('기도 시작'));
+    await tester.tap(find.textContaining('신비 시작'));
     await _pumpRoute(tester);
 
     expect(find.byType(PrayerScreen), findsOneWidget);
@@ -225,5 +225,48 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('설정 열기'), findsOneWidget);
+  });
+
+  testWidgets('시작 버튼에 오늘의 신비 이름이 보이고, 바꾸면 오늘로 칩이 나온다 (P-01)', (tester) async {
+    final settings = await _load();
+    final today = mysterySetForWeekday(DateTime.now().weekday);
+    await _pumpHome(tester, settings);
+
+    expect(find.text('오늘의 신비 · ${today.koreanName} 시작'), findsOneWidget);
+    expect(find.byKey(const ValueKey('reset-to-today')), findsNothing);
+
+    final other = MysterySet.values.firstWhere((s) => s != today);
+    await tester.tap(find.text(other.koreanName));
+    await tester.pump();
+    expect(settings.mysterySet, other);
+    expect(find.text('${other.koreanName} 시작'), findsOneWidget);
+    expect(find.text('오늘의 신비 · ${today.koreanName} 시작'), findsNothing);
+    expect(find.byKey(const ValueKey('reset-to-today')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('reset-to-today')));
+    await tester.pump();
+    expect(settings.mysterySet, today);
+    expect(find.text('오늘의 신비 · ${today.koreanName} 시작'), findsOneWidget);
+    expect(find.byKey(const ValueKey('reset-to-today')), findsNothing);
+  });
+
+  testWidgets('시작 버튼이 큰 글씨 2.0에서도 넘치지 않는다', (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final settings = await _load();
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(2.0)),
+          child: child!,
+        ),
+        home: HomeScreen(settings: settings, soundPlayer: _SilentSoundPlayer()),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('신비 시작'), findsOneWidget);
   });
 }

@@ -10,10 +10,17 @@ enum EmailAuthMode { signIn, signUp }
 
 /// 이메일 가입·로그인 바텀시트: 이메일, 비밀번호(보기 토글), 가입/로그인 전환,
 /// 비밀번호 재설정, 한국어 인라인 검증 메시지.
+///
+/// [linkGuest]가 true이면 게스트 계정에 이메일을 연결하는 시트다(가입 전용, 사용자 id 유지).
 class EmailAuthSheet extends StatefulWidget {
-  const EmailAuthSheet({super.key, required this.authService});
+  const EmailAuthSheet({
+    super.key,
+    required this.authService,
+    this.linkGuest = false,
+  });
 
   final AuthService authService;
+  final bool linkGuest;
 
   @override
   State<EmailAuthSheet> createState() => _EmailAuthSheetState();
@@ -23,7 +30,9 @@ class _EmailAuthSheetState extends State<EmailAuthSheet> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
-  EmailAuthMode _mode = EmailAuthMode.signIn;
+  late EmailAuthMode _mode = widget.linkGuest
+      ? EmailAuthMode.signUp
+      : EmailAuthMode.signIn;
   bool _obscure = true;
   bool _busy = false;
   String? _error;
@@ -48,15 +57,24 @@ class _EmailAuthSheetState extends State<EmailAuthSheet> {
     setState(() => _busy = true);
     try {
       if (_isSignUp) {
-        final outcome = await widget.authService.signUpWithEmail(
-          _email.text,
-          _password.text,
-        );
+        final outcome = widget.linkGuest
+            ? await widget.authService.linkWithEmail(
+                _email.text,
+                _password.text,
+              )
+            : await widget.authService.signUpWithEmail(
+                _email.text,
+                _password.text,
+              );
         if (!mounted) return;
         if (outcome == EmailSignUpOutcome.confirmationRequired) {
           setState(() {
-            _mode = EmailAuthMode.signIn;
-            _info = '확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.';
+            _mode = widget.linkGuest
+                ? EmailAuthMode.signUp
+                : EmailAuthMode.signIn;
+            _info = widget.linkGuest
+                ? '확인 메일을 보냈어요. 메일의 링크를 누르면 연결이 끝나요. 그때까지는 게스트로 계속 쓸 수 있어요.'
+                : '확인 메일을 보냈어요. 메일의 링크를 누른 뒤 로그인해 주세요.';
           });
         } else {
           _close();
@@ -133,33 +151,38 @@ class _EmailAuthSheetState extends State<EmailAuthSheet> {
                 Semantics(
                   header: true,
                   child: Text(
-                    _isSignUp ? '이메일로 가입' : '이메일로 로그인',
+                    widget.linkGuest
+                        ? '이메일 연결'
+                        : _isSignUp
+                        ? '이메일로 가입'
+                        : '이메일로 로그인',
                     style: text.titleLarge,
                   ),
                 ),
                 const SizedBox(height: AppSpace.sm),
-                SegmentedButton<EmailAuthMode>(
-                  key: const Key('email-mode'),
-                  segments: const [
-                    ButtonSegment(
-                      value: EmailAuthMode.signIn,
-                      label: Text('로그인'),
-                    ),
-                    ButtonSegment(
-                      value: EmailAuthMode.signUp,
-                      label: Text('가입'),
-                    ),
-                  ],
-                  selected: {_mode},
-                  onSelectionChanged: _busy
-                      ? null
-                      : (s) => setState(() {
-                          _mode = s.first;
-                          _error = null;
-                          _info = null;
-                        }),
-                ),
-                const SizedBox(height: AppSpace.sm),
+                if (!widget.linkGuest)
+                  SegmentedButton<EmailAuthMode>(
+                    key: const Key('email-mode'),
+                    segments: const [
+                      ButtonSegment(
+                        value: EmailAuthMode.signIn,
+                        label: Text('로그인'),
+                      ),
+                      ButtonSegment(
+                        value: EmailAuthMode.signUp,
+                        label: Text('가입'),
+                      ),
+                    ],
+                    selected: {_mode},
+                    onSelectionChanged: _busy
+                        ? null
+                        : (s) => setState(() {
+                            _mode = s.first;
+                            _error = null;
+                            _info = null;
+                          }),
+                  ),
+                if (!widget.linkGuest) const SizedBox(height: AppSpace.sm),
                 TextFormField(
                   key: const Key('email-field'),
                   controller: _email,
@@ -237,7 +260,13 @@ class _EmailAuthSheetState extends State<EmailAuthSheet> {
                           height: 22,
                           child: CircularProgressIndicator(strokeWidth: 2.5),
                         )
-                      : Text(_isSignUp ? '가입하기' : '로그인'),
+                      : Text(
+                          widget.linkGuest
+                              ? '연결하기'
+                              : _isSignUp
+                              ? '가입하기'
+                              : '로그인',
+                        ),
                 ),
                 if (!_isSignUp)
                   TextButton(

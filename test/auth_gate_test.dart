@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/auth/auth_config.dart';
 import 'package:rosary_app/auth/auth_gate.dart';
 import 'package:rosary_app/auth/auth_state.dart';
 import 'package:rosary_app/auth/consent_screen.dart';
@@ -54,12 +55,17 @@ void main() {
     expect(find.byKey(const Key('app-child')), findsNothing);
   });
 
-  testWidgets('로그아웃 + requireLogin=false → 본문', (tester) async {
+  testWidgets('로그아웃 + requireLogin=false(기본) → 로그인 벽 없이 동의 화면', (tester) async {
     final auth = FakeAuthService();
     final store = await makeConsentStore(auth);
     await tester.pumpWidget(_gate(auth, store, requireLogin: false));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('app-child')), findsOneWidget);
+    expect(find.byType(ConsentScreen), findsOneWidget);
+    expect(find.byType(LoginScreen), findsNothing);
+  });
+
+  test('AuthConfig.requireLogin의 기본은 false(게스트 우선)', () {
+    expect(AuthConfig.requireLogin, isFalse);
   });
 
   testWidgets('로그인 + 필수 동의 없음 → 동의 화면', (tester) async {
@@ -180,6 +186,10 @@ void main() {
     expect(stage(const AuthState.loading(), cfg: false), AuthGateStage.child);
     expect(stage(const AuthState.loading()), AuthGateStage.splash);
     expect(stage(const AuthState.signedOut()), AuthGateStage.login);
-    expect(stage(const AuthState.signedOut(), req: false), AuthGateStage.child);
+    // 게스트 우선: 로그아웃 + 동의 전 → 동의, 동의 후 → 게스트 시작 상태에 따라.
+    expect(
+      stage(const AuthState.signedOut(), req: false),
+      AuthGateStage.consent,
+    );
   });
 }

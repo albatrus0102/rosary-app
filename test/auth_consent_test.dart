@@ -317,12 +317,13 @@ void main() {
       expect(backend.server[ConsentKind.sync]!.granted, isFalse);
     });
 
-    test('로그아웃 상태에서 grant는 아무것도 하지 않는다', () async {
+    test('로그아웃 상태의 동의는 기기에만 저장되고 has()는 여전히 false', () async {
       final auth = FakeAuthService();
       final store = await makeConsentStore(auth);
       await store.grant(ConsentKind.sync);
+      // 사용자 행이 없으니 서버로 보낼 수 없고, 다른 기능도 열리지 않는다.
       expect(store.has(ConsentKind.sync), isFalse);
-      expect(store.pendingCount, 0);
+      expect(store.pendingCount, 1);
     });
 
     test('clearLocalData는 캐시를 지운다', () async {

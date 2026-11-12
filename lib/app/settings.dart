@@ -68,6 +68,7 @@ class AppSettings extends ChangeNotifier {
         .clamp(minChimeVolume, maxChimeVolume);
     _hapticOnAdvance = _prefs.getBool(_kHaptic) ?? true;
     _useDynamicColor = _prefs.getBool(_kUseDynamicColor) ?? false;
+    _volumeKeyAdvance = _prefs.getBool(_kVolumeKeyAdvance) ?? false;
     _prayerTextScale = (_prefs.getDouble(_kTextScale) ?? defaultTextScale)
         .clamp(minTextScale, maxTextScale);
     _savedPrayer = _readSavedPrayer();
@@ -102,6 +103,7 @@ class AppSettings extends ChangeNotifier {
   static const _kChimeVolume = 'chime_volume';
   static const _kHaptic = 'haptic';
   static const _kUseDynamicColor = 'use_dynamic_color';
+  static const _kVolumeKeyAdvance = 'volume_key_advance';
   static const _kTextScale = 'prayer_text_scale';
   static const _kResumeSet = 'resume_set';
   static const _kResumeIndex = 'resume_index';
@@ -115,7 +117,7 @@ class AppSettings extends ChangeNotifier {
 
   /// 기도문 글자 크기 배율(1.0이 기본 24sp).
   static const double minTextScale = 0.85;
-  static const double maxTextScale = 1.6;
+  static const double maxTextScale = 2.0;
   static const double defaultTextScale = 1.0;
 
   static const double minTtsRate = 0.3;
@@ -130,6 +132,7 @@ class AppSettings extends ChangeNotifier {
 
   late bool _hapticOnAdvance;
   late bool _useDynamicColor;
+  late bool _volumeKeyAdvance;
   late double _prayerTextScale;
   SavedPrayer? _savedPrayer;
 
@@ -192,7 +195,7 @@ class AppSettings extends ChangeNotifier {
   /// 후창 모드의 선창 소스(기본: 자연스러운 음성).
   LeaderVoiceSource get leaderVoiceSource => _leaderVoiceSource;
 
-  /// 'AI 음성(고품질)'의 화자(기본: 수녀님).
+  /// 'AI 음성(고품질)'의 화자(기본: 여성 목소리).
   LeaderVoicePersona get leaderPersona => _leaderPersona;
 
   /// 기기 음성 말하기 속도(0.3~0.7).
@@ -296,6 +299,16 @@ class AppSettings extends ChangeNotifier {
 
   /// 기기 배경화면 색(Material You 동적 색상)을 쓸지 여부. 기본은 끔(앱 고유 테라코타).
   bool get useDynamicColor => _useDynamicColor;
+
+  /// 기도 화면에서 볼륨 키(↑ 다음, ↓ 이전)로 넘기기(P-02). 기본은 끔.
+  bool get volumeKeyAdvance => _volumeKeyAdvance;
+
+  set volumeKeyAdvance(bool v) {
+    if (v == _volumeKeyAdvance) return;
+    _volumeKeyAdvance = v;
+    _prefs.setBool(_kVolumeKeyAdvance, v);
+    notifyListeners();
+  }
 
   set useDynamicColor(bool v) {
     if (v == _useDynamicColor) return;

@@ -47,12 +47,47 @@ abstract final class Track {
     required PrayerMode mode,
     required bool resumed,
     required String source,
+    bool? withIntent,
+    String? pace,
   }) => event('prayer_start', {
     'set': set.name,
     'mode': mode.name,
     'resumed': resumed,
+    // app | church | widget | reminder
     'source': source,
+    'with_intent': ?withIntent,
+    // silent | guided
+    'pace': ?pace,
   });
+
+  /// `prayed_today{kind}`: beads | app | church.
+  static void prayedToday(String kind) => event('prayed_today', {'kind': kind});
+
+  /// `onboarding_step{step}`: consent | text_size | style | done.
+  static void onboardingStep(String step) =>
+      event('onboarding_step', {'step': step});
+
+  /// `guest_link{provider}`.
+  static void guestLink(String provider) =>
+      event('guest_link', {'provider': provider});
+
+  /// `reminder_change{kind,on,hour}`: kind = angelus | rosary | mercy.
+  static void reminderChange(String kind, {required bool on, int? hour}) =>
+      event('reminder_change', {'kind': kind, 'on': on, 'hour': ?hour});
+
+  static void reminderOpen(String kind) =>
+      event('reminder_open', {'kind': kind});
+
+  /// `novena_start{type,luminous}`: type = n9 | n54.
+  static void novenaStart(String type, {required bool luminous}) =>
+      event('novena_start', {'type': type, 'luminous': luminous});
+
+  static void novenaDay(String type, int day, {required bool makeup}) =>
+      event('novena_day', {'type': type, 'day': day, 'makeup': makeup});
+
+  /// `widget_tap{action}`: start | resume.
+  static void widgetTap(String action) =>
+      event('widget_tap', {'action': action});
 
   static void decadeComplete(MysterySet set, int decade) =>
       event('decade_complete', {'set': set.name, 'decade': decade});

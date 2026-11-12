@@ -29,16 +29,24 @@ enum LeaderVoicePersona { sister, priest }
 extension LeaderVoicePersonaInfo on LeaderVoicePersona {
   /// 선택 단추에 쓰는 이름.
   String get label => switch (this) {
-    LeaderVoicePersona.sister => '수녀님',
-    LeaderVoicePersona.priest => '신부님',
+    LeaderVoicePersona.sister => '여성 목소리(AI)',
+    LeaderVoicePersona.priest => '남성 목소리(AI)',
   };
 
-  /// 설정 화면의 선택 단추 문구.
-  String get voiceLabel => '$label 목소리';
+  /// 설정 화면의 선택 단추 문구. 성직자·수도자를 연상시키는 이름을 쓰지 않는다.
+  String get voiceLabel => label;
 }
 
 /// 합성 음성임을 알리는 문구(설정 화면, 정보).
 const String aiVoiceDisclosure = 'AI로 합성한 음성이며, 사람이 녹음한 것이 아닙니다.';
+
+/// 선창 음성 설정에 한 줄로 보이는 고지(D-01).
+const String aiVoiceNotice = 'AI로 만든 음성입니다. 성사가 아니며, 교회의 공식 녹음이 아닙니다.';
+
+/// 더보기 > 정보의 고지(D-01).
+const String appUnofficialNotice =
+    '이 앱은 가톨릭 교회의 공식 서비스가 아닙니다. 사이버 성당은 실제 성당이 아닌 3D 모형이며, '
+    '실제 봉헌·성사와 무관합니다.';
 
 /// 큐 하나([cueId])만 말하게 하는 스텝. [LeaderVoice.speakStep]에는
 /// `leaderCueIds`만 쓰이므로 나머지 필드는 자리만 채운다.

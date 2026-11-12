@@ -162,10 +162,16 @@ class ConsentStore extends ChangeNotifier {
   }) : _auth = authService,
        _now = now ?? DateTime.now {
     _auth.state.addListener(_onAuth);
+    // 시작 시 로그아웃 상태면 로그인 전에 받아 둔 동의(기기 캐시)부터 읽는다.
+    _load(deviceKey);
     _onAuth();
   }
 
   static const String _prefix = 'auth.consent.v1.';
+
+  /// 로그인 전(첫 실행, 게스트 시작 전)의 동의를 담는 로컬 캐시 키. 게스트로 시작하면
+  /// 그 사용자의 캐시로 옮겨져 서버에 올라간다.
+  static const String deviceKey = '_device';
 
   final SharedPreferences _prefs;
   final AuthService _auth;
@@ -196,14 +202,17 @@ class ConsentStore extends ChangeNotifier {
   /// 서버의 기존 동의를 확인하기 전에는 false(게이트가 잠깐 기다린다).
   bool get isResolved => _resolved;
 
-  /// 현재 버전에서 [kind]에 동의했는가. 로그아웃 상태면 항상 false.
-  bool has(String kind) {
-    if (_uid == null) return false;
+  /// 현재 버전에서 [kind]에 동의했는가. 로그아웃 상태(아직 사용자 행이 없음)에서는
+  /// 항상 false: 사용자 없이 서버로 보낼 수 없으므로 분석·동기화는 막혀 있다.
+  bool has(String kind) => _uid != null && _hasLocal(kind);
+
+  /// 사용자 행이 없는 동안(로컬에만 저장된 동의 포함)에도 현재 버전으로 동의했는가.
+  bool _hasLocal(String kind) {
     final r = _records[kind];
     return r != null && r.granted && r.version == version;
   }
 
-  bool get isRequiredComplete => ConsentKind.required.every(has);
+  bool get isRequiredComplete => ConsentKind.required.every(_hasLocal);
 
   /// 필수 동의가 현재 버전으로 모두 되어 있지 않다.
   bool get needsConsent => !isRequiredComplete;
@@ -224,9 +233,12 @@ class ConsentStore extends ChangeNotifier {
       setAll({for (final k in ConsentKind.required) k: true}, source: source);
 
   /// 여러 종류를 한 번에 바꾼다. 로컬에 즉시 반영·저장하고, 서버 전송은 큐로 한다.
+  ///
+  /// 로그인 전이면 기기 로컬 캐시([deviceKey])에만 저장해 두었다가, 게스트로 시작하는
+  /// 순간 새 사용자에게 옮겨 서버에 올린다.
   Future<void> setAll(Map<String, bool> values, {String source = 'app'}) async {
     final uid = _uid;
-    if (uid == null) return;
+    final owner = uid ?? deviceKey;
     final now = _now();
     final changed = <ConsentChange>[];
     for (final e in values.entries) {
@@ -241,7 +253,7 @@ class ConsentStore extends ChangeNotifier {
       changed.add(ConsentChange(e.key, e.value));
     }
     if (changed.isEmpty) return;
-    await _persist(uid);
+    await _persist(owner);
     notifyListeners();
     for (final c in changed) {
       if (!_changes.isClosed) _changes.add(c);
@@ -330,19 +342,41 @@ class ConsentStore extends ChangeNotifier {
     _records.clear();
     _queue.clear();
     if (uid == null) {
+      // 로그아웃·첫 실행: 사용자 없이 기기에 저장해 둔 동의만 읽는다.
+      _load(deviceKey);
       _resolved = true;
       notifyListeners();
       return;
     }
     _load(uid);
+    _adoptDeviceConsent(uid);
     // 로컬에서 필수 동의가 이미 확인되면 서버 확인을 기다리지 않는다.
     _resolved = !needsConsent;
     notifyListeners();
     unawaited(sync());
   }
 
-  void _load(String uid) {
-    final raw = _prefs.getString('$_prefix$uid');
+  /// 로그인 전에 받은 동의를 새로 생긴 사용자에게 옮긴다(사용자가 이미 현재 버전의
+  /// 필수 동의를 가졌으면 건드리지 않는다). 옮긴 뒤 기기 캐시는 지운다.
+  void _adoptDeviceConsent(String uid) {
+    final key = '$_prefix$deviceKey';
+    if (_prefs.getString(key) == null) return;
+    if (needsConsent) {
+      final userRecords = Map<String, ConsentRecord>.of(_records);
+      final userQueue = List<_Pending>.of(_queue);
+      _records.clear();
+      _queue.clear();
+      _load(deviceKey);
+      // 사용자 캐시에 같은 종류가 있으면 그것을 우선한다.
+      _records.addAll(userRecords);
+      _queue.addAll(userQueue);
+      unawaited(_persist(uid));
+    }
+    unawaited(_prefs.remove(key));
+  }
+
+  void _load(String owner) {
+    final raw = _prefs.getString('$_prefix$owner');
     if (raw == null) return;
     try {
       final j = jsonDecode(raw) as Map<String, dynamic>;
@@ -374,7 +408,7 @@ class ConsentStore extends ChangeNotifier {
     }
   }
 
-  Future<void> _persist(String uid) {
+  Future<void> _persist(String owner) {
     final j = {
       'r': {
         for (final e in _records.entries)
@@ -386,15 +420,14 @@ class ConsentStore extends ChangeNotifier {
       },
       'q': [for (final p in _queue) p.toJson()],
     };
-    return _prefs.setString('$_prefix$uid', jsonEncode(j));
+    return _prefs.setString('$_prefix$owner', jsonEncode(j));
   }
 
   /// 계정 삭제 뒤: 이 사용자의 로컬 동의 캐시와 대기 큐를 지운다.
   Future<void> clearLocalData([String? uid]) async {
-    final target = uid ?? _uid;
-    if (target == null) return;
+    final target = uid ?? _uid ?? deviceKey;
     await _prefs.remove('$_prefix$target');
-    if (target == _uid) {
+    if (target == (_uid ?? deviceKey)) {
       _records.clear();
       _queue.clear();
       notifyListeners();

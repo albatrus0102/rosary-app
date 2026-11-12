@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/app_services.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
+import 'package:rosary_app/stats/prayer_stats_store.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
 import 'package:rosary_app/ui/widgets/rosary_map.dart';
@@ -241,7 +243,8 @@ void main() {
     await tester.tap(find.text('다음'));
     await tester.pump();
     await tester.pump();
-    expect(calls, ['HapticFeedbackType.selectionClick']);
+    // 성호경 -> 사도신경: 큰 구슬은 중간 세기.
+    expect(calls, ['HapticFeedbackType.mediumImpact']);
 
     settings.hapticOnAdvance = false;
     await tester.pump();
@@ -345,5 +348,221 @@ void main() {
     await gesture.up();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('묵주기도를 마쳤습니다'), findsNothing);
+  });
+
+  testWidgets('has no overflow at the maximum text scale 2.0 on 360x640', (
+    tester,
+  ) async {
+    expect(AppSettings.maxTextScale, 2.0);
+    phoneSize(tester);
+    final settings = await loadSettings({'prayer_text_scale': 2.0});
+    expect(settings.prayerTextScale, 2.0);
+    // 앱 글자 배율 2.0 + 기도문 배율 2.0이 겹쳐도 넘치지 않는다.
+    await tester.pumpWidget(app(settings, textScale: 2.0));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    for (var i = 0; i < 25; i++) {
+      await tester.tap(find.text('다음'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.takeException(), isNull, reason: 'after $i taps');
+    }
+  });
+
+  testWidgets('text size slider reaches 200%', (tester) async {
+    phoneSize(tester);
+    final settings = await loadSettings();
+    await tester.pumpWidget(app(settings));
+    await tester.pump();
+    await tester.tap(find.byTooltip('글자 크기'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.drag(find.byType(Slider), const Offset(600, 0));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(settings.prayerTextScale, 2.0);
+  });
+
+  testWidgets('haptic strength differs by bead type', (tester) async {
+    phoneSize(tester);
+    final calls = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'HapticFeedback.vibrate') {
+          calls.add(call.arguments as String);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final settings = await loadSettings();
+    await tester.pumpWidget(app(settings));
+    await tester.pump();
+
+    final steps = buildRosarySequence(MysterySet.joyful);
+    // 한 단 + 단 끝까지 진행하며 도착한 구슬 종류별 진동을 모은다.
+    final byKind = <StepKind, Set<String>>{};
+    for (var i = 1; i < 20; i++) {
+      calls.clear();
+      await tester.tap(find.text('다음'));
+      await tester.pump();
+      await tester.pump();
+      expect(calls, hasLength(1), reason: 'step $i');
+      byKind.putIfAbsent(steps[i].kind, () => {}).add(calls.single);
+    }
+    expect(byKind[StepKind.hailMary], {'HapticFeedbackType.lightImpact'});
+    expect(byKind[StepKind.ourFather], {'HapticFeedbackType.mediumImpact'});
+    expect(byKind[StepKind.apostlesCreed], {'HapticFeedbackType.mediumImpact'});
+
+    // 단 끝은 강하게.
+    var guard = 0;
+    calls.clear();
+    while (guard++ < 200) {
+      await tester.tap(find.text('다음'));
+      await tester.pump();
+      await tester.pump();
+      if (calls.contains('HapticFeedbackType.heavyImpact')) break;
+    }
+    expect(calls, contains('HapticFeedbackType.heavyImpact'));
+  });
+
+  group('volume keys', () {
+    Future<void> press(WidgetTester tester, LogicalKeyboardKey key) async {
+      await tester.sendKeyEvent(key);
+      await tester.pump();
+    }
+
+    testWidgets('are ignored by default', (tester) async {
+      phoneSize(tester);
+      final settings = await loadSettings();
+      expect(settings.volumeKeyAdvance, isFalse);
+      await tester.pumpWidget(app(settings));
+      await tester.pump();
+      await press(tester, LogicalKeyboardKey.audioVolumeDown);
+      expect(find.text('성호경'), findsWidgets);
+      expect(settings.savedPrayer, isNull);
+    });
+
+    testWidgets('advance (down) and go back (up) when enabled', (tester) async {
+      phoneSize(tester);
+      final settings = await loadSettings({'volume_key_advance': true});
+      await tester.pumpWidget(app(settings));
+      await tester.pump();
+      final steps = buildRosarySequence(MysterySet.joyful);
+      expect(find.text(steps[0].title), findsWidgets);
+
+      await press(tester, LogicalKeyboardKey.audioVolumeDown);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text(steps[1].title), findsWidgets);
+      expect(settings.savedPrayer?.stepIndex, 1);
+
+      await press(tester, LogicalKeyboardKey.audioVolumeDown);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(settings.savedPrayer?.stepIndex, 2);
+
+      await press(tester, LogicalKeyboardKey.audioVolumeUp);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(settings.savedPrayer?.stepIndex, 1);
+    });
+  });
+
+  group('completion screen', () {
+    Future<void> finish(WidgetTester tester) async {
+      final total = buildRosarySequence(MysterySet.joyful).length;
+      for (var i = 0; i < total; i++) {
+        await tester.tap(find.text('다음'));
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    Widget appWithServices(AppServices services, {VoidCallback? onStats}) =>
+        AppServicesScope(
+          services: services,
+          child: MaterialApp(
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => PrayerScreen(
+                          settings: services.settings,
+                          mysterySet: MysterySet.joyful,
+                          soundPlayer: _SilentSoundPlayer(),
+                          onOpenStats: onStats,
+                        ),
+                      ),
+                    ),
+                    child: const Text('open'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+    testWidgets('shows 기록됨 · 이번 달 n번째, 기록 보기 and 닫기', (tester) async {
+      phoneSize(tester);
+      final settings = await loadSettings();
+      final now = DateTime.now();
+      final stats = PrayerStatsStore.inMemory([
+        PrayerRecord(
+          at: DateTime(now.year, now.month),
+          set: MysterySet.glorious,
+          decades: 5,
+          hailMarys: 50,
+          completed: true,
+          seconds: 900,
+        ),
+      ]);
+      final services = AppServices.inMemory(settings, stats: stats);
+      addTearDown(services.disposeInMemory);
+      var statsOpened = 0;
+      await tester.pumpWidget(
+        appWithServices(services, onStats: () => statsOpened++),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+
+      await finish(tester);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('묵주기도를 마쳤습니다'), findsOneWidget);
+      // 미리 있던 1건 + 방금 완주 = 이번 달 2번째. 점수·순위는 없다.
+      expect(find.text('기록됨 · 이번 달 2번째'), findsOneWidget);
+      expect(find.textContaining('점'), findsNothing);
+      expect(find.textContaining('순위'), findsNothing);
+      expect(find.text('기록 보기'), findsOneWidget);
+      expect(find.text('닫기'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('기록 보기'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.byType(PrayerScreen), findsNothing);
+      expect(statsOpened, 1);
+    });
+
+    testWidgets('닫기 pops back', (tester) async {
+      phoneSize(tester);
+      final settings = await loadSettings();
+      final services = AppServices.inMemory(settings);
+      addTearDown(services.disposeInMemory);
+      await tester.pumpWidget(appWithServices(services));
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await finish(tester);
+      expect(find.text('기록됨 · 이번 달 1번째'), findsOneWidget);
+      await tester.tap(find.text('닫기'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.byType(PrayerScreen), findsNothing);
+    });
   });
 }

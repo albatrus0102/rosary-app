@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../app/app_services.dart';
 import '../app/leader_audio_store.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/track.dart';
 import '../app/window_class.dart';
 import '../church/church_tab.dart';
+import '../stats/stats_screen.dart';
 import 'home_screen.dart';
+import 'more_screen.dart';
 import 'rosary_style_screen.dart';
 import 'settings_screen.dart';
 
@@ -34,31 +39,49 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  static const _prayer = 0;
-  static const _style = 1;
-  static const _settings = 2;
-  static const _church = 3;
+  static const _today = 0;
+  static const _church = 1;
+  static const _stats = 2;
 
   /// 탭 번호 → 화면 id(SPEC §4). 탭은 라우트가 아니라서 여기서 직접 기록한다.
-  static const _screenIds = [
-    'home',
-    'rosary_styles',
-    'settings',
-    'church_select',
-  ];
+  /// 성당 탭의 실제 화면(church_select/church)은 [ChurchTab]이 기록한다.
+  static const _screenIds = ['home', 'church_select', 'stats', 'more'];
 
-  int _index = _prayer;
+  int _index = _today;
 
   void _select(int i) {
     if (i == _index) return;
     setState(() => _index = i);
-    // 성당 탭의 실제 화면(church_select/church)은 ChurchTab이 기록한다.
     if (i != _church) Track.screen(_screenIds[i]);
   }
+
+  /// 묵주 스타일 화면은 탭이 아니라 더보기·오늘에서 여는 화면이다.
+  void _openStyles() => unawaited(
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(name: 'rosary_styles'),
+        builder: (_) => RosaryStyleScreen(settings: widget.settings),
+      ),
+    ),
+  );
+
+  void _openSettings() => unawaited(
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(name: 'settings'),
+        builder: (_) => SettingsScreen(
+          settings: widget.settings,
+          leaderAudio: widget.leaderAudio,
+          soundPlayer: widget.soundPlayer,
+        ),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     final wc = windowClassOf(context);
+    final services = AppServicesScope.maybeOf(context);
     final body = IndexedStack(
       index: _index,
       children: [
@@ -66,11 +89,10 @@ class _AppShellState extends State<AppShell> {
           settings: widget.settings,
           leaderAudio: widget.leaderAudio,
           soundPlayer: widget.soundPlayer,
-          onOpenStyles: () => _select(_style),
-          onOpenSettings: () => _select(_settings),
+          onOpenStyles: _openStyles,
+          onOpenSettings: _openSettings,
+          onOpenStats: () => _select(_stats),
         ),
-        RosaryStyleScreen(settings: widget.settings),
-        SettingsScreen(settings: widget.settings),
         // 성당 탭은 보고 있을 때만 만든다. 다른 탭으로 가면 화면이 사라져
         // WebView·소켓·타이머가 모두 정리되므로 배터리를 쓰지 않는다.
         if (_index == _church)
@@ -81,14 +103,28 @@ class _AppShellState extends State<AppShell> {
               )
         else
           const SizedBox.shrink(),
+        // 기록 탭도 보고 있을 때만 만든다(열 때마다 최신 기록을 읽고 stats_open을 센다).
+        if (_index == _stats && services != null)
+          StatsScreen(
+            key: const ValueKey('stats-tab'),
+            store: services.stats,
+            embedded: true,
+          )
+        else
+          const SizedBox.shrink(),
+        MoreScreen(
+          settings: widget.settings,
+          onOpenStyles: _openStyles,
+          onOpenSettings: _openSettings,
+        ),
       ],
     );
 
-    // 다른 탭에서 뒤로가기를 누르면 앱을 닫지 않고 '기도' 탭으로 돌아간다.
+    // 다른 탭에서 뒤로가기를 누르면 앱을 닫지 않고 '오늘' 탭으로 돌아간다.
     return PopScope(
-      canPop: _index == _prayer,
+      canPop: _index == _today,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _select(_prayer);
+        if (!didPop) _select(_today);
       },
       child: wc.isWide ? _buildWide(context, wc, body) : _buildCompact(body),
     );
@@ -100,17 +136,13 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: _select,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.self_improvement),
-            label: '기도',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.radio_button_checked),
-            label: '묵주',
-          ),
-          NavigationDestination(icon: Icon(Icons.settings), label: '설정'),
-          NavigationDestination(icon: Icon(Icons.church), label: '성당'),
+        destinations: [
+          for (final d in _destinations)
+            NavigationDestination(
+              icon: Icon(d.icon),
+              selectedIcon: Icon(d.selectedIcon),
+              label: d.label,
+            ),
         ],
       ),
     );
@@ -130,23 +162,13 @@ class _AppShellState extends State<AppShell> {
                   : NavigationRailLabelType.all,
               selectedIndex: _index,
               onDestinationSelected: _select,
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.self_improvement),
-                  label: Text('기도'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.radio_button_checked),
-                  label: Text('묵주'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.settings),
-                  label: Text('설정'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.church),
-                  label: Text('성당'),
-                ),
+              destinations: [
+                for (final d in _destinations)
+                  NavigationRailDestination(
+                    icon: Icon(d.icon),
+                    selectedIcon: Icon(d.selectedIcon),
+                    label: Text(d.label),
+                  ),
               ],
             ),
           ),
@@ -155,4 +177,19 @@ class _AppShellState extends State<AppShell> {
       ),
     );
   }
+
+  static const _destinations = [
+    _Dest('오늘', Icons.self_improvement_outlined, Icons.self_improvement),
+    _Dest('성당', Icons.church_outlined, Icons.church),
+    _Dest('기록', Icons.insights_outlined, Icons.insights),
+    _Dest('더보기', Icons.more_horiz, Icons.more_horiz),
+  ];
+}
+
+class _Dest {
+  const _Dest(this.label, this.icon, this.selectedIcon);
+
+  final String label;
+  final IconData icon;
+  final IconData selectedIcon;
 }

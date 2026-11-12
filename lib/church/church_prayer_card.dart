@@ -219,12 +219,13 @@ class ChurchPrayerCard extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: size.height * 0.62),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 8, 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // 머리줄: 상태, 시간, ⋮(쉬기·전체 화면·끝내기).
                   Row(
                     children: [
                       Expanded(
@@ -252,78 +253,112 @@ class ChurchPrayerCard extends StatelessWidget {
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
+                      if (!finished) _overflowMenu(paused),
+                      if (finished) const SizedBox(width: 8),
                     ],
                   ),
-                  const SizedBox(height: 6),
                   if (finished)
-                    Text(
-                      '${controller.mysterySet.koreanName} 묵주기도를 모두 바쳤습니다. '
-                      '평화를 빕니다.',
-                      style: theme.textTheme.bodyLarge,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text(
+                        '${controller.mysterySet.koreanName} 묵주기도를 모두 바쳤습니다. '
+                        '평화를 빕니다.',
+                        style: theme.textTheme.bodyLarge,
+                      ),
                     )
                   else ...[
-                    Text(
-                      _stepLabel(step),
-                      key: const ValueKey('prayer-step'),
-                      style: theme.textTheme.titleSmall,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text(
+                        _stepLabel(step),
+                        key: const ValueKey('prayer-step'),
+                        style: theme.textTheme.titleSmall,
+                      ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      step.text,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.prayerStyle(
-                        context,
-                        settings.prayerFont,
-                        size: 15 * settings.prayerTextScale,
-                        color: scheme.onSurfaceVariant,
+                    // 기도문은 자르지 않는다(A-01). 길면 이 영역만 스크롤된다.
+                    Flexible(
+                      child: SingleChildScrollView(
+                        key: const ValueKey('prayer-text-scroll'),
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Text(
+                          step.text,
+                          key: const ValueKey('prayer-text'),
+                          style: AppTheme.prayerStyle(
+                            context,
+                            settings.prayerFont,
+                            size: 15 * settings.prayerTextScale,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                   const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (!finished) ...[
-                        OutlinedButton(
-                          onPressed: session.index == 0
-                              ? null
-                              : () {
-                                  _haptic();
-                                  session.back();
-                                },
-                          child: const Text('이전'),
-                        ),
-                        FilledButton(
-                          onPressed: () {
-                            _haptic();
-                            session.next();
-                          },
-                          child: const Text('다음'),
-                        ),
-                        FilledButton.tonal(
-                          onPressed: onTogglePause,
-                          child: Text(paused ? '이어 기도' : '잠깐 쉬기'),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!finished)
+                          // 주 동작: 큰 [다음], 옆에 작은 [이전].
+                          Row(
+                            children: [
+                              OutlinedButton(
+                                onPressed: session.index == 0
+                                    ? null
+                                    : () {
+                                        _haptic();
+                                        session.back();
+                                      },
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(64, 56),
+                                ),
+                                child: const Text('이전'),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: FilledButton(
+                                  key: const ValueKey('prayer-next'),
+                                  onPressed: () {
+                                    _haptic();
+                                    session.next();
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size(96, 56),
+                                    textStyle: theme.textTheme.titleMedium,
+                                  ),
+                                  child: const Text('다음'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (!finished) const SizedBox(height: 8),
+                        // 일어나기: 앉기 버튼이 있던 오른쪽 아래 자리.
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: finished
+                              ? FilledButton(
+                                  key: const ValueKey('prayer-stand'),
+                                  onPressed: onStand,
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size(112, 56),
+                                  ),
+                                  child: const Text('일어나기'),
+                                )
+                              : FilledButton.tonal(
+                                  key: const ValueKey('prayer-stand'),
+                                  onPressed: onStand,
+                                  style: FilledButton.styleFrom(
+                                    minimumSize: const Size(112, 48),
+                                  ),
+                                  child: const Text('일어나기'),
+                                ),
                         ),
                       ],
-                      FilledButton.tonal(
-                        onPressed: onStand,
-                        child: const Text('일어나기'),
-                      ),
-                      if (!finished)
-                        TextButton(onPressed: onEnd, child: const Text('끝내기')),
-                    ],
-                  ),
-                  if (!finished)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: onFullScreen,
-                        icon: const Icon(Icons.fullscreen),
-                        label: const Text('전체 화면으로 기도'),
-                      ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -332,4 +367,33 @@ class ChurchPrayerCard extends StatelessWidget {
       },
     );
   }
+
+  Widget _overflowMenu(bool paused) => PopupMenuButton<_CardMenu>(
+    key: const ValueKey('prayer-menu'),
+    tooltip: '더보기',
+    icon: const Icon(Icons.more_vert),
+    onSelected: (m) {
+      switch (m) {
+        case _CardMenu.pause:
+          onTogglePause();
+        case _CardMenu.fullScreen:
+          onFullScreen();
+        case _CardMenu.end:
+          onEnd();
+      }
+    },
+    itemBuilder: (context) => [
+      PopupMenuItem(
+        value: _CardMenu.pause,
+        child: Text(paused ? '이어 기도' : '잠깐 쉬기'),
+      ),
+      const PopupMenuItem(
+        value: _CardMenu.fullScreen,
+        child: Text('전체 화면으로 기도'),
+      ),
+      const PopupMenuItem(value: _CardMenu.end, child: Text('끝내기')),
+    ],
+  );
 }
+
+enum _CardMenu { pause, fullScreen, end }

@@ -34,6 +34,8 @@ abstract final class AnalyticsEvents {
       'mode',
       'resumed',
       'source',
+      'with_intent',
+      'pace',
     }),
     'decade_complete': EventSpec(ConsentKinds.usage, {'set', 'decade'}),
     'prayer_finish': EventSpec(ConsentKinds.usage, {
@@ -48,6 +50,15 @@ abstract final class AnalyticsEvents {
     'text_scale_change': EventSpec(ConsentKinds.usage, {'scale'}),
     'setting_change': EventSpec(ConsentKinds.usage, {'key'}),
     'stats_open': EventSpec(ConsentKinds.usage, {'range'}),
+    // UX 개편(R1): 온보딩·기록·알림·노베나·위젯. 값은 열거형·숫자·bool만.
+    'onboarding_step': EventSpec(ConsentKinds.usage, {'step'}),
+    'guest_link': EventSpec(ConsentKinds.usage, {'provider'}),
+    'prayed_today': EventSpec(ConsentKinds.usage, {'kind'}),
+    'reminder_change': EventSpec(ConsentKinds.usage, {'kind', 'on', 'hour'}),
+    'reminder_open': EventSpec(ConsentKinds.usage, {'kind'}),
+    'novena_start': EventSpec(ConsentKinds.usage, {'type', 'luminous'}),
+    'novena_day': EventSpec(ConsentKinds.usage, {'type', 'day', 'makeup'}),
+    'widget_tap': EventSpec(ConsentKinds.usage, {'action'}),
     // church
     'church_pick': EventSpec(ConsentKinds.church, {'church'}),
     'church_enter': EventSpec(ConsentKinds.church, {'church', 'online'}),
@@ -59,6 +70,9 @@ abstract final class AnalyticsEvents {
     'church_sit': EventSpec(ConsentKinds.church, {'church'}),
     'church_candle': EventSpec(ConsentKinds.church, {'church'}),
     'avatar_save': EventSpec(ConsentKinds.church),
+    'church_gesture': EventSpec(ConsentKinds.church, {'church', 'e'}),
+    'church_mode': EventSpec(ConsentKinds.church, {'church', 'mode', 'on'}),
+    'church_report': EventSpec(ConsentKinds.church, {'church', 'reason'}),
     // diagnostics
     'error': EventSpec(
       ConsentKinds.diagnostics,

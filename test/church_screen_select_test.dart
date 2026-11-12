@@ -73,15 +73,39 @@ void main() {
     await _reveal(tester, _card('stpeter'));
     expect(find.text('성 베드로 대성전'), findsOneWidget);
     expect(find.textContaining('실제의 '), findsWidgets);
-    // 썸네일이 없어도 색 블록 대체로 그려진다(예외 없음).
-    expect(find.byIcon(Icons.church), findsWidgets);
+    // 썸네일이 없어도 색 블록으로 대체되므로 예외가 없다.
+    expect(find.byType(Image), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('준비 중 churches are hidden unless 준비 중 보기 is on', (tester) async {
+    await _pumpSelect(tester, holder: AppSettingsHolder());
+    expect(ChurchSelectScreen.availableIds, isNot(contains('sagrada')));
+    expect(_card('sagrada'), findsNothing);
+    expect(find.text('준비 중'), findsNothing);
+    final chip = find.byKey(const ValueKey('chip-upcoming'));
+    expect(tester.widget<FilterChip>(chip).selected, isFalse);
+    await tester.ensureVisible(chip);
+    await tester.tap(chip);
+    await tester.pump();
+    expect(tester.widget<FilterChip>(chip).selected, isTrue);
+    await _reveal(tester, _card('sagrada'));
+    expect(find.text('준비 중'), findsWidgets);
+    await tester.drag(_vScroll, const Offset(0, 6000));
+    await tester.pump();
+    await tester.ensureVisible(chip);
+    await tester.tap(chip);
+    await tester.pump();
+    expect(_card('sagrada'), findsNothing);
   });
 
   testWidgets('unavailable churches are disabled with 준비 중', (tester) async {
     final h = AppSettingsHolder();
     await _pumpSelect(tester, holder: h);
-    expect(ChurchSelectScreen.availableIds, isNot(contains('sagrada')));
+    final chip = find.byKey(const ValueKey('chip-upcoming'));
+    await tester.ensureVisible(chip);
+    await tester.tap(chip);
+    await tester.pump();
     await _reveal(tester, _card('sagrada'));
     expect(
       find.descendant(of: _card('sagrada'), matching: find.text('준비 중')),
@@ -235,9 +259,14 @@ void main() {
     }
     await tester.tap(find.widgetWithText(MenuItemButton, '로마네스크·비잔틴'));
     await tester.pumpAndSettle();
+    expect(_card('jeondong'), findsNothing); // 준비 중이라 숨김
+    await tester.ensureVisible(find.byKey(const ValueKey('chip-upcoming')));
+    await tester.tap(find.byKey(const ValueKey('chip-upcoming')));
+    await tester.pumpAndSettle();
     expect(_card('jeondong'), findsOneWidget);
     expect(_card('myeongdong'), findsNothing);
 
+    await tester.ensureVisible(find.widgetWithText(FilterChip, '전체'));
     await tester.tap(find.widgetWithText(FilterChip, '전체'));
     await tester.pumpAndSettle();
     expect(_card('stpeter'), findsOneWidget);
@@ -318,7 +347,8 @@ void main() {
       tester,
     ) async {
       setView(tester, const Size(400, 800));
-      final settings = await loadSettings();
+      // 처음 방문(아직 성당에 들어간 적 없음): 바로 선택 목록이 열린다.
+      final settings = await loadSettings(avatarChosen: false);
       final net = FakeChurchNet();
       final scene = FakeChurchSceneController();
       await tester.pumpWidget(
@@ -331,6 +361,7 @@ void main() {
           ),
         ),
       );
+      expect(find.byKey(const ValueKey('entry-card')), findsNothing);
       await _reveal(tester, _card('stpeter'));
       await tester.tap(_card('stpeter'));
       await tester.pumpAndSettle();
@@ -349,6 +380,124 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(net.disconnects, 1);
       expect(find.text('성당 고르기'), findsWidgets);
+    });
+  });
+
+  group('entry card (C-02)', () {
+    Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> pumpTab(
+      WidgetTester tester, {
+      Size size = const Size(400, 800),
+      double textScale = 1.0,
+      String? last,
+    }) async {
+      setView(tester, size);
+      final settings = await loadSettings(); // 성당에 들어간 적 있음
+      if (last != null) settings.churchId = last;
+      final net = FakeChurchNet();
+      final scene = FakeChurchSceneController();
+      await tester.pumpWidget(
+        wrapApp(
+          ChurchTab(
+            settings: settings,
+            net: net,
+            scene: scene,
+            availableIds: const {'basic', 'stpeter', 'myeongdong'},
+          ),
+          textScale: textScale,
+        ),
+      );
+      await tester.pump();
+      return (settings, net, scene);
+    }
+
+    testWidgets('returning visit shows the last church with 입장', (
+      tester,
+    ) async {
+      await pumpTab(tester, last: 'myeongdong');
+      expect(find.byKey(const ValueKey('entry-card')), findsOneWidget);
+      expect(find.text('명동대성당'), findsOneWidget);
+      expect(find.textContaining('서울'), findsOneWidget);
+      expect(find.byType(Image), findsOneWidget); // 썸네일
+      final enter = find.byKey(const ValueKey('entry-enter'));
+      final pick = find.byKey(const ValueKey('entry-pick'));
+      expect(find.text('다른 성당 고르기'), findsOneWidget);
+      // 입장이 더 크고 위에 있다.
+      expect(
+        tester.getSize(enter).height,
+        greaterThan(tester.getSize(pick).height),
+      );
+      expect(tester.getTopLeft(enter).dy, lessThan(tester.getTopLeft(pick).dy));
+      expect(find.text('성당 고르기'), findsNothing);
+    });
+
+    testWidgets('입장 enters the last church without picking again', (
+      tester,
+    ) async {
+      final (_, net, scene) = await pumpTab(tester, last: 'myeongdong');
+      await tester.tap(find.byKey(const ValueKey('entry-enter')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      scene.emit(const SceneReady());
+      await tester.pump();
+      expect(net.connectedIds, ['myeongdong']);
+      expect(scene.lastArgs('init')!['church'], 'myeongdong');
+    });
+
+    testWidgets('다른 성당 고르기 opens the list; back and 성당 바꾸기 work', (
+      tester,
+    ) async {
+      final (settings, net, scene) = await pumpTab(tester, last: 'stpeter');
+      await tester.tap(find.byKey(const ValueKey('entry-pick')));
+      await tester.pumpAndSettle();
+      expect(find.text('성당 고르기'), findsWidgets);
+      expect(find.byKey(const ValueKey('entry-card')), findsNothing);
+      // 뒤로 가면 마지막 성당 카드.
+      await tester.tap(find.byKey(const ValueKey('select-back')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('entry-card')), findsOneWidget);
+      // 다시 목록에서 다른 성당을 골라 입장하면 그 성당이 마지막 성당이 된다.
+      await tester.tap(find.byKey(const ValueKey('entry-pick')));
+      await tester.pumpAndSettle();
+      await _reveal(tester, _card('basic'));
+      await tester.tap(_card('basic'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, '입장'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      scene.emit(const SceneReady());
+      await tester.pump();
+      expect(net.connectedIds, ['basic']);
+      expect(settings.churchId, 'basic');
+      // HUD 의 성당 바꾸기 → 목록.
+      await tester.tap(find.byTooltip('성당 바꾸기'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('성당 고르기'), findsWidgets);
+    });
+
+    testWidgets('an unavailable last church falls back to an available one', (
+      tester,
+    ) async {
+      await pumpTab(tester, last: 'sagrada');
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('entry-name'))).data,
+        '우리 본당',
+      );
+    });
+
+    testWidgets('no overflow at 360x640 text scale 2.0', (tester) async {
+      await pumpTab(
+        tester,
+        size: const Size(360, 640),
+        textScale: 2.0,
+        last: 'stpeter',
+      );
+      expect(tester.takeException(), isNull);
+      final enter = find.byKey(const ValueKey('entry-enter'));
+      await tester.ensureVisible(enter);
+      await tester.pump();
+      expect(tester.getSize(enter).height, greaterThanOrEqualTo(48));
+      expect(tester.takeException(), isNull);
     });
   });
 
@@ -376,7 +525,7 @@ void main() {
         find.descendant(of: bar, matching: find.text('성당')),
         findsOneWidget,
       );
-      expect(find.byIcon(Icons.church), findsOneWidget);
+      expect(find.byIcon(Icons.church_outlined), findsOneWidget);
       expect(built, 0);
 
       await tester.tap(find.descendant(of: bar, matching: find.text('성당')));
@@ -385,7 +534,7 @@ void main() {
       expect(find.text('PROBE'), findsOneWidget);
 
       // 다른 탭으로 가면 성당 화면은 정리된다.
-      await tester.tap(find.descendant(of: bar, matching: find.text('설정')));
+      await tester.tap(find.descendant(of: bar, matching: find.text('오늘')));
       await tester.pumpAndSettle();
       expect(disposed, 1);
       expect(find.text('PROBE'), findsNothing);

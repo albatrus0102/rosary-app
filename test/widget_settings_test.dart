@@ -101,7 +101,7 @@ void main() {
     );
     await tester.pump();
 
-    for (final title in ['소리 · 진동', '기도문 표시', '선창 음성', '정보']) {
+    for (final title in ['소리 · 진동', '기도 화면', '선창 음성', '정보']) {
       expect(find.text(title), findsWidgets, reason: title);
     }
     expect(find.text('설정'), findsWidgets);
@@ -112,6 +112,12 @@ void main() {
     await tester.tap(find.text('넘길 때 진동'));
     await tester.pump();
     expect(settings.hapticOnAdvance, isFalse);
+
+    // P-02: 볼륨 키로 넘기기는 기본 꺼짐.
+    expect(settings.volumeKeyAdvance, isFalse);
+    await tester.tap(find.text('볼륨 키로 넘기기'));
+    await tester.pump();
+    expect(settings.volumeKeyAdvance, isTrue);
 
     expect(find.text('음성 인식'), findsNothing);
     expect(find.text('마이크 테스트'), findsNothing);
@@ -298,9 +304,10 @@ void main() {
     expect(find.byType(SegmentedButton<LeaderVoiceSource>), findsOneWidget);
 
     // 화자 선택 단추와 안내 문구.
-    expect(find.text('수녀님 목소리'), findsOneWidget);
-    expect(find.text('신부님 목소리'), findsOneWidget);
+    expect(find.text('여성 목소리(AI)'), findsOneWidget);
+    expect(find.text('남성 목소리(AI)'), findsOneWidget);
     expect(find.text(aiVoiceDisclosure), findsNWidgets(2)); // 설명 + 정보
+    expect(find.text(aiVoiceNotice), findsOneWidget); // D-01 한 줄 고지
     expect(find.text('자연스러운 음성 파일 0개 / 26개'), findsOneWidget);
     expect(find.text('아직 음성 파일이 없어 기기 음성으로 읽어 드려요'), findsOneWidget);
     expect(find.text('26개 미만이면', skipOffstage: false), findsNothing);
@@ -313,7 +320,7 @@ void main() {
     await tester.pump();
     expect(spoken, ['sister:hail_mary']);
 
-    await tester.tap(find.text('신부님 목소리'));
+    await tester.tap(find.text('남성 목소리(AI)'));
     await tester.pumpAndSettle();
     expect(settings.leaderPersona, LeaderVoicePersona.priest);
     await tester.tap(find.text('미리 듣기'));
@@ -345,8 +352,8 @@ void main() {
     expect(find.text('아직 음성 파일이 없어 기기 음성으로 읽어 드려요'), findsNothing);
     expect(find.text('26개 미만이면 부족한 부분은 기기 음성으로 읽어요'), findsOneWidget);
 
-    // 신부님은 26개가 다 있다: 개수만 보이고 안내는 사라진다.
-    await tester.tap(find.text('신부님 목소리'));
+    // 남성 목소리는 26개가 다 있다: 개수만 보이고 안내는 사라진다.
+    await tester.tap(find.text('남성 목소리(AI)'));
     await tester.pumpAndSettle();
     expect(find.text('자연스러운 음성 파일 26개 / 26개'), findsOneWidget);
     expect(find.text('26개 미만이면 부족한 부분은 기기 음성으로 읽어요'), findsNothing);
@@ -356,7 +363,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
     expect(find.text('말하기 속도'), findsOneWidget);
-    expect(find.text('수녀님 목소리'), findsNothing);
+    expect(find.text('여성 목소리(AI)'), findsNothing);
   });
 
   testWidgets('settings: leader voice switch hides controls', (tester) async {

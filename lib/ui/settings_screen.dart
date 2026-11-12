@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../app/app_services.dart';
 import '../app/bundled_leader_voice.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
@@ -10,15 +9,13 @@ import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
-import '../auth/account_screen.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
-import '../stats/stats_screen.dart';
 import 'leader_record_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 
-/// 설정 화면: 소리·진동, 기도문 표시, 선창 음성, 정보.
+/// 설정 화면: 소리·진동, 기도 화면(기도문 표시), 선창 음성, 정보. 더보기에서 연다.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
@@ -170,7 +167,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSoundSection(context),
                   _buildDisplaySection(context),
                   _buildLeaderSection(context),
-                  _buildAccountSection(context),
                   _buildAboutSection(context),
                 ],
               ),
@@ -246,8 +242,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final serif = settings.prayerFont == PrayerFont.serif;
     final baseSize = serif ? 25.0 : 24.0;
     return _Section(
-      title: '기도문 표시',
+      title: '기도 화면',
       children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.volume_down_outlined),
+          title: const Text('볼륨 키로 넘기기'),
+          subtitle: const Text('기도 화면에서 볼륨 ↓ 다음, ↑ 이전. 화면을 보지 않고 바칠 때 편해요'),
+          value: settings.volumeKeyAdvance,
+          onChanged: (v) {
+            settings.volumeKeyAdvance = v;
+            Track.setting('volume_key');
+          },
+        ),
         SwitchListTile(
           secondary: const Icon(Icons.palette_outlined),
           title: const Text('기기 배경화면 색 사용(Material You)'),
@@ -312,7 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           slider: Slider(
             min: AppSettings.minTextScale,
             max: AppSettings.maxTextScale,
-            divisions: 15,
+            divisions: 23,
             label: '${(scale * 100).round()}%',
             semanticFormatterCallback: (v) => '${(v * 100).round()}%',
             value: scale,
@@ -536,6 +542,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: AppSpace.xs),
               Text(aiVoiceDisclosure, style: dim),
+              const SizedBox(height: AppSpace.xxs),
+              Text(aiVoiceNotice, style: dim),
               const SizedBox(height: AppSpace.sm),
               if (usesFallback) _koreanWarning(context, _ensureTts()),
               if (count != null) ...[
@@ -602,53 +610,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // (d) 계정·기도 기록. 서비스가 없거나 백엔드가 설정되지 않으면 '계정'은 숨긴다.
-  Widget _buildAccountSection(BuildContext context) {
-    final services = AppServicesScope.maybeOf(context);
-    if (services == null) return const SizedBox.shrink();
-    return _Section(
-      title: '계정 · 기록',
-      children: [
-        if (services.backendConfigured)
-          ListenableBuilder(
-            listenable: services.auth.state,
-            builder: (context, _) {
-              final s = services.auth.state.value;
-              return ListTile(
-                leading: const Icon(Icons.account_circle_outlined),
-                title: const Text('계정'),
-                subtitle: Text(
-                  s.isSignedIn ? (s.provider?.label ?? '로그인됨') : '로그인하지 않음',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    settings: const RouteSettings(name: 'account'),
-                    builder: (_) => AccountScreen(
-                      authService: services.auth,
-                      consentStore: services.consent,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ListTile(
-          leading: const Icon(Icons.insights_outlined),
-          title: const Text('기도 기록'),
-          subtitle: const Text('바친 묵주기도와 연속 기도 일수'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              settings: const RouteSettings(name: 'stats'),
-              builder: (_) => StatsScreen(store: services.stats),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

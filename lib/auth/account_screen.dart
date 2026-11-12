@@ -9,6 +9,7 @@ import 'auth_state.dart';
 import 'auth_widgets.dart';
 import 'consent_detail_sheet.dart';
 import 'consent_store.dart';
+import 'guest_link_card.dart';
 import 'legal_screen.dart';
 import 'legal_texts.dart';
 
@@ -29,8 +30,8 @@ String _revokedDataName(String kind) => switch (kind) {
   _ => '데이터',
 };
 
-/// 설정 > 계정: 프로필, 선택 동의 관리, 내 데이터 내려받기, 약관 링크, 로그아웃,
-/// 계정 삭제.
+/// 더보기 > 계정: 프로필(게스트이면 '기록 지키기' 카드), 선택 동의 관리, 내 데이터 내려받기,
+/// 약관 링크, 로그아웃, 계정 삭제. 로그인은 여기서 연결하는 것이 유일한 진입점이다.
 class AccountScreen extends StatefulWidget {
   const AccountScreen({
     super.key,
@@ -98,8 +99,13 @@ class _AccountScreenState extends State<AccountScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('로그아웃할까요?'),
-        content: const Text('다시 로그인하면 이어서 쓸 수 있어요.'),
+        title: Text(_auth.current.isAnonymous ? '게스트 기록을 지울까요?' : '로그아웃할까요?'),
+        content: Text(
+          _auth.current.isAnonymous
+              ? '게스트는 이 기기의 로그인 정보에 묶여 있어요. 지금 로그아웃하면 이 기록은 다시 볼 수 없고, '
+                    '새 게스트로 다시 시작하게 돼요. 기록을 지키려면 먼저 \'기록 지키기\'로 계정을 연결하세요.'
+              : '다시 로그인하면 이어서 쓸 수 있어요.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -120,6 +126,18 @@ class _AccountScreenState extends State<AccountScreen> {
       nav.popUntil((r) => r.isFirst);
     } on AuthFailure catch (e) {
       if (mounted) showAuthSnack(context, e.message);
+    }
+  }
+
+  Future<void> _reconnect() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await _auth.signInAnonymously();
+    } on AuthFailure catch (e) {
+      if (mounted) showAuthSnack(context, e.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -179,7 +197,11 @@ class _AccountScreenState extends State<AccountScreen> {
                                   radius: 24,
                                   backgroundColor: scheme.primaryContainer,
                                   foregroundColor: scheme.onPrimaryContainer,
-                                  child: Icon(providerIcon(s.provider)),
+                                  child: Icon(
+                                    s.isAnonymous
+                                        ? Icons.person_outline
+                                        : providerIcon(s.provider),
+                                  ),
                                 ),
                                 const SizedBox(width: AppSpace.sm),
                                 Expanded(
@@ -188,13 +210,24 @@ class _AccountScreenState extends State<AccountScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        s.email ?? '소셜 계정',
+                                        s.isAnonymous
+                                            ? '게스트'
+                                            : s.isSignedIn
+                                            ? (s.email ?? '소셜 계정')
+                                            : '서버에 연결되지 않음',
                                         key: const Key('account-title'),
                                         style: text.titleMedium,
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 2,
                                       ),
-                                      if (s.provider != null)
+                                      if (s.isAnonymous)
+                                        Text(
+                                          '로그인 없이 쓰는 중이에요',
+                                          style: text.bodyMedium?.copyWith(
+                                            color: scheme.onSurfaceVariant,
+                                          ),
+                                        )
+                                      else if (s.provider != null)
                                         Text(
                                           '${s.provider!.label}로 로그인',
                                           style: text.bodyMedium?.copyWith(
@@ -208,44 +241,77 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppSpace.sm),
-                        _header(context, '선택 동의'),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpace.sm,
+                        if (s.isAnonymous) ...[
+                          const SizedBox(height: AppSpace.sm),
+                          GuestLinkCard(
+                            authService: _auth,
+                            consentStore: _consents,
                           ),
-                          child: Text(
-                            '켠 항목만 서버로 전송돼요. 끄면 그 항목의 서버 데이터가 삭제돼요. '
-                            '$consentRefusalLine',
-                            style: text.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
+                        ],
+                        if (s.isSignedOut) ...[
+                          const SizedBox(height: AppSpace.sm),
+                          Card.outlined(
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpace.sm),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    '인터넷에 연결되면 게스트로 시작돼요. 그때까지 기록은 이 기기에만 저장돼요.',
+                                    style: text.bodyMedium,
+                                  ),
+                                  const SizedBox(height: AppSpace.xs),
+                                  FilledButton(
+                                    key: const Key('account-reconnect'),
+                                    onPressed: _busy ? null : _reconnect,
+                                    child: const Text('다시 연결'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpace.xs),
-                        Card.outlined(
-                          child: Column(
-                            children: [
-                              for (final kind in ConsentKind.optional)
-                                _consentRow(context, kind),
-                            ],
+                        ],
+                        if (s.isSignedIn) ...[
+                          const SizedBox(height: AppSpace.sm),
+                          _header(context, '선택 동의'),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpace.sm,
+                            ),
+                            child: Text(
+                              '켠 항목만 서버로 전송돼요. 끄면 그 항목의 서버 데이터가 삭제돼요. '
+                              '$consentRefusalLine',
+                              style: text.bodyMedium?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: AppSpace.xs),
+                          Card.outlined(
+                            child: Column(
+                              children: [
+                                for (final kind in ConsentKind.optional)
+                                  _consentRow(context, kind),
+                              ],
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: AppSpace.sm),
                         _header(context, '내 정보'),
                         Card.outlined(
                           child: Column(
                             children: [
-                              ListTile(
-                                key: const Key('account-export'),
-                                leading: const Icon(Icons.download_outlined),
-                                title: const Text('내 데이터 내려받기'),
-                                subtitle: const Text(
-                                  '서버에 저장된 내 정보를 JSON으로 보여 드려요.',
+                              if (s.isSignedIn)
+                                ListTile(
+                                  key: const Key('account-export'),
+                                  leading: const Icon(Icons.download_outlined),
+                                  title: const Text('내 데이터 내려받기'),
+                                  subtitle: const Text(
+                                    '서버에 저장된 내 정보를 JSON으로 보여 드려요.',
+                                  ),
+                                  enabled: !_busy,
+                                  onTap: _export,
                                 ),
-                                enabled: !_busy,
-                                onTap: _export,
-                              ),
                               ListTile(
                                 key: const Key('account-privacy'),
                                 leading: const Icon(Icons.privacy_tip_outlined),
@@ -267,35 +333,37 @@ class _AccountScreenState extends State<AccountScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: AppSpace.sm),
-                        _header(context, '계정 관리'),
-                        Card.outlined(
-                          child: Column(
-                            children: [
-                              ListTile(
-                                key: const Key('account-logout'),
-                                leading: const Icon(Icons.logout),
-                                title: const Text('로그아웃'),
-                                enabled: !_busy,
-                                onTap: _logout,
-                              ),
-                              ListTile(
-                                key: const Key('account-delete'),
-                                leading: Icon(
-                                  Icons.delete_forever_outlined,
-                                  color: scheme.error,
+                        if (s.isSignedIn) ...[
+                          const SizedBox(height: AppSpace.sm),
+                          _header(context, '계정 관리'),
+                          Card.outlined(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  key: const Key('account-logout'),
+                                  leading: const Icon(Icons.logout),
+                                  title: const Text('로그아웃'),
+                                  enabled: !_busy,
+                                  onTap: _logout,
                                 ),
-                                title: Text(
-                                  '계정 삭제',
-                                  style: TextStyle(color: scheme.error),
+                                ListTile(
+                                  key: const Key('account-delete'),
+                                  leading: Icon(
+                                    Icons.delete_forever_outlined,
+                                    color: scheme.error,
+                                  ),
+                                  title: Text(
+                                    '계정 삭제',
+                                    style: TextStyle(color: scheme.error),
+                                  ),
+                                  subtitle: const Text('계정과 서버의 모든 데이터가 삭제돼요.'),
+                                  enabled: !_busy,
+                                  onTap: _deleteAccount,
                                 ),
-                                subtitle: const Text('계정과 서버의 모든 데이터가 삭제돼요.'),
-                                enabled: !_busy,
-                                onTap: _deleteAccount,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     );
                   },

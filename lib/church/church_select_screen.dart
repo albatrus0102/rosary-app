@@ -48,6 +48,7 @@ class ChurchSelectScreen extends StatefulWidget {
     required this.settings,
     required this.onEnter,
     this.available,
+    this.onBack,
   });
 
   /// 내부 3D 모형이 준비된 성당 id. 새 성당 내부가 들어올 때마다 늘린다.
@@ -69,6 +70,9 @@ class ChurchSelectScreen extends StatefulWidget {
 
   /// 테스트용: [availableIds] 대신 쓸 가용 목록.
   final Set<String>? available;
+
+  /// 마지막 성당 카드로 돌아가기(있으면 머리글에 뒤로 가기 버튼이 보인다).
+  final VoidCallback? onBack;
 
   /// 목록을 걸러 정렬한다(즐겨찾기가 항상 먼저, 같은 즐겨찾기 상태 안에서는 정렬 기준대로).
   static List<ChurchInfo> arrange(
@@ -116,6 +120,9 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
   String? _region;
   String? _style;
   ChurchSort _sort = ChurchSort.recommended;
+
+  /// '준비 중 보기': 켜야만 아직 3D 모형이 없는 성당이 목록에 나온다(C-02).
+  bool _showUpcoming = false;
 
   Set<String> get _available =>
       widget.available ?? ChurchSelectScreen.availableIds;
@@ -172,7 +179,10 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
         listenable: widget.settings,
         builder: (context, _) {
           final items = ChurchSelectScreen.arrange(
-            ChurchCatalog.all,
+            [
+              for (final c in ChurchCatalog.all)
+                if (_showUpcoming || _available.contains(c.id)) c,
+            ],
             query: _query,
             region: _region,
             style: _style,
@@ -181,7 +191,7 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
           );
           return CustomScrollView(
             slivers: [
-              const SliverToBoxAdapter(child: _Hero()),
+              SliverToBoxAdapter(child: _Hero(onBack: widget.onBack)),
               SliverToBoxAdapter(child: _searchBar()),
               SliverToBoxAdapter(child: _filterRow()),
               if (items.isEmpty)
@@ -293,6 +303,15 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
             onSelected: (v) => setState(() => _style = v),
           ),
           const SizedBox(width: 8),
+          FilterChip(
+            key: const ValueKey('chip-upcoming'),
+            avatar: const Icon(Icons.hourglass_empty),
+            label: const Text('준비 중 보기'),
+            selected: _showUpcoming,
+            showCheckmark: false,
+            onSelected: (v) => setState(() => _showUpcoming = v),
+          ),
+          const SizedBox(width: 8),
           _MenuChip<ChurchSort>(
             key: const ValueKey('chip-sort'),
             icon: Icons.swap_vert,
@@ -352,7 +371,9 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
 
 /// 부드러운 그라데이션 히어로 헤더.
 class _Hero extends StatelessWidget {
-  const _Hero();
+  const _Hero({this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -380,8 +401,24 @@ class _Hero extends StatelessWidget {
                 color: scheme.onPrimaryContainer.withValues(alpha: 0.12),
               ),
             ),
+            if (onBack != null)
+              Positioned(
+                left: 4,
+                top: 4,
+                child: IconButton(
+                  key: const ValueKey('select-back'),
+                  tooltip: '마지막 성당으로',
+                  onPressed: onBack,
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                onBack != null ? 48 : 32,
+                24,
+                28,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

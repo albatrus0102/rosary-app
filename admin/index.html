@@ -49,7 +49,14 @@
       </div>
     </header>
 
-    <main class="wrap">
+    <nav class="tabs" aria-label="관리자 메뉴">
+      <div class="tabs-inner" role="tablist">
+        <button type="button" role="tab" id="tab-analytics" class="tab on" aria-selected="true" aria-controls="analytics-view" data-tab="analytics">분석</button>
+        <button type="button" role="tab" id="tab-roadmap" class="tab" aria-selected="false" aria-controls="roadmap-view" data-tab="roadmap">로드맵</button>
+      </div>
+    </nav>
+
+    <main class="wrap" id="analytics-view" role="tabpanel" aria-labelledby="tab-analytics">
       <p class="muted small-text note">모든 수치는 한국 시간(KST) 기준 집계이며, 개인별 데이터는 표시되지 않습니다. 사용 지표는 '화면·기능 사용 분석'에 동의한 사용자만 포함됩니다.</p>
 
       <section aria-labelledby="h-kpi">
@@ -113,12 +120,35 @@
         </section>
       </div>
     </main>
+
+    <main class="wrap" id="roadmap-view" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
+      <div id="rm-banner" class="rm-banner" role="status" hidden></div>
+      <section aria-labelledby="h-rm-sum">
+        <h2 id="h-rm-sum">진행 요약 <span class="tag" id="rm-sub"></span></h2>
+        <div id="rm-summary" class="rm-summary"></div>
+      </section>
+      <section class="card rm-filters" aria-label="로드맵 필터">
+        <label>검색<input id="rm-q" type="search" placeholder="ID·제목·메모 검색" autocomplete="off"></label>
+        <label>릴리스<select id="rm-f-release" class="rm-select"></select></label>
+        <label>우선순위<select id="rm-f-priority" class="rm-select"></select></label>
+        <label>분류<select id="rm-f-category" class="rm-select"></select></label>
+        <label>상태<select id="rm-f-status" class="rm-select"></select></label>
+        <button type="button" id="rm-reset" class="btn">필터 초기화</button>
+      </section>
+      <div id="rm-board" class="rm-board" data-state="loading"></div>
+      <section class="card" aria-labelledby="h-rm-dec">
+        <h2 id="h-rm-dec">결정 사항 <span class="tag">Q1~Q8 · 권장 기본값을 모두 채택</span></h2>
+        <div id="rm-decisions"></div>
+      </section>
+      <p class="muted small-text note">근거와 전체 설명: <code>docs/ux/UX_PLAN.md</code> (4장 개선 과제 목록, 6장 로드맵, 7장 열린 질문). 상태·메모는 관리자만 바꿀 수 있고 즉시 저장됩니다.</p>
+    </main>
   </div>
 </div>
 <div id="tip" class="tip" hidden></div>
 
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="roadmap.js"></script>
 <script src="admin.js"></script>
 </body>
 </html>

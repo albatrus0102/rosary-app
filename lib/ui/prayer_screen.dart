@@ -19,6 +19,8 @@ import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
+import '../stats/prayer_stats_store.dart';
+import '../stats/stats_screen.dart';
 import 'widgets/pill.dart';
 import 'widgets/rosary_map.dart';
 import 'widgets/soft_card.dart';
@@ -34,6 +36,7 @@ class PrayerScreen extends StatefulWidget {
     this.leaderAudio,
     this.leaderVoice,
     this.session,
+    this.onOpenStats,
   });
 
   final AppSettings settings;
@@ -55,6 +58,10 @@ class PrayerScreen extends StatefulWidget {
   /// 이미 진행 중인 세션(사이버 성당 등). 주어지면 이 세션을 이어서 쓰고,
   /// 화면이 닫혀도 정리(dispose)하지 않는다. [initialIndex]는 무시한다.
   final RosarySession? session;
+
+  /// 완료 화면의 '기록 보기'. 기도 화면을 닫은 뒤 부른다(셸이 '기록' 탭으로 이동).
+  /// 없으면 기록 화면을 새 라우트로 연다(기록 서비스가 있을 때만 버튼이 보인다).
+  final VoidCallback? onOpenStats;
 
   @override
   State<PrayerScreen> createState() => _PrayerScreenState();
@@ -127,6 +134,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
     _eventSub = _session.events.listen(_onSessionEvent);
     _session.addListener(_onProgress);
+    HardwareKeyboard.instance.addHandler(_onKey);
 
     if (_leaderAudioActive) {
       _setUpLeaderVoice();
@@ -207,28 +215,64 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
+  /// 눈을 감고 바쳐도 구슬 종류를 손끝으로 알 수 있게 진동 세기를 나눈다(P-02).
+  /// 성모송 구슬은 약하게, 주님의 기도·영광송 등 큰 구슬은 중간, 단의 끝·마침은 강하게.
+  /// 이벤트 직후 [RosarySession.current]는 **도착한** 구슬이다.
+  Future<void> Function() _hapticFor(SessionEvent e) {
+    switch (e) {
+      case SessionEvent.finished:
+      case SessionEvent.decadeCompleted:
+        return HapticFeedback.heavyImpact;
+      case SessionEvent.hailMarysCompleted:
+        return HapticFeedback.mediumImpact;
+      case SessionEvent.bead:
+        return _session.current.kind == StepKind.hailMary
+            ? HapticFeedback.lightImpact
+            : HapticFeedback.mediumImpact;
+    }
+  }
+
   void _onSessionEvent(SessionEvent e) {
+    _haptic(_hapticFor(e));
     switch (e) {
       case SessionEvent.hailMarysCompleted:
-        _haptic(HapticFeedback.mediumImpact);
         _sound.volume = _settings.chimeVolume;
         if (_settings.chimeOnTenHailMarys) unawaited(_sound.playDecadeChime());
       case SessionEvent.bead:
-        _haptic(HapticFeedback.selectionClick);
         _sound.volume = _settings.chimeVolume;
         if (_settings.tickPerBead) unawaited(_sound.playBeadTick());
       case SessionEvent.decadeCompleted:
-        _haptic(HapticFeedback.mediumImpact);
         _sound.volume = _settings.chimeVolume;
         if (_settings.tickPerBead) unawaited(_sound.playBeadTick());
       case SessionEvent.finished:
-        _haptic(HapticFeedback.heavyImpact);
+        break;
     }
+  }
+
+  /// 볼륨 키로 넘기기(설정, 기본 꺼짐). 별도 네이티브 코드 없이 Flutter 키 이벤트로 받는다.
+  /// 볼륨 ↓ 다음, ↑ 이전. 켜져 있고 이 화면이 맨 위일 때만 키를 가로채(시스템 볼륨은 그대로)
+  /// 넘긴다. 다른 화면·시트·꺼짐 상태에서는 아무것도 하지 않아 평소처럼 볼륨이 바뀐다.
+  bool _onKey(KeyEvent event) {
+    if (!_settings.volumeKeyAdvance || _session.isFinished) return false;
+    final route = ModalRoute.of(context);
+    if (route == null || !route.isCurrent) return false;
+    final key = event.logicalKey;
+    final next = key == LogicalKeyboardKey.audioVolumeDown;
+    if (!next && key != LogicalKeyboardKey.audioVolumeUp) return false;
+    if (event is KeyDownEvent) {
+      if (next) {
+        _session.next();
+      } else {
+        _session.back();
+      }
+    }
+    return true; // 누르고 있는 반복 입력도 삼켜 볼륨이 바뀌지 않게 한다.
   }
 
   @override
   void dispose() {
     _disposed = true;
+    HardwareKeyboard.instance.removeHandler(_onKey);
     _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     _session.removeListener(_onSessionChanged);
     _session.removeListener(_onProgress);
@@ -325,7 +369,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                           value: scale,
                           min: AppSettings.minTextScale,
                           max: AppSettings.maxTextScale,
-                          divisions: 15,
+                          divisions: 23,
                           label: '${(scale * 100).round()}%',
                           semanticFormatterCallback: (v) =>
                               '글자 크기 ${(v * 100).round()}%',
@@ -435,9 +479,51 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _session.restart();
   }
 
+  /// '기록 보기': 기도 화면을 닫고 셸의 기록 탭으로. 셸 없이 열렸으면 기록 화면을 대신 연다.
+  void _openStats(AppServices services) {
+    final navigator = Navigator.of(context);
+    final callback = widget.onOpenStats;
+    if (callback != null) {
+      navigator.pop();
+      callback();
+      return;
+    }
+    unawaited(
+      navigator.pushReplacement(
+        MaterialPageRoute<void>(
+          settings: const RouteSettings(name: 'stats'),
+          builder: (_) => StatsScreen(store: services.stats),
+        ),
+      ),
+    );
+  }
+
+  /// '기록됨 · 이번 달 n번째'. 점수·순위 없이 이번 달 완주 횟수만 보여 준다.
+  Widget _buildRecordedLine(BuildContext context, PrayerStatsStore stats) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return ListenableBuilder(
+      listenable: stats,
+      builder: (context, _) {
+        final now = DateTime.now();
+        final n = stats.calc.completedInMonth(now.year, now.month);
+        final text = n > 0 ? '기록됨 · 이번 달 $n번째' : '기록됨';
+        return Text(
+          text,
+          key: const ValueKey('finished-recorded'),
+          style: theme.textTheme.titleMedium?.copyWith(color: scheme.primary),
+          textAlign: TextAlign.center,
+        );
+      },
+    );
+  }
+
   Widget _buildFinished(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final services = AppServicesScope.maybeOf(context);
+    // 기록은 이 화면이 세션 주인일 때만 남는다(성당 기도 카드가 연 화면은 카드가 기록).
+    final recorded = services != null && _tracking != null;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -482,16 +568,31 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 36),
-              FilledButton(
+              if (recorded) ...[
+                const SizedBox(height: AppSpace.sm),
+                _buildRecordedLine(context, services.stats),
+              ],
+              const SizedBox(height: 32),
+              if (services != null) ...[
+                FilledButton(
+                  key: const ValueKey('finished-open-stats'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(64, 56),
+                  ),
+                  onPressed: () => _openStats(services),
+                  child: const Text('기록 보기'),
+                ),
+                const SizedBox(height: 12),
+              ],
+              FilledButton.tonal(
+                key: const ValueKey('finished-close'),
+                style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('처음으로'),
+                child: const Text('닫기'),
               ),
               const SizedBox(height: 12),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(64, 56),
-                ),
+              TextButton(
+                style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
                 onPressed: _restartPrayer,
                 child: const Text('다시 기도하기'),
               ),

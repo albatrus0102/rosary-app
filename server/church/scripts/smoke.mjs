@@ -6,7 +6,8 @@ import WebSocket from 'ws';
 const base = (process.argv[2] || process.env.CHURCH_URL || 'http://127.0.0.1:8787').replace(/\/$/, '');
 const church = process.argv[3] || 'basic';
 const room = `${church}-${1 + Math.floor(Math.random() * 40)}`; // 반복 실행해도 서로 간섭하지 않게
-const wsUrl = base.replace(/^http/, 'ws') + `/ws?room=${room}&v=1`;
+// pin=1: 샤딩(방 자동 배정)을 우회해 지정한 방에 직접 접속한다. 배정 시험은 아래 별도 구간에서 한다.
+const wsUrl = base.replace(/^http/, 'ws') + `/ws?room=${room}&v=1&pin=1`;
 
 let failures = 0;
 function check(name, ok, extra = '') {
@@ -23,9 +24,12 @@ class Client {
     this.msgs = [];
     this.waiters = [];
   }
-  connect() {
+  connect(url = wsUrl) {
     return new Promise((resolve, reject) => {
-      this.ws = new WebSocket(wsUrl);
+      this.ws = new WebSocket(url);
+      this.ws.on('upgrade', (res) => {
+        this.upgradeRoom = res.headers['x-church-room'] || null;
+      });
       this.ws.on('open', resolve);
       this.ws.on('error', reject);
       this.ws.on('message', (data) => {
@@ -203,6 +207,33 @@ async function main() {
   check('B 퇴장 → A가 leave n=1 수신', !!lb);
   a.close();
   await sleep(200);
+
+  // ---------------------------------------------------------------- 샤딩(S-01): 방 자동 배정과 합산 현황
+  const wsBase = base.replace(/^http/, 'ws');
+  const legacyUrl = `${wsBase}/ws?room=${church}-1&v=1`; // 기존 앱 형식: 방 번호는 서버가 정한다
+  const newUrl = `${wsBase}/ws?church=${church}&client=${uuid()}`; // 새 형식(v 생략 가능)
+  const before = await fetch(base + '/stats').then((r) => r.json()).catch(() => null);
+  check('/stats 형식', before && before.ok === true && before.tz === 'Asia/Seoul' && before.total && typeof before.total.live === 'number' && before.churches[church], JSON.stringify(before));
+  const baseLive = before ? before.churches[church].live : 0;
+  const shard = [];
+  for (const [i, url] of [legacyUrl, legacyUrl, newUrl].entries()) {
+    const x = new Client('S' + i);
+    await x.connect(url);
+    x.send({ t: 'hello', id: x.id, v: 1, avatar: avatarA });
+    shard.push(x);
+  }
+  const sw = await Promise.all(shard.map((x) => x.waitFor((m) => m.t === 'welcome')));
+  const rooms = sw.map((w) => w && w.room);
+  check('배정된 방 이름 형식 <church>-N', rooms.every((r) => typeof r === 'string' && new RegExp(`^${church}-[0-9]+$`).test(r)), JSON.stringify(rooms));
+  check('같은 성당 3명이 같은 방에 모임(가장 찬 방 우선)', new Set(rooms).size === 1, JSON.stringify(rooms));
+  check('업그레이드 응답 헤더 x-church-room == welcome.room', shard.every((x, i) => x.upgradeRoom === rooms[i]), JSON.stringify(shard.map((x) => x.upgradeRoom)));
+  check('welcome.presence 포함(추가 필드)', sw.every((w) => w && w.presence && typeof w.presence.n === 'number'), JSON.stringify(sw[0]));
+  const pres = await shard[0].waitFor((m) => m.t === 'presence' && m.n >= baseLive + 3, 4000);
+  check('presence 메시지(성당 합산 n)', !!pres && typeof pres.praying === 'number' && typeof pres.candlesToday === 'number', JSON.stringify(shard[0].msgs.filter((m) => m.t === 'presence')));
+  await sleep(5500); // /stats 는 Worker 안에서 5초 캐시된다
+  const after = await fetch(base + '/stats').then((r) => r.json()).catch(() => null);
+  check('/stats live 이 접속 수를 반영', after && after.churches[church].live >= baseLive + 3, JSON.stringify(after && after.churches[church]));
+  for (const x of shard) x.close();
 
   console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAIL`);
   process.exit(failures === 0 ? 0 : 1);
