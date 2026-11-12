@@ -12,17 +12,29 @@ import 'package:rosary_app/church/avatar/avatar_editor_screen.dart';
 import 'package:rosary_app/church/avatar/avatar_preview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const out = '/tmp/claude-0/-home-user/127c52ad-6e6f-576e-8168-2e8eda5aa1ed/scratchpad/avatar_shots';
+const out =
+    '/tmp/claude-0/-home-user/127c52ad-6e6f-576e-8168-2e8eda5aa1ed/scratchpad/avatar_shots';
 
 Future<void> loadFonts() async {
   final l = FontLoader('Pretendard');
   for (final f in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
-    l.addFont(Future.value(ByteData.sublistView(File('assets/fonts/Pretendard-$f.otf').readAsBytesSync())));
+    l.addFont(
+      Future.value(
+        ByteData.sublistView(
+          File('assets/fonts/Pretendard-$f.otf').readAsBytesSync(),
+        ),
+      ),
+    );
   }
   await l.load();
 }
 
-Future<void> shot(WidgetTester t, GlobalKey key, String name, double ratio) async {
+Future<void> shot(
+  WidgetTester t,
+  GlobalKey key,
+  String name,
+  double ratio,
+) async {
   await t.runAsync(() async {
     final b = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
     final img = await b.toImage(pixelRatio: ratio);
@@ -48,21 +60,27 @@ void main() {
       AvatarConfig(skin: 2, style: 2, hair: 3, outfit: 11, name: 6),
       AvatarConfig(skin: 3, style: 3, hair: 2, outfit: 1, name: 7),
     ];
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.light(),
-      home: Scaffold(
-        body: RepaintBoundary(
-          key: key,
-          child: Container(
-            color: const Color(0xFFFBF6EE),
-            padding: const EdgeInsets.all(12),
-            child: Wrap(spacing: 12, runSpacing: 12, children: [
-              for (final c in cfgs) AvatarPreview(config: c, height: 300),
-            ]),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: Scaffold(
+          body: RepaintBoundary(
+            key: key,
+            child: Container(
+              color: const Color(0xFFFBF6EE),
+              padding: const EdgeInsets.all(12),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final c in cfgs) AvatarPreview(config: c, height: 300),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pump();
     await shot(tester, key, 'flutter_preview_grid.png', 1.0);
   });
@@ -75,10 +93,15 @@ void main() {
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
     final key = GlobalKey();
-    await tester.pumpWidget(RepaintBoundary(
-      key: key,
-      child: MaterialApp(theme: AppTheme.light(), home: AvatarEditorScreen(settings: settings)),
-    ));
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          home: AvatarEditorScreen(settings: settings),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     await shot(tester, key, 'flutter_editor.png', 1.0);
   });

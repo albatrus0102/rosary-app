@@ -51,7 +51,16 @@ class ChurchSelectScreen extends StatefulWidget {
   });
 
   /// 내부 3D 모형이 준비된 성당 id. 새 성당 내부가 들어올 때마다 늘린다.
-  static const Set<String> availableIds = {'basic'};
+  static const Set<String> availableIds = {
+    'basic',
+    'stpeter',
+    'lateran',
+    'maggiore',
+    'stpaul',
+    'milan',
+    'florence',
+    'myeongdong',
+  };
 
   final AppSettings settings;
 

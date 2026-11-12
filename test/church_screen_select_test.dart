@@ -81,13 +81,13 @@ void main() {
   testWidgets('unavailable churches are disabled with 준비 중', (tester) async {
     final h = AppSettingsHolder();
     await _pumpSelect(tester, holder: h);
-    expect(ChurchSelectScreen.availableIds, {'basic'});
-    await _reveal(tester, _card('stpeter'));
+    expect(ChurchSelectScreen.availableIds, isNot(contains('sagrada')));
+    await _reveal(tester, _card('sagrada'));
     expect(
-      find.descendant(of: _card('stpeter'), matching: find.text('준비 중')),
+      find.descendant(of: _card('sagrada'), matching: find.text('준비 중')),
       findsOneWidget,
     );
-    await tester.tap(_card('stpeter'), warnIfMissed: false);
+    await tester.tap(_card('sagrada'), warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsNothing);
     expect(find.text('입장'), findsNothing);
