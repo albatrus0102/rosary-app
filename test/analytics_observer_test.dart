@@ -39,6 +39,27 @@ void main() {
     expect(AnalyticsObserver.screenIdFor(page('/${'a' * 60}'))!.length, 40);
   });
 
+  test('closing a dialog does not record the screen underneath again', () {
+    fakeAsync((fa) {
+      var t = DateTime.utc(2026, 11, 12);
+      final a = initIn(fa, uploader: FakeEventUploader());
+      final o = AnalyticsObserver(analytics: a, now: () => t);
+      final home = page('/');
+      final prayer = page('prayer');
+      final dialog = RawDialogRoute<void>(
+        pageBuilder: (_, _, _) => const SizedBox(),
+      );
+      o.didPush(home, null);
+      t = t.add(const Duration(seconds: 5));
+      o.didPush(prayer, home);
+      t = t.add(const Duration(seconds: 5));
+      o.didPush(dialog, prayer);
+      t = t.add(const Duration(seconds: 5));
+      o.didPop(dialog, prayer);
+      expect(screens(a), ['home', 'prayer']);
+    });
+  });
+
   test('push/pop sequence yields one screen_view per visible change', () {
     fakeAsync((fa) {
       var t = DateTime.utc(2026, 11, 12);

@@ -61,6 +61,9 @@ class AnalyticsObserver extends NavigatorObserver {
       _record(newRoute);
 
   @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _record(previousRoute);
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // 다이얼로그·바텀시트가 닫힐 때는 화면이 바뀌지 않으므로 기록하지 않는다.
+    if (route is! PageRoute) return;
+    _record(previousRoute);
+  }
 }
