@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../church_constants.dart';
 import 'avatar_config.dart';
 import 'avatar_preview.dart';
+import 'baptismal_name_picker.dart';
+
+export 'baptismal_name_picker.dart'
+    show BaptismalNameScreen, showBaptismalNamePicker;
 
 /// 글자 크기 배율(기본 1.0). 큰 글씨에서는 한 줄 배치를 세로 배치로 바꾼다.
 double avatarTextScale(BuildContext context) =>
@@ -346,7 +350,7 @@ class _Swatch extends StatelessWidget {
   }
 }
 
-/// 지금 세례명을 크게 보여 주는 칩 + '바꾸기' 버튼. 누르면 이름 고르기 시트가 열린다.
+/// 지금 세례명을 보여 주는 M3 목록 줄('루치아 >'). 줄 전체를 누르면 세례명 고르기 화면이 열린다.
 class BaptismalNameField extends StatelessWidget {
   const BaptismalNameField({
     super.key,
@@ -375,282 +379,36 @@ class BaptismalNameField extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final nameStyle = (large ? text.titleLarge : text.titleMedium)?.copyWith(
-      color: scheme.onPrimaryContainer,
+      color: scheme.onSurface,
       fontWeight: FontWeight.w700,
     );
-    return Row(
-      children: [
-        Expanded(
-          child: Semantics(
-            container: true,
-            label: '세례명 ${config.nameText}',
-            excludeSemantics: true,
-            child: Container(
-              key: const ValueKey('name-chip'),
-              constraints: const BoxConstraints(minHeight: 52),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              alignment: Alignment.centerLeft,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(config.nameText, style: nameStyle, maxLines: 1),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        OutlinedButton(
-          key: const ValueKey('name-change'),
-          onPressed: () => _open(context),
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(64, 52),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-          ),
-          child: const Text('바꾸기'),
-        ),
-      ],
-    );
-  }
-}
-
-/// 세례명 고르기 시트를 열고 고른 이름의 인덱스(성별 목록 기준)를 돌려준다. 닫으면 null.
-Future<int?> showBaptismalNamePicker(
-  BuildContext context, {
-  required int gender,
-  required int selected,
-}) {
-  return showModalBottomSheet<int>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    builder: (context) =>
-        BaptismalNameSheet(gender: gender, selected: selected),
-  );
-}
-
-/// 이름 검색창 + 많이 쓰는 이름 12개(큰 칩) + 가나다순 전체 목록(48dp 칸).
-/// 한 번 누르면 고르고 닫힌다.
-class BaptismalNameSheet extends StatefulWidget {
-  const BaptismalNameSheet({
-    super.key,
-    required this.gender,
-    required this.selected,
-  });
-
-  final int gender;
-  final int selected;
-
-  @override
-  State<BaptismalNameSheet> createState() => _BaptismalNameSheetState();
-}
-
-class _BaptismalNameSheetState extends State<BaptismalNameSheet> {
-  final TextEditingController _query = TextEditingController();
-  late final List<int> _alphabetical = () {
-    final names = baptismalNamesFor(widget.gender);
-    final idx = [for (var i = 0; i < names.length; i++) i];
-    idx.sort((a, b) => names[a].compareTo(names[b]));
-    return idx;
-  }();
-
-  @override
-  void dispose() {
-    _query.dispose();
-    super.dispose();
-  }
-
-  void _pick(int i) => Navigator.of(context).pop(i);
-
-  @override
-  Widget build(BuildContext context) {
-    final names = baptismalNamesFor(widget.gender);
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    final scale = avatarTextScale(context);
-    final columns = scale <= 1.2 ? 3 : (scale <= 1.6 ? 2 : 1);
-    final searching = _query.text.trim().isNotEmpty;
-    final results = searching
-        ? searchBaptismalNames(widget.gender, _query.text)
-        : _alphabetical;
-    final height = MediaQuery.sizeOf(context).height * 0.88;
-
-    Widget heading(String t) => Padding(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
-      child: Semantics(
-        header: true,
-        child: Text(
-          t,
-          style: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 100),
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SizedBox(
-        height: height,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('세례명 고르기', style: text.titleLarge),
-              const SizedBox(height: 12),
-              TextField(
-                key: const ValueKey('name-search'),
-                controller: _query,
-                onChanged: (_) => setState(() {}),
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: '이름으로 찾기 (예: 요, 마리)',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: searching
-                      ? IconButton(
-                          tooltip: '지우기',
-                          icon: const Icon(Icons.close),
-                          onPressed: () => setState(_query.clear),
-                        )
-                      : null,
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    if (!searching) ...[
-                      SliverToBoxAdapter(child: heading('많이 쓰는 이름')),
-                      SliverToBoxAdapter(
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (var i = 0; i < popularBaptismalCount; i++)
-                              ChoiceChip(
-                                key: ValueKey('name-popular-$i'),
-                                label: Text(names[i]),
-                                selected: widget.selected == i,
-                                selectedColor: scheme.primaryContainer,
-                                labelStyle: text.titleMedium?.copyWith(
-                                  color: widget.selected == i
-                                      ? scheme.onPrimaryContainer
-                                      : scheme.onSurface,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 12,
-                                ),
-                                onSelected: (_) => _pick(i),
-                              ),
-                          ],
-                        ),
-                      ),
-                      SliverToBoxAdapter(child: heading('가나다순')),
-                    ] else
-                      SliverToBoxAdapter(
-                        child: heading('찾은 이름 ${results.length}개'),
-                      ),
-                    if (searching && results.isEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          child: Text(
-                            '찾는 이름이 없어요. 다른 철자로 찾아 보세요.',
-                            style: text.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ),
-                    SliverPadding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: columns,
-                          mainAxisExtent: 48,
-                          mainAxisSpacing: 6,
-                          crossAxisSpacing: 6,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, k) {
-                          final i = results[k];
-                          return _NameTile(
-                            key: ValueKey('name-tile-$i'),
-                            name: names[i],
-                            selected: i == widget.selected,
-                            onTap: () => _pick(i),
-                          );
-                        }, childCount: results.length),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NameTile extends StatelessWidget {
-  const _NameTile({
-    super.key,
-    required this.name,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String name;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Semantics(
+      container: true,
       button: true,
-      selected: selected,
-      label: name,
+      label: '세례명 ${config.nameText}, 눌러서 바꾸기',
       excludeSemantics: true,
-      onTap: onTap,
-      child: Material(
-        color: selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: selected ? scheme.primary : scheme.outlineVariant,
-            width: selected ? 2 : 1,
-          ),
-        ),
+      onTap: () => _open(context),
+      child: Card(
+        key: const ValueKey('name-chip'),
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        color: scheme.surfaceContainerLow,
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  name,
-                  maxLines: 1,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: selected
-                        ? scheme.onPrimaryContainer
-                        : scheme.onSurface,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                  ),
-                ),
-              ),
-            ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+        child: ListTile(
+          key: const ValueKey('name-change'),
+          minTileHeight: 56,
+          contentPadding: const EdgeInsetsDirectional.only(start: 16, end: 8),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(config.nameText, style: nameStyle, maxLines: 1),
           ),
+          trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+          onTap: () => _open(context),
         ),
       ),
     );

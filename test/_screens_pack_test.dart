@@ -87,11 +87,7 @@ void _phone(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
-Widget _app(
-  Widget home, {
-  AppServices? services,
-  bool dark = false,
-}) {
+Widget _app(Widget home, {AppServices? services, bool dark = false}) {
   final app = MaterialApp(
     debugShowCheckedModeBanner: false,
     themeMode: dark ? ThemeMode.dark : ThemeMode.light,
@@ -121,7 +117,9 @@ Widget _app(
 /// 이미지 디코딩 등 실제 비동기를 흘려보낸 뒤 몇 프레임 진행한다.
 Future<void> _settle(WidgetTester tester, {int rounds = 4}) async {
   for (var i = 0; i < rounds; i++) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
     await tester.pump(const Duration(milliseconds: 120));
   }
   await tester.pump(const Duration(milliseconds: 450));
@@ -131,7 +129,8 @@ Future<void> _shot(WidgetTester tester, String name) async {
   await _settle(tester, rounds: 2);
   await tester.runAsync(() async {
     final b =
-        _boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        _boundaryKey.currentContext!.findRenderObject()
+            as RenderRepaintBoundary;
     final img = await b.toImage(pixelRatio: 2);
     final bd = await img.toByteData(format: ui.ImageByteFormat.png);
     Directory(_out).createSync(recursive: true);
@@ -187,7 +186,13 @@ List<PrayerRecord> _records() {
     final n = 2 + rnd.nextInt(4);
     for (var i = 0; i < n; i++) {
       add(
-        DateTime(now.year, m, 1 + rnd.nextInt(27), 6 + rnd.nextInt(14), rnd.nextInt(59)),
+        DateTime(
+          now.year,
+          m,
+          1 + rnd.nextInt(27),
+          6 + rnd.nextInt(14),
+          rnd.nextInt(59),
+        ),
         church: rnd.nextDouble() < 0.2,
       );
     }
@@ -221,9 +226,7 @@ Future<void> _anim(WidgetTester tester) async {
   await tester.pump();
 }
 
-Future<
-  ({AppSettings settings, FakeChurchNet net, _BgScene scene})
-> _pumpChurch(
+Future<({AppSettings settings, FakeChurchNet net, _BgScene scene})> _pumpChurch(
   WidgetTester tester, {
   required String church,
   required String bg,
@@ -236,7 +239,14 @@ Future<
   final net = FakeChurchNet();
   final scene = _BgScene(_bg(bg) ?? Uint8List(0));
   await tester.pumpWidget(
-    _app(ChurchScreen(settings: settings, churchId: church, net: net, scene: scene)),
+    _app(
+      ChurchScreen(
+        settings: settings,
+        churchId: church,
+        net: net,
+        scene: scene,
+      ),
+    ),
   );
   await tester.pump();
   scene.emit(const SceneReady());
@@ -261,25 +271,33 @@ void main() {
     return (settings, services);
   }
 
-  testWidgets('shell light: 01 today, 15 more, 14 stats, 06 church entry, 07 select',
-      (tester) async {
-    _phone(tester);
-    final (settings, services) = await shellEnv();
-    await tester.pumpWidget(
-      _app(AppShell(settings: settings), services: services),
-    );
-    await _settle(tester);
-    await _shot(tester, '01_today_home.png');
-    await _tapTab(tester, '더보기');
-    await _shot(tester, '15_more_menu.png');
-    await _tapTab(tester, '기록');
-    await _shot(tester, '14_stats_record.png');
-    await _tapTab(tester, '성당');
-    await _shot(tester, '06_church_entry_card.png');
-    await tester.tap(find.text('다른 성당 고르기'));
-    await _settle(tester);
-    await _shot(tester, '07_church_select_list.png');
-  });
+  testWidgets(
+    'shell light: 01 today, 15 more, 14 stats, 06 church entry, 07 select',
+    (tester) async {
+      _phone(tester);
+      final (settings, services) = await shellEnv();
+      await tester.pumpWidget(
+        _app(AppShell(settings: settings), services: services),
+      );
+      await _settle(tester);
+      await _shot(tester, '01_today_home.png');
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -520));
+      await _settle(tester);
+      await _shot(tester, '01b_today_home_scrolled.png');
+      await _tapTab(tester, '더보기');
+      await _shot(tester, '15_more_menu.png');
+      await _tapTab(tester, '기록');
+      await _shot(tester, '14_stats_record.png');
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, -600));
+      await _settle(tester);
+      await _shot(tester, '14b_stats_record_scrolled.png');
+      await _tapTab(tester, '성당');
+      await _shot(tester, '06_church_entry_card.png');
+      await tester.tap(find.text('다른 성당 고르기'));
+      await _settle(tester);
+      await _shot(tester, '07_church_select_list.png');
+    },
+  );
 
   testWidgets('shell dark: 16 today, 18 stats', (tester) async {
     _phone(tester);
@@ -293,17 +311,21 @@ void main() {
     await _shot(tester, '18_stats_record_dark.png');
   });
 
-  Widget prayer(AppSettings settings, {int initialIndex = 12, AppServices? services, bool dark = false}) =>
-      _app(
-        PrayerScreen(
-          settings: settings,
-          mysterySet: MysterySet.joyful,
-          initialIndex: initialIndex,
-          soundPlayer: _SilentSoundPlayer(),
-        ),
-        services: services,
-        dark: dark,
-      );
+  Widget prayer(
+    AppSettings settings, {
+    int initialIndex = 12,
+    AppServices? services,
+    bool dark = false,
+  }) => _app(
+    PrayerScreen(
+      settings: settings,
+      mysterySet: MysterySet.joyful,
+      initialIndex: initialIndex,
+      soundPlayer: _SilentSoundPlayer(),
+    ),
+    services: services,
+    dark: dark,
+  );
 
   testWidgets('prayer: 02, 04, 17', (tester) async {
     _phone(tester);
@@ -331,6 +353,11 @@ void main() {
     final settings = await _settings(extra: {'prayer_text_scale': 2.0});
     await tester.pumpWidget(prayer(settings));
     await _settle(tester);
+    // 큰 글씨 첫 진입 때 한 번 뜨는 '짧게 보기' 제안은 닫고(그대로) 본문을 찍는다.
+    if (find.text('그대로').evaluate().isNotEmpty) {
+      await tester.tap(find.text('그대로'));
+      await _settle(tester);
+    }
     await _shot(tester, '03_prayer_large_text.png');
   });
 
@@ -385,13 +412,15 @@ void main() {
     final net = FakeChurchNet();
     final scene = FakeChurchSceneController();
     await tester.pumpWidget(
-      _app(ChurchScreen(
-        settings: settings,
-        churchId: 'stpeter',
-        net: net,
-        scene: scene,
-        random: Random(7),
-      )),
+      _app(
+        ChurchScreen(
+          settings: settings,
+          churchId: 'stpeter',
+          net: net,
+          scene: scene,
+          random: Random(7),
+        ),
+      ),
     );
     await tester.pump();
     scene.emit(const SceneReady());
@@ -406,7 +435,12 @@ void main() {
   });
 
   testWidgets('church hud walk: 10', (tester) async {
-    final h = await _pumpChurch(tester, church: 'stpeter', bg: '3d_stpeter_walk.png', online: 12);
+    final h = await _pumpChurch(
+      tester,
+      church: 'stpeter',
+      bg: '3d_stpeter_walk.png',
+      online: 12,
+    );
     await _precache(tester, h.scene);
     h.scene.emit(const SceneNear(seat: 'L03-2'));
     await _anim(tester);
@@ -420,7 +454,12 @@ void main() {
   });
 
   testWidgets('church go sheet: 11', (tester) async {
-    final h = await _pumpChurch(tester, church: 'milan', bg: '3d_milan_nave.png', online: 5);
+    final h = await _pumpChurch(
+      tester,
+      church: 'milan',
+      bg: '3d_milan_nave.png',
+      online: 5,
+    );
     await _precache(tester, h.scene);
     await tester.tap(find.byKey(const ValueKey('go-button')));
     await _anim(tester);
@@ -429,7 +468,12 @@ void main() {
   });
 
   testWidgets('church sitting prayer card: 12', (tester) async {
-    final h = await _pumpChurch(tester, church: 'stpeter', bg: '3d_pew_seated.png', online: 12);
+    final h = await _pumpChurch(
+      tester,
+      church: 'stpeter',
+      bg: '3d_pew_seated.png',
+      online: 12,
+    );
     await _precache(tester, h.scene);
     h.scene.emit(const SceneNear(seat: 'L03-2'));
     await _anim(tester);
@@ -446,7 +490,12 @@ void main() {
   });
 
   testWidgets('candle sheet: 13', (tester) async {
-    final h = await _pumpChurch(tester, church: 'florence', bg: '3d_florence_octagon.png', online: 8);
+    final h = await _pumpChurch(
+      tester,
+      church: 'florence',
+      bg: '3d_florence_octagon.png',
+      online: 8,
+    );
     await _precache(tester, h.scene);
     h.scene.emit(const SceneNear(candle: 5));
     await _anim(tester);

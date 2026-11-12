@@ -44,6 +44,9 @@ const int baptismalNameMaxIndex = 99;
 /// 인기 순으로 칩에 크게 보여 줄 세례명 개수(각 목록의 앞쪽).
 const int popularBaptismalCount = 12;
 
+/// 세례명 고르기 화면의 '많이 쓰는 이름' 구역에 보여 줄 개수(각 목록의 앞쪽).
+const int popularBaptismalShown = 8;
+
 /// 여성 세례명(앞 12개가 인기순 상위). 순서 고정: 인덱스가 곧 와이어 값이다.
 const List<String> femaleBaptismalNames = [
   '마리아',
@@ -297,6 +300,65 @@ List<int> searchBaptismalNames(int gender, String query) {
     }
   }
   return [...starts, ...contains];
+}
+
+/// 세례명 고르기의 초성 색인 글자(가나다순). 쌍자음은 기본 자음 아래에 묶는다.
+const List<String> baptismalInitials = [
+  'ㄱ',
+  'ㄴ',
+  'ㄷ',
+  'ㄹ',
+  'ㅁ',
+  'ㅂ',
+  'ㅅ',
+  'ㅇ',
+  'ㅈ',
+  'ㅊ',
+  'ㅋ',
+  'ㅌ',
+  'ㅍ',
+  'ㅎ',
+];
+
+// 한글 음절의 초성 19개(유니코드 순서)를 [baptismalInitials]의 기본 자음으로 옮긴다.
+const List<String> _choseongBase = [
+  'ㄱ', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅂ', 'ㅅ', //
+  'ㅅ', 'ㅇ', 'ㅈ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+];
+
+/// 이름의 첫 글자 초성(쌍자음은 기본 자음). 한글 음절이 아니면 빈 문자열.
+String baptismalInitial(String name) {
+  if (name.isEmpty) return '';
+  final code = name.runes.first - 0xAC00;
+  if (code < 0 || code > 11171) return '';
+  return _choseongBase[code ~/ 588];
+}
+
+/// 성별 [gender] 목록을 초성별로 묶는다. 있는 초성만 가나다순으로, 묶음 안은 가나다순 인덱스.
+List<({String initial, List<int> indices})> groupBaptismalNames(int gender) {
+  final names = baptismalNamesFor(gender);
+  final order = [for (var i = 0; i < names.length; i++) i]
+    ..sort((a, b) => names[a].compareTo(names[b]));
+  final groups = <String, List<int>>{};
+  for (final i in order) {
+    groups.putIfAbsent(baptismalInitial(names[i]), () => []).add(i);
+  }
+  return [
+    for (final ini in baptismalInitials)
+      if (groups[ini] != null) (initial: ini, indices: groups[ini]!),
+  ];
+}
+
+/// 검색어 [query]가 이름 자체가 아니라 다른 표기(별칭)로만 맞았을 때 그 표기. 아니면 null.
+String? baptismalAliasMatch(int gender, int index, String query) {
+  final q = query.replaceAll(RegExp(r'\s+'), '');
+  if (q.isEmpty) return null;
+  final name = baptismalNamesFor(gender)[index];
+  if (name.replaceAll(' ', '').contains(q)) return null;
+  for (final a in baptismalNameAliases[name] ?? const <String>[]) {
+    if (a.replaceAll(' ', '').contains(q)) return a;
+  }
+  return null;
 }
 
 /// 성별 [gender] 목록에서 [name]의 인덱스. 없으면 -1.
