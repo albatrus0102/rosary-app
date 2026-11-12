@@ -72,10 +72,10 @@ class AvatarConfig {
 
   // assets/church/palette.js(window.ChurchPalette)와 같은 HEX 값.
   static const List<Color> skinColors = [
-    Color(0xFFFFE3CC),
-    Color(0xFFF6CBA8),
-    Color(0xFFDDA77A),
-    Color(0xFFA87049),
+    Color(0xFFF2D4BD),
+    Color(0xFFE0B393),
+    Color(0xFFB98259),
+    Color(0xFF70472F),
   ];
 
   static const List<String> skinNames = ['밝은 피부', '보통 피부', '구릿빛 피부', '짙은 피부'];
@@ -83,31 +83,31 @@ class AvatarConfig {
   static const List<String> styleNames = ['짧은 머리', '단발', '올림머리', '곱슬'];
 
   static const List<Color> hairColors = [
-    Color(0xFF2B2522),
-    Color(0xFF4A3328),
-    Color(0xFF7A5238),
-    Color(0xFFA8744A),
-    Color(0xFFE3C070),
-    Color(0xFFC8643A),
-    Color(0xFF9A9AA3),
-    Color(0xFFD8D8E0),
-    Color(0xFF2F3A5F),
-    Color(0xFFE58AA8),
+    Color(0xFF1C1917),
+    Color(0xFF3B2A20),
+    Color(0xFF5A3B28),
+    Color(0xFF7B4A2D),
+    Color(0xFF8F4A2A),
+    Color(0xFFA88B5A),
+    Color(0xFFD2B27A),
+    Color(0xFF8F8E8C),
+    Color(0xFFD9D9D6),
+    Color(0xFF6E2A1E),
   ];
 
   static const List<Color> outfitColors = [
-    Color(0xFFE8665D),
-    Color(0xFFF4A259),
-    Color(0xFFF4D35E),
-    Color(0xFF9CCC65),
-    Color(0xFF4CAF7A),
-    Color(0xFF3FB8AF),
-    Color(0xFF5AA9E6),
-    Color(0xFF4A6FD6),
-    Color(0xFF8E6BD0),
-    Color(0xFFF08CB4),
-    Color(0xFFA1745A),
-    Color(0xFFECE6DA),
+    Color(0xFF26334F),
+    Color(0xFF3A3D42),
+    Color(0xFF1F1F22),
+    Color(0xFFB58A5B),
+    Color(0xFF6B6B3F),
+    Color(0xFF6A2433),
+    Color(0xFF2F5240),
+    Color(0xFFE4DAC3),
+    Color(0xFF8C7B6E),
+    Color(0xFF6F8CA6),
+    Color(0xFF5E3B5C),
+    Color(0xFFB35E45),
   ];
 
   final int skin;

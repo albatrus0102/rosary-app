@@ -22,6 +22,7 @@
       var a = pool.pop();
       if (a) { a.setConfig(cfg); a.lod = -1; } else a = new Av(cfg, {});
       scene.add(a.root);
+      if (root.ChurchRenderUtil) root.ChurchRenderUtil.markCaster(a.root);
       return a;
     }
     function release(rec) {
@@ -213,14 +214,14 @@
           var sp = logic.seatPos(id), av = new Av(rcfg(), {});
           av.setSeated(true); av.setPray(true); av.nod = true; av.nodPh = rnd() * 6;
           av.setPose(sp.x, logic.floorY(sp.x, sp.z), sp.z, sp.yaw); av.snapPose();
-          scene.add(av.root); sit.push({ av: av, id: id }); taken[id] = 1;
+          scene.add(av.root); if (root.ChurchRenderUtil) root.ChurchRenderUtil.markCaster(av.root); sit.push({ av: av, id: id }); taken[id] = 1;
         }
         var sp0 = logic.spawn;
         for (i = 0; i < 2; i++) {
           var wv = new Av(rcfg(), {});
           var n = { av: wv, x: sp0.x + (i ? -1.4 : 1.4), z: sp0.z - 4 - i * 6, tx: 0, tz: 0, stuck: 0, lx: 0, lz: 0, pause: 0 };
           n.lx = n.x; n.lz = n.z;
-          wv.setPose(n.x, 0, n.z, 0); scene.add(wv.root); walkers.push(n);
+          wv.setPose(n.x, 0, n.z, 0); scene.add(wv.root); if (root.ChurchRenderUtil) root.ChurchRenderUtil.markCaster(wv.root); walkers.push(n);
           pick(n);
         }
       },

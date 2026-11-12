@@ -233,3 +233,72 @@ ctx.floor({ x0:…, tex: marble, tile: 4 });
 - 기둥 충돌 반경이 좌석 띠와 겹치면 길이 막힌다. 줄 끝에서 기둥까지 ≥ 1.0 m.
 - `layout`에서 `THREE` 참조 금지. 빌더 파일 최상위에서 `THREE`를 건드리지 말 것(모든 THREE 사용은 `build` 안).
 - 빌더 안에서 전역(`window`) 상태를 만들지 말 것. `build`는 성당을 바꿀 때마다 새로 호출된다.
+
+
+---------------------------------------------------------------------
+## 7. 사실감 도구 (Realism toolkit, v3) — 기존 빌더는 그대로 동작하고 자동으로 더 좋아 보인다
+엔진이 **PBR 재질·HDRI 환경광·태양 그림자·창 개구부·후처리(AO/블룸)·ACES 톤매핑**을 처리한다. 빌더는 *어떤 표면인지*만 알려 주면 된다. 아래는 모두 **선택 옵션**이며 `color`만 쓰던 코드는 변함없이 돈다(금색은 자동으로 금속 처리).
+
+### 7.1 색과 재질 라우팅
+- 색은 지금처럼 sRGB 16진수. 엔진이 선형으로 변환하고 sRGB 로 출력한다(`ChurchGeo`가 `ColorManagement` 를 켠다). 아바타·스프라이트·캔버스 질감도 같은 규칙.
+- 모든 도형 도우미(`box/boxAABB/cyl/cone/sphere/ico/arch/arcade/column/wall/vault/dome/apse/steps/...`)가 받는 새 옵션:
+  | 옵션 | 뜻 |
+  |---|---|
+  | `mat:'solid'` | 무광 돌/회반죽 (기본, 거칠기 .84) |
+  | `mat:'gloss'` 또는 `gloss:true` | 광택 대리석/유약: 거칠기 .16 + 클리어코트 .8 |
+  | `mat:'wood'` | 옻칠 나무: 거칠기 .5 + 클리어코트 .55 |
+  | `mat:'metal'` 또는 `metal:true` | 금속(금/청동): metalness 1, 거칠기 .3, 환경광 반사 |
+  | `mat:'outside'` | 바깥 풍경(그림자 안 드리움, AO 안 구움) |
+  | `surf:'이름'` | **표면(사진 질감 PBR)**: 아래 7.2. 이때 `color` 는 곱해지는 색조(기본 흰색) |
+- 금색 자동 감지: 색이 금빛(색상 36–52°, 채도 높음)이면 `mat:'metal'` 이 된다. 도금이 아니면 `mat:'solid'` 로 막을 수 있다.
+- 직접 접근: `ctx.solid / ctx.gloss / ctx.woodB / ctx.metalB / ctx.glass / ctx.glow / ctx.outsideB` 배치(`add/addQuad/addTris/addBeam`). 재질: `ctx.mats.solid|gloss|wood|metal|glass|glow` 와 `ctx.mats.surface(name)`(PBR 재질 한 개 새로 만들기), `ctx.mats.standard({...})`.
+
+### 7.2 표면(Surfaces) — 사진 질감 + PBR
+`surf:'marble_white'` 처럼 이름만 주면 색/법선/거칠기 사진이 월드 좌표 박스 투영 UV 로 자동 입혀진다(타일 크기 미터는 사전에 정의). 같은 표면은 **하나의 draw call** 로 합쳐진다.
+
+| 이름 | 느낌 | 타일(m) | 비고 |
+|---|---|---|---|
+| `marble_white` | 흰 대리석(칼라라풍) | 1.6 | 광택, 클리어코트 |
+| `marble_black` | 검은 대리석(흰 맥) | 1.6 | 광택 |
+| `marble_beige` | 베이지 대리석 | 1.6 | 광택 |
+| `marble_rose` | 분홍빛 대리석 | 1.6 | 광택 |
+| `marble_checker` | 흰/검정 2×2 체스판 | 2.4 | 한 장이 2×2칸 |
+| `limestone` | 연한 석회암 블록 | 1.8 | 반무광 |
+| `plaster` | 회반죽 벽/천장 | 2.6 | 무광 |
+| `stone_grey` | 회색 석재/화강암풍 | 2.6 | 무광 |
+| `brick_grey` | 회색 벽돌 | 2.4 | 명동·밀라노 풍 |
+| `wood_dark` | 짙은 마호가니 나무 | 1.4 | 옻칠 |
+| `wood_cherry` | 매우 어두운 체리 나무 | 1.4 | 옻칠 |
+| `mosaic_gold` | 금빛 모자이크(반금속, 약한 자체발광) | 1.6 | 후진 반돔·개선문 |
+| `gold_relief` | 금박 장식 | 3.0 | |
+| `fresco_dome` | 바로크 천장화(사진) | 6.0 | 돔 안쪽, `dome({surf, surfRepeat})` |
+- 새 표면 정의: `ctx.defineSurface('stpeter_floor', { photo:'stpeter_floor', tile:[2.4,2.4], clearcoat:0.8, ccRough:0.06, normalScale:0.4, metalness:0, roughness:0.7, envK:1.2, color:0xffffff, emissive:0 })`. `photo` 는 `tex_<photo>.jpg`(+ 선택 `_n.jpg` 법선, `_r.jpg` 거칠기). 사진이 없으면 절차 생성 대체 질감(`fb:'marble'|'plaster'|'brick'|'wood'|'mosaic'`)을 쓴다.
+- **성당별 사진 추가 규칙**: `assets/church/tex_<성당id>_*.jpg`(≤1024px, JPEG q≈80)로 두고 `node tools/church_web/build_texpack.mjs --church <성당id>` 를 실행하면 `tex_pack_<성당id>.js`(data URI)가 만들어진다. 그 뒤 `node tools/church_web/register_builders.mjs` 가 그 JS 를 페이지에 등록한다. 출처·작가·라이선스·표시 문구는 `docs/church/licenses/<성당id>.md` 에 쓰고 공용 목록 `docs/church/ASSET_LICENSES.md` 규칙(CC0/PD/CC-BY만)을 지킨다.
+- 사진 질감 직접 쓰기: `ctx.photoTex(name, {repeat:[rx,ry], enc:'srgb'|'linear', fallback:()=>ctx.tex.plaster({})})` → `THREE.Texture`(그림은 비동기로 교체, 호출마다 새 인스턴스). `ctx.hasPhoto(name)`.
+- 개별 면: `ctx.floor/ceilingFlat/plane/wallFace({surf, tile, gloss, color})`. `gloss`(0..1, 질감 면 기본 .75). `ctx.floor({reflect:true|0..1})` 로 **평면 반사**(고화질에서 거울처럼 기둥·창이 비친다; 광택≥.6 바닥은 자동, 성당당 바닥 2장까지).
+
+### 7.3 벽과 진짜 창 (실제 개구부)
+- `ctx.wall()` 은 이제 **지연 생성**된다: 같은 면에 놓인 `ctx.window()` 마다 벽에 **실제 구멍**(반원/뾰족 아치 상부 포함, 구멍 옆면·아치 소핏)을 뚫는다. 그래서 태양빛이 창으로 들어와 바닥/신자석/기둥에 창 모양 빛 무늬를 그린다(고화질). 창 `face` 와 벽이 나란하고 창이 벽 안쪽 면 ±0.45m 이내·벽 높이 안이면 자동 매칭. 매칭 안 되면 벽면에 그려진 창(painted)이 된다(`painted:true` 로 강제 가능, 돔 드럼 창은 painted).
+- 창은 구멍 안에 **스테인드글라스(발광, 낮에 밝고 밤에 어두움) + 납선 + 가는 창살(`pattern:'lancet'|'grid'`) + 돌 틀·창턱 + 얇은 반사 유리막**이 들어간다. 창의 컬러 `colors:[...]` 는 보석톤이 기본.
+- `wall({plinth, crown, plinthColor, crownColor})`: 걸레받이·처마 돌림띠를 자동 생성(기본: 높이≥2.5m 바닥 벽은 걸레받이, ≥3.5m 는 돌림띠). `false` 로 끈다.
+- 벽 주변 접촉 AO 는 자동. 직접: `ctx.aoDecal({x0,x1,z0,z1,y,pad})`, `ctx.aoDecalCircle({x,z,r,y})`. 정점 AO 굽기(바닥 근처 세로면·아래향 면 어둡게)는 기본 켜짐: `ctx.setAO(false)` 또는 `ctx.setAO({floor:.36, under:.28, height:.5})`.
+
+### 7.4 시간대·조명·그림자 (자동)
+- 해가 뜨고 지는 경로(아침 제대 뒤→정오 오른쪽(+x, 남쪽) 높이→저녁 입구 쪽)에 따라 **태양 방향광(그림자맵 2048, PCFSoft)**, 하늘, 안개, 환경광 세기, 노출이 바뀐다. 유리 빛줄기(볼륨 샤프트 + 바닥 색 빛무늬)도 실제 태양 방향으로 정렬된다(태양이 창 뒤에 있을 때만).
+- `ctx.addLight` 점광원은 여전히 성당당 1개(+ 촛불대용 코어 1개). 동적 광원 합계는 반구광+태양+점광 2 = 4. 점광 `intensity` 는 1.0 이 보통(코어가 물리 단위로 환산).
+- `ctx.addGlow/addFlame` 의 불꽃·후광은 블룸을 받는다. 램프·촛불 몸체를 더 빛나게 하려면 `ctx.glow.add(geometry, new THREE.Color(0xffd78a).multiplyScalar(2.2), ...)` 처럼 색을 1 보다 크게(HDR).
+- 금속(`metal`)은 환경 HDRI 반사에 의존한다 → 창 쪽/어두운 쪽 모두에서 금빛이 살아 있다. 거친 돌은 `mat:'solid'`.
+
+### 7.5 화질 단계와 자동 하향
+- `quality:'high'`(기본): 그림자 + 평면 반사 + 블룸 + SSAO + 클리어코트 + MSAA. `'low'`: 후처리 없음, 그림자 없음, 반사 없음, 클리어코트 없음(굽기 AO·환경 반사·PBR 은 유지).
+- 프레임 시간 평균(3초)이 45ms 를 넘으면 자동으로 `low` 로 내려간다(`perf` 이벤트에 `tier` 필드: `{"e":"perf","fps":..,"tier":"low"}`). 정점 < 250k, draw call < 약 300 을 지킬 것(고화질은 반사/그림자로 장면을 2~3번 그린다).
+- 시험용 URL 파라미터: `frames=N`(N 프레임 그린 뒤 정지 — 스크린샷용), `autotier=0`(자동 하향 끔; 소프트웨어 렌더에서는 필수), `msaa=0`, `ao=0`, `quality=low|high`.
+
+### 7.6 현실감 체크리스트(빌더용)
+1. 큰 면은 `surf` 로 사진 질감: 바닥·벽·천장·기둥. 단색 박스 덩어리를 피한다.
+2. 바닥은 광택(`gloss:.9`), 금속은 `metal`, 나무는 `wood`/`wood_dark`.
+3. 벽에는 몰딩: `wall` 의 걸레받이·돌림띠, `cornice`, 기둥 `base/capital`, `arch` 두께 .35–.5.
+4. 창은 반드시 `ctx.wall` 에 놓인 벽 위에(안쪽 면 좌표) — 진짜 구멍·빛줄기·그림자가 생긴다.
+5. 양탄자는 실제 성당에 있을 때만(`ctx.carpet` 은 천 질감·테두리 무늬). 없는 성당이면 쓰지 않는다.
+6. 신자석은 `ctx.renderSeats(layout,'bench'|'chair')` 가 실제 비율(등받이 판·상단 레일·기도대·좌석판·둥근 옆판)로 그린다.
+7. 색은 채도 낮은 따뜻한 돌색, 깊은 나무색, 진한 금색. 파스텔 장난감 색 금지.

@@ -8,7 +8,7 @@
   var canvas = document.getElementById('c');
   var App = {
     started: false, quality: 'high', renderer: null, scene: null, camera: null, world: null, logic: null,
-    me: null, meAv: null, ctl: null, net: null, crowd: null, cfg: { skin: 1, style: 0, hair: 2, outfit: 6, name: 0 },
+    maxFrames: +(qs.frames || 0), frameCount: 0, done: false, me: null, meAv: null, ctl: null, net: null, crowd: null, cfg: { skin: 1, style: 0, hair: 2, outfit: 6, name: 0 },
     near: { seat: null, candle: null }, frames: 0, perfT: 0, t: 0, last: 0, posT: 0, wasMoving: false, stepT: 0, fps: 60,
     camPos: new T.Vector3(), camLook: new T.Vector3(), camInit: false, sitF: 0, church: 'basic', solo: false, ambient: false
   };
@@ -21,8 +21,7 @@
   function resize() {
     if (!App.renderer) return;
     var w = root.innerWidth || 360, h = root.innerHeight || 640;
-    App.renderer.setPixelRatio(pixelRatio());
-    App.renderer.setSize(w, h, false);
+    App.R.resize(w, h, pixelRatio());
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     App.camera.aspect = w / h;
     // 세로 화면에서는 시야를 넓힌다
@@ -43,7 +42,8 @@
 
   function loadWorld(id) {
     if (App.world) { App.world.dispose(); App.world = null; }
-    var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.quality, hour: App.hourInit, renderer: App.renderer });
+    var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer });
+    if (App.R.envTex) w.setEnvironment(App.R.envTex);
     App.world = w; App.logic = w.logic; App.church = w.id;
     App.net.setLogic(w.logic); App.crowd.setLogic(w.logic);
     var sp = w.layout.spawn;
@@ -64,27 +64,29 @@
     var church = o.church || qs.church || 'basic';
     if (!App.started) {
       App.started = true;
-      var gl;
       try {
-        App.renderer = new T.WebGLRenderer({ canvas: canvas, antialias: App.quality !== 'low', alpha: false, powerPreference: 'high-performance' });
+        App.R = root.ChurchRender.create(canvas, { quality: App.quality, autoTier: qs.autotier !== '0' });
+        App.renderer = App.R.renderer;
       } catch (e) {
         document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;left:8px;top:8px;color:#fff;font:12px sans-serif">WebGL을 사용할 수 없습니다.</div>');
         if (console && console.error) console.error('[church] WebGL init failed', e);
         App.started = false; return;
       }
-      App.renderer.setClearColor(0xf6ead8, 1);
       App.scene = new T.Scene();
-      App.camera = new T.PerspectiveCamera(52, 1, 0.1, 700);
+      App.camera = new T.PerspectiveCamera(52, 1, 0.3, 700);
+      App.meAvReady = false;
       App.ctl = root.ChurchControls.create(canvas);
       App.me = { x: 0, z: 17, y: 0, yaw: 0, vx: 0, vz: 0, mode: 'walk', seat: null, t: 0, fx: 0, fz: 0, fyaw: 0, tx: 0, tz: 0, tyaw: 0, pendingStand: false, speed: 0 };
       App.meAv = new root.ChurchAvatar.Avatar(App.cfg, {});
       App.scene.add(App.meAv.root);
+      root.ChurchRenderUtil.markCaster(App.meAv.root);
       App.net = root.ChurchNetView.create(App.scene);
       App.crowd = root.ChurchNetView.createCrowd(App.scene);
       resize();
       loadWorld(church);
       App.last = performance.now();
-      requestAnimationFrame(loop);
+      var go = function () { App.last = performance.now(); requestAnimationFrame(loop); };
+      if (root.ChurchPhotos) root.ChurchPhotos.whenReady(go, 2500); else go();
     } else {
       App.meAv.setConfig(App.cfg);
       if (church !== App.church) loadWorld(church);
@@ -162,7 +164,7 @@
     setAmbient: function (o) { App.ambient = !!o.on; root.ChurchAudio.setAmbient(App.ambient); },
     setHour: function (o) { if (App.world) App.world.setHour(+o.hour); },
     setSolo: function (o) { App.solo = !!o.on; if (App.crowd) App.crowd.set(App.solo); },
-    setQuality: function (o) { App.quality = o.quality === 'low' ? 'low' : 'high'; resize(); },
+    setQuality: function (o) { App.quality = o.quality === 'low' ? 'low' : 'high'; if (App.R) { App.R.autoTier = App.quality === 'high' && qs.autotier !== '0'; App.R.setTier(App.quality, App.world); } resize(); },
     emote: function (o) { if (App.meAv) App.meAv.playEmote(o.e); },
     setSeatTaken: function (o) {
       if (!App.net || !o.seat) return;
@@ -273,7 +275,9 @@
   }
 
   function loop(now) {
+    if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; return; }
     requestAnimationFrame(loop);
+    App.frameCount = (App.frameCount || 0) + 1;
     var dt = Math.min(0.05, (now - App.last) / 1000);
     App.last = now; App.t += dt;
     if (!App.world) return;
@@ -283,11 +287,13 @@
     App.net.update(dt, App.t, now);
     App.crowd.update(dt, App.t);
     App.world.update(dt, App.t, App.me, App.camera);
-    App.renderer.render(App.scene, App.camera);
+    App.R.setExposure(App.world.env.exp * (App.expK || 1));
+    var chg = App.R.render(App.scene, App.camera, dt, App.world);
+    if (chg) { App.quality = 'low'; post({ e: 'perf', fps: Math.round(1 / Math.max(dt, 0.001)), tier: App.R.tier }); }
     App.frames++; App.perfT += dt;
     if (App.perfT >= 5) {
       App.fps = Math.round(App.frames / App.perfT);
-      post({ e: 'perf', fps: App.fps });
+      post({ e: 'perf', fps: App.fps, tier: App.R.tier });
       App.frames = 0; App.perfT = 0;
     }
   }

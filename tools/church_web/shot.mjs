@@ -16,7 +16,7 @@ export async function shoot(opts) {
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text()); });
-  const q = new URLSearchParams({ church: id });
+  const q = new URLSearchParams({ church: id, autotier: '0', msaa: '0', frames: '6' });
   if (hour !== undefined) q.set('hour', hour);
   if (solo) q.set('solo', '1');
   if (peers) q.set('peers', peers);
@@ -29,7 +29,7 @@ export async function shoot(opts) {
   await page.goto('file://' + root + '/test.html?' + q.toString());
   await page.waitForFunction(() => window.__church && window.__church.world, null, { timeout: 60000 });
   if (evalJs) await page.evaluate(evalJs);
-  await page.waitForTimeout(wait);
+  await page.waitForFunction(() => window.__church && window.__church.done, null, { timeout: 600000 });
   if (out) await page.screenshot({ path: out });
   const info = await page.evaluate(() => ({ stats: window.__church.world.stats, fps: window.__church.fps }));
   if (!given) await browser.close();

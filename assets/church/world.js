@@ -1,23 +1,25 @@
-/* world.js — 월드 코어: 빌더 실행, 조명/하늘/시간대, 창 빛줄기, 촛불대 렌더, 먼지. ChurchWorld.create(scene, opts) */
+/* world.js — 월드 코어: 빌더 실행, 물리 기반 조명, 태양 그림자, 하늘/시간대, 창 빛줄기·색 빛무늬, 촛불대, 먼지, 바닥 반사(Reflector).
+   ChurchWorld.create(scene, opts) */
 (function (root) {
   'use strict';
   var T = root.THREE, G = root.ChurchGeo, PI = Math.PI;
 
-  // ---- 시간대 키프레임 (부드러운 파스텔/따뜻한 톤: style_lowpoly 참고) ----
+  // ---- 시간대 키프레임 (실제 건축 사진 톤: 낮은 채도의 따뜻한 돌, 강한 명암) ----
+  // hi: 반구광, di/dc: 태양(달) 세기/색, exp: 노출, envK: 환경광 세기, gk: 유리 발광, beam: 빛줄기
   var KEYS = [
-    { h: 0,    top: 0x0b1236, hor: 0x26325f, hs: 0x6a7ab8, hg: 0x2e3358, hi: 0.78, dc: 0x8c9de0, di: 0.18, fog: 0x1c2447, glass: 0x4c5c9c, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x3a4570, amb: 0.0 },
-    { h: 5,    top: 0x0b1236, hor: 0x26325f, hs: 0x6a7ab8, hg: 0x2e3358, hi: 0.78, dc: 0x8c9de0, di: 0.18, fog: 0x1c2447, glass: 0x4c5c9c, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x3a4570, amb: 0.0 },
-    { h: 6.5,  top: 0x9bb3e0, hor: 0xffcaa6, hs: 0xffe2cc, hg: 0xc9b3a0, hi: 0.85, dc: 0xffd2a8, di: 0.5, fog: 0xf0d8c6, glass: 0xc9b0a8, beam: 0.55, candle: 0.55, lamp: 0.55, cloud: 0xffdcc8, amb: 0.5 },
-    { h: 9,    top: 0x9fcdf2, hor: 0xfff0dc, hs: 0xfff6e8, hg: 0xd2c0a4, hi: 0.95, dc: 0xfff0d2, di: 0.62, fog: 0xf6ead8, glass: 0xffffff, beam: 1, candle: 0.3, lamp: 0.3, cloud: 0xffffff, amb: 1 },
-    { h: 16,   top: 0x9fcdf2, hor: 0xfff0dc, hs: 0xfff3e0, hg: 0xd2c0a4, hi: 0.95, dc: 0xffe6bf, di: 0.6, fog: 0xf6ead8, glass: 0xffffff, beam: 1, candle: 0.3, lamp: 0.3, cloud: 0xffffff, amb: 1 },
-    { h: 17.7, top: 0xb7a6dc, hor: 0xffc79c, hs: 0xffd9b8, hg: 0xc4a58f, hi: 0.82, dc: 0xffb98a, di: 0.55, fog: 0xf2cfc0, glass: 0xffd9c0, beam: 0.85, candle: 0.55, lamp: 0.55, cloud: 0xffd6c6, amb: 0.8 },
-    { h: 19,   top: 0x7b6aa8, hor: 0xff9f84, hs: 0xffb89a, hg: 0x9a7c88, hi: 0.66, dc: 0xff9a66, di: 0.42, fog: 0xc89aa0, glass: 0xd89a8c, beam: 0.25, candle: 0.85, lamp: 0.85, cloud: 0xf0a8b8, amb: 0.3 },
-    { h: 20.5, top: 0x2d2c6c, hor: 0x8a5a8c, hs: 0x7a6aa8, hg: 0x4a3f60, hi: 0.6, dc: 0xa08ad0, di: 0.22, fog: 0x4a3f68, glass: 0x7a6a9c, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x6a5a90, amb: 0.05 },
-    { h: 22,   top: 0x0b1236, hor: 0x26325f, hs: 0x6a7ab8, hg: 0x2e3358, hi: 0.78, dc: 0x8c9de0, di: 0.18, fog: 0x1c2447, glass: 0x4c5c9c, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x3a4570, amb: 0.0 },
-    { h: 24,   top: 0x0b1236, hor: 0x26325f, hs: 0x6a7ab8, hg: 0x2e3358, hi: 0.78, dc: 0x8c9de0, di: 0.18, fog: 0x1c2447, glass: 0x4c5c9c, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x3a4570, amb: 0.0 }
+    { h: 0,    top: 0x040810, hor: 0x121a38, hs: 0x3a4a80, hg: 0x1a1d30, hi: 0.85, dc: 0x7f90d0, di: 0.6, fog: 0x0d1228, glass: 0x35467f, gk: 0.9, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x2a3560, amb: 0.0, exp: 1.3, envK: 0.32 },
+    { h: 5,    top: 0x040810, hor: 0x121a38, hs: 0x3a4a80, hg: 0x1a1d30, hi: 0.85, dc: 0x7f90d0, di: 0.6, fog: 0x0d1228, glass: 0x35467f, gk: 0.9, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x2a3560, amb: 0.0, exp: 1.3, envK: 0.32 },
+    { h: 6.5,  top: 0x7f9fd0, hor: 0xffc79a, hs: 0xffe6cf, hg: 0x9a8268, hi: 1.0, dc: 0xffc590, di: 2.4, fog: 0xd9baa0, glass: 0xd0b8a8, gk: 0.9, beam: 0.6, candle: 0.55, lamp: 0.55, cloud: 0xffdcc8, amb: 0.5, exp: 1.0, envK: 1.1 },
+    { h: 9,    top: 0x6ea6e6, hor: 0xe2ecf5, hs: 0xdfe9ff, hg: 0xa8987e, hi: 1.25, dc: 0xfff1da, di: 6.5, fog: 0xc7d0da, glass: 0xffffff, gk: 0.85, beam: 1, candle: 0.3, lamp: 0.3, cloud: 0xffffff, amb: 1, exp: 0.95, envK: 1.6 },
+    { h: 16,   top: 0x6ea6e6, hor: 0xe8e8e8, hs: 0xe8ecff, hg: 0xa8987e, hi: 1.25, dc: 0xffe9c8, di: 6.2, fog: 0xcbd0d6, glass: 0xffffff, gk: 0.85, beam: 1, candle: 0.3, lamp: 0.3, cloud: 0xffffff, amb: 1, exp: 0.95, envK: 1.6 },
+    { h: 17.7, top: 0x8d9fdc, hor: 0xffb98a, hs: 0xffddc0, hg: 0x8a7058, hi: 0.95, dc: 0xffb36e, di: 5.6, fog: 0xe0b8a0, glass: 0xffc8a0, gk: 1.0, beam: 0.9, candle: 0.55, lamp: 0.55, cloud: 0xffd6c6, amb: 0.8, exp: 1.0, envK: 1.2 },
+    { h: 19,   top: 0x5a4b92, hor: 0xff8a66, hs: 0xffb08c, hg: 0x6a5060, hi: 0.6, dc: 0xff8a50, di: 2.4, fog: 0xa87a88, glass: 0xd89a8c, gk: 1.1, beam: 0.3, candle: 0.85, lamp: 0.85, cloud: 0xf0a8b8, amb: 0.3, exp: 1.08, envK: 0.7 },
+    { h: 20.5, top: 0x1c1c52, hor: 0x5a4072, hs: 0x6a5a98, hg: 0x2e2840, hi: 0.7, dc: 0x9080c0, di: 0.7, fog: 0x2f2750, glass: 0x5a4f88, gk: 0.95, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x5a4a88, amb: 0.05, exp: 1.2, envK: 0.28 },
+    { h: 22,   top: 0x040810, hor: 0x121a38, hs: 0x3a4a80, hg: 0x1a1d30, hi: 0.85, dc: 0x7f90d0, di: 0.6, fog: 0x0d1228, glass: 0x35467f, gk: 0.9, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x2a3560, amb: 0.0, exp: 1.3, envK: 0.32 },
+    { h: 24,   top: 0x040810, hor: 0x121a38, hs: 0x3a4a80, hg: 0x1a1d30, hi: 0.85, dc: 0x7f90d0, di: 0.6, fog: 0x0d1228, glass: 0x35467f, gk: 0.9, beam: 0, candle: 1.0, lamp: 1.0, cloud: 0x2a3560, amb: 0.0, exp: 1.3, envK: 0.32 }
   ];
   var COLOR_KEYS = ['top', 'hor', 'hs', 'hg', 'dc', 'fog', 'glass', 'cloud'];
-  var NUM_KEYS = ['hi', 'di', 'beam', 'candle', 'lamp', 'amb'];
+  var NUM_KEYS = ['hi', 'di', 'gk', 'beam', 'candle', 'lamp', 'amb', 'exp', 'envK'];
   var _ca = new T.Color(), _cb = new T.Color();
 
   function sampleEnv(hour, out) {
@@ -34,32 +36,38 @@
     for (k = 0; k < NUM_KEYS.length; k++) out[NUM_KEYS[k]] = a[NUM_KEYS[k]] + (b[NUM_KEYS[k]] - a[NUM_KEYS[k]]) * t;
     out.hour = h;
     out.day = out.amb;
-    out.night = Math.max(0, Math.min(1, 1 - out.hi / 0.95 * 1.0 - out.di * 0.2 + 0.2));
     out.night = (h >= 20.5 || h < 5.2) ? 1 : (h > 19 ? (h - 19) / 1.5 : (h < 6.5 ? 1 - (h - 5) / 1.5 : 0));
     out.night = Math.max(0, Math.min(1, out.night));
     out.dusk = Math.max(0, 1 - Math.abs(h - 18.8) / 1.6) + Math.max(0, 1 - Math.abs(h - 6.4) / 1.0) * 0.8;
-    // 태양 방향 (낮에는 높이, 해질녘에는 낮게)
-    var el = Math.sin(PI * (h - 6) / 13) ; // 6시 0, 12.5시 1, 19시 0
+    // 태양 경로(성당 방위: 제대=동쪽(-z), 입구=서쪽(+z), 오른쪽 벽(+x)=남쪽): 아침 제대 뒤에서 떠서 정오에 +x(남쪽) 높이, 저녁 입구 쪽으로 진다. 최고 고도 약 55도.
+    var el = Math.sin(PI * (h - 6) / 13);
     var elev = el > 0 ? el : 0.0;
-    var azim = -0.9 + 1.8 * Math.max(0, Math.min(1, (h - 6) / 13));
+    var phi = PI * Math.max(0, Math.min(1, (h - 6) / 13));
     var moon = el <= 0;
-    var e2 = moon ? 0.45 : 0.08 + elev * 1.2;
+    var e2 = moon ? 0.5 : 0.07 + elev * 0.9;
     out.sunDir = out.sunDir || [0, 1, 0];
-    out.sunDir[0] = Math.sin(azim) * Math.cos(e2);
+    out.sunDir[0] = (moon ? -0.5 : Math.sin(phi)) * Math.cos(e2);
     out.sunDir[1] = Math.sin(e2);
-    out.sunDir[2] = Math.cos(azim) * Math.cos(e2);
+    out.sunDir[2] = (moon ? 0.8 : -Math.cos(phi)) * Math.cos(e2);
     out.moon = moon;
     return out;
   }
+
+  var REFLECTOR_SHADER = {
+    uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, strength: { value: 0.4 } },
+    vertexShader: 'uniform mat4 textureMatrix; varying vec4 vUv; varying vec3 vWorld;\n#include <common>\n#include <logdepthbuf_pars_vertex>\nvoid main(){ vUv = textureMatrix * vec4(position, 1.0); vWorld = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n#include <logdepthbuf_vertex>\n}',
+    fragmentShader: 'uniform vec3 color; uniform sampler2D tDiffuse; uniform float strength; varying vec4 vUv; varying vec3 vWorld;\n#include <logdepthbuf_pars_fragment>\nvoid main(){\n#include <logdepthbuf_fragment>\n vec4 base = texture2DProj(tDiffuse, vUv);\n float f = pow(1.0 - clamp(normalize(cameraPosition - vWorld).y, 0.0, 1.0), 3.0);\n float a = clamp(strength * (0.16 + 0.84 * f), 0.0, 1.0);\n gl_FragColor = vec4(base.rgb * color, a);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'
+  };
 
   function create(scene, opts) {
     var id = opts.church || 'basic';
     var builder = root.ChurchBuilders[id] || root.ChurchBuilders.basic;
     if (!root.ChurchBuilders[id]) id = 'basic';
     var layout = builder.layout || root.ChurchLayouts.get(id);
-    var low = opts.quality === 'low';
+    var tier = opts.quality === 'low' ? 'low' : 'high';
+    var low = tier === 'low';
 
-    var ctx = root.ChurchKit.createContext({ layout: layout, quality: opts.quality });
+    var ctx = root.ChurchKit.createContext({ layout: layout, quality: low ? 'low' : 'high' });
     var S = ctx._;
     var ret = null;
     try { ret = builder.build(ctx); } catch (e) { if (root.console) console.error('[church] builder error', e); }
@@ -74,28 +82,44 @@
     world.name = 'world-' + id;
     scene.add(world);
     world.add(ctx.root);
-    var solidGroup = ctx.solid.build(ctx.mats.solid, 'solid');
-    var glassGroup = ctx.glass.build(ctx.mats.glass, 'glass');
-    var glowGroup = ctx.glow.build(ctx.mats.glow, 'glow');
-    ctx.root.add(solidGroup); ctx.root.add(glassGroup); ctx.root.add(glowGroup);
-
-    var stats = { vertices: (solidGroup.userData.vertexCount || 0) + (glassGroup.userData.vertexCount || 0) + (glowGroup.userData.vertexCount || 0), meshes: ctx.stats.meshes + solidGroup.children.length + glassGroup.children.length + glowGroup.children.length, colliders: S.colliders.length, seats: logic.seats.length };
+    var items = [];
+    try { items = ctx._prepare(); } catch (e) { if (root.console) console.error('[church] prepare error', e); }
+    var vcount = 0, mcount = ctx.stats.meshes;
+    var shadowCasters = [];
+    items.forEach(function (it) {
+      var grp = it.batch.build(it.material, it.name, { cast: it.cast, receive: it.receive });
+      if (it.decal) grp.children.forEach(function (m) { m.renderOrder = 3; });
+      if (it.name === 'glass' || it.name === 'glow') grp.children.forEach(function (m) { m.renderOrder = 1; });
+      if (it.name === 'glassRefl' || it.name === 'aodecal') grp.userData.noAO = true;
+      if (it.name === 'glassRefl') grp.children.forEach(function (m) { m.renderOrder = 4; });
+      ctx.root.add(grp);
+      vcount += grp.userData.vertexCount || 0; mcount += grp.children.length;
+    });
+    // 바닥 판·평면 메쉬도 그림자를 받는다
+    var stats = { vertices: vcount, meshes: mcount, colliders: S.colliders.length, seats: logic.seats.length };
 
     // ---- 조명 ----
     var bnd = layout.bounds, dim = Math.max(bnd.x1 - bnd.x0, bnd.z1 - bnd.z0);
-    var hemi = new T.HemisphereLight(0xffffff, 0xcccccc, 0.9);
-    var dirLight = new T.DirectionalLight(0xffffff, 0.6);
-    dirLight.position.set(5, 10, 5);
-    var candleLight = new T.PointLight(0xffa860, 0, 11, 1.4);
+    var cbx = S.cameraBounds || {};
+    var hemi = new T.HemisphereLight(0xffffff, 0x888888, 0.4);
+    var dirLight = new T.DirectionalLight(0xffffff, 3);
+    dirLight.position.set(5, 30, 5);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(2048, 2048);
+    dirLight.shadow.bias = -0.0004; dirLight.shadow.normalBias = 0.035;
+    var target = new T.Object3D(); target.position.set((bnd.x0 + bnd.x1) / 2, 0, (bnd.z0 + bnd.z1) / 2);
+    scene.add(target); dirLight.target = target;
+    var candleLight = new T.PointLight(0xffa860, 0, 12, 2);
     scene.add(hemi); scene.add(dirLight); scene.add(candleLight);
     var bLight = null;
     if (S.lights.length) {
       var sl = S.lights[0];
-      bLight = new T.PointLight(sl.color === undefined ? 0xffc27a : sl.color, 0, sl.distance || 14, 1.3);
+      bLight = new T.PointLight(sl.color === undefined ? 0xffc27a : sl.color, 0, (sl.distance || 14) * 1.2, 2);
       bLight.position.set(sl.x, sl.y, sl.z);
       scene.add(bLight);
     }
-    scene.fog = new T.Fog(0xf6ead8, dim * 0.7, Math.max(110, dim * 2.4));
+    scene.fog = new T.Fog(0xc7d0da, dim * 0.8, Math.max(130, dim * 2.6));
+    var yMax = (S.cameraBounds && S.cameraBounds.yMax) || 14;
 
     // ---- 하늘 ----
     var skyGeo = new T.SphereGeometry(300, 24, 16);
@@ -123,93 +147,119 @@
       for (var k = 0; k < 5; k++) cloudB.add(G.Geo.ico(1), 0xffffff, { x: Math.cos(ca) * cr + (k - 2) * 14 + crnd() * 6, y: cy + crnd() * 5, z: Math.sin(ca) * cr + crnd() * 8, sx: 16 + crnd() * 10, sy: 6 + crnd() * 3, sz: 12 + crnd() * 6, flat: true, vary: 0.03 });
     }
     var cloudMat = new T.MeshBasicMaterial({ vertexColors: true, fog: false });
-    var clouds = cloudB.build(cloudMat, 'clouds');
+    var clouds = cloudB.build(cloudMat, 'clouds', { receive: false });
     scene.add(clouds);
 
-    // ---- 창 빛줄기 ----
-    var beamTex = G.canvasTexture(32, 64, function (g, w, h) {
+    // ---- 창 빛줄기 + 색 빛무늬 (태양 방향에 맞춰 매 시간대 갱신) ----
+    var noiseTex = G.canvasTexture(64, 128, function (g, w, h) {
       var img = g.createImageData(w, h);
       for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
         var a = x / (w - 1), b = y / (h - 1);
-        var edge = Math.min(1, Math.min(a, 1 - a) * 5);
-        var v = edge * edge * (3 - 2 * edge) * (1 - 0.8 * b) * Math.min(1, (1 - b) * 4 + 0.2);
-        var o = (y * w + x) * 4; img.data[o] = img.data[o + 1] = img.data[o + 2] = Math.round(255 * v); img.data[o + 3] = 255;
+        var edge = Math.min(1, Math.min(a, 1 - a) * 4.5); edge = edge * edge * (3 - 2 * edge);
+        var streak = 0.75 + 0.25 * Math.sin(a * 23 + Math.sin(b * 6) * 2) * Math.sin(a * 9 + 1);
+        var v = edge * streak * (1 - 0.7 * b) * Math.min(1, (1 - b) * 4 + 0.15);
+        var o = (y * w + x) * 4; img.data[o] = img.data[o + 1] = img.data[o + 2] = Math.round(255 * Math.max(0, v)); img.data[o + 3] = 255;
       }
       g.putImageData(img, 0, 0);
-    }, false);
+    }, false, true);
     var patchTex = G.canvasTexture(32, 32, function (g, w, h) {
       var img = g.createImageData(w, h);
       for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
         var a = Math.min(x, w - 1 - x) / (w / 2), b = Math.min(y, h - 1 - y) / (h / 2);
-        var v = Math.min(1, a * 2.2) * Math.min(1, b * 2.2); v = v * v * (3 - 2 * v);
+        var v = Math.min(1, a * 2.4) * Math.min(1, b * 2.4); v = v * v * (3 - 2 * v);
         var o = (y * w + x) * 4; img.data[o] = img.data[o + 1] = img.data[o + 2] = Math.round(255 * v); img.data[o + 3] = 255;
       }
       g.putImageData(img, 0, 0);
-    }, false);
-    var beamMat = new T.MeshBasicMaterial({ map: beamTex, vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false, opacity: 0 });
-    var patchMat = new T.MeshBasicMaterial({ map: patchTex, vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false, opacity: 0 });
-    var bp = [], bu = [], bc = [], pp = [], pu = [], pc = [];
-    var floorY0 = 0;
+    }, false, true);
+    var beamMat = new T.MeshBasicMaterial({ map: noiseTex, vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false, opacity: 1 });
+    var patchMat = new T.MeshBasicMaterial({ map: patchTex, vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false, opacity: 1, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+    var beamList = [], SHEETS = low ? 1 : 3;
     S.beams.forEach(function (b, bi) {
-      var n = b.face, nl = Math.sqrt(n[0] * n[0] + n[1] * n[1]) || 1, nx = n[0] / nl, nz = n[1] / nl, ux = nz, uz = -nx;
-      var alpha = b.dome ? 1.05 : 0.5, ca2 = Math.cos(alpha), sa2 = Math.sin(alpha), skew = b.dome ? 0 : 0.22;
-      var dx = nx * ca2 + ux * skew * ca2, dz = nz * ca2 + uz * skew * ca2, dy = -sa2;
-      var reach = b.reach || 11, w = b.w, hh = b.h;
-      var colors = b.colors && b.colors.length ? b.colors : [0xfff1c0];
-      var topY = b.y + hh / 2, botY = Math.max(0.4, b.y - hh / 2);
-      var LT = Math.min(topY / sa2, reach / ca2), LB = Math.min(botY / sa2, reach / ca2);
-      var sheets = low ? 1 : 3;
-      for (var s = 0; s < sheets; s++) {
-        var off = sheets === 1 ? 0 : (s - 1) * w * 0.34;
-        var col = G.toColor(colors[(s + bi) % colors.length]).clone().multiplyScalar(0.36);
-        var cx0 = b.x + ux * off, cz0 = b.z + uz * off;
-        var T0 = [cx0, topY, cz0], B0 = [cx0, botY, cz0];
-        var T1 = [cx0 + dx * LT, topY + dy * LT, cz0 + dz * LT], B1 = [cx0 + dx * LB, botY + dy * LB, cz0 + dz * LB];
-        bp.push(T0[0], T0[1], T0[2], B0[0], B0[1], B0[2], B1[0], B1[1], B1[2], T0[0], T0[1], T0[2], B1[0], B1[1], B1[2], T1[0], T1[1], T1[2]);
-        bu.push(0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1);
-        for (var q = 0; q < 6; q++) bc.push(col.r, col.g, col.b);
-        if (s === 1 || sheets === 1) {
-          // 바닥 빛무늬
-          if (LB >= botY / sa2 - 1e-3 && LT >= topY / sa2 - 1e-3) {
-            var pcol = G.toColor(colors[(s + bi + 1) % colors.length]).clone().multiplyScalar(0.36);
-            var fy = floorY0 + 0.04, hw = w * 0.5;
-            var q0 = [B1[0] - ux * hw, fy, B1[2] - uz * hw], q1 = [B1[0] + ux * hw, fy, B1[2] + uz * hw], q2 = [T1[0] + ux * hw, fy, T1[2] + uz * hw], q3 = [T1[0] - ux * hw, fy, T1[2] - uz * hw];
-            pp.push(q0[0], q0[1], q0[2], q1[0], q1[1], q1[2], q2[0], q2[1], q2[2], q0[0], q0[1], q0[2], q2[0], q2[1], q2[2], q3[0], q3[1], q3[2]);
-            pu.push(0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1);
-            for (q = 0; q < 6; q++) pc.push(pcol.r, pcol.g, pcol.b);
+      var n = b.face, nl = Math.sqrt(n[0] * n[0] + n[1] * n[1]) || 1;
+      beamList.push({ b: b, nx: n[0] / nl, nz: n[1] / nl, bi: bi, colors: (b.colors && b.colors.length ? b.colors : [0xfff1c0]).map(function (c) { return G.toColor(c).clone(); }) });
+    });
+    var nB = beamList.length;
+    var bpArr = new Float32Array(nB * SHEETS * 18), bcArr = new Float32Array(nB * SHEETS * 18), buArr = new Float32Array(nB * SHEETS * 12);
+    var ppArr = new Float32Array(nB * 18), pcArr = new Float32Array(nB * 18), puArr = new Float32Array(nB * 12);
+    for (i = 0; i < nB * SHEETS; i++) buArr.set([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1], i * 12);
+    for (i = 0; i < nB; i++) puArr.set([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1], i * 12);
+    function mkBeamMesh(p, u, c, mat) {
+      if (!p.length) return null;
+      var g = new T.BufferGeometry();
+      g.setAttribute('position', new T.BufferAttribute(p, 3));
+      g.setAttribute('uv', new T.BufferAttribute(u, 2));
+      g.setAttribute('color', new T.BufferAttribute(c, 3));
+      var m = new T.Mesh(g, mat); m.frustumCulled = false; m.renderOrder = 5; world.add(m); return m;
+    }
+    var beamMesh = mkBeamMesh(bpArr, buArr, bcArr, beamMat), patchMesh = mkBeamMesh(ppArr, puArr, pcArr, patchMat);
+    var floorY0 = 0;
+    var Lv = new T.Vector3();
+    function updateBeams(env) {
+      if (!nB) return;
+      for (var bi = 0; bi < nB; bi++) {
+        var e = beamList[bi], b = e.b, nx = e.nx, nz = e.nz, ux = nz, uz = -nx;
+        var dx, dy, dz, vis;
+        if (b.dome) {
+          var al = 1.05; dx = nx * Math.cos(al); dz = nz * Math.cos(al); dy = -Math.sin(al); vis = env.beam * 0.85;
+        } else {
+          Lv.set(-env.sunDir[0], -env.sunDir[1], -env.sunDir[2]).normalize();
+          dx = Lv.x; dy = Lv.y; dz = Lv.z;
+          var cosI = dx * nx + dz * nz;               // 실내로 들어오는 방향 성분
+          vis = (dy < -0.02 && !env.moon) ? Math.max(0, Math.min(1, (cosI - 0.08) * 2.4)) * env.beam : 0;
+        }
+        var hz = Math.sqrt(dx * dx + dz * dz) || 1e-3, sa2 = Math.max(0.05, -dy), reach = b.reach || 12, w = b.w, hh = b.h;
+        var topY = b.y + hh / 2, botY = Math.max(0.3, b.y - hh / 2);
+        var LT = Math.min(topY / sa2, reach / hz), LB = Math.min(botY / sa2, reach / hz);
+        var colors = e.colors;
+        for (var s = 0; s < SHEETS; s++) {
+          var off = SHEETS === 1 ? 0 : (s - (SHEETS - 1) / 2) * w * 0.4;
+          var col = colors[(s + bi) % colors.length];
+          var cx0 = b.x + ux * off, cz0 = b.z + uz * off;
+          var o = (bi * SHEETS + s) * 18;
+          var T0 = [cx0, topY, cz0], B0 = [cx0, botY, cz0];
+          var T1 = [cx0 + dx * LT, topY + dy * LT, cz0 + dz * LT], B1 = [cx0 + dx * LB, botY + dy * LB, cz0 + dz * LB];
+          var P6 = [T0, B0, B1, T0, B1, T1];
+          for (var q = 0; q < 6; q++) {
+            bpArr[o + q * 3] = P6[q][0]; bpArr[o + q * 3 + 1] = P6[q][1]; bpArr[o + q * 3 + 2] = P6[q][2];
+            bcArr[o + q * 3] = col.r * 0.75 * vis; bcArr[o + q * 3 + 1] = col.g * 0.75 * vis; bcArr[o + q * 3 + 2] = col.b * 0.75 * vis;
+          }
+          if (s === (SHEETS === 1 ? 0 : 1)) {
+            var po = bi * 18, hw = w * 0.5, fy = floorY0 + 0.03;
+            var pcol = colors[(bi + 1) % colors.length];
+            var floorHit = (LB >= botY / sa2 - 1e-3 && LT >= topY / sa2 - 1e-3);
+            var f2 = floorHit ? vis : 0;
+            var Q6 = [[B1[0] - ux * hw, fy, B1[2] - uz * hw], [B1[0] + ux * hw, fy, B1[2] + uz * hw], [T1[0] + ux * hw, fy, T1[2] + uz * hw], [B1[0] - ux * hw, fy, B1[2] - uz * hw], [T1[0] + ux * hw, fy, T1[2] + uz * hw], [T1[0] - ux * hw, fy, T1[2] - uz * hw]];
+            for (q = 0; q < 6; q++) {
+              ppArr[po + q * 3] = Q6[q][0]; ppArr[po + q * 3 + 1] = Q6[q][1]; ppArr[po + q * 3 + 2] = Q6[q][2];
+              pcArr[po + q * 3] = pcol.r * 0.8 * f2; pcArr[po + q * 3 + 1] = pcol.g * 0.8 * f2; pcArr[po + q * 3 + 2] = pcol.b * 0.8 * f2;
+            }
           }
         }
       }
-    });
-    function mkMesh(p, u, c, mat) {
-      if (!p.length) return null;
-      var g = new T.BufferGeometry();
-      g.setAttribute('position', new T.BufferAttribute(new Float32Array(p), 3));
-      g.setAttribute('uv', new T.BufferAttribute(new Float32Array(u), 2));
-      g.setAttribute('color', new T.BufferAttribute(new Float32Array(c), 3));
-      var m = new T.Mesh(g, mat); m.frustumCulled = false; m.renderOrder = 5; world.add(m); return m;
+      if (beamMesh) { beamMesh.geometry.attributes.position.needsUpdate = true; beamMesh.geometry.attributes.color.needsUpdate = true; }
+      if (patchMesh) { patchMesh.geometry.attributes.position.needsUpdate = true; patchMesh.geometry.attributes.color.needsUpdate = true; }
     }
-    var beamMesh = mkMesh(bp, bu, bc, beamMat), patchMesh = mkMesh(pp, pu, pc, patchMat);
 
     // ---- 먼지 ----
-    var dustN = low ? 0 : 70, dustPos = new Float32Array(dustN * 3), dustSeed = [], drnd = G.rng(91);
+    var dustN = low ? 0 : 90, dustPos = new Float32Array(dustN * 3), dustSeed = [], drnd = G.rng(91);
     for (i = 0; i < dustN; i++) {
       dustSeed.push([drnd() * 6.28, drnd() * 6.28, 0.2 + drnd() * 0.4]);
       dustPos[i * 3] = bnd.x0 * 0.7 + drnd() * (bnd.x1 - bnd.x0) * 0.7; dustPos[i * 3 + 1] = 1.2 + drnd() * 5; dustPos[i * 3 + 2] = bnd.z0 * 0.8 + drnd() * (bnd.z1 - bnd.z0) * 0.8;
     }
     var dustBase = dustPos.slice();
     var dustGeo = new T.BufferGeometry(); dustGeo.setAttribute('position', new T.BufferAttribute(dustPos, 3));
-    var dust = new T.Points(dustGeo, new T.PointsMaterial({ color: 0xfff3cf, size: 2.2, sizeAttenuation: false, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false }));
+    var dust = new T.Points(dustGeo, new T.PointsMaterial({ color: 0xfff3cf, size: 2.0, sizeAttenuation: false, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, fog: false }));
     dust.frustumCulled = false;
     if (dustN) world.add(dust);
 
     // ---- 촛불대 ----
     var slots = logic.slots, nSlots = slots.length;
-    var candleGeo = new T.CylinderGeometry(0.055, 0.06, 0.2, 7).translate(0, 0.1, 0);
-    var candleMat = new T.MeshLambertMaterial({ color: 0xffffff });
+    var candleGeo = new T.CylinderGeometry(0.05, 0.055, 0.2, 10).translate(0, 0.1, 0);
+    var candleMat = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55 });
     var candles = new T.InstancedMesh(candleGeo, candleMat, Math.max(1, nSlots));
-    var cupGeo = new T.CylinderGeometry(0.085, 0.065, 0.09, 8).translate(0, 0.045, 0);
-    var cups = new T.InstancedMesh(cupGeo, new T.MeshLambertMaterial({ color: 0x8f2a36 }), Math.max(1, nSlots));
+    var cupGeo = new T.CylinderGeometry(0.075, 0.055, 0.09, 12).translate(0, 0.045, 0);
+    var cupMat = new T.MeshPhysicalMaterial({ color: 0x7a1822, roughness: 0.15, metalness: 0.1, clearcoat: 0.8 });
+    var cups = new T.InstancedMesh(cupGeo, cupMat, Math.max(1, nSlots));
     var m4 = new T.Matrix4(), zeroM = new T.Matrix4().makeScale(0, 0, 0), tc = new T.Color();
     var INTENT_COL = [0xfff0d8, 0xffd6e0, 0xd9ecff, 0xe6deff, 0xffe9a8, 0xd8f2d0, 0xffd2b0, 0xf0e0c8];
     var slotY0 = [];
@@ -221,9 +271,10 @@
     }
     cups.instanceMatrix.needsUpdate = true;
     candles.instanceMatrix.needsUpdate = true; if (candles.instanceColor) candles.instanceColor.needsUpdate = true;
+    candles.castShadow = false; cups.castShadow = false;
     if (nSlots) { world.add(cups); world.add(candles); }
     var lit = {}, litCount = 0, flames = {};
-    var flameMat = new T.SpriteMaterial({ map: ctx._getFlameTex(), blending: T.AdditiveBlending, transparent: true, depthWrite: false, fog: false });
+    var flameMat = new T.SpriteMaterial({ map: ctx._getFlameTex(), color: new T.Color(1.6, 1.4, 1.0), blending: T.AdditiveBlending, transparent: true, depthWrite: false, fog: false });
 
     function lightSlot(c) {
       var s = c.slot | 0;
@@ -260,21 +311,63 @@
     var candleRing = new T.Sprite(new T.SpriteMaterial({ map: ringTex, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false }));
     candleRing.scale.set(0.5, 0.5, 1); candleRing.visible = false; candleRing.renderOrder = 7; world.add(candleRing);
 
+    // ---- 바닥 반사(Reflector, 고화질 전용) ----
+    var reflectors = [];
+    function buildReflectors(renderer) {
+      if (!root.ThreeX || !root.ThreeX.Reflector || reflectors.length || !S.floors.length) return;
+      var dpr = renderer ? renderer.getPixelRatio() : 1;
+      var W = Math.max(256, Math.round((root.innerWidth || 800) * dpr * 0.5)), H = Math.max(256, Math.round((root.innerHeight || 450) * dpr * 0.5));
+      S.floors.forEach(function (f) {
+        var r = new root.ThreeX.Reflector(new T.PlaneGeometry(f.x1 - f.x0, f.z1 - f.z0), { textureWidth: W, textureHeight: H, clipBias: 0.003, color: 0xffffff, shader: REFLECTOR_SHADER, multisample: 0 });
+        r.material.transparent = true; r.material.depthWrite = false; r.material.polygonOffset = true; r.material.polygonOffsetFactor = -2; r.material.polygonOffsetUnits = -2;
+        r.material.uniforms.strength.value = f.strength;
+        r.rotation.x = -PI / 2; r.position.set((f.x0 + f.x1) / 2, f.y + 0.006, (f.z0 + f.z1) / 2); r.renderOrder = 2;
+        r.userData.reflector = true;
+        world.add(r); reflectors.push(r);
+      });
+    }
+    function disposeReflectors() {
+      reflectors.forEach(function (r) { world.remove(r); if (r.dispose) r.dispose(); if (r.getRenderTarget) { var rt = r.getRenderTarget(); if (rt) rt.dispose(); } });
+      reflectors.length = 0;
+    }
+
     var env = {}, curHour = opts.hour === undefined ? 12 : opts.hour, clock = 0, envTimer = 99;
     var tmpC = new T.Color();
-    var camPos = new T.Vector3();
+    var lastSunKey = '';
+    var fitV = new T.Vector3(), fitR = new T.Vector3(), fitU = new T.Vector3(), fitF = new T.Vector3(), upV = new T.Vector3(0, 1, 0);
+    function fitShadow() {
+      var sd = env.sunDir, D = Math.max(60, dim * 1.6);
+      fitF.set(-sd[0], -sd[1], -sd[2]).normalize();
+      fitR.crossVectors(fitF, upV); if (fitR.lengthSq() < 1e-6) fitR.set(1, 0, 0); fitR.normalize();
+      fitU.crossVectors(fitR, fitF).normalize();
+      var minR = 1e9, maxR = -1e9, minU = 1e9, maxU = -1e9, minF = 1e9, maxF = -1e9;
+      var x0 = bnd.x0 - 1, x1 = bnd.x1 + 1, z0 = bnd.z0 - 2, z1 = bnd.z1 + 2, yy1 = yMax + 2;
+      for (var xi = 0; xi < 2; xi++) for (var yi = 0; yi < 2; yi++) for (var zi = 0; zi < 2; zi++) {
+        fitV.set(xi ? x1 : x0, yi ? yy1 : -0.2, zi ? z1 : z0).sub(target.position);
+        var r = fitV.dot(fitR), u = fitV.dot(fitU), f = fitV.dot(fitF);
+        minR = Math.min(minR, r); maxR = Math.max(maxR, r); minU = Math.min(minU, u); maxU = Math.max(maxU, u); minF = Math.min(minF, f); maxF = Math.max(maxF, f);
+      }
+      dirLight.position.set(target.position.x + sd[0] * D, target.position.y + sd[1] * D, target.position.z + sd[2] * D);
+      var cam = dirLight.shadow.camera;
+      cam.left = minR; cam.right = maxR; cam.bottom = minU; cam.top = maxU; cam.near = Math.max(0.5, D + minF - 2); cam.far = D + maxF + 2;
+      cam.updateProjectionMatrix();
+      dirLight.updateMatrixWorld(); target.updateMatrixWorld();
+      dirLight.shadow.needsUpdate = true;
+    }
+    var envTex = null;
 
     function applyEnv() {
       sampleEnv(curHour, env);
-      hemi.color.copy(env.hs); hemi.groundColor.copy(env.hg); hemi.intensity = env.hi * 0.7;
-      dirLight.color.copy(env.dc); dirLight.intensity = env.di * 0.75;
-      dirLight.position.set(env.sunDir[0] * 40, Math.max(6, env.sunDir[1] * 40), env.sunDir[2] * 40);
-      tmpC.copy(env.hor).lerp(env.fog, 0.35);
+      var hiT = tier === 'high';
+      hemi.color.copy(env.hs); hemi.groundColor.copy(env.hg); hemi.intensity = env.hi * (hiT ? 1 : 1.3);
+      dirLight.color.copy(env.dc); dirLight.intensity = env.di * (hiT ? 1 : 0.35);
+      fitShadow();
       scene.fog.color.copy(env.fog);
       if (opts.renderer) opts.renderer.setClearColor(env.hor);
-      ctx.mats.glass.color.copy(env.glass);
+      ctx.mats.glass.color.copy(env.glass).multiplyScalar(env.gk);
       cloudMat.color.copy(env.cloud);
-      // 하늘 정점색: 위(top) -> 지평선(hor) + 해 방향 번짐
+      for (var pm = 0; pm < S.physMats.length; pm++) { var p = S.physMats[pm]; p.m.envMapIntensity = p.envK * env.envK; }
+      cupMat.envMapIntensity = env.envK;
       var pos = skyGeo.attributes.position, sd = env.sunDir, sunGlow = _ca.set(0xffb070);
       for (var v = 0; v < pos.count; v++) {
         var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v), l = Math.sqrt(x * x + y * y + z * z);
@@ -285,11 +378,11 @@
         var gg = env.hor.g + (env.top.g - env.hor.g) * t + sunGlow.g * g2;
         var bb = env.hor.b + (env.top.b - env.hor.b) * t + sunGlow.b * g2;
         if (yn < 0) { rr = env.hor.r; gg = env.hor.g; bb = env.hor.b; }
-        skyCol[v * 3] = rr; skyCol[v * 3 + 1] = gg; skyCol[v * 3 + 2] = bb;
+        skyCol[v * 3] = rr * 1.6; skyCol[v * 3 + 1] = gg * 1.6; skyCol[v * 3 + 2] = bb * 1.6;
       }
       skyGeo.attributes.color.needsUpdate = true;
       sun.visible = !env.moon; moonSp.visible = env.moon;
-      sun.material.color.setHex(env.dusk > 0.3 ? 0xffb070 : 0xfff1c8);
+      sun.material.color.setHex(env.dusk > 0.3 ? 0xffb070 : 0xfff1c8).multiplyScalar(2.2);
       stars.material.opacity = env.night * 0.9;
       moonSp.material.opacity = Math.max(0.2, env.night);
       candleLight.userData.k = env.candle;
@@ -299,18 +392,36 @@
         gl.sp.visible = gl.kind !== 'none';
         gl.k = gl.kind === 'always' ? 1 : (gl.kind === 'lamp' ? Math.max(0.25, env.lamp) : 1);
       }
+      updateBeams(env);
       for (var hI = 0; hI < S.hourHooks.length; hI++) { try { S.hourHooks[hI](env); } catch (e) { /* ignore */ } }
     }
-    applyEnv();
 
     var stand0 = (layout.candles && layout.candles.stands && layout.candles.stands[0]) || null;
     var cb = S.cameraBounds || { x0: bnd.x0, x1: bnd.x1, z0: bnd.z0, z1: bnd.z1, yMax: 9 };
 
     var api = {
-      id: id, layout: layout, logic: logic, group: world, env: env, ctx: ctx, builder: builder, stats: stats,
+      id: id, layout: layout, logic: logic, group: world, env: env, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9 },
+      reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
       setHour: function (h) { curHour = ((h % 24) + 24) % 24; applyEnv(); },
+      // PMREM 환경 텍스처 연결
+      setEnvironment: function (tex) { envTex = tex; scene.environment = tex; },
+      // 'high' | 'low' 전환: 그림자·반사·코팅 on/off
+      setTier: function (t, renderer) {
+        tier = t === 'low' ? 'low' : 'high'; api.tier = tier;
+        var hi = tier === 'high';
+        dirLight.castShadow = hi;
+        if (hi) buildReflectors(renderer); else disposeReflectors();
+        for (var pm = 0; pm < S.physMats.length; pm++) {
+          var p = S.physMats[pm];
+          if (p.m.clearcoat !== undefined) { var want = hi ? p.cc : 0; if (p.m.clearcoat !== want) { p.m.clearcoat = want; p.m.needsUpdate = true; } }
+          p.m.needsUpdate = true;
+        }
+        beamMat.needsUpdate = true;
+        if (dust) dust.visible = hi;
+        if (env && env.sunDir) applyEnv();
+      },
       setCandles: function (list) {
         var keep = {};
         (list || []).forEach(function (c) { keep[c.slot] = 1; lightSlot(c); });
@@ -328,13 +439,12 @@
           candleRing.position.set(slots[slot].x, slotY0[slot] + 0.2, slots[slot].z); candleRing.visible = true;
         } else candleRing.visible = false;
       },
-      setSkyCenter: function (p) { sky.position.copy(p); sun.position.set(p.x + env.sunDir[0] * 250, p.y + env.sunDir[1] * 250, p.z + env.sunDir[2] * 250); moonSp.position.set(p.x - env.sunDir[0] * 200 * 0 + 60, p.y + 150, p.z + 200); stars.position.copy(p); clouds.position.set(p.x, 0, p.z); },
+      setSkyCenter: function (p) { sky.position.copy(p); sun.position.set(p.x + env.sunDir[0] * 250, p.y + env.sunDir[1] * 250, p.z + env.sunDir[2] * 250); moonSp.position.set(p.x + 60, p.y + 150, p.z + 200); stars.position.copy(p); clouds.position.set(p.x, 0, p.z); },
       update: function (dt, t, focus, camera) {
         clock += dt;
         envTimer += dt;
-        curHour += dt / 3600;   // 실시간 흐름
+        curHour += dt / 3600;
         if (envTimer > 5) { envTimer = 0; applyEnv(); }
-        // 불꽃
         for (var k in flames) {
           var f = flames[k];
           if (!f.sp.visible) continue;
@@ -350,20 +460,18 @@
           if (gl.kind === 'none') continue;
           gl.sp.material.opacity = gl.base * (gl.k === undefined ? 1 : gl.k) * (1 + gl.pulse * Math.sin(t * 2 + gl.phase));
         }
-        // 촛불 빛: 가까운 촛불대로 이동
         if (stand0 && focus) {
           var best = null, bd = 1e9;
           layout.candles.stands.forEach(function (st2) { var d2 = (st2.x - focus.x) * (st2.x - focus.x) + (st2.z - focus.z) * (st2.z - focus.z); if (d2 < bd) { bd = d2; best = st2; } });
           var bf = best.face || [-1, 0]; candleLight.position.set(best.x + bf[0] * 0.9, 1.9, best.z + bf[1] * 0.9);
         }
-        var cl = Math.min(1.4, 0.05 + litCount * 0.018) * (candleLight.userData.k === undefined ? 1 : candleLight.userData.k) * 1.4;
+        var cl = Math.min(60, 8 + litCount * 1.2) * (candleLight.userData.k === undefined ? 1 : candleLight.userData.k);
         candleLight.intensity = litCount ? cl : 0;
-        if (bLight) bLight.intensity = (S.lights[0].intensity || 1) * (bLight.userData.k === undefined ? 1 : bLight.userData.k) * 1.2;
-        // 빛줄기
-        var bk = env.beam * (0.8 + 0.2 * Math.sin(clock * 0.6));
-        if (beamMesh) beamMat.opacity = bk * 0.85;
-        if (patchMesh) patchMat.opacity = bk * 0.9;
-        dust.material.opacity = env.beam * 0.6;
+        if (bLight) bLight.intensity = (S.lights[0].intensity || 1) * 22 * (bLight.userData.k === undefined ? 1 : bLight.userData.k);
+        var bk = 0.85 + 0.15 * Math.sin(clock * 0.6);
+        if (beamMesh) { beamMat.opacity = bk * (tier === 'high' ? 0.8 : 1); beamMesh.visible = true; }
+        if (patchMesh) patchMat.opacity = (tier === 'high' ? 0.7 : 1) * bk;
+        dust.material.opacity = env.beam * 0.7;
         if (dustN && env.beam > 0.02) {
           var arr = dustGeo.attributes.position.array;
           for (var d = 0; d < dustN; d++) {
@@ -381,16 +489,20 @@
         if (camera) api.setSkyCenter(camera.position);
       },
       dispose: function () {
-        [world, sky, sun, moonSp, stars, clouds, hemi, dirLight, candleLight, bLight].forEach(function (o) {
+        disposeReflectors();
+        [world, sky, sun, moonSp, stars, clouds, hemi, dirLight, target, candleLight, bLight].forEach(function (o) {
           if (!o) return;
           scene.remove(o);
           if (o.traverse) o.traverse(function (n) {
             if (n.geometry && n.geometry.dispose) n.geometry.dispose();
-            if (n.material) { var ms = Array.isArray(n.material) ? n.material : [n.material]; ms.forEach(function (m) { if (m.map && m.map.dispose && m.map !== glowTex) m.map.dispose(); m.dispose && m.dispose(); }); }
+            if (n.material) { var ms = Array.isArray(n.material) ? n.material : [n.material]; ms.forEach(function (m) { ['map', 'normalMap', 'roughnessMap', 'emissiveMap'].forEach(function (k) { if (m[k] && m[k].dispose && m[k] !== glowTex) m[k].dispose(); }); m.dispose && m.dispose(); }); }
           });
         });
+        if (dirLight.shadow && dirLight.shadow.map) dirLight.shadow.map.dispose();
       }
     };
+    applyEnv();
+    api.setTier(tier, opts.renderer);
     return api;
   }
 

@@ -11,7 +11,8 @@ const assets = path.resolve(here, '../../assets/church');
 const outDir = path.resolve(here, '../../assets/church_thumbs');
 fs.mkdirSync(outDir, { recursive: true });
 const all = fs.readdirSync(assets).map((f) => /^ch_([a-z]+)\.js$/.exec(f)).filter(Boolean).map((m) => m[1]).sort();
-const ids = process.argv.slice(2).length ? process.argv.slice(2) : all;
+const lowFlag = process.argv.includes('--low');
+const ids = process.argv.slice(2).filter((a) => !a.startsWith('--')).length ? process.argv.slice(2).filter((a) => !a.startsWith('--')) : all;
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 let failed = 0;
 for (const id of ids) {
@@ -19,9 +20,8 @@ for (const id of ids) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto(`file://${assets}/test.html?church=${id}&hideui=1&thumb=1&hour=15`);
-  try { await page.waitForFunction(() => window.__church && window.__church.world && window.__church.fps >= 0, null, { timeout: 60000 }); } catch (e) { errors.push('timeout'); }
-  await page.waitForTimeout(2500);
+  await page.goto(`file://${assets}/test.html?church=${id}&hideui=1&thumb=1&hour=15&autotier=0&msaa=0&frames=5${lowFlag ? '&quality=low' : ''}`);
+  try { await page.waitForFunction(() => window.__church && window.__church.done, null, { timeout: 600000 }); } catch (e) { errors.push('timeout'); }
   const tmp = path.join(outDir, `${id}.raw.png`);
   await page.screenshot({ path: tmp });
   await page.close();

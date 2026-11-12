@@ -4,7 +4,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../assets/church');
 const files = fs.readdirSync(root).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort((a, b) => (a === 'ch_basic.js' ? -1 : b === 'ch_basic.js' ? 1 : a.localeCompare(b)));
-const block = '<!-- BUILDERS:BEGIN (자동 생성: node tools/church_web/register_builders.mjs — 직접 고치지 말 것) -->\n' + files.map((f) => `<script src="${f}"></script>`).join('\n') + '\n<!-- BUILDERS:END -->';
+const all = fs.readdirSync(root);
+const packs = all.filter((f) => /^tex_pack_[a-z]+\.js$/.test(f)).sort();
+const block = '<!-- BUILDERS:BEGIN (자동 생성: node tools/church_web/register_builders.mjs — 직접 고치지 말 것) -->\n' + packs.concat(files).map((f) => `<script src="${f}"></script>`).join('\n') + '\n<!-- BUILDERS:END -->';
 for (const page of ['index.html', 'test.html']) {
   const p = path.join(root, page);
   if (!fs.existsSync(p)) continue;

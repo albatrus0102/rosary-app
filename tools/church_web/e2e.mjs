@@ -94,6 +94,22 @@ await page.evaluate(() => ChurchAPI.peerLeave({ id: 'p7' }));
 check('true leave removes record', await page.evaluate(() => __church.net.count() === 2999));
 const ft = await page.evaluate(async () => { const t = performance.now(); let n = 0; for (let i = 0; i < 200; i++) { ChurchAPI.peerSnap({ p: Array.from({ length: 200 }, (_, k) => ['p' + (k + 100), 1, 2, 0, 'w']) }); n++; } return performance.now() - t; });
 check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft));
+// 화질 자동 하향: 고화질로 시작한 뒤 프레임 시간이 길면 tier 'low' perf 이벤트가 온다(소프트웨어 렌더에서는 보통 발생)
+{
+  const pg = await browser.newPage({ viewport: { width: 640, height: 360 } });
+  await pg.addInitScript(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
+  pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
+  await pg.goto('file://' + root + '/index.html');
+  await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
+  await pg.evaluate(() => ChurchAPI.init({ church: 'basic', hour: 12, quality: 'high', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
+  const t = await pg.waitForFunction(() => window.__church && window.__church.R && window.__church.R.tier, null, { timeout: 120000 }).then(() => true).catch(() => false);
+  check('high tier starts with composer-capable renderer', t && await pg.evaluate(() => ['high', 'low'].includes(__church.R.tier)));
+  const down = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'perf' && e.tier === 'low'), null, { timeout: 200000 }).then(() => true).catch(() => false);
+  const info = await pg.evaluate(() => ({ tier: __church.R.tier, avg: __church.R.lastAvgMs }));
+  console.log('INFO auto-downgrade (software GL)', JSON.stringify({ down, ...info }));
+  check('slow frames trigger automatic downgrade with tier field', down ? info.tier === 'low' : info.avg !== undefined && info.avg <= 45, info);
+  await pg.close();
+}
 // perf 이벤트(5초 주기)
 await page.waitForTimeout(5500);
 const perf = await page.evaluate(() => window.__ev.filter((e) => e.e === 'perf'));

@@ -29,9 +29,9 @@
       function Q(n) { return low ? Math.max(4, Math.round(n * 0.6)) : n; }
 
       // ---------- 팔레트(조사서 §5) ----------
-      var STU = 0xe7e3d9, STU2 = 0xf0ece1, STU_SH = 0xc9c5ba, GOLD = 0xc9a13b, GOLD2 = 0xe0bb52, GOLD_D = 0x9a7a28;
+      var STU = 0xeeeae0, STU2 = 0xf0ece1, STU_SH = 0xc9c5ba, GOLD = 0xc9a13b, GOLD2 = 0xe0bb52, GOLD_D = 0x9a7a28;
       var RED = 0x8e2b2b, BLUE = 0x2c4a7c, NAVY = 0x1f3566, GREEN = 0x3e5f4b, PORPH = 0x7b2d2f;
-      var MARB = 0xece7da, YEL = 0xd2a94e, PINK = 0xb98a7a, PINK2 = 0xc9a39a, WALNUT = 0x5a3a22, BRONZE = 0x5c4630;
+      var MARB = 0xece7da, YEL = 0xd2a94e, PINK = 0xb98a7a, PINK2 = 0xc9a39a, WALNUT = 0x80563a, BRONZE = 0x5c4630;
 
       // ---------- 치수(앱 미터) ----------
       var XN = 4.77, XB = 6.37, XA = 9.57, XC = 10.07, XO = 13.97, XT = 18.3;
@@ -39,15 +39,42 @@
       var ZP = [32.4, 25.1, 17.8, 10.5, 3.2, -4.1];       // 신랑 피어 중심 z
       var ZB = [28.75, 21.45, 14.15, 6.85, -0.45];         // 아케이드 아치 중심 z
       var YS = 4.1, AR = 2.15, YTA = YS + AR;              // 아케이드 아치 시작/상승/정점
-      var NY = 4.5, NR = 1.05, ND = 0.9;                   // 사도 벽감 시작/반경/깊이
+      var NY = 4.0, NR = 1.05, ND = 0.9;                   // 사도 벽감 시작/반경/깊이
       var PH = 1.3;                                        // 사도상 받침 높이
       var SIDES = [-1, 1];
+      var _vc = 0; function vtot() { var t = 0, b = ctx._.batches, k; for (k in b) t += b[k].vertexCount || 0; var sb = ctx._.surfBatches; for (k in sb) t += sb[k].batch.vertexCount || 0; return t; }
+      function mark(n) { if (typeof window !== 'undefined' && window.__LATDBG) { var t = vtot(); console.log('[lat] ' + n + ' ' + (t - _vc)); _vc = t; } }
+
+      // ---------- 사진 질감(키트 surf) 자동 매핑: 색 → 표면 ----------
+      function hp(n) { return (ctx.hasPhoto && ctx.hasPhoto(n)) ? n : undefined; }
+      var S_PL = hp('marble_beige'), S_MW = hp('marble_white'), S_MR = hp('marble_rose'), S_LM = hp('limestone'), S_WD = hp('wood_dark');
+      var AUTO = {};
+      [STU, STU2, 0xe2d9c8, 0xe2dacb, 0xe2d9c8, 0xf1eadb].forEach(function (c) { AUTO[c] = S_PL; });
+      [MARB, 0xf0ebe0, 0xe3ddd0, 0xf2ead8, 0xf4ecda, 0xd8d2c4, 0xd6cfbe].forEach(function (c) { AUTO[c] = S_MW; });
+      AUTO[PINK2] = S_MR; AUTO[PINK] = S_MR; AUTO[STU_SH] = S_LM;
+      AUTO[WALNUT] = S_WD; AUTO[0x6b4a2a] = S_WD; AUTO[BRONZE] = S_WD;
+      function autoSurf(o) {
+        if (o.surf !== undefined || o.mat !== undefined || o.color === undefined) return o;
+        var sf = AUTO[o.color];
+        if (sf) { o.surf = sf; if (sf === S_MR || sf === S_WD) o.color = (sf === S_WD ? ctx.shade(0xffffff, 0.8) : 0xffffff); }
+        return o;
+      }
+      ['box', 'cyl', 'sphere', 'ico'].forEach(function (fn) { var f0 = ctx[fn]; ctx[fn] = function (o) { return f0(autoSurf(o)); }; });
+      function batFor(c) { return AUTO[c] ? ctx.surfBatch(AUTO[c]) : solid; }
 
       // ---------- 도우미 ----------
       function B(x0, x1, y0, y1, z0, z1, c, o) {
         var a = { x0: x0, x1: x1, y0: y0, y1: y1, z0: z0, z1: z1, color: c };
         if (o) for (var k in o) a[k] = o[k];
         ctx.boxAABB(a);
+      }
+      function pil(x, z, y, h, r, color, capColor) {   // 가벼운 벽기둥(받침·홈 기둥·금 주두)
+        var ch = r * 1.3, sh = h - 0.5 * r - ch;
+        ctx.box({ x: x, y: y, z: z, w: r * 2.5, h: r * 0.3, d: r * 2.5, color: col(color, 0.95) });
+        ctx.cyl({ x: x, y: y + r * 0.3, z: z, r: r * 1.2, rTop: r, h: r * 0.2, seg: 8, color: color });
+        ctx.cyl({ x: x, y: y + r * 0.5, z: z, r: r, rTop: r * 0.88, h: sh, seg: 10, color: color, flat: true });
+        ctx.cyl({ x: x, y: y + r * 0.5 + sh, z: z, r: r * 0.95, rTop: r * 1.5, h: ch * 0.8, seg: 6, color: capColor });
+        ctx.box({ x: x, y: y + r * 0.5 + sh + ch * 0.8, z: z, w: r * 3.1, h: ch * 0.3, d: r * 3.1, color: capColor });
       }
       function col(c, f) { return ctx.shade(c, f); }
       function mod1(v) { return v - Math.floor(v); }
@@ -57,8 +84,8 @@
       }
       function texFloor(o) {   // 정렬된 바닥/천장 질감 판 (타일 경계가 bx,bz 에 맞는다)
         var m = o.ceil
-          ? ctx.ceilingFlat({ x0: o.x0, x1: o.x1, z0: o.z0, z1: o.z1, y: o.y, tex: o.tex, tile: [o.tw, o.th] })
-          : ctx.floor({ x0: o.x0, x1: o.x1, z0: o.z0, z1: o.z1, y: o.y, tex: o.tex, tile: [o.tw, o.th] });
+          ? ctx.ceilingFlat({ x0: o.x0, x1: o.x1, z0: o.z0, z1: o.z1, y: o.y, tex: o.tex, tile: [o.tw, o.th], gloss: o.gloss })
+          : ctx.floor({ x0: o.x0, x1: o.x1, z0: o.z0, z1: o.z1, y: o.y, tex: o.tex, tile: [o.tw, o.th], gloss: o.gloss === undefined ? 0.85 : o.gloss, reflect: !!o.reflect });
         if (m.material && m.material.map) {
           var u = -(o.bx - o.x0) / o.tw, v = o.ceil ? -(o.bz - o.z0) / o.th : -(o.z1 - o.bz) / o.th;
           m.material.map.offset.set(mod1(u), mod1(v));
@@ -73,7 +100,7 @@
         for (var i = 0; i < n; i++) {
           var p0 = pts[i], p1 = pts[i + 1];
           if (o.y0 + Math.max(p0[1], p1[1]) >= o.top) continue;
-          solid.addQuad(P(p0[0], o.y0 + p0[1]), P(p1[0], o.y0 + p1[1]), P(p1[0], o.top), P(p0[0], o.top), o.color, hint);
+          batFor(o.color).addQuad(P(p0[0], o.y0 + p0[1]), P(p1[0], o.y0 + p1[1]), P(p1[0], o.top), P(p0[0], o.top), o.color, hint);
         }
       }
       // 아치 안쪽 부채꼴(그림판)
@@ -83,7 +110,7 @@
         var hint = o.axis === 'x' ? [o.at + o.nrm, o.y0, o.c] : [o.c, o.y0, o.at + o.nrm];
         for (var i = 0; i < n; i++) {
           var p0 = pts[i], p1 = pts[i + 1], a = P(0, o.y0), b = P(p0[0], o.y0 + p0[1]), c = P(p1[0], o.y0 + p1[1]);
-          solid.addTris([a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]], o.color, hint);
+          batFor(o.color).addTris([a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]], o.color, hint);
         }
       }
       // 아치 안쪽 면(통로 천장)
@@ -93,7 +120,7 @@
         var mid = (o.at0 + o.at1) / 2, hint = o.axis === 'x' ? [mid, o.y0, o.c] : [o.c, o.y0, mid];
         for (var i = 0; i < n; i++) {
           var p0 = pts[i], p1 = pts[i + 1];
-          solid.addQuad(P(o.at0, p0[0], o.y0 + p0[1]), P(o.at1, p0[0], o.y0 + p0[1]), P(o.at1, p1[0], o.y0 + p1[1]), P(o.at0, p1[0], o.y0 + p1[1]), o.color, hint);
+          batFor(o.color).addQuad(P(o.at0, p0[0], o.y0 + p0[1]), P(o.at1, p0[0], o.y0 + p0[1]), P(o.at1, p1[0], o.y0 + p1[1]), P(o.at0, p1[0], o.y0 + p1[1]), o.color, hint);
         }
       }
       // 벽에 실제 창 구멍을 뚫는다. axis 'x': 벽 법선이 x(벽은 z 방향), 'z': 법선이 z
@@ -124,6 +151,7 @@
       }
       var GLASS_PALE = [0xe8eff6, 0xdbe6f1, 0xf3f5f8, 0xd0deec, 0xeaf0f4];
       var GLASS_WARM = [0xf8eed2, 0xf1e2b8, 0xfff5dc, 0xe9d9a8];
+      var GLASS_STAIN = [0x2f5db0, 0xc0392b, 0xe6b52e, 0x2f5db0, 0x3a8a5a, 0xe6b52e, 0x7a3fa0];
       function winAt(o) {  // 벽 중심면에 유리창 + 틀
         var a = { x: o.x, y: o.sill, z: o.z, face: o.face, w: o.w, h: o.h, top: o.top || 'round', pattern: o.pattern || 'grid', colors: o.colors || GLASS_PALE, seed: o.seed || 3, frame: true, beam: !!o.beam, beamReach: o.reach || 9 };
         ctx.window(a);
@@ -139,26 +167,27 @@
           for (var s = 0; s < 4; s++) { vx += (r() - 0.5) * 90; vy += (r() - 0.5) * 60; g.lineTo(vx, vy); }
           g.stroke();
         }
-        g.strokeStyle = '#d2a94e'; g.lineWidth = 10; g.strokeRect(10, 10, w - 20, h - 20);
-        g.strokeStyle = '#8e2b2b'; g.lineWidth = 3; g.strokeRect(25, 25, w - 50, h - 50);
-        function disc(x, y, rad, c) { g.fillStyle = c; g.beginPath(); g.arc(x, y, rad, 0, 6.2832); g.fill(); }
-        disc(cx, cy, 224, '#3e5f4b'); disc(cx, cy, 214, '#ece7da'); disc(cx, cy, 200, '#7b2d2f'); disc(cx, cy, 152, '#ece7da');
+        g.strokeStyle = '#dfbf6a'; g.lineWidth = 10; g.strokeRect(10, 10, w - 20, h - 20);
+        g.strokeStyle = '#b0494a'; g.lineWidth = 3; g.strokeRect(25, 25, w - 50, h - 50);
+        var k = 0.86;
+        function disc(x, y, rad, c) { g.fillStyle = c; g.beginPath(); g.arc(x, y, rad * (x === cx && y === cy ? k : 1), 0, 6.2832); g.fill(); }
+        disc(cx, cy, 224, '#628a72'); disc(cx, cy, 214, '#ece7da'); disc(cx, cy, 200, '#a24b4f'); disc(cx, cy, 152, '#ece7da');
         for (i = 0; i < 12; i++) {
           var an = i * Math.PI / 6;
-          g.strokeStyle = (i % 2) ? '#d2a94e' : '#3e5f4b'; g.lineWidth = 5; g.beginPath(); g.arc(cx + Math.cos(an) * 176, cy + Math.sin(an) * 176, 40, 0, 6.2832); g.stroke();
+          g.strokeStyle = (i % 2) ? '#dfbf6a' : '#628a72'; g.lineWidth = 5; g.beginPath(); g.arc(cx + Math.cos(an) * 176 * k, cy + Math.sin(an) * 176 * k, 40 * k, 0, 6.2832); g.stroke();
         }
-        for (i = 0; i < 24; i++) { var a2 = i * Math.PI / 12; disc(cx + Math.cos(a2) * 130, cy + Math.sin(a2) * 130, 8, i % 2 ? '#3e5f4b' : '#7b2d2f'); }
-        disc(cx, cy, 108, '#7b2d2f'); disc(cx, cy, 92, '#ece7da'); disc(cx, cy, 80, '#3e5f4b'); disc(cx, cy, 60, '#d2a94e'); disc(cx, cy, 44, '#7b2d2f'); disc(cx, cy, 22, '#ece7da');
-        [[0, 0], [w, 0], [0, h], [w, h]].forEach(function (p) { disc(p[0], p[1], 104, '#d2a94e'); disc(p[0], p[1], 92, '#3e5f4b'); disc(p[0], p[1], 76, '#7b2d2f'); disc(p[0], p[1], 44, '#ece7da'); });
-        [[w / 2, 0], [w / 2, h], [0, h / 2], [w, h / 2]].forEach(function (p) { disc(p[0], p[1], 40, '#3e5f4b'); disc(p[0], p[1], 28, '#ece7da'); disc(p[0], p[1], 14, '#7b2d2f'); });
+        for (i = 0; i < 24; i++) { var a2 = i * Math.PI / 12; disc(cx + Math.cos(a2) * 130 * k, cy + Math.sin(a2) * 130 * k, 8, i % 2 ? '#628a72' : '#a24b4f'); }
+        disc(cx, cy, 108, '#a24b4f'); disc(cx, cy, 92, '#ece7da'); disc(cx, cy, 80, '#628a72'); disc(cx, cy, 60, '#dfbf6a'); disc(cx, cy, 44, '#a24b4f'); disc(cx, cy, 22, '#ece7da');
+        [[0, 0], [w, 0], [0, h], [w, h]].forEach(function (p) { disc(p[0], p[1], 104, '#dfbf6a'); disc(p[0], p[1], 92, '#628a72'); disc(p[0], p[1], 76, '#a24b4f'); disc(p[0], p[1], 44, '#ece7da'); });
+        [[w / 2, 0], [w / 2, h], [0, h / 2], [w, h / 2]].forEach(function (p) { disc(p[0], p[1], 40, '#628a72'); disc(p[0], p[1], 28, '#ece7da'); disc(p[0], p[1], 14, '#a24b4f'); });
       });
       var texPanels = ctx.tex.custom(256, 256, function (g, w, h) {
         var r = ctx.rng(5); g.fillStyle = '#e9e2d3'; g.fillRect(0, 0, w, h);
         for (var i = 0; i < 24; i++) { g.strokeStyle = 'rgba(150,128,118,' + (0.05 + r() * 0.08) + ')'; g.beginPath(); var x = r() * w, y = r() * h; g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 80, y + (r() - 0.5) * 60); g.stroke(); }
-        g.strokeStyle = '#d2a94e'; g.lineWidth = 6; g.strokeRect(6, 6, w - 12, h - 12);
-        g.strokeStyle = '#8e2b2b'; g.lineWidth = 2; g.strokeRect(16, 16, w - 32, h - 32);
-        g.fillStyle = '#3e5f4b'; g.beginPath(); g.moveTo(w / 2, 60); g.lineTo(w - 60, h / 2); g.lineTo(w / 2, h - 60); g.lineTo(60, h / 2); g.closePath(); g.fill();
-        g.fillStyle = '#7b2d2f'; g.beginPath(); g.arc(w / 2, h / 2, 30, 0, 6.2832); g.fill();
+        g.strokeStyle = '#dfbf6a'; g.lineWidth = 6; g.strokeRect(6, 6, w - 12, h - 12);
+        g.strokeStyle = '#b0494a'; g.lineWidth = 2; g.strokeRect(16, 16, w - 32, h - 32);
+        g.fillStyle = '#628a72'; g.beginPath(); g.moveTo(w / 2, 60); g.lineTo(w - 60, h / 2); g.lineTo(w / 2, h - 60); g.lineTo(60, h / 2); g.closePath(); g.fill();
+        g.fillStyle = '#a24b4f'; g.beginPath(); g.arc(w / 2, h / 2, 30, 0, 6.2832); g.fill();
         g.fillStyle = '#ece7da'; g.beginPath(); g.arc(w / 2, h / 2, 12, 0, 6.2832); g.fill();
       });
       var texFresco = ctx.tex.custom(512, 512, function (g, w, h) {
@@ -181,12 +210,12 @@
           var c = w / 4, i, j, k;
           for (j = 0; j < 4; j++) for (i = 0; i < 4; i++) {
             var x = i * c, y = j * c;
-            g.fillStyle = '#e6c560'; g.fillRect(x + 2, y + 2, c - 4, c - 4);
-            g.fillStyle = '#a8802a'; g.fillRect(x + 8, y + 8, c - 16, c - 16);
-            g.fillStyle = ((i + j) % 2) ? '#8e2b2b' : '#27406e'; g.fillRect(x + 14, y + 14, c - 28, c - 28);
-            g.fillStyle = '#e0bb52'; g.beginPath(); g.arc(x + c / 2, y + c / 2, c * 0.24, 0, 6.2832); g.fill();
-            for (k = 0; k < 8; k++) { var a = k * Math.PI / 4; g.beginPath(); g.arc(x + c / 2 + Math.cos(a) * c * 0.31, y + c / 2 + Math.sin(a) * c * 0.31, c * 0.06, 0, 6.2832); g.fill(); }
-            g.fillStyle = ((i + j) % 2) ? '#7a2222' : '#1c3258'; g.beginPath(); g.arc(x + c / 2, y + c / 2, c * 0.13, 0, 6.2832); g.fill();
+            g.fillStyle = '#e6c560'; g.fillRect(x + 3, y + 3, c - 6, c - 6);
+            g.fillStyle = '#b08a2e'; g.fillRect(x + 12, y + 12, c - 24, c - 24);
+            g.fillStyle = ((i + j) % 2) ? '#a23a3a' : '#2f4c80'; g.fillRect(x + 24, y + 24, c - 48, c - 48);
+            g.fillStyle = '#e0bb52'; g.beginPath(); g.arc(x + c / 2, y + c / 2, c * 0.2, 0, 6.2832); g.fill();
+            for (k = 0; k < 8; k++) { var a = k * Math.PI / 4; g.beginPath(); g.arc(x + c / 2 + Math.cos(a) * c * 0.27, y + c / 2 + Math.sin(a) * c * 0.27, c * 0.05, 0, 6.2832); g.fill(); }
+            g.fillStyle = ((i + j) % 2) ? '#8a2a2a' : '#223c6a'; g.beginPath(); g.arc(x + c / 2, y + c / 2, c * 0.11, 0, 6.2832); g.fill();
             g.fillStyle = '#f0d070'; g.beginPath(); g.arc(x + c / 2, y + c / 2, c * 0.05, 0, 6.2832); g.fill();
           }
         });
@@ -196,11 +225,12 @@
         return ctx.tex.custom(512, 512, function (g, w, h) {
           g.fillStyle = '#c9a13b'; g.fillRect(0, 0, w, h);
           g.fillStyle = '#e6c560'; g.fillRect(14, 14, w - 28, h - 28);
-          g.fillStyle = '#a8802a'; g.fillRect(34, 34, w - 68, h - 68);
-          g.fillStyle = '#25396b'; g.fillRect(52, 52, w - 104, h - 104);
-          g.strokeStyle = '#e0bb52'; g.lineWidth = 6; g.strokeRect(70, 70, w - 140, h - 140);
+          g.fillStyle = '#b08a2e'; g.fillRect(34, 34, w - 68, h - 68);
+          g.fillStyle = '#e0bb52'; g.fillRect(48, 48, w - 96, h - 96);
+          g.fillStyle = '#2f4c80'; g.fillRect(84, 84, w - 168, h - 168);
+          g.strokeStyle = '#b08a2e'; g.lineWidth = 6; g.strokeRect(96, 96, w - 192, h - 192);
           g.fillStyle = '#e0bb52';
-          for (var k = 0; k < 16; k++) { var a = k * Math.PI / 8; g.beginPath(); g.arc(w / 2 + Math.cos(a) * 170, h / 2 + Math.sin(a) * 170, 12, 0, 6.2832); g.fill(); }
+          for (var k = 0; k < 16; k++) { var a = k * Math.PI / 8; g.beginPath(); g.arc(w / 2 + Math.cos(a) * 190, h / 2 + Math.sin(a) * 190, 12, 0, 6.2832); g.fill(); }
           if (withEmblem) {
             g.save(); g.translate(w / 2, h / 2 + 30);
             [-0.7, 0.7].forEach(function (rot, idx) {
@@ -290,8 +320,8 @@
       }
 
       // ---------- 재질(키트 팩토리) ----------
-      var matMosaic = ctx.mats.lambert({ tex: mosaicTex(), side: T.DoubleSide });
-      var matApseWall = ctx.mats.lambert({ tex: apseWallTex(), side: T.DoubleSide });
+      var matMosaic = ctx.mats.standard({ map: mosaicTex(), side: T.DoubleSide, roughness: 0.38, metalness: 0.45 });
+      var matApseWall = ctx.mats.standard({ map: apseWallTex(), side: T.DoubleSide, roughness: 0.55, metalness: 0.1 });
       if (matMosaic.emissive) { matMosaic.emissive.setHex(0xffffff); matMosaic.emissiveMap = matMosaic.map; matMosaic.emissiveIntensity = 0.3; }
       if (matApseWall.emissive) { matApseWall.emissive.setHex(0xffffff); matApseWall.emissiveMap = matApseWall.map; matApseWall.emissiveIntensity = 0.2; }
       ctx.onHour(function (env) {
@@ -300,16 +330,17 @@
         if (matApseWall.emissive) matApseWall.emissiveIntensity = k * 0.7;
       });
 
+      mark('before');
       // =====================================================================
       // 1. 바닥
       // =====================================================================
-      texFloor({ x0: -XB, x1: XB, z0: ZT1, z1: ZE, y: 0, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: -4.1 });
+      texFloor({ x0: -XB, x1: XB, z0: ZT1, z1: ZE, y: 0, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: -4.1, reflect: true });
       SIDES.forEach(function (s) {
         texFloor({ x0: s < 0 ? -XO : XB, x1: s < 0 ? -XB : XO, z0: -5.3, z1: ZE, y: 0, tex: texPanels, tw: 3.8, th: 3.65, bx: s < 0 ? -XO : XB, bz: -5.3 });
       });
       // 익랑·성가대석·후진 바닥(4단 높음)
       B(-XT, XT, 0, TY - 0.01, ZAP, ZT1, STU_SH);
-      texFloor({ x0: -XT, x1: XT, z0: ZT0, z1: ZT1, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT1 });
+      texFloor({ x0: -XT, x1: XT, z0: ZT0, z1: ZT1, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT1, reflect: true });
       texFloor({ x0: -XN - 0.2, x1: XN + 0.2, z0: ZAP, z1: ZT0, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT0 });
       ctx.floorZone({ x0: -XT, x1: XT, z0: ZAP, z1: ZT1, y: TY });
       // 신랑→익랑 계단 4단 + 붉은 카펫
@@ -318,6 +349,7 @@
       B(-1.6, 1.6, TY, TY + 0.014, -8.0, ZT1 + 0.2, 0xa8323a, { vary: 0 });
       B(-1.6, -1.5, TY + 0.014, TY + 0.02, -8.0, ZT1 + 0.2, GOLD2, { vary: 0 }); B(1.5, 1.6, TY + 0.014, TY + 0.02, -8.0, ZT1 + 0.2, GOLD2, { vary: 0 });
 
+      mark('before');
       // =====================================================================
       // 2. 신랑 아케이드 (피어 6 + 아치 5 + 사도 벽감 12)
       // =====================================================================
@@ -329,14 +361,15 @@
         var u = H / 2.3, ry = Math.atan2(fx, fz);
         function P(lf, lr) { return [cx + fx * lf - fz * lr, cz + fz * lf + fx * lr]; }
         var M = 0xf0ebe0, M2 = 0xe3ddd0, HAIR = 0xd5cdbd, p;
-        ctx.cyl({ x: cx, y: y0, z: cz, r: 0.47 * u, rTop: 0.3 * u, h: 1.0 * u, seg: 9, color: M });
+        ctx.cyl({ x: cx, y: y0, z: cz, r: 0.54 * u, rTop: 0.31 * u, h: 1.0 * u, seg: 9, color: M });
         ctx.cyl({ x: cx, y: y0 + 0.95 * u, z: cz, r: 0.31 * u, rTop: 0.27 * u, h: 0.5 * u, seg: 9, color: M2 });
-        ctx.box({ x: cx, y: y0 + 1.4 * u, z: cz, w: 0.64 * u, h: 0.42 * u, d: 0.34 * u, color: M, ry: ry });
-        [-1, 1].forEach(function (sg) { p = P(0, sg * 0.31 * u); ctx.sphere({ x: p[0], y: y0 + 1.78 * u, z: p[1], r: 0.15 * u, color: M, w: 8, h: 6 }); });
+        ctx.box({ x: cx, y: y0 + 1.38 * u, z: cz, w: 0.7 * u, h: 0.46 * u, d: 0.36 * u, color: M, ry: ry });
+        [-1, 1].forEach(function (sg) { p = P(0, sg * 0.31 * u); ctx.ico({ x: p[0], y: y0 + 1.78 * u, z: p[1], r: 0.16 * u, color: M, detail: 0 }); });
         ctx.cyl({ x: cx, y: y0 + 1.78 * u, z: cz, r: 0.08 * u, h: 0.14 * u, seg: 6, color: M });
-        p = P(0.02 * u, 0); ctx.sphere({ x: p[0], y: y0 + 2.0 * u, z: p[1], r: 0.155 * u, color: 0xf2ece1, w: 9, h: 7 });
+        p = P(0.02 * u, 0); ctx.sphere({ x: p[0], y: y0 + 2.0 * u, z: p[1], r: 0.155 * u, color: 0xf2ece1, w: 8, h: 6 });
         ctx.sphere({ x: p[0], y: y0 + 2.13 * u, z: p[1], r: 0.17 * u, sy: 0.1 * u, color: HAIR, w: 8, h: 4 });
         p = P(0.1 * u, 0); ctx.ico({ x: p[0], y: y0 + 1.9 * u, z: p[1], r: 0.1 * u, sy: 0.14 * u, color: HAIR, detail: 0 });
+        (function () { var a = P(0.12 * u, -0.3 * u), b2 = P(0.2 * u, 0.28 * u); solid.addBeam([a[0], y0 + 1.76 * u, a[1]], [b2[0], y0 + 0.9 * u, b2[1]], 0.1 * u, 0.1 * u, M2, { vary: 0.02 }); for (var fi = -1; fi <= 1; fi++) { var fp = P(0.44 * u * (1 - Math.abs(fi) * 0.12), fi * 0.24 * u); ctx.box({ x: fp[0], y: y0 + 0.05 * u, z: fp[1], w: 0.05 * u, h: 0.85 * u, d: 0.07 * u, color: M2, ry: ry }); } p = P(0.17 * u, 0); ctx.box({ x: p[0], y: y0 + 1.95 * u, z: p[1], w: 0.04 * u, h: 0.1 * u, d: 0.05 * u, color: M, ry: ry }); })();
         p = P(-0.2 * u, -0.28 * u); ctx.box({ x: p[0], y: y0 + 0.3 * u, z: p[1], w: 0.14 * u, h: 1.5 * u, d: 0.5 * u, color: M2, ry: ry });
         p = P(0, 0.4 * u); ctx.box({ x: p[0], y: y0 + 0.55 * u, z: p[1], w: 0.14 * u, h: 0.7 * u, d: 0.13 * u, color: M, ry: ry });
         var hand = P(0.32 * u, -0.45 * u), sh = P(0, -0.3 * u);
@@ -368,8 +401,8 @@
         ctx.box({ x: xc, y: 1.07, z: zc, w: 0.96, h: 0.23, d: 1.6, color: MARB });
         ctx.box({ x: xc - s * 0.49, y: 1.07, z: zc, w: 0.04, h: 0.05, d: 1.64, color: col(MARB, 0.9) });
         ctx.box({ x: fr + s * 0.0 + (-s * 0.0), y: 0.42, z: zc, w: 0.04, h: 0.5, d: 0.95, color: 0xa9786f });
-        ctx.solid.add(Geo.cyl(12, 1), GOLD, { x: fr - s * 0.03, y: 0.67, z: zc, rz: PI / 2, sx: 0.22, sy: 0.03, sz: 0.22, flat: true, vary: 0 });
-        ctx.solid.add(Geo.cyl(12, 1), 0x6a4a2a, { x: fr - s * 0.04, y: 0.67, z: zc, rz: PI / 2, sx: 0.12, sy: 0.03, sz: 0.12, flat: true, vary: 0 });
+        ctx.solid.add(Geo.cyl(8, 1), GOLD, { x: fr - s * 0.03, y: 0.67, z: zc, rz: PI / 2, sx: 0.22, sy: 0.03, sz: 0.22, flat: true, vary: 0 });
+        ctx.solid.add(Geo.cyl(8, 1), 0x6a4a2a, { x: fr - s * 0.04, y: 0.67, z: zc, rz: PI / 2, sx: 0.12, sy: 0.03, sz: 0.12, flat: true, vary: 0 });
         ctx.box({ x: fr - s * 0.02, y: 1.12, z: zc, w: 0.03, h: 0.1, d: 0.8, color: 0x3a3a46 });
         ctx.addCollider({ x0: Math.min(fr, xf + s * 1.0), x1: Math.max(fr, xf + s * 1.0), z0: zc - 0.82, z1: zc + 0.82 });
       }
@@ -385,7 +418,7 @@
           B(nj0, nj1, NY + NR, YTA, zp - NR, zp + NR, STU);                    // 벽감 위 상인방
           spandrel({ axis: 'x', at: xf, c: zp, a: NR, y0: NY, rise: NR, top: NY + NR, nrm: -s, color: STU });
           // 벽감 안쪽: 뒤판(청록회색) + 곡면 천장 + 조개 늑
-          var bk = 0x56665f;
+          var bk = 0x8a9d92;
           B(Math.min(xn, xn - s * 0.03), Math.max(xn, xn - s * 0.03), 0, NY, zp - NR, zp + NR, bk);
           archFill({ axis: 'x', at: xn - s * 0.03, c: zp, a: NR, y0: NY, rise: NR, nrm: -s, color: col(bk, 1.1) });
           soffit({ axis: 'x', at0: xf, at1: xn, c: zp, a: NR, y0: NY, rise: NR, color: 0xd8d2c4 });
@@ -394,11 +427,17 @@
             solid.addBeam([xn - s * 0.05, NY, zp], [xn - s * 0.05, ey, ex], 0.035, 0.03, 0xd6cfbe, { vary: 0 });
           }
           solid.addBeam([xn - s * 0.05, NY + 0.0, zp - NR], [xn - s * 0.05, NY, zp + NR], 0.05, 0.04, GOLD, { vary: 0 });
+          // 천상 예루살렘의 문(벽감 뒤 그림): 짙은 청회색 문 + 금 테
+          var xd = xn - s * 0.045;
+          B(Math.min(xd, xd - s * 0.01), Math.max(xd, xd - s * 0.01), PH + 0.05, NY, zp - 0.62, zp + 0.62, 0x4b5c6e);
+          archFill({ axis: 'x', at: xd - s * 0.01, c: zp, a: 0.62, y0: NY, rise: 0.62, nrm: -s, color: 0x4b5c6e });
+          B(Math.min(xd - s * 0.01, xd - s * 0.02), Math.max(xd - s * 0.01, xd - s * 0.02), PH + 0.05, NY, zp - 0.64, zp - 0.58, GOLD); B(Math.min(xd - s * 0.01, xd - s * 0.02), Math.max(xd - s * 0.01, xd - s * 0.02), PH + 0.05, NY, zp + 0.58, zp + 0.64, GOLD);
+          solid.addBeam([xd - s * 0.025, PH + 0.05, zp], [xd - s * 0.025, NY + 0.62, zp], 0.02, 0.03, GOLD, { vary: 0 });
           // 벽감 테두리 아치 + 녹색 대리석 기둥 2
-          ctx.arch({ x: xf, y: NY, z: zp, span: NR * 2, rise: NR, t: 0.2, depth: 0.3, axis: 'z', type: 'round', color: STU2 });
+          ctx.arch({ x: xf, y: NY, z: zp, span: NR * 2, rise: NR, t: 0.2, depth: 0.3, axis: 'z', type: 'round', color: STU2, seg: 8 });
           [-1, 1].forEach(function (sg) {
             ctx.column({ x: xf - s * 0.02, z: zp + sg * 0.95, y: PH, h: NY - PH, r: 0.1, style: 'round', capital: 'block', base: false, color: GREEN, capColor: GOLD, collide: false });
-            ctx.column({ x: xf - s * 0.0, z: zp + sg * 1.3, y: 0, h: 8.55, r: 0.2, style: 'fluted', capital: 'composite', base: true, color: STU2, capColor: GOLD2, collide: false, ry: s > 0 ? PI / 2 : PI / 2 });
+            pil(xf, zp + sg * 1.3, 0, 8.55, 0.2, STU2, GOLD2);
           });
           // 상인방 위 스투코 부조 판(흰색 + 금 테)
           B(Math.min(xf, xf - s * 0.06), Math.max(xf, xf - s * 0.06), 6.0, 7.9, zp - 1.15, zp + 1.15, STU2);
@@ -413,41 +452,44 @@
           var kind = APOS[String(s)][k];
           pedestal(s, zp);
           statue(xf + s * 0.55, zp, PH, -s, 0, 2.44, kind);
-          ctx.addGlow({ x: xf + s * 0.4, y: 3.2, z: zp, size: 2.2, color: 0xffd9a0, kind: 'lamp' });
+          ctx.addGlow({ x: xf + s * 0.4, y: 3.0, z: zp, size: 1.3, color: 0xffd9a0, kind: 'lamp' });
         }
+        mark('side-piers');
         // 아치 5개: 스팬드럴 + 소핏 + 테두리 + 창
         for (var a = 0; a < 5; a++) {
           var zb = ZB[a];
           [[xf, -s], [xb, s]].forEach(function (f) { spandrel({ axis: 'x', at: f[0], c: zb, a: 2.15, y0: YS, rise: AR, top: YTA, nrm: f[1], color: STU }); });
           soffit({ axis: 'x', at0: xf, at1: xb, c: zb, a: 2.15, y0: YS, rise: AR, color: 0xdcd6c8, n: 14 });
-          ctx.arch({ x: xf, y: YS, z: zb, span: 4.3, rise: AR, t: 0.3, depth: 0.32, axis: 'z', type: 'round', color: STU2, seg: 14 });
-          ctx.arch({ x: xb, y: YS, z: zb, span: 4.3, rise: AR, t: 0.22, depth: 0.24, axis: 'z', type: 'round', color: STU2, seg: 14 });
+          ctx.arch({ x: xf, y: YS, z: zb, span: 4.3, rise: AR, t: 0.3, depth: 0.32, axis: 'z', type: 'round', color: STU2, seg: 10 });
+          ctx.arch({ x: xb, y: YS, z: zb, span: 4.3, rise: AR, t: 0.22, depth: 0.24, axis: 'z', type: 'round', color: STU2, seg: 10 });
         }
+        mark('side-arches');
         // 위쪽 벽(창 구멍 5개)
         var wins = ZB.map(function (zc, i) { return { c: zc, sill: 9.7, w: i === 2 ? 2.8 : 1.8, h: 2.0, top: 'round' }; });
         wallOpen({ axis: 'x', n0: Math.min(xf, xb), n1: Math.max(xf, xb), u0: ZT1, u1: ZE, y0: YTA, y1: HC, wins: wins, color: STU, sillStone: MARB, sillIn: 0.1 });
         ZB.forEach(function (zc, i) {
-          winAt({ x: (xf + xb) / 2, z: zc, sill: 9.7, w: i === 2 ? 2.8 : 1.8, h: 2.0, top: 'round', face: [-s, 0], pattern: 'grid', seed: 10 + i + (s > 0 ? 7 : 0), beam: true, reach: 9, colors: GLASS_PALE });
+          winAt({ x: (xf + xb) / 2, z: zc, sill: 9.7, w: i === 2 ? 2.8 : 1.8, h: 2.0, top: 'round', face: [-s, 0], pattern: 'lancet', seed: 10 + i + (s > 0 ? 7 : 0), beam: (i === 1 || i === 3), reach: 9, colors: GLASS_PALE });
         });
+        mark('side-clerestory+windows');
         // 코니스·글귀띠·타원 그림·상부 금 코니스
         B(Math.min(xf, xf - s * 0.05), Math.max(xf, xf - s * 0.05), 8.1, 8.7, ZT1, ZE, NAVY);
-        for (var d = 0; d < 80; d++) { var dz = ZT1 + 0.6 + d * 0.5; if (dz > ZE - 0.4) break; B(Math.min(xf - s * 0.05, xf - s * 0.08), Math.max(xf - s * 0.05, xf - s * 0.08), 8.28, 8.52, dz, dz + 0.1 + ((d * 7) % 5) * 0.05, GOLD2, { vary: 0 }); }
+        for (var d = 0; d < 50; d++) { var dz = ZT1 + 0.6 + d * 0.8; if (dz > ZE - 0.4) break; B(Math.min(xf - s * 0.05, xf - s * 0.08), Math.max(xf - s * 0.05, xf - s * 0.08), 8.28, 8.52, dz, dz + 0.1 + ((d * 7) % 5) * 0.05, GOLD2, { vary: 0 }); }
         B(Math.min(xf, xf - s * 0.4), Math.max(xf, xf - s * 0.4), 8.7, 9.1, ZT1, ZE, STU2);
         B(Math.min(xf - s * 0.4, xf - s * 0.46), Math.max(xf - s * 0.4, xf - s * 0.46), 8.78, 8.88, ZT1, ZE, GOLD);
         B(Math.min(xf, xf - s * 0.42), Math.max(xf, xf - s * 0.42), 13.15, 13.5, ZT1, ZE, GOLD2);
         B(Math.min(xf, xf - s * 0.14), Math.max(xf, xf - s * 0.14), 13.5, HC, ZT1, ZE, STU2);
-        for (var m = 0; m < 66; m++) { var mz = ZT1 + 0.4 + m * 0.6; if (mz > ZE - 0.3) break; B(Math.min(xf - s * 0.14, xf - s * 0.28), Math.max(xf - s * 0.14, xf - s * 0.28), 13.58, 14.1, mz, mz + 0.26, GOLD, { vary: 0.02 }); }
+        for (var m = 0; m < 42; m++) { var mz = ZT1 + 0.4 + m * 0.95; if (mz > ZE - 0.3) break; B(Math.min(xf - s * 0.14, xf - s * 0.28), Math.max(xf - s * 0.14, xf - s * 0.28), 13.58, 14.1, mz, mz + 0.26, GOLD, { vary: 0.02 }); }
         ZP.forEach(function (zp) {
           var ox = xf - s * 0.05;
-          ctx.solid.add(Geo.cyl(16, 1), GOLD, { x: ox - s * 0.0, y: 11.1, z: zp, rz: PI / 2, sx: 1.3, sy: 0.07, sz: 0.85, flat: true, vary: 0 });
-          ctx.solid.add(Geo.cyl(16, 1), 0x4b3c33, { x: ox - s * 0.05, y: 11.1, z: zp, rz: PI / 2, sx: 1.15, sy: 0.05, sz: 0.72, flat: true, vary: 0 });
+          ctx.solid.add(Geo.cyl(12, 1), GOLD, { x: ox - s * 0.0, y: 11.1, z: zp, rz: PI / 2, sx: 1.3, sy: 0.07, sz: 0.85, flat: true, vary: 0 });
+          ctx.solid.add(Geo.cyl(12, 1), 0x4b3c33, { x: ox - s * 0.05, y: 11.1, z: zp, rz: PI / 2, sx: 1.15, sy: 0.05, sz: 0.72, flat: true, vary: 0 });
           ctx.solid.add(Geo.cyl(12, 1), 0xd9c3a0, { x: ox - s * 0.09, y: 11.2, z: zp, rz: PI / 2, sx: 0.55, sy: 0.03, sz: 0.3, flat: true, vary: 0 });
         });
-        // 아치 위 작은 금색 장식 메달
+        mark('side-cornices');
         // ------- 안쪽 측랑 / 열주 / 바깥 측랑 -------
         var xa = s * XA, xc = s * XC, xo = s * XO, xw = s * (XO + 1.0);
         var cn = [[Math.min(xa, xc), Math.max(xa, xc)]];
-        ZP.forEach(function (zp) { ctx.column({ x: s * (XA + XC) / 2, z: zp, y: 0, h: 5.4, r: 0.26, style: 'round', capital: 'ionic', color: STU, capColor: STU2, collide: true }); });
+        ZP.forEach(function (zp) { pil(s * (XA + XC) / 2, zp, 0, 5.4, 0.26, STU, GOLD2); ctx.addCollider({ x: s * (XA + XC) / 2, z: zp, r: 0.4 }); });
         B(Math.min(xa, xc), Math.max(xa, xc), 5.4, 6.3, -5.3, ZE, STU2);
         B(Math.min(xa, xc), Math.max(xa, xc), 6.3, 7.5, -5.3, ZE, STU);
         B(Math.min(xa + s * 0.0, xa - s * 0.1), Math.max(xa, xa - s * 0.1), 6.2, 6.4, -5.3, ZE, GOLD);
@@ -456,7 +498,7 @@
         B(Math.min(xo, xw), Math.max(xo, xw), 0, 7.8, -5.3, ZE, 0xe2dacb);
         B(Math.min(xo, xo - s * 0.1), Math.max(xo, xo - s * 0.1), 0, 1.2, -5.3, ZE, STU_SH);
         B(Math.min(xo, xo - s * 0.14), Math.max(xo, xo - s * 0.14), 1.2, 1.3, -5.3, ZE, 0xb98a66);
-        ZP.forEach(function (zp) { ctx.column({ x: xo - s * 0.0, z: zp, y: 0, h: 6.2, r: 0.3, style: 'fluted', capital: 'composite', color: STU2, capColor: GOLD2, collide: false }); });
+        ZP.forEach(function (zp) { pil(xo, zp, 0, 6.2, 0.3, STU2, GOLD2); });
         ZB.forEach(function (zb, i) {
           var big = (s < 0 && i === 0);   // 코르시니 경당(가장 큼)
           var aw = big ? 1.9 : 1.55, ay = big ? 3.5 : 3.3, ar = aw * 0.9;
@@ -465,12 +507,13 @@
           // 제단화 속 인물(색 면)
           B(Math.min(xo + s * 0.12, xo + s * 0.1), Math.max(xo + s * 0.12, xo + s * 0.1), 1.2, 3.2, zb - 0.45, zb + 0.45, i % 2 ? 0xd7c8a8 : 0x3b5d90);
           ctx.sphere({ x: xo + s * 0.1, y: 3.4, z: zb, r: 0.22, color: 0xe8cfae, w: 8, h: 6 });
-          ctx.arch({ x: xo, y: ay, z: zb, span: aw * 2, rise: ar, t: 0.28, depth: 0.3, axis: 'z', type: 'round', color: STU2 });
+          ctx.arch({ x: xo, y: ay, z: zb, span: aw * 2, rise: ar, t: 0.28, depth: 0.3, axis: 'z', type: 'round', color: STU2, seg: 8 });
           ctx.box({ x: xo - s * 0.35, y: 0, z: zb, w: 0.7, h: 0.95, d: 2.4, color: MARB });
           ctx.box({ x: xo - s * 0.4, y: 0.95, z: zb, w: 0.78, h: 0.08, d: 2.5, color: GOLD });
           ctx.addCollider({ x0: Math.min(xo - s * 0.75, xo), x1: Math.max(xo - s * 0.75, xo), z0: zb - 1.25, z1: zb + 1.25 });
         });
         ctx.addCollider({ x0: Math.min(xo, s * XT), x1: Math.max(xo, s * XT), z0: -5.9, z1: ZE + 2 });
+        mark('side-aisle-walls');
         // 안쪽 측랑 작은 돔(돛형 궁륭), 바깥 측랑 평천장(목재+금)
         ctx.vault({ type: 'sail', x0: Math.min(s * XB, xa), x1: Math.max(s * XB, xa), z0: -5.3, z1: ZE, y: 6.3, rise: 1.5, bays: [1, 10], color: 0xf1eadb });
         var oc = texFloor({ ceil: true, x0: Math.min(xc, xo), x1: Math.max(xc, xo), z0: -5.3, z1: ZE, y: 6.2, tex: ctx.tex.coffer({ base: 0x6b3e2e, gold: 0xd9b45a, border: 0xa07a30, n: 2 }), tw: 3.9, th: 3.975, bx: Math.min(xc, xo), bz: -5.3 });
@@ -483,12 +526,13 @@
         ctx.addCollider({ x0: Math.min(s * XB, s * XT), x1: Math.max(s * XB, s * XT), z0: ZT1, z1: -5.3 });
       });
 
+      mark('before');
       // =====================================================================
       // 3. 입구 벽(문 5개 + 큰 창)
       // =====================================================================
       wallOpen({ axis: 'z', n0: ZE, n1: ZE + 1.0, u0: -XO - 1.0, u1: XO + 1.0, y0: 0, y1: HC, color: STU, sillStone: MARB, sillIn: 0.1,
         wins: [{ c: 0, sill: 7.2, w: 3.2, h: 3.4, top: 'round' }, { c: -3.8, sill: 7.2, w: 1.3, h: 2.6, top: 'round' }, { c: 3.8, sill: 7.2, w: 1.3, h: 2.6, top: 'round' }] });
-      winAt({ x: 0, z: ZE + 0.5, sill: 7.2, w: 3.2, h: 3.4, top: 'round', face: [0, -1], pattern: 'grid', seed: 3, beam: true, reach: 12 });
+      winAt({ x: 0, z: ZE + 0.5, sill: 7.2, w: 3.2, h: 3.4, top: 'round', face: [0, -1], pattern: 'grid', seed: 3, beam: false, reach: 12 });
       winAt({ x: -3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'grid', seed: 4 });
       winAt({ x: 3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'grid', seed: 5 });
       [[0, 2.4, 4.7], [-7.97, 1.7, 3.8], [7.97, 1.7, 3.8], [-12, 1.7, 3.4], [12, 1.7, 3.4]].forEach(function (d) {
@@ -504,13 +548,14 @@
       ctx.addCollider({ x0: -XT, x1: XT, z0: ZE, z1: ZE + 2 });
       [-3.3, 3.3].forEach(function (x) { ctx.holyFont({ x: x, z: 33.1 }); });
 
+      mark('before');
       // =====================================================================
       // 4. 천장: 금박 격자 평천장(+ 실제 돌출 보)
       // =====================================================================
       function cofferBeams(x0, x1, z0, z1, nx, nz) {
         var i, x, z, dx = (x1 - x0) / nx, dz = (z1 - z0) / nz;
-        for (i = 0; i <= nx; i++) { x = x0 + dx * i; B(x - 0.1, x + 0.1, HC - 0.3, HC, z0, z1, GOLD, { vary: 0.03 }); B(x - 0.2, x - 0.1, HC - 0.16, HC, z0, z1, GOLD_D, { vary: 0 }); B(x + 0.1, x + 0.2, HC - 0.16, HC, z0, z1, GOLD_D, { vary: 0 }); }
-        for (i = 0; i <= nz; i++) { z = z0 + dz * i; B(x0, x1, HC - 0.3, HC, z - 0.1, z + 0.1, GOLD, { vary: 0.03 }); B(x0, x1, HC - 0.16, HC, z - 0.2, z - 0.1, GOLD_D, { vary: 0 }); B(x0, x1, HC - 0.16, HC, z + 0.1, z + 0.2, GOLD_D, { vary: 0 }); }
+        for (i = 0; i <= nx; i++) { x = x0 + dx * i; B(x - 0.12, x + 0.12, HC - 0.3, HC, z0, z1, GOLD, { vary: 0.03 }); }
+        for (i = 0; i <= nz; i++) { z = z0 + dz * i; B(x0, x1, HC - 0.3, HC, z - 0.12, z + 0.12, GOLD, { vary: 0.03 }); }
       }
       var cn1 = texFloor({ ceil: true, x0: -XN, x1: XN, z0: ZT1, z1: ZE, y: HC - 0.001, tex: texCoffer, tw: 9.54, th: 4 * (ZE - ZT1) / 16, bx: -XN, bz: ZT1 });
       brighten(cn1, 0.5); cofferBeams(-XN, XN, ZT1, ZE, 4, 16);
@@ -528,6 +573,7 @@
       B(-XT, -XT + 0.14, 13.5, HC, ZT0, ZT1, STU2); B(XT - 0.14, XT, 13.5, HC, ZT0, ZT1, STU2);
       [[4.77, XT], [-XT, -4.77]].forEach(function (r) { B(r[0], r[1], 13.15, 13.5, ZT0, ZT0 + 0.42, GOLD2); B(r[0], r[1], 13.5, HC, ZT0, ZT0 + 0.14, STU2); });
 
+      mark('before');
       // =====================================================================
       // 5. 익랑 (+4단): 벽, 창, 오르간, 성체 제대, 개선 아치
       // =====================================================================
@@ -536,17 +582,17 @@
         // 뒷벽 (z=ZT0 .. -16.44), x 4.77..18.3
         wallOpen({ axis: 'z', n0: ZT0 - 1.0, n1: ZT0, u0: Math.min(s * XN, s * XT), u1: Math.max(s * XN, s * XT), y0: 0, y1: HC, color: 0xe2d9c8, sillStone: MARB,
           wins: [{ c: s * 8.6, sill: 9.0, w: 1.5, h: 2.4, top: 'round' }, { c: s * 13.6, sill: 9.0, w: 1.5, h: 2.4, top: 'round' }] });
-        [8.6, 13.6].forEach(function (xx, i) { winAt({ x: s * xx, z: ZT0 - 0.5, sill: 9.0, w: 1.5, h: 2.4, top: 'round', face: [0, 1], seed: 20 + i + (s > 0 ? 3 : 0), colors: GLASS_WARM }); });
+        [8.6, 13.6].forEach(function (xx, i) { winAt({ x: s * xx, z: ZT0 - 0.5, sill: 9.0, w: 1.5, h: 2.4, top: 'round', face: [0, 1], seed: 20 + i + (s > 0 ? 3 : 0), colors: GLASS_WARM, pattern: 'lancet' }); });
         // 끝벽
         wallOpen({ axis: 'x', n0: Math.min(s * XT, s * (XT + 1)), n1: Math.max(s * XT, s * (XT + 1)), u0: ZT0, u1: ZT1, y0: 0, y1: HC, color: 0xe2d9c8, sillStone: MARB,
           wins: [{ c: -6.8, sill: 9.0, w: 1.3, h: 2.4, top: 'round' }, { c: -14.4, sill: 9.0, w: 1.3, h: 2.4, top: 'round' }] });
-        [-6.8, -14.4].forEach(function (zz, i) { winAt({ x: s * (XT + 0.5), z: zz, sill: 9.0, w: 1.3, h: 2.4, top: 'round', face: [-s, 0], seed: 30 + i, colors: GLASS_WARM }); });
+        [-6.8, -14.4].forEach(function (zz, i) { winAt({ x: s * (XT + 0.5), z: zz, sill: 9.0, w: 1.3, h: 2.4, top: 'round', face: [-s, 0], seed: 30 + i, colors: GLASS_WARM, pattern: 'lancet' }); });
         // 앞벽 창(측랑 끝 벽 위) z=-5.3..-5.9 얇은 벽이므로 위쪽만 창 구멍
         [9.0, 14.0].forEach(function (xx, i) { /* 앞벽은 측랑 끝벽(0..HC, 두께 .6) — 위쪽 창은 장식 유리로 */
-          ctx.window({ x: s * xx, y: 9.0, z: ZT1 + 0.04, face: [0, -1], w: 1.5, h: 2.4, top: 'round', pattern: 'grid', colors: GLASS_WARM, seed: 40 + i, frame: true, beam: false });
+          ctx.window({ x: s * xx, y: 9.0, z: ZT1 + 0.04, face: [0, -1], w: 1.5, h: 2.4, top: 'round', pattern: 'lancet', colors: GLASS_WARM, seed: 40 + i, frame: true, beam: false });
         });
         // 하부 대리석 판(질감) + 프레스코
-        var lowTex = ctx.tex.pattern('stone', { c1: 0xcdb8a8, c2: 0xb9a090 });
+        var lowTex = ctx.tex.pattern('stone', { c1: 0xe6d7c8, c2: 0xd6c2b0 });
         ctx.wallFace({ x0: s * XN, z0: ZT0 + 0.01, x1: s * XT, z1: ZT0 + 0.01, y0: TY, y1: 3.2, facing: [0, 1], tex: lowTex, tile: [2.5, 2.9] });
         ctx.wallFace({ x0: s * XB, z0: ZT1 - 0.01, x1: s * XT, z1: ZT1 - 0.01, y0: TY, y1: 3.2, facing: [0, -1], tex: lowTex, tile: [2.5, 2.9] });
         ctx.wallFace({ x0: s * (XT - 0.01), z0: ZT0, x1: s * (XT - 0.01), z1: ZT1, y0: TY, y1: 3.2, facing: [-s, 0], tex: lowTex, tile: [2.5, 2.9] });
@@ -558,7 +604,7 @@
         B(Math.min(s * XB, s * XT), Math.max(s * XB, s * XT), 3.2, 3.4, ZT1 - 0.1, ZT1, GOLD2); B(Math.min(s * XB, s * XT), Math.max(s * XB, s * XT), 8.0, 8.35, ZT1 - 0.2, ZT1, STU2);
         B(Math.min(s * XT, s * (XT - 0.1)), Math.max(s * XT, s * (XT - 0.1)), 3.2, 3.4, ZT0, ZT1, GOLD2); B(Math.min(s * XT, s * (XT - 0.2)), Math.max(s * XT, s * (XT - 0.2)), 8.0, 8.35, ZT0, ZT1, STU2);
         // 벽기둥
-        [8.8, 13.6].forEach(function (xx) { ctx.column({ x: s * xx, z: ZT0 + 0.0, y: TY, h: 8.0, r: 0.28, style: 'fluted', capital: 'composite', color: STU2, capColor: GOLD2, collide: false }); });
+        [8.8, 13.6].forEach(function (xx) { pil(s * xx, ZT0, TY, 8.0, 0.28, STU2, GOLD2); });
       });
       // 후면(익랑 뒷벽·성가대석 벽) 충돌
       SIDES.forEach(function (s) { ctx.addCollider({ x0: Math.min(s * XN, s * XT), x1: Math.max(s * XN, s * XT), z0: ZAP, z1: ZT0 }); });
@@ -573,7 +619,7 @@
         [-1, 1].forEach(function (sg) { ctx.column({ x: ox - 1.0, z: zc + sg * 2.7, y: TY, h: 3.9, r: 0.28, style: 'round', capital: 'ionic', color: YEL, capColor: GOLD2, collide: true }); });
         B(ox - 0.9, ox, 4.6, 9.4, zc - 3.0, zc + 3.0, 0x6b4a2a);
         var hs = [[-2.5, 2.6], [-1.9, 3.3], [-1.3, 2.6], [-0.7, 3.6], [0, 4.2], [0.7, 3.6], [1.3, 2.6], [1.9, 3.3], [2.5, 2.6]];
-        hs.forEach(function (p) { ctx.cyl({ x: ox - 0.95, y: 5.0, z: zc + p[0], r: 0.19, rTop: 0.17, h: p[1] + 0.2, seg: 8, color: 0xcdd0d8 }); ctx.cone({ x: ox - 0.95, y: 5.0 + p[1] + 0.2, z: zc + p[0], r: 0.19, h: 0.0001, seg: 3, color: 0x888 }); });
+        hs.forEach(function (p) { ctx.cyl({ x: ox - 0.95, y: 5.0, z: zc + p[0], r: 0.19, rTop: 0.17, h: p[1] + 0.2, seg: 8, color: 0xcdd0d8 }); });
         [-1.3, 1.3].forEach(function (zz) { for (var t = -2; t <= 2; t++) ctx.cyl({ x: ox - 0.95, y: 5.0, z: zc + zz + t * 0.14 * 1.0 + (zz < 0 ? -0.9 : 0.9), r: 0.07, h: 1.0 + Math.abs(t) * -0.1 + 0.6, seg: 5, color: 0xcdd0d8 }); });
         B(ox - 1.0, ox, 9.4, 9.8, zc - 3.1, zc + 3.1, GOLD2); B(ox - 1.1, ox - 1.0, 9.4, 9.9, zc - 3.1, zc + 3.1, GOLD_D);
         ctx.addCollider({ x0: ox - 1.7, x1: ox, z0: zc - 3.4, z1: zc + 3.4 });
@@ -601,6 +647,7 @@
       ctx.arch({ x: 0, y: TY + 5.8, z: -6.7, span: 8.54, rise: 3.4, t: 0.7, depth: 1.0, axis: 'x', type: 'round', color: STU2, seg: 20 });
       ctx.arch({ x: 0, y: TY + 5.8, z: -6.7, span: 9.9, rise: 3.8, t: 0.16, depth: 1.12, axis: 'x', type: 'round', color: GOLD, seg: 20 });
 
+      mark('before');
       // =====================================================================
       // 6. 고딕 치보리오 + 교황 제대 (z=-10.65)
       // =====================================================================
@@ -654,9 +701,9 @@
         [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (f) {
           var along = f[0] === 0; for (var gi = -2; gi <= 2; gi++) { if (along) B(cx + gi * 0.3 - 0.04, cx + gi * 0.3 + 0.04, ys + 0.55, ys + 1.55, cz + f[1] * 0.92 - 0.02, cz + f[1] * 0.92 + 0.02, 0x5a3a22); else B(cx + f[0] * 0.92 - 0.02, cx + f[0] * 0.92 + 0.02, ys + 0.55, ys + 1.55, cz + gi * 0.3 - 0.04, cz + gi * 0.3 + 0.04, 0x5a3a22); }
         });
-        ctx.cyl({ x: cx, y: ys + 1.65, z: cz, r: 1.15, rTop: 0.12, h: 1.7, seg: 4, color: 0xf2ead8, ry: PI / 4 });
-        ctx.cyl({ x: cx, y: ys + 3.35, z: cz, r: 0.05, h: 0.45, seg: 5, color: GOLD2 }); ctx.box({ x: cx, y: ys + 3.55, z: cz, w: 0.28, h: 0.05, d: 0.05, color: GOLD2 });
-        ctx.addGlow({ x: cx, y: ys + 1.1, z: cz, size: 3.5, color: 0xffd98a, kind: 'always' });
+        ctx.cyl({ x: cx, y: ys + 1.65, z: cz, r: 1.15, rTop: 0.1, h: 2.4, seg: 4, color: 0xf2ead8, ry: PI / 4 });
+        ctx.cyl({ x: cx, y: ys + 4.05, z: cz, r: 0.05, h: 0.45, seg: 5, color: GOLD2 }); ctx.box({ x: cx, y: ys + 4.25, z: cz, w: 0.28, h: 0.05, d: 0.05, color: GOLD2 });
+        ctx.addGlow({ x: cx, y: ys + 1.1, z: cz, size: 1.8, color: 0xffd98a, kind: 'lamp' });
         // 고해소(콘페시오): U자 난간
         var rz0 = -8.4, rz1 = -6.9;
         B(-1.7, 1.7, TY, TY + 0.02, rz0 - 0.1, rz1, 0x2a2a30);
@@ -668,20 +715,21 @@
         ctx.addLight({ x: 0, y: 4.5, z: -9.5, color: 0xffc27a, intensity: 1.1, distance: 20, kind: 'lamp' });
       })();
 
+      mark('before');
       // =====================================================================
       // 7. 성가대석 + 후진 + 교황좌
       // =====================================================================
       SIDES.forEach(function (s) {
         wallOpen({ axis: 'x', n0: Math.min(s * XN, s * (XN + 1)), n1: Math.max(s * XN, s * (XN + 1)), u0: ZAC, u1: ZT0, y0: 0, y1: HC, color: 0xe2d9c8, sillStone: MARB,
           wins: [{ c: -19.6, sill: 8.2, w: 1.5, h: 2.4, top: 'round' }, { c: -25.4, sill: 8.2, w: 1.5, h: 2.4, top: 'round' }] });
-        [-19.6, -25.4].forEach(function (zz, i) { winAt({ x: s * (XN + 0.5), z: zz, sill: 8.2, w: 1.5, h: 2.4, top: 'round', face: [-s, 0], seed: 50 + i, colors: GLASS_WARM }); });
-        var lowTex2 = ctx.tex.pattern('stone', { c1: 0xd7cabb, c2: 0xc3b2a2 });
+        [-19.6, -25.4].forEach(function (zz, i) { winAt({ x: s * (XN + 0.5), z: zz, sill: 8.2, w: 1.5, h: 2.4, top: 'round', face: [-s, 0], seed: 50 + i, colors: GLASS_WARM, pattern: 'lancet' }); });
+        var lowTex2 = ctx.tex.pattern('stone', { c1: 0xe8dccd, c2: 0xd8c8b6 });
         ctx.wallFace({ x0: s * (XN - 0.01), z0: ZAC, x1: s * (XN - 0.01), z1: ZT0, y0: 1.6, y1: 4.6, facing: [-s, 0], tex: lowTex2, tile: [2.5, 2.9] });
         ctx.wallFace({ x0: s * (XN - 0.01), z0: ZAC, x1: s * (XN - 0.01), z1: ZT0, y0: 4.6, y1: 8.0, facing: [-s, 0], tex: texFresco, tile: [4.2, 3.4] });
         // 호두나무 참사회석
         var sx0 = s * (XN - 0.75), sx1 = s * XN;
         B(Math.min(sx0, sx1), Math.max(sx0, sx1), TY, TY + 0.45, ZAC + 1.0, ZT0 - 0.6, WALNUT); B(Math.min(s * (XN - 0.45), sx1), Math.max(s * (XN - 0.45), sx1), TY + 0.45, TY + 1.5, ZAC + 1.0, ZT0 - 0.6, col(WALNUT, 1.12));
-        for (var sk = 0; sk < 9; sk++) { var zz2 = ZAC + 1.6 + sk * 1.45; B(Math.min(sx1, s * (XN - 0.5)), Math.max(sx1, s * (XN - 0.5)), TY + 0.5, TY + 1.9, zz2, zz2 + 0.1, 0x3d2616); }
+        for (var sk = 0; sk < 9; sk++) { var zz2 = ZAC + 1.6 + sk * 1.45; B(Math.min(sx1, s * (XN - 0.5)), Math.max(sx1, s * (XN - 0.5)), TY + 0.5, TY + 1.9, zz2, zz2 + 0.1, 0x6a4529); }
         B(Math.min(s * (XN - 0.55), sx1), Math.max(s * (XN - 0.55), sx1), TY + 1.5, TY + 1.6, ZAC + 1.0, ZT0 - 0.6, GOLD);
         B(Math.min(sx0, sx1), Math.max(sx0, sx1), TY + 0.45, TY + 0.5, ZAC + 1.0, ZT0 - 0.6, col(WALNUT, 0.8));
         ctx.addCollider({ x0: Math.min(sx0, sx1), x1: Math.max(sx0, sx1), z0: ZAC + 1.0, z1: ZT0 - 0.6 });
@@ -719,7 +767,7 @@
         ctx.mesh(gw, matApseWall);
         wins.forEach(function (deg, i) {
           var a = deg * PI / 180, rr = R + 0.35;
-          winAt({ x: cx + rr * Math.cos(a), z: cz - rr * Math.sin(a), sill: wsill, w: 1.0, h: whead - wsill - 0.5, top: 'pointed', face: [-Math.cos(a), Math.sin(a)], seed: 60 + i, colors: GLASS_WARM, pattern: 'lancet' });
+          winAt({ x: cx + rr * Math.cos(a), z: cz - rr * Math.sin(a), sill: wsill, w: 1.0, h: whead - wsill - 0.5, top: 'pointed', face: [-Math.cos(a), Math.sin(a)], seed: 60 + i, colors: GLASS_STAIN, pattern: 'lancet' });
         });
         // 반돔(모자이크, 정면 투영 UV)
         var seg = Q(48), rings = Q(16), dp = [], du = [], di = [];
@@ -751,17 +799,17 @@
         B(-1.7, 1.7, TY + 0.4, TY + 0.5, -34.3, -31.5, PINK2);
         B(-0.55, 0.55, TY + 0.5, TY + 0.95, -34.1, -33.4, MARB); B(-0.6, 0.6, TY + 0.95, TY + 1.0, -34.1, -33.3, 0xa8323a);
         B(-0.6, 0.6, TY + 0.5, TY + 3.0, -34.3, -34.1, MARB);
-        [-1, 1].forEach(function (s) { ctx.column({ x: s * 0.78, z: -33.6, y: TY + 0.5, h: 2.5, r: 0.1, style: 'twisted', capital: 'block', color: PINK, capColor: GOLD2, collide: false }); });
+        [-1, 1].forEach(function (s) { ctx.column({ x: s * 0.78, z: -33.6, y: TY + 0.5, h: 2.5, r: 0.1, style: 'round', capital: 'block', color: PINK, capColor: GOLD2, collide: false }); });
         ctx.arch({ x: 0, y: TY + 3.0, z: -33.6, span: 1.8, rise: 1.1, t: 0.2, depth: 0.45, axis: 'x', type: 'pointed', color: MARB });
         ctx.addCollider({ x0: -1.8, x1: 1.8, z0: -34.45, z1: -33.2 });
       })();
 
+      mark('before');
       // =====================================================================
       // 8. 좌석 + 촛불대 + 조명
       // =====================================================================
-      ctx.renderSeats(layout, 'bench', { wood: 0x6f4a2e, seat: 0x8a5d3b, back: 0x5e3d28 });
-      ctx.candleStand(0, {});
-      ctx.addGlow({ x: 0, y: 11.5, z: -33.8, size: 7, color: 0xffd98a, kind: 'always', pulse: 0.03 });
+      ctx.renderSeats(layout, 'bench', { wood: 0xa4713f, seat: 0xbd8a52, back: 0x8c5e36 });
+      ctx.candleStand(0, { wood: 0x8a5d3b });
       ctx.setSky({ outside: false });
       ctx.setCameraBounds({ x0: -13.6, x1: 13.6, z0: -34.1, z1: 34.1, yMax: 13.0 });
     }
