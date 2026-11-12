@@ -79,6 +79,9 @@ abstract final class ChurchCatalog {
   /// 기본 성당 id.
   static const String defaultId = 'basic';
 
+  /// 창 감상실(GLASS_APP_PLAN §3) 장면 id. 목록·서버 방에는 없고 혼자 보는 곳이다.
+  static const String glassRoomId = 'glass_room';
+
   /// 구역 머리글 순서.
   static const List<String> groups = ['로마·바티칸', '이탈리아', '한국', '세계', '우리 본당'];
 
