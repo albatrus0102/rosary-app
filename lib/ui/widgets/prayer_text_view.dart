@@ -67,6 +67,7 @@ class PrayerTextView extends StatefulWidget {
   static int pageAt(double offset, double extent, double viewport) {
     final n = pageCount(extent, viewport);
     if (n == 1) return 1;
+    if (offset >= extent - 0.5) return n; // 끝에 닿으면 마지막 쪽
     final k = 1 + (offset / (viewport * pageFraction) - 0.01).ceil();
     return k.clamp(1, n);
   }
@@ -509,7 +510,10 @@ class _PrayerText extends StatelessWidget {
         );
 
     final short = this.short;
-    if (short != null) return _buildShort(context, short, style, big, small);
+    // 짧게 보기의 보조 줄은 더 작게 해서 큰 글자에서도 한 줄에 들어가게 한다.
+    if (short != null) {
+      return _buildShort(context, short, style, big, big * 0.7);
+    }
 
     if (mode == PrayerMode.solo) {
       return Text(step.text, style: style(big, onSurface));
@@ -604,11 +608,19 @@ class _PrayerText extends StatelessWidget {
               children: [
                 TextSpan(
                   text: '$n',
-                  style: style(big * 1.5, scheme.primary, bold: true),
+                  style: style(
+                    big * 1.2,
+                    scheme.primary,
+                    bold: true,
+                  ).copyWith(height: 1.15),
                 ),
                 TextSpan(
                   text: ' / $total',
-                  style: style(big * 0.8, scheme.onSurfaceVariant, bold: true),
+                  style: style(
+                    big * 0.7,
+                    scheme.onSurfaceVariant,
+                    bold: true,
+                  ).copyWith(height: 1.15),
                 ),
               ],
             ),

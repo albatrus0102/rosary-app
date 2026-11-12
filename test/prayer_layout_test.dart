@@ -306,13 +306,17 @@ void main() {
           'short_prayers': true,
         });
         await _pump(tester, settings, size: size, index: _hailMary4);
-        expect(find.textContaining('은총이 가득하신 마리아님, …'), findsOneWidget);
-        expect(find.textContaining('천주의 성모 마리아님, …'), findsOneWidget);
+        expect(
+          find.textContaining(ShortPrayers.hailMary.leader),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining(ShortPrayers.hailMary.responder),
+          findsOneWidget,
+        );
         expect(find.textContaining('기뻐하소서'), findsNothing);
         expect(find.textContaining('복되시나이다'), findsNothing);
         expect(find.text('외운 기도 짧게 보기'), findsOneWidget);
-        // ignore: avoid_print
-        print('SHORT $size ext=${_position(tester).maxScrollExtent} vp=${_position(tester).viewportDimension} text=${tester.getRect(find.textContaining('은총이 가득하신 마리아님, …'))} num=${tester.getRect(find.textContaining(' / 10'))}');
         expect(_pill, findsNothing, reason: '$size');
         expect(_position(tester).maxScrollExtent, 0, reason: '$size');
       }
@@ -336,7 +340,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.textContaining('기뻐하소서'), findsNothing);
-      expect(find.textContaining('은총이 가득하신 마리아님, …'), findsOneWidget);
+      expect(find.textContaining(ShortPrayers.hailMary.leader), findsOneWidget);
     });
 
     testWidgets('sign of cross, creed, mystery announcement and glory are '
@@ -374,7 +378,10 @@ void main() {
       );
       await goto(decadeStart);
       expect(find.textContaining('피땀 흘리심을 묵상합시다.'), findsOneWidget);
-      expect(find.textContaining('하늘에 계신 우리 아버지, …'), findsOneWidget);
+      expect(
+        find.textContaining(ShortPrayers.ourFather.leader),
+        findsOneWidget,
+      );
       expect(find.textContaining('악에서 구하소서'), findsNothing);
 
       final glory = _indexOf(
@@ -398,7 +405,10 @@ void main() {
         index: _hailMary4,
       );
       expect(find.text('내 차례: 뒷단'), findsOneWidget);
-      expect(find.textContaining('천주의 성모 마리아님, …'), findsOneWidget);
+      expect(
+        find.textContaining(ShortPrayers.hailMary.responder),
+        findsOneWidget,
+      );
     });
 
     test('every short form is an opening phrase of the official text', () {
@@ -435,7 +445,7 @@ void main() {
       final settings = await _settings({'prayer_text_scale': 1.6});
       expect(settings.shortPrayersAsked, isFalse);
       await _pump(tester, settings, index: _hailMary4);
-      expect(find.textContaining('첫머리만 보여 드릴까요'), findsOneWidget);
+      expect(find.textContaining('외운 기도는 첫머리만'), findsOneWidget);
       expect(settings.shortPrayersAsked, isTrue);
       expect(settings.shortPrayers, isFalse);
 
@@ -452,18 +462,18 @@ void main() {
       await tester.tap(find.text('그대로'));
       await tester.pumpAndSettle();
       expect(settings.shortPrayers, isFalse);
-      expect(find.textContaining('첫머리만 보여 드릴까요'), findsNothing);
+      expect(find.textContaining('외운 기도는 첫머리만'), findsNothing);
 
       // 새 화면을 열어도 다시 묻지 않는다.
       await tester.pumpWidget(const SizedBox());
       await _pump(tester, settings, index: _hailMary4);
-      expect(find.textContaining('첫머리만 보여 드릴까요'), findsNothing);
+      expect(find.textContaining('외운 기도는 첫머리만'), findsNothing);
     });
 
     testWidgets('not shown below 1.6 or once answered', (tester) async {
       var settings = await _settings({'prayer_text_scale': 1.5});
       await _pump(tester, settings, index: _hailMary4);
-      expect(find.textContaining('첫머리만 보여 드릴까요'), findsNothing);
+      expect(find.textContaining('외운 기도는 첫머리만'), findsNothing);
       expect(settings.shortPrayersAsked, isFalse);
 
       await tester.pumpWidget(const SizedBox());
@@ -472,7 +482,7 @@ void main() {
         'short_prayers_asked': true,
       });
       await _pump(tester, settings, index: _hailMary4);
-      expect(find.textContaining('첫머리만 보여 드릴까요'), findsNothing);
+      expect(find.textContaining('외운 기도는 첫머리만'), findsNothing);
     });
 
     testWidgets('the text size sheet has the switch and answers the question', (
@@ -651,7 +661,7 @@ void main() {
     expect(find.text('묵주 전체 보기'), findsOneWidget);
     expect(find.text('외운 기도 짧게 보기'), findsOneWidget);
     expect(find.text('기도 끝내기'), findsOneWidget);
-    await tester.tap(find.text('외운 기도 짧게 보기'));
+    await tester.tap(find.text('외운 기도 짧게 보기'), warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(settings.shortPrayers, isTrue);
   });

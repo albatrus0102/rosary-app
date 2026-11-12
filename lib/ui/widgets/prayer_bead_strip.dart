@@ -110,16 +110,13 @@ class PrayerBeadStrip extends StatelessWidget {
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: c.maxWidth * 0.5),
-                      child: Semantics(
-                        liveRegion: true,
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: scheme.secondary,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: scheme.secondary,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -165,12 +162,19 @@ class PrayerBeadStrip extends StatelessWidget {
 
     final summary =
         '$label, ${model.label}${onOpenMap != null ? ', 묵주 전체 보기' : ''}';
+    // 구슬이 바뀔 때마다 화면 읽기 프로그램이 (끼어들지 않고) 차분히 읽도록 liveRegion.
     if (onOpenMap == null) {
-      return Semantics(container: true, label: summary, child: body);
+      return Semantics(
+        container: true,
+        liveRegion: true,
+        label: summary,
+        child: body,
+      );
     }
     return Semantics(
       container: true,
       button: true,
+      liveRegion: true,
       excludeSemantics: true,
       label: summary,
       onTap: onOpenMap,
@@ -200,13 +204,20 @@ class _DecadeBar extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(1.5),
-                child: LinearProgressIndicator(
-                  value: model.decade > d
-                      ? 1
-                      : (model.decade == d ? model.fraction : 0),
-                  minHeight: 3,
-                  backgroundColor: scheme.outlineVariant,
-                  color: scheme.primary,
+                child: ColoredBox(
+                  color: scheme.outlineVariant,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor:
+                          (model.decade > d
+                                  ? 1.0
+                                  : (model.decade == d ? model.fraction : 0.0))
+                              .clamp(0.0, 1.0),
+                      heightFactor: 1,
+                      child: ColoredBox(color: scheme.primary),
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -97,13 +97,24 @@ export const PRESENCE_MAX_MS = 60_000;
 
 export type St = 'w' | 's' | 'p';
 
+/**
+ * 아바타. `g`(성별 0 여성/1 남성)는 추가 필드다. 있으면 `name`은 성별별 세례명 목록 안의
+ * 인덱스(0..NAME_MAX), 없으면(옛 클라이언트) 옛 목록 인덱스(0..LEGACY_NAME_MAX)이며
+ * 그대로 중계한다(해석은 받는 클라이언트가 한다).
+ */
 export interface Avatar {
   skin: number;
   style: number;
   hair: number;
   outfit: number;
   name: number;
+  g?: number;
 }
+
+/** 세례명 인덱스 상한(Flutter `baptismalNameMaxIndex`와 같다). */
+export const NAME_MAX = 99;
+/** `g`가 없는 옛 클라이언트의 세례명 인덱스 상한. */
+export const LEGACY_NAME_MAX = 39;
 
 export interface PeerView {
   id: string;
@@ -209,16 +220,20 @@ export function parseRoomName(room: string | null | undefined): { churchId: stri
 function parseAvatar(a: unknown): Avatar | null {
   if (typeof a !== 'object' || a === null) return null;
   const o = a as Record<string, unknown>;
+  const hasG = o.g !== undefined && o.g !== null;
   if (
     !isInt(o.skin, 0, 3) ||
     !isInt(o.style, 0, 3) ||
     !isInt(o.hair, 0, 9) ||
     !isInt(o.outfit, 0, 11) ||
-    !isInt(o.name, 0, 39)
+    !isInt(o.name, 0, hasG ? NAME_MAX : LEGACY_NAME_MAX) ||
+    (hasG && !isInt(o.g, 0, 1))
   ) {
     return null;
   }
-  return { skin: o.skin, style: o.style, hair: o.hair, outfit: o.outfit, name: o.name };
+  const out: Avatar = { skin: o.skin, style: o.style, hair: o.hair, outfit: o.outfit, name: o.name };
+  if (hasG) out.g = o.g as number;
+  return out;
 }
 
 export class RoomLogic {

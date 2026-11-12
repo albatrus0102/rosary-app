@@ -1,14 +1,20 @@
 import 'dart:convert';
+import 'dart:math' show Random;
 import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 
+import '../church_constants.dart';
+
 /// 사이버 성당 아바타 설정. 모든 값은 인덱스이며 항상 허용 범위로 맞춰진다.
 ///
+/// [gender]는 0 여성, 1 남성. [style]은 성별마다 따로 있는 머리 모양 0..3이고,
+/// [name]은 성별별 세례명 목록 안의 인덱스다(church_constants.dart 참고).
 /// 색상표는 웹(`assets/church/palette.js`)과 같은 HEX 값을 가진다.
 @immutable
 class AvatarConfig {
   const AvatarConfig({
+    this.gender = 0,
     this.skin = 0,
     this.style = 0,
     this.hair = 0,
@@ -18,34 +24,64 @@ class AvatarConfig {
 
   /// 값 범위를 벗어나면 가장 가까운 허용 값으로 맞춘다.
   factory AvatarConfig.clamped({
+    int gender = 0,
     int skin = 0,
     int style = 0,
     int hair = 0,
     int outfit = 0,
     int name = 0,
-  }) => AvatarConfig(
-    skin: skin.clamp(0, skinColors.length - 1),
-    style: style.clamp(0, styleNames.length - 1),
-    hair: hair.clamp(0, hairColors.length - 1),
-    outfit: outfit.clamp(0, outfitColors.length - 1),
-    name: name.clamp(0, nameCount - 1),
-  );
+  }) {
+    final g = gender == avatarMale ? avatarMale : avatarFemale;
+    return AvatarConfig(
+      gender: g,
+      skin: skin.clamp(0, skinColors.length - 1),
+      style: style.clamp(0, styleCount - 1),
+      hair: hair.clamp(0, hairColors.length - 1),
+      outfit: outfit.clamp(0, outfitColors.length - 1),
+      name: name.clamp(0, baptismalNamesFor(g).length - 1),
+    );
+  }
 
+  /// JSON에서 읽는다. `g`(성별)가 있으면 새 형식이고, 없으면 옛 형식(세례명이 옛 목록
+  /// 인덱스, 머리 모양이 옛 4종)으로 보고 성별과 이름·머리 모양을 옮겨 읽는다.
   factory AvatarConfig.fromJson(Map<String, dynamic> json) {
     int read(String key) {
       final v = json[key];
-      if (v is num) return v.toInt();
+      if (v is num && v.isFinite) return v.toInt();
       return 0;
     }
 
+    final g = json['g'];
+    if (g is num && g.isFinite) {
+      return AvatarConfig.clamped(
+        gender: g.toInt(),
+        skin: read('skin'),
+        style: read('style'),
+        hair: read('hair'),
+        outfit: read('outfit'),
+        name: read('name'),
+      );
+    }
+    // 옛 형식: 0..19 여성 이름, 20..39 남성 이름.
+    final oldName = read('name').clamp(0, legacyBaptismalNames.length - 1);
+    final gender = oldName >= 20 ? avatarMale : avatarFemale;
+    final newName = baptismalIndexOf(gender, legacyBaptismalNames[oldName]);
+    final oldStyle = read('style').clamp(0, 3);
     return AvatarConfig.clamped(
+      gender: gender,
       skin: read('skin'),
-      style: read('style'),
+      style: _legacyStyle[gender][oldStyle],
       hair: read('hair'),
       outfit: read('outfit'),
-      name: read('name'),
+      name: newName < 0 ? 0 : newName,
     );
   }
+
+  /// 옛 머리 모양(짧은 머리·단발·올림머리·곱슬) → 성별별 새 머리 모양.
+  static const List<List<int>> _legacyStyle = [
+    [0, 0, 3, 1], // 여성: 단발, 단발, 낮은 쪽머리, 어깨 길이
+    [1, 0, 0, 2], // 남성: 가르마, 짧게, 짧게, 웨이브
+  ];
 
   /// JSON 문자열에서 읽는다. 잘못된 입력이면 [defaultConfig].
   factory AvatarConfig.fromJsonString(String? source) {
@@ -60,6 +96,7 @@ class AvatarConfig {
   }
 
   static const AvatarConfig defaultConfig = AvatarConfig(
+    gender: avatarFemale,
     skin: 1,
     style: 0,
     hair: 3,
@@ -67,8 +104,25 @@ class AvatarConfig {
     name: 0,
   );
 
-  /// 세례명 목록 길이(church_constants.dart의 baptismalNames와 같다).
-  static const int nameCount = 40;
+  /// 첫 입장 때 미리 골라 두는 모습: 성별·머리 모양·머리색·세례명(인기 이름 중)을
+  /// 무작위로 정한다. 그대로 들어가도 어색하지 않은 값만 쓴다.
+  factory AvatarConfig.randomStart(Random random) {
+    final g = random.nextInt(2);
+    return AvatarConfig(
+      gender: g,
+      skin: 1,
+      style: random.nextInt(styleCount),
+      hair: random.nextInt(4), // 검정·갈색 계열
+      outfit: defaultConfig.outfit,
+      name: random.nextInt(popularBaptismalCount),
+    );
+  }
+
+  /// 성별마다의 머리 모양 개수.
+  static const int styleCount = 4;
+
+  /// 성별별 세례명 개수.
+  static int nameCountFor(int gender) => baptismalNamesFor(gender).length;
 
   // assets/church/palette.js(window.ChurchPalette)와 같은 HEX 값.
   static const List<Color> skinColors = [
@@ -80,7 +134,19 @@ class AvatarConfig {
 
   static const List<String> skinNames = ['밝은 피부', '보통 피부', '구릿빛 피부', '짙은 피부'];
 
-  static const List<String> styleNames = ['짧은 머리', '단발', '올림머리', '곱슬'];
+  /// 머리 모양 이름(여성/남성). 3D 아바타·미리보기와 같은 순서.
+  static const List<String> femaleStyleNames = [
+    '단발',
+    '어깨 길이',
+    '포니테일',
+    '낮은 쪽머리',
+  ];
+  static const List<String> maleStyleNames = ['짧게 친 머리', '가르마', '웨이브', '넓은 이마'];
+
+  static List<String> styleNamesFor(int gender) =>
+      gender == avatarMale ? maleStyleNames : femaleStyleNames;
+
+  static const List<String> genderNames = ['여성', '남성'];
 
   /// 머리색 이름(접근성 라벨용). 색상표와 같은 순서.
   static const List<String> hairNames = [
@@ -156,11 +222,23 @@ class AvatarConfig {
     Color(0xFF3E4F7A),
   ];
 
+  /// 0 여성, 1 남성.
+  final int gender;
   final int skin;
   final int style;
   final int hair;
   final int outfit;
   final int name;
+
+  bool get isMale => gender == avatarMale;
+
+  /// 이름표에 보일 세례명.
+  String get nameText {
+    final list = baptismalNamesFor(gender);
+    return list[name.clamp(0, list.length - 1)];
+  }
+
+  List<String> get styleNameList => styleNamesFor(gender);
 
   Color get pantsColor => pantsColors[outfit.clamp(0, pantsColors.length - 1)];
   Color get skinColor => skinColors[skin.clamp(0, skinColors.length - 1)];
@@ -168,13 +246,29 @@ class AvatarConfig {
   Color get outfitColor =>
       outfitColors[outfit.clamp(0, outfitColors.length - 1)];
 
+  /// 성별을 바꾸면 세례명은 새 목록에 같은 이름이 있을 때 유지하고, 없으면 가장 인기 있는
+  /// 이름으로 바꾼다. 머리 모양 번호는 그대로 둔다(성별마다 모양이 다르다).
+  AvatarConfig withGender(int g) {
+    if (g == gender) return this;
+    return AvatarConfig.clamped(
+      gender: g,
+      skin: skin,
+      style: style,
+      hair: hair,
+      outfit: outfit,
+      name: convertBaptismalName(gender, name, g),
+    );
+  }
+
   AvatarConfig copyWith({
+    int? gender,
     int? skin,
     int? style,
     int? hair,
     int? outfit,
     int? name,
   }) => AvatarConfig.clamped(
+    gender: gender ?? this.gender,
     skin: skin ?? this.skin,
     style: style ?? this.style,
     hair: hair ?? this.hair,
@@ -188,6 +282,7 @@ class AvatarConfig {
     'hair': hair,
     'outfit': outfit,
     'name': name,
+    'g': gender,
   };
 
   String toJsonString() => jsonEncode(toJson());
@@ -195,6 +290,7 @@ class AvatarConfig {
   @override
   bool operator ==(Object other) =>
       other is AvatarConfig &&
+      other.gender == gender &&
       other.skin == skin &&
       other.style == style &&
       other.hair == hair &&
@@ -202,9 +298,9 @@ class AvatarConfig {
       other.name == name;
 
   @override
-  int get hashCode => Object.hash(skin, style, hair, outfit, name);
+  int get hashCode => Object.hash(gender, skin, style, hair, outfit, name);
 
   @override
   String toString() =>
-      'AvatarConfig(skin: $skin, style: $style, hair: $hair, outfit: $outfit, name: $name)';
+      'AvatarConfig(gender: $gender, skin: $skin, style: $style, hair: $hair, outfit: $outfit, name: $name)';
 }

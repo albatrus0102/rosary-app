@@ -269,7 +269,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void dispose() {
     _disposed = true;
-    _snack?.close();
+    _closeSnack();
     HardwareKeyboard.instance.removeHandler(_onKey);
     _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     _session.removeListener(_onSessionChanged);
@@ -455,26 +455,27 @@ class _PrayerScreenState extends State<PrayerScreen> {
         : PrayerActions.height + MediaQuery.paddingOf(context).bottom + 8;
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
-    _snack = messenger.showSnackBar(
+    final snack = messenger.showSnackBar(
       SnackBar(
         key: const ValueKey('short-suggest'),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.fromLTRB(16, 0, 16, bottom),
         duration: const Duration(seconds: 15),
-        content: Row(
-          children: [
-            const Expanded(
-              child: Text('글자가 커서 기도문이 길게 이어져요. 외운 기도는 첫머리만 보여 드릴까요?'),
-            ),
-            TextButton(
-              onPressed: () => _snack?.close(),
-              style: TextButton.styleFrom(
-                foregroundColor: scheme.onInverseSurface,
-                minimumSize: const Size(48, 48),
+        content: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: Row(
+            children: [
+              const Expanded(child: Text('외운 기도는 첫머리만 보여 드릴까요?')),
+              TextButton(
+                onPressed: _closeSnack,
+                style: TextButton.styleFrom(
+                  foregroundColor: scheme.onInverseSurface,
+                  minimumSize: const Size(48, 48),
+                ),
+                child: const Text('그대로'),
               ),
-              child: const Text('그대로'),
-            ),
-          ],
+            ],
+          ),
         ),
         action: SnackBarAction(
           label: '켜기',
@@ -485,12 +486,29 @@ class _PrayerScreenState extends State<PrayerScreen> {
         ),
       ),
     );
+    _snack = snack;
+    unawaited(
+      snack.closed.then((_) {
+        if (identical(_snack, snack)) _snack = null;
+      }),
+    );
   }
 
   /// 이 글자 배율 이상이면 짧게 보기를 권한다.
   static const double shortSuggestScale = 1.6;
 
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _snack;
+
+  void _closeSnack() {
+    final snack = _snack;
+    _snack = null;
+    if (snack == null) return;
+    try {
+      snack.close();
+    } catch (_) {
+      // 이미 닫혔거나 화면과 함께 정리되는 중이다.
+    }
+  }
 
   bool _isWide(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -758,36 +776,49 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 Expanded(
                   flex: 4,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 16, 16),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: scheme.surface,
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: scheme.outlineVariant),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(27),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: PrayerBeadStrip(step: step),
+                    padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: scheme.surface,
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(color: scheme.outlineVariant),
                             ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: RosaryMap(
-                                  step: step,
-                                  style: _settings.rosaryStyle,
-                                  showLabel: false,
-                                  onStep: _scrubStep,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: PrayerBeadStrip(step: step),
                                 ),
-                              ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      12,
+                                      8,
+                                      12,
+                                      12,
+                                    ),
+                                    child: RosaryMap(
+                                      step: step,
+                                      style: _settings.rosaryStyle,
+                                      showLabel: false,
+                                      onStep: _scrubStep,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            actions,
-                          ],
+                          ),
                         ),
-                      ),
+                        PrayerActions(
+                          canGoBack: _session.index > 0,
+                          onBack: _session.back,
+                          onNext: _session.next,
+                          bordered: false,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -834,10 +865,9 @@ class _PrayerHeader extends StatelessWidget {
       height: height,
       child: Row(
         children: [
-          IconButton(
+          // AppBar와 같은 BackButton(48dp). 누르면 Navigator.maybePop → PopScope.
+          BackButton(
             key: const ValueKey('prayer-header-back'),
-            tooltip: '뒤로',
-            icon: const Icon(Icons.arrow_back),
             onPressed: onBack,
           ),
           Expanded(

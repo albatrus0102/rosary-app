@@ -4,7 +4,8 @@ import '../domain/rosary_sequence.dart';
 ///
 /// 이 파일이 짧은 형태의 **유일한 정의**다. 기도문 본문(`prayer_data.dart`)은 건드리지 않고,
 /// 아래 문구는 모두 공식 본문의 앞단/뒷단 **첫 줄의 앞부분**이며 끝에 '…'만 붙인다
-/// (`test/prayer_text_short_test.dart`가 본문의 접두어인지 검사한다).
+/// (`test/prayer_layout_test.dart`가 본문의 접두어인지 검사한다). '…' 앞은 줄바꿈되지 않는
+/// 공백(NBSP)이라 '…'만 다음 줄에 홀로 떨어지지 않는다.
 ///
 /// TODO(review): 사제·교구(주교회의 전례위원회) 검토 필요. 어느 기도를 줄여 보이는지,
 /// 어디까지를 첫머리로 볼지는 신앙 공동체의 판단이다. 검토 전에는 기본 꺼짐을 유지한다.
@@ -14,10 +15,10 @@ import '../domain/rosary_sequence.dart';
 class ShortPrayer {
   const ShortPrayer({required this.leader, required this.responder});
 
-  /// 앞단(선창) 첫머리. 예: '은총이 가득하신 마리아님, …'.
+  /// 앞단(선창) 첫머리. 예: '은총이 가득하신 마리아님,\u00A0…'.
   final String leader;
 
-  /// 뒷단(후창) 첫머리. 예: '천주의 성모 마리아님, …'.
+  /// 뒷단(후창) 첫머리. 예: '천주의 성모 마리아님,\u00A0…'.
   final String responder;
 
   /// 혼자 모드에서 보여 주는 두 줄.
@@ -26,18 +27,18 @@ class ShortPrayer {
 
 abstract final class ShortPrayers {
   static const hailMary = ShortPrayer(
-    leader: '은총이 가득하신 마리아님, …',
-    responder: '천주의 성모 마리아님, …',
+    leader: '은총이 가득하신 마리아님,\u00A0…',
+    responder: '천주의 성모 마리아님,\u00A0…',
   );
 
   static const ourFather = ShortPrayer(
-    leader: '하늘에 계신 우리 아버지, …',
-    responder: '오늘 저희에게 일용할 양식을 주시고 …',
+    leader: '하늘에 계신 우리 아버지,\u00A0…',
+    responder: '오늘 저희에게 일용할 양식을 주시고\u00A0…',
   );
 
   static const fatima = ShortPrayer(
-    leader: '예수님, 저희 죄를 용서하시며 …',
-    responder: '연옥 영혼을 돌보시며 …',
+    leader: '예수님, 저희 죄를 용서하시며\u00A0…',
+    responder: '연옥 영혼을 돌보시며\u00A0…',
   );
 
   /// [step]의 짧은 형태. 늘 전문으로 보이는 기도는 null.

@@ -174,6 +174,46 @@ test('hello: 범위·형식 검증', () => {
   assert.equal(h.msgs('x', 'error').length, 1); // 중복 hello
 });
 
+test('hello: 성별 g(추가 필드)는 0/1만, 없으면 옛 형식(name 0..39), 있으면 name 0..99', () => {
+  const base = { skin: 1, style: 2, hair: 3, outfit: 4 };
+  const ok: Message[] = [
+    { ...base, name: 39 }, // g 없음 = 옛 클라이언트
+    { ...base, name: 0, g: 0 },
+    { ...base, name: 99, g: 1 },
+    { ...base, name: 70, g: 0 },
+  ];
+  for (const [i, av] of ok.entries()) {
+    const h = new Harness();
+    const a = h.join(1, av);
+    const welcome = h.msgs(a, 'welcome');
+    assert.equal(welcome.length, 1, `ok case ${i}`);
+    // 나중에 들어온 사람의 welcome에 g 포함 그대로 중계된다.
+    const b = h.join(2);
+    const peers = h.msgs(b, 'welcome')[0].peers as Message[];
+    assert.deepEqual(peers[0].avatar, { ...av }, `relay ${i}`);
+  }
+  const bad: Message[] = [
+    { ...base, name: 40 }, // g 없으면 옛 상한
+    { ...base, name: 100, g: 0 },
+    { ...base, name: 5, g: 2 },
+    { ...base, name: 5, g: -1 },
+    { ...base, name: 5, g: 0.5 },
+    { ...base, name: 5, g: '1' },
+    { ...base, name: 5, g: true },
+  ];
+  for (const [i, av] of bad.entries()) {
+    const h = new Harness();
+    h.logic.onConnect('x');
+    h.send('x', { t: 'hello', id: h.uuid(1), v: 1, avatar: av });
+    assert.deepEqual(h.msgs('x'), [{ t: 'error', code: 'bad_msg' }], `bad case ${i}`);
+    assert.equal(h.logic.peerCount(), 0);
+  }
+  // g: null 은 없는 것으로 본다(옛 형식 상한 적용).
+  const h = new Harness();
+  const a = h.join(1, { ...base, name: 39, g: null });
+  assert.equal(h.msgs(a, 'welcome').length, 1);
+});
+
 test('hello 전에는 ping 외 메시지 거부, 알 수 없는 t/깨진 JSON은 bad_msg', () => {
   const h = new Harness();
   h.logic.onConnect('x');

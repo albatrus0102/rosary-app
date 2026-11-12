@@ -10,12 +10,16 @@ class PrayerActions extends StatelessWidget {
     required this.onBack,
     required this.onNext,
     this.maxWidth = 560,
+    this.bordered = true,
   });
 
   final bool canGoBack;
   final VoidCallback onBack;
   final VoidCallback onNext;
   final double maxWidth;
+
+  /// 위쪽 경계선. 카드 밖 아래에 붙일 때는 끈다.
+  final bool bordered;
 
   static const double height = 76;
   static const double buttonHeight = 60;
@@ -28,7 +32,9 @@ class PrayerActions extends StatelessWidget {
       key: const ValueKey('prayer-actions'),
       decoration: BoxDecoration(
         color: scheme.surface,
-        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+        border: bordered
+            ? Border(top: BorderSide(color: scheme.outlineVariant))
+            : null,
       ),
       child: SizedBox(
         height: height,
