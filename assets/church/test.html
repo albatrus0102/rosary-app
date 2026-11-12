@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>사이버 성당 테스트</title>
+<style>
+  html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#222;touch-action:none;font:12px/1.35 sans-serif}
+  canvas{display:block;position:fixed;left:0;top:0;width:100%;height:100%;touch-action:none}
+  #dbg{position:fixed;left:6px;top:6px;color:#fff;background:rgba(0,0,0,.45);padding:4px 6px;border-radius:6px;white-space:pre;pointer-events:none}
+  #btns{position:fixed;right:6px;top:6px;display:flex;flex-wrap:wrap;gap:4px;max-width:260px;justify-content:flex-end}
+  #btns button{font-size:12px;padding:4px 6px;border-radius:6px;border:0;background:rgba(255,255,255,.85)}
+  body.hideui #btns,body.hideui #dbg{display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="dbg"></div>
+<div id="btns"></div>
+<script src="three.min.js"></script>
+<script src="palette.js"></script>
+<script src="layouts.js"></script>
+<script src="scene_logic.js"></script>
+<script src="geo.js"></script>
+<script src="kit_tex.js"></script>
+<script src="kit.js"></script>
+<script src="audio.js"></script>
+<script src="world.js"></script>
+<script src="avatar.js"></script>
+<script src="controls.js"></script>
+<script src="net_view.js"></script>
+<script src="bridge.js"></script>
+<!-- BUILDERS:BEGIN (자동 생성: node tools/church_web/register_builders.mjs — 직접 고치지 말 것) -->
+<script src="ch_basic.js"></script>
+<!-- BUILDERS:END -->
+<script src="main.js"></script>
+<script>
+(function () {
+  var qs = new URLSearchParams(location.search);
+  var A = window.ChurchAPI, P = window.ChurchPalette;
+  if (qs.get('hideui')) document.body.classList.add('hideui');
+  var last = {};
+  // 모의 브리지: 이벤트는 console + window.__churchEvents
+  function init() {
+    A.init({ avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 0 }, hour: qs.get('hour') !== null ? +qs.get('hour') : 14, ambient: false, solo: qs.get('solo') === '1', quality: qs.get('quality') || 'high', church: qs.get('church') || 'basic' });
+    var n = +(qs.get('peers') || 0);
+    if (n) simPeers(n);
+    var c = +(qs.get('candles') || 0);
+    if (c) for (var i = 0; i < c; i++) A.lightCandle({ slot: (i * 7) % 96, until: 0, intention: i % 8 });
+    if (qs.get('sit')) setTimeout(function () { A.sit({}); }, 300);
+  }
+  var peerIds = [];
+  function rndAvatar(i) { return { skin: i % 4, style: (i * 3) % 4, hair: (i * 7) % 10, outfit: (i * 5) % 12, name: (i * 11) % 40 }; }
+  function simPeers(n) {
+    var L = __church.logic, peers = [], seats = {};
+    var ids = L.seatIds.slice(), k = 0;
+    for (var i = 0; i < n; i++) {
+      var id = 'p' + i, st = ['w', 's', 'p', 'p', 'w'][i % 5], p = { id: id, avatar: rndAvatar(i + 1), x: 0, z: 0, r: 0, st: st, seat: null, ms: -1 };
+      if (st === 'w') { p.x = (i % 2 ? 1 : -1) * (1 + (i % 3)) * 0.8; p.z = 8 - i * 2.2; p.r = i % 2 ? 0.4 : -0.4; }
+      else {
+        // 가까운 좌석 앞쪽 줄부터
+        var sid = L.seatIds[(L.seatIds.length - 1) - i * 5 - 10], si = L.seatInfo(sid);
+        p.seat = sid; p.x = si.x; p.z = si.z; p.r = 0; seats[sid] = id; if (st === 'p') p.ms = 1;
+      }
+      peers.push(p);
+    }
+    A.setPeers({ peers: peers, seats: seats });
+    var t0 = 0;
+    // 걷는 피어를 움직이는 스냅샷 시뮬레이션
+    if (window.__simTimer) clearInterval(window.__simTimer);
+    window.__simTimer = setInterval(function () {
+      t0 += 0.2;
+      var snap = [];
+      peers.forEach(function (p, i) { if (p.st === 'w') { var a = t0 * 0.5 + i, x = Math.sin(a) * 2.2 * (i % 2 ? 1 : -1) * 0.8 + (i % 2 ? 1 : -1) * 0.5, z = p.z + Math.cos(a) * 1.5; snap.push([p.id, x, z, -Math.cos(a) * 1.0, 'w']); } });
+      A.peerSnap({ p: snap });
+    }, 200);
+  }
+  window.simPeers = simPeers;
+
+  var btns = document.getElementById('btns');
+  function B(label, fn) { var b = document.createElement('button'); b.textContent = label; b.onclick = fn; btns.appendChild(b); }
+  B('앉기', function () { A.sit({}); });
+  B('일어나기', function () { A.stand({}); });
+  B('기도 on', function () { A.setPraying({ on: true, ms: 0 }); });
+  B('기도 off', function () { A.setPraying({ on: false, ms: -1 }); });
+  B('촛불', function () { var s = __church.near.candle; if (s === null || s === undefined) s = (Math.random() * 96) | 0; A.lightCandle({ slot: s, until: 0, intention: (Math.random() * 8) | 0 }); });
+  B('촛불x20', function () { for (var i = 0; i < 20; i++) A.lightCandle({ slot: (Math.random() * 96) | 0, until: 0, intention: i % 8 }); });
+  [11, 15, 18.5, 22].forEach(function (h) { B(h + '시', function () { A.setHour({ hour: h }); }); });
+  B('혼자 on', function () { A.setSolo({ on: true }); });
+  B('혼자 off', function () { A.setSolo({ on: false }); });
+  B('피어5', function () { simPeers(5); });
+  B('피어300', function () { simPeers(300); });
+  B('인사', function () { A.emote({ e: 0 }); });
+  B('성호', function () { A.emote({ e: 1 }); });
+  B('절', function () { A.emote({ e: 2 }); });
+  B('소리', function () { A.setAmbient({ on: true }); });
+  var dbg = document.getElementById('dbg');
+  setInterval(function () {
+    var a = window.__church; if (!a || !a.me) return;
+    var ev = (window.__churchEvents || []).filter(function (e) { return e.e !== 'pos' && e.e !== 'perf'; }).slice(-4).map(function (e) { return JSON.stringify(e); }).join('\n');
+    dbg.textContent = 'fps ' + a.fps + '  ' + (a.world ? a.world.id : '') + '  mode ' + a.me.mode + '\npos ' + a.me.x.toFixed(1) + ', ' + a.me.z.toFixed(1) + '  near ' + a.near.seat + ' / ' + a.near.candle + '\n' + (a.world ? 'verts ' + a.world.stats.vertices + ' meshes ' + a.world.stats.meshes : '') + '\n' + ev;
+  }, 250);
+  var extra = qs.get('builder');   // 예: ../../tools/church_web/ch_example.js (등록 전 개발용)
+  if (extra) { var sc = document.createElement('script'); sc.src = extra; sc.onload = function () { setTimeout(init, 20); }; sc.onerror = function () { console.error('builder load failed ' + extra); setTimeout(init, 20); }; document.body.appendChild(sc); }
+  else setTimeout(init, 50);
+})();
+</script>
+</body>
+</html>
