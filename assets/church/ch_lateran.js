@@ -689,6 +689,11 @@
           solid.addBeam([a0[0], a0[1], a0[2]], [a2[0], a2[1], a2[2]], 0.12, 0.14, GOLD); solid.addBeam([a1[0], a1[1], a1[2]], [a2[0], a2[1], a2[2]], 0.12, 0.14, GOLD);
           for (var cr = 1; cr <= 4; cr++) { var tt = cr / 5; [a0, a1].forEach(function (aa) { ctx.ico({ x: aa[0] + (a2[0] - aa[0]) * tt, y: aa[1] + (a2[1] - aa[1]) * tt + 0.06, z: aa[2] + (a2[2] - aa[2]) * tt, r: 0.07, color: GOLD2, detail: 0 }); }); }
           ctx.cone({ x: a2[0], y: a2[1], z: a2[2], r: 0.09, h: 0.4, seg: 4, color: GOLD2 });
+          // 박공 장식: 금 장미창 + 세로 창살 + 삼엽 아치
+          var rp = Pp(0, ys + 1.25), off = 0.04;
+          ctx.solid.add(Geo.cyl(10, 1), GOLD2, { x: rp[0] + f[0] * off, y: rp[1], z: rp[2] + f[1] * off, rx: along ? PI / 2 : 0, rz: along ? 0 : PI / 2, sx: 0.3, sy: 0.05, sz: 0.3, flat: true, vary: 0 });
+          ctx.solid.add(Geo.cyl(10, 1), 0x7c2a30, { x: rp[0] + f[0] * off * 2, y: rp[1], z: rp[2] + f[1] * off * 2, rx: along ? PI / 2 : 0, rz: along ? 0 : PI / 2, sx: 0.16, sy: 0.05, sz: 0.16, flat: true, vary: 0 });
+          [-0.9, -0.45, 0.45, 0.9].forEach(function (uu) { var mp = Pp(uu, ys + 0.62); ctx.box({ x: mp[0] + f[0] * 0.03, y: mp[1], z: mp[2] + f[1] * 0.03, w: along ? 0.05 : 0.04, h: 0.5, d: along ? 0.04 : 0.05, color: GOLD2 }); });
         });
         // 모서리 첨탑 4 + 작은 첨탑
         [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (p) {

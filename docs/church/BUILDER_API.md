@@ -1,5 +1,7 @@
 # 성당 빌더 API (BUILDER_API)
 
+> **Realism toolkit (v3) 바로가기: 이 문서 맨 아래 「## 7. 사실감 도구 (Realism toolkit, v3)」** — 표면 사진 질감(`surf`), 광택/금속/옻칠 재질(`mat`), 진짜 창 개구부, 태양 그림자, 화질 단계, 성당별 사진 규칙. 기존 API는 그대로 호환.
+
 여러 성당 내부를 서로 다른 에이전트가 동시에 만들 수 있도록, 월드 구성은 **빌더 파일 하나(`assets/church/ch_<id>.js`)** 로 분리되어 있다.
 빌더는 W1 파일(`world.js`, `kit.js`, `scene_logic.js`, `main.js` …)을 **수정하지 않는다**. 모든 것은 `ctx` 도구 모음으로 한다.
 기준 구현: `assets/church/ch_basic.js` (우리 본당) — 실제 사용 예로 먼저 읽을 것.

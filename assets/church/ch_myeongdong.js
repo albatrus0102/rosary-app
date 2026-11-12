@@ -44,8 +44,6 @@
       var pfCache = {};
       function pf(a, r) { var k = a.toFixed(3) + '_' + r.toFixed(3); return pfCache[k] || (pfCache[k] = KIT.profileFn('pointed', a, r)); }
       var E = 1e-5;
-      var _tr = (ctx.stats.trace = []), _last = 0;
-      function trace(l) { var B = ctx._.batches, t = 0, k; for (k in B) t += B[k].vertexCount; var sb = ctx._.surfBatches; for (k in sb) t += sb[k].batch.vertexCount; _tr.push(l + ':' + (t - _last)); _last = t; }
 
       // ---------- 표면(kit 의 사진 질감 + PBR 표면 배치) ----------
       ctx.defineSurface('md_brick_red', { photo: 'brick_grey', tile: 2.4, roughness: 0.9, normalScale: 0.9, envK: 0.6, fb: 'brick', color: 0xe6a283 });
@@ -339,7 +337,6 @@
       [[-3.95, -1.0], [1.0, 3.95]].forEach(function (r) { ctx.boxAABB({ mat: 'wood', x0: r[0], x1: r[1], y0: 0, y1: 0.03, z0: -5.4, z1: 17.4, color: 0x68452c, vary: 0.03 }); });
       [[-7.6, -6.1], [6.1, 7.6]].forEach(function (r) { ctx.boxAABB({ mat: 'wood', x0: r[0], x1: r[1], y0: 0, y1: 0.03, z0: -3.2, z1: 14.1, color: 0x68452c, vary: 0.03 }); });
 
-      trace('floor');
       // ---------- 기둥(다발기둥): 회색 벽돌 ----------
       var colliders = [];
       function addPierCollider(x, z, r) { ctx.addCollider({ x: x, z: z, r: r }); }
@@ -380,7 +377,6 @@
         [[-15, 0.2], [-25, 0.2]].forEach(function (q) { uvCyl(mGrey, s * 8.86, q[0], 0, 5.5, q[1], 0.18, 6, false); });
       });
 
-      trace('piers');
       // ---------- 신랑/성단 안벽(아케이드 + 트리포리움 + 고측창) ----------
       function elevation(s, bounds, kindEnd) {
         // s: -1 왼쪽(-x) / +1 오른쪽. bounds: 오름차순 칸 경계 z 목록
@@ -426,7 +422,6 @@
       }
       [-1, 1].forEach(function (s) { elevation(s, NAVE_Z, 'wall'); elevation(s, CHANCEL_Z, 'open'); });
 
-      trace('elev');
       // ---------- 입구 벽(장미창·문) ----------
       (function () {
         var M = mapX(31.5), holes = [], f45 = pf(4.05, CROWN);
@@ -459,7 +454,6 @@
         }
       })();
 
-      trace('entrance');
       // ---------- 측랑 바깥벽(붉은 벽돌 + 첨두창 + 십자가의 길) ----------
       function aisleWall(s, z0, z1, winZs) {
         var M = mapZ(s * 9.45), holes = [], dIn = s > 0 ? -1 : 1;   // 안쪽 면 d: 오른쪽 벽은 -x 방향(-d), 왼쪽은 +d
@@ -487,7 +481,6 @@
         uvBox(mGrey, u0, u1, 0, 0.5, -25.08, -25);
       });
 
-      trace('aisleW');
       // ---------- 익랑(좌우 팔) ----------
       [-1, 1].forEach(function (s) {
         // 끝벽(x=±13.5): 세 개의 긴 첨두창
@@ -515,7 +508,6 @@
       ctx.addCollider({ x0: 13.5, x1: 15, z0: -16, z1: -5 }); ctx.addCollider({ x0: -15, x1: -13.5, z0: -16, z1: -5 });
       [-1, 1].forEach(function (s) { ctx.addCollider({ x0: s > 0 ? 8.7 : -14, x1: s > 0 ? 14 : -8.7, z0: -26, z1: -15 }); });
 
-      trace('transept');
       // ---------- 후진(5면 첨두창 = 로사리오 15단) ----------
       (function () {
         var i;
@@ -547,7 +539,6 @@
         }
       })();
 
-      trace('apse');
       // ---------- 궁륭 ----------
       var VY = SPR, VR = CROWN;
       vaultRun({ x0: -4.05, x1: 4.05, z0: -6, z1: 24, nz: 6, y: VY, rise: VR, color: C.vault });
@@ -584,7 +575,6 @@
         ctx.sphere({ x: Cc[0], y: SPR + CROWN - 0.34, z: Cc[1], r: 0.26, sy: 0.16, color: C.boss, w: 8, h: 4 });
       })();
 
-      trace('vaults');
       // ---------- 성소(제대부) ----------
       var PY = 0.6;
       ctx.boxAABB({ x0: -5.1, x1: 5.1, z0: -31.4, z1: -11, y0: 0, y1: PY - 0.01, color: 0xe5dccb });
@@ -655,7 +645,6 @@
         ctx.boxAABB({ mat: 'wood', x0: x - s * 0.9 - 0.3, x1: x - s * 0.9 + 0.3, y0: PY, y1: PY + 0.5, z0: -24.2, z1: -16.7, color: C.woodMid });
       });
 
-      trace('sanct');
       // 주제대 뒤 제단 벽(백색·금색 고딕 첨탑 + 성모상)
       (function () {
         var zb = -30.0, y = PY, cream = 0xf2ebdc, gold = C.gold;
@@ -703,7 +692,6 @@
         ctx.addCollider({ x0: -3, x1: 3, z0: -31, z1: -29.4 });
       })();
 
-      trace('reredos');
       // ---------- 측면 제대, 성상, 세례대 ----------
       (function () {
         // 왼쪽: 79위 복자 성화 + 제대 / 김대건 성상
@@ -731,7 +719,6 @@
       ctx.candleStand(0, { wood: 0x5a3a24 });
       ctx.candleStand(1, { wood: 0x5a3a24 });
 
-      trace('sideAlt');
       // ---------- 2층 성가대석 + 파이프 오르간 ----------
       (function () {
         var gy = 6.5;
@@ -770,7 +757,6 @@
         ctx.cone({ mat: 'wood', x: 0, y: gy + 6.2, z: oz - 0.2, r: 0.3, h: 1.0, seg: 4, color: C.woodMid });
       })();
 
-      trace('gallery');
       // ---------- 십자가의 길(14처): 청동 부조판 + 나무 틀 + 작은 십자가 ----------
       [-1, 1].forEach(function (s) {
         [27.5, 21.5, 16.5, 11.5, 6.5, 1.5, -3.5].forEach(function (z) {
@@ -782,7 +768,6 @@
         });
       });
 
-      trace('stations');
       // ---------- 신자석 장식: 끝판(첨두 + 새김 무늬) ----------
       ctx.renderSeats(layout, 'bench', {});
       // ---------- 샹들리에(철제, 촛불 전구) + 현관 성수대 ----------
@@ -806,7 +791,6 @@
       [19.5, 11.5, 3.5].forEach(function (z) { [-1, 1].forEach(function (s) { chandelier(s * 2.9, 6.6, z, 7.2, 0.9); }); });
       [-2.6, 2.6].forEach(function (x) { ctx.holyFont({ x: x, z: 30.7 }); });
 
-      trace('chand');
       // ---------- 지붕(안에서는 보이지 않음; 햇빛 차단용 닫힌 껍질) ----------
       (function () {
         var rc = C.slate, up = function (x, z) { return [x, 60, z]; };
@@ -835,7 +819,6 @@
       ctx.setSky({ outside: false });
       ctx.setCameraBounds({ x0: -8.85, x1: 8.85, z0: -24.5, z1: 31.3, yMax: 13 });
       ctx.addCollider({ x0: -14, x1: 14, z0: 31.5, z1: 33 });
-      trace('end'); if (typeof window !== 'undefined' && window.__mdTrace) console.log('[md trace] ' + _tr.join(' '));
 
     }
   };

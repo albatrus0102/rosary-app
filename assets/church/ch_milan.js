@@ -620,14 +620,28 @@
         if (win.door) S.addTris(vv, col, PF(F, 0, sill + h * 0.5, -3), { vary: 0.06 });
         else { GL.addTris(vv, C(col), PF(F, 0, sill + h * 0.5, -3), { vary: 0.1 }); if (RF) RF.addTris(vv, 0xffffff, PF(F, 0, sill + h * 0.5, -3), { vary: 0 }); }
       }
+      function cellTop(poly, col) {
+        var vv = [];
+        for (var q = 1; q < poly.length - 1; q++) { var a0 = PF(F, poly[0][0], poly[0][1], gd - 0.012), b0 = PF(F, poly[q][0], poly[q][1], gd - 0.012), c0 = PF(F, poly[q + 1][0], poly[q + 1][1], gd - 0.012); vv.push(a0[0], a0[1], a0[2], b0[0], b0[1], b0[2], c0[0], c0[1], c0[2]); }
+        GL.addTris(vv, C(col), PF(F, 0, sill + h * 0.5, -3), { vary: 0.08 }); if (RF) RF.addTris(vv, 0xffffff, PF(F, 0, sill + h * 0.5, -3), { vary: 0 });
+      }
       var beamCols = [];
       var lw = win.w / lights, li, rj;
+      var GROUND = [0x1a3f9a, 0xa81a2a], ACCENT = [0xe8a926, 0xf0e3b0, 0x2c8a4e, 0xf0b93a, 0xd7ccb0, 0xb86a1e];
       for (li = 0; li < lights; li++) for (rj = 0; rj < rows; rj++) {
         var u0 = -a + lw * li, u1 = u0 + lw, v0 = sill + h * rj / rows, v1 = sill + h * (rj + 1) / rows;
         var cc;
-        if (win.door) cc = (rj + li) % 2 ? 0x4e3425 : 0x5b3d2a; else cc = pick();
-        if (beamCols.length < 3 && rnd() < 0.3 && !win.door) beamCols.push(cc);
+        if (win.door) cc = (rj + li) % 2 ? 0x4e3425 : 0x5b3d2a;
+        else if (win.medal) cc = GROUND[(li + rj) % 2]; else cc = pick();
+        if (beamCols.length < 3 && rnd() < 0.3 && !win.door) beamCols.push(win.medal ? ACCENT[Math.floor(wr() * ACCENT.length)] : cc);
         cell([[u0, v0], [u1, v0], [u1, v1], [u0, v1]], cc);
+        if (win.medal) {
+          // 메달리온(팔각) : 바탕 위에 밝은 색 면
+          var mu = (u0 + u1) / 2, mv = (v0 + v1) / 2, rx = (u1 - u0) * 0.36, ry2 = (v1 - v0) * 0.36, oct = [];
+          for (var q = 0; q < 8; q++) { var aq = q * PI / 4 + PI / 8; oct.push([mu + Math.cos(aq) * rx * 1.08, mv + Math.sin(aq) * ry2 * 1.08]); }
+          cellTop(oct, ACCENT[Math.floor(wr() * ACCENT.length)]);
+          cellTop([[mu - rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv + ry2 * 0.28], [mu - rx * 0.28, mv + ry2 * 0.28]], GROUND[(li + rj + 1) % 2]);
+        }
       }
       // 아치부 부채꼴 칸
       var top = sill + h, ar = [], cA = [0, top + rise * 0.2], f = pf(a, rise), m = 12;
@@ -709,7 +723,7 @@
     // 익랑 끝 벽(x=±XT): 가운데 큰 창 + 양옆 측랑 창
     [-1, 1].forEach(function (sg) {
       var N = [-sg, 0];
-      windowPanel({ F: fr(sg * XT, (zk(11) + zk(9)) / 2, N[0], N[1]), W: 2 * M, y0: 0, y1: 22, color: WALLC, win: { sill: 3.4, w: 4.4, h: 8.8, rise: 4.6, lights: 3, rows: 11, pal: PAL_APSE, seed: 90 + sg, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12 } });
+      windowPanel({ F: fr(sg * XT, (zk(11) + zk(9)) / 2, N[0], N[1]), W: 2 * M, y0: 0, y1: 22, color: WALLC, win: { sill: 3.4, w: 4.4, h: 8.8, rise: 4.6, lights: 3, rows: 11, medal: true, pal: PAL_APSE, seed: 90 + sg, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12 } });
       windowPanel({ F: fr(sg * XT, (zk(9) + zk(8)) / 2, N[0], N[1]), W: M, y0: 0, y1: 12, color: WALLC, win: { sill: 2.7, w: 1.75, h: 5.4, rise: 2.4, lights: 2, rows: 7, pal: PAL_HI, seed: 101 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
       windowPanel({ F: fr(sg * XT, (zk(12) + zk(11)) / 2, N[0], N[1]), W: M, y0: 0, y1: 12, color: WALLC, win: { sill: 2.7, w: 1.75, h: 5.4, rise: 2.4, lights: 2, rows: 7, pal: PAL_HI, seed: 111 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
       pilaster(sg * XT, zk(9), -sg, 0, 0.9, 0.5, SP_I + 0.3); pilaster(sg * XT, zk(11), -sg, 0, 0.9, 0.5, SP_I + 0.3);
@@ -735,7 +749,7 @@
         var toC = [0 - mid[0], -26.0 - mid[1]];
         if (nx * toC[0] + nz * toC[1] < 0) { nx = -nx; nz = -nz; }
         var F = fr(mid[0], mid[1], nx, nz), center = e === 2;
-        windowPanel({ F: F, W: len, y0: 0, y1: 15.2, color: WALLC, win: center ? { sill: 2.0, w: 4.8, h: 5.5, rise: 3.6, lights: 4, rows: 8, pal: PAL_APSE, seed: 7, splay: 0.45, dg: 0.55, beam: 1, beamReach: 14, n: 14 } : { sill: 2.0, w: 3.5, h: 5.0, rise: 3.1, lights: 3, rows: 7, pal: PAL_APSE, seed: e * 13, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12, n: 12 } });
+        windowPanel({ F: F, W: len, y0: 0, y1: 15.2, color: WALLC, win: center ? { sill: 2.0, w: 4.8, h: 5.5, rise: 3.6, lights: 4, rows: 8, medal: true, pal: PAL_APSE, seed: 7, splay: 0.45, dg: 0.55, beam: 1, beamReach: 14, n: 14 } : { sill: 2.0, w: 3.5, h: 5.0, rise: 3.1, lights: 3, rows: 7, medal: true, pal: PAL_APSE, seed: e * 13, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12, n: 12 } });
         S.add(Geo.box(), STONE_L, { x: mid[0] + F.nx * 0.08, y: 12.4, z: mid[1] + F.nz * 0.08, ry: Math.atan2(F.nx, F.nz), sx: len, sy: 0.2, sz: 0.2, flat: true, vary: 0.02 });
       }
     })();
@@ -1071,7 +1085,7 @@
       // 정면 벽기둥
       [-XA, -XN, XN, XA].forEach(function (x) { ctx.addCollider({ x0: x - 0.7, x1: x + 0.7, z0: ZF - 0.9, z1: ZF + 0.1 }); });
       // 성구실 모서리 벽 돌출 / 팔 모서리
-      ctx.setCameraBounds({ x0: -XT + 0.1, x1: XT - 0.1, z0: -34.4, z1: 41.0, yMax: 28 });
+      ctx.setCameraBounds({ x0: -XT + 0.1, x1: XT - 0.1, z0: -34.4, z1: ZF - 0.5, yMax: 28 });
       ctx.setSky({ outside: false });
     })();
 
@@ -1082,7 +1096,6 @@
         if (Math.abs(x) <= XW - m && z <= ZF - m && z >= zk(8) - 0.3) return true;          // 신랑부
         if (Math.abs(x) <= XT - m && z <= zk(8) + 0.3 && z >= zk(12) + m) return true;       // 익랑
         if (Math.abs(x) <= XA - m && z <= zk(12) + 0.3 && z >= -34.3) return true;           // 성가대·후진
-        if (Math.abs(x) <= XW - m && z > ZF - m && z <= 41) return true;                      // 정면 밖(단면 벽이라 투명)
         return false;
       }
       var tmp = { x: 0, z: 0 };
@@ -1100,7 +1113,7 @@
         }
         var wantFov = A.camera.aspect < 0.8 ? 66 : 62;
         if (Math.abs(cam.fov - wantFov) > 0.01) { cam.fov = wantFov; cam.updateProjectionMatrix(); }
-        cam.rotateX(0.12 + 0.18 * (1 - Math.min(1, A.ctl ? (A.ctl.pitch - 0.12) / 0.8 : 0.5)));
+        cam.rotateX(0.12 + 0.30 * (1 - Math.min(1, A.ctl ? (A.ctl.pitch - 0.12) / 0.8 : 0.5)));
       });
     })();
 

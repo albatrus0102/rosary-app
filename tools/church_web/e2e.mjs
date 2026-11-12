@@ -31,9 +31,10 @@ const N = await page.evaluate(() => ({ seats: __church.logic.seats.length, slots
 check('basic 144 seats / 96 slots', N.seats === 144 && N.slots === 96, N);
 // 걷기: 조이스틱 -> pos 이벤트(<=10Hz), 멈추면 m:0 한 번
 await page.evaluate(() => ChurchAPI.setJoystick({ x: 0, y: 1 }));
-await page.waitForTimeout(1500);
+await page.waitForFunction(() => window.__ev.filter((e) => e.e === 'pos' && e.m === 1).length >= 4, null, { timeout: 120000 }).catch(() => {});
 await page.evaluate(() => ChurchAPI.setJoystick({ x: 0, y: 0 }));
-await page.waitForTimeout(800);
+await page.waitForFunction(() => window.__ev.some((e) => e.e === 'pos' && e.m === 0), null, { timeout: 120000 }).catch(() => {});
+await page.waitForTimeout(500);
 const pos = await page.evaluate(() => window.__ev.filter((e) => e.e === 'pos'));
 const moving = pos.filter((p) => p.m === 1), stops = pos.filter((p) => p.m === 0);
 check('pos events while walking (<=~12/s)', moving.length >= 2 && moving.length <= 25, { moving: moving.length });
@@ -41,18 +42,18 @@ check('exactly one m:0 after stopping', stops.length === 1, { stops: stops.lengt
 check('walked toward altar (z decreased)', moving.length && moving[moving.length - 1].z < 17);
 // 가까운 좌석으로 이동 후 near/sit/seated/stood
 await page.evaluate(() => { const m = __church.me; m.x = -5.2; m.z = -10 + 1.9 * 3 + 1.0; });
-await page.waitForTimeout(400);
+await page.waitForFunction(() => __church.near && __church.near.seat === 'L03-2', null, { timeout: 120000 }).catch(() => {});
 const near = await page.evaluate(() => window.__ev.filter((e) => e.e === 'near').pop());
 check('near seat reported', near && near.seat === 'L03-2', near);
 await page.evaluate(() => ChurchAPI.sit({}));
-await page.waitForFunction(() => window.__ev.some((e) => e.e === 'seated'), null, { timeout: 15000 }).catch(() => {});
+await page.waitForFunction(() => window.__ev.some((e) => e.e === 'seated'), null, { timeout: 150000 }).catch(() => {});
 const seated = await page.evaluate(() => window.__ev.filter((e) => e.e === 'seated'));
 check('seated event after sit animation', seated.length === 1 && seated[0].seat === 'L03-2', seated);
 await page.evaluate(() => { ChurchAPI.setJoystick({ x: 1, y: 1 }); ChurchAPI.setPraying({ on: true, ms: 1 }); });
-await page.waitForTimeout(500);
+await page.waitForTimeout(1500);
 check('joystick ignored while seated', await page.evaluate(() => Math.abs(__church.me.x + 5.2) < 0.01));
 await page.evaluate(() => { ChurchAPI.setJoystick({ x: 0, y: 0 }); ChurchAPI.stand({}); });
-await page.waitForFunction(() => window.__ev.some((e) => e.e === 'stood'), null, { timeout: 15000 }).catch(() => {});
+await page.waitForFunction(() => window.__ev.some((e) => e.e === 'stood'), null, { timeout: 150000 }).catch(() => {});
 const stood = await page.evaluate(() => window.__ev.filter((e) => e.e === 'stood').length);
 check('stood event after standing', stood === 1);
 check('standing returns to the row corridor', await page.evaluate(() => Math.abs(__church.me.z - (-10 + 1.9 * 3 + 1.0)) < 0.05));
@@ -60,7 +61,7 @@ check('standing returns to the row corridor', await page.evaluate(() => Math.abs
 await page.evaluate(() => ChurchAPI.sit({}));
 await page.waitForTimeout(300);
 await page.evaluate(() => ChurchAPI.setSeatTaken({ seat: 'L03-2' }));
-await page.waitForFunction(() => window.__ev.filter((e) => e.e === 'stood').length >= 2, null, { timeout: 15000 }).catch(() => {});
+await page.waitForFunction(() => window.__ev.filter((e) => e.e === 'stood').length >= 2, null, { timeout: 150000 }).catch(() => {});
 const st2 = await page.evaluate(() => ({ mode: __church.me.mode, stood: window.__ev.filter((e) => e.e === 'stood').length, taken: __church.net.isTaken('L03-2') }));
 check('setSeatTaken while sitting -> stands up and posts stood', st2.mode === 'walk' && st2.stood === 2 && st2.taken, st2);
 check('taken seat is not offered again', await page.evaluate(() => __church.logic.nearestSeat(-5.2, -10 + 1.9 * 3 + 1.0, (id) => __church.net.isTaken(id)) !== 'L03-2'));

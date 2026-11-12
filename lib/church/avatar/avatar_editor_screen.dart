@@ -130,7 +130,7 @@ class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
                               i < AvatarConfig.hairColors.length;
                               i++
                             )
-                              '머리색 ${i + 1}',
+                              '머리색 ${i + 1}, ${AvatarConfig.hairNames[i]}',
                           ],
                           selected: _config.hair,
                           onSelected: (i) => _update(_config.copyWith(hair: i)),
@@ -146,7 +146,7 @@ class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
                               i < AvatarConfig.outfitColors.length;
                               i++
                             )
-                              '옷 색 ${i + 1}',
+                              '옷 색 ${i + 1}, ${AvatarConfig.outfitNames[i]}',
                           ],
                           selected: _config.outfit,
                           onSelected: (i) =>

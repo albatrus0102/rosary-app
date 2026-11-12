@@ -636,10 +636,10 @@
       if (sit && variant === 1) ap = [[side * 0.185, 1.40 + dy, dz], [side * 0.195, 1.12 + dy, dz - 0.03], [side * 0.10, 0.92 + dy, dz - 0.19]];
       tube(m, ap, [0.058, 0.048, 0.04], { nu: 5, w: Wn, reg: R.COAT, ao: 1, caps: 'end' });
     }
-    // 머리
-    var hy = HC + dy, hz = dz + (variant === 2 ? -0.05 : 0), hyy = variant === 2 ? hy - 0.02 : hy;
-    blob(m, [0, hyy, hz], [0.077, 0.108, 0.094], [variant === 2 ? 0.5 : 0, 0, 0], { nu: 7, nv: 5, w: Wn, reg: R.SKIN, ao: 1 });
-    blob(m, [0, hyy + 0.012, hz + 0.01], [0.083, 0.100, 0.10], [variant === 2 ? 0.5 : 0, 0, 0], { nu: 7, nv: 4, th1: PI * 0.62, w: Wn, reg: R.HAIR, ao: 0.9 });
+    // 머리(앞 반구 피부 + 머리카락 덮개 + 목)
+    var hy = HC + dy, hz = dz + (variant === 2 ? -0.05 : 0), hyy = variant === 2 ? hy - 0.02 : hy, hr = variant === 2 ? 0.5 : 0;
+    blob(m, [0, hyy, hz], [0.077, 0.106, 0.094], [hr, 0, 0], { nu: 7, nv: 5, w: Wn, reg: R.SKIN, ao: 1 });
+    blob(m, [0, hyy + 0.004, hz + 0.008], [0.081, 0.108, 0.099], [hr - 0.35, 0, 0], { nu: 7, nv: 4, th1: PI * 0.55, w: Wn, reg: R.HAIR, ao: 0.9 });
     blob(m, [0, hyy - 0.07, hz + 0.0], [0.04, 0.05, 0.04], [0, 0, 0], { nu: 5, nv: 3, w: Wn, reg: R.SKIN, ao: 0.6 });
     return m;
   }
@@ -668,7 +668,7 @@
     t[R.DARK] = [skin[0] * 0.42, skin[1] * 0.22, skin[2] * 0.22];
     t[R.EARIN] = [skin[0] * 0.78, skin[1] * 0.52, skin[2] * 0.46];
     t[R.COAT] = oc; t[R.COATIN] = mul(oc, 0.7); t[R.SHIRT] = inner; t[R.SHIRTIN] = mul(inner, 0.62);
-    t[R.PANTS] = lin('#4a4a52'); t[R.BUTTON] = mix(mul(oc, 0.5), [0.02, 0.02, 0.02], 0.4);
+    t[R.PANTS] = lin('#54545d'); t[R.BUTTON] = mix(mul(oc, 0.5), [0.02, 0.02, 0.02], 0.4);
     t[R.CUFF] = mul(oc, 0.86); t[R.LAPEL] = mul(oc, 1.07);
     t.blush = [Math.min(1, skin[0] * 1.15 + 0.04), skin[1] * 0.62, skin[2] * 0.58];
     colCache[key] = t;
@@ -911,7 +911,7 @@
     this.shadow.visible = l < 2;
     if (l === 2) {
       if (this.body.parent) this.root.remove(this.body);
-      this._applyFar(this._variant());
+      this._fv = this._variant(); this._applyFar(this._fv);
       this.imp.visible = true;
     } else {
       if (!this.body.parent) this.root.add(this.body);
@@ -952,7 +952,8 @@
     }
     var bow = emoting && this.emote === 2 ? Math.sin(eU * PI) : 0;
     if (this.lod === 2) {
-      this._applyFar(this._variant());
+      var fv = this._variant();
+      if (fv !== this._fv) { this._fv = fv; this._applyFar(fv); }
       this.shadow.visible = false;
       return;
     }
@@ -984,7 +985,7 @@
     setE(bs[B.ulR], t1R, 0, -0.019 * ws + 0.05 * sa + (-0.02) * w * 0);
     setE(bs[B.ulL], t1L, 0, -0.019 * ws - 0.05 * sa);
     setE(bs[B.llR], t2R, 0, 0); setE(bs[B.llL], t2L, 0, 0);
-    setE(bs[B.ftR], fR, 0, 0); setE(bs[B.ftL], fL, 0, 0);
+    setE(bs[B.ftR], fR, -0.12 * (1 - sa * 0.5), 0); setE(bs[B.ftL], fL, 0.12 * (1 - sa * 0.5), 0);
 
     // ---- 몸통 ----
     var turn = 0.075 * (0.5 + w) * sR * w;
@@ -1007,7 +1008,7 @@
     setE(bs[B.head], -0.02 - 0.28 * pa - 0.10 * bow - nodv * 0.6 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
 
     // ---- 팔 ----
-    var armA = 0.12 + 0.5 * w, elb = 0.14 + 0.5 * w + 0.05 * br, side, qs = this.qs;
+    var armA = 0.12 + 0.5 * w, elb = 0.22 + 0.5 * w + 0.04 * br, side, qs = this.qs;
     var weightL = sa, weightP = pa;
     for (side = -1; side <= 1; side += 2) {
       var ua = bs[side > 0 ? B.uaR : B.uaL], fa = bs[side > 0 ? B.faR : B.faL], ha = bs[side > 0 ? B.haR : B.haL];
@@ -1018,7 +1019,7 @@
       var uxr = armA * sw * 1.0 + 0.55 * bow, uzr = side * (0.07 + 0.02 * w);
       _e.set(uxr, 0, uzr, 'YXZ'); qs.bU[idx].setFromEuler(_e);
       _e.set(elb + 0.35 * w * fwd, 0, 0, 'YXZ'); qs.bF[idx].setFromEuler(_e);
-      _e.set(0.05, 0, side * 0.04, 'YXZ'); qs.bH[idx].setFromEuler(_e);
+      _e.set(0.10, 0, side * 0.05, 'YXZ'); qs.bH[idx].setFromEuler(_e);
       // 포즈: 서기 → 무릎 위 → 기도 → 이모트
       var qU = _qa.copy(qs.bU[idx]), qF = _qb.copy(qs.bF[idx]), qH = _qc.copy(qs.bH[idx]);
       if (sa > 0.001) {

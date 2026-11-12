@@ -80,15 +80,15 @@ void main() {
       expect(find.text(t), findsWidgets, reason: t);
     }
     // Swatch touch targets are at least 48dp with semantics labels.
-    final swatch = find.bySemanticsLabel('머리색 8');
+    final swatch = find.bySemanticsLabel('머리색 8, 회색');
     expect(swatch, findsOneWidget);
     final size = tester.getSize(swatch);
     expect(size.width, greaterThanOrEqualTo(48));
     expect(size.height, greaterThanOrEqualTo(48));
 
-    await tester.tap(find.bySemanticsLabel('머리색 8'));
+    await tester.tap(find.bySemanticsLabel('머리색 8, 회색'));
     await tester.pump();
-    await tester.tap(find.bySemanticsLabel('옷 색 12'));
+    await tester.tap(find.bySemanticsLabel('옷 색 12, 테라코타'));
     await tester.pump();
     await tester.tap(find.bySemanticsLabel('구릿빛 피부'));
     await tester.pump();

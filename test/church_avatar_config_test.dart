@@ -60,6 +60,11 @@ void main() {
       expect(AvatarConfig.styleNames, hasLength(4));
       expect(AvatarConfig.hairColors, hasLength(10));
       expect(AvatarConfig.outfitColors, hasLength(12));
+      expect(AvatarConfig.hairNames, hasLength(AvatarConfig.hairColors.length));
+      expect(
+        AvatarConfig.outfitNames,
+        hasLength(AvatarConfig.outfitColors.length),
+      );
       expect(AvatarConfig.nameCount, baptismalNames.length);
       expect(a.skinColor, AvatarConfig.skinColors[a.skin]);
     });

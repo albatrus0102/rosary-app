@@ -82,6 +82,36 @@ class AvatarConfig {
 
   static const List<String> styleNames = ['짧은 머리', '단발', '올림머리', '곱슬'];
 
+  /// 머리색 이름(접근성 라벨용). 색상표와 같은 순서.
+  static const List<String> hairNames = [
+    '검정',
+    '짙은 갈색',
+    '갈색',
+    '밤색',
+    '적갈색',
+    '어두운 금발',
+    '금발',
+    '회색',
+    '은백색',
+    '짙은 적색',
+  ];
+
+  /// 옷색 이름(접근성 라벨용). 색상표와 같은 순서.
+  static const List<String> outfitNames = [
+    '네이비',
+    '차콜',
+    '블랙',
+    '카멜',
+    '올리브',
+    '버건디',
+    '포레스트',
+    '크림',
+    '토프',
+    '더스티 블루',
+    '플럼',
+    '테라코타',
+  ];
+
   static const List<Color> hairColors = [
     Color(0xFF1C1917),
     Color(0xFF3B2A20),

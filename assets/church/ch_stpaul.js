@@ -30,7 +30,7 @@
     build: function (ctx) {
       var T = ctx.THREE, PI = Math.PI, G = ChurchGeo, Geo = G.Geo, solid = ctx.solid;
       var C = {
-        wallNave: 0xd5c8aa, wallLow: 0xdcd5c5, ring: 0xe7e1d4, reveal: 0xcfc4ab, aisle: 0xd3c6a8, aisleLow: 0xd0c8b6,
+        wallNave: 0xf3e8cd, wallLow: 0xf0ebdf, ring: 0xe7e1d4, reveal: 0xcfc4ab, aisle: 0xeadfc3, aisleLow: 0xe6dfcf,
         gold: 0xc9a236, goldD: 0xa07c22, white: 0xe0dacc, marble: 0xd8d1c2, porph: 0x6e2c3e, bronze: 0x5a4630
       };
       var rng = ctx.rng;
