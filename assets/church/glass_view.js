@@ -11,15 +11,17 @@
   'use strict';
   var T = root.THREE, GM = root.ChurchGlassMath;
   var FOV = 35, GLIDE = 0.9, RESET = 0.4, FADE = 0.25;
+  // 밉 LOD 치우침: 삼선형 필터는 축소할 때 이상적인 면적 평균보다 흐리다. -0.5 면 화면 화소 크기에 더 가깝다(밉맵·이방성으로 모아레 억제).
+  var LOD_BIAS = (function () { try { var m = /[?&]lodbias=(-?[0-9.]+)/.exec(root.location.search); return m ? +m[1] : -0.5; } catch (e) { return -0.5; } })();
 
   var GLASS_VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
   var SRGB_GLSL = 'vec3 s2l(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }\n';
-  var GLASS_FS = 'uniform sampler2D uMapA; uniform sampler2D uMapB; uniform float uMix; uniform float uK; uniform vec3 uTint; uniform vec3 uRefl;\n' +
+  var GLASS_FS = 'uniform sampler2D uMapA; uniform sampler2D uMapB; uniform float uMix; uniform float uBias; uniform float uK; uniform vec3 uTint; uniform vec3 uRefl;\n' +
     'uniform float uDecode; uniform float uSelfTone; uniform float uDebug; varying vec2 vUv;\n' + SRGB_GLSL +
     'vec3 glassTM(vec3 c){ float p = max(c.r, max(c.g, c.b)); if (p <= 1.0) return c; float w = 1.0 - 1.0 / (1.0 + 0.6 * (p - 1.0)); return mix(c / p, vec3(1.0), w); }\n' +
     'void main(){\n' +
-    ' vec4 a = texture2D(uMapA, vUv);\n' +
-    ' if (uMix > 0.0) a = mix(a, texture2D(uMapB, vUv), uMix);\n' +
+    ' vec4 a = texture2D(uMapA, vUv, uBias);\n' +
+    ' if (uMix > 0.0) a = mix(a, texture2D(uMapB, vUv, uBias), uMix);\n' +
     ' if (uDecode > 0.5) a.rgb = s2l(a.rgb);\n' +
     ' float fw = max(fwidth(a.a), 1e-4);\n' +
     ' float cov = clamp((a.a - 0.5) / fw + 0.5, 0.0, 1.0);\n' +
@@ -31,13 +33,14 @@
     '#include <encodings_fragment>\n}';
   // 창 둘레 돌 뒤판 위의 빛 번짐 + 윤곽 바로 바깥의 얇은 그늘(창틀). 색 = 흐린 밉(bias)으로 읽은 창 색 × 알파.
   var GLOW_VS = 'uniform vec4 uMapXf; varying vec2 vW; void main(){ vW = uv * uMapXf.xy + uMapXf.zw; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
-  var GLOW_FS = 'uniform sampler2D uMap; uniform float uGlow; uniform float uRim; uniform float uDecode; uniform float uFall; uniform vec3 uTint; varying vec2 vW;\n' + SRGB_GLSL +
+  // 빛 번짐 색은 창 그림을 96px 로 줄여 흐린 작은 질감(uPatch, 알파를 곱해 검정 위에 합성, 이방성 없음)에서 읽는다.
+  // (창 질감을 큰 bias 로 읽으면 개구부 바깥의 clamp 영역에서 이방성 필터가 축 방향 줄무늬를 만든다.) 그늘(창틀)은 판 안쪽에서만 창 알파로.
+  var GLOW_FS = 'uniform sampler2D uMap; uniform sampler2D uPatch; uniform float uHasPatch; uniform float uGlow; uniform float uRim; uniform float uDecode; uniform float uFall; uniform vec3 uTint; varying vec2 vW;\n' + SRGB_GLSL +
     'void main(){ vec2 uc = clamp(vW, 0.0, 1.0); float od = length((vW - uc) * vec2(uFall, uFall));\n' +
-    ' vec4 nearT = texture2D(uMap, uc, 2.0); vec4 farT = texture2D(uMap, uc, 5.5);\n' +
-    ' vec3 fc = farT.rgb; if (uDecode > 0.5) fc = s2l(fc);\n' +
+    ' vec3 fc = uHasPatch > 0.5 ? texture2D(uPatch, uc).rgb : vec3(0.0);\n' +
     ' float fall = exp(-od * 3.0);\n' +
     ' vec3 glow = fc * uGlow * uTint * fall;\n' +
-    ' float rim = smoothstep(0.02, 0.45, nearT.a) * (1.0 - smoothstep(0.0, 0.08, od));\n' +
+    ' float rim = 0.0; if (od <= 0.0) { float na = texture2D(uMap, vW, 1.5).a; rim = smoothstep(0.02, 0.45, na); }\n' +
     ' gl_FragColor = vec4(glow, 1.0 - uRim * rim);\n' +
     '#include <encodings_fragment>\n}';
 
@@ -206,8 +209,10 @@
         var g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
         if ('filter' in g) g.filter = 'blur(1.2px)';
         g.drawImage(img, 0, 0, c.width, c.height);
-        patchTex = new T.CanvasTexture(c); patchTex.encoding = T.sRGBEncoding;
+        patchTex = new T.CanvasTexture(c); patchTex.encoding = T.sRGBEncoding; patchTex.anisotropy = 1;
+        patchTex.wrapS = patchTex.wrapT = T.ClampToEdgeWrapping; patchTex.minFilter = T.LinearFilter; patchTex.generateMipmaps = false;
         if (patchMat) { patchMat.map = patchTex; patchMat.needsUpdate = true; }
+        if (glowMat) { glowMat.uniforms.uPatch.value = patchTex; glowMat.uniforms.uHasPatch.value = 1; }
       } catch (e) { /* 색빛 없이 */ }
     }
 
@@ -220,7 +225,7 @@
       disposeMeshes();
       var c = capsOf(), q = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, 1), new T.Vector3(s.nx, 0, s.nz));
       glassMat = new T.ShaderMaterial({
-        uniforms: { uMapA: { value: null }, uMapB: { value: null }, uMix: { value: 0 }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
+        uniforms: { uMapA: { value: null }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: LOD_BIAS }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
           uDecode: { value: c.gl2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 } },
         vertexShader: GLASS_VS, fragmentShader: GLASS_FS, extensions: { derivatives: true },
         fog: false, lights: false, toneMapped: false, transparent: false, depthWrite: true,
@@ -235,7 +240,7 @@
       if (withGlow && s.open) {
         var ow = s.open.x1 - s.open.x0, oh = s.open.y1 - s.open.y0;
         glowMat = new T.ShaderMaterial({
-          uniforms: { uMap: { value: null }, uGlow: { value: 0.1 }, uRim: { value: 0.35 }, uDecode: { value: c.gl2 ? 0 : 1 }, uTint: { value: new T.Vector3(1, 1, 1) },
+          uniforms: { uMap: { value: null }, uPatch: { value: null }, uHasPatch: { value: 0 }, uGlow: { value: 0.1 }, uRim: { value: 0.35 }, uDecode: { value: c.gl2 ? 0 : 1 }, uTint: { value: new T.Vector3(1, 1, 1) },
             uFall: { value: 4.0 }, uMapXf: { value: new T.Vector4(ow / w, oh / h, (s.open.x0 - (s.x - w / 2)) / w, (s.open.y0 - (s.y - h / 2)) / h) } },
           vertexShader: GLOW_VS, fragmentShader: GLOW_FS, fog: false, lights: false, toneMapped: false, transparent: true, depthWrite: false,
           blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.OneFactor, blendDst: T.SrcAlphaFactor, blendSrcAlpha: T.ZeroFactor, blendDstAlpha: T.OneFactor
@@ -263,7 +268,7 @@
         var r = st.refl * (V.light === 'night' ? 1 : 0);
         u.uRefl.value.set(r * 1.0, r * 0.7, r * 0.45);
       }
-      if (glowMat) { glowMat.uniforms.uGlow.value = st.glow * st.k; glowMat.uniforms.uTint.value.set(st.tint[0], st.tint[1], st.tint[2]); glowMat.uniforms.uRim.value = V.light === 'night' ? 0.15 : 0.35; }
+      if (glowMat) { glowMat.uniforms.uGlow.value = st.glow * Math.min(st.k, 1.5); glowMat.uniforms.uTint.value.set(st.tint[0], st.tint[1], st.tint[2]); glowMat.uniforms.uRim.value = V.light === 'night' ? 0.15 : 0.35; }
       if (patchMesh) {
         var on = V.light === 'sun' && st.patch > 0.01 && slot && slot.open;
         patchMesh.visible = !!on;

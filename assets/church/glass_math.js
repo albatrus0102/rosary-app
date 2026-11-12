@@ -42,11 +42,8 @@
     var rs = (entry && entry.real_size_m) || {};
     var w = +rs.width || 0, h = +rs.height || 0;
     var st = rs.status === 'known' ? 'known' : 'est';
-    if (w > 0 && h > 0) {
-      // 사진 비율과 실제 비율이 다르면(카탈로그 검증 오류) 모양은 사진을 따르고 높이를 맞춘다
-      if (Math.abs(w / h - a) / a > 0.02) w = h * a;
-      return { w: w, h: h, status: st };
-    }
+    // 판 모양은 언제나 사진 비율을 따른다(늘이지 않는다). 둘 다 알면 높이를 기준으로 한다(실제 비율과 2% 넘게 다르면 카탈로그 검증 오류).
+    if (w > 0 && h > 0) return { w: h * a, h: h, status: st };
     if (w > 0) return { w: w, h: w / a, status: st };
     if (h > 0) return { w: h * a, h: h, status: st };
     var L = defaultLongSide(entry && entry.form, a);
@@ -103,7 +100,7 @@
   // 이동 한계: 화면 가장자리가 창 가장자리(+4%)까지만 가게 한다. 1배에서는 0.
   function clampPan(px, py, w, h, hv) {
     var lx = Math.max(0, w * 0.54 - hv.hx), ly = Math.max(0, h * 0.54 - hv.hy);
-    return { x: clamp(px, -lx, lx), y: clamp(py, -ly, ly) };
+    return { x: clamp(px, -lx, lx) + 0, y: clamp(py, -ly, ly) + 0 };
   }
   // 핀치: 화면의 ndc(sx,sy) 아래 점이 확대 전후 같은 자리에 머물도록 이동량을 고친다
   function pinchPan(px, py, sx, sy, hv0, hv1) {
@@ -185,21 +182,21 @@
     return { dir: [Math.sin(phi) * Math.cos(e2), Math.sin(e2), -Math.cos(phi) * Math.cos(e2)], elev: up ? e2 : -0.2, up: up };
   }
   function lightState(light, hour) {
-    if (light === 'night') return { k: 0.035, tint: [1, 1, 1], patch: 0, glow: 0.004, refl: 0.02, stone: 0.10 };
+    if (light === 'night') return { k: 0.04, tint: [1, 1, 1], patch: 0, glow: 0.004, refl: 0.005, stone: 0.10 };
     if (light !== 'sun') return { k: 1, tint: [1, 1, 1], patch: 0, glow: 0.10, refl: 0, stone: 1 };
     var s = sunAt(hour === undefined ? 10 : +hour);
     var day = s.up ? clamp(Math.sin(s.elev) * 3.2, 0, 1) : 0;
     var cosI = -s.dir[2];                                   // 빛이 실내(+z)로 들어오는 성분
     var direct = s.up ? clamp((cosI - 0.05) * 1.6, 0, 1) * clamp(Math.sin(s.elev) * 6, 0, 1) : 0;
-    var k = 0.15 + 0.8 * day + 1.6 * direct;
-    var low = s.up ? clamp(1 - Math.sin(s.elev) / Math.sin(10 * D2R), 0, 1) : 0;   // 고도 10° 미만이면 호박색 쪽
+    var k = 0.15 + 0.8 * day + 0.6 * direct;   // 정면 햇빛 최대 약 1.55배(그 이상은 거의 흰색으로 날아간다)
+    var low = s.up ? clamp(1 - Math.sin(s.elev) / Math.sin(15 * D2R), 0, 1) : 0;   // 낮은 해(이 태양 경로의 최저 고도는 4°)는 호박색 쪽
     var amber = [1.0, 0.86, 0.66], cool = [0.95, 0.985, 1.05];
     var t = direct > 0.05 ? 1 : 0, tint = [];
     for (var i = 0; i < 3; i++) {
       var base = t ? 1 : cool[i];
-      tint.push(base + (amber[i] - base) * low * Math.max(direct, 0.5));
+      tint.push(base + (amber[i] - base) * low);
     }
-    return { k: k, tint: tint, patch: direct * day, glow: 0.08 + 0.25 * direct, refl: 0.04, stone: 0.35 + 0.65 * day, sun: s.dir };
+    return { k: k, tint: tint, patch: direct * day, glow: 0.06 + 0.1 * direct, refl: 0.04, stone: 0.35 + 0.65 * day, sun: s.dir };
   }
 
   var M = {

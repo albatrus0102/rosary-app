@@ -260,6 +260,87 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   check('look-up: walking decays look back to 0', decayed, await pg.evaluate(() => ({ look: __church.ctl.look })));
   await pg.close();
 }
+// 창 감상(SPEC §22): 성당 안 → viewWindow(room) → viewReady·질감·아바타 숨김·정지 시 그리기 멈춤 → 제스처 → endView 로 같은 자리 복귀,
+// 'church' 모드(지금 성당의 창 자리), 잘못된 id 는 viewError.
+{
+  const pg = await browser.newPage({ viewport: { width: 480, height: 640 } });
+  await pg.addInitScript(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
+  pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
+  pg.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await pg.goto('file://' + root + '/index.html');
+  await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
+  const missingV = await pg.evaluate(() => ['viewWindow', 'endView', 'setViewLight', 'setViewTier', 'resetView'].filter((k) => typeof window.ChurchAPI[k] !== 'function'));
+  check('ChurchAPI has the view methods', missingV.length === 0, missingV);
+  await pg.evaluate(() => ChurchAPI.init({ church: 'basic', hour: 12, quality: 'low', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
+  await pg.waitForFunction(() => window.__church && window.__church.world && window.__church.frameCount > 3, null, { timeout: 180000 });
+  await pg.evaluate(() => { const m = __church.me; m.x = 1.5; m.z = 6; __church.ctl.yaw = 0.4; });
+  await pg.waitForTimeout(500);
+  const before = await pg.evaluate(() => ({ x: __church.me.x, z: __church.me.z, yaw: __church.ctl.yaw, church: __church.church }));
+  await pg.evaluate(() => ChurchAPI.viewWindow({ win: 'dove_stpeter', mode: 'room', tier: 't2', light: 'ref' }));
+  const vr = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'viewReady' || e.e === 'viewError'), null, { timeout: 180000 }).then(() => true).catch(() => false);
+  const ready = await pg.evaluate(() => window.__ev.find((e) => e.e === 'viewReady'));
+  check('viewWindow(room): viewReady {win, tier, ms}', vr && ready && ready.win === 'dove_stpeter' && /^t[12]$/.test(ready.tier) && ready.ms >= 0, ready);
+  await pg.waitForFunction(() => { const d = __church.view.debug(); return d.idle && d.tierShown === 't2'; }, null, { timeout: 180000 });
+  const st = await pg.evaluate(() => ({ church: __church.church, d: __church.view.debug(), me: __church.meAv.root.visible, raf: __church.rafOn, stations: __church.stations, zone: __church.ctl.moveZone, vm: __church.ctl.viewMode }));
+  check('room mode: glass_room scene, t2 shown, <=2 textures, avatar hidden, joystick zone off', st.church === 'glass_room' && st.d.resident.length <= 2 && st.d.resident.includes('dove_stpeter:t2') && !st.me && st.stations === null && st.vm && !st.zone, st);
+  check('render-on-demand: the rAF loop stops when idle', st.raf === false, { raf: st.raf });
+  check('view profile: SSAO off, Neutral curve', st.d.passes === null || (st.d.passes.ssao === false && (st.d.passes.curve === 1 || st.d.passes.curve === -1)), st.d.passes);
+  const z = await pg.evaluate(() => {
+    const pe = (t, id, x, y) => document.getElementById('c').dispatchEvent(new PointerEvent(t, { pointerId: id, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' }));
+    pe('pointerdown', 21, 200, 320); pe('pointerdown', 22, 280, 320); pe('pointermove', 22, 400, 320); pe('pointerup', 22, 400, 320); pe('pointerup', 21, 200, 320);
+    const a = __church.view.debug();
+    pe('pointerdown', 23, 240, 320); pe('pointermove', 23, 300, 360); pe('pointerup', 23, 300, 360);
+    const b = __church.view.debug();
+    return { zoom: a.zoom, raf: __church.rafOn, panX: b.panX, panY: b.panY };
+  });
+  check('pinch zooms (2 fingers) and one finger pans while zoomed; drawing resumes', z.zoom > 1.5 && (z.panX !== 0 || z.panY !== 0), z);
+  await pg.waitForFunction(() => __church.view.debug().idle, null, { timeout: 120000 });
+  await pg.evaluate(() => {
+    const pe = (t, x, y) => document.getElementById('c').dispatchEvent(new PointerEvent(t, { pointerId: 24, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' }));
+    pe('pointerdown', 240, 320); pe('pointerup', 240, 320); pe('pointerdown', 242, 321); pe('pointerup', 242, 321);
+  });
+  await pg.waitForFunction(() => __church.view.debug().idle, null, { timeout: 120000 });
+  const rs = await pg.evaluate(() => ({ d: __church.view.debug(), g: window.__ev.filter((e) => e.e === 'viewGesture').map((e) => e.kind) }));
+  check('double tap resets to 1x and posts viewGesture zoom/pan/reset', rs.d.zoom === 1 && rs.d.panX === 0 && rs.d.panY === 0 && ['zoom', 'pan', 'reset'].every((k) => rs.g.includes(k)), rs.g);
+  await pg.evaluate(() => { ChurchAPI.setViewLight({ light: 'sun', hour: 8.5 }); });
+  await pg.waitForFunction(() => __church.view.debug().idle, null, { timeout: 120000 });
+  check('setViewLight sun', await pg.evaluate(() => __church.view.debug().light === 'sun'));
+  await pg.evaluate(() => ChurchAPI.endView());
+  await pg.waitForFunction(() => __church.world && __church.world.id === 'basic' && __church.frameCount > 0, null, { timeout: 180000 });
+  await pg.waitForTimeout(800);
+  const after = await pg.evaluate(() => ({ x: __church.me.x, z: __church.me.z, yaw: __church.ctl.yaw, church: __church.church, av: __church.meAv.root.visible, end: window.__ev.find((e) => e.e === 'viewEnd'), d: __church.view.debug(), raf: __church.rafOn, vm: __church.ctl.viewMode, markers: !!__church.markers }));
+  check('endView: viewEnd {win, seconds, zoomMax, panned} and back at the same place in the same church', after.end && after.end.win === 'dove_stpeter' && after.end.zoomMax > 1.5 && after.end.panned === true && typeof after.end.seconds === 'number' && after.church === 'basic' && Math.hypot(after.x - before.x, after.z - before.z) < 0.05 && Math.abs(after.yaw - before.yaw) < 1e-6, { before, after: { ...after, d: undefined } });
+  check('endView: textures released, avatar/markers back, loop running', after.d.resident.length === 0 && after.d.stats.created === after.d.stats.disposed && after.av && after.markers && after.raf && !after.vm, after.d.stats);
+  // church 모드: 기본 성당의 옆벽 창 앞에서
+  await pg.evaluate(() => { const m = __church.me; m.x = -9; m.z = 0; __church.ctl.yaw = -Math.PI / 2; });
+  await pg.waitForTimeout(400);
+  await pg.evaluate(() => { window.__ev.length = 0; ChurchAPI.viewWindow({ win: 'lancet_gesta', mode: 'church', tier: 't1' }); });
+  await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'viewReady' || e.e === 'viewError'), null, { timeout: 180000 });
+  await pg.waitForFunction(() => __church.view.debug().idle, null, { timeout: 180000 });
+  const ch = await pg.evaluate(() => ({ d: __church.view.debug(), church: __church.church, ev: window.__ev.filter((e) => /^view/.test(e.e)) }));
+  check('church mode: stays in basic, window placed on a wall slot facing the avatar', ch.church === 'basic' && ch.d.mode === 'church' && ch.d.slot && Math.abs(ch.d.slot.x + 12) < 0.6 && ch.ev.some((e) => e.e === 'viewReady'), { slot: ch.d.slot, ev: ch.ev });
+  await pg.evaluate(() => ChurchAPI.endView());
+  await pg.waitForTimeout(300);
+  check('church mode endView restores walk mode', await pg.evaluate(() => !__church.view.active && __church.world.id === 'basic' && !__church.world.viewMode));
+  await pg.evaluate(() => { window.__ev.length = 0; ChurchAPI.viewWindow({ win: '../etc', mode: 'room' }); ChurchAPI.viewWindow({ win: 'no_such_window', mode: 'room' }); });
+  await pg.waitForFunction(() => window.__ev.filter((e) => e.e === 'viewError').length >= 2, null, { timeout: 60000 }).catch(() => {});
+  const ve = await pg.evaluate(() => window.__ev.filter((e) => e.e === 'viewError'));
+  check('bad / unknown window id -> viewError unknown (no crash)', ve.length >= 2 && ve.every((e) => e.reason === 'unknown'), ve);
+  await pg.close();
+}
+// 감상만 하려고 연 경우: init 없이 viewWindow → 감상실로 바로(성당을 짓지 않음)
+{
+  const pg = await browser.newPage({ viewport: { width: 360, height: 640 } });
+  await pg.addInitScript(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
+  pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
+  await pg.goto('file://' + root + '/index.html');
+  await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
+  await pg.evaluate(() => ChurchAPI.viewWindow({ win: 'rose_chartres_south', tier: 't1', light: 'night' }));
+  const ok = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'viewReady'), null, { timeout: 180000 }).then(() => true).catch(() => false);
+  const info = await pg.evaluate(() => ({ church: __church.church, stations: window.__ev.filter((e) => e.e === 'stations').length, light: __church.view.debug().light }));
+  check('viewWindow before init boots straight into the viewing room (no church, no stations event)', ok && info.church === 'glass_room' && info.stations === 0 && info.light === 'night', info);
+  await pg.close();
+}
 // 화질 자동 하향: 고화질로 시작한 뒤 프레임 시간이 길면 tier 'low' perf 이벤트가 온다(소프트웨어 렌더에서는 보통 발생)
 {
   const pg = await browser.newPage({ viewport: { width: 640, height: 360 } });

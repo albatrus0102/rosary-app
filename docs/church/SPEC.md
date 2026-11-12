@@ -256,3 +256,58 @@ tapAt({x,y})     // 화면 좌표(CSS px). Flutter 가 가로챈 왼쪽 절반�
 - 원인 기록(라테라노 '벽에서 계속 깜빡임'): `high` 화질의 SSAOPass 가 장면을 자기 `beautyRenderTarget` 에 다시 그리는데, 이 타깃엔 깊이 텍스처가 없어 three r149 가 16비트 깊이 버퍼를 잡았다. near 0.3 에서 10m 거리 깊이 해상도 ≈5mm, 30m ≈5cm 라 벽 위 프레스코·판이 벽과 같은 깊이로 뭉개져 카메라가 조금만 움직여도 줄무늬로 깜빡였다. `render.js` 에서 32비트 깊이 텍스처를 붙여 고쳤다.
 - 새 판·장식은 바탕 면과 **같은 평면에 두지 않는다**(최소 1.5cm 앞, 또는 실제로 파낸 벽감).
 - `node tools/church_web/flicker.mjs [id ...]`(기본 lateran stpeter, 수 분 걸려 `node --test` 밖): 카메라 고정, 프레임마다 depthFunc Less↔LessEqual 을 바꿔 같은 깊이로 뭉개진 면을 드러낸다. 32×32 블록 평균 차이 > 2.0 이면 실패.
+
+---
+# G1: 스테인드글라스 감상 모드 (GLASS_APP_PLAN §3·§4, 과제 G-04·G-05·G-07·G-08·G-11)
+창에 대해서는 이 절과 `docs/ux/GLASS_APP_PLAN.md`가 §13("사진·이미지는 쓰지 않는다")보다 우선한다. 구현: `assets/church/glass_math.js`(순수 계산), `glass_view.js`(감상 모드), `ch_glass.js`(감상실), `render.js`(프로필), `main.js`(그리기 고리), `controls.js`(제스처).
+
+## 22. 감상 브리지
+Flutter → 웹:
+```
+viewWindow({win:'<카탈로그 id>', mode:'room'|'church', tier:'t1'|'t2', light:'ref'|'sun'|'night', hour?, base?})
+   // mode 'room'(기본) = 감상실 장면(church id 'glass_room')을 그 창 크기로 지어 들어간다. 이미 감상 중이면 창만 바꾼다(방을 새 크기로 다시 짓는다).
+   // mode 'church' = 지금 성당에서 내 앞쪽의 가장 가까운 창 자리(빌더의 ctx.window/ctx.rose)에 그 사진 창을 비율 그대로(contain) 끼우고 활강한다.
+   //                 앞쪽에 창 자리가 없거나 init 전이면 'room' 으로 간다. (G1 선택 항목: 기본 동작만, 창 자리별 실제 배치표는 G-29)
+   // tier: 't2'(기본) = t1 을 먼저 보이고 t2 가 오면 0.25초 교차 페이드. maxTextureSize < 2048 또는 deviceMemory < 2GB 면 t1 로 내린다. T3 는 G2.
+   // light 기본 'ref'. hour 0..24(sun 일 때 해 위치). base: 질감·카탈로그를 읽을 URL 접두사(G-03 루프백 서버 'http://127.0.0.1:<port>/<token>/').
+   // init 전에 불러도 된다(감상실로 바로 시작, 성당을 짓지 않는다).
+endView({})                           // 감상을 끝내고 들어오기 전 장면·자리·카메라로 돌아간다(앉아 있었으면 같은 좌석). 바로 감상으로 열었으면 그리지 않고 쉰다.
+setViewLight({light, hour?})          // 'ref' | 'sun' | 'night'
+setViewTier({tier})                   // 't1' | 't2' (교차 페이드)
+resetView({})                         // 처음 구도로 0.4초 복귀(두 번 탭과 같음)
+```
+웹 → Flutter (`FlutterChurch`, 다른 이벤트와 같은 JSON):
+```
+{"e":"viewReady","win":"rose_chartres_north","tier":"t1","ms":420}   // 그 창 질감으로 그린 첫 프레임. tier = 그때 보인 단계(t2 는 뒤이어 페이드), ms = viewWindow 부터
+{"e":"viewEnd","win":"...","seconds":63,"zoomMax":3.2,"panned":true}  // seconds = viewReady 부터 endView 까지, zoomMax = 도달한 최대 배율(소수 1자리)
+{"e":"viewError","win":"...","reason":"texture"|"webgl"|"memory"|"unknown"}
+   // texture: 그림/팩/카탈로그를 못 읽음·교차 출처로 막힘, webgl: 렌더러 없음·문맥 잃음, memory: 질감 업로드 OUT_OF_MEMORY, unknown: id 형식이 틀리거나 카탈로그에 없음
+{"e":"viewPerf","win":"...","fps":58,"texMb":17.1}                   // 감상 중 5초마다. fps = 실제로 그린 시간 동안의 평균(멈춰 있으면 0), texMb = 올라간 창 질감(밉맵 포함 추정)
+{"e":"viewGesture","kind":"zoom"|"pan"|"reset"}                      // 종류마다 1.5초에 한 번까지
+```
+- 질감 위치: http(s) 또는 `base` 가 있으면 `glass_<id>_1k.webp`(t1)·`_2k.webp`(t2)와 `glass_catalog.json`을 직접 읽는다(교차 출처면 CORS 필요, 2D 캔버스로 오염 여부를 먼저 본다). **file:// WebView 에서는** WebGL 이 같은 폴더의 그림도 교차 출처로 거부하고 fetch/XHR 도 막히므로 `gpack_<id>_<1k|2k>.js`(data URI)·`glass_catalog.js`를 `<script>` 로 읽는다. 둘 다 `node tools/church_web/build_glasspack.mjs` 가 만든다(약 72MB, 카탈로그·webp 를 바꾸면 다시 실행).
+- 메모리: 창 질감은 동시에 최대 2장(페이드 중 t1+t2). 새 창·`endView` 때 모두 해제한다. `__church.view.debug().stats` = `{created, disposed, resident, peak, texMb, loads, errors, frames}`.
+- 감상 중 Flutter 는 왼쪽 절반 조이스틱 가로채기를 끄고 모든 터치를 웹으로 넘긴다(웹 `ctl.viewMode`: 한 손가락 = 이동(확대했을 때만), 두 손가락 = 확대, 두 번 탭 = 복귀). 아바타·이름표·표식은 숨고, `tapAt`·`setJoystick`은 무시된다. 감상실은 실시간 서버에 붙지 않는다(Flutter 는 감상실에 대해 방 연결을 만들지 않는다).
+
+## 23. 감상 카메라와 그리기
+- 활강: 들어갈 때 0.9초 ease-in-out(창을 바꿀 때 0.54초)으로 창 중심 법선 위 수평·정면 자리로 간다. 세로 시야각 35°(망원), 창 외곽이 화면의 84% 안에 들어가는 거리(`frameDistance`). 굴림·기울기 없음.
+- 확대 1배~상한: 상한 = min(8, 질감 1텍셀이 CSS 2px 이 되는 배율)(`zoomMax`). 확대는 시야각으로 한다(tan 비율, 원근 불변). 핀치 중심 아래 점이 고정된다. 이동은 확대했을 때만, 화면 가장자리가 창 외곽+4%를 넘지 않게. 두 번 탭/`resetView` = 0.4초 복귀.
+- 필요할 때만 그린다: 입력·활강·페이드·빛 바꾸기·질감 도착 때만 프레임을 그리고, 할 일이 없으면 rAF 를 멈춘다(`main.js` `kick()` 이 다시 깨운다). 감상 중 자동 화질 하향은 끈다. 화소 비율은 기기값(최대 3, low 1.5)까지.
+
+## 24. 색 프로필(G-04)과 창 재질(G-05)
+- `render.js` 최종 패스: **'walk'**(성당 걷기) = 예전과 같은 채도 0.94·난색 +3%·비네트 0.16 + ACES(three r149 와 같은 식, 성당 모습 불변). **'view'**(감상) = 보정 없음(채도 1·난색 0·비네트 0) + **Khronos PBR Neutral**(색상각 보존), SSAO 끔(유리·창틀이 어두워지지 않고 8비트 beauty 타깃도 피한다), 블룸은 'sun' 에서만(문턱 1.6 = 유리 알베도 범위 위의 HDR, 강도 0.15, 반경 0.4). low 화질(후처리 없음)은 three `CustomToneMapping` 을 Neutral 로 바꿔 같은 프로필을 쓴다. 전환: `R.setProfile('view'|'walk', {bloom})`(GlassView 가 부른다).
+- **사진 창 화소는 어느 프로필에서도 보정·톤매핑을 건너뛴다**: 유리 셰이더가 알파 0(덮임 비율만큼)을 쓰고, 최종 패스가 `mix(톤매핑(장면), 유리곡선(c), 1-alpha)`로 고른다. 유리곡선 = 최댓값 ≤ 1.0 이면 항등(기준광에서 화면 값 = 사진 값), 넘치면(햇빛) 색상각을 지키며 흰색 쪽으로 누른다. PBR Neutral 자체는 0.04 를 빼는 발끝(유전체 반사 4% 보정)이 있어 발광 유리의 중간톤을 ΔE≈4 어둡게 하므로 유리에는 쓰지 않는다. 기존 절차적 창(`ctx.mats.glass`)은 그대로(알파 1, 걷기 모습 불변).
+- 창 판: `ShaderMaterial`, draw call 1. 질감 sRGB(`sRGBEncoding`, WebGL2 는 하드웨어 디코드, WebGL1 은 셰이더 디코드), 밉맵 + `LinearMipmapLinear` + 최대 이방성 + 밉 LOD 치우침 -0.5(삼선형은 이상적 면적 평균보다 흐려 장미창 같은 고운 납선의 블록 ΔE 를 키운다; 시험용 `?lodbias=`), ClampToEdge. 출력 = `tex.rgb(선형) × 투과량 × 색조 (+ 밤 반사)`. 조명·안개·SSAO·그림자·AO 데칼 없음(`fog:false, lights:false, toneMapped:false, noAO`). 윤곽 = 알파 0.5 등고선을 `fwidth` 로 1px 부드럽게(반투명 정렬 문제 없이 depthWrite, 절차적 변주 없음 — `glass.test.mjs` 가 셰이더에 rand/noise/sin/time 이 없음을 고정).
+- 크기: 판 모양은 언제나 사진 비율(`aspect_w_over_h`). 크기 = 카탈로그 `real_size_m`(둘 다 알면 높이 기준, 하나만 알면 비율로), 모르면 형태별 기본값(장미 8m, 원형 3.5m, 랜싯 6m/다연창 8m/반원 4.5m, 패널 1.2m, 부분 2.4m)으로 `est`.
+- 둘레: 개구부 뒤 돌판 위에 흐린 밉(bias 7.5)으로 읽은 창 색의 빛 번짐(기준광 0.10, 햇빛 0.06~0.16 × 투과량) + 윤곽 바로 바깥의 얇은 그늘(창틀). 개구부 테두리 돌 띠.
+- 빛 상태(`lightState`): **ref** = 투과 1.0·색조 1·바닥 색빛 없음·반사 없음. **sun** = 해 고도·방위(world.js 와 같은 경로, 창은 동쪽 벽)로 투과 0.15~1.55배, 정면 햇빛이면 창 모양 바닥 색빛(창 질감 96px 흐림, 태양 방향으로 바닥에 투영한 가산 사각형), 낮은 해는 호박색, 등지면 약간 차가운 색. **night** = 투과 0.04 + 아주 약한 따뜻한 반사, 촛대 2개의 불꽃·촛불빛.
+
+## 25. 감상실 `ch_glass.js` (church id `glass_room`)
+- `ChurchBuilders['glass_room']`(`viewing:true`), 레이아웃은 `ChurchLayouts` 에 등록하지 않는다(서버 `layouts.json`·레이아웃/스테이션 시험·썸네일 대상 아님). 좌석·촛불대·스테이션·표식·군중 없음.
+- 창을 실제 크기로 동쪽 벽(-z, 실내 방향 +z)에 끼운다: 개구부 = 창 외곽 + 여백(긴 변의 6%, 0.12~0.6m), 깊이 0.25~0.7m 의 돌 뒤판, 판은 뒤판 앞 1.2cm. 창 중심 높이: 2.6m 이하 창은 눈높이(1.55m) 근처, 큰 창은 바닥에서 0.9m. 방 폭·높이·깊이는 창 크기와 세로 화면(비율 0.42)에서의 구도 거리로 정한다(큰 장미창이면 50m 넘게 깊어진다).
+- 돌은 따뜻한 회색(`stone_grey` 사진 질감, 채도 낮게, 창보다 어둡게), 반사 바닥 없음, 그림자·안개·먼지·빛줄기 끔(`world.setViewMode(true)`). 실내 조명은 `ctx.envOverride` 로 빛 상태별로 정한다(해 직사광 없음, 부드러운 반구광 + 창에서 나오는 약한 점광, 밤은 촛불).
+- 빌더 도구 추가: `ctx.envOverride(fn(env,hour))`, `ctx.setViewSlot({x,y,z,nx,nz,w,h,depth,backZ,open})`, `ctx.view`(GlassView 매개변수). 월드: `world.setViewMode(on)`, `world.viewSlot`, `world.windowSlots()`.
+
+## 26. 시험
+- `node --test "tools/church_web/*.test.mjs"` — `glass.test.mjs`(카탈로그 조회·크기 추정·구도·확대/이동 한계·단계 선택·색 함수·CIEDE2000(Sharma 자료)·빛 상태·셰이더에 변주 없음).
+- `node tools/church_web/glasscolor.mjs`(수 분, `node --test` 밖) — (1) 색: 기준광 정면 t2 렌더를 마스터 사진(4096, 선형 빛 area 축소)과 4×4 블록으로 비교, 윤곽 안쪽 블록의 ΔE2000 중앙값 ≤ 1.5·p95 ≤ 4.0·C*>20 블록 평균 색상각 이동 ≤ 2°. **재는 것은 '렌더 파이프라인이 사진 값을 바꾸지 않는가'이지 실제 유리 색이 아니다**(리샘플링 차이 포함, SwiftShader 기준). (2) 감상실 깜박임(정지 카메라 10프레임, depthFunc 교대, 32×32 블록 ≤ 2.0). (3) 윤곽 IoU ≥ 0.98(장미·랜싯·원형창) + 화면 비율 오차 ≤ 1%. (4) 창 30개 연속 열기에서 동시 질감 ≤ 2장, 끝나면 0장.

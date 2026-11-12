@@ -32,13 +32,13 @@ function masterPath(id) {
   return fs.existsSync(m) ? m : path.join(root, `glass_${id}_2k.webp`);
 }
 
-export async function openView(browser, id, { size = '800x800', light = 'ref', tier = 't2' } = {}) {
+export async function openView(browser, id, { size = '800x800', light = 'ref', tier = 't2', lodbias } = {}) {
   const [W, H] = size.split('x').map(Number);
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror ' + e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: 'glass_room', hideui: '1', autotier: '0', msaa: '0', view: id, tier, light }));
+  await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: 'glass_room', hideui: '1', autotier: '0', msaa: '0', view: id, tier, light, ...(lodbias !== undefined ? { lodbias } : {}) }));
   await page.waitForFunction(() => (window.__churchEvents || []).some((e) => e.e === 'viewReady' || e.e === 'viewError'), null, { timeout: 180000, polling: 250 });
   await page.waitForFunction(() => { const d = __church.view.debug(); return d.idle && d.tierShown === d.tierReq; }, null, { timeout: 180000, polling: 250 });
   return { page, errors };
@@ -203,7 +203,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   let only = ['color', 'iou', 'flicker', 'mem'], ids = null;
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--only') only = a[++i].split(','); else if (a[i] === '--ids') ids = a[++i].split(',');
-    else if (a[i] === '--size') o.size = a[++i]; else if (a[i] === '--out') o.out = a[++i];
+    else if (a[i] === '--size') o.size = a[++i]; else if (a[i] === '--out') o.out = a[++i]; else if (a[i] === '--lodbias') o.lodbias = a[++i];
   }
   if (o.out) fs.mkdirSync(o.out, { recursive: true });
   const browser = await chromium.launch({ args: ARGS });

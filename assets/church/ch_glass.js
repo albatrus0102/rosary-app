@@ -82,7 +82,7 @@
         var L = V.light || 'ref', st = M ? M.lightState(L, V.hour) : { k: 1, tint: [1, 1, 1] };
         var night = L === 'night';
         flames.forEach(function (f) { f.visible = night; });
-        candle.intensity = night ? 9 : 0;
+        candle.intensity = night ? 2.2 : 0;
         winLight.intensity = night ? 0 : 2.4 * BIG2 * Math.min(2.2, st.k);
         winLight.color.setRGB(st.tint[0], st.tint[1], st.tint[2]);
       });

@@ -29,7 +29,7 @@
       setMoveZone: function (on) { on = !!on; if (ctl.moveZone === on) return; ctl.moveZone = on; if (!on) releaseMove(); },
       // 창 감상 제스처
       viewMode: false, onView: null,
-      setViewMode: function (on) { on = !!on; if (ctl.viewMode === on) return; ctl.viewMode = on; vpts = {}; vLast = 0; if (on) { releaseMove(); pts = {}; recount(); } }
+      setViewMode: function (on) { on = !!on; if (ctl.viewMode === on) return; ctl.viewMode = on; vpts = {}; vLast = 0; if (on) { releaseMove(); ctl.moveZone = false; pts = {}; recount(); } }
     };
     // ---- 감상 제스처(viewMode) ----
     var vpts = {}, vLast = 0, vTap = null;

@@ -304,3 +304,11 @@ ctx.floor({ x0:…, tex: marble, tile: 4 });
 5. 양탄자는 실제 성당에 있을 때만(`ctx.carpet` 은 천 질감·테두리 무늬). 없는 성당이면 쓰지 않는다.
 6. 신자석은 `ctx.renderSeats(layout,'bench'|'chair')` 가 실제 비율(등받이 판·상단 레일·기도대·좌석판·둥근 옆판)로 그린다.
 7. 색은 채도 낮은 따뜻한 돌색, 깊은 나무색, 진한 금색. 파스텔 장난감 색 금지.
+
+
+### 7.7 감상실·창 감상용 도구 (G1, SPEC §22~25)
+- `ctx.view` — 감상실 빌더(`ch_glass.js`, `viewing:true`)에만 들어오는 매개변수 `{w,h,light,hour}`(GlassView 소유). 다른 빌더는 `null`.
+- `ctx.envOverride(fn(env, hour))` — 시간대 값을 적용 직전에 고친다(감상실의 빛 상태별 실내 조명). 성당 빌더는 쓰지 않는다.
+- `ctx.setViewSlot({x,y,z,nx,nz,w,h,depth,backZ,open})` — 감상실의 창 자리. 사진 창 판은 GlassView 가 이 자리에 끼운다.
+- 일반 성당의 `ctx.window`/`ctx.rose` 자리는 `world.windowSlots()`로 'church' 감상 모드에 쓰인다(창 안쪽 면 + 1.2cm 에 사진 창을 비율 그대로 끼움). 실제 창 배치표는 G-29.
+- 사진 창 재질은 빌더가 만들지 않는다(`glass_view.js`). 빌더의 절차적 창(`ctx.mats.glass`)은 예전 그대로다.
