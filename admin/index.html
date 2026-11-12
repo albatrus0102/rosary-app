@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>묵주기도 관리자</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="app">
+  <!-- 로그인 -->
+  <main id="login-view" class="center" hidden>
+    <form id="login-form" class="card login-card" autocomplete="on">
+      <h1>묵주기도 관리자</h1>
+      <p class="muted">관리자로 등록된 이메일 계정으로 로그인하세요.</p>
+      <label>이메일<input id="email" type="email" autocomplete="username" required></label>
+      <label>비밀번호<input id="password" type="password" autocomplete="current-password" required></label>
+      <button id="login-btn" type="submit" class="btn primary">로그인</button>
+      <p id="login-msg" class="msg" role="alert" hidden></p>
+    </form>
+  </main>
+
+  <!-- 설정 누락 / 관리자 아님 등 안내 -->
+  <main id="notice-view" class="center" hidden>
+    <div class="card login-card">
+      <h1 id="notice-title"></h1>
+      <p id="notice-body" class="muted"></p>
+      <button id="notice-btn" class="btn" type="button" hidden>로그아웃</button>
+    </div>
+  </main>
+
+  <!-- 대시보드 -->
+  <div id="dash-view" hidden>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <h1>묵주기도 관리자</h1>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="기간 선택" id="range">
+            <button type="button" data-days="7">7일</button>
+            <button type="button" data-days="30" class="on" aria-pressed="true">30일</button>
+            <button type="button" data-days="90">90일</button>
+          </div>
+          <button id="refresh" class="btn small" type="button">새로고침</button>
+          <span id="who" class="muted small-text"></span>
+          <button id="logout" class="btn small" type="button">로그아웃</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <p class="muted small-text note">모든 수치는 한국 시간(KST) 기준 집계이며, 개인별 데이터는 표시되지 않습니다. 사용 지표는 '화면·기능 사용 분석'에 동의한 사용자만 포함됩니다.</p>
+
+      <section aria-labelledby="h-kpi">
+        <h2 id="h-kpi">핵심 지표</h2>
+        <div id="kpi" class="kpis"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-dau">
+        <h2 id="h-dau">일별 활성 사용자 (DAU)</h2>
+        <div id="dau" class="chart" data-state="loading"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-ret">
+        <h2 id="h-ret">유지율 <span class="tag">기간 무관 · 최근 12주 가입자</span></h2>
+        <div id="retention" class="chart" data-state="loading"></div>
+        <p class="muted small-text">D<i>n</i> = 가입 후 정확히 n일째에 앱을 연 비율. 분모는 현재 사용 분석에 동의 중이며 n일이 지난 가입자입니다.</p>
+      </section>
+
+      <div class="grid2">
+        <section class="card" aria-labelledby="h-feat">
+          <h2 id="h-feat">많이 쓰는 기능</h2>
+          <div id="features" class="chart" data-state="loading"></div>
+        </section>
+        <section class="card" aria-labelledby="h-scr">
+          <h2 id="h-scr">많이 보는 화면</h2>
+          <div id="screens" class="chart" data-state="loading"></div>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="h-prayer">
+        <h2 id="h-prayer">기도 현황 <span class="tag">'기도 기록 동기화' 동의자</span></h2>
+        <div id="prayer-kpi" class="kpis compact"></div>
+        <div id="prayer" class="chart" data-state="loading"></div>
+        <div id="prayer-legend" class="legend"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-church">
+        <h2 id="h-church">성당 이용 <span class="tag">'성당 이용 기록' 동의자</span></h2>
+        <div id="church" class="chart" data-state="loading"></div>
+      </section>
+
+      <div class="grid2">
+        <section class="card" aria-labelledby="h-ver">
+          <h2 id="h-ver">앱 버전 <span class="tag">기기 수 · 기간 무관</span></h2>
+          <div id="versions" class="chart" data-state="loading"></div>
+        </section>
+        <section class="card" aria-labelledby="h-os">
+          <h2 id="h-os">운영체제 <span class="tag">기기 수 · 기간 무관</span></h2>
+          <div id="os" class="chart" data-state="loading"></div>
+        </section>
+      </div>
+
+      <div class="grid2">
+        <section class="card" aria-labelledby="h-err">
+          <h2 id="h-err">상위 오류 <span class="tag">'오류·기기 정보' 동의자</span></h2>
+          <div id="errors" class="chart" data-state="loading"></div>
+        </section>
+        <section class="card" aria-labelledby="h-consent">
+          <h2 id="h-consent">선택 동의 비율 <span class="tag">전체 가입자 기준</span></h2>
+          <div id="consent" class="chart" data-state="loading"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="tip" class="tip" hidden></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
