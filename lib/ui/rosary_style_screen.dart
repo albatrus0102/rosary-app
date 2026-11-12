@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
+import '../app/track.dart';
 import '../app/window_class.dart';
 import 'widgets/page_body.dart';
 
@@ -31,7 +32,10 @@ class RosaryStyleScreen extends StatelessWidget {
               WindowClass.expanded => 3,
             },
             selected: selected,
-            onSelect: (style) => settings.rosaryStyle = style,
+            onSelect: (style) {
+              settings.rosaryStyle = style;
+              Track.rosaryStyle(style);
+            },
           );
           return CustomScrollView(
             slivers: [

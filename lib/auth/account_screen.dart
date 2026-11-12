@@ -71,6 +71,7 @@ class _AccountScreenState extends State<AccountScreen> {
   void _openLegal(String title, String body) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
+        settings: const RouteSettings(name: 'legal'),
         builder: (_) => LegalScreen(title: title, body: body),
       ),
     );

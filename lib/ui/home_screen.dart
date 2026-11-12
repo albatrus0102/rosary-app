@@ -2,15 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/app_services.dart';
 import '../app/leader_audio_store.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
+import '../app/track.dart';
 import '../app/window_class.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
+import '../stats/stats_screen.dart';
+import '../stats/stats_widgets.dart';
 import 'prayer_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/pill.dart';
@@ -79,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final target = set ?? settings.mysterySet;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
+        settings: const RouteSettings(name: 'prayer'),
         builder: (_) => PrayerScreen(
           settings: settings,
           mysterySet: target,
@@ -91,6 +96,14 @@ class _HomeScreenState extends State<HomeScreen> {
     // 기도 중 저장된 진행 상태(알림 없이 갱신됨)를 다시 읽는다.
     if (mounted) setState(() {});
   }
+
+  /// 기도 기록(통계) 화면을 연다. `stats_open`은 화면이 열릴 때 스스로 기록한다.
+  Future<void> _openStats(AppServices services) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      settings: const RouteSettings(name: 'stats'),
+      builder: (_) => StatsScreen(store: services.stats),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -242,6 +255,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
         _HeroCard(style: settings.rosaryStyle, onTap: widget.onOpenStyles),
         const SizedBox(height: AppSpace.md),
+        if (AppServicesScope.maybeOf(context) case final services?) ...[
+          StatsSummaryCard(
+            store: services.stats,
+            onTap: () => unawaited(_openStats(services)),
+          ),
+          const SizedBox(height: AppSpace.md),
+        ],
         const SectionHeader('오늘의 신비'),
         for (var i = 0; i < sets.length; i += 2) ...[
           if (i > 0) const SizedBox(height: AppSpace.sm),
@@ -282,7 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
           selected: {settings.prayerMode},
-          onSelectionChanged: (v) => settings.prayerMode = v.first,
+          onSelectionChanged: (v) {
+            settings.prayerMode = v.first;
+            Track.mode(v.first);
+          },
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

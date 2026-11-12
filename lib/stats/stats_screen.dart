@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app/track.dart';
 import '../app/window_class.dart';
 import '../domain/prayer_data.dart';
 import 'prayer_stats_store.dart';
@@ -28,6 +29,12 @@ class _StatsScreenState extends State<StatsScreen> {
   _StatsRange _range = _StatsRange.month;
 
   DateTime get _now => (widget.now ?? DateTime.now)();
+
+  @override
+  void initState() {
+    super.initState();
+    Track.event('stats_open', {'range': _range.name});
+  }
 
   Future<void> _confirmClear() async {
     final ok = await showDialog<bool>(
@@ -111,7 +118,10 @@ class _StatsScreenState extends State<StatsScreen> {
         ButtonSegment(value: _StatsRange.all, label: Text('전체')),
       ],
       selected: {_range},
-      onSelectionChanged: (s) => setState(() => _range = s.first),
+      onSelectionChanged: (s) {
+        setState(() => _range = s.first);
+        Track.event('stats_open', {'range': s.first.name});
+      },
     );
 
     final metrics = _MetricGrid(

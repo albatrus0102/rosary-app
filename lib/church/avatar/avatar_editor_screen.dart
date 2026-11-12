@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../app/settings.dart';
+import '../../app/track.dart';
 import '../church_constants.dart';
 import 'avatar_config.dart';
 import 'avatar_preview.dart';
@@ -44,6 +45,7 @@ class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
   void _save() {
     widget.settings.churchAvatar = _config;
     widget.settings.churchAvatarChosen = true;
+    Track.event('avatar_save');
     Navigator.of(context).pop(_config);
   }
 

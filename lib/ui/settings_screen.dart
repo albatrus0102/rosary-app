@@ -2,14 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/app_services.dart';
 import '../app/bundled_leader_voice.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
+import '../app/track.dart';
+import '../auth/account_screen.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
+import '../stats/stats_screen.dart';
 import 'leader_record_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
@@ -166,6 +170,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSoundSection(context),
                   _buildDisplaySection(context),
                   _buildLeaderSection(context),
+                  _buildAccountSection(context),
                   _buildAboutSection(context),
                 ],
               ),
@@ -185,7 +190,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           secondary: const Icon(Icons.notifications_none),
           title: const Text('성모송 10번이 끝나면 종소리'),
           value: settings.chimeOnTenHailMarys,
-          onChanged: (v) => settings.chimeOnTenHailMarys = v,
+          onChanged: (v) {
+            settings.chimeOnTenHailMarys = v;
+            Track.setting('chime_ten');
+          },
         ),
         _SliderTile(
           icon: Icons.volume_up_outlined,
@@ -204,20 +212,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
             semanticFormatterCallback: (v) => '${(v * 100).round()}%',
             value: settings.chimeVolume,
             onChanged: (v) => settings.chimeVolume = v,
+            onChangeEnd: (_) => Track.setting('chime_volume'),
           ),
         ),
         SwitchListTile(
           secondary: const Icon(Icons.radio_button_checked),
           title: const Text('구슬마다 짧은 소리'),
           value: settings.tickPerBead,
-          onChanged: (v) => settings.tickPerBead = v,
+          onChanged: (v) {
+            settings.tickPerBead = v;
+            Track.setting('tick_bead');
+          },
         ),
         SwitchListTile(
           secondary: const Icon(Icons.vibration),
           title: const Text('넘길 때 진동'),
           subtitle: const Text('다음 구슬로 넘어갈 때 가볍게 진동합니다'),
           value: settings.hapticOnAdvance,
-          onChanged: (v) => settings.hapticOnAdvance = v,
+          onChanged: (v) {
+            settings.hapticOnAdvance = v;
+            Track.setting('haptic');
+          },
         ),
       ],
     );
@@ -238,7 +253,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: const Text('기기 배경화면 색 사용(Material You)'),
           subtitle: const Text('지원하지 않는 기기에서는 앱 기본 색을 씁니다'),
           value: settings.useDynamicColor,
-          onChanged: (v) => settings.useDynamicColor = v,
+          onChanged: (v) {
+            settings.useDynamicColor = v;
+            Track.setting('dynamic_color');
+          },
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -269,7 +287,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                   selected: {settings.prayerFont},
-                  onSelectionChanged: (v) => settings.prayerFont = v.first,
+                  onSelectionChanged: (v) {
+                    settings.prayerFont = v.first;
+                    Track.setting('prayer_font');
+                  },
                 ),
               ),
             ],
@@ -282,7 +303,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           trailing: TextButton(
             onPressed: scale == AppSettings.defaultTextScale
                 ? null
-                : () => settings.prayerTextScale = AppSettings.defaultTextScale,
+                : () {
+                    settings.prayerTextScale = AppSettings.defaultTextScale;
+                    Track.textScale(AppSettings.defaultTextScale);
+                  },
             child: const Text('기본'),
           ),
           slider: Slider(
@@ -293,6 +317,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             semanticFormatterCallback: (v) => '${(v * 100).round()}%',
             value: scale,
             onChanged: (v) => settings.prayerTextScale = v,
+            onChangeEnd: Track.textScale,
           ),
         ),
         Padding(
@@ -339,7 +364,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: const Text('선창 음성'),
           subtitle: const Text('후창 모드에서 뒷단 차례에 앞단을 들려줍니다'),
           value: settings.leaderAudioEnabled,
-          onChanged: (v) => settings.leaderAudioEnabled = v,
+          onChanged: (v) {
+            settings.leaderAudioEnabled = v;
+            Track.setting('leader_audio');
+          },
         ),
         AnimatedSize(
           duration: AppMotion.of(context, Durations.medium1),
@@ -370,8 +398,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                           ],
                           selected: {source},
-                          onSelectionChanged: (v) =>
-                              settings.leaderVoiceSource = v.first,
+                          onSelectionChanged: (v) {
+                            settings.leaderVoiceSource = v.first;
+                            Track.leaderVoice(settings);
+                          },
                         ),
                       ),
                     ),
@@ -402,6 +432,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 _stopPreview();
                                 Navigator.of(context).push(
                                   MaterialPageRoute<void>(
+                                    settings: const RouteSettings(
+                                      name: 'leader_record',
+                                    ),
                                     builder: (_) =>
                                         LeaderRecordScreen(store: _leaderStore),
                                   ),
@@ -497,6 +530,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onSelectionChanged: (v) {
                     _stopPreview();
                     settings.leaderPersona = v.first;
+                    Track.leaderVoice(settings);
                   },
                 ),
               ),
@@ -553,6 +587,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   label: settings.ttsRate.toStringAsFixed(2),
                   value: settings.ttsRate,
                   onChanged: (v) => settings.ttsRate = v,
+                  onChangeEnd: (_) => Track.setting('tts_rate'),
                 ),
               ),
             ],
@@ -570,7 +605,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // (d) 정보
+  // (d) 계정·기도 기록. 서비스가 없거나 백엔드가 설정되지 않으면 '계정'은 숨긴다.
+  Widget _buildAccountSection(BuildContext context) {
+    final services = AppServicesScope.maybeOf(context);
+    if (services == null) return const SizedBox.shrink();
+    return _Section(
+      title: '계정 · 기록',
+      children: [
+        if (services.backendConfigured)
+          ListenableBuilder(
+            listenable: services.auth.state,
+            builder: (context, _) {
+              final s = services.auth.state.value;
+              return ListTile(
+                leading: const Icon(Icons.account_circle_outlined),
+                title: const Text('계정'),
+                subtitle: Text(
+                  s.isSignedIn ? (s.provider?.label ?? '로그인됨') : '로그인하지 않음',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    settings: const RouteSettings(name: 'account'),
+                    builder: (_) => AccountScreen(
+                      authService: services.auth,
+                      consentStore: services.consent,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ListTile(
+          leading: const Icon(Icons.insights_outlined),
+          title: const Text('기도 기록'),
+          subtitle: const Text('바친 묵주기도와 연속 기도 일수'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              settings: const RouteSettings(name: 'stats'),
+              builder: (_) => StatsScreen(store: services.stats),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // (e) 정보
   Widget _buildAboutSection(BuildContext context) {
     return _Section(
       title: '정보',

@@ -23,6 +23,7 @@ class PrayerSessionTracker {
     required this.mysterySet,
     this.source = PrayerRecord.sourceApp,
     this.now = DateTime.now,
+    this.onRecord,
   }) : _hailMaryBelow = _prefix(
          session.steps,
          (s) => s.kind == StepKind.hailMary,
@@ -39,6 +40,9 @@ class PrayerSessionTracker {
 
   /// 시계(테스트에서 주입).
   final DateTime Function() now;
+
+  /// 기록 한 건을 만들어 저장소에 넘기는 순간 불린다(예: 분석 `prayer_finish`).
+  final void Function(PrayerRecord record)? onRecord;
 
   /// `prefix[i]` = 인덱스 i보다 작은 스텝 중 조건을 만족하는 수.
   final List<int> _hailMaryBelow;
@@ -190,6 +194,11 @@ class PrayerSessionTracker {
       seconds: (_active.inMilliseconds / 1000).round(),
       source: source,
     );
+    try {
+      onRecord?.call(record);
+    } catch (_) {
+      // 알림 실패가 기록 저장을 막지 않는다.
+    }
     _pending = _pending.then((_) => store.add(record));
   }
 }

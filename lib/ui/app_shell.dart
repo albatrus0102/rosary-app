@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/leader_audio_store.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
+import '../app/track.dart';
 import '../app/window_class.dart';
 import '../church/church_tab.dart';
 import 'home_screen.dart';
@@ -38,11 +39,21 @@ class _AppShellState extends State<AppShell> {
   static const _settings = 2;
   static const _church = 3;
 
+  /// 탭 번호 → 화면 id(SPEC §4). 탭은 라우트가 아니라서 여기서 직접 기록한다.
+  static const _screenIds = [
+    'home',
+    'rosary_styles',
+    'settings',
+    'church_select',
+  ];
+
   int _index = _prayer;
 
   void _select(int i) {
     if (i == _index) return;
     setState(() => _index = i);
+    // 성당 탭의 실제 화면(church_select/church)은 ChurchTab이 기록한다.
+    if (i != _church) Track.screen(_screenIds[i]);
   }
 
   @override

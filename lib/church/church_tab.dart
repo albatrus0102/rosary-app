@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/settings.dart';
+import '../app/track.dart';
 import 'church_catalog.dart';
 import 'church_scene_controller.dart';
 import 'church_screen.dart';
@@ -36,9 +37,22 @@ class ChurchTab extends StatefulWidget {
 class _ChurchTabState extends State<ChurchTab> {
   String? _inChurch;
 
-  void _enter(ChurchInfo info) => setState(() => _inChurch = info.id);
+  @override
+  void initState() {
+    super.initState();
+    Track.screen('church_select');
+  }
 
-  void _leave() => setState(() => _inChurch = null);
+  void _enter(ChurchInfo info) {
+    Track.church('church_pick', info.id);
+    Track.screen('church');
+    setState(() => _inChurch = info.id);
+  }
+
+  void _leave() {
+    Track.screen('church_select');
+    setState(() => _inChurch = null);
+  }
 
   @override
   Widget build(BuildContext context) {

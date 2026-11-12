@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../app/app_services.dart';
 import '../app/settings.dart';
+import '../app/track.dart';
 import '../domain/prayer_data.dart';
 import '../domain/rosary_session.dart';
 import '../ui/prayer_screen.dart';
@@ -86,6 +88,11 @@ class _ChurchScreenState extends State<ChurchScreen>
   late bool _lastAmbient;
   String _lastAvatar = '';
 
+  // 분석(church_exit): 들어온 시각과 앉아 있던 시간.
+  DateTime? _enteredAt;
+  DateTime? _satSince;
+  Duration _satTotal = Duration.zero;
+
   @override
   void initState() {
     super.initState();
@@ -117,11 +124,29 @@ class _ChurchScreenState extends State<ChurchScreen>
     } catch (e) {
       debugPrint('church connect failed: $e');
     }
+    if (_disposed) return;
+    _enteredAt = DateTime.now();
+    Track.church('church_enter', widget.churchId, {
+      'online': _net.state.value == NetState.online,
+    });
+  }
+
+  /// 앉은 시간을 센다(앉으면 true, 일어나면 false).
+  void _markSat(bool sat) {
+    final now = DateTime.now();
+    if (sat) {
+      _satSince ??= now;
+      return;
+    }
+    final since = _satSince;
+    if (since != null) _satTotal += now.difference(since);
+    _satSince = null;
   }
 
   Future<void> _openAvatarEditor() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
+        settings: const RouteSettings(name: 'avatar_editor'),
         fullscreenDialog: true,
         builder:
             widget.avatarEditorBuilder ??
@@ -177,6 +202,8 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _onSeated(String seat) {
     if (!mounted) return;
+    if (_mySeat == null) Track.church('church_sit', widget.churchId);
+    _markSat(true);
     _mySeat = seat.isEmpty ? (_pendingSeat ?? '') : seat;
     _pendingSeat = null;
     final p = _prayer ??= _createPrayer();
@@ -189,7 +216,10 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   ChurchPrayerController _createPrayer() {
-    final p = ChurchPrayerController(settings: _settings);
+    final p = ChurchPrayerController(
+      settings: _settings,
+      stats: AppServicesScope.maybeOf(context)?.stats,
+    );
     p.addListener(_onPrayerChanged);
     return p;
   }
@@ -374,6 +404,8 @@ class _ChurchScreenState extends State<ChurchScreen>
     final intention = await showCandleSheet(context);
     if (intention == null || _disposed) return;
     _net.lightCandle(slot, intention);
+    // 촛불을 켰다는 사실만 기록한다. 지향 값은 절대 넘기지 않는다.
+    Track.church('church_candle', widget.churchId);
     // 켠 촛불은 꺼지지 않는다(until 0 = 만료 없음).
     unawaited(_scene.lightCandle(slot: slot, until: 0, intention: intention));
   }
@@ -388,6 +420,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _mySeat = null;
     _pendingSeat = null;
     _prayerActive = false;
+    _markSat(false);
     _prayer?.stop(save: saveProgress);
     if (wasSeated) {
       if (tellNet) _net.sendStand();
@@ -442,6 +475,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (p == null) return;
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
+        settings: const RouteSettings(name: 'prayer'),
         builder: (context) =>
             widget.prayerScreenBuilder?.call(
               context,
@@ -459,7 +493,10 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (!_disposed && _prayerActive) _setWakelock(true);
   }
 
-  void _toggleAmbient() => _settings.churchAmbient = !_settings.churchAmbient;
+  void _toggleAmbient() {
+    _settings.churchAmbient = !_settings.churchAmbient;
+    Track.setting('church_ambient');
+  }
 
   void _emote(int e) {
     _net.emote(e);
@@ -476,6 +513,14 @@ class _ChurchScreenState extends State<ChurchScreen>
     _sceneSub?.cancel();
     _netSub?.cancel();
     // 퇴장: 일어서고, 진행을 저장하고, 접속을 끊는다.
+    _markSat(false);
+    final enteredAt = _enteredAt;
+    if (enteredAt != null) {
+      Track.church('church_exit', widget.churchId, {
+        'seconds': DateTime.now().difference(enteredAt).inSeconds,
+        'sat_seconds': _satTotal.inSeconds,
+      });
+    }
     if (_mySeat != null || _pendingSeat != null) {
       _net.sendStand();
       unawaited(_scene.stand());

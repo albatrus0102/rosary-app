@@ -27,7 +27,13 @@ jobs:
       - run: flutter test
 
       - name: APK 빌드 (ABI별 분리)
-        run: flutter build apk --release --split-per-abi
+        # 비밀 값은 저장소 시크릿에서 받는다(비어 있으면 '백엔드 미설정' 빌드).
+        # anon 키는 공개용이며 서비스 롤 키는 절대 넣지 않는다.
+        run: >
+          flutter build apk --release --split-per-abi
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          --dart-define=CHURCH_SERVER_URL=${{ secrets.CHURCH_SERVER_URL }}
 
       - uses: actions/upload-artifact@v4
         with:

@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../app/app_services.dart';
 import '../app/bundled_leader_voice.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
+import '../app/prayer_tracking.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
+import '../app/track.dart';
 import '../app/window_class.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
@@ -70,6 +73,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
   late final bool _ownsSound;
   StreamSubscription<SessionEvent>? _eventSub;
 
+  /// 기도 기록·분석. 세션의 주인(이 화면이 세션을 만든 경우)만 만든다. 성당 기도 카드가
+  /// 연 전체 화면 기도는 카드 쪽 컨트롤러가 이미 기록하므로 여기서는 만들지 않는다.
+  PrayerTracking? _tracking;
+
   // 선창 음성(후창 모드 전용).
   LeaderVoice? _voice;
   LeaderAudioStore? _ownedStore;
@@ -89,10 +96,22 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _ownsSession = widget.session == null;
     _session =
         widget.session ?? RosarySession(buildRosarySequence(widget.mysterySet));
+    var resumed = false;
     if (_ownsSession &&
         widget.initialIndex > 0 &&
         widget.initialIndex < _session.steps.length) {
       _session.jumpTo(widget.initialIndex);
+      resumed = true;
+    }
+    if (_ownsSession) {
+      // 이어하기 위치로 옮긴 뒤에 붙인다(그 위치가 기준선).
+      _tracking = PrayerTracking(
+        session: _session,
+        mysterySet: widget.mysterySet,
+        settings: _settings,
+        stats: AppServicesScope.maybeOf(context)?.stats,
+        resumed: resumed,
+      )..start();
     }
 
     _ownsSound = widget.soundPlayer == null;
@@ -210,6 +229,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void dispose() {
     _disposed = true;
+    _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     _session.removeListener(_onSessionChanged);
     _session.removeListener(_onProgress);
     final voice = _voice;
@@ -311,6 +331,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                               '글자 크기 ${(v * 100).round()}%',
                           onChanged: (v) => _settings.prayerTextScale =
                               (v * 100).roundToDouble() / 100,
+                          onChangeEnd: (_) =>
+                              Track.textScale(_settings.prayerTextScale),
                         ),
                       ),
                       Icon(
@@ -324,8 +346,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     child: TextButton(
                       onPressed: scale == AppSettings.defaultTextScale
                           ? null
-                          : () => _settings.prayerTextScale =
-                                AppSettings.defaultTextScale,
+                          : () {
+                              _settings.prayerTextScale =
+                                  AppSettings.defaultTextScale;
+                              Track.textScale(AppSettings.defaultTextScale);
+                            },
                       child: const Text('기본 크기'),
                     ),
                   ),

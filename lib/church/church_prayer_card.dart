@@ -3,28 +3,47 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/prayer_tracking.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../domain/prayer_data.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
+import '../stats/prayer_stats_store.dart';
 
 /// 성당에서 앉아 기도하는 동안의 상태: 세션, 기도 시간(mm:ss), 쉬는 중 여부.
 ///
 /// 타이머는 기도 중(쉬는 중이 아닐 때)에만 1초씩 센다.
 class ChurchPrayerController extends ChangeNotifier {
-  ChurchPrayerController({required this.settings, MysterySet? mysterySet})
-    : mysterySet = mysterySet ?? mysterySetForWeekday(DateTime.now().weekday) {
+  ChurchPrayerController({
+    required this.settings,
+    MysterySet? mysterySet,
+    PrayerStatsStore? stats,
+  }) : mysterySet = mysterySet ?? mysterySetForWeekday(DateTime.now().weekday) {
     session = RosarySession(buildRosarySequence(this.mysterySet));
     final saved = settings.savedPrayer;
+    var resumed = false;
     if (saved != null &&
         saved.mysterySet == this.mysterySet &&
         saved.stepIndex > 0 &&
         saved.stepIndex < session.steps.length) {
       session.jumpTo(saved.stepIndex);
+      resumed = true;
     }
     session.addListener(_onSession);
+    // 이어하기 위치로 옮긴 뒤에 붙인다(그 위치가 기준선). 이 세션의 기록은 여기서만
+    // 만든다: 전체 화면 기도(PrayerScreen)가 같은 세션을 받아도 따로 만들지 않는다.
+    _tracking = PrayerTracking(
+      session: session,
+      mysterySet: this.mysterySet,
+      settings: settings,
+      stats: stats,
+      source: PrayerRecord.sourceChurch,
+      resumed: resumed,
+    )..start();
   }
+
+  late final PrayerTracking _tracking;
 
   final AppSettings settings;
   final MysterySet mysterySet;
@@ -68,6 +87,7 @@ class ChurchPrayerController extends ChangeNotifier {
   void start() {
     _running = true;
     _paused = false;
+    _tracking.resume();
     if (!session.isFinished) _startTimer();
     notifyListeners();
   }
@@ -76,6 +96,7 @@ class ChurchPrayerController extends ChangeNotifier {
   void pause() {
     if (_paused) return;
     _paused = true;
+    _tracking.pause();
     _stopTimer();
     notifyListeners();
   }
@@ -83,6 +104,7 @@ class ChurchPrayerController extends ChangeNotifier {
   void resume() {
     if (!_paused) return;
     _paused = false;
+    _tracking.resume();
     if (!session.isFinished) _startTimer();
     notifyListeners();
   }
@@ -90,6 +112,7 @@ class ChurchPrayerController extends ChangeNotifier {
   /// 일어서서 기도를 멈춘다(진행은 저장). 같은 세션으로 다시 앉을 수 있다.
   void stop({bool save = true}) {
     _running = false;
+    _tracking.pause(); // 서 있는 동안은 기도 시간이 아니다. 다시 앉으면 start()가 이어 잰다.
     _stopTimer();
     if (save) saveProgress();
     notifyListeners();
@@ -125,6 +148,7 @@ class ChurchPrayerController extends ChangeNotifier {
     if (_disposed) return;
     _disposed = true;
     _stopTimer();
+    _tracking.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     session.removeListener(_onSession);
     session.dispose();
     super.dispose();
