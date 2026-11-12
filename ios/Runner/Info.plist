@@ -49,6 +49,20 @@
 			</array>
 		</dict>
 	</dict>
+	<!-- 로그인 딥링크: kr.rosary.rosaryapp://login-callback -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>kr.rosary.rosaryapp</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kr.rosary.rosaryapp</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

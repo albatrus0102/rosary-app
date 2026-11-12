@@ -1,0 +1,127 @@
+import 'package:flutter/material.dart';
+
+import '../app/theme.dart';
+import 'auth_config.dart';
+import 'auth_service.dart';
+import 'auth_state.dart';
+import 'backend_config.dart';
+import 'consent_screen.dart';
+import 'consent_store.dart';
+import 'login_screen.dart';
+
+/// 게이트가 보여 주는 단계.
+enum AuthGateStage { child, splash, login, consent }
+
+/// 상태 → 단계 규칙(테스트 가능하도록 순수 함수로 분리).
+///
+/// - 백엔드 미설정 → 항상 [AuthGateStage.child](개발용 우회)
+/// - 인증 확인 중 → splash
+/// - 로그아웃 + 로그인 필수 → login, 로그인 선택 → child
+/// - 로그인 + 필수 동의 미완(또는 버전 불일치) → consent
+///   (서버의 기존 동의를 확인하는 동안에는 splash)
+/// - 그 외 → child
+AuthGateStage resolveAuthGateStage({
+  required bool backendConfigured,
+  required bool requireLogin,
+  required AuthState auth,
+  required ConsentStore consentStore,
+}) {
+  if (!backendConfigured) return AuthGateStage.child;
+  if (auth.isLoading) return AuthGateStage.splash;
+  if (auth.isSignedOut) {
+    return requireLogin ? AuthGateStage.login : AuthGateStage.child;
+  }
+  if (consentStore.isCheckingServer) return AuthGateStage.splash;
+  if (consentStore.needsConsent) return AuthGateStage.consent;
+  return AuthGateStage.child;
+}
+
+/// 앱 본문 앞의 관문. `MaterialApp.home`을 이것으로 감싼다(Navigator 아래에 있어야 한다).
+class AuthGate extends StatefulWidget {
+  const AuthGate({
+    super.key,
+    required this.child,
+    required this.authService,
+    required this.consentStore,
+    this.requireLogin = AuthConfig.requireLogin,
+    this.backendConfigured,
+  });
+
+  final Widget child;
+  final AuthService authService;
+  final ConsentStore consentStore;
+  final bool requireLogin;
+
+  /// 백엔드 설정 여부. null이면 [BackendConfig.isConfigured](테스트에서 덮어쓴다).
+  final bool? backendConfigured;
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  AuthGateStage? _lastStage;
+
+  AuthGateStage _stage() => resolveAuthGateStage(
+    backendConfigured: widget.backendConfigured ?? BackendConfig.isConfigured,
+    requireLogin: widget.requireLogin,
+    auth: widget.authService.state.value,
+    consentStore: widget.consentStore,
+  );
+
+  /// 단계가 바뀌면(예: 로그아웃) 본문 위에 쌓인 화면(계정 화면, 시트 등)을 걷어 낸다.
+  void _afterStageChange(AuthGateStage stage) {
+    final previous = _lastStage;
+    _lastStage = stage;
+    if (previous == null || previous == stage) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.maybeOf(context)?.popUntil((r) => r.isFirst);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        widget.authService.state,
+        widget.consentStore,
+      ]),
+      builder: (context, _) {
+        final stage = _stage();
+        _afterStageChange(stage);
+        final Widget page = switch (stage) {
+          AuthGateStage.child => widget.child,
+          AuthGateStage.splash => const _Splash(),
+          AuthGateStage.login => LoginScreen(authService: widget.authService),
+          AuthGateStage.consent => ConsentScreen(
+            authService: widget.authService,
+            consentStore: widget.consentStore,
+          ),
+        };
+        return AnimatedSwitcher(
+          duration: AppMotion.of(context, Durations.medium2),
+          switchInCurve: Easing.emphasizedDecelerate,
+          switchOutCurve: Easing.emphasizedAccelerate,
+          child: KeyedSubtree(key: ValueKey(stage), child: page),
+        );
+      },
+    );
+  }
+}
+
+class _Splash extends StatelessWidget {
+  const _Splash();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Semantics(
+          label: '불러오는 중',
+          child: const CircularProgressIndicator(),
+        ),
+      ),
+    );
+  }
+}
