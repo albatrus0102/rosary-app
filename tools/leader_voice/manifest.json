@@ -1,0 +1,31 @@
+{
+ "sister": {
+  "files": {
+   "hail_mary": {
+    "bytes": 116342,
+    "sha256": "d330b5e1c6611023d500adbf66ce7becbc45fb9d4236e046cc4c649cfeb9085b",
+    "seconds": 9.64,
+    "text": "은총이 가득하신 마리아님 기뻐하소서 주님께서 함께 계시니 여인 중에 복되시며 태중의 아들 예수님 또한 복되시나이다.",
+    "joined": true
+   },
+   "mystery_joyful_1": {
+    "bytes": 66187,
+    "sha256": "80204620ab368ad5c8b4204cca29a281a281993d4b4bb710bf697b14c3e2dd9f",
+    "seconds": 5.48,
+    "text": "환희의 신비 일 단. 마리아께서 예수님을 잉태하심을 묵상합시다.",
+    "joined": false
+   }
+  },
+  "provider": "elevenlabs",
+  "voice": "yeieVCpNANUQm8gq7quR",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 1.0,
+   "similarity_boost": 0.8,
+   "style": 0.0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  },
+  "generatedAt": "2026-11-12T17:57:26.083744+00:00"
+ }
+}

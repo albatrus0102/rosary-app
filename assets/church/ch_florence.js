@@ -766,6 +766,7 @@
         window.addEventListener('pointermove', function (e) {
           if (lastY === null) return; var dy = e.clientY - lastY; lastY = e.clientY;
           var A = window.__church; if (!A || !A.ctl || A.church !== 'florence') return;
+          if (typeof A.ctl.look === 'number') return;   // 코어 카메라가 '올려다보기(ctl.look)'를 직접 처리한다(겹치면 두 번 기운다)
           if (dy < 0 && A.ctl.pitch <= 0.14) { manualUp = Math.min(1.1, manualUp - dy * 0.006); lastDrag = A.t; }
           else if (dy > 0 && manualUp > 0) { manualUp = Math.max(0, manualUp - dy * 0.006); lastDrag = A.t; }
         });
@@ -776,6 +777,9 @@
         var dx = A.me.x - CX, dz = A.me.z - CZ, dist = Math.sqrt(dx * dx + dz * dz);
         var w = dist < 10 ? 1 : (dist < 22 ? 1 - (dist - 10) / 12 * 0.65 : 0.35);
         var target = window.__florenceTilt !== undefined ? window.__florenceTilt : (isThumb ? thumbTilt : 0.36 * w + manualUp);
+        // 올려다보기(ctl.look) 중에는 돔 보정 기울기를 양보한다(look 0.35rad 에서 0). 두 기울기가 겹쳐 시선이 튀지 않게.
+        var lk = A.ctl && A.ctl.look > 0 ? A.ctl.look : 0;
+        if (lk > 0 && !isThumb && window.__florenceTilt === undefined) target *= Math.max(0, 1 - lk / 0.35);
         tiltNow += (target - tiltNow) * Math.min(1, dt * 3);
         A.camera.rotateX(tiltNow);
       });
