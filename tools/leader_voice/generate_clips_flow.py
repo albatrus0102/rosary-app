@@ -78,7 +78,7 @@ def frames(x):
     return np.sqrt((x[:n * FR].reshape(n, FR) ** 2).mean(axis=1)), n
 
 def boundary_region(x, t_end, t_next):
-    """줄 경계의 쉼 자리(샘플 구간). 글자 시간표의 '앞 줄 마지막 글자 끝 ~ 다음 줄 첫 글자 시작' 사이가 기준이다.
+    """두 단어 사이(글자 시간표의 앞 단어 끝 ~ 다음 단어 시작) 근처의 쉼 자리 [a,b](샘플)와 실제 무음 여부.
     그 근처에 실제 무음 구간이 있으면 그 구간 전체를, 없으면(모델이 안 쉬고 이어 읽은 곳) 그 사이에서 가장
     조용한 한 점을 쓴다. 단어 한가운데를 자르지 않도록 이 사이 밖은 보지 않는다."""
     rms, n = frames(x); thr = max(rms.max() * 0.02, 1e-5)
@@ -88,10 +88,10 @@ def boundary_region(x, t_end, t_next):
         a = sil[0]; b = sil[-1]
         while a - 1 >= 0 and rms[a - 1] < thr: a -= 1
         while b + 1 < n and rms[b + 1] < thr: b += 1
-        return a * FR, (b + 1) * FR
+        return a * FR, (b + 1) * FR, True
     g0 = max(0, int(t_end / 0.005)); g1 = max(g0 + 1, min(n, int(t_next / 0.005) + 1))
     c = g0 + int(np.argmin(rms[g0:g1]))
-    return c * FR, (c + 1) * FR
+    return c * FR, (c + 1) * FR, False
 
 def squeeze(seg, keep=INNER_KEEP, minlen=INNER_MIN):
     rms, n = frames(seg)
@@ -198,26 +198,38 @@ def build(vid, cue):
                          input=pcm, capture_output=True, check=True).stdout
     return mp3, len(y) / SR, text, score
 
+INNER_GAP = 0.04   # 줄 안 단어 사이 쉼의 상한(초): 단어마다 끊겨 들리는 것을 막는다(글자 시간표로 찾은 단어 사이만 줄임)
+
 def build_once(vid, cue):
     ls, pauses = lines_of(cue)
     text = SEP.join(ls) + '.'
     res = tts(vid, text)
     x = decode(base64.b64decode(res['audio_base64']))
     al = res['alignment']; chars = al['characters']; st = al['character_start_times_seconds']; en = al['character_end_times_seconds']
-    pos = 0; idx = []; s = ''.join(chars)
-    for l in ls:
-        a = s.index(l, pos); idx.append((a, a + len(l) - 1)); pos = a + len(l)
-    cuts = []
-    for i in range(len(ls) - 1):
-        a, b = boundary_region(x, en[idx[i][1]], st[idx[i + 1][0]])
-        cuts.append((a, b, pauses[i]))
-    cuts.sort(); parts = []; cur = 0
-    for a, b, pause in cuts:
+    s = ''.join(chars); pos = 0
+    # 단어 목록(줄 번호 포함)
+    words = []   # (line_idx, first_char_idx, last_char_idx)
+    for li, l in enumerate(ls):
+        a = s.index(l, pos); pos = a + len(l); i = a
+        for w in l.split(' '):
+            j = s.index(w, i); words.append((li, j, j + len(w) - 1)); i = j + len(w)
+    cuts = []; forced = 0
+    for k in range(len(words) - 1):
+        l0, _, e0 = words[k]; l1, s1, _ = words[k + 1]
+        a, b, real = boundary_region(x, en[e0], st[s1])
+        if l0 != l1:                       # 줄 경계: 정해진 쉼으로 바꾼다
+            cuts.append((a, b, pauses[l0], 'line'))
+            if not real: forced += 1
+        elif real and (b - a) / SR > INNER_GAP + 0.02:   # 줄 안: 단어 사이 쉼을 짧게
+            cuts.append((a, b, INNER_GAP, 'inner'))
+    cuts.sort(key=lambda c: c[0]); parts = []; cur = 0
+    for a, b, pause, kind in cuts:
         a = max(a, cur)
-        parts.append(squeeze(x[cur:a])); parts.append(np.zeros(int(SR * pause), dtype=np.float32)); cur = max(b, a)
-    parts.append(squeeze(x[cur:]))
+        parts.append(x[cur:a]); parts.append(np.zeros(int(SR * pause), dtype=np.float32)); cur = max(b, a)
+    parts.append(x[cur:])
     y = np.concatenate(parts)
-    score = flat_score(y) if TAKES > 1 else 0.0
+    y = squeeze(y, keep=0.05, minlen=1.0)        # 안전장치: 모델이 단어 밖에 넣은 아주 긴 쉼(정해 둔 쉼은 최대 0.8초)
+    score = (flat_score(y) if TAKES > 1 else 0.0) + 5.0 * forced
     return y, text, score
 
 def main():
