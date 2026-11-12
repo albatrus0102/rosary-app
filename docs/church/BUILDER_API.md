@@ -15,10 +15,10 @@
    <script src="ch_stpeter.js"></script>
    <!-- BUILDERS:END -->
    ```
-3. 시험: 브라우저에서 `assets/church/test.html?church=<id>` (WASD 이동, 버튼으로 앉기·시간대). URL 파라미터: `church`, `hour`(0..24), `solo`(0/1), `quality`(low/high), `x`,`z`,`yaw`(도), `pitch`(도), `dist`(미터 배율), `peers`(수).
+3. 시험: 브라우저에서 `assets/church/test.html?church=<id>` (등록 전 개발 중이면 `&builder=../../tools/church_web/ch_x.js` 로 임의 빌더 파일을 먼저 읽힐 수 있다; WASD 이동, 버튼으로 앉기·시간대). URL 파라미터: `church`, `hour`(0..24), `solo`(0/1), `quality`(low/high), `x`,`z`(내 시작 위치), `yaw`,`pitch`(도), `zoom`(배율), `peers`(시험용 피어 수), `candles`(켠 초 수), `sit`(1이면 앉기), `hideui`(1이면 시험 UI 숨김), `thumb`(1이면 빌더의 `thumb` 카메라와 아바타 숨김).
 4. 스크린샷: `node tools/church_web/shot.mjs <id> [출력.png] [--hour 11] [--pos x,z] [--yaw 도] [--pitch 도] [--zoom 1] [--solo] [--peers 5] [--size 960x540]` (Playwright, swiftshader 자동). `콘솔 에러 0`이어야 한다. 스크립트가 JS 에러/`console.error`가 있으면 종료코드 1.
-5. 레이아웃 내보내기: `node tools/church_web/export_layouts.mjs` → `server/church/src/layouts.json`. 썸네일: `node tools/church_web/thumbs.mjs [id…]` → `assets/church_thumbs/<id>.png`.
-6. 단위 시험: `node --test tools/church_web/` (레이아웃 검증 시험이 모든 등록된 `ch_*.js`의 `layout`을 자동 검사: 좌석 id 형식·중복·경계 안·스폰이 장애물과 겹치지 않는지 등).
+5. 종합 점검: `node tools/church_web/e2e.mjs`(API·이벤트·AOI·성능). 레이아웃 내보내기: `node tools/church_web/export_layouts.mjs` → `server/church/src/layouts.json`. 썸네일: `node tools/church_web/thumbs.mjs [id…]` → `assets/church_thumbs/<id>.png`.
+6. 단위 시험: `node --test "tools/church_web/*.test.mjs"` (Node 22 는 디렉터리 인자를 못 받으므로 글롭; 레이아웃 검증 시험이 모든 등록된 `ch_*.js`의 `layout`을 자동 검사: 좌석 id 형식·중복·경계 안·스폰이 장애물과 겹치지 않는지 등).
 
 ---------------------------------------------------------------------
 ## 1. 빌더 파일 틀
@@ -53,7 +53,7 @@
       ctx.wall({ x0: 8, z0: -16, x1: 8, z1: 14, h: 8, t: 0.6, color: 0xf2e6cf });
       ctx.wall({ x0: -8, z0: 14, x1: 8, z1: 14, h: 8, t: 0.6, color: 0xf2e6cf });
       ctx.vault({ type: 'barrel', profile: 'round', x0: -8, x1: 8, z0: -16, z1: 14, y: 8, rise: 4, color: 0xf6eedc });
-      ctx.window({ x: -7.95, z: -4, y: 2, face: [1, 0], w: 2, h: 3.2, top: 'pointed', seed: 3 });
+      ctx.window({ x: -7.7, z: -4, y: 2, face: [1, 0], w: 2, h: 3.2, top: 'pointed', seed: 3 });
       ctx.renderSeats(layout, 'bench');
       ctx.altar({ x: 0, z: -13, y: 0 });
       ctx.candleStand(0, {});
@@ -116,18 +116,18 @@
 ### 3.5 구조 도형 (모두 `ctx.solid` 배치에 합쳐짐)
 - `box({x,y,z,w,h,d,ry,color})` — x,z 중심, y 바닥. `boxAABB({x0,x1,y0,y1,z0,z1,color})`.
 - `cyl({x,y,z,r,rTop=r,h,seg=10,color})`, `cone({x,y,z,r,h,seg,color})`, `sphere({x,y,z,r,sx,sy,sz,color,w=12,h=8})`(중심), `ico({x,y,z,r,detail=0,color})`.
-- `wall({x0,z0,x1,z1,y=0,h,t=0.5,color,collide=true,tex?})` — 축에 맞춘(또는 사선) 벽 박스. `collide`면 충돌체 자동 등록.
+- `wall({x0,z0,x1,z1,y=0,h,t=0.5,color,collide=true,tex?})` — 축에 맞춘(또는 사선) 벽 박스. **선분이 벽 두께의 가운데**다(안쪽 면 = 선 ± t/2). 창·벽감·프리즈는 벽의 *안쪽 면* 좌표에 붙인다(예: x=-8 에 t=.6 벽이면 창 x=-7.7). `collide`면 충돌체 자동 등록.
 - `column({x,z,y=0,h,r,style,base,capital,color,capColor,collide=true})`
   - `style`: `'round'`(기본) `'fluted'`(홈 기둥, 16각) `'square'`(각기둥) `'pier'`(다발 기둥/기둥 다발 4+4) `'twisted'`(솔로몬 나선 기둥) `'engaged'`(벽에 붙은 반기둥, `ry`로 방향).
   - `capital`: `'doric'|'ionic'|'corinthian'|'composite'|'block'|'none'`, `base`: `true|false`.
   - 충돌: 원형 충돌체 자동(`collide:false`로 끔).
-- `arch({x,y,z,span,rise,t=.4,depth=.5,axis:'x'|'z',type:'round'|'pointed'|'segmental'|'horseshoe'|'trefoil',color,fill})`
-  — `x,z`는 아치 가운데, `y`는 **시작선(springline)**, `axis:'x'`면 x 방향으로 벌어짐(평면 xy), `'z'`면 z 방향. `fill:true`면 아치 위쪽 반원 빈틈은 채우지 않는다(벽을 `wall`로 직접 쌓을 것). 연속 아케이드는 `arcade({x0,z0,x1,z1,spacing,...})` 로 한 번에.
+- `arch({x,y,z,span,rise,t=.4,depth=.5,axis:'x'|'z',type:'round'|'pointed'|'segmental'|'horseshoe',color})`
+  — `x,z`는 아치 가운데, `y`는 **시작선(springline)**, `axis:'x'`면 x 방향으로 벌어짐(평면 xy), `'z'`면 z 방향. 아치 링(쐐기돌 상자)만 만든다. 아치 위 벽은 `wall`로 직접 쌓거나 `arcade({topY})` 를 쓴다. 연속 아케이드는 `arcade({x0,z0,x1,z1,spacing,...})` 로 한 번에.
 - `arcade({x0,z0,x1,z1,y,h,span,pierR,type,color,collide})` — 직선 구간(x 또는 z 방향)을 기둥+아치로 채운다. 기둥 사이로 걷기 위해 충돌은 기둥 원만 등록.
 - `vault({type,x0,x1,z0,z1,y,rise,profile,axis,ribs,ribColor,color,tex,bays})` — 천장 곡면(아래에서 보이는 면).
   - `type:'barrel'` 원통형(축 `axis:'z'`=앞뒤로 긴 통, 기본). `profile:'round'|'pointed'|'elliptic'|'segmental'`.
-  - `type:'groin'` 교차 궁륭(칸마다 반복: `bays:[nx,nz]`), `type:'ribbed'` 늑골 궁륭(groin + 대각선/횡단 늑골 `ribColor`, `pointed:true` 가능), `type:'sail'` 돛형(작은 돔형 칸), `type:'flat'`.
-  - `y` = 곡면 시작 높이(springline), `rise` = 정점까지의 높이. `ribs:{every:m}`로 횡단 늑골/띠(나무보·돌띠) 추가, `tex`는 개별 메쉬 대신 정점색 줄무늬/격자(`coffer:true`)로 근사.
+  - `type:'groin'` 교차 궁륭(칸마다 반복: `bays:[nx,nz]`, 지붕돌 높이 `rise`), `type:'ribbed'` 늑골 궁륭(groin + 대각선/횡단 늑골 `ribColor`/`ribT`/`crossRibs`, 정점 장식 `bossColor`, `pointed:true` 가능), `type:'sail'` 돛형(작은 돔형 칸), `type:'flat'`.
+  - `y` = 곡면 시작 높이(springline), `rise` = 정점까지의 높이. `ribs:{every:m,t,d}`로 횡단 늑골/띠(나무보·돌띠) 추가. 격자(coffer) 천장은 곡면이 아니라 `ceilingFlat({tex:ctx.tex.coffer(..)})`(평천장)로 만든다. 늑골 하나만 따로 놓으려면 `ctx.vaultRib({axis,center,pos,y,a,rise,profile,t,d,color})`.
 - `dome({x,z,y,r,rise,seg=20,rings=7,ribs=16,color,ribColor,bands,drum:{h,windows,w,colors},lantern:{h,r},oculus:false})`
   — 안쪽에서 보이는 반구형 돔(`y`=돔 시작 높이). `drum`을 주면 `y`에서 `y+h` 까지 원통 드럼(창 N개, 스테인드글라스 칸)을 먼저 세우고 그 위에 돔. `lantern`은 정상 채광탑(원통+창+작은 지붕). `bands:[c1,c2,…]` 고리별 띠 색.
 - `apse({cx,cz,r,y=0,h,rise,dir:[0,-1],color,tex?,mosaic:true,ribs})` — 반원 후진: 반원 벽 + 반구형 반돔. `dir`은 열린 쪽에서 안쪽(후진 끝) 방향(제대 뒤쪽이면 `[0,-1]`). 반원 벽은 충돌체(여러 AABB)로 자동 등록.
@@ -150,14 +150,33 @@
 - 좌석 높이 = 바닥 + 0.45 m. 좌석/띠 충돌체는 `ChurchLogic.rowBands(layout)`와 **동일한 순수 함수**로 계산되므로 서버·시험과 일치한다.
 
 ### 3.7 촛불대 `ctx.candleStand(i, opts)`
-- 레이아웃 `candles.stands[i]`: `{x,z,slots,reach=1.8,cols=8,face:[-1,0],pitch=.7,step=.35,y0=.8}`. `face` = 촛불대에서 사람 쪽으로 향하는 법선. 슬롯 위치(전역 번호): `row=floor(s/cols)`, `col=s%cols`, 위치 = `(x,z) + perp*(col-(cols-1)/2)*pitch - face*step*(rows-1-row)`, 높이 `y0 + 0.35*(rows-1-row)`. (basic: 3×8)
+- 레이아웃 `candles.stands[i]`: `{x,z,slots,reach=1.8,cols=8,face:[-1,0],pitch=.7,step=.35,ystep=.35,y0=.8}` (basic: 96칸 = 16열 × 6행, `pitch .5, step .25, ystep .3`). `face` = 촛불대에서 사람 쪽으로 향하는 법선. 슬롯 위치(전역 번호): `row=floor(s/cols)`, `col=s%cols`, 위치 = `(x,z) + perp*(col-(cols-1)/2)*pitch - face*step*(rows-1-row)`, 높이 `y0 + 0.35*(rows-1-row)`. (basic: 3×8)
 - **초(컵·불꽃·촛불 빛)는 코어가 자동 렌더**한다(빌더는 호출 불필요). `ctx.candleStand(i,{wood,metal,width})`는 받침대/선반 가구와 충돌체만 그린다. 호출하지 않으면 초만 공중에 보이므로 호출 권장.
+
+### 3.7b 기타 도우미 (구현됨)
+- `medallionFrieze({x0,z0,x1,z1,y,h,facing,color,gold,inner,spacing})` — 벽 위쪽 원형 메달리온 띠(색 면 + 금테 원판; 초상 대신 색 면).
+- `cornice({x0,z0,x1,z1,y,h,facing,depth,color})` — 벽면을 따라 튀어나온 띠/몰딩.
+- `pilaster({x,z,y,h,r,capital,color,capColor,ry})` — 벽에 붙은 기둥(`column` 단축).
+- `beam3(p0,p1,t,d,color)` — 임의 두 점 사이의 보(상자).
+- `ctx.solid / ctx.glass / ctx.glow` — 정점색 배치 직접 접근: `add(geometry,color,{x,y,z,rx,ry,rz,sx,sy,sz,flat,vary,c2})`, `addQuad(a,b,c,d,color,hintPoint)`, `addTris(flatVerts,color|[Color…],hintPoint)`, `addBeam(p0,p1,t,d,color)`. `hintPoint`(앞면이 향할 쪽 점)를 주면 면 방향이 자동으로 맞춰진다.
+- `column({tex})` / `wall({tex})` — 질감이 필요한 경우만(개별 Mesh, draw call 1). 벽돌 기둥은 `ctx.tex.brick`.
+- `ctx.loadTexture(url, fallbackFactory)` — **외부 CC0/MIT 질감**(아래 3.10).
 
 ### 3.8 충돌·바닥·카메라
 - `ctx.addCollider({x0,x1,z0,z1})`(AABB) / `ctx.addCollider({x,z,r})`(원). 아바타 반경 0.3 m. 문·벽·기둥·제대·조각 받침 등 **걸어서 통과하면 안 되는 모든 것**. 도형 도우미 중 `collide` 옵션이 있는 것은 자동 등록.
 - `ctx.floorZone({x0,x1,z0,z1,y})` 걷는 높이. `ctx.steps(...)` 가 같이 처리.
 - `bounds` 밖으로는 못 나간다(걷기 영역은 반경만큼 안쪽). 바깥 벽·문 앞 등은 충돌체로 막는다.
 - 카메라: 기본은 걷기 영역 + 여유. `ctx.setCameraBounds({x0,x1,z0,z1,yMax})` — 예: 입구 문 밖으로 카메라가 나가는 것을 허용(`z1`을 늘림), 낮은 천장이면 `yMax`를 천장 아래로. **천장이 낮은(< 7 m) 성당은 반드시 yMax 지정.**
+
+### 3.10 외부 질감 (선택, 온라인일 때만)
+사용자 결정으로 앱은 인터넷이 있어도 된다. 그래서 **CC0/MIT 라이선스 질감**(ambientCG, Poly Haven 등)을 HTTPS로 불러 쓸 수 있다.
+```js
+var marble = ctx.loadTexture('https://…/Marble_Color.jpg', function () { return ctx.tex.checker({}); });   // 즉시 대체 질감을 돌려주고, 로드되면 그림이 교체된다
+ctx.floor({ x0:…, tex: marble, tile: 4 });
+```
+- 규칙: **CC0 또는 MIT 출처만.** 쓰는 URL마다 `docs/church/ASSET_LICENSES.md` 에 URL·출처·라이선스를 기록한다. 이미지는 1k(1024px) 이하 JPG.
+- 실패해도(오프라인·차단) 대체 질감으로 장면이 정상 동작해야 한다(첫 프레임을 막지 않는다). 필수 요소를 외부 자산에 의존하지 말 것. three.js 는 계속 로컬 번들.
+- 반복 질감이어야 한다(이음매 없는 타일). 서로 다른 repeat 가 필요하면 `ctx.floor/plane/wall({tex,tile})` 가 복제해 준다.
 
 ### 3.9 조명·시간대·효과
 - `ctx.addLight({x,y,z,color,intensity=1,distance=14,kind:'lamp'|'candle'|'always'})` — **점광원은 성당당 1개만**(성능; 촛불대용 1개는 코어가 별도로 가짐). 둘째 호출은 경고 후 무시. `kind:'lamp'`는 밤/황혼에 강하게, 낮에는 약하게.
@@ -166,6 +185,7 @@
 - `ctx.addWindowBeam({x,y,z,face:[nx,nz],w,h,colors:[…],reach})` — 창 하나의 햇빛 기둥을 직접 등록(보통 `window({beam:true})`가 대신).
 - `ctx.onHour(fn(env))` — 시간대가 바뀔 때 호출. `env = {hour, day(0..1), dusk, night, sunDir:[x,y,z]}`.
 - `ctx.onUpdate(fn(dt,t))` — 매 프레임(할당 없이 가볍게).
+- `ctx.addGlow` 의 `kind`: `'lamp'`(밤에 밝음)·`'always'`·`'none'`.
 - `ctx.setSky({outside:true|false})` — 문이 열려 바깥이 보이는 성당만 `ground/path/scatterTrees`를 쓰고, 그렇지 않으면 쓰지 않는다(하늘 돔은 항상 있음).
 
 ---------------------------------------------------------------------
@@ -184,6 +204,22 @@
 - 레이아웃 시험(`tools/church_web/layouts.test.mjs`)이 자동 검사: 좌석 id 형식/중복, 좌석·스폰이 `bounds` 안, 촛불대 `slots`≥1, 스폰이 좌석 띠와 겹치지 않음.
 
 ---------------------------------------------------------------------
+## 4b. 참고 시안(§14)에서 표현 가능한 것과 제약
+| 시안 요소 | 도구 |
+|---|---|
+| 금빛+남색 코퍼 천장 | `ceilingFlat({tex: tex.coffer({base,gold,border})})` |
+| 이오니아 기둥(볼류트) | `column({capital:'ionic', style:'fluted'})`, 줄 전체는 `arcade` |
+| 반원 후진 + 금 모자이크 반돔 | `apse({mosaic:true, domeColor, bands})` + 정점색 띠 (그림은 색 면) |
+| 청동 꼬임 기둥 발다키노 | `baldachin({style:'twisted'})`, `column({style:'twisted'})` |
+| 기둥/벽의 사도 벽감 | `statueNiche`(단순 조각), 벽면 전체는 `wall`+`arch` |
+| 코스마테스크 바닥 | `tex.pattern('cosmati'|'octagon'|'diamond'…)`, `tex.checker` |
+| 메달리온 프리즈 | `medallionFrieze` |
+| 회색 벽돌 기둥 + 흰 늑골 궁륭 | `column({tex: tex.brick({…})})`(개별 메쉬) 또는 `style:'pier'`(정점색), `vault({type:'ribbed', pointed:true})` |
+| 키 큰 스테인드글라스 | `window({top:'pointed', w:1.2, h:5})`, `pattern:'lancet'|'grid'`, 큰 후진 창 `window` 여러 개 |
+| 돔에서 내려오는 빛줄기 | `dome({drum:{windows,…}, lantern:{}})`(자동 빔) + `addWindowBeam({dome:true})` |
+| 고딕 치보리움/닫집 | 상자·원뿔·`arch`·`beam3` 조합(전용 도우미 없음) |
+| 합창석/제의실 목재 | `box`+`tex.wood` 면 (전용 도우미 없음) |
+
 ## 5. 성능·품질 체크리스트
 - 정점 수(`__church.world.stats`): `console.log(__church.world.stats)` 로 확인. 목표 정점 < 250k, 메쉬 < 60.
 - 돔·궁륭 분할은 `ctx.quality==='low'`에서 절반으로.

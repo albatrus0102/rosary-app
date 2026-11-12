@@ -213,3 +213,15 @@
 - https://brunelleschi.imss.fi.it/itineraries/multimedia/TheDomeStructure.html — Museo Galileo: 돔 기점 177ft, 기점~꼭대기 약 108ft, 란테르나 약 72ft
 - https://commons.wikimedia.org/wiki/File:Plattegrond_van_de_Santa_Maria_del_Fiore_te_Florence_Pianta_del_Tempio_de_S._Maria_del_Fiore,_ovvero_del_Duomo_di_Firenze_(titel_op_object),_RP-P-OB-39.191.jpg — 스그릴리 1733년 실측 평면(브라초 축척): 베이 길이, 신랑·측랑 폭, 팔각 72브라초, 성가대 울타리, 트리부나·성구실·문 위치
 - https://www.italia.it/it/toscana/firenze/duomo-di-s-maria-del-fiore — 153m, 신랑부 폭 39m, 익랑 90m (폭 수치 비교용)
+
+---
+## 11. 실제 치수 보강 (ChatGPT 조사 결과, 2026-11) — **모델링은 이 절의 '채택값'을 우선한다**
+출처 이름만 받은 2차 정리이므로 직접 열어 검증하지는 못했다. 규칙: 확신 '높음'은 채택, '중간'은 이전 추정과 충돌하지 않으면 채택, '낮음'은 참고만. 아래 값을 쓸 때는 앱 미터 = 실제 미터 × scalePercent / 100 으로 다시 계산한다. 이 절과 앞의 절이 충돌하면 이 절이 우선한다.
+
+| 항목 | 값 | 확신 | 채택 |
+| --- | --- | --- | --- |
+| 신랑 폭 (기둥 표면 사이) | 약 16.3~16.7 m (서쪽에서 교차부로 갈수록 좁아짐) | 높음 | **16.5 m** |
+| 칸 길이 (4칸, 기둥 중심간) | 설계값 19.8424 m (34 브라차 × 0.5836 m); 실제는 19.3~20.1 m | 높음/중간 | **19.84 m** |
+| 신랑 천장 높이 | 39 m(구조 보고서, 낮음), 43.3 m(비교 자료), 45 m(it.wikipedia) | 낮음 | **43 m로 절충**(빌더는 39~45 허용) |
+| 측랑 폭 | 약 9.14 m (경간 약 10 m) | 중간 | **9.1 m** |
+| 내부 전체 길이 | 약 146.9 m (공식 건물 전체 153 m와 구별); 평면 실측 149.5 m | 중간 | **약 148 m** |

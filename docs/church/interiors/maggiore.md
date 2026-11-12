@@ -194,3 +194,15 @@
 - https://www.meer.com/it/73908-la-basilica-di-santa-maria-maggiore — 86.54 m × 32.12 m
 - https://www.churches-of-rome.info/CoR_Info/SMM%20024/pages/Nave/16972732.html , https://www.churches-of-rome.info/CoR_Info/SMM%20024/pages/RightAisle/DSC7379.html — 기둥 42개 이설, 경당 앞 큰 아치와 화강암 기둥
 - https://www.walksinrome.com/church-of-santa-maria-maggiore.html — 측랑별 배치 순서(세례당 문, 시스티나·파올리나 위치), 발다키노, 콘페시오, 성문 위치
+
+---
+## 11. 실제 치수 보강 (ChatGPT 조사 결과, 2026-11) — **모델링은 이 절의 '채택값'을 우선한다**
+출처 이름만 받은 2차 정리이므로 직접 열어 검증하지는 못했다. 규칙: 확신 '높음'은 채택, '중간'은 이전 추정과 충돌하지 않으면 채택, '낮음'은 참고만. 아래 값을 쓸 때는 앱 미터 = 실제 미터 × scalePercent / 100 으로 다시 계산한다. 이 절과 앞의 절이 충돌하면 이 절이 우선한다.
+
+| 항목 | 값 | 확신 | 채택 |
+| --- | --- | --- | --- |
+| 신랑 폭 | 약 17.0 m (Martellotta 2016) | 높음 | **17.0 m 확정** |
+| 측랑 폭 | 약 6.71 m (22 ft 환산) | 중간 | **6.7 m** (기존 7 m 대체) |
+| 내부 전체 길이 | 86 m (churches-of-rome); 음향 연구는 약 80 m | 중간 | 86 m 유지(범위 80~86) |
+| 기둥 높이, 기둥 간격 | 모름 | 낮음 | 기존 추정 유지(높이 약 7 m, 간격 약 3.4 m) |
+| 86 m의 측정 기준면 | 모름 | 낮음 | 입구 내벽에서 후진 내벽까지로 가정 |
