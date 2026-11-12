@@ -1,5 +1,6 @@
 // 깜빡임(z-fighting·시간 노이즈) 회귀 검사 — `node --test` 에는 넣지 않는다(헤드리스 swiftshader 로 수 분 걸림).
-// 사용: node tools/church_web/flicker.mjs [church ...] [--frames 10] [--size 640x360] [--out dir] [--quality high]
+// 사용: node tools/church_web/flicker.mjs [church ...] [--frames 10] [--size 640x360] [--out dir] [--quality high] [--mode tie|jit]
+//       --mode jit: 참고 측정(카메라 ±1cm 흔들기, 실제 손떨림에 가까움). 판정은 tie(기본)만.
 //       기본 church = lateran stpeter(대조군). 실패하면 종료 코드 1.
 //
 // 방법: 카메라·아바타 고정, rAF 를 가로채 16.67ms 씩 프레임을 직접 넘긴다. 매 프레임 불투명 재질의 depthFunc 를
@@ -26,7 +27,7 @@ export const VIEWS = {
 };
 const DEFAULT_VIEW = [{ tag: 'nave', x: undefined, z: undefined, yaw: undefined, pitch: 4, hour: 11 }];
 
-export async function measure(browser, id, { frames = 10, size = '640x360', quality = 'high', out = null, views = null } = {}) {
+export async function measure(browser, id, { frames = 10, size = '640x360', quality = 'high', out = null, views = null, mode = 'tie' } = {}) {
   const [W, H] = size.split('x').map(Number);
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   const errors = [];
@@ -55,7 +56,11 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d', { willReadFrequently: true });
       const mats = []; A.scene.traverse((o) => { const ms = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []); ms.forEach((m) => { if (!m.transparent && m.depthTest !== false && mats.indexOf(m) < 0) mats.push(m); }); });
       const orig = mats.map((m) => m.depthFunc);
-      function grab(f) { if (mode === 'tie') { const df = (f % 2) ? THREE.LessEqualDepth : THREE.LessDepth; mats.forEach((m) => { m.depthFunc = df; }); } __step(1, 16.67); g.drawImage(c, 0, 0); return g.getImageData(0, 0, W, H).data; }
+      if (mode === 'jit' && !A.R.__jitWrap) {   // 참고용: 카메라를 시선 방향으로 ±1cm 씩 흔든다(손떨림 흉내). 실패 판정에는 쓰지 않는다.
+        const r0 = A.R.render; A.R.__jitWrap = true;
+        A.R.render = function (s, cam, dt, w) { if (A.__jitOff) { const v = new THREE.Vector3(); cam.getWorldDirection(v); cam.position.addScaledVector(v, A.__jitOff); cam.updateMatrixWorld(); } return r0.call(this, s, cam, dt, w); };
+      }
+      function grab(f) { if (mode === 'jit') A.__jitOff = (f % 2 ? 1 : -1) * 0.01; if (mode === 'tie') { const df = (f % 2) ? THREE.LessEqualDepth : THREE.LessDepth; mats.forEach((m) => { m.depthFunc = df; }); } __step(1, 16.67); g.drawImage(c, 0, 0); return g.getImageData(0, 0, W, H).data; }
       let prev = grab(0); const first = cv.toDataURL('image/jpeg', 0.85);
       const acc = new Float32Array(W * H), mx = new Float32Array(W * H);
       for (let f = 1; f <= N; f++) {
@@ -66,7 +71,7 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
         }
         prev = cur;
       }
-      mats.forEach((m, i) => { m.depthFunc = orig[i]; });
+      mats.forEach((m, i) => { m.depthFunc = orig[i]; }); A.__jitOff = 0;
       let sum = 0, over = 0; for (let i = 0; i < W * H; i++) { sum += acc[i]; if (mx[i] > 24) over++; }
       const blocks = [];
       for (let by = 0; by < Math.ceil(H / 32); by++) for (let bx = 0; bx < Math.ceil(W / 32); bx++) {
@@ -79,14 +84,14 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
       for (let i = 0; i < W * H; i++) { img.data[i * 4] = Math.min(255, mx[i] * 4); img.data[i * 4 + 1] = Math.min(255, acc[i] * 20); img.data[i * 4 + 3] = 255; }
       g.putImageData(img, 0, 0);
       return { mean: +(sum / (W * H)).toFixed(4), over24: over, worst: blocks[0], top: blocks.slice(0, 4), first, heat: cv.toDataURL('image/png') };
-    }, { N: frames, mode: 'tie' });
+    }, { N: frames, mode });
     if (out) {
       fs.mkdirSync(out, { recursive: true });
-      fs.writeFileSync(path.join(out, `${id}_${v.tag}_frame.jpg`), Buffer.from(r.first.split(',')[1], 'base64'));
-      fs.writeFileSync(path.join(out, `${id}_${v.tag}_heat.png`), Buffer.from(r.heat.split(',')[1], 'base64'));
+      fs.writeFileSync(path.join(out, `${id}_${v.tag}_${mode}_frame.jpg`), Buffer.from(r.first.split(',')[1], 'base64'));
+      fs.writeFileSync(path.join(out, `${id}_${v.tag}_${mode}_heat.png`), Buffer.from(r.heat.split(',')[1], 'base64'));
     }
     delete r.first; delete r.heat;
-    res.push({ id, view: v.tag, ...r, pass: r.worst.mean <= THRESH });
+    res.push({ id, view: v.tag, ...r, pass: mode !== 'tie' || r.worst.mean <= THRESH });
   }
   await page.close();
   return { res, errors };
@@ -96,7 +101,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const a = process.argv.slice(2), ids = [], o = {};
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--frames') o.frames = Math.min(10, +a[++i]); else if (a[i] === '--size') o.size = a[++i];
-    else if (a[i] === '--out') o.out = a[++i]; else if (a[i] === '--quality') o.quality = a[++i]; else ids.push(a[i]);
+    else if (a[i] === '--out') o.out = a[++i]; else if (a[i] === '--quality') o.quality = a[++i]; else if (a[i] === '--mode') o.mode = a[++i]; else ids.push(a[i]);
   }
   if (!ids.length) ids.push('lateran', 'stpeter');
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -105,7 +110,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const t0 = Date.now();
     const { res, errors } = await measure(browser, id, o);
     for (const r of res) {
-      console.log(`${r.pass ? 'ok  ' : 'FAIL'} ${id}/${r.view} worstBlock=${r.worst.mean} (bx${r.worst.bx},by${r.worst.by}) mean=${r.mean} px>24=${r.over24} thresh=${THRESH}`);
+      console.log(`${r.pass ? 'ok  ' : 'FAIL'} ${id}/${r.view} [${o.mode || 'tie'}] worstBlock=${r.worst.mean} (bx${r.worst.bx},by${r.worst.by}) mean=${r.mean} px>24=${r.over24} thresh=${THRESH}`);
       ok = ok && r.pass;
     }
     if (errors.length) { console.log('page errors:', errors.join(' | ')); ok = false; }
