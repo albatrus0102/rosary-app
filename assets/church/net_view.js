@@ -197,7 +197,7 @@
   function createCrowd(scene) {
     var logic = null, on = false, sit = [], walkers = [], taken = {};
     var rnd = root.ChurchGeo.rng(Date.now() & 0xffff);
-    function rcfg() { return { skin: (rnd() * 4) | 0, style: (rnd() * 4) | 0, hair: (rnd() * 10) | 0, outfit: (rnd() * 12) | 0, name: (rnd() * 40) | 0 }; }
+    function rcfg() { var g = (rnd() * 2) | 0; return { g: g, skin: (rnd() * 4) | 0, style: (rnd() * 4) | 0, hair: (rnd() * 10) | 0, outfit: (rnd() * 12) | 0, name: (rnd() * 60) | 0 }; }   // 이름 인덱스는 두 성별 목록 모두 60개 이상
     var api = {
       setLogic: function (l) { logic = l; if (on) api.set(true, true); },
       isTaken: function (id) { return taken[id] !== undefined; },
