@@ -37,7 +37,7 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
     window.requestAnimationFrame = (cb) => { q.push(cb); return q.length; };
     window.__step = (n, dtMs) => { for (let i = 0; i < n; i++) { const cbs = q.splice(0); tNow = (tNow || performance.now()) + dtMs; cbs.forEach((cb) => cb(tNow)); } };
   });
-  await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality, solo: '1' }));
+  await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality, solo: '0' }));   // solo:'0' = 군중 NPC 없음(움직이는 사람은 깜빡임이 아니다)
   await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 180000, polling: 500 });
   await page.waitForTimeout(2000);
   await page.evaluate(() => { document.body.classList.add('hideui'); if (__church.meAv) __church.meAv.root.visible = false; });
