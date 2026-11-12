@@ -228,6 +228,36 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   await pg.waitForFunction((f) => __church.frameCount > f + 25, f0, { timeout: 120000 });
   const cam = await pg.evaluate(() => ({ pitch: __church.ctl.pitch, camY: __church.camera.position.y, eye: __church.me.y + 1.0, meZ: __church.me.z, camZ: __church.camera.position.z }));
   check('spawn + minimal pitch: camera is at most 1.6 m above the eye (level view without walking)', cam.pitch <= 0.061 && cam.camY - cam.eye <= 1.6 && cam.camY >= 0.7, cam);
+  // 천장 올려다보기(ctl.look): 최소 피치에서 더 위로 끌면 look 이 쌓이고, 아래로 끌면 피치보다 look 이 먼저 줄며, 걸으면 서서히 0 으로.
+  const LK = await pg.evaluate(() => {
+    const A = __church, c = A.ctl, o = {};
+    const pe = (t, x, y) => document.getElementById('c').dispatchEvent(new PointerEvent(t, { pointerId: 11, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' }));
+    c.pitch = 0.3; c.look = 0;
+    pe('pointerdown', 500, 300); pe('pointermove', 500, 200);          // 100px 위로: 피치 0.3 → 0.06, 남은 0.16 은 look
+    o.a = { pitch: c.pitch, look: c.look };
+    pe('pointermove', 500, 100);                                       // 100px 더: look 만 +0.4
+    o.b = { pitch: c.pitch, look: c.look };
+    pe('pointermove', 500, 150);                                       // 50px 아래로: look 먼저 -0.2, 피치 그대로
+    o.c = { pitch: c.pitch, look: c.look };
+    pe('pointermove', 500, 300);                                       // 150px 아래로: look 0.36 을 다 쓰고 남은 0.24 는 피치로
+    o.d = { pitch: c.pitch, look: c.look };
+    for (let i = 0; i < 20; i++) pe('pointermove', 500, 300 - (i + 1) * 60);   // 아주 많이 위로: 상한 1.35
+    o.e = { pitch: c.pitch, look: c.look };
+    pe('pointerup', 500, -900);
+    return o;
+  });
+  const near = (a, b) => Math.abs(a - b) < 1e-6;
+  check('look-up: dragging up past the minimum pitch accumulates ctl.look', near(LK.a.pitch, 0.06) && near(LK.a.look, 0.16) && near(LK.b.pitch, 0.06) && near(LK.b.look, 0.56), LK);
+  check('look-up: dragging down lowers look before raising pitch', near(LK.c.pitch, 0.06) && near(LK.c.look, 0.36) && near(LK.d.look, 0) && near(LK.d.pitch, 0.3), LK);
+  check('look-up: capped at 1.35 rad, pitch stays at minimum', near(LK.e.look, 1.35) && near(LK.e.pitch, 0.06), LK.e);
+  const f1 = await pg.evaluate(() => __church.frameCount);
+  await pg.waitForFunction((f) => __church.frameCount > f + 6, f1, { timeout: 120000 });
+  const gaze = await pg.evaluate(() => { const d = new THREE.Vector3(); __church.camera.getWorldDirection(d); const u = new THREE.Vector3(0, 1, 0).applyQuaternion(__church.camera.quaternion); return { elevDeg: Math.asin(d.y) * 180 / Math.PI, upY: u.y }; });
+  check('look-up: camera gazes upward (elevation > 60 deg) without rolling over', gaze.elevDeg > 60 && gaze.upY > 0, gaze);
+  await pg.evaluate(() => ChurchAPI.setJoystick({ x: 0, y: 1 }));
+  const decayed = await pg.waitForFunction(() => __church.ctl.look === 0, null, { timeout: 120000 }).then(() => true).catch(() => false);
+  await pg.evaluate(() => ChurchAPI.setJoystick({ x: 0, y: 0 }));
+  check('look-up: walking decays look back to 0', decayed, await pg.evaluate(() => ({ look: __church.ctl.look })));
   await pg.close();
 }
 // 화질 자동 하향: 고화질로 시작한 뒤 프레임 시간이 길면 tier 'low' perf 이벤트가 온다(소프트웨어 렌더에서는 보통 발생)

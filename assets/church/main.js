@@ -109,7 +109,7 @@
     if (qs.x !== undefined && qs.z !== undefined) { App.me.x = +qs.x; App.me.z = +qs.z; }
     if (qs.yaw !== undefined) { App.ctl.yaw = (+qs.yaw) * PI / 180; App.me.yaw = App.ctl.yaw; }
     if (qs.pitch !== undefined) App.ctl.pitch = (+qs.pitch) * PI / 180;
-    if (qs.look !== undefined) App.ctl.look = (+qs.look) * PI / 180;
+    if (qs.look !== undefined) App.ctl.look = Math.max(0, Math.min(1.35, (+qs.look) * PI / 180 || 0));   // 끌기와 같은 상한(77°): 90° 를 넘기면 시선이 뒤로 뒤집힌다
     if (qs.zoom !== undefined) App.ctl.zoom = +qs.zoom;
     if (qs.thumb) App.meAv.root.visible = false;
     if (qs.thumb && App.world.builder.thumb) {   // 썸네일 카메라(빌더가 지정)

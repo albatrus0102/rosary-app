@@ -777,11 +777,14 @@
         var dx = A.me.x - CX, dz = A.me.z - CZ, dist = Math.sqrt(dx * dx + dz * dz);
         var w = dist < 10 ? 1 : (dist < 22 ? 1 - (dist - 10) / 12 * 0.65 : 0.35);
         var target = window.__florenceTilt !== undefined ? window.__florenceTilt : (isThumb ? thumbTilt : 0.36 * w + manualUp);
-        // 올려다보기(ctl.look) 중에는 돔 보정 기울기를 양보한다(look 0.35rad 에서 0). 두 기울기가 겹쳐 시선이 튀지 않게.
+        // 올려다보기(ctl.look) 중에는 돔 보정 기울기를 서서히 양보한다(look 1.0rad≈57° 에서 0).
+        // 0.35rad 에서 바로 0 으로 줄이면 돔 아래에서 look 이 커져도 전체 시선이 제자리(12~21° 구간 정체·역행)였다.
+        // 1.0 이면 전체 시선 기울기 변화율 ≥ 1 - 0.36/1.0 > 0 이라 끌수록 항상 위로 올라간다.
+        // 양보 배율은 부드럽게 따라가는 tiltNow 바깥에서 곱한다(안에서 곱하면 빠르게 끌 때 지연 때문에 넘쳤다가 내려앉는다).
         var lk = A.ctl && A.ctl.look > 0 ? A.ctl.look : 0;
-        if (lk > 0 && !isThumb && window.__florenceTilt === undefined) target *= Math.max(0, 1 - lk / 0.35);
+        var yieldK = (lk > 0 && !isThumb && window.__florenceTilt === undefined) ? Math.max(0, 1 - lk / 1.0) : 1;
         tiltNow += (target - tiltNow) * Math.min(1, dt * 3);
-        A.camera.rotateX(tiltNow);
+        A.camera.rotateX(tiltNow * yieldK);
       });
     }
   };
