@@ -280,7 +280,7 @@
         ctx.box(mb({ x: x, y: 6.41, z: cz, w: 0.98, h: 0.1, d: len, color: MARBLE_D }));                 // 받침 몰딩
         ctx.box(mb({ x: x, y: 6.51, z: cz, w: 1.14, h: 0.2, d: len, color: MARBLE }));                   // 코로나
         ctx.box({ x: x, y: 6.71, z: cz, w: 1.18, h: 0.1, d: len, color: GOLD, metal: true });          // 금빛 시마
-        for (var z = Z_A + 0.3; z < Z_E - 0.2; z += 0.45) ctx.box(mb({ x: x - s * 0.43, y: 6.31, z: z, w: 0.12, h: 0.1, d: 0.17, color: MARBLE_D, vary: 0 }));
+        for (var z = Z_A + 0.3; z < Z_E - 0.2; z += 0.6) ctx.box(mb({ x: x - s * 0.43, y: 6.31, z: z, w: 0.12, h: 0.1, d: 0.17, color: MARBLE_D, vary: 0 }));
       });
 
       // =====================================================================
@@ -588,7 +588,7 @@
         ctx.plane({ x: (g[0] + g[1]) / 2, y: -0.05, z: (g[2] + g[3]) / 2, rx: -PI / 2, w: g[1] - g[0], h: g[3] - g[2], color: 0xd9ceb4 });
       });
       ctx.path({ x0: -2.4, x1: 2.4, z0: Z_E + 0.4, z1: 90, color: 0xcfc2a6 });
-      ctx.scatterTrees({ x0: -80, x1: 80, z0: Z_E + 14, z1: 120, count: 8, seed: 5, minH: 5, maxH: 9, exclude: [{ x0: -8, x1: 8, z0: 0, z1: 130 }], palette: [0x7fb07a, 0x8fc088, 0x6aa070, 0xa5cf8a] });
+      ctx.scatterTrees({ x0: -80, x1: 80, z0: Z_E + 14, z1: 120, count: 5, seed: 5, minH: 5, maxH: 9, exclude: [{ x0: -8, x1: 8, z0: 0, z1: 130 }], palette: [0x7fb07a, 0x8fc088, 0x6aa070, 0xa5cf8a] });
       ctx.hills({ color: 0xa9c8a0, count: 14, radius: 220 });
 
       mark('entrance+outside');
