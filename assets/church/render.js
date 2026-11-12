@@ -83,6 +83,11 @@
       if (X.SSAOPass && !/[?&]ao=0/.test(search)) {
         ssao = new X.SSAOPass(curScene, curCam, Math.round(W * PR), Math.round(H * PR));
         ssao.kernelRadius = 0.9; ssao.minDistance = 0.00015; ssao.maxDistance = 0.0035;
+        // SSAOPass 는 장면 전체를 자기 beautyRenderTarget 에 다시 그린다. 그 타깃엔 깊이 텍스처가 없어 three r149 가
+        // 16비트 깊이 버퍼(DEPTH_COMPONENT16)를 잡는다 → near 0.3 에서 10m 거리 깊이 해상도 ≈5mm, 30m ≈5cm.
+        // 벽 위 프레스코·판(1~2cm 앞)이 같은 깊이로 뭉개져 카메라가 조금만 움직여도 줄무늬로 깜빡였다(라테라노 '벽 깜빡임').
+        // 32비트(UnsignedInt → DEPTH_COMPONENT24) 깊이 텍스처를 붙여 RenderPass 와 같은 정밀도로 그린다.
+        try { var bt = ssao.beautyRenderTarget; bt.depthTexture = new T.DepthTexture(bt.width, bt.height, T.UnsignedIntType); } catch (e) { /* 16비트로 폴백 */ }
         // 법선 패스에서 스프라이트·포인트·하늘이 끼어들지 않도록 숨긴다
         var orig = ssao.renderOverride.bind(ssao);
         ssao.renderOverride = function (r, mat, target, cc, ca) {
