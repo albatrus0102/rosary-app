@@ -94,7 +94,7 @@
         lastDist = d;
       } else {
         ctl.yaw -= dx * 0.0065;
-        ctl.pitch = Math.max(0.12, Math.min(1.25, ctl.pitch + dy * 0.004));
+        ctl.pitch = Math.max(0.06, Math.min(1.25, ctl.pitch + dy * 0.004));
       }
       ctl.lastDragT = ctl.now;
     });

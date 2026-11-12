@@ -258,13 +258,20 @@
     var D = (7.2 * (1 - sf) + 4.4 * sf) * ctl.zoom;
     var pitch = ctl.pitch * (1 - 0.3 * sf);
     var fy = me.y + 1.0 + sf * (0.45 - 0.2);
-    var ch = Math.cos(pitch) * D, cv = Math.sin(pitch) * D;
     var dx = Math.sin(ctl.yaw), dz = Math.cos(ctl.yaw);
+    // 벽 쪽(경계)에 가까우면 거리를 줄여서 같은 각도(pitch)를 유지한다. 예전에는 경계에서 잘라 내고
+    // 높이만 올려서, 입구 근처에서는 화면을 정면 높이까지 내릴 수 없었다(조금 걸어야 가능했다).
+    var reach = 1;
+    if (dx > 1e-4) reach = Math.min(reach, (cb.x1 - me.x) / (dx * Math.cos(pitch) * D));
+    else if (dx < -1e-4) reach = Math.min(reach, (cb.x0 - me.x) / (dx * Math.cos(pitch) * D));
+    if (dz > 1e-4) reach = Math.min(reach, (cb.z1 - me.z) / (dz * Math.cos(pitch) * D));
+    else if (dz < -1e-4) reach = Math.min(reach, (cb.z0 - me.z) / (dz * Math.cos(pitch) * D));
+    reach = Math.max(0.3, Math.min(1, reach));
+    var Dd = D * reach;
+    var ch = Math.cos(pitch) * Dd, cv = Math.sin(pitch) * Dd;
     var desX = me.x + dx * ch, desZ = me.z + dz * ch, desY = fy + cv;
-    // 경계로 클램프(축소되면 높이를 조금 올려 아바타가 가려지지 않게)
     var cx = Math.max(cb.x0, Math.min(cb.x1, desX)), cz = Math.max(cb.z0, Math.min(cb.z1, desZ));
-    var lost = Math.hypot(desX - cx, desZ - cz);
-    var cyv = desY + lost * 0.35;
+    var cyv = desY;
     cyv = Math.min(cb.yMax, Math.max(0.7, cyv));
     if (!App.camInit) { App.camPos.set(cx, cyv, cz); App.camLook.set(me.x, fy, me.z); App.camInit = true; }
     var kp = 1 - Math.exp(-dt * 7), kl = 1 - Math.exp(-dt * 11);
