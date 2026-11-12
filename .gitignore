@@ -49,3 +49,6 @@ app.*.map.json
 
 android/.gradle/
 *.apk
+
+# 스테인드글라스 고해상도 원본(저장소에는 올리지 않는다; 앱에 넣는 최종 파일만 커밋)
+assets/church/glass_src/*_orig.*
