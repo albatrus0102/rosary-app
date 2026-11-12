@@ -417,7 +417,6 @@ void main() {
         lessThan(tester.getTopLeft(tile(contains)).dy),
       );
       expect(tile(femaleBaptismalNames.indexOf('안나')), findsNothing);
-      // 별칭: '바울' → 바오로(남성)
     });
 
     testWidgets('search by alias shows the canonical name and the alias', (
@@ -572,13 +571,10 @@ void main() {
       );
     });
 
-    testWidgets('a mid-list selection is scrolled to the middle area', (
-      tester,
-    ) async {
-      final idx = maleBaptismalNames.indexOf('바오로'); // 인기 상위(2)지만
-      final other = maleBaptismalNames.indexOf('스테파노');
+    testWidgets('a selection in the popular range stays at the top of the '
+        'list', (tester) async {
+      final idx = maleBaptismalNames.indexOf('바오로');
       await pick(tester, gender: avatarMale, selected: idx);
-      // 인기 구역 안의 선택: 맨 위, 인기 칸이 선택돼 있다.
       expect(
         tester
             .widget<ListTile>(find.byKey(ValueKey('name-popular-$idx')))
@@ -586,9 +582,17 @@ void main() {
         isTrue,
       );
       expect(tester.getTopLeft(header('★')).dy, closeTo(listTop(tester), 1));
-      await tester.tap(find.byTooltip('닫기'));
-      await tester.pumpAndSettle();
-      expect(other, 10);
+    });
+
+    testWidgets('a selection in the middle of the 가나다 list opens centered', (
+      tester,
+    ) async {
+      final idx = maleBaptismalNames.indexOf('안토니오');
+      await pick(tester, gender: avatarMale, selected: idx);
+      final list = tester.getRect(find.byKey(const ValueKey('name-list')));
+      final c = tester.getCenter(tile(idx));
+      expect(list.contains(c), isTrue);
+      expect((c.dy - list.center.dy).abs(), lessThan(40));
     });
 
     testWidgets('selected popular name shows in the popular section', (
