@@ -511,7 +511,7 @@ class _Pen {
     canvas.clipPath(path);
     canvas.drawOval(
       Rect.fromCenter(center: bp(0, 1.488), width: 0.13 * s, height: 0.05 * s),
-      blurFill(_shade(skin, -0.28).withValues(alpha: 0.75), 0.012),
+      blurFill(_shade(skin, -0.22).withValues(alpha: 0.5), 0.012),
     );
     canvas.restore();
     // 코트 칼라(목 양옆으로 서 있는 옷깃)

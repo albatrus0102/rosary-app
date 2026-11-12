@@ -940,7 +940,7 @@
     this.prayAmt += (this.prayTarget - this.prayAmt) * Math.min(1, dt * 5);
     var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa;
     // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 3.2*walkAmt m/s)
-    var A = (0.10 + 0.42 * w) * sm(w * 6);
+    var A = (0.10 + 0.36 * w) * sm(w * 6);
     if (w > 0.01) {
       var vReal = 3.2 * w, stepLen = Math.max(0.25, 2 * 0.84 * Math.sin(Math.min(0.9, A)) * 0.95);
       this.phase += dt * PI * vReal / stepLen;
