@@ -103,7 +103,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
 
   _Metrics _computeMetrics(BuildContext context) {
     final scaler = MediaQuery.textScalerOf(context);
-    final itemExtent = max(60.0, scaler.scale(16) * 1.5 + 20);
+    final itemExtent = max(56.0, scaler.scale(16) * 1.5 + 20);
     final headerExtent = max(40.0, scaler.scale(14) * 1.5 + 18);
     final tail = MediaQuery.paddingOf(context).bottom + 16;
     final popular = [for (var i = 0; i < popularBaptismalShown; i++) i];
@@ -177,7 +177,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
     final selected = i == widget.selected;
     final letter = names[i].characters.first;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: ListTile(
         key: key,
         selected: selected,
@@ -244,10 +244,11 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                 s.popular ? '많이 쓰는 이름' : s.id,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: text.titleSmall?.copyWith(
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: (s.popular ? text.titleSmall : text.titleMedium)
+                    ?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
             ),
           ],
@@ -361,6 +362,14 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
     );
   }
 
+  /// 이름 칸의 배경(ListTile의 선택 색)은 가장 가까운 [Material]에 그려지므로, 목록 밖으로
+  /// 번지지 않게 목록 자리에 잘라내는 Material을 둔다.
+  Widget _listSurface(Widget child) => Material(
+    color: Theme.of(context).colorScheme.surface,
+    clipBehavior: Clip.hardEdge,
+    child: child,
+  );
+
   void _clearQuery() => setState(_query.clear);
 
   @override
@@ -377,6 +386,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: '닫기',
           icon: const Icon(Icons.close),
@@ -431,7 +441,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                         ),
                         visualDensity: VisualDensity.compact,
                       ),
-                      if (searching)
+                      if (searching && results.isNotEmpty)
                         Text(
                           '찾은 이름 ${results.length}개',
                           key: const ValueKey('name-result-count'),
@@ -462,11 +472,15 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                                 children: [
                                   Offstage(
                                     offstage: searching,
-                                    child: _groupedList(context, box.maxHeight),
+                                    child: _listSurface(
+                                      _groupedList(context, box.maxHeight),
+                                    ),
                                   ),
                                   if (searching)
                                     Positioned.fill(
-                                      child: _searchResults(context, results),
+                                      child: _listSurface(
+                                        _searchResults(context, results),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -478,7 +492,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                                 areaHeight: box.maxHeight,
                                 current: _current,
                                 pinned: () => _pinned,
-                                textScale: min(scale, 1.3),
+                                textScale: min(scale, 1.2),
                                 onSelect: _jumpToSection,
                               ),
                           ],
@@ -618,7 +632,7 @@ class _IndexRailState extends State<_IndexRail> {
                                           textScaler: TextScaler.linear(
                                             widget.textScale,
                                           ),
-                                          style: text.labelMedium?.copyWith(
+                                          style: text.titleSmall?.copyWith(
                                             color: i == shown
                                                 ? scheme.onSecondaryContainer
                                                 : scheme.onSurfaceVariant,

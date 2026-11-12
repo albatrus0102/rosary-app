@@ -134,6 +134,7 @@ void main() {
     await _shot(t, 'picker_light_scale2_search_360x640.png');
 
     _view(t, const Size(360, 640));
+    await t.pumpWidget(const SizedBox());
     await t.pumpWidget(_app(AvatarEditorScreen(settings: settings, firstEntry: true, random: Random(5)), scale: 2.0));
     await t.pumpAndSettle();
     await _shot(t, 'setup_scale2_360x640.png');
