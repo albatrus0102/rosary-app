@@ -10,7 +10,6 @@ import 'package:rosary_app/auth/guest_link_card.dart';
 import 'package:rosary_app/auth/guest_start.dart';
 import 'package:rosary_app/auth/login_screen.dart';
 import 'package:rosary_app/auth/supabase_auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'auth_test_support.dart';
@@ -471,7 +470,7 @@ void main() {
     });
 
     testWidgets('이메일 연결 즉시 완료되면 시트가 닫히고 카드가 사라진다', (tester) async {
-      final (auth, _) = await guest(tester);
+      final (_, _) = await guest(tester);
       await tester.tap(find.byKey(const Key('link-email')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('email-field')), 'a@b.co');

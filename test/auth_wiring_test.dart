@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/analytics/analytics.dart';
-import 'package:rosary_app/analytics/analytics_queue_store.dart';
-import 'package:rosary_app/analytics/analytics_types.dart';
 import 'package:rosary_app/app/app_services.dart';
 import 'package:rosary_app/app/app_wiring.dart';
 import 'package:rosary_app/app/settings.dart';

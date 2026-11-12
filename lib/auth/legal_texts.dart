@@ -34,10 +34,10 @@ const String consentSensitiveNote =
 
 /// 필수 동의로 서버에 저장되는 계정 정보(필드 이름).
 const List<String> requiredServerFields = [
-  '로그인 수단(카카오·Google·이메일)',
-  '이메일 주소(이메일 가입 시 직접 입력, 소셜 로그인은 해당 서비스가 제공한 경우)',
+  '로그인 수단(게스트, 또는 연결한 카카오·Google·이메일)',
+  '이메일 주소(이메일을 연결한 경우 직접 입력, 소셜 연결은 해당 서비스가 제공한 경우)',
   '이메일 가입 시 비밀번호(암호화된 값으로만 저장)',
-  '서버가 부여한 계정 식별자(무작위 ID)',
+  '서버가 부여한 계정 식별자(무작위 ID, 게스트는 이것만 있음)',
   '가입 시각, 마지막 접속 시각, 앱 언어 설정',
   '동의 이력(동의 종류, 버전, 동의·철회 여부, 시각, 경로)',
 ];
@@ -56,7 +56,7 @@ class ConsentItemText {
     required this.retention,
     this.sensitive = false,
     this.refusal = '거부할 수 있으며 거부해도 서비스 이용에 불이익이 없습니다. 앱의 모든 기능을 그대로 쓸 수 있습니다.',
-    this.withdraw = '설정 > 계정 > 선택 동의에서 끄세요. 끄는 즉시 이 범주의 서버 데이터가 삭제됩니다.',
+    this.withdraw = '더보기 > 계정 > 선택 동의에서 끄세요. 끄는 즉시 이 범주의 서버 데이터가 삭제됩니다.',
   });
 
   final String kind;
@@ -122,7 +122,7 @@ const Map<String, ConsentItemText> consentItemTexts = {
     sensitive: true,
     refusal: '거부할 수 있으며 거부해도 불이익이 없습니다. 기도 기록은 이 기기에만 저장되고, 기기를 바꾸면 이어 볼 수 없다는 점만 다릅니다.',
     withdraw:
-        '설정 > 계정 > 선택 동의에서 끄세요. 끄는 즉시 서버의 기도 기록이 삭제됩니다(이 기기의 기록은 그대로 남습니다).',
+        '더보기 > 계정 > 선택 동의에서 끄세요. 끄는 즉시 서버의 기도 기록이 삭제됩니다(이 기기의 기록은 그대로 남습니다).',
   ),
   ConsentKind.church: ConsentItemText(
     kind: ConsentKind.church,
@@ -153,7 +153,7 @@ const Map<String, ConsentItemText> consentItemTexts = {
       '세션 ID, 앱 버전, 운영체제 종류',
     ],
     retention: '철회하거나 탈퇴할 때까지. 오류·성능 기록은 최대 24개월, 기기 정보는 마지막 확인 후 24개월이 지나면 자동 삭제합니다. 철회·탈퇴 시 즉시 삭제합니다.',
-    withdraw: '설정 > 계정 > 선택 동의에서 끄세요. 끄는 즉시 오류 기록과 기기 정보가 삭제됩니다.',
+    withdraw: '더보기 > 계정 > 선택 동의에서 끄세요. 끄는 즉시 오류 기록과 기기 정보가 삭제됩니다.',
   ),
 };
 

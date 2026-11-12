@@ -14,19 +14,25 @@
 | `src/layouts.json` | 성당별 레이아웃. 원본은 `assets/church/layouts.js` 이고 `node tools/church_web/export_layouts.mjs` 로 생성 |
 | `src/layouts_fallback.ts` | `layouts.json`에 `basic`이 없을 때만 쓰는 하드코딩 폴백. `layouts.json`이 자리 잡으면 이 파일과 `layouts.ts`의 `FALLBACK` 관련 두 줄을 지워도 됩니다 |
 | `src/layouts.ts` | json + 폴백으로 카탈로그(`LAYOUTS`, `CHURCH_IDS`) 구성 |
-| `src/room.ts` | Durable Object `ChurchRoom` (Hibernation API, 200ms 알람) |
-| `src/index.ts` | Worker 라우팅: `/health`, `/ws` |
+| `src/room.ts` | Durable Object `ChurchRoom` (Hibernation API, 200ms 알람, 디렉터리에 인원 보고) |
+| `src/directory_logic.ts` | 순수 로직 `DirectoryLogic`: 방 배정(가장 찬 방 우선, 정원 목표 60), 합산 현황, TTL |
+| `src/directory.ts` | Durable Object `ChurchDirectory`(성당당 하나): 방 배정·합산 현황 RPC |
+| `src/index.ts` | Worker 라우팅: `/health`, `/stats`, `/ws`(디렉터리에서 방을 배정받음) |
 | `test/room_logic.test.ts` | 단위 테스트(`node:test` + `tsx`) |
+| `test/capacity.test.ts` | S-01 단위 테스트(과부하 단계, 합산 현황, 방 배정 정책) |
 | `scripts/smoke.mjs` | `wrangler dev` 상대 스모크 테스트(Node `ws` 클라이언트 2~3개) |
+| `scripts/loadtest.mjs` | 부하 테스트(봇 N개, `--dry` 인-프로세스 모드). `npm run loadtest`, `npm run loadtest:dry` |
 
 > 주의: 현재 `src/layouts.json`은 `basic` 하나(촛불 슬롯 96개)만 들어 있는 자리표시입니다. 웹 쪽 내보내기 스크립트를 돌리면 덮어써지며, 배열 / `{layouts:[...]}` / `{churches:[...]}` / id를 키로 하는 객체 형태를 모두 읽습니다. 배포 전에 반드시 내보내기를 다시 실행하세요.
 
 ## 엔드포인트
 
 - `GET /health` → `{"ok":true,"v":1,"churches":["basic", ...]}` (CORS 허용: `*`)
+- `GET /stats` → 성당별·전체 합산 현황(접속 인원, 앉은 사람, 기도 중, 오늘 켜진 초, 활성 방 수). Worker 안에서 5초 캐시. 자세한 내용은 [`docs/church/SERVER.md`](../../docs/church/SERVER.md)
 - `GET /ws?room=<churchId>-<N>&v=1` (WebSocket 업그레이드 필수)
   - 업그레이드 헤더가 없으면 426, `room` 형식 오류/N이 1..50 밖/카탈로그에 없는 churchId/`v`≠1 이면 400
-  - **v3: 방 인원 제한 없음.** 서버는 `full`을 보내지 않습니다(클라이언트는 필드를 파싱만 할 수 있게 유지). 보통 성당당 `<churchId>-1` 하나에 모두 들어옵니다. 서버 내부 안전 상한 2000명을 넘으면 `{"t":"error","code":"busy"}` 후 연결을 닫습니다(close 코드 4002).
+  - **v3: 방 인원 제한 없음.** 서버는 `full`을 보내지 않습니다(클라이언트는 필드를 파싱만 할 수 있게 유지).
+  - **S-01 샤딩(보이지 않음):** 앱이 보내는 `room=<churchId>-N` 의 N 은 무시하고 서버가 성당 디렉터리에서 방을 배정합니다(정원 목표 60명, 가장 찬 방 우선, 넘치면 새 방, 거절 없음). 배정된 방은 `welcome.room` 과 응답 헤더 `x-church-room` 으로 알려 줍니다. `n` 은 성당 전체(모든 방) 인원입니다. `?church=<id>` 형식도 받고(`v` 생략 가능), `&pin=1` 이면 방을 직접 지정합니다(스모크·디버그용). 서버 내부 안전 상한 방당 2000명을 넘으면 `{"t":"error","code":"busy"}` 후 연결을 닫습니다(close 코드 4002) — 샤딩 때문에 정상 운영에서는 도달하지 않습니다.
   - `hello`는 접속 후 10초 안에 보내야 하며, 그렇지 않으면 연결을 닫습니다.
 - 핑: 클라이언트가 정확히 `{"t":"ping"}` 문자열을 보내면 런타임이 DO를 깨우지 않고 `{"t":"pong"}`으로 자동 응답합니다(다른 모양의 ping도 로직이 처리). 자동 응답 핑은 메시지 속도 제한에 포함되지 않습니다.
 
@@ -69,7 +75,7 @@ npm run dev         # wrangler dev → http://127.0.0.1:8787 (처음에는 worke
 npm run smoke       # 또는 node scripts/smoke.mjs [baseUrl] [churchId]
 ```
 
-스모크 스크립트는 `/health`, 잘못된 요청(400), 입장/welcome/join, 이동/snap, 멀리서 앉기(far), 앉기/seated, 같은 자리(taken), 기도, 촛불(until 0), 이모트, 35명 추가 입장(full 없음), ping/pong, bad_msg, 일어서기/stood, 퇴장/leave를 확인하고 PASS/FAIL을 출력합니다. 매번 임의의 방 번호(1..40)를 사용해 반복 실행해도 서로 간섭하지 않습니다.
+스모크 스크립트는 `/health`, 잘못된 요청(400), 입장/welcome/join, 이동/snap, 멀리서 앉기(far), 앉기/seated, 같은 자리(taken), 기도, 촛불(until 0), 이모트, 35명 추가 입장(full 없음), ping/pong, bad_msg, 일어서기/stood, 퇴장/leave를 확인하고 PASS/FAIL을 출력합니다. 직접 지정 방(`pin=1`, 임의 번호 1..40)을 쓰므로 반복 실행해도 서로 간섭하지 않고, 마지막 구간에서 자동 배정·`/stats`·`presence` 를 확인합니다. 실행에 약 1분 걸립니다.
 
 ## 배포
 
@@ -107,6 +113,7 @@ npx wrangler deploy
 
 ## 운영 메모
 
-- 방 이름은 `<churchId>-N`(N=1..50)을 받지만 v3부터 앱은 성당당 `<churchId>-1` 하나만 씁니다. 방 인원 제한은 없고(서버 안전 상한 2000), 한 방에 사람이 많을 때는 AOI 필터가 송수신량을 줄입니다.
+- 방 이름은 `<churchId>-N`(N=1..50)입니다. 앱은 계속 `<churchId>-1` 로 접속하지만 서버가 실제 방을 배정합니다(S-01, `docs/church/SERVER.md`). 사용자에게 보이는 인원 제한은 없고, 방이 바쁘면 전송 간격·AOI 반경·가시 아바타 수가 단계적으로 줄어듭니다(`room_logic.ts` 의 `LOAD_LEVELS`).
 - 새 성당을 추가하려면 웹의 `layouts.js`에 추가하고 `export_layouts.mjs`를 실행한 뒤 다시 배포합니다. Worker는 카탈로그에 없는 churchId를 400으로 거부합니다.
-- DO 이름은 `idFromName("<churchId>-<N>")`입니다.
+- 방 DO 이름은 `idFromName("<churchId>-<N>")`, 디렉터리 DO 이름은 `idFromName("<churchId>")`입니다.
+- 방마다 촛불 저장소가 따로 있으므로 같은 성당이라도 방이 다르면 촛불 모양이 다릅니다. 빈 성당은 항상 `-1` 방으로 모입니다.

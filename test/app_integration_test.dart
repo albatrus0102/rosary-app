@@ -211,7 +211,9 @@ void main() {
       expect(find.byKey(const ValueKey('more-settings')), findsOneWidget);
     });
 
-    testWidgets('백엔드가 설정되면 로그인 → 필수 동의 → 홈 순서로 보인다', (tester) async {
+    testWidgets('백엔드가 설정되면 동의 한 화면 → 게스트 시작 → 홈 순서로 보인다(로그인 벽 없음)', (
+      tester,
+    ) async {
       _size(tester, const Size(400, 900));
       final settings = await _settings();
       final auth = FakeAuthService();
@@ -224,23 +226,22 @@ void main() {
 
       await tester.pumpWidget(RosaryApp(settings, services: services));
       await tester.pumpAndSettle();
-      expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.textContaining('신비 시작'), findsNothing);
-
-      auth.emitSignedIn(provider: LoginProvider.email);
-      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsNothing);
       expect(find.byType(ConsentScreen), findsOneWidget);
       expect(find.textContaining('신비 시작'), findsNothing);
 
       await services.consent.grantRequired();
       await tester.pumpAndSettle();
+      expect(auth.calls, ['signInAnonymously']);
+      expect(auth.current.isAnonymous, isTrue);
       expect(find.byType(ConsentScreen), findsNothing);
       expect(find.textContaining('신비 시작'), findsOneWidget);
 
-      // 로그아웃하면 다시 로그인 화면.
+      // 게스트를 로그아웃하면 다시 동의부터(새 게스트).
       await auth.signOut();
       await tester.pumpAndSettle();
-      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(ConsentScreen), findsOneWidget);
+      expect(find.byType(LoginScreen), findsNothing);
     });
 
     testWidgets('더보기 > 계정 항목은 설정된 때만 보이고 제공자를 알려 준다', (tester) async {

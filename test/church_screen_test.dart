@@ -8,7 +8,6 @@ import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
 import 'package:rosary_app/church/net/church_net.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
-import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/domain/rosary_session.dart';
 
 import 'church_screen_fakes.dart';
