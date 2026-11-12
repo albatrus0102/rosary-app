@@ -44,11 +44,18 @@ for (const [name, r] of [['R1', 'R1'], ['R2', 'R2']]) {
 const R3_DOC = block('R3').match(/`([^`]+)`/)[1].split(/[,\s]+/).filter(Boolean);
 for (const id of R3_DOC) if (rel[id]) throw new Error('R3 id also in R1/R2: ' + id);
 
+// 2026-11-12 구현 완료(코드·테스트), 실기기/실서버 확인이 남은 항목의 메모.
+const NOTES = {
+  'S-01': '구현·단위시험 완료. 2000명 네트워크 시험은 이 환경에서 미통과: 별도 시험 서버에서 재시험 필요(홍보 전).',
+  'P-02': '볼륨 키 넘기기는 위젯 시험만 확인: 실기기 확인 필요.',
+  'O-01': 'Supabase에서 익명 로그인·수동 연결 허용 필요. 실서버 미검증.',
+  'C-04': '실기기 FPS 표는 비어 있음(docs/church/PERF.md 절차대로 측정).',
+};
 const items = t4.map((r, i) => {
   const [id, title, category, evidence, value, effort, risk, priority, depends] = r;
   if (!/^[SML]$/.test(effort) || !/^P[012]$/.test(priority)) throw new Error('bad row ' + id);
   return { id, title, category, release: rel[id] || 'R3', priority, effort, risk, depends, evidence, value,
-    status: DOING.has(id) ? 'doing' : 'todo', owner_note: '', sort_order: i + 1 };
+    status: DOING.has(id) ? 'review' : 'todo', owner_note: NOTES[id] || '', sort_order: i + 1 };
 });
 const ids40 = new Set(items.map((x) => x.id));
 for (const id of Object.keys(rel)) if (!ids40.has(id)) throw new Error('release lists unknown id ' + id);

@@ -56,7 +56,7 @@ await check('non-admin (authenticated) and anon cannot call roadmap RPCs', async
     await fails(() => asUser(USER, `select public.${c}`), /not_admin/);
     await fails(() => asAnon(`select public.${c}`), /permission denied/);
   }
-  eq((await sudo(`select status from public.roadmap_items where id = 'M-01'`)).rows[0].status, 'doing', 'non-admin write must not apply');
+  eq((await sudo(`select status from public.roadmap_items where id = 'M-01'`)).rows[0].status, 'review', 'non-admin write must not apply');
 });
 await check('nobody can read or write roadmap tables directly (no table privileges)', async () => {
   for (const t of ['roadmap_items', 'roadmap_decisions']) {
@@ -78,7 +78,7 @@ await check('admin lists 40 items and 8 decisions with expected seed content', a
   eq(board.decisions.map((d) => d.id), ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8']);
   const by = (r) => board.items.filter((i) => i.release === r);
   eq([by('R1').length, by('R2').length, by('R3').length], [14, 19, 7]);
-  eq(by('R1').map((i) => i.status).filter((s) => s !== 'doing').length, 0, 'all R1 doing');
+  eq(by('R1').map((i) => i.status).filter((s) => s !== 'review').length, 0, 'all R1 review');
   eq(board.items.filter((i) => i.release !== 'R1').every((i) => i.status === 'todo'), true, 'rest todo');
   eq(board.items.filter((i) => i.priority === 'P0').length, 14);
   eq(board.items.filter((i) => i.priority === 'P1').length, 19);

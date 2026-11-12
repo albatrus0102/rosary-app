@@ -79,7 +79,7 @@ abstract final class AnalyticsEvents {
       {'where', 'message', 'stack'},
       {'message': 200, 'stack': 1000},
     ),
-    'perf': EventSpec(ConsentKinds.diagnostics, {'fps_avg', 'church'}),
+    'perf': EventSpec(ConsentKinds.diagnostics, {'fps_avg', 'church', 'tier'}),
   };
 
   static bool isKnown(String name) => specs.containsKey(name);

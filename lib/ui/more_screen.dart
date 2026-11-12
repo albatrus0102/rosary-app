@@ -92,9 +92,7 @@ class MoreScreen extends StatelessWidget {
                             leading: const Icon(Icons.account_circle_outlined),
                             title: const Text('계정'),
                             subtitle: Text(
-                              s.isSignedIn
-                                  ? (s.provider?.label ?? '로그인됨')
-                                  : '로그인하지 않음',
+                              s.isSignedIn ? s.accountLabel : '로그인하지 않음',
                             ),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () => unawaited(

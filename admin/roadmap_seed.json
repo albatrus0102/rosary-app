@@ -13,7 +13,7 @@
       "depends": "–",
       "evidence": "RA §6 IA 함의; OP §6 제안 IA",
       "value": "핵심이 한눈에 보이고 기록에 바로 갈 수 있음",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 1
     },
@@ -28,7 +28,7 @@
       "depends": "M-01",
       "evidence": "RA §3-3 (자동 선택 + 1탭 변경)",
       "value": "무엇을 바칠지 확실해짐",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 2
     },
@@ -43,8 +43,8 @@
       "depends": "–",
       "evidence": "RA §1-10, §1-17 (차등 진동·볼륨 키 호평)",
       "value": "화면을 보지 않고 바침",
-      "status": "doing",
-      "owner_note": "",
+      "status": "review",
+      "owner_note": "볼륨 키 넘기기는 위젯 시험만 확인: 실기기 확인 필요.",
       "sort_order": 3
     },
     {
@@ -58,7 +58,7 @@
       "depends": "–",
       "evidence": "RA §3-9; OT §3-10 (점수 아닌 기록)",
       "value": "마친 보람, 다음 행동 안내",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 4
     },
@@ -73,7 +73,7 @@
       "depends": "–",
       "evidence": "RA §4 (글자 불만), OP §5 (가독성 퇴행)",
       "value": "어르신이 끝까지 읽음",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 5
     },
@@ -88,8 +88,8 @@
       "depends": "사용자 결정 Q1",
       "evidence": "OT §1-1 (무가입 입장), RA §4 (강제 로그인 불만), OP §1.15 (굿뉴스: 로그인 선택)",
       "value": "첫 실행 30초 안에 기도 시작",
-      "status": "doing",
-      "owner_note": "",
+      "status": "review",
+      "owner_note": "Supabase에서 익명 로그인·수동 연결 허용 필요. 실서버 미검증.",
       "sort_order": 6
     },
     {
@@ -103,7 +103,7 @@
       "depends": "–",
       "evidence": "3D §1.1 (꾸미기 부담으로 이탈) [S]; OT §1-1 (같은 아바타)",
       "value": "바로 성당 안으로",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 7
     },
@@ -118,7 +118,7 @@
       "depends": "–",
       "evidence": "3D §3-1,2,4 [S/I]",
       "value": "처음 해도 헤매지 않음",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 8
     },
@@ -133,7 +133,7 @@
       "depends": "M-01",
       "evidence": "OT §3-1 (진입 마찰 0)",
       "value": "두 번 탭으로 입장",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 9
     },
@@ -148,7 +148,7 @@
       "depends": "C-01",
       "evidence": "3D §3-6 (HUD 최소화) [I]",
       "value": "기도에 집중",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 10
     },
@@ -163,8 +163,8 @@
       "depends": "–",
       "evidence": "3D §3-9 (VRChat 품질 단계) [S]",
       "value": "끊김·발열 감소",
-      "status": "doing",
-      "owner_note": "",
+      "status": "review",
+      "owner_note": "실기기 FPS 표는 비어 있음(docs/church/PERF.md 절차대로 측정).",
       "sort_order": 11
     },
     {
@@ -178,8 +178,8 @@
       "depends": "–",
       "evidence": "OT §4-6 / 3D §1.1 (산사 20석 → 첫날 서버 다운) [확인/S]",
       "value": "홍보 날 성당이 안 죽음",
-      "status": "doing",
-      "owner_note": "",
+      "status": "review",
+      "owner_note": "구현·단위시험 완료. 2000명 네트워크 시험은 이 환경에서 미통과: 별도 시험 서버에서 재시험 필요(홍보 전).",
       "sort_order": 12
     },
     {
@@ -193,7 +193,7 @@
       "depends": "–",
       "evidence": "OT §4-4,5 (실제와 혼동, 사칭 인상); 3D §1.8 (Pro Deo 고지)",
       "value": "신뢰, 교회 측 오해 방지",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 13
     },
@@ -208,7 +208,7 @@
       "depends": "–",
       "evidence": "auth SPEC §4",
       "value": "개선 효과 판단",
-      "status": "doing",
+      "status": "review",
       "owner_note": "",
       "sort_order": 14
     },

@@ -7,7 +7,7 @@
 1. Supabase 대시보드 **SQL Editor** 를 연다. (init 마이그레이션 `20261112000000_init.sql` 이 이미 적용되어 있어야 한다. `is_admin()` 과 `admins` 표를 쓴다.)
 2. `supabase/migrations/20261113000000_roadmap.sql` 의 내용을 붙여 넣고 **Run**. 여러 번 실행해도 안전하다. 시드는 `on conflict do nothing` 이라 이미 바꾼 상태·메모를 덮어쓰지 않는다.
 3. Table Editor 에서 `roadmap_items`(40행), `roadmap_decisions`(8행)이 "RLS enabled" 인지 확인한다. 두 표는 정책이 없어 앱·콘솔에서 직접 읽거나 쓸 수 없고, 관리자 전용 함수 `admin_roadmap()` / `admin_roadmap_set()` 으로만 접근한다.
-4. 처음 적용하면 R1 의 14개 과제는 `진행 중`, 나머지 26개는 `할 일` 로 들어간다.
+4. 처음 적용하면 R1 의 14개 과제는 `검토`(구현 완료, 실기기·실서버 확인 대기), 나머지 26개는 `할 일` 로 들어간다.
 
 ## 2. 나를 관리자로 등록하기
 

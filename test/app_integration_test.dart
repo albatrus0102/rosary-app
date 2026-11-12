@@ -529,7 +529,9 @@ void main() {
 
       final total = _nextsForOneDecade(today);
       await _nexts(tester, 3); // 카드에서
-      await tester.ensureVisible(find.text('전체 화면으로 기도'));
+      // 전체 화면 기도는 카드의 ⋮ 메뉴 안에 있다.
+      await tester.tap(find.byKey(const ValueKey('prayer-menu')));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('전체 화면으로 기도'));
       // PrayerScreen에는 끝나지 않는 애니메이션이 있어 pumpAndSettle을 쓸 수 없다.
       await tester.pump();
@@ -547,6 +549,9 @@ void main() {
       // 전체 화면이 닫혀도 기록은 아직 없다(세션의 주인은 성당 카드).
       expect(stats.records, isEmpty);
 
+      // 끝내기는 카드의 ⋮ 메뉴 안에 있다.
+      await tester.tap(find.byKey(const ValueKey('prayer-menu')));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('끝내기'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
@@ -752,6 +757,12 @@ void main() {
           ),
         ),
       );
+      // 마지막 성당 카드가 먼저 보이면 '다른 성당 고르기'로 목록을 연다.
+      final pick = find.byKey(const ValueKey('entry-pick'));
+      if (pick.evaluate().isNotEmpty) {
+        await tester.tap(pick);
+        await tester.pumpAndSettle();
+      }
       final scrollable = find
           .descendant(
             of: find.byType(CustomScrollView),
@@ -824,7 +835,12 @@ void main() {
       expect(exit.keys.toSet(), {'church', 'seconds', 'sat_seconds'});
       expect(exit['seconds'], isA<int>());
       expect(exit['sat_seconds'], isA<int>());
-      expect(_screens(), ['church_select', 'church', 'church_select']);
+      expect(_screens(), [
+        'church_entry',
+        'church_select',
+        'church',
+        'church_select',
+      ]);
       _expectNoSensitiveProps();
       // 카탈로그의 모든 성당 id는 분석 값 규칙을 통과한다.
       for (final c in ChurchCatalog.all) {
