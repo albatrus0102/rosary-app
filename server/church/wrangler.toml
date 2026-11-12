@@ -1,0 +1,12 @@
+name = "rosary-church"
+main = "src/index.ts"
+compatibility_date = "2025-11-01"
+
+[[durable_objects.bindings]]
+name = "CHURCH_ROOM"
+class_name = "ChurchRoom"
+
+# 무료 플랜에서 쓰려면 SQLite 백엔드 클래스여야 한다.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ChurchRoom"]
