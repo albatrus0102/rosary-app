@@ -1,13 +1,26 @@
 # 관리자 콘솔 '로드맵' 사용법
 
-`docs/ux/UX_PLAN.md` 의 개선 과제 40개(4장), 릴리스 R1~R3(6장), 결정 Q1~Q8(7장)을 관리자 콘솔(`admin/`)의 **로드맵** 탭에서 보고, 과제별 상태와 메모를 고칠 수 있다. 결정일 2026-11-12, 권장 기본값을 모두 채택했다.
+`docs/ux/UX_PLAN.md` 의 개선 과제 40개(4장), 릴리스 R1~R3(6장), 결정 Q1~Q8(7장)에 더해 **외부 UX 검토 과제 18개(U-01~U-18, `docs/ux/CHATGPT_REVIEW.md`)** 와 **유리화 계획 과제 34개(G-xx, `docs/ux/GLASS_APP_PLAN.md`)** 를 관리자 콘솔(`admin/`)의 **로드맵** 탭에서 보고, 과제별 상태와 메모를 고칠 수 있다. 전체 92개. 결정일 2026-11-12, 권장 기본값을 모두 채택했다.
 
 ## 1. 서버에 적용하기 (한 번만)
 
+마이그레이션은 두 개이고 **순서대로** 적용한다. 둘 다 여러 번 실행해도 안전하다.
+
 1. Supabase 대시보드 **SQL Editor** 를 연다. (init 마이그레이션 `20261112000000_init.sql` 이 이미 적용되어 있어야 한다. `is_admin()` 과 `admins` 표를 쓴다.)
 2. `supabase/migrations/20261113000000_roadmap.sql` 의 내용을 붙여 넣고 **Run**. 여러 번 실행해도 안전하다. 시드는 `on conflict do nothing` 이라 이미 바꾼 상태·메모를 덮어쓰지 않는다.
-3. Table Editor 에서 `roadmap_items`(40행), `roadmap_decisions`(8행)이 "RLS enabled" 인지 확인한다. 두 표는 정책이 없어 앱·콘솔에서 직접 읽거나 쓸 수 없고, 관리자 전용 함수 `admin_roadmap()` / `admin_roadmap_set()` 으로만 접근한다.
-4. 처음 적용하면 R1 의 14개 과제는 `검토`(구현 완료, 실기기·실서버 확인 대기), 나머지 26개는 `할 일` 로 들어간다.
+3. 이어서 `supabase/migrations/20261114000000_roadmap_items_2.sql` 을 붙여 넣고 **Run**. 아래 "두 번째 마이그레이션이 하는 일" 을 본다.
+4. Table Editor 에서 `roadmap_items`(92행), `roadmap_decisions`(8행)이 "RLS enabled" 인지 확인한다. 두 표는 정책이 없어 앱·콘솔에서 직접 읽거나 쓸 수 없고, 관리자 전용 함수 `admin_roadmap()` / `admin_roadmap_set()` 으로만 접근한다.
+5. 처음 적용하면 R1 의 14개 과제와 C-09 는 `검토`(구현 완료, 실기기·실서버 확인 대기), 나머지는 `할 일` 로 들어간다. (92개 중 `검토` 15, `할 일` 77)
+
+### 두 번째 마이그레이션이 하는 일
+
+1. **release 값 확대**: `roadmap_items.release` 검사를 `R1,R2,R3` 에서 `R1,R2,R3,G1,G2,G3` 으로 바꾼다(기존 release 검사 제약을 지우고 다시 만든다. 재실행해도 제약은 하나만 남는다). `G1~G3` 은 유리화 계획 릴리스다(G1 약 2주, G2 +1개월, G3 이후).
+2. **과제 추가**(`on conflict do nothing`): 외부 UX 검토 U-01~U-18(메모 `신규(외부 UX 검토)`), 유리화 G 과제 34개(메모 `제안: 소유자 확인 대기`). 모두 상태 `할 일`. U 는 R1 9개(U-01·05·06·08·09·10·11·14·16)와 R2 9개.
+3. **현황 보정**(아직 `할 일`/`진행 중` 인 행에만 적용, 관리자가 이미 바꾼 상태·메모는 건드리지 않음):
+   - `C-09` (탭해서 이동 = '가기' 시트·장면 탭 이동): `할 일` → `검토`, 메모 "2026-11-13 구현: 가기 시트·장면 탭 이동(walkTo/tapAt). 실기기 확인 대기." (근거: `lib/church/church_go_sheet.dart`, `assets/church/bridge.js` 의 `walkTo`/`tapAt`, `test/church_walk_test.dart`)
+   - 첫 마이그레이션 시드에 빠져 있던 구현 현황 메모를 비어 있는 경우에만 채움: P-02, S-01, O-01, C-04 (정적 사본 `roadmap_seed.json` 과 같아지게).
+   - 기도 화면 1단계(텍스트 우선: `prayer_text_view`·`prayer_bead_strip`·`rosary_map_sheet`)는 UX_PLAN 의 A-01 로 이미 `검토` 라서 바꾸지 않았다. 따로 id 가 있는 항목이 아니다.
+   - 그 밖의 행(예: C-05, C-10, P-05)은 코드에서 구현 근거를 확인하지 못해 `할 일` 그대로 뒀다.
 
 ## 2. 나를 관리자로 등록하기
 
@@ -22,9 +35,10 @@ values ('<Authentication > Users 의 User UID>', 'me@example.com');
 
 ## 3. 화면 사용법
 
-- **진행 요약**: 상태별 개수(할 일·진행 중·검토·완료·막힘·보류·제외)와 릴리스(R1/R2/R3)별 진행 막대. 진한 부분은 완료, 연한 부분은 진행 중·검토.
-- **필터**: 릴리스, 우선순위(P0~P2), 분류, 상태, 글자 검색(ID·제목·메모·의존·근거). `필터 초기화` 로 되돌린다.
-- **과제 카드**: ID, 우선순위·효과(S/M/L)·분류 칩, 제목, 의존 과제, `자세히`(사용자 가치·위험·근거).
+- **진행 요약**: 상태별 개수(할 일·진행 중·검토·완료·막힘·보류·제외)와 릴리스(R1/R2/R3/G1/G2/G3)별 진행 막대. 진한 부분은 완료, 연한 부분은 진행 중·검토.
+- **필터**: 릴리스(R1~R3, G1~G3), 우선순위(P0~P2), 분류, 상태, **출처**, 글자 검색(ID·제목·메모·의존·근거). `필터 초기화` 로 되돌린다.
+- **출처 칩**: ID 접두사로 정한다. `U-` = 외부 UX 검토, `G-` = 유리화 계획, 그 밖(`M-`, `P-`, `O-`, `C-`, ...) = UX_PLAN. 출처 필터로 따로 볼 수 있다.
+- **과제 카드**: ID, 출처·우선순위·효과(S/M/L)·분류 칩, 제목, 의존 과제, `자세히`(사용자 가치·위험·근거).
 - **상태 바꾸기**: 카드의 상태 선택 상자를 바꾸면 **즉시 저장**된다(`admin_roadmap_set`). 저장에 실패하면 이전 값으로 되돌아가고 카드에 오류가 표시된다.
 - **메모**: 입력 칸에 쓰고 다른 곳을 누르면(blur) 저장된다. 500자까지. 비우면 메모가 지워진다.
 - **결정 사항**: Q1~Q8 의 결정과 이유(펼치기).
@@ -37,20 +51,24 @@ values ('<Authentication > Users 의 User UID>', 'me@example.com');
 
 ## 5. 문서가 바뀌었을 때 (내용 다시 만들기)
 
-시드 SQL 과 JSON 은 문서 표를 읽어 생성한다. 직접 고치지 않는다.
+시드 SQL 과 JSON 은 문서를 읽어 생성한다. 직접 고치지 않는다. 입력은 `UX_PLAN.md`(R 과제·결정), `docs/ux/UX_REVIEW_ITEMS.json`(U 과제), `docs/ux/GLASS_ROADMAP_ITEMS.json`(G 과제)이다. 현황 보정 목록(`STATUS_UPDATES`)과 구현 메모(`NOTES`)는 스크립트 안에 있다.
 
 ```bash
 node admin/tools_seed_roadmap.mjs
 ```
 
-- `supabase/migrations/20261113000000_roadmap.sql` 과 `admin/roadmap_seed.json` 이 다시 쓰인다.
+- `supabase/migrations/20261113000000_roadmap.sql`(원래 40개, 운영에 이미 적용되어 내용이 바뀌지 않음), `supabase/migrations/20261114000000_roadmap_items_2.sql`, `admin/roadmap_seed.json`(R+U+G 전부, 두 번째 마이그레이션 적용 뒤 상태) 이 다시 쓰인다. 스크립트는 입력이 잘못되면(id 중복·잘못된 release·G 과제 34개가 아님 등) 파일을 쓰기 전에 오류로 멈춘다.
 - 이미 운영 중인 서버에는 **새 과제 행만** 추가된다. 기존 과제의 제목·릴리스 등을 바꾸려면 별도 `update` 문(새 마이그레이션)이 필요하다. 상태·메모는 콘솔에서 바꾼다.
 
 ## 6. 테스트
 
 ```bash
-cd tools/auth_sql_tests && npm install && npm test        # run.mjs + roadmap_test.mjs (PGlite)
+cd tools/auth_sql_tests && npm install && npm test        # run.mjs + roadmap_test.mjs + roadmap_items2_test.mjs (PGlite)
 node --check admin/admin.js && node --check admin/roadmap.js
 ```
 
-`roadmap_test.mjs` 가 확인하는 것: 일반 사용자·anon 은 두 함수를 호출할 수 없고 두 표를 직접 읽을 수 없음, 관리자는 과제 40개·결정 8개를 받음, 상태·메모 수정, 잘못된 상태/500자 초과/없는 ID 거부, 시드 재실행이 수정 내용을 덮어쓰지 않음.
+`roadmap_test.mjs`(모든 마이그레이션 적용 뒤): 일반 사용자·anon 은 두 함수를 호출할 수 없고 두 표를 직접 읽을 수 없음, 관리자는 과제 92개(원래 40 + U 18 + G 34)·결정 8개를 받음, 상태·메모 수정, 잘못된 상태/500자 초과/없는 ID/잘못된 release 거부, 시드 재실행이 수정 내용을 덮어쓰지 않고 행을 늘리지 않음.
+
+`roadmap_items2_test.mjs`(두 번째 마이그레이션): 적용 전에는 G 값이 거부됨, 적용 뒤 `R1~R3,G1~G3` 만 허용(`G4`·소문자·빈 값 거부, 다른 검사는 유지), U 18개·G 34개가 JSON 원본과 정확히 같게 들어감(릴리스별 R1 23·R2 28·R3 7·G1 15·G2 13·G3 6), 관리자가 미리 바꾼 행(`C-09` 막힘 등)은 보정에서 건드리지 않음, 재실행 멱등(수정 유지, 제약 1개), 일반 사용자·anon 차단 유지, `admin_roadmap` 이 92개 전부 반환, 정적 사본 `roadmap_seed.json` 이 DB 결과와 일치.
+
+화면 확인은 Playwright 로 한다(`tools/auth_sql_tests/admin_ui_test.cjs` 의 가짜 supabase 방식).

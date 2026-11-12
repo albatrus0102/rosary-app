@@ -14,13 +14,23 @@
     ['R1', 'R1 · 약 1주', '빠르게 고칠 것 (P0)'],
     ['R2', 'R2 · 약 1개월', '매일 쓰게 만드는 것 (P1)'],
     ['R3', 'R3 · 이후', '함께하는 기도 (P2)'],
+    ['G1', 'G1 · 유리화 약 2주', '색이 맞는 창과 갤러리'],
+    ['G2', 'G2 · 유리화 +1개월', '전체 카탈로그와 빛'],
+    ['G3', 'G3 · 유리화 이후', '머무는 이유'],
   ];
+  // 출처: 과제 ID 접두사로 구분한다. U- = 외부 UX 검토, G- = 유리화 계획, 나머지(M-,P-,O-,C-,...) = UX_PLAN.
+  var SOURCES = [['plan', 'UX_PLAN'], ['review', '외부 UX 검토'], ['glass', '유리화 계획']];
+  var SOURCE_LABEL = {}; SOURCES.forEach(function (s) { SOURCE_LABEL[s[0]] = s[1]; });
+  function sourceOf(id) {
+    var p = String(id || '').slice(0, 2);
+    return p === 'U-' ? 'review' : p === 'G-' ? 'glass' : 'plan';
+  }
   var PRIORITIES = ['P0', 'P1', 'P2'];
   var EFFORT_LABEL = { S: 'S · 1일 이하', M: 'M · 2~5일', L: 'L · 1주 이상' };
 
   var st = {
     client: null, items: [], decisions: [], readOnly: false, loaded: false, loading: false,
-    f: { q: '', release: '', priority: '', category: '', status: '' },
+    f: { q: '', release: '', priority: '', category: '', status: '', source: '' },
   };
 
   function h(tag, attrs, kids) {
@@ -84,14 +94,15 @@
     fillSelect($('rm-f-release'), '전체', RELEASES.map(function (r) { return [r[0], r[1]]; }));
     fillSelect($('rm-f-priority'), '전체', PRIORITIES.map(function (p) { return [p, p]; }));
     fillSelect($('rm-f-status'), '전체', STATUS);
+    fillSelect($('rm-f-source'), '전체', SOURCES);
     $('rm-q').addEventListener('input', function (e) { st.f.q = e.target.value; renderBoard(); });
-    [['release', 'rm-f-release'], ['priority', 'rm-f-priority'], ['category', 'rm-f-category'], ['status', 'rm-f-status']].forEach(function (p) {
+    [['release', 'rm-f-release'], ['priority', 'rm-f-priority'], ['category', 'rm-f-category'], ['status', 'rm-f-status'], ['source', 'rm-f-source']].forEach(function (p) {
       $(p[1]).addEventListener('change', function (e) { st.f[p[0]] = e.target.value; renderBoard(); });
     });
     $('rm-reset').addEventListener('click', function () {
-      st.f = { q: '', release: '', priority: '', category: '', status: '' };
+      st.f = { q: '', release: '', priority: '', category: '', status: '', source: '' };
       $('rm-q').value = '';
-      ['rm-f-release', 'rm-f-priority', 'rm-f-category', 'rm-f-status'].forEach(function (id) { $(id).value = ''; });
+      ['rm-f-release', 'rm-f-priority', 'rm-f-category', 'rm-f-status', 'rm-f-source'].forEach(function (id) { $(id).value = ''; });
       renderBoard();
     });
   }
@@ -107,6 +118,7 @@
     if (f.priority && i.priority !== f.priority) return false;
     if (f.category && i.category !== f.category) return false;
     if (f.status && i.status !== f.status) return false;
+    if (f.source && sourceOf(i.id) !== f.source) return false;
     var q = f.q.trim().toLowerCase();
     if (q) {
       var hay = [i.id, i.title, i.category, i.depends, i.value, i.risk, i.evidence, i.owner_note].join(' ').toLowerCase();
@@ -176,6 +188,7 @@
 
     el.appendChild(h('div', { class: 'rm-top' }, [
       h('span', { class: 'rm-id', text: item.id }),
+      chip(SOURCE_LABEL[sourceOf(item.id)], 'src src-' + sourceOf(item.id)),
       chip(item.priority, 'pri-' + String(item.priority).toLowerCase()),
       chip(EFFORT_LABEL[item.effort] || item.effort, 'eff'),
       chip(item.category || '', 'cat'),
@@ -200,7 +213,13 @@
   function renderBoard() {
     var box = $('rm-board'); box.removeAttribute('data-state'); clear(box);
     var shown = 0;
-    RELEASES.forEach(function (r) {
+    // 알 수 없는 release 값이 와도 숨기지 않고 마지막에 그 이름으로 묶어 보여 준다.
+    var known = {}; RELEASES.forEach(function (r) { known[r[0]] = 1; });
+    var groups = RELEASES.slice();
+    st.items.forEach(function (i) {
+      if (!known[i.release]) { known[i.release] = 1; groups.push([String(i.release), String(i.release), '알 수 없는 릴리스']); }
+    });
+    groups.forEach(function (r) {
       var all = st.items.filter(function (i) { return i.release === r[0]; });
       var its = all.filter(matches);
       if (!its.length) return;
@@ -274,7 +293,7 @@
       apply(res.data, false);
     }).catch(function (err) {
       if (isMissingRpc(err)) {
-        return loadSeed('로드맵 기능이 아직 서버에 설치되지 않았습니다. supabase/migrations/20261113000000_roadmap.sql 을 적용하세요. (docs/ux/ROADMAP_ADMIN.md)');
+        return loadSeed('로드맵 기능이 아직 서버에 설치되지 않았습니다. supabase/migrations/20261113000000_roadmap.sql 과 20261114000000_roadmap_items_2.sql 을 차례로 적용하세요. (docs/ux/ROADMAP_ADMIN.md)');
       }
       return loadSeed('로드맵을 불러오지 못했습니다: ' + ((err && err.message) || '알 수 없는 오류') + '.');
     }).then(function () { st.loading = false; });

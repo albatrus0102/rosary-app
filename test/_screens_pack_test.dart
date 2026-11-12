@@ -262,6 +262,8 @@ void main() {
   setUpAll(() async {
     await _loadFonts();
   });
+  // flutter test는 그림자를 단색 검정 테두리로 그린다. 실제 기기처럼 부드러운 그림자로.
+  setUp(() => debugDisableShadows = false);
 
   Future<(AppSettings, AppServices)> shellEnv() async {
     final settings = await _settings();
