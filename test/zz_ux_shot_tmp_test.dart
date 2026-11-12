@@ -113,6 +113,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump();
     }
+    await tester.pump(const Duration(milliseconds: 500));
     await _save(tester, 'church_hud_prayer_360x640');
     await tester.tap(find.byKey(const ValueKey('prayer-stand')));
     await tester.pump();

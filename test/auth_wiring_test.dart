@@ -20,6 +20,7 @@ Map<String, dynamic> _props(Map<String, dynamic> e) =>
     Map<String, dynamic>.from(e['props'] as Map);
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late FakeAuthService auth;
   late AppServices services;
   late AppWiring wiring;
