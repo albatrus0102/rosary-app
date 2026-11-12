@@ -7,7 +7,7 @@
   function create(canvas) {
     var ctl = {
       joyX: 0, joyY: 0, kx: 0, ky: 0,
-      yaw: 0, pitch: 0.45, zoom: 1,
+      yaw: 0, pitch: 0.45, look: 0, zoom: 1,
       dragging: false, lastDragT: -99, now: 0,
       // 웹 떠다니는 스틱: 왼쪽 절반 터치(걷는 중에만). 값은 [-1,1], y>0 이 앞.
       moveZone: true, webX: 0, webY: 0, webActive: false,
@@ -99,7 +99,18 @@
         lastDist = d;
       } else {
         ctl.yaw -= dx * 0.0065;
-        ctl.pitch = Math.max(0.06, Math.min(1.25, ctl.pitch + dy * 0.004));
+        // 아래로 끌면 시점이 올라가고, 맨 아래(수평)에서 더 위로 끌면 천장을 올려다본다(look).
+        var dp = dy * 0.004;
+        if (dp < 0 && ctl.pitch + dp < 0.06) {
+          ctl.look = Math.min(1.35, ctl.look + (0.06 - (ctl.pitch + dp)));
+          ctl.pitch = 0.06;
+        } else if (dp > 0 && ctl.look > 0) {
+          var take = Math.min(ctl.look, dp);
+          ctl.look -= take;
+          ctl.pitch = Math.min(1.25, ctl.pitch + (dp - take));
+        } else {
+          ctl.pitch = Math.max(0.06, Math.min(1.25, ctl.pitch + dp));
+        }
       }
       ctl.lastDragT = ctl.now;
     });

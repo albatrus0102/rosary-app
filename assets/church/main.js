@@ -109,6 +109,7 @@
     if (qs.x !== undefined && qs.z !== undefined) { App.me.x = +qs.x; App.me.z = +qs.z; }
     if (qs.yaw !== undefined) { App.ctl.yaw = (+qs.yaw) * PI / 180; App.me.yaw = App.ctl.yaw; }
     if (qs.pitch !== undefined) App.ctl.pitch = (+qs.pitch) * PI / 180;
+    if (qs.look !== undefined) App.ctl.look = (+qs.look) * PI / 180;
     if (qs.zoom !== undefined) App.ctl.zoom = +qs.zoom;
     if (qs.thumb) App.meAv.root.visible = false;
     if (qs.thumb && App.world.builder.thumb) {   // 썸네일 카메라(빌더가 지정)
@@ -378,8 +379,20 @@
     var kp = 1 - Math.exp(-dt * 7), kl = 1 - Math.exp(-dt * 11);
     App.camPos.x += (cx - App.camPos.x) * kp; App.camPos.y += (cyv - App.camPos.y) * kp; App.camPos.z += (cz - App.camPos.z) * kp;
     App.camLook.x += (me.x - App.camLook.x) * kl; App.camLook.y += (fy - App.camLook.y) * kl; App.camLook.z += (me.z - App.camLook.z) * kl;
+    // 천장 올려다보기: ctl.look(라디안)만큼 시선을 위로 든다. 아바타를 보는 시선과 부드럽게 섞는다.
+    // 걷기 시작하면 서서히 원래 시점으로 돌아온다.
+    if (ctl.look > 0 && me.mode === 'walk' && Math.hypot(me.vx, me.vz) > 0.6 && !ctl.dragging) {
+      ctl.look = Math.max(0, ctl.look - dt * 1.2);
+    }
+    var lookTarget = App.camLook;
+    if (ctl.look > 0.001) {
+      var wl = Math.min(1, ctl.look / 0.2);
+      var ca = Math.cos(ctl.look), sa = Math.sin(ctl.look);
+      var gx = App.camPos.x - dx * ca * 20, gy = App.camPos.y + sa * 20, gz = App.camPos.z - dz * ca * 20;
+      lookTarget = tmpV.set(App.camLook.x + (gx - App.camLook.x) * wl, App.camLook.y + (gy - App.camLook.y) * wl, App.camLook.z + (gz - App.camLook.z) * wl);
+    }
     cam.position.copy(App.camPos);
-    cam.lookAt(App.camLook);
+    cam.lookAt(lookTarget);
   }
 
   function loop(now) {

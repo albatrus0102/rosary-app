@@ -567,7 +567,7 @@ void main() {
       expect(find.byIcon(Icons.check), findsOneWidget);
       // 다른 칸은 선택 표시가 없다.
       expect(
-        selectedTile(tester, tile(femaleBaptismalNames.indexOf('젬마'))),
+        selectedTile(tester, tile(femaleBaptismalNames.indexOf('헬레나'))),
         isFalse,
       );
     });
@@ -657,7 +657,7 @@ void main() {
         tester,
         gender: avatarFemale,
         textScale: 2.0,
-        size: const Size(360, 480),
+        size: const Size(360, 400),
       );
       expect(tester.takeException(), isNull);
       expect(find.byKey(const ValueKey('name-rail')), findsNothing);

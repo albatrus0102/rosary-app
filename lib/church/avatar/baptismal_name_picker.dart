@@ -564,16 +564,13 @@ class _IndexRailState extends State<_IndexRail> {
             right: 4,
             width: _width,
             height: railHeight,
-            child: GestureDetector(
+            child: Listener(
               key: const ValueKey('name-rail'),
               behavior: HitTestBehavior.opaque,
-              onTapDown: (d) => _touch(d.localPosition.dy),
-              onTapUp: (_) => _end(),
-              onTapCancel: _end,
-              onVerticalDragStart: (d) => _touch(d.localPosition.dy),
-              onVerticalDragUpdate: (d) => _touch(d.localPosition.dy),
-              onVerticalDragEnd: (_) => _end(),
-              onVerticalDragCancel: _end,
+              onPointerDown: (e) => _touch(e.localPosition.dy),
+              onPointerMove: (e) => _touch(e.localPosition.dy),
+              onPointerUp: (_) => _end(),
+              onPointerCancel: (_) => _end(),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: _active == null
