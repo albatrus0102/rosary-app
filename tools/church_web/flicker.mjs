@@ -50,7 +50,8 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
       if (v.yaw !== undefined) { A.ctl.yaw = v.yaw * D; A.me.yaw = A.ctl.yaw; }
       A.ctl.pitch = v.pitch * D; A.ctl.look = 0; A.camInit = false;
     }, v);
-    for (let i = 0; i < 3; i++) await page.evaluate(() => __step(4, 16.67));   // 카메라 안착·그림자 갱신
+    // 카메라·성당 훅(피렌체 돔 기울기 등 시간 상수 ~0.3s)이 완전히 안착하도록 2초(50ms×40) 흘린다. 움직이는 카메라는 깜빡임이 아니다.
+    for (let i = 0; i < 4; i++) await page.evaluate(() => __step(10, 50));
     const r = await page.evaluate(({ N, mode }) => {
       const A = __church, c = document.getElementById('c'), W = c.width, H = c.height;
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d', { willReadFrequently: true });
