@@ -5,6 +5,8 @@
 ## 요약
 
 - 창 46점, 그 가운데 긴 변 4096px 마스터 **22점**. 나머지 24점은 구할 수 있는 합법 원본이 작아 4096px 에 못 미친다(원본의 1.5배를 넘겨 확대하지 않음 — 아래 「해상도」 열 참조).
+- 4096px 마스터 22점 가운데 **확대 없이(원본 ≥ 4096px) 만든 것은 12점**이고, 10점은 원본을 1.03–1.46배 Lanczos 확대한 것이다(목록의 「원본 대비」 열).
+- QA 대조 시트: 작업 스크래치패드의 `glass_contact_dark.jpg` · `glass_contact_white.jpg` · `glass_before_after.jpg`(6점의 보정 전/후 100% 크롭).
 - 라이선스: CC0 13점 · Public domain 19점 · CC BY 14점. CC BY-SA·NC 는 없다. CC BY 14점은 앱 라이선스 화면에 표시 문구가 **필수**다(아래 「출처 표기」).
 - 파일: 창마다 `glass_<id>.webp`(마스터, 긴 변 최대 4096) · `glass_<id>_2k.webp`(2048) · `glass_<id>_1k.webp`(1024). 모두 알파 채널 포함 손실 WebP(q≈90, 6MB 초과 시 q 낮춤), `assets/church/` 바로 아래. 합계 약 166 MB.
 - 보관 원본: `assets/church/glass_src/<이름>_orig.jpg` (번들 제외).
@@ -98,7 +100,7 @@
 - **사진 출처**: [File:Holy Spirit stained-glass window (Cathedra Petri).jpg](https://commons.wikimedia.org/wiki/File:Holy_Spirit_stained-glass_window_(Cathedra_Petri).jpg) · 작가 Wilfredor · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Wilfredor, CC0, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/dove_stpeter_orig.jpg` — thumb3840 3840×5745 (Commons/미술관 원본 5097×7625)
-- **파일**: `assets/church/glass_dove_stpeter.webp` 2828×4096 3.90MB q90 · `assets/church/glass_dove_stpeter_2k.webp` 1414×2048 1.10MB q90 · `assets/church/glass_dove_stpeter_1k.webp` 707×1024 0.27MB q90
+- **파일**: `art/glass_masters/glass_dove_stpeter.webp` 2828×4096 3.90MB q90 · `art/glass_masters/glass_dove_stpeter_2k.webp` 1414×2048 1.10MB q90 · `art/glass_masters/glass_dove_stpeter_1k.webp` 707×1024 0.27MB q90
 - **색감**: 호박색·금색·갈색의 방사형 분할, 중심은 거의 흰색. 납선 굵음.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 타원 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.88배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.994, 1.0, 1.003] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.95, 감마 0.77, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3360px → 마스터 4096px (×1.218999981880188) — 확대본
 - **한계**: 타원 가장자리를 실제로 덮고 있는 청동 구름·천사 조각은 창 앞에 있는 실물이라 지우지 않았다(지우면 창작이 됨).
@@ -114,7 +116,7 @@
 - **사진 출처**: [Hinds House Window](https://clevelandart.org/art/1966.432) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: Hinds House Window, c. 1900. Tiffany Glass & Decorating Company (America, New York, 1892–1902). Leaded glass; unframed: 227.3 x 114.3 cm (89 1/2 x 45 in.). The Cleveland Museum of Art, Gift of Mrs. Robert M. Fallon, 1966.432 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/tiffany_hinds_orig.jpg` — original TIFF downsampled to 9000px re-encoded JPEG q95 4:4:4 4545×9000 (Commons/미술관 원본 6062×12004)
-- **파일**: `assets/church/glass_tiffany_hinds.webp` 2068×4096 2.29MB q90 · `assets/church/glass_tiffany_hinds_2k.webp` 1034×2048 0.72MB q90 · `assets/church/glass_tiffany_hinds_1k.webp` 517×1024 0.23MB q90
+- **파일**: `art/glass_masters/glass_tiffany_hinds.webp` 2068×4096 2.29MB q90 · `art/glass_masters/glass_tiffany_hinds_2k.webp` 1034×2048 0.72MB q90 · `art/glass_masters/glass_tiffany_hinds_1k.webp` 517×1024 0.23MB q90
 - **색감**: 녹색 테두리, 주황·노랑 하늘, 흰 꽃.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×0.96, 감마 0.82, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 9000px → 마스터 4096px (×0.45500001311302185)
 - **한계**: 미술관 촬영본(CC0)이라 색 보정은 최소화. 긴 변 9000px 로 줄인 JPEG 를 보관 원본으로 함(원 TIFF 6062×12004).
@@ -130,7 +132,7 @@
 - **사진 출처**: [Crucified Christ](https://clevelandart.org/art/1948.131) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: Crucified Christ, c. 1480–1500. England. Pot metal, white glass with silver stain (with later composite glass); overall: 86.9 x 43.5 cm (34 3/16 x 17 1/8 in.). The Cleveland Museum of Art, Gift of William G. Mather, 1948.131 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/panel_crucified_orig.jpg` — original TIFF re-encoded JPEG q95 4:4:4 3635×6400 (Commons/미술관 원본 3635×6400)
-- **파일**: `assets/church/glass_panel_crucified.webp` 2086×4096 3.28MB q90 · `assets/church/glass_panel_crucified_2k.webp` 1043×2048 0.82MB q90 · `assets/church/glass_panel_crucified_1k.webp` 522×1024 0.22MB q90
+- **파일**: `art/glass_masters/glass_panel_crucified.webp` 2086×4096 3.28MB q90 · `art/glass_masters/glass_panel_crucified_2k.webp` 1043×2048 0.82MB q90 · `art/glass_masters/glass_panel_crucified_1k.webp` 522×1024 0.22MB q90
 - **색감**: 파랑 바탕, 흰 유리와 은염(노랑).
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.023, 0.023, 0.023] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×0.96, 감마 0.83, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 5960px → 마스터 4096px (×0.6869999766349792)
 - **한계**: 미술관 설명에 따르면 후대의 유리 조각이 섞여 있다(composite). 색 보정 최소.
@@ -146,7 +148,7 @@
 - **사진 출처**: [Saint Catherine with a Kneeling Male Donor](https://clevelandart.org/art/1921.106) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: Saint Catherine with a Kneeling Male Donor, 1400s. France, Poitou, Melle, 15th century. Pot metal, white glass with silver stain; overall: 158.7 x 49.2 cm (62 1/2 x 19 3/8 in.). The Cleveland Museum of Art, Dudley P. Allen Fund, 1921.106 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/panel_catherine_donor_orig.jpg` — original TIFF re-encoded JPEG q95 4:4:4 2890×6585 (Commons/미술관 원본 2890×6585)
-- **파일**: `assets/church/glass_panel_catherine_donor.webp` 1300×4096 2.70MB q90 · `assets/church/glass_panel_catherine_donor_2k.webp` 650×2048 0.63MB q90 · `assets/church/glass_panel_catherine_donor_1k.webp` 325×1024 0.16MB q90
+- **파일**: `art/glass_masters/glass_panel_catherine_donor.webp` 1300×4096 2.70MB q90 · `art/glass_masters/glass_panel_catherine_donor_2k.webp` 650×2048 0.63MB q90 · `art/glass_masters/glass_panel_catherine_donor_1k.webp` 325×1024 0.16MB q90
 - **색감**: 대부분 흰 유리·은염, 파랑 옷과 빨강 광배.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.013, 0.013, 0.013] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×0.96, 감마 1.0, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 6186px → 마스터 4096px (×0.6620000004768372)
 - **한계**: 균열 수리 납선이 많다(실물). 색 보정 최소.
@@ -162,7 +164,7 @@
 - **사진 출처**: [The Annunciation from the Parish Church of Maria am Waasen in Leoben](https://clevelandart.org/art/2024.171.1) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: The Annunciation from the Parish Church of Maria am Waasen in Leoben, c. 1410–20. Austria, Styria, 15th century. Stained glass; overall: 73 x 49 cm (28 3/4 x 19 5/16 in.). The Cleveland Museum of Art, Leonard C. Hanna Jr. Fund, 2024.171.1 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/leoben_annunciation_orig.jpg` — original TIFF downsampled to 9000px re-encoded JPEG q95 4:4:4 6155×9000 (Commons/미술관 원본 7475×10930)
-- **파일**: `assets/church/glass_leoben_annunciation.webp` 2801×4096 5.51MB q90 · `assets/church/glass_leoben_annunciation_2k.webp` 1400×2048 1.28MB q90 · `assets/church/glass_leoben_annunciation_1k.webp` 700×1024 0.33MB q90
+- **파일**: `art/glass_masters/glass_leoben_annunciation.webp` 2801×4096 5.51MB q90 · `art/glass_masters/glass_leoben_annunciation_2k.webp` 1400×2048 1.28MB q90 · `art/glass_masters/glass_leoben_annunciation_1k.webp` 700×1024 0.33MB q90
 - **색감**: 노랑 천사, 파랑 성모, 빨강 바탕.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×0.96, 감마 0.82, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 9000px → 마스터 4096px (×0.45500001311302185)
 - **한계**: 미술관 촬영본(CC0), 색 보정 최소. 9000px 로 줄인 JPEG 보관(원 TIFF 7475×10930). 패널 가장자리가 사진 테두리에 거의 닿아 있어 직사각 전체를 그대로 씀.
@@ -178,7 +180,7 @@
 - **사진 출처**: [The Adoration of the Magi from the Parish Church of Maria am Waasen in Leoben](https://clevelandart.org/art/2024.171.2) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: The Adoration of the Magi from the Parish Church of Maria am Waasen in Leoben, c. 1410–20. Austria, Styria, 15th century. Stained glass; overall: 72 x 49 cm (28 3/8 x 19 5/16 in.). The Cleveland Museum of Art, Leonard C. Hanna Jr. Fund, 2024.171.2 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/leoben_magi_orig.jpg` — original TIFF downsampled to 9000px re-encoded JPEG q95 4:4:4 6042×9000 (Commons/미술관 원본 7398×11020)
-- **파일**: `assets/church/glass_leoben_magi.webp` 2750×4096 5.12MB q90 · `assets/church/glass_leoben_magi_2k.webp` 1375×2048 1.24MB q90 · `assets/church/glass_leoben_magi_1k.webp` 688×1024 0.32MB q90
+- **파일**: `art/glass_masters/glass_leoben_magi.webp` 2750×4096 5.12MB q90 · `art/glass_masters/glass_leoben_magi_2k.webp` 1375×2048 1.24MB q90 · `art/glass_masters/glass_leoben_magi_1k.webp` 688×1024 0.32MB q90
 - **색감**: 파랑 다마스크 바탕, 녹색·자주 옷.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×0.96, 감마 0.82, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 9000px → 마스터 4096px (×0.45500001311302185)
 - **한계**: 미술관 촬영본(CC0), 색 보정 최소. 9000px JPEG 보관(원 TIFF 7398×11020).
@@ -194,7 +196,7 @@
 - **사진 출처**: [Christ in the Garden of Gethsemane](https://clevelandart.org/art/1940.340.1) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: Christ in the Garden of Gethsemane, 1522–26. Everhard Rensig (German), or Gerhard Remisch (German). Pot-metal and white glass, silver stain and sanguine; overall: 73.7 x 71.8 cm (29 x 28 1/4 in.). The Cleveland Museum of Art, Gift of S. Livingstone Mather, Constance Mather Bishop, Philip R. Mather, Katherine Hoyt Cross, and Katherine Mather McLean in accordance with the wishes of Samuel Mather, 1940.340.1 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/panel_gethsemane_orig.jpg` — original TIFF re-encoded JPEG q95 4:4:4 5394×6003 (Commons/미술관 원본 5394×6003)
-- **파일**: `assets/church/glass_panel_gethsemane.webp` 3680×4096 4.63MB q90 · `assets/church/glass_panel_gethsemane_2k.webp` 1840×2048 1.18MB q90 · `assets/church/glass_panel_gethsemane_1k.webp` 920×1024 0.31MB q90
+- **파일**: `art/glass_masters/glass_panel_gethsemane.webp` 3680×4096 4.63MB q90 · `art/glass_masters/glass_panel_gethsemane_2k.webp` 1840×2048 1.18MB q90 · `art/glass_masters/glass_panel_gethsemane_1k.webp` 920×1024 0.31MB q90
 - **색감**: 녹색 풍경, 붉은 옷, 흰 유리와 은염.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×1.04, 감마 0.82, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 6003px → 마스터 4096px (×0.6819999814033508)
 - **한계**: 색 보정 최소. 9000px 이하 원본 그대로.
@@ -211,7 +213,7 @@
 - **사진 출처**: [Stained Glass Panel with Aconite Leaves](https://clevelandart.org/art/1977.89) · 작가 The Cleveland Museum of Art (Open Access) · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: Stained Glass Panel with Aconite Leaves, c. 1275–1300. France, Alsace(?), 13th century. Pot-metal and white glass, silver stain; overall: 55.9 x 33.4 cm (22 x 13 1/8 in.). The Cleveland Museum of Art, Gift of Ella Brummer in Memory of her Husband, Ernest Brummer, 1977.89 (CC0, Open Access)
 - **받은 원본**: `assets/church/glass_src/grisaille_aconite_orig.jpg` — original TIFF re-encoded JPEG q95 4:4:4 2407×4012 (Commons/미술관 원본 2407×4012)
-- **파일**: `assets/church/glass_grisaille_aconite.webp` 1972×4096 1.72MB q90 · `assets/church/glass_grisaille_aconite_2k.webp` 986×2048 0.49MB q90 · `assets/church/glass_grisaille_aconite_1k.webp` 493×1024 0.15MB q90
+- **파일**: `art/glass_masters/glass_grisaille_aconite.webp` 1972×4096 1.72MB q90 · `art/glass_masters/glass_grisaille_aconite_2k.webp` 986×2048 0.49MB q90 · `art/glass_masters/glass_grisaille_aconite_1k.webp` 493×1024 0.15MB q90
 - **색감**: 회백색 그리자유, 빨강·노랑 테두리.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 뾰족 아치 알파(해석적) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.057, 0.057, 0.057] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (보정 안 함) · 노출 ×1.21, 감마 0.97, 채도(Lab 크로마, 색상각 유지) ×1.0 · 노이즈 제거 h=0, 언샤프 0.35/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3957px → 마스터 4096px (×1.034999966621399) — 확대본
 - **한계**: 뒤의 블라인드가 비치는 설치 사진이라 무색 유리 뒤로 가로 줄이 약하게 보인다(지우지 않음). 뾰족 아치 윤곽은 해석적 마스크(곡률 k=1.05)로 잘랐다.
@@ -228,7 +230,7 @@
 - **사진 출처**: [File:Alabaster window of the Basilica of Saint Paul Outside the Walls 02.jpg](https://commons.wikimedia.org/wiki/File:Alabaster_window_of_the_Basilica_of_Saint_Paul_Outside_the_Walls_02.jpg) · 작가 Szilas · **CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Alabaster window of the Basilica of Saint Paul Outside the Walls 02" by Szilas, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/alabaster_stpaul_1_orig.jpg` — thumb1920 1920×2880 (Commons/미술관 원본 3168×4752)
-- **파일**: `assets/church/glass_alabaster_stpaul_1.webp` 1770×3397 3.01MB q90 · `assets/church/glass_alabaster_stpaul_1_2k.webp` 1067×2048 1.19MB q90 · `assets/church/glass_alabaster_stpaul_1_1k.webp` 534×1024 0.30MB q90
+- **파일**: `art/glass_masters/glass_alabaster_stpaul_1.webp` 1770×3397 3.01MB q90 · `art/glass_masters/glass_alabaster_stpaul_1_2k.webp` 1067×2048 1.19MB q90 · `art/glass_masters/glass_alabaster_stpaul_1_1k.webp` 534×1024 0.30MB q90
 - **색감**: 크림·꿀색·갈색 줄무늬, 검은 금속 틀.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 1.0) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.61배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.978, 1.0, 1.038] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.89, 감마 1.0, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2265px → 마스터 3397px (×1.5) — 확대본
 - **한계**: 원본 사진이 1920px 썸네일이라 1.5배 확대됨.
@@ -245,7 +247,7 @@
 - **사진 출처**: [File:Alabaster window of the Basilica of Saint Paul Outside the Walls 04.jpg](https://commons.wikimedia.org/wiki/File:Alabaster_window_of_the_Basilica_of_Saint_Paul_Outside_the_Walls_04.jpg) · 작가 Szilas · **CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Alabaster window of the Basilica of Saint Paul Outside the Walls 04" by Szilas, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/alabaster_stpaul_2_orig.jpg` — thumb1920 1920×2880 (Commons/미술관 원본 3168×4752)
-- **파일**: `assets/church/glass_alabaster_stpaul_2.webp` 1770×3480 3.62MB q90 · `assets/church/glass_alabaster_stpaul_2_2k.webp` 1042×2048 1.30MB q90 · `assets/church/glass_alabaster_stpaul_2_1k.webp` 521×1024 0.31MB q90
+- **파일**: `art/glass_masters/glass_alabaster_stpaul_2.webp` 1770×3480 3.62MB q90 · `art/glass_masters/glass_alabaster_stpaul_2_2k.webp` 1042×2048 1.30MB q90 · `art/glass_masters/glass_alabaster_stpaul_2_1k.webp` 521×1024 0.31MB q90
 - **색감**: 흰색~황토색 세로 줄무늬.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 1.0) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.35배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.987, 1.0, 1.037] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.91, 감마 1.07, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2320px → 마스터 3480px (×1.5) — 확대본
 - **한계**: 1920px 썸네일 원본, 1.5배 확대.
@@ -262,7 +264,7 @@
 - **사진 출처**: [File:Alabaster window in the Mausoleum of Galla Placidia, 425-50; Ravenna (2).jpg](https://commons.wikimedia.org/wiki/File:Alabaster_window_in_the_Mausoleum_of_Galla_Placidia,_425-50%3B_Ravenna_(2).jpg) · 작가 Richard Mortel · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Alabaster window in the Mausoleum of Galla Placidia, 425-50; Ravenna (2)" by Richard Mortel, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/alabaster_slab_orig.jpg` — thumb1920 1920×2948 (Commons/미술관 원본 3504×5380)
-- **파일**: `assets/church/glass_alabaster_slab.webp` 1344×1897 0.33MB q90 · `assets/church/glass_alabaster_slab_2k.webp` 1344×1897 0.33MB q90 · `assets/church/glass_alabaster_slab_1k.webp` 725×1024 0.16MB q90
+- **파일**: `art/glass_masters/glass_alabaster_slab.webp` 1344×1897 0.33MB q90 · `art/glass_masters/glass_alabaster_slab_2k.webp` 1344×1897 0.33MB q90 · `art/glass_masters/glass_alabaster_slab_1k.webp` 725×1024 0.16MB q90
 - **색감**: 꿀색·호박색·주황 띠.
 - **복원 내용**: 기하: 손으로 잡은 4점 투시 보정 · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.05, 0.05, 0.05] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.13배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.989, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.93, 감마 1.35, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1265px → 마스터 1897px (×1.5) — 확대본
 - **한계**: 비스듬히 찍힌 사진을 4점 투시 보정. 원본 해상도가 낮아(석판 부분 약 850×1260px) 1.5배 확대본이며 4096 마스터가 아님. 석판의 금(crack)은 실물 그대로 둠.
@@ -279,7 +281,7 @@
 - **사진 출처**: [File:Donatello, incoronazione della vergine.jpg](https://commons.wikimedia.org/wiki/File:Donatello,_incoronazione_della_vergine.jpg) · 작가 Sailko (스캔) · 밑그림 Donatello · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Sailko (스캔) · 밑그림 Donatello, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/oculus_florence_donatello_orig.jpg` — thumb1920 1920×1906 (Commons/미술관 원본 2409×2391)
-- **파일**: `assets/church/glass_oculus_florence_donatello.webp` 2859×2859 1.23MB q90 · `assets/church/glass_oculus_florence_donatello_2k.webp` 2048×2048 0.81MB q90 · `assets/church/glass_oculus_florence_donatello_1k.webp` 1024×1024 0.35MB q90
+- **파일**: `art/glass_masters/glass_oculus_florence_donatello.webp` 2859×2859 1.23MB q90 · `art/glass_masters/glass_oculus_florence_donatello_2k.webp` 2048×2048 0.81MB q90 · `art/glass_masters/glass_oculus_florence_donatello_1k.webp` 1024×1024 0.35MB q90
 - **색감**: 진한 빨강·흰색·녹색·파랑, 큰 유리 조각.
 - **복원 내용**: 기하: 타원→원 보정(축 [1586.4, 1590.0], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 17.05배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.991, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.92, 감마 0.63, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1906px → 마스터 2859px (×1.5) — 확대본
 - **한계**: 책 도판 스캔(PD-Art) 1920px 썸네일 → 1.5배 확대. 수평 철제 보강대와 균열 수리 납선은 실물이므로 그대로 둠. 인쇄 망점이 약하게 남아 있을 수 있음.
@@ -296,7 +298,7 @@
 - **사진 출처**: [File:Ghiberti, assunzione di maria.jpg](https://commons.wikimedia.org/wiki/File:Ghiberti,_assunzione_di_maria.jpg) · 작가 Sailko (스캔) · 밑그림 Lorenzo Ghiberti · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Sailko (스캔) · 밑그림 Lorenzo Ghiberti, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/oculus_florence_ghiberti_1_orig.jpg` — thumb960 960×946 (Commons/미술관 원본 1249×1231)
-- **파일**: `assets/church/glass_oculus_florence_ghiberti_1.webp` 1447×1447 0.53MB q90 · `assets/church/glass_oculus_florence_ghiberti_1_2k.webp` 1447×1447 0.53MB q90 · `assets/church/glass_oculus_florence_ghiberti_1_1k.webp` 1024×1024 0.35MB q90
+- **파일**: `art/glass_masters/glass_oculus_florence_ghiberti_1.webp` 1447×1447 0.53MB q90 · `art/glass_masters/glass_oculus_florence_ghiberti_1_2k.webp` 1447×1447 0.53MB q90 · `art/glass_masters/glass_oculus_florence_ghiberti_1_1k.webp` 1024×1024 0.35MB q90
 - **색감**: 금색 광배, 빨강·파랑 배경, 메달리온 테두리.
 - **복원 내용**: 기하: 타원→원 보정(축 [948.8, 964.7], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.05, 0.05, 0.05] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.85배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.954, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.87, 감마 1.0, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 965px → 마스터 1447px (×1.5) — 확대본
 - **한계**: 원본이 책 스캔 1249px(받은 것은 960px 썸네일)뿐이라 저해상도. 1.5배까지만 확대했고 4096 마스터가 아님.
@@ -313,7 +315,7 @@
 - **사진 출처**: [File:Ghiberti, ascensione.jpg](https://commons.wikimedia.org/wiki/File:Ghiberti,_ascensione.jpg) · 작가 Sailko (스캔) · 밑그림 Lorenzo Ghiberti · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Sailko (스캔) · 밑그림 Lorenzo Ghiberti, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/oculus_florence_ghiberti_2_orig.jpg` — thumb960 960×949 (Commons/미술관 원본 1249×1235)
-- **파일**: `assets/church/glass_oculus_florence_ghiberti_2.webp` 1440×1440 0.41MB q90 · `assets/church/glass_oculus_florence_ghiberti_2_2k.webp` 1440×1440 0.41MB q90 · `assets/church/glass_oculus_florence_ghiberti_2_1k.webp` 1024×1024 0.27MB q90
+- **파일**: `art/glass_masters/glass_oculus_florence_ghiberti_2.webp` 1440×1440 0.41MB q90 · `art/glass_masters/glass_oculus_florence_ghiberti_2_2k.webp` 1440×1440 0.41MB q90 · `art/glass_masters/glass_oculus_florence_ghiberti_2_1k.webp` 1024×1024 0.27MB q90
 - **색감**: 녹색·노랑 테두리, 파랑 하늘, 흰 옷.
 - **복원 내용**: 기하: 타원→원 보정(축 [954.4, 965.9], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.033, 0.033, 0.033] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.05배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.004, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.83, 감마 1.0, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 960px → 마스터 1440px (×1.5) — 확대본
 - **한계**: 원본이 책 스캔 1249px(960px 썸네일)뿐이라 저해상도. 4096 마스터가 아님.
@@ -330,7 +332,7 @@
 - **사진 출처**: [File:Chartres - cathédrale - rosace nord.jpg](https://commons.wikimedia.org/wiki/File:Chartres_-_cath%C3%A9drale_-_rosace_nord.jpg) · 작가 Eusebius · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Eusebius, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/rose_chartres_north_orig.jpg` — thumb1920 1920×2658 (Commons/미술관 원본 2167×3000)
-- **파일**: `assets/church/glass_rose_chartres_north.webp` 2091×3252 2.13MB q90 · `assets/church/glass_rose_chartres_north_2k.webp` 1317×2048 1.05MB q90 · `assets/church/glass_rose_chartres_north_1k.webp` 658×1024 0.33MB q90
+- **파일**: `art/glass_masters/glass_rose_chartres_north.webp` 2091×3252 2.13MB q90 · `art/glass_masters/glass_rose_chartres_north_2k.webp` 1317×2048 1.05MB q90 · `art/glass_masters/glass_rose_chartres_north_1k.webp` 658×1024 0.33MB q90
 - **색감**: 샤르트르 블루와 루비 레드, 금색 백합 문장.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 0.89) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.33배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.049, 1.0, 1.007] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.88, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2168px → 마스터 3252px (×1.5) — 확대본
 - **한계**: 아래에서 올려 찍은 사진을 자동 사다리꼴 보정. 장미창과 랜싯 사이의 벽(판형 트레이서리)은 사진에서 완전히 검게 찍혀 돌의 질감은 보이지 않는다. 1920px 썸네일 → 1.5배 확대.
@@ -347,7 +349,7 @@
 - **사진 출처**: [File:Vitrail Chartres-rosace 143 +net & corrigée.jpg](https://commons.wikimedia.org/wiki/File:Vitrail_Chartres-rosace_143_%2Bnet_%26_corrig%C3%A9e.jpg) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/rose_chartres_west_orig.jpg` — thumb1920 1920×1920 (Commons/미술관 원본 3022×3022)
-- **파일**: `assets/church/glass_rose_chartres_west.webp` 2793×2793 1.58MB q90 · `assets/church/glass_rose_chartres_west_2k.webp` 2048×2048 0.97MB q90 · `assets/church/glass_rose_chartres_west_1k.webp` 1024×1024 0.31MB q90
+- **파일**: `art/glass_masters/glass_rose_chartres_west.webp` 2793×2793 1.58MB q90 · `art/glass_masters/glass_rose_chartres_west_2k.webp` 2048×2048 0.97MB q90 · `art/glass_masters/glass_rose_chartres_west_1k.webp` 1024×1024 0.31MB q90
 - **색감**: 파랑·빨강 위주, 검은 석재 면적이 넓음.
 - **복원 내용**: 기하: 타원→원 보정(축 [1545.0, 1558.4], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.91배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.04, 1.0, 1.046] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.8, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1862px → 마스터 2793px (×1.5) — 확대본
 - **한계**: 업로더가 이미 정면 보정·선명화한 사진(PD). 석재는 검게 찍힘. 1920px 썸네일 → 1.5배 확대.
@@ -364,7 +366,7 @@
 - **사진 출처**: [File:Vitrail Chartres-122.jpg](https://commons.wikimedia.org/wiki/File:Vitrail_Chartres-122.jpg) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/rose_chartres_south_orig.jpg` — thumb1920 1920×2880 (Commons/미술관 원본 3456×5184)
-- **파일**: `assets/church/glass_rose_chartres_south.webp` 2141×2141 1.41MB q90 · `assets/church/glass_rose_chartres_south_2k.webp` 2048×2048 1.31MB q90 · `assets/church/glass_rose_chartres_south_1k.webp` 1024×1024 0.47MB q90
+- **파일**: `art/glass_masters/glass_rose_chartres_south.webp` 2141×2141 1.41MB q90 · `art/glass_masters/glass_rose_chartres_south_2k.webp` 2048×2048 1.31MB q90 · `art/glass_masters/glass_rose_chartres_south_1k.webp` 1024×1024 0.47MB q90
 - **색감**: 파랑·빨강·보라.
 - **복원 내용**: 기하: 타원→원 보정(축 [1006.9, 1189.3], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.12배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.014] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.9, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1427px → 마스터 2141px (×1.5) — 확대본
 - **한계**: 아래에서 비스듬히 찍은 사진의 타원을 원으로 펴는 보정(대칭 아핀)이라 미세한 원근 왜곡이 남을 수 있다. 장미창 부분만 약 1400px → 1.5배 확대, 4096 마스터가 아님. 아래 랜싯은 포함하지 않음.
@@ -381,7 +383,7 @@
 - **사진 출처**: [File:Chartres -30a- ND de la belle verrière and its angel border.jpg](https://commons.wikimedia.org/wiki/File:Chartres_-30a-_ND_de_la_belle_verri%C3%A8re_and_its_angel_border.jpg) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/lancet_chartres_belle_orig.jpg` — thumb3840 3840×7198 (Commons/미술관 원본 4012×7520)
-- **파일**: `assets/church/glass_lancet_chartres_belle.webp` 2218×4096 2.80MB q90 · `assets/church/glass_lancet_chartres_belle_2k.webp` 1109×2048 0.89MB q90 · `assets/church/glass_lancet_chartres_belle_1k.webp` 554×1024 0.30MB q90
+- **파일**: `art/glass_masters/glass_lancet_chartres_belle.webp` 2218×4096 2.80MB q90 · `art/glass_masters/glass_lancet_chartres_belle_2k.webp` 1109×2048 0.89MB q90 · `art/glass_masters/glass_lancet_chartres_belle_1k.webp` 554×1024 0.30MB q90
 - **색감**: 깊은 파랑과 루비 레드, 성모 옷은 밝은 하늘색.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.09배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.031] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.84, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 7095px → 마스터 4096px (×0.5770000219345093)
 - **한계**: 업로더가 정면 보정한 사진(PD). 철제 보강 격자는 실물이라 그대로 둠.
@@ -398,7 +400,7 @@
 - **사진 출처**: [File:Vitrail Chartres-049 rectifié.jpg](https://commons.wikimedia.org/wiki/File:Vitrail_Chartres-049_rectifi%C3%A9.jpg) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/lancet_chartres_jesse_orig.jpg` — thumb1920 1920×6591 (Commons/미술관 원본 2891×9924)
-- **파일**: `assets/church/glass_lancet_chartres_jesse.webp` 1212×4096 2.89MB q90 · `assets/church/glass_lancet_chartres_jesse_2k.webp` 606×2048 0.85MB q90 · `assets/church/glass_lancet_chartres_jesse_1k.webp` 303×1024 0.23MB q90
+- **파일**: `art/glass_masters/glass_lancet_chartres_jesse.webp` 1212×4096 2.89MB q90 · `art/glass_masters/glass_lancet_chartres_jesse_2k.webp` 606×2048 0.85MB q90 · `art/glass_masters/glass_lancet_chartres_jesse_1k.webp` 303×1024 0.23MB q90
 - **색감**: 맑은 12세기 파랑 바탕, 빨강·녹색·노랑.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.18배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.026, 1.0, 1.043] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.8, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 6488px → 마스터 4096px (×0.6309999823570251)
 - **한계**: 업로더가 정면 보정한 사진(PD), 1920px 폭 썸네일.
@@ -415,7 +417,7 @@
 - **사진 출처**: [File:Chartres 44 -Corrected.jpg](https://commons.wikimedia.org/wiki/File:Chartres_44_-Corrected.jpg) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/lancet_chartres_samaritan_orig.jpg` — thumb1920 1920×6453 (Commons/미술관 원본 3741×12573)
-- **파일**: `assets/church/glass_lancet_chartres_samaritan.webp` 1269×4096 2.44MB q90 · `assets/church/glass_lancet_chartres_samaritan_2k.webp` 634×2048 0.73MB q90 · `assets/church/glass_lancet_chartres_samaritan_1k.webp` 317×1024 0.21MB q90
+- **파일**: `art/glass_masters/glass_lancet_chartres_samaritan.webp` 1269×4096 2.44MB q90 · `art/glass_masters/glass_lancet_chartres_samaritan_2k.webp` 634×2048 0.73MB q90 · `art/glass_masters/glass_lancet_chartres_samaritan_1k.webp` 317×1024 0.21MB q90
 - **색감**: 파랑·빨강, 사엽·원형 메달리온.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.58배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.024, 1.0, 1.046] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.87, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 6130px → 마스터 4096px (×0.6679999828338623)
 - **한계**: 업로더가 정면 보정한 사진(PD), 1920px 폭 썸네일.
@@ -432,7 +434,7 @@
 - **사진 출처**: [File:Vitrail Chartres 210209 07.jpg](https://commons.wikimedia.org/wiki/File:Vitrail_Chartres_210209_07.jpg) · 작가 Vassil · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Vassil, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/medallion_chartres_orig.jpg` — thumb1920 1920×1920 (Commons/미술관 원본 2089×2089)
-- **파일**: `assets/church/glass_medallion_chartres.webp` 2880×2880 1.80MB q90 · `assets/church/glass_medallion_chartres_2k.webp` 2048×2048 1.07MB q90 · `assets/church/glass_medallion_chartres_1k.webp` 1024×1024 0.37MB q90
+- **파일**: `art/glass_masters/glass_medallion_chartres.webp` 2880×2880 1.80MB q90 · `art/glass_masters/glass_medallion_chartres_2k.webp` 2048×2048 1.07MB q90 · `art/glass_masters/glass_medallion_chartres_1k.webp` 1024×1024 0.37MB q90
 - **색감**: 빨강 바탕에 파랑 원.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 3.36배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.028, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.84, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1920px → 마스터 2880px (×1.5) — 확대본
 - **한계**: 창 전체가 아닌 부분 사진. 1920px 썸네일 → 1.5배 확대.
@@ -449,7 +451,7 @@
 - **사진 출처**: [File:Die Fenster im Kölner Dom - 7 von 9 - panoramio.jpg](https://commons.wikimedia.org/wiki/File:Die_Fenster_im_K%C3%B6lner_Dom_-_7_von_9_-_panoramio.jpg) · 작가 Edgar El · **CC BY 3.0** (https://creativecommons.org/licenses/by/3.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Die Fenster im Kölner Dom - 7 von 9 - panoramio" by Edgar El, CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/lancet_cologne_orig.jpg` — thumb1920 1920×3167 (Commons/미술관 원본 2091×3449)
-- **파일**: `assets/church/glass_lancet_cologne.webp` 2500×4096 2.15MB q90 · `assets/church/glass_lancet_cologne_2k.webp` 1250×2048 0.86MB q90 · `assets/church/glass_lancet_cologne_1k.webp` 625×1024 0.28MB q90
+- **파일**: `art/glass_masters/glass_lancet_cologne.webp` 2500×4096 2.15MB q90 · `art/glass_masters/glass_lancet_cologne_2k.webp` 1250×2048 0.86MB q90 · `art/glass_masters/glass_lancet_cologne_1k.webp` 625×1024 0.28MB q90
 - **색감**: 흰색·금색 캐노피가 많아 밝고, 옷은 파랑·빨강.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 0.583) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 4.54배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.03, 1.0, 1.043] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.8, 감마 0.82, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3125px → 마스터 4096px (×1.3109999895095825) — 확대본
 - **한계**: 아래에서 올려 찍은 사진을 사다리꼴 보정(위쪽 해상도가 낮음). 1920px 썸네일 → 약 1.3배 확대.
@@ -466,7 +468,7 @@
 - **사진 출처**: [File:Saint-Eutrope, vitrail Gesta, Marsilly, Charente-Maritime, august 2015.jpg](https://commons.wikimedia.org/wiki/File:Saint-Eutrope,_vitrail_Gesta,_Marsilly,_Charente-Maritime,_august_2015.jpg) · 작가 Jebulon (사진) · 창: Louis-Victor Gesta · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Jebulon (사진) · 창: Louis-Victor Gesta, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/lancet_gesta_orig.jpg` — thumb1280 1280×2963 (Commons/미술관 원본 1804×4176)
-- **파일**: `assets/church/glass_lancet_gesta.webp` 939×3803 1.33MB q90 · `assets/church/glass_lancet_gesta_2k.webp` 506×2048 0.52MB q90 · `assets/church/glass_lancet_gesta_1k.webp` 253×1024 0.15MB q90
+- **파일**: `art/glass_masters/glass_lancet_gesta.webp` 939×3803 1.33MB q90 · `art/glass_masters/glass_lancet_gesta_2k.webp` 506×2048 0.52MB q90 · `art/glass_masters/glass_lancet_gesta_1k.webp` 253×1024 0.15MB q90
 - **색감**: 파랑 다이아퍼 바탕, 빨강 제의, 꽃무늬 테두리.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.21배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.029, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.89, 감마 0.83, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2535px → 마스터 3803px (×1.5) — 확대본
 - **한계**: 1280px 썸네일 → 1.5배 확대, 4096 마스터가 아님.
@@ -483,7 +485,7 @@
 - **사진 출처**: [File:Geometric Grisaille c.1200-1250 - Stained Glass Museum.jpg](https://commons.wikimedia.org/wiki/File:Geometric_Grisaille_c.1200-1250_-_Stained_Glass_Museum.jpg) · 작가 The wub · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) The wub, CC0, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/grisaille_knot_orig.jpg` — thumb960 960×2400 (Commons/미술관 원본 1265×3163)
-- **파일**: `assets/church/glass_grisaille_knot.webp` 1283×3229 1.28MB q90 · `assets/church/glass_grisaille_knot_2k.webp` 814×2048 0.63MB q90 · `assets/church/glass_grisaille_knot_1k.webp` 407×1024 0.17MB q90
+- **파일**: `art/glass_masters/glass_grisaille_knot.webp` 1283×3229 1.28MB q90 · `art/glass_masters/glass_grisaille_knot_2k.webp` 814×2048 0.63MB q90 · `art/glass_masters/glass_grisaille_knot_1k.webp` 407×1024 0.17MB q90
 - **색감**: 옅은 녹황색 무색 유리, 파랑·노랑·빨강 점.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.31배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.94, 감마 1.11, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2152px → 마스터 3229px (×1.5) — 확대본
 - **한계**: 원본 1265px(960px 썸네일)이라 저해상도, 4096 마스터가 아님.
@@ -500,7 +502,7 @@
 - **사진 출처**: [File:Sainte-Chapelle, Paris, upper chapel rose.jpg](https://commons.wikimedia.org/wiki/File:Sainte-Chapelle,_Paris,_upper_chapel_rose.jpg) · 작가 Gerda Arendt · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Gerda Arendt, CC0, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/rose_saintechapelle_orig.jpg` — thumb3840 3840×2880 (Commons/미술관 원본 4000×3000)
-- **파일**: `assets/church/glass_rose_saintechapelle.webp` 2274×2274 1.08MB q90 · `assets/church/glass_rose_saintechapelle_2k.webp` 2048×2048 0.94MB q90 · `assets/church/glass_rose_saintechapelle_1k.webp` 1024×1024 0.36MB q90
+- **파일**: `art/glass_masters/glass_rose_saintechapelle.webp` 2274×2274 1.08MB q90 · `art/glass_masters/glass_rose_saintechapelle_2k.webp` 2048×2048 0.94MB q90 · `art/glass_masters/glass_rose_saintechapelle_1k.webp` 1024×1024 0.36MB q90
 - **색감**: 파랑·녹색·노랑, 불꽃 모양 트레이서리.
 - **복원 내용**: 기하: 타원→원 보정(축 [1169.1, 1522.3], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.87배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.001] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.81, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1516px → 마스터 2274px (×1.5) — 확대본
 - **한계**: 아래에서 넓게 찍은 사진 속 작은 장미창(약 1000px)을 타원→원 보정한 것이라 해상도가 낮고 원근 왜곡이 조금 남는다. 장미창 아래를 가리는 난간은 실물이라 그대로 있다. 4096 마스터가 아님.
@@ -517,7 +519,7 @@
 - **사진 출처**: [File:York Minster Rose window S16 (15563016153).jpg](https://commons.wikimedia.org/wiki/File:York_Minster_Rose_window_S16_(15563016153).jpg) · 작가 Jules & Jenny · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "York Minster Rose window S16 (15563016153)" by Jules & Jenny, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/rose_york_orig.jpg` — thumb1920 1920×1734 (Commons/미술관 원본 2472×2232)
-- **파일**: `assets/church/glass_rose_york.webp` 2859×2859 1.96MB q90 · `assets/church/glass_rose_york_2k.webp` 2048×2048 1.23MB q90 · `assets/church/glass_rose_york_1k.webp` 1024×1024 0.36MB q90
+- **파일**: `art/glass_masters/glass_rose_york.webp` 2859×2859 1.96MB q90 · `art/glass_masters/glass_rose_york_2k.webp` 2048×2048 1.23MB q90 · `art/glass_masters/glass_rose_york_1k.webp` 1024×1024 0.36MB q90
 - **색감**: 빨강·흰색 장미, 노란 해살, 파랑 테두리.
 - **복원 내용**: 기하: 타원→원 보정(축 [1426.3, 1591.7], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.7배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.03, 1.0, 0.992] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.85, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1906px → 마스터 2859px (×1.5) — 확대본
 - **한계**: 1920px 썸네일 → 1.5배 확대. 석재는 검게 찍힘.
@@ -534,7 +536,7 @@
 - **사진 출처**: [File:Canterbury Cathedral, window n.III (36940593903).jpg](https://commons.wikimedia.org/wiki/File:Canterbury_Cathedral,_window_n.III_(36940593903).jpg) · 작가 Jules & Jenny · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Canterbury Cathedral, window n.III (36940593903)" by Jules & Jenny, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/canterbury_n3_orig.jpg` — thumb1280 1280×3602 (Commons/미술관 원본 1486×4182)
-- **파일**: `assets/church/glass_canterbury_n3.webp` 1350×4096 1.60MB q90 · `assets/church/glass_canterbury_n3_2k.webp` 675×2048 0.64MB q90 · `assets/church/glass_canterbury_n3_1k.webp` 338×1024 0.22MB q90
+- **파일**: `art/glass_masters/glass_canterbury_n3.webp` 1350×4096 1.60MB q90 · `art/glass_masters/glass_canterbury_n3_2k.webp` 675×2048 0.64MB q90 · `art/glass_masters/glass_canterbury_n3_1k.webp` 338×1024 0.22MB q90
 - **색감**: 깊은 파랑 바탕, 빨강·녹색·흰색.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.83배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.998, 1.0, 0.99] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×1.03, 감마 0.66, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3539px → 마스터 4096px (×1.156999945640564) — 확대본
 - **한계**: 원본 1486px 폭(1280px 썸네일), 약 1.1배 확대.
@@ -551,7 +553,7 @@
 - **사진 출처**: [File:Beverley Minster, West window (23725072089).jpg](https://commons.wikimedia.org/wiki/File:Beverley_Minster,_West_window_(23725072089).jpg) · 작가 Jules & Jenny · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Beverley Minster, West window (23725072089)" by Jules & Jenny, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/beverley_west_orig.jpg` — thumb3840 3840×6657 (Commons/미술관 원본 4447×7709)
-- **파일**: `assets/church/glass_beverley_west.webp` 2257×4096 2.85MB q90 · `assets/church/glass_beverley_west_2k.webp` 1128×2048 0.86MB q90 · `assets/church/glass_beverley_west_1k.webp` 564×1024 0.25MB q90
+- **파일**: `art/glass_masters/glass_beverley_west.webp` 2257×4096 2.85MB q90 · `art/glass_masters/glass_beverley_west_2k.webp` 1128×2048 0.86MB q90 · `art/glass_masters/glass_beverley_west_1k.webp` 564×1024 0.25MB q90
 - **색감**: 파랑·빨강 인물, 흰색·금색 캐노피.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 0.988) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.11배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.003, 1.0, 0.971] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×1.08, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 6624px → 마스터 4096px (×0.6179999709129333)
 - **한계**: 사다리꼴 자동 보정. 창살(멀리언)과 트레이서리 석재는 검게 찍힘.
@@ -568,7 +570,7 @@
 - **사진 출처**: [File:Rosace cathedrale strasbourg.jpg](https://commons.wikimedia.org/wiki/File:Rosace_cathedrale_strasbourg.jpg) · 작가 Clostridium · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Clostridium, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/strasbourg_rose_orig.jpg` — thumb1280 1280×1280 (Commons/미술관 원본 1770×1770)
-- **파일**: `assets/church/glass_strasbourg_rose.webp` 1777×1777 1.11MB q90 · `assets/church/glass_strasbourg_rose_2k.webp` 1777×1777 1.11MB q90 · `assets/church/glass_strasbourg_rose_1k.webp` 1024×1024 0.45MB q90
+- **파일**: `art/glass_masters/glass_strasbourg_rose.webp` 1777×1777 1.11MB q90 · `art/glass_masters/glass_strasbourg_rose_2k.webp` 1777×1777 1.11MB q90 · `art/glass_masters/glass_strasbourg_rose_1k.webp` 1024×1024 0.45MB q90
 - **색감**: 노랑·녹색 이삭, 파랑 중심, 빨강 점.
 - **복원 내용**: 기하: 타원→원 보정(축 [1145.1, 1184.9], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.63배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.0] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.85, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1185px → 마스터 1777px (×1.5) — 확대본
 - **한계**: 원본 1770px(1280px 썸네일) → 1.5배 확대, 4096 마스터가 아님.
@@ -585,7 +587,7 @@
 - **사진 출처**: [File:2019-01-27 Augsburg 082 Augsburger Dom, Prophetenfenster Daniel (47101327862).jpg](https://commons.wikimedia.org/wiki/File:2019-01-27_Augsburg_082_Augsburger_Dom,_Prophetenfenster_Daniel_(47101327862).jpg) · 작가 Allie_Caulfield · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "2019-01-27 Augsburg 082 Augsburger Dom, Prophetenfenster Daniel (47101327862)" by Allie_Caulfield, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/augsburg_daniel_orig.jpg` — thumb1920 1920×2982 (Commons/미술관 원본 3430×5327)
-- **파일**: `assets/church/glass_augsburg_daniel.webp` 1052×3077 0.71MB q90 · `assets/church/glass_augsburg_daniel_2k.webp` 700×2048 0.43MB q90 · `assets/church/glass_augsburg_daniel_1k.webp` 350×1024 0.14MB q90
+- **파일**: `art/glass_masters/glass_augsburg_daniel.webp` 1052×3077 0.71MB q90 · `art/glass_masters/glass_augsburg_daniel_2k.webp` 700×2048 0.43MB q90 · `art/glass_masters/glass_augsburg_daniel_1k.webp` 350×1024 0.14MB q90
 - **색감**: 녹색 모자, 주황·자주 옷, 흰 두루마리.
 - **복원 내용**: 기하: 손으로 잡은 4점 투시 보정 · 윤곽: 반원 아치 알파(해석적) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.66배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.044, 1.0, 0.985] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.93, 감마 0.83, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2051px → 마스터 3077px (×1.5) — 확대본
 - **한계**: 비스듬히 올려 찍은 사진을 손으로 잡은 4점으로 투시 보정(오차 수 px). 인물 패널만 잘랐고, 둘레의 밝은 보호 유리(후대)는 뺐다. 유리의 부식·후대 보수 조각은 그대로다.
@@ -602,7 +604,7 @@
 - **사진 출처**: [File:2019-01-27 Augsburg 081 Augsburger Dom, Prophetenfenster Hosea (47101330312).jpg](https://commons.wikimedia.org/wiki/File:2019-01-27_Augsburg_081_Augsburger_Dom,_Prophetenfenster_Hosea_(47101330312).jpg) · 작가 Allie_Caulfield · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "2019-01-27 Augsburg 081 Augsburger Dom, Prophetenfenster Hosea (47101330312)" by Allie_Caulfield, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/augsburg_hosea_orig.jpg` — thumb1920 1920×3023 (Commons/미술관 원본 3109×4895)
-- **파일**: `assets/church/glass_augsburg_hosea.webp` 1097×3344 0.85MB q90 · `assets/church/glass_augsburg_hosea_2k.webp` 672×2048 0.45MB q90 · `assets/church/glass_augsburg_hosea_1k.webp` 336×1024 0.15MB q90
+- **파일**: `art/glass_masters/glass_augsburg_hosea.webp` 1097×3344 0.85MB q90 · `art/glass_masters/glass_augsburg_hosea_2k.webp` 672×2048 0.45MB q90 · `art/glass_masters/glass_augsburg_hosea_1k.webp` 336×1024 0.15MB q90
 - **색감**: 빨강 모자, 녹색 겉옷, 빨강 띠, 흰 수염.
 - **복원 내용**: 기하: 손으로 잡은 4점 투시 보정 · 윤곽: 반원 아치 알파(해석적) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.35배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 0.982] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.97, 감마 0.87, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2229px → 마스터 3344px (×1.5) — 확대본
 - **한계**: 손으로 잡은 4점 투시 보정. 인물 패널만 잘랐다. 후대 보수 조각 그대로.
@@ -619,7 +621,7 @@
 - **사진 출처**: [File:Louis Comfort Tiffany - Angel of the Resurrection - Google Art Project.jpg](https://commons.wikimedia.org/wiki/File:Louis_Comfort_Tiffany_-_Angel_of_the_Resurrection_-_Google_Art_Project.jpg) · 작가 Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/tiffany_angel_resurrection_orig.jpg` — thumb1920 1920×2976 (Commons/미술관 원본 3774×5849)
-- **파일**: `assets/church/glass_tiffany_angel_resurrection.webp` 2433×4096 1.80MB q90 · `assets/church/glass_tiffany_angel_resurrection_2k.webp` 1216×2048 0.71MB q90 · `assets/church/glass_tiffany_angel_resurrection_1k.webp` 608×1024 0.24MB q90
+- **파일**: `art/glass_masters/glass_tiffany_angel_resurrection.webp` 2433×4096 1.80MB q90 · `art/glass_masters/glass_tiffany_angel_resurrection_2k.webp` 1216×2048 0.71MB q90 · `art/glass_masters/glass_tiffany_angel_resurrection_1k.webp` 608×1024 0.24MB q90
 - **색감**: 푸른 회색·흰색, 금색 테두리.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.91, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.08 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2809px → 마스터 4096px (×1.4579999446868896) — 확대본
 - **한계**: Google Art Project 사진의 1920px 썸네일 → 약 1.4배 확대. 창살 사이 벽은 검게 처리된 촬영본.
@@ -636,7 +638,7 @@
 - **사진 출처**: [File:Louis Comfort Tiffany - The Righteous Shall Receive A Crown of Glory, 1901.jpg](https://commons.wikimedia.org/wiki/File:Louis_Comfort_Tiffany_-_The_Righteous_Shall_Receive_A_Crown_of_Glory,_1901.jpg) · 작가 Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/tiffany_crown_glory_orig.jpg` — thumb1920 1920×3060 (Commons/미술관 원본 3744×5967)
-- **파일**: `assets/church/glass_tiffany_crown_glory.webp` 2436×4096 3.15MB q90 · `assets/church/glass_tiffany_crown_glory_2k.webp` 1218×2048 1.02MB q90 · `assets/church/glass_tiffany_crown_glory_1k.webp` 609×1024 0.29MB q90
+- **파일**: `art/glass_masters/glass_tiffany_crown_glory.webp` 2436×4096 3.15MB q90 · `art/glass_masters/glass_tiffany_crown_glory_2k.webp` 1218×2048 1.02MB q90 · `art/glass_masters/glass_tiffany_crown_glory_1k.webp` 609×1024 0.29MB q90
 - **색감**: 금색·호박색 위주, 분홍·파랑 옷.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [0.962, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.99, 감마 1.0, 채도(Lab 크로마, 색상각 유지) ×1.08 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2907px → 마스터 4096px (×1.409000039100647) — 확대본
 - **한계**: 1920px 썸네일 → 약 1.3배 확대.
@@ -653,7 +655,7 @@
 - **사진 출처**: [File:Louis Comfort Tiffany - Parakeets and Gold Fish Bowl, 1893.jpg](https://commons.wikimedia.org/wiki/File:Louis_Comfort_Tiffany_-_Parakeets_and_Gold_Fish_Bowl,_1893.jpg) · 작가 Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/tiffany_parakeets_orig.jpg` — thumb1920 1920×3707 (Commons/미술관 원본 3418×6600)
-- **파일**: `assets/church/glass_tiffany_parakeets.webp` 2142×4096 2.74MB q90 · `assets/church/glass_tiffany_parakeets_2k.webp` 1071×2048 0.79MB q90 · `assets/church/glass_tiffany_parakeets_1k.webp` 536×1024 0.23MB q90
+- **파일**: `art/glass_masters/glass_tiffany_parakeets.webp` 2142×4096 2.74MB q90 · `art/glass_masters/glass_tiffany_parakeets_2k.webp` 1071×2048 0.79MB q90 · `art/glass_masters/glass_tiffany_parakeets_1k.webp` 536×1024 0.23MB q90
 - **색감**: 연두·노랑·하늘색, 흰 꽃.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [0.958, 1.0, 1.0] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×1.05, 감마 0.88, 채도(Lab 크로마, 색상각 유지) ×1.05 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3672px → 마스터 4096px (×1.1150000095367432) — 확대본
 - **한계**: 1920px 썸네일.
@@ -670,7 +672,7 @@
 - **사진 출처**: [File:Louis Comfort Tiffany - A Wooded Landscape in Three Panels - Google Art Project.jpg](https://commons.wikimedia.org/wiki/File:Louis_Comfort_Tiffany_-_A_Wooded_Landscape_in_Three_Panels_-_Google_Art_Project.jpg) · 작가 Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Google Art Project / 소장 미술관 촬영 (작품: Louis Comfort Tiffany), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/tiffany_wooded_landscape_orig.jpg` — thumb3840 3840×2470 (Commons/미술관 원본 8169×5255)
-- **파일**: `assets/church/glass_tiffany_wooded_landscape.webp` 4096×2634 3.38MB q90 · `assets/church/glass_tiffany_wooded_landscape_2k.webp` 2048×1317 1.03MB q90 · `assets/church/glass_tiffany_wooded_landscape_1k.webp` 1024×658 0.33MB q90
+- **파일**: `art/glass_masters/glass_tiffany_wooded_landscape.webp` 4096×2634 3.38MB q90 · `art/glass_masters/glass_tiffany_wooded_landscape_2k.webp` 2048×1317 1.03MB q90 · `art/glass_masters/glass_tiffany_wooded_landscape_1k.webp` 1024×658 0.33MB q90
 - **색감**: 녹색·갈색 숲, 밝은 하늘.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.0] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.96, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.05 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3840px → 마스터 4096px (×1.0670000314712524) — 확대본
 - **한계**: Google Art Project 사진의 3840px 썸네일. 폭 사이의 검은 틀은 실물.
@@ -687,7 +689,7 @@
 - **사진 출처**: [File:Vitrail Chartres-051 rectifié.JPG](https://commons.wikimedia.org/wiki/File:Vitrail_Chartres-051_rectifi%C3%A9.JPG) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/lancet_chartres_passion_orig.jpg` — thumb1920 1920×7057 (Commons/미술관 원본 2734×10049)
-- **파일**: `assets/church/glass_lancet_chartres_passion.webp` 1145×4096 1.96MB q90 · `assets/church/glass_lancet_chartres_passion_2k.webp` 572×2048 0.66MB q90 · `assets/church/glass_lancet_chartres_passion_1k.webp` 286×1024 0.21MB q90
+- **파일**: `art/glass_masters/glass_lancet_chartres_passion.webp` 1145×4096 1.96MB q90 · `art/glass_masters/glass_lancet_chartres_passion_2k.webp` 572×2048 0.66MB q90 · `art/glass_masters/glass_lancet_chartres_passion_1k.webp` 286×1024 0.21MB q90
 - **색감**: 파랑 바탕, 빨강 테두리.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.27배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.012, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.87, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 6863px → 마스터 4096px (×0.597000002861023)
 - **한계**: 업로더가 정면 보정한 사진(PD), 1920px 폭 썸네일.
@@ -704,7 +706,7 @@
 - **사진 출처**: [File:York Minster window n16 "The Five sisters" (16157008236).jpg](https://commons.wikimedia.org/wiki/File:York_Minster_window_n16_%22The_Five_sisters%22_(16157008236).jpg) · 작가 Jules & Jenny · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "York Minster window n16 "The Five sisters" (16157008236)" by Jules & Jenny, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/fivesisters_york_jj_orig.jpg` — thumb1920 1920×2486 (Commons/미술관 원본 2716×3516)
-- **파일**: `assets/church/glass_fivesisters_york.webp` 2881×3729 5.70MB q86 · `assets/church/glass_fivesisters_york_2k.webp` 1582×2048 2.10MB q90 · `assets/church/glass_fivesisters_york_1k.webp` 791×1024 0.47MB q90
+- **파일**: `art/glass_masters/glass_fivesisters_york.webp` 2881×3729 5.70MB q86 · `art/glass_masters/glass_fivesisters_york_2k.webp` 1582×2048 2.10MB q90 · `art/glass_masters/glass_fivesisters_york_1k.webp` 791×1024 0.47MB q90
 - **색감**: 회녹색·은회색 그리자유, 아주 적은 색 조각.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 3.88배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.0, 1.0, 1.027] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.82, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.05 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2486px → 마스터 3729px (×1.5) — 확대본
 - **한계**: 랜싯 사이의 돌기둥(실물)을 포함한 창군 전체를 하나로 잘랐다. 1920px 썸네일 → 1.5배 확대. 원래 어두운 창이라 대비를 조금 올렸다.
@@ -721,7 +723,7 @@
 - **사진 출처**: [File:016KrakówFranciszkański.JPG](https://commons.wikimedia.org/wiki/File:016Krak%C3%B3wFranciszka%C5%84ski.JPG) · 작가 Rj1979 · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Rj1979, Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/wyspianski_god_father_orig.jpg` — thumb1280 1280×1707 (Commons/미술관 원본 1704×2272)
-- **파일**: `assets/church/glass_wyspianski_god_father.webp` 1145×2211 0.64MB q90 · `assets/church/glass_wyspianski_god_father_2k.webp` 1061×2048 0.59MB q90 · `assets/church/glass_wyspianski_god_father_1k.webp` 530×1024 0.21MB q90
+- **파일**: `art/glass_masters/glass_wyspianski_god_father.webp` 1145×2211 0.64MB q90 · `art/glass_masters/glass_wyspianski_god_father_2k.webp` 1061×2048 0.59MB q90 · `art/glass_masters/glass_wyspianski_god_father_1k.webp` 530×1024 0.21MB q90
 - **색감**: 파랑·보라·녹색 물결, 노랑·흰색 빛.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 0.865) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 3.71배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.024] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.81, 감마 0.87, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1474px → 마스터 2211px (×1.5) — 확대본
 - **한계**: 원본 1704×2272(1280px 썸네일) 속 창 부분이 약 700×1350px 뿐이라 1.5배 확대해도 저해상도. 비스듬한 촬영을 사다리꼴 보정. 4096 마스터가 아님.
@@ -738,7 +740,7 @@
 - **사진 출처**: [File:Duomo Milan (Vitraux).jpg](https://commons.wikimedia.org/wiki/File:Duomo_Milan_(Vitraux).jpg) · 작가 Van Der Meulen Christofle · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Van Der Meulen Christofle, CC0, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/milan_window_orig.jpg` — thumb1920 1920×2560 (Commons/미술관 원본 3024×4032)
-- **파일**: `assets/church/glass_milan_apse_lower.webp` 2634×1505 1.51MB q90 · `assets/church/glass_milan_apse_lower_2k.webp` 2048×1170 1.06MB q90 · `assets/church/glass_milan_apse_lower_1k.webp` 1024×585 0.34MB q90
+- **파일**: `art/glass_masters/glass_milan_apse_lower.webp` 2634×1505 1.51MB q90 · `art/glass_masters/glass_milan_apse_lower_2k.webp` 2048×1170 1.06MB q90 · `art/glass_masters/glass_milan_apse_lower_1k.webp` 1024×585 0.34MB q90
 - **색감**: 빨강·파랑·노랑·보라 고채도 장면.
 - **복원 내용**: 기하: 손으로 잡은 4점 투시 보정 · 가로세로비 1.75 로 고정 · 윤곽: 직사각(알파 전체 불투명) · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.1배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.995, 1.0, 1.004] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.94, 감마 0.71, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1756px → 마스터 2634px (×1.5) — 확대본
 - **한계**: 창 전체가 아닌 부분. 심하게 올려 찍은 사진을 4점 투시 보정했고, 세로 비율(가로:세로≈1.75)은 추정이라 실제 비례와 다를 수 있다. 1920px 썸네일 → 1.5배 확대, 위쪽 단은 흐리다.
@@ -755,7 +757,7 @@
 - **사진 출처**: [File:Notre-Dame-de-Paris - rosace sud.jpg](https://commons.wikimedia.org/wiki/File:Notre-Dame-de-Paris_-_rosace_sud.jpg) · 작가 Albertus teolog (derivative work: Eusebius) · **CC BY 3.0** (https://creativecommons.org/licenses/by/3.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Notre-Dame-de-Paris - rosace sud" by Albertus teolog (derivative work: Eusebius), CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/rose_notredame_south_orig.jpg` — thumb1920 1920×1987 (Commons/미술관 원본 2091×2164)
-- **파일**: `assets/church/glass_rose_notredame_south.webp` 2640×2640 1.70MB q90 · `assets/church/glass_rose_notredame_south_2k.webp` 2048×2048 1.22MB q90 · `assets/church/glass_rose_notredame_south_1k.webp` 1024×1024 0.43MB q90
+- **파일**: `art/glass_masters/glass_rose_notredame_south.webp` 2640×2640 1.70MB q90 · `art/glass_masters/glass_rose_notredame_south_2k.webp` 2048×2048 1.22MB q90 · `art/glass_masters/glass_rose_notredame_south_1k.webp` 1024×1024 0.43MB q90
 - **색감**: 보라·파랑·빨강.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.42배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.003, 1.0, 1.006] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.88, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×0.95 · 노이즈 제거 h=5, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1760px → 마스터 2640px (×1.5) — 확대본
 - **한계**: 원본이 이미 강하게 보정된 파생 사진(노이즈·과채도)이라 채도를 오히려 조금 낮추고 노이즈를 줄였다. 석재는 검게 찍힘. 1920px 썸네일 → 1.5배 확대, 4096 마스터가 아님.
@@ -772,7 +774,7 @@
 - **사진 출처**: [File:Canterbury Cathedral window n.XIV (23778480668).jpg](https://commons.wikimedia.org/wiki/File:Canterbury_Cathedral_window_n.XIV_(23778480668).jpg) · 작가 Jules & Jenny · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Canterbury Cathedral window n.XIV (23778480668)" by Jules & Jenny, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/canterbury_n14_orig.jpg` — thumb1920 1920×3651 (Commons/미술관 원본 2539×4828)
-- **파일**: `assets/church/glass_canterbury_n14.webp` 2021×4096 2.74MB q90 · `assets/church/glass_canterbury_n14_2k.webp` 1010×2048 1.00MB q90 · `assets/church/glass_canterbury_n14_1k.webp` 505×1024 0.32MB q90
+- **파일**: `art/glass_masters/glass_canterbury_n14.webp` 2021×4096 2.74MB q90 · `art/glass_masters/glass_canterbury_n14_2k.webp` 1010×2048 1.00MB q90 · `art/glass_masters/glass_canterbury_n14_1k.webp` 505×1024 0.32MB q90
 - **색감**: 깊은 파랑 바탕, 빨강·녹색·흰색.
 - **복원 내용**: 기하: 자동 사다리꼴 보정(위/아래 폭 비 0.956) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.87배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 0.977] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.91, 감마 0.81, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3468px → 마스터 4096px (×1.180999994277954) — 확대본
 - **한계**: 약한 사다리꼴 보정. 1920px 썸네일 → 약 1.1배.
@@ -789,7 +791,7 @@
 - **사진 출처**: [File:Siena Museo dell'Opera del Duomo Rosone.jpg](https://commons.wikimedia.org/wiki/File:Siena_Museo_dell%27Opera_del_Duomo_Rosone.jpg) · 작가 Zairon · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Zairon, CC0, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/siena_duccio_oculus_orig.jpg` — thumb3840 3840×3056 (Commons/미술관 원본 4760×3788)
-- **파일**: `assets/church/glass_siena_duccio_oculus.webp` 3957×3957 3.64MB q90 · `assets/church/glass_siena_duccio_oculus_2k.webp` 2048×2048 1.41MB q90 · `assets/church/glass_siena_duccio_oculus_1k.webp` 1024×1024 0.47MB q90
+- **파일**: `art/glass_masters/glass_siena_duccio_oculus.webp` 3957×3957 3.64MB q90 · `art/glass_masters/glass_siena_duccio_oculus_2k.webp` 2048×2048 1.41MB q90 · `art/glass_masters/glass_siena_duccio_oculus_1k.webp` 1024×1024 0.47MB q90
 - **색감**: 파랑·빨강·금색, 흰 테두리 무늬.
 - **복원 내용**: 기하: 타원→원 보정(축 [1397.2, 1535.3], 회전 없는 대칭 아핀) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.62배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [0.981, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.9, 감마 0.67, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2638px → 마스터 3957px (×1.5) — 확대본
 - **한계**: 미술관 전시 상태를 비스듬히 찍은 사진을 타원→원 보정. 맨 아래는 받침대에 가려 있을 수 있다.
@@ -806,7 +808,7 @@
 - **사진 출처**: [File:Lincoln Cathedral, Deans eye window (High resolution) (38822141462).jpg](https://commons.wikimedia.org/wiki/File:Lincoln_Cathedral,_Deans_eye_window_(High_resolution)_(38822141462).jpg) · 작가 Jules & Jenny · **CC BY 2.0** (https://creativecommons.org/licenses/by/2.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "Lincoln Cathedral, Deans eye window (High resolution) (38822141462)" by Jules & Jenny, CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/lincoln_deans_eye_orig.jpg` — thumb3840 3840×3387 (Commons/미술관 원본 6718×5926)
-- **파일**: `assets/church/glass_lincoln_deans_eye.webp` 4096×4096 5.02MB q90 · `assets/church/glass_lincoln_deans_eye_2k.webp` 2048×2048 1.51MB q90 · `assets/church/glass_lincoln_deans_eye_1k.webp` 1024×1024 0.43MB q90
+- **파일**: `art/glass_masters/glass_lincoln_deans_eye.webp` 4096×4096 5.02MB q90 · `art/glass_masters/glass_lincoln_deans_eye_2k.webp` 2048×2048 1.51MB q90 · `art/glass_masters/glass_lincoln_deans_eye_1k.webp` 1024×1024 0.43MB q90
 - **색감**: 깊은 파랑·빨강, 13세기 유리.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 가로세로비 1.0 로 고정 · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.9배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.035, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.94, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 3644px → 마스터 4096px (×1.1239999532699585) — 확대본
 - **한계**: 정면 고해상도 사진(3840px 썸네일). 석재는 거의 검게 찍힘.
@@ -823,7 +825,7 @@
 - **사진 출처**: [File:St Germans Priory east window by Edward Burne Jones.jpg](https://commons.wikimedia.org/wiki/File:St_Germans_Priory_east_window_by_Edward_Burne_Jones.jpg) · 작가 Ojwelch · **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Ojwelch, CC0, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/burnejones_stgermans_orig.jpg` — thumb1280 1280×1920 (Commons/미술관 원본 1920×2880)
-- **파일**: `assets/church/glass_burnejones_stgermans.webp` 1548×2592 1.06MB q90 · `assets/church/glass_burnejones_stgermans_2k.webp` 1223×2048 0.76MB q90 · `assets/church/glass_burnejones_stgermans_1k.webp` 612×1024 0.25MB q90
+- **파일**: `art/glass_masters/glass_burnejones_stgermans.webp` 1548×2592 1.06MB q90 · `art/glass_masters/glass_burnejones_stgermans_2k.webp` 1223×2048 0.76MB q90 · `art/glass_masters/glass_burnejones_stgermans_1k.webp` 612×1024 0.25MB q90
 - **색감**: 맑은 흰 유리 바탕, 짙은 파랑·빨강·녹색 옷.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 1.47배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.024, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.85, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 1728px → 마스터 2592px (×1.5) — 확대본
 - **한계**: 원본 1920×2880(1280px 썸네일) → 1.5배 확대, 4096 마스터가 아님. 석재는 검게 찍힘.
@@ -840,7 +842,7 @@
 - **사진 출처**: [File:Chartres 50 -rectifié.JPG](https://commons.wikimedia.org/wiki/File:Chartres_50_-rectifi%C3%A9.JPG) · 작가 Micheletb (Michelet-密是力) · **Public domain** (https://commons.wikimedia.org/wiki/Commons:Licensing#Material_in_the_public_domain) · 확인일 2026-11-12
 - **크레딧 문구**: (표시 의무 없음) Micheletb (Michelet-密是力), Public domain, via Wikimedia Commons
 - **받은 원본**: `assets/church/glass_src/lancet_chartres_incarnation_orig.jpg` — thumb3840 3840×11074 (Commons/미술관 원본 4434×12787)
-- **파일**: `assets/church/glass_lancet_chartres_incarnation.webp` 1421×4096 2.53MB q90 · `assets/church/glass_lancet_chartres_incarnation_2k.webp` 710×2048 0.78MB q90 · `assets/church/glass_lancet_chartres_incarnation_1k.webp` 355×1024 0.22MB q90
+- **파일**: `art/glass_masters/glass_lancet_chartres_incarnation.webp` 1421×4096 2.53MB q90 · `art/glass_masters/glass_lancet_chartres_incarnation_2k.webp` 710×2048 0.78MB q90 · `art/glass_masters/glass_lancet_chartres_incarnation_1k.webp` 355×1024 0.22MB q90
 - **색감**: 파랑 바탕에 빨강·녹색·노랑.
 - **복원 내용**: 기하: 창 윤곽에 맞춘 직사각 크롭(투시 보정 없음) · 윤곽: 밝은 유리 영역의 볼록 껍질(창 개구부)로 알파 생성 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드: 1차(선형) 기울기만 보정, 측정된 밝기 기울기 2.98배 중 최대 ±25% 범위·강도 0.6 · 화이트밸런스 게인 RGB [1.05, 1.0, 1.05] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.83, 감마 0.6, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 11074px → 마스터 4096px (×0.3700000047683716)
 - **한계**: 업로더가 정면 보정한 사진(PD), 1920px 폭 썸네일.
@@ -857,7 +859,7 @@
 - **사진 출처**: [File:North rose window of Notre-Dame de Paris, Dec. 2024 (1).jpg](https://commons.wikimedia.org/wiki/File:North_rose_window_of_Notre-Dame_de_Paris,_Dec._2024_(1).jpg) · 작가 Ibex73 · **CC BY 4.0** (https://creativecommons.org/licenses/by/4.0/) · 확인일 2026-11-12
 - **크레딧 문구** (필수): "North rose window of Notre-Dame de Paris, Dec. 2024 (1)" by Ibex73, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons — 크롭·투시/색 보정함
 - **받은 원본**: `assets/church/glass_src/notredame_north_2024_orig.jpg` — thumb3840 3840×2560 (Commons/미술관 원본 5368×3579)
-- **파일**: `assets/church/glass_rose_notredame_north.webp` 3510×3510 3.74MB q90 · `assets/church/glass_rose_notredame_north_2k.webp` 2048×2048 1.65MB q90 · `assets/church/glass_rose_notredame_north_1k.webp` 1024×1024 0.51MB q90
+- **파일**: `art/glass_masters/glass_rose_notredame_north.webp` 3510×3510 3.74MB q90 · `art/glass_masters/glass_rose_notredame_north_2k.webp` 2048×2048 1.65MB q90 · `art/glass_masters/glass_rose_notredame_north_1k.webp` 1024×1024 0.51MB q90
 - **색감**: 파랑·보라 지배, 빨강 점. 밝은 석회암 트레이서리가 보인다.
 - **복원 내용**: 기하: 직사각 크롭(투시 보정 없음) · 윤곽: 원형 알파 · 검은점(베일링 글레어 제거, 세 채널 동일값) [0.0, 0.0, 0.0] · 플랫필드 보정 안 함 · 화이트밸런스 게인 RGB [1.05, 1.0, 0.991] (밝은 무채색 유리 기준, ±5% 제한) · 노출 ×0.91, 감마 0.92, 채도(Lab 크로마, 색상각 유지) ×1.15 · 노이즈 제거 h=3, 언샤프 0.5/σ1.1 · 인페인팅 없음(지운 것·그려 넣은 것 없음) · 해상도: 창 부분 원본 긴 변 2340px → 마스터 3510px (×1.5) — 확대본
 - **한계**: ★ 창 전체가 아님: 사진에서 장미창 맨 아래 약 9%가 사진 밖(및 난간 뒤)이라 그 부분은 투명(알파 0)으로 비워 두었다 — 지어내지 않음. 아래에서 올려 찍은 원근은 보정하지 않았다(원 외접 정사각 크롭). 사방 모서리의 스팬드럴 유리는 원형 마스크로 잘려 나간다.
