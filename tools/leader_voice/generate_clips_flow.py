@@ -56,17 +56,21 @@ def frames(x):
     n = len(x) // FR
     return np.sqrt((x[:n * FR].reshape(n, FR) ** 2).mean(axis=1)), n
 
-def valley(x, t_center, half=0.4):
-    """t_center 주변에서 가장 조용한 구간 [a,b](샘플). 조용한 구간이 이어지면 그 전체."""
-    rms, n = frames(x); mx = rms.max()
-    lo = max(0, int((t_center - half) / 0.005)); hi = min(n, int((t_center + half) / 0.005))
-    seg = rms[lo:hi]
-    c = lo + int(np.argmin(seg))
-    thr = max(mx * 0.02, rms[c] * 3 if rms[c] > 0 else 1e-5)
-    a = c; b = c
-    while a - 1 >= lo and rms[a - 1] < thr: a -= 1
-    while b + 1 < hi and rms[b + 1] < thr: b += 1
-    return a * FR, (b + 1) * FR
+def boundary_region(x, t_end, t_next):
+    """줄 경계의 쉼 자리(샘플 구간). 글자 시간표의 '앞 줄 마지막 글자 끝 ~ 다음 줄 첫 글자 시작' 사이가 기준이다.
+    그 근처에 실제 무음 구간이 있으면 그 구간 전체를, 없으면(모델이 안 쉬고 이어 읽은 곳) 그 사이에서 가장
+    조용한 한 점을 쓴다. 단어 한가운데를 자르지 않도록 이 사이 밖은 보지 않는다."""
+    rms, n = frames(x); thr = max(rms.max() * 0.02, 1e-5)
+    lo = max(0, int((t_end - 0.06) / 0.005)); hi = min(n, int((t_next + 0.06) / 0.005) + 1)
+    sil = [i for i in range(lo, hi) if rms[i] < thr]
+    if len(sil) >= 3:
+        a = sil[0]; b = sil[-1]
+        while a - 1 >= 0 and rms[a - 1] < thr: a -= 1
+        while b + 1 < n and rms[b + 1] < thr: b += 1
+        return a * FR, (b + 1) * FR
+    g0 = max(0, int(t_end / 0.005)); g1 = max(g0 + 1, min(n, int(t_next / 0.005) + 1))
+    c = g0 + int(np.argmin(rms[g0:g1]))
+    return c * FR, (c + 1) * FR
 
 def squeeze(seg, keep=INNER_KEEP, minlen=INNER_MIN):
     rms, n = frames(seg)
@@ -145,8 +149,7 @@ def build_once(vid, cue):
         a = s.index(l, pos); idx.append((a, a + len(l) - 1)); pos = a + len(l)
     cuts = []
     for i in range(len(ls) - 1):
-        t = (en[idx[i][1]] + st[idx[i + 1][0]]) / 2
-        a, b = valley(x, t)
+        a, b = boundary_region(x, en[idx[i][1]], st[idx[i + 1][0]])
         cuts.append((a, b, TITLE_PAUSE if cue['id'].startswith('mystery_') and i == 0 else LINE_PAUSE))
     # 겹침 방지
     cuts.sort(); parts = []; cur = 0
