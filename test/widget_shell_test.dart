@@ -31,7 +31,7 @@ Future<void> _pumpShell(
 }
 
 void main() {
-  testWidgets('compact width uses NavigationBar with 3 destinations', (
+  testWidgets('compact width uses NavigationBar with 4 destinations', (
     tester,
   ) async {
     await _pumpShell(tester, const Size(360, 640));
@@ -58,6 +58,13 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('성당'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('medium width uses a collapsed NavigationRail', (tester) async {
@@ -65,7 +72,7 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
     final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
     expect(rail.extended, isFalse);
-    expect(rail.destinations, hasLength(3));
+    expect(rail.destinations, hasLength(4));
   });
 
   testWidgets('expanded width uses an extended NavigationRail', (tester) async {

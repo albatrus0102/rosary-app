@@ -30,6 +30,7 @@ class PrayerScreen extends StatefulWidget {
     this.soundPlayer,
     this.leaderAudio,
     this.leaderVoice,
+    this.session,
   });
 
   final AppSettings settings;
@@ -48,6 +49,10 @@ class PrayerScreen extends StatefulWidget {
   /// 주입한 객체는 화면이 정리하지 않는다(말하기만 멈춘다).
   final LeaderVoice? leaderVoice;
 
+  /// 이미 진행 중인 세션(사이버 성당 등). 주어지면 이 세션을 이어서 쓰고,
+  /// 화면이 닫혀도 정리(dispose)하지 않는다. [initialIndex]는 무시한다.
+  final RosarySession? session;
+
   @override
   State<PrayerScreen> createState() => _PrayerScreenState();
 }
@@ -60,6 +65,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
   double? _mapDragHeight;
 
   late final RosarySession _session;
+  late final bool _ownsSession;
   late final SoundPlayer _sound;
   late final bool _ownsSound;
   StreamSubscription<SessionEvent>? _eventSub;
@@ -80,8 +86,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void initState() {
     super.initState();
-    _session = RosarySession(buildRosarySequence(widget.mysterySet));
-    if (widget.initialIndex > 0 &&
+    _ownsSession = widget.session == null;
+    _session =
+        widget.session ?? RosarySession(buildRosarySequence(widget.mysterySet));
+    if (_ownsSession &&
+        widget.initialIndex > 0 &&
         widget.initialIndex < _session.steps.length) {
       _session.jumpTo(widget.initialIndex);
     }
@@ -214,7 +223,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
     }
     _ownedStore?.dispose();
     _eventSub?.cancel();
-    _session.dispose();
+    if (_ownsSession) _session.dispose();
     if (_ownsSound) unawaited(_sound.dispose());
     unawaited(
       WakelockPlus.disable().catchError((Object e) {

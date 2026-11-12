@@ -4,6 +4,7 @@ import '../app/leader_audio_store.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/window_class.dart';
+import '../church/church_tab.dart';
 import 'home_screen.dart';
 import 'rosary_style_screen.dart';
 import 'settings_screen.dart';
@@ -15,6 +16,7 @@ class AppShell extends StatefulWidget {
     required this.settings,
     this.leaderAudio,
     this.soundPlayer,
+    this.churchBuilder,
   });
 
   final AppSettings settings;
@@ -22,6 +24,9 @@ class AppShell extends StatefulWidget {
   /// 테스트용 주입: 기도 화면에 넘겨 줄 선창 음성 저장소/재생기.
   final LeaderAudioStore? leaderAudio;
   final SoundPlayer? soundPlayer;
+
+  /// 테스트용 주입: '성당' 탭 내용을 대신 만든다.
+  final WidgetBuilder? churchBuilder;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -31,6 +36,7 @@ class _AppShellState extends State<AppShell> {
   static const _prayer = 0;
   static const _style = 1;
   static const _settings = 2;
+  static const _church = 3;
 
   int _index = _prayer;
 
@@ -54,6 +60,16 @@ class _AppShellState extends State<AppShell> {
         ),
         RosaryStyleScreen(settings: widget.settings),
         SettingsScreen(settings: widget.settings),
+        // 성당 탭은 보고 있을 때만 만든다. 다른 탭으로 가면 화면이 사라져
+        // WebView·소켓·타이머가 모두 정리되므로 배터리를 쓰지 않는다.
+        if (_index == _church)
+          widget.churchBuilder?.call(context) ??
+              ChurchTab(
+                key: const ValueKey('church-tab'),
+                settings: widget.settings,
+              )
+        else
+          const SizedBox.shrink(),
       ],
     );
 
@@ -83,6 +99,7 @@ class _AppShellState extends State<AppShell> {
             label: '묵주',
           ),
           NavigationDestination(icon: Icon(Icons.settings), label: '설정'),
+          NavigationDestination(icon: Icon(Icons.church), label: '성당'),
         ],
       ),
     );
@@ -114,6 +131,10 @@ class _AppShellState extends State<AppShell> {
                 NavigationRailDestination(
                   icon: Icon(Icons.settings),
                   label: Text('설정'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.church),
+                  label: Text('성당'),
                 ),
               ],
             ),
