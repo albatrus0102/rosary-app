@@ -1,0 +1,7 @@
+{
+  "name": "church-web-tools",
+  "private": true,
+  "type": "module",
+  "description": "Build/test tools for assets/church (extras bundle via esbuild; three examples must match assets/church/three.min.js r149)",
+  "devDependencies": { "esbuild": "0.21.5", "three": "0.149.0" }
+}

@@ -1,4 +1,5 @@
-/* kit_tex.js — 캔버스 생성 질감(대리석 격자, 바닥 문양, 벽돌, 나뭇결, 모자이크, 회벽, 코퍼 천장). ctx.tex 로 노출된다. */
+/* kit_tex.js — 캔버스 생성 질감(절차 생성). 사진 질감이 없을 때의 대체이자, 법선/거칠기 변화·양탄자 같은 보조 질감. ctx.tex 로 노출된다.
+   색 질감은 sRGB, 데이터 질감(법선·거칠기)은 선형. */
 (function (root) {
   'use strict';
   var G = root.ChurchGeo;
@@ -6,8 +7,8 @@
 
   function make(rand) {
     var cache = {};
-    function memo(key, w, h, draw) {
-      if (!cache[key]) cache[key] = G.canvasTexture(w, h, draw);
+    function memo(key, w, h, draw, linear) {
+      if (!cache[key]) cache[key] = G.canvasTexture(w, h, draw, true, linear);
       return cache[key];
     }
     function shadeCss(c, k) {
@@ -21,8 +22,25 @@
         g.fillRect(rand() * w, rand() * h, 1 + rand() * 2, 1 + rand() * 2);
       }
     }
+    // 값 노이즈 높이맵 (size×size, 0..1)
+    function heightNoise(size, octaves, seedK) {
+      var h = new Float32Array(size * size), amp = 1, tot = 0;
+      for (var o = 0; o < octaves; o++) {
+        var cells = 4 << o, grid = [];
+        for (var i = 0; i < cells * cells; i++) grid.push(rand());
+        for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+          var fx = x / size * cells, fy = y / size * cells, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+          tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+          var a = grid[(y0 % cells) * cells + (x0 % cells)], b = grid[(y0 % cells) * cells + ((x0 + 1) % cells)], c = grid[((y0 + 1) % cells) * cells + (x0 % cells)], d = grid[((y0 + 1) % cells) * cells + ((x0 + 1) % cells)];
+          h[y * size + x] += amp * ((a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty);
+        }
+        tot += amp; amp *= 0.5;
+      }
+      for (var k = 0; k < h.length; k++) h[k] /= tot;
+      return h;
+    }
     var tex = {
-      // 2x2 대리석 체스판 한 타일
+      // 2x2 대리석 체스판 한 타일 (절차 생성 대체)
       checker: function (o) {
         o = o || {};
         var c1 = o.c1 === undefined ? 0xf4efe6 : o.c1, c2 = o.c2 === undefined ? 0xd9cfc0 : o.c2, S = o.size || 256;
@@ -173,6 +191,55 @@
             g.fillStyle = css(gold);
             for (var k = 0; k < 8; k++) { var a = k * Math.PI / 4; g.beginPath(); g.arc(x + c / 2 + Math.cos(a) * c * 0.3, y + c / 2 + Math.sin(a) * c * 0.3, c * 0.04, 0, 6.2832); g.fill(); }
           }
+        });
+      },
+      // 법선 맵(높이 노이즈의 소벨). 대리석/회반죽의 미세한 요철용. strength 높을수록 거칠다.
+      noiseNormal: function (o) {
+        o = o || {};
+        var S = o.size || 256, st = o.strength === undefined ? 2.0 : o.strength, oct = o.octaves || 4;
+        return memo('nn' + S + '_' + st + '_' + oct, S, S, function (g, w, h) {
+          var hm = heightNoise(S, oct), img = g.createImageData(S, S);
+          for (var y = 0; y < S; y++) for (var x = 0; x < S; x++) {
+            var l = hm[y * S + (x + S - 1) % S], r = hm[y * S + (x + 1) % S], u = hm[((y + S - 1) % S) * S + x], d = hm[((y + 1) % S) * S + x];
+            var nx = (l - r) * st * 8, ny = (u - d) * st * 8, nz = 1, len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            var o2 = (y * S + x) * 4;
+            img.data[o2] = (nx / len * 0.5 + 0.5) * 255; img.data[o2 + 1] = (ny / len * 0.5 + 0.5) * 255; img.data[o2 + 2] = (nz / len * 0.5 + 0.5) * 255; img.data[o2 + 3] = 255;
+          }
+          g.putImageData(img, 0, 0);
+        }, true);
+      },
+      // 거칠기 변화 맵(green 채널 사용). base 평균, vary 변화량
+      roughMap: function (o) {
+        o = o || {};
+        var S = o.size || 256, base = o.base === undefined ? 0.5 : o.base, vary = o.vary === undefined ? 0.3 : o.vary;
+        return memo('rm' + S + '_' + base + '_' + vary, S, S, function (g, w, h) {
+          var hm = heightNoise(S, 4), img = g.createImageData(S, S);
+          for (var i = 0; i < S * S; i++) {
+            var v = Math.max(0, Math.min(1, base + (hm[i] - 0.5) * vary * 2)) * 255;
+            img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+          }
+          g.putImageData(img, 0, 0);
+        }, true);
+      },
+      // 양탄자: 가로 폭 방향(u)에 테두리 줄무늬, 길이(v) 방향으로 메달리온 반복
+      carpet: function (o) {
+        o = o || {};
+        var base = o.color === undefined ? 0x7d1f2c : o.color, trim = o.border === undefined ? 0xc9a24b : o.border, S = 256;
+        return memo('carpet' + base + '_' + trim, S, S * 2, function (g, w, h) {
+          g.fillStyle = css(base); g.fillRect(0, 0, w, h);
+          var dark = css(G.toColor(base).clone().multiplyScalar(0.7)), light = css(G.toColor(base).clone().multiplyScalar(1.25));
+          for (var y = 0; y < h; y += 2) { g.fillStyle = (y / 2) % 2 ? dark : light; g.globalAlpha = 0.09; g.fillRect(0, y, w, 1); }
+          g.globalAlpha = 1;
+          g.strokeStyle = css(trim); g.lineWidth = 6; g.strokeRect(10, 0, w - 20, h);
+          g.lineWidth = 2; g.strokeRect(22, 0, w - 44, h);
+          g.fillStyle = css(trim);
+          for (var m = 0; m < 2; m++) {
+            var cy = h * (0.25 + m * 0.5);
+            g.globalAlpha = 0.85; g.beginPath(); g.ellipse(w / 2, cy, w * 0.2, w * 0.26, 0, 0, 6.2832); g.lineWidth = 3; g.strokeStyle = css(trim); g.stroke();
+            g.globalAlpha = 0.5; g.beginPath(); g.ellipse(w / 2, cy, w * 0.1, w * 0.14, 0, 0, 6.2832); g.fill();
+          }
+          g.globalAlpha = 1;
+          speckle(g, w, h, 900, 0.22, true);
         });
       },
       custom: function (w, h, draw) { return G.canvasTexture(w, h, draw); },
