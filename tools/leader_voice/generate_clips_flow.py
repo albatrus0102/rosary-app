@@ -88,14 +88,53 @@ def squeeze(seg, keep=INNER_KEEP, minlen=INNER_MIN):
     out.append(seg[n * FR:])
     return np.concatenate(out)
 
+def flat_score(y):
+    """낮을수록 평탄(억양이 오르내리지 않음). 줄 끝이 올라가거나(기울기+) 음높이 변동이 크면 벌점."""
+    try:
+        import librosa
+    except ImportError:
+        return 0.0
+    y22 = librosa.resample(y, orig_sr=SR, target_sr=22050)
+    f0, _, _ = librosa.pyin(y22, fmin=70, fmax=400, sr=22050, frame_length=1024, hop_length=256)
+    t = librosa.times_like(f0, sr=22050, hop_length=256); voiced = ~np.isnan(f0)
+    runs = []; start = None; last = None
+    for i, v in enumerate(voiced):
+        if v:
+            if start is None: start = i
+            elif t[i] - t[last] > 0.3: runs.append((start, last)); start = i
+            last = i
+    if start is not None: runs.append((start, last))
+    pen = []; stds = []
+    for a, b in runs:
+        seg = f0[a:b + 1]; tt = t[a:b + 1]; m = ~np.isnan(seg)
+        if m.sum() < 8: continue
+        st = 12 * np.log2(seg[m] / np.nanmedian(seg[m])); tm = tt[m]
+        w = tm >= tm[-1] - 0.3
+        slope = np.polyfit(tm[w], st[w], 1)[0] if w.sum() > 4 else 0.0
+        end = st[tm >= tm[-1] - 0.15].mean()
+        pen.append(max(0.0, slope) / 10 + 2 * max(0.0, end)); stds.append(float(np.nanstd(st)))
+    if not pen: return 0.0
+    return float(np.mean(pen) + 0.5 * np.mean(stds))
+
 def xfade(a, b, n=int(SR * 0.004)):
     if len(a) < n or len(b) < n: return np.concatenate([a, b])
     w = np.linspace(0, 1, n)
     return np.concatenate([a[:-n], a[-n:] * (1 - w) + b[:n] * w, b[n:]])
 
+SEP = ' '
+
+TAKES = 1
+
 def build(vid, cue):
+    best = None
+    for _ in range(TAKES):
+        r = build_once(vid, cue)
+        if best is None or r[3] < best[3]: best = r
+    return best[0], best[1], best[2], best[3]
+
+def build_once(vid, cue):
     ls = lines_of(cue)
-    text = ' '.join(ls) + '.'
+    text = SEP.join(ls) + '.'
     res = tts(vid, text)
     x = decode(base64.b64decode(res['audio_base64']))
     al = res['alignment']; chars = al['characters']; st = al['character_start_times_seconds']; en = al['character_end_times_seconds']
@@ -124,15 +163,17 @@ def build(vid, cue):
     nz = np.where(rms >= rms.max() * 0.004)[0]
     a = max(0, nz[0] * FR - int(SR * 0.05)); b = min(len(y), (nz[-1] + 1) * FR + int(SR * 0.15))
     y = np.concatenate([np.zeros(int(SR * 0.05), dtype=np.float32), y[a:b], np.zeros(int(SR * 0.10), dtype=np.float32)])
+    score = flat_score(y) if TAKES > 1 else 0.0
     pcm = (np.clip(y, -1, 1) * 32767).astype(np.int16).tobytes()
     mp3 = subprocess.run(['ffmpeg', '-v', 'error', '-f', 's16le', '-ar', str(SR), '-ac', '1', '-i', 'pipe:0',
                           '-af', 'loudnorm=I=-18:LRA=7:TP=-1.5', '-ar', '44100', '-ac', '1', '-b:a', '96k', '-f', 'mp3', 'pipe:1'],
                          input=pcm, capture_output=True, check=True).stdout
-    return mp3, len(y) / SR, text
+    return mp3, len(y) / SR, text, score
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument('--out', required=True); ap.add_argument('--only', default=''); ap.add_argument('--persona', default='')
+    ap = argparse.ArgumentParser(); ap.add_argument('--out', required=True); ap.add_argument('--only', default=''); ap.add_argument('--persona', default=''); ap.add_argument('--takes', type=int, default=1, help='같은 큐를 여러 번 합성해 가장 평탄한 것을 고른다'); ap.add_argument('--sep', default=' ', help="줄 사이 구분(' ' | '. ' | ', ')")
     a = ap.parse_args()
+    global SEP, TAKES; SEP = a.sep.replace('\\n','\n'); TAKES = a.takes
     cues = json.loads((HERE / 'cues.json').read_text()) + json.loads((HERE / 'responder_cues.json').read_text())
     only = set(filter(None, a.only.split(','))); out = Path(a.out); chars = 0; manifest = {}
     for persona, vid in VOICES.items():
@@ -141,10 +182,10 @@ def main():
         manifest[persona] = dict(provider='elevenlabs', voice=vid, model=MODEL, settings=SETTINGS, method='whole-prayer synthesis + line-end pause edit (v5)', generatedAt=dt.datetime.now(dt.timezone.utc).isoformat(), files={})
         for c in cues:
             if only and c['id'] not in only: continue
-            mp3, dur, text = build(vid, c); chars += len(text)
+            mp3, dur, text, score = build(vid, c); chars += len(text) * TAKES
             (d / f"{c['id']}.mp3").write_bytes(mp3)
-            manifest[persona]['files'][c['id']] = dict(bytes=len(mp3), sha256=hashlib.sha256(mp3).hexdigest(), seconds=round(dur, 2), text=text)
-            print(persona, c['id'], f'{dur:.1f}s', f'{len(mp3)//1024}KB', flush=True)
+            manifest[persona]['files'][c['id']] = dict(bytes=len(mp3), sha256=hashlib.sha256(mp3).hexdigest(), seconds=round(dur, 2), text=text, flat_score=round(score, 2))
+            print(persona, c['id'], f'{dur:.1f}s', f'{len(mp3)//1024}KB', f'flat={score:.2f}', flush=True)
     (out / 'manifest_flow.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
     print('characters sent:', chars)
 
