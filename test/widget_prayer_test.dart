@@ -49,8 +49,9 @@ void main() {
     expect(find.text('사도신경'), findsOneWidget);
     expect(find.text('성호경'), findsNothing);
   });
-  testWidgets('PrayerScreen shows the whole-rosary map without overflowing '
-      'on a 360x640 screen', (tester) async {
+  testWidgets('PrayerScreen keeps the map out of the way on a 360x640 screen', (
+    tester,
+  ) async {
     tester.view.devicePixelRatio = 2;
     tester.view.physicalSize = const Size(720, 1280);
     addTearDown(tester.view.resetPhysicalSize);
@@ -70,10 +71,9 @@ void main() {
     );
     await tester.pump();
 
-    final map = find.byType(RosaryMap);
-    expect(map, findsOneWidget);
-    final height = tester.getSize(map).height;
-    expect(height, closeTo(640 * 0.22, 0.01));
+    // 세로 화면에는 지도가 없다(띠만). 지도는 '묵주 전체 보기' 시트에서 연다.
+    expect(find.byType(RosaryMap), findsNothing);
+    expect(find.byKey(const ValueKey('mapHandle')), findsNothing);
     expect(find.text('서두'), findsOneWidget);
 
     // 서두, 1단 시작(긴 묵상 문구), 성모송, 영광송까지 넘겨 본다.
@@ -82,23 +82,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull, reason: 'after $i taps');
     }
-    expect(find.text('1단 · 5/10'), findsOneWidget);
-
-    // 묵주를 위로 끌어올리면 묵주가 커지고, 다시 내리면 원래 크기로 돌아온다.
-    final handle = find.byKey(const ValueKey('mapHandle'));
-    await tester.fling(handle, const Offset(0, -300), 1000);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    final expanded = tester.getSize(find.byType(RosaryMap)).height;
-    expect(expanded, greaterThan(height * 1.5));
-    expect(tester.takeException(), isNull);
-    expect(find.text('다음'), findsOneWidget);
-
-    await tester.fling(handle, const Offset(0, 300), 1000);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(tester.getSize(find.byType(RosaryMap)).height, closeTo(height, 0.5));
-    expect(tester.takeException(), isNull);
+    expect(find.text('성모송 5/10'), findsOneWidget);
+    expect(find.text('1/5단'), findsOneWidget);
   });
 
   Future<AppSettings> loadSettings([
@@ -152,7 +137,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('wide layout shows map and text side by side without a handle', (
+  testWidgets('wide layout shows text and map side by side without a handle', (
     tester,
   ) async {
     tester.view.devicePixelRatio = 1;
@@ -164,12 +149,15 @@ void main() {
     await tester.pump();
 
     expect(find.byType(RosaryMap), findsOneWidget);
-    expect(find.text('성호경'), findsOneWidget);
     expect(find.text('서두'), findsOneWidget);
     final map = tester.getRect(find.byType(RosaryMap));
-    final text = tester.getRect(find.text('성호경'));
-    expect(text.right, lessThan(map.left));
+    final text = tester.getRect(
+      find.byKey(const ValueKey('prayer-text-scroll')),
+    );
+    expect(text.right, lessThanOrEqualTo(map.left));
     expect(map.height, greaterThan(300));
+    // 지도가 이미 보이므로 띠에는 지도 열기 버튼이 없다.
+    expect(find.byKey(const ValueKey('prayer-strip')), findsNothing);
 
     // 크기 조절 손잡이 띠가 없다(지도 위 끌기는 구슬 넘기기용).
     expect(find.byKey(const ValueKey('mapHandle')), findsNothing);

@@ -71,6 +71,8 @@ class AppSettings extends ChangeNotifier {
     _volumeKeyAdvance = _prefs.getBool(_kVolumeKeyAdvance) ?? false;
     _prayerTextScale = (_prefs.getDouble(_kTextScale) ?? defaultTextScale)
         .clamp(minTextScale, maxTextScale);
+    _shortPrayers = _prefs.getBool(_kShortPrayers) ?? false;
+    _shortPrayersAsked = _prefs.getBool(_kShortPrayersAsked) ?? false;
     _savedPrayer = _readSavedPrayer();
     _churchAvatar = AvatarConfig.fromJsonString(
       _prefs.getString(_kChurchAvatar),
@@ -105,6 +107,8 @@ class AppSettings extends ChangeNotifier {
   static const _kUseDynamicColor = 'use_dynamic_color';
   static const _kVolumeKeyAdvance = 'volume_key_advance';
   static const _kTextScale = 'prayer_text_scale';
+  static const _kShortPrayers = 'short_prayers';
+  static const _kShortPrayersAsked = 'short_prayers_asked';
   static const _kResumeSet = 'resume_set';
   static const _kResumeIndex = 'resume_index';
   static const _kResumeAt = 'resume_at';
@@ -134,6 +138,8 @@ class AppSettings extends ChangeNotifier {
   late bool _useDynamicColor;
   late bool _volumeKeyAdvance;
   late double _prayerTextScale;
+  late bool _shortPrayers;
+  late bool _shortPrayersAsked;
   SavedPrayer? _savedPrayer;
 
   SavedPrayer? _readSavedPrayer() {
@@ -293,6 +299,31 @@ class AppSettings extends ChangeNotifier {
 
   /// 기도문 글자 크기 배율 (minTextScale..maxTextScale).
   double get prayerTextScale => _prayerTextScale;
+
+  /// '외운 기도 짧게 보기'(기본 꺼짐). 켜면 반복되는 기도(성모송 등)를 첫머리만 보여 준다.
+  /// 성호경·사도신경·신비 안내·영광송은 늘 전문이다(`prayer_text_short.dart`).
+  bool get shortPrayers => _shortPrayers;
+
+  /// '짧게 보기'를 권하는 안내에 사용자가 이미 답했는지(켜기/그대로, 또는 직접 설정).
+  bool get shortPrayersAsked => _shortPrayersAsked;
+
+  /// 사용자가 직접 바꾸면 이미 답한 것으로 보고 더는 권하지 않는다.
+  set shortPrayers(bool v) {
+    if (v == _shortPrayers && _shortPrayersAsked) return;
+    _shortPrayers = v;
+    _shortPrayersAsked = true;
+    _prefs.setBool(_kShortPrayers, v);
+    _prefs.setBool(_kShortPrayersAsked, true);
+    notifyListeners();
+  }
+
+  /// 권유 안내를 한 번 보여 줬음을 기록한다(어느 쪽으로 답하든 다시 묻지 않는다).
+  void markShortPrayersAsked() {
+    if (_shortPrayersAsked) return;
+    _shortPrayersAsked = true;
+    _prefs.setBool(_kShortPrayersAsked, true);
+    notifyListeners();
+  }
 
   /// 중단한 기도가 있으면 그 상태, 없으면 null.
   SavedPrayer? get savedPrayer => _savedPrayer;

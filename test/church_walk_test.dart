@@ -181,7 +181,6 @@ void main() {
       h.scene.emit(const SceneNear(candle: 87));
       h.scene.emit(const SceneWalkDone('candle'));
       await _settle(tester);
-      expect(find.text('누구를 위해 초를 켜낼까요?'), findsNothing);
       expect(find.text('누구를 위해 초를 켤까요?'), findsOneWidget);
       expect(find.byKey(const ValueKey('candle-later')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('candle-later')));

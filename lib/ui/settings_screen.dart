@@ -255,6 +255,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
         SwitchListTile(
+          secondary: const Icon(Icons.short_text),
+          title: const Text('외운 기도 짧게 보기'),
+          subtitle: const Text(
+            '성모송 같은 반복 기도를 첫머리만 보여 줍니다. 글자를 크게 쓸 때 한 화면에 담기 좋아요. '
+            '성호경·사도신경·신비 안내·영광송은 늘 전문입니다',
+          ),
+          value: settings.shortPrayers,
+          onChanged: (v) {
+            settings.shortPrayers = v;
+            Track.setting('short_prayers');
+          },
+        ),
+        SwitchListTile(
           secondary: const Icon(Icons.palette_outlined),
           title: const Text('기기 배경화면 색 사용(Material You)'),
           subtitle: const Text('지원하지 않는 기기에서는 앱 기본 색을 씁니다'),

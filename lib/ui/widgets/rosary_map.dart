@@ -103,6 +103,34 @@ int slotIndexForStep(RosaryStep step) {
 BeadSlot slotForStep(List<BeadSlot> slots, RosaryStep step) =>
     slots[slotIndexForStep(step)];
 
+/// 칸 [slot]에 해당하는 첫 스텝의 인덱스. 한 칸에 스텝이 여럿이면(10번째 성모송·영광송·구원송,
+/// 십자가의 성호경·사도신경) 가장 앞의 스텝이다. 없으면 null.
+int? stepIndexForSlot(List<RosaryStep> steps, int slot) {
+  for (var i = 0; i < steps.length; i++) {
+    if (slotIndexForStep(steps[i]) == slot) return i;
+  }
+  return null;
+}
+
+/// 지도 위 점 [p]에서 가장 가까운 칸. 어느 조각에서도 [reach]보다 멀면 null.
+///
+/// 구슬이 작아서 손가락이 조금 빗나가도 가장 가까운 구슬로 받는다. 조각 반지름의 2.2배와
+/// [minReach] 중 큰 값 안에 있어야 한다.
+int? slotAtPoint(List<BeadSlot> slots, Offset p, {double minReach = 18}) {
+  int? best;
+  var bestD = double.infinity;
+  for (var i = 0; i < slots.length; i++) {
+    final s = slots[i];
+    final d = (s.center - p).distance;
+    final reach = math.max(minReach, s.radius * 2.2);
+    if (d <= reach && d < bestD) {
+      best = i;
+      bestD = d;
+    }
+  }
+  return best;
+}
+
 /// 영광송/구원송은 구슬 위에서 쉬는 모양의 마커를 쓴다.
 bool isRestingStep(RosaryStep step) =>
     step.decade != null &&
@@ -407,6 +435,7 @@ class RosaryMap extends StatefulWidget {
     required this.style,
     this.onTap,
     this.onStep,
+    this.onSlotTap,
     this.showLabel = true,
     this.animate = true,
   });
@@ -420,6 +449,10 @@ class RosaryMap extends StatefulWidget {
   /// 지도 위에서 손가락을 아래로 끌면 +1, 위로 끌면 -1씩 불린다(구슬을 하나씩 넘기기).
   /// 접근성의 늘리기/줄이기 동작에도 연결된다.
   final void Function(int delta)? onStep;
+
+  /// 지도의 구슬(조각)을 누르면 그 칸 번호([RosarySlots])와 함께 불린다. 가장 가까운 조각이
+  /// 받는다([slotAtPoint]). 구슬이 없는 빈 곳을 누르면 불리지 않는다.
+  final void Function(int slot)? onSlotTap;
 
   /// 왼쪽 아래의 '{d}단 · {k}/10' 표시.
   final bool showLabel;
@@ -578,6 +611,13 @@ class _RosaryMapState extends State<RosaryMap>
     });
   }
 
+  void _onTapUp(TapUpDetails d) {
+    final g = _geometry;
+    if (g == null) return;
+    final slot = slotAtPoint(g.slots, d.localPosition);
+    if (slot != null) widget.onSlotTap?.call(slot);
+  }
+
   void _resolveImage() {
     final stream = AssetImage(widget.style.unitImage)
         .resolve(createLocalImageConfiguration(context));
@@ -646,6 +686,7 @@ class _RosaryMapState extends State<RosaryMap>
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
+        onTapUp: widget.onSlotTap == null ? null : _onTapUp,
         onVerticalDragStart: widget.onStep == null ? null : _onDragStart,
         onVerticalDragUpdate: widget.onStep == null ? null : _onDragUpdate,
         onVerticalDragEnd: widget.onStep == null ? null : _onDragEnd,

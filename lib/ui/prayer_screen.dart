@@ -21,9 +21,11 @@ import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
 import '../stats/prayer_stats_store.dart';
 import '../stats/stats_screen.dart';
-import 'widgets/pill.dart';
+import 'widgets/prayer_actions.dart';
+import 'widgets/prayer_bead_strip.dart';
+import 'widgets/prayer_text_view.dart';
 import 'widgets/rosary_map.dart';
-import 'widgets/soft_card.dart';
+import 'widgets/rosary_map_sheet.dart';
 
 /// 기도 진행 화면.
 class PrayerScreen extends StatefulWidget {
@@ -68,12 +70,6 @@ class PrayerScreen extends StatefulWidget {
 }
 
 class _PrayerScreenState extends State<PrayerScreen> {
-  /// 아래 묵주 패널이 위로 펼쳐진(크게 보는) 상태인지.
-  bool _mapExpanded = false;
-
-  /// 손가락으로 끌고 있는 동안의 묵주 높이. 끌지 않을 때는 null.
-  double? _mapDragHeight;
-
   late final RosarySession _session;
   late final bool _ownsSession;
   late final SoundPlayer _sound;
@@ -139,6 +135,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
     if (_leaderAudioActive) {
       _setUpLeaderVoice();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeSuggestShort());
   }
 
   void _setUpLeaderVoice() {
@@ -272,6 +269,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void dispose() {
     _disposed = true;
+    _snack?.close();
     HardwareKeyboard.instance.removeHandler(_onKey);
     _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     _session.removeListener(_onSessionChanged);
@@ -324,13 +322,32 @@ class _PrayerScreenState extends State<PrayerScreen> {
     return decade == null ? '$name · 서두' : '$name · $decade단';
   }
 
+  /// 머리줄 부제: 이번 단의 신비 묵상 문구('…을 묵상합시다.'를 뺀 것). 서두·마침에는 없다.
+  String? _subtitle(RosaryStep step) {
+    final decade = step.decade;
+    if (decade == null || step.kind == StepKind.closing) return null;
+    final text = widget.mysterySet.mysteries[decade - 1].meditation;
+    return text.replaceFirst(RegExp(r'[을를] 묵상합시다\.$'), '');
+  }
+
+  /// 기도문에 적용할 글자 배율: 앱 설정과 시스템 배율 중 큰 쪽(둘을 곱하지 않는다).
+  double _prayerScale(BuildContext context) {
+    final system = MediaQuery.textScalerOf(context).scale(24) / 24;
+    return math
+        .max(_settings.prayerTextScale, system)
+        .clamp(AppSettings.minTextScale, AppSettings.maxTextScale)
+        .toDouble();
+  }
+
   /// 기도문 글자 크기를 바로 바꿔 볼 수 있는 시트.
-  void _showTextSizeSheet(BuildContext context) {
-    showModalBottomSheet<void>(
+  Future<void> _showTextSizeSheet(BuildContext context) async {
+    await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (sheetContext) => SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           child: ListenableBuilder(
@@ -348,12 +365,14 @@ class _PrayerScreenState extends State<PrayerScreen> {
                     color: theme.colorScheme.surfaceContainerHigh,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text(
-                        '은총이 가득하신 마리아님, 기뻐하소서!',
-                        style: AppTheme.prayerStyle(
-                          context,
-                          _settings.prayerFont,
-                          size: 20 * scale,
+                      child: MediaQuery.withNoTextScaling(
+                        child: Text(
+                          '은총이 가득하신 마리아님, 기뻐하소서!',
+                          style: AppTheme.prayerStyle(
+                            context,
+                            _settings.prayerFont,
+                            size: 20 * scale,
+                          ),
                         ),
                       ),
                     ),
@@ -398,6 +417,20 @@ class _PrayerScreenState extends State<PrayerScreen> {
                       child: const Text('기본 크기'),
                     ),
                   ),
+                  SwitchListTile(
+                    key: const ValueKey('sheet-short-prayers'),
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('외운 기도 짧게 보기'),
+                    subtitle: const Text(
+                      '성모송 같은 반복 기도를 첫머리만 보여 줍니다. '
+                      '성호경·사도신경·신비 안내·영광송은 늘 전문입니다',
+                    ),
+                    value: _settings.shortPrayers,
+                    onChanged: (v) {
+                      _settings.shortPrayers = v;
+                      Track.setting('short_prayers');
+                    },
+                  ),
                 ],
               );
             },
@@ -405,6 +438,63 @@ class _PrayerScreenState extends State<PrayerScreen> {
         ),
       ),
     );
+    if (mounted) _maybeSuggestShort();
+  }
+
+  /// 글자가 아주 클 때(배율 1.6 이상) '외운 기도 짧게 보기'를 딱 한 번 권한다.
+  /// 보여 주는 순간 '물어봄'으로 기록해 다시는 띄우지 않는다.
+  void _maybeSuggestShort() {
+    if (!mounted || _session.isFinished) return;
+    if (_settings.shortPrayersAsked || _settings.shortPrayers) return;
+    if (_prayerScale(context) < shortSuggestScale) return;
+    _settings.markShortPrayersAsked();
+    final scheme = Theme.of(context).colorScheme;
+    final wide = _isWide(context);
+    final bottom = wide
+        ? 16.0
+        : PrayerActions.height + MediaQuery.paddingOf(context).bottom + 8;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    _snack = messenger.showSnackBar(
+      SnackBar(
+        key: const ValueKey('short-suggest'),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.fromLTRB(16, 0, 16, bottom),
+        duration: const Duration(seconds: 15),
+        content: Row(
+          children: [
+            const Expanded(
+              child: Text('글자가 커서 기도문이 길게 이어져요. 외운 기도는 첫머리만 보여 드릴까요?'),
+            ),
+            TextButton(
+              onPressed: () => _snack?.close(),
+              style: TextButton.styleFrom(
+                foregroundColor: scheme.onInverseSurface,
+                minimumSize: const Size(48, 48),
+              ),
+              child: const Text('그대로'),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: '켜기',
+          onPressed: () {
+            _settings.shortPrayers = true;
+            Track.setting('short_prayers');
+          },
+        ),
+      ),
+    );
+  }
+
+  /// 이 글자 배율 이상이면 짧게 보기를 권한다.
+  static const double shortSuggestScale = 1.6;
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _snack;
+
+  bool _isWide(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return windowClassOf(context).isWide || size.width > size.height * 1.1;
   }
 
   @override
@@ -413,51 +503,26 @@ class _PrayerScreenState extends State<PrayerScreen> {
       listenable: Listenable.merge([_session, _settings]),
       builder: (context, _) {
         final finished = _session.isFinished;
-        final progress = finished
-            ? 1.0
-            : _session.index / _session.steps.length;
         return PopScope(
           canPop: finished,
           onPopInvokedWithResult: (didPop, _) {
             if (!didPop) _confirmExit();
           },
           child: Scaffold(
-            appBar: AppBar(
-              title: Text(
-                finished
-                    ? widget.mysterySet.koreanName
-                    : _appBarTitle(_session.current),
-              ),
-              centerTitle: true,
-              actions: [
-                if (!finished)
-                  IconButton(
-                    tooltip: '글자 크기',
-                    icon: const Icon(Icons.text_fields),
-                    onPressed: () => _showTextSizeSheet(context),
-                  ),
-              ],
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(16),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
-                  child: Semantics(
-                    container: true,
-                    label: '진행률',
-                    value: '${(progress * 100).round()}%',
-                    child: ExcludeSemantics(
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 5,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
             body: SafeArea(
-              child: finished ? _buildFinished(context) : _buildPrayer(context),
+              child: finished
+                  ? Column(
+                      children: [
+                        _clampChrome(
+                          _PrayerHeader(
+                            title: widget.mysterySet.koreanName,
+                            onBack: () => Navigator.of(context).maybePop(),
+                          ),
+                        ),
+                        Expanded(child: _buildFinished(context)),
+                      ],
+                    )
+                  : _buildPrayer(context),
             ),
           ),
         );
@@ -465,7 +530,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
-  /// 지도를 손가락으로 끌어 구슬을 한 칸씩 넘긴다. 끌다가 기도가 끝나 버리지 않도록
+  /// 틀(머리·띠·버튼)은 시스템 글자 배율을 1.3까지만 따른다. 기도문은 따로 [_prayerScale].
+  Widget _clampChrome(Widget child) =>
+      MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: child);
+
+  /// 지도를 손가락으로 끌어 구슬을 한 칸씩 넘긴다(넓은 화면의 지도). 끌다가 기도가 끝나 버리지 않도록
   /// 마지막 스텝에서는 앞으로 넘기지 않는다(마치려면 '다음' 버튼).
   void _scrubStep(int delta) {
     if (delta > 0) {
@@ -477,6 +546,28 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   void _restartPrayer() {
     _session.restart();
+  }
+
+  void _openMap() {
+    unawaited(
+      showRosaryMapSheet(
+        context,
+        session: _session,
+        style: _settings.rosaryStyle,
+      ),
+    );
+  }
+
+  void _onMenu(_PrayerMenu item) {
+    switch (item) {
+      case _PrayerMenu.map:
+        _openMap();
+      case _PrayerMenu.shortPrayers:
+        _settings.shortPrayers = !_settings.shortPrayers;
+        Track.setting('short_prayers');
+      case _PrayerMenu.end:
+        unawaited(_confirmExit());
+    }
   }
 
   /// '기록 보기': 기도 화면을 닫고 셸의 기록 탭으로. 셸 없이 열렸으면 기록 화면을 대신 연다.
@@ -603,451 +694,195 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
-  /// 화면 높이의 약 22%(120..190). 본문 칸을 넓게 쓰도록 작게 두고, 탭하면 크게 펼친다.
-  double _mapHeight(BuildContext context) {
-    final screen = MediaQuery.sizeOf(context).height;
-    final min = math.min(120.0, screen * 0.3);
-    return (screen * 0.22).clamp(min, 190.0);
-  }
-
   Widget _buildPrayer(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final wide =
-        windowClassOf(context).isWide || size.width > size.height * 1.1;
-    if (wide) return _buildWide(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final minH = _mapHeight(context);
-        // 펼쳤을 때: 버튼·손잡이를 빼고도 본문이 최소한 보이도록 남긴다.
-        final maxH = math.max(
-          minH,
-          math.min(constraints.maxHeight * 0.72, constraints.maxHeight - 260),
-        );
-        return _buildPrayerBody(context, minH, maxH);
-      },
-    );
-  }
-
-  /// 탭하면 다음으로 넘어가는 기도문 영역. 스텝이 바뀌면 짧게 페이드인하고 맨 위에서 시작한다.
-  Widget _buildStepText(BuildContext context) {
     final step = _session.current;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final scale = _settings.prayerTextScale;
-    final reduce = MediaQuery.disableAnimationsOf(context);
-    final titleStyle = theme.textTheme.titleSmall;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _session.next,
-      child: TweenAnimationBuilder<double>(
-        key: ValueKey(_session.index),
-        tween: Tween(begin: 0.25, end: 1),
-        duration: reduce ? Duration.zero : const Duration(milliseconds: 160),
-        curve: Curves.easeOut,
-        builder: (context, value, child) =>
-            Opacity(opacity: value, child: child),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(18, 8, 18, 20),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_voice?.isSpeaking.value ?? false)
-                      const _LeaderPlayingBadge(),
-                    if (step.heading != null)
-                      _HeadingCard(heading: step.heading!, scale: scale),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(2, 4, 2, 10),
-                      child: Text(
-                        step.title,
-                        style: titleStyle?.copyWith(
-                          fontSize: (titleStyle.fontSize ?? 14) * scale,
-                          color: scheme.secondary,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    _PrayerText(
-                      step: step,
-                      mode: _settings.prayerMode,
-                      font: _settings.prayerFont,
-                      scale: scale,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    final wide = _isWide(context);
+    final scale = _prayerScale(context);
+    final text = PrayerTextView(
+      step: step,
+      stepIndex: _session.index,
+      mode: _settings.prayerMode,
+      font: _settings.prayerFont,
+      scale: scale,
+      short: _settings.shortPrayers,
+      leaderSpeaking: _voice?.isSpeaking.value ?? false,
+      onAdvance: _session.next,
     );
-  }
+    final actions = PrayerActions(
+      canGoBack: _session.index > 0,
+      onBack: _session.back,
+      onNext: _session.next,
+    );
 
-  Widget _buildNavButtons(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: FilledButton.tonal(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(64, 56),
-              textStyle: theme.textTheme.titleMedium,
-            ),
-            onPressed: _session.index == 0 ? null : _session.back,
-            child: const Text('이전'),
-          ),
+    final header = _PrayerHeader(
+      title: _appBarTitle(step),
+      subtitle: _subtitle(step),
+      onBack: () => Navigator.of(context).maybePop(),
+      onTextSize: () => _showTextSizeSheet(context),
+      menuBuilder: (context) => [
+        const PopupMenuItem(value: _PrayerMenu.map, child: Text('묵주 전체 보기')),
+        CheckedPopupMenuItem(
+          value: _PrayerMenu.shortPrayers,
+          checked: _settings.shortPrayers,
+          child: const Text('외운 기도 짧게 보기'),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 3,
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(56),
-              textStyle: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            onPressed: _session.next,
-            child: const Text('다음'),
-          ),
-        ),
+        const PopupMenuItem(value: _PrayerMenu.end, child: Text('기도 끝내기')),
       ],
+      onMenu: _onMenu,
     );
-  }
 
-  /// 넓은 화면: 왼쪽에 기도문, 오른쪽에 항상 큰 묵주 지도와 버튼.
-  Widget _buildWide(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final step = _session.current;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(flex: 5, child: _buildStepText(context)),
-        Expanded(
-          flex: 4,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8, 16, 16),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: scheme.surface,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: scheme.outlineVariant),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      RosaryMap.labelFor(step),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: scheme.secondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: RosaryMap(
-                        step: step,
-                        style: _settings.rosaryStyle,
-                        showLabel: false,
-                        onStep: _scrubStep,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildNavButtons(context),
-                  ],
-                ),
-              ),
-            ),
-          ),
+    if (!wide) {
+      return _clampChrome(
+        Column(
+          children: [
+            header,
+            PrayerBeadStrip(step: step, onOpenMap: _openMap),
+            Expanded(child: text),
+            actions,
+          ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildPrayerBody(BuildContext context, double minH, double maxH) {
-    final step = _session.current;
-    final scheme = Theme.of(context).colorScheme;
-    final dragging = _mapDragHeight != null;
-    final mapH = (_mapDragHeight ?? (_mapExpanded ? maxH : minH)).clamp(
-      minH,
-      maxH,
-    );
-
-    void dragStart(DragStartDetails _) => setState(() => _mapDragHeight = mapH);
-    void dragUpdate(DragUpdateDetails d) => setState(
-      () => _mapDragHeight = ((_mapDragHeight ?? mapH) - d.delta.dy).clamp(
-        minH,
-        maxH,
-      ),
-    );
-    void dragEnd(DragEndDetails d) {
-      final h = _mapDragHeight ?? mapH;
-      final v = d.primaryVelocity ?? 0;
-      setState(() {
-        // 빠르게 위로 끌면 펼치고, 아래로 끌면 접는다. 느리면 가까운 쪽으로.
-        _mapExpanded = v < -300
-            ? true
-            : (v > 300 ? false : h > (minH + maxH) / 2);
-        _mapDragHeight = null;
-      });
-    }
-
-    return Column(
-      children: [
-        Expanded(child: _buildStepText(context)),
-        _ControlBar(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 손잡이 띠를 위아래로 끌면 묵주 패널 크기가 따라서 커지고 작아진다.
-              // (지도 위에서 끄는 동작은 구슬 넘기기이므로 크기 조절은 이 띠만 맡는다.)
-              GestureDetector(
-                key: const ValueKey('mapHandle'),
-                behavior: HitTestBehavior.opaque,
-                onVerticalDragStart: dragStart,
-                onVerticalDragUpdate: dragUpdate,
-                onVerticalDragEnd: dragEnd,
-                child: Semantics(
-                  label: '묵주 크기 조절',
-                  child: SizedBox(
-                    height: 36,
-                    width: double.infinity,
-                    child: Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: scheme.outline,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              AnimatedContainer(
-                duration: dragging
-                    ? Duration.zero
-                    : const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                height: mapH,
-                width: double.infinity,
-                child: RosaryMap(
-                  step: step,
-                  style: _settings.rosaryStyle,
-                  onTap: () => setState(() => _mapExpanded = !_mapExpanded),
-                  onStep: _scrubStep,
-                ),
-              ),
-              const SizedBox(height: 10),
-              _buildNavButtons(context),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// 아래쪽 컨트롤 영역: 윗부분만 둥근 크림색 판.
-class _ControlBar extends StatelessWidget {
-  const _ControlBar({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(
-          top: BorderSide(color: scheme.outlineVariant),
-          left: BorderSide(color: scheme.outlineVariant),
-          right: BorderSide(color: scheme.outlineVariant),
-        ),
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-            child: child,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LeaderPlayingBadge extends StatelessWidget {
-  const _LeaderPlayingBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Pill(
-          label: '선창 재생 중',
-          icon: Icons.volume_up,
-          background: scheme.tertiaryContainer,
-          foreground: scheme.onTertiaryContainer,
-        ),
-      ),
-    );
-  }
-}
-
-class _HeadingCard extends StatelessWidget {
-  const _HeadingCard({required this.heading, required this.scale});
-
-  final String heading;
-  final double scale;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final lines = heading.split('\n');
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: SoftCard(
-        color: scheme.secondaryContainer,
-        borderColor: Colors.transparent,
-        padding: const EdgeInsets.all(18),
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                lines.first,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize:
-                      (theme.textTheme.titleMedium?.fontSize ?? 16) * scale,
-                  color: scheme.onSecondaryContainer,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (lines.length > 1) ...[
-                const SizedBox(height: 6),
-                Text(
-                  lines.skip(1).join('\n'),
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontSize:
-                        (theme.textTheme.bodyLarge?.fontSize ?? 16) * scale,
-                    color: scheme.onSecondaryContainer,
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PrayerText extends StatelessWidget {
-  const _PrayerText({
-    required this.step,
-    required this.mode,
-    required this.font,
-    required this.scale,
-  });
-
-  final RosaryStep step;
-  final PrayerMode mode;
-  final PrayerFont font;
-
-  /// 기도문 글자 크기 배율(설정).
-  final double scale;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final onSurface = scheme.onSurface;
-    final dim = onSurface.withValues(alpha: 0.45);
-    final split = step.responderText.isNotEmpty;
-    final big = (font == PrayerFont.serif ? 25.0 : 24.0) * scale;
-    final small = big - 6 * scale;
-
-    TextStyle style(double size, Color color, {bool bold = false}) =>
-        AppTheme.prayerStyle(
-          context,
-          font,
-          size: size,
-          color: color,
-          bold: bold,
-        );
-
-    if (mode == PrayerMode.solo) {
-      return Text(step.text, style: style(big, onSurface));
-    }
-
-    // 나뉘지 않는 기도(성호경 등)는 모두 함께 바친다.
-    if (!split) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _RoleLabel(text: '모두 함께'),
-          Text(step.text, style: style(big, onSurface, bold: true)),
-        ],
       );
     }
 
-    final leaderMine = mode == PrayerMode.leader;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _RoleLabel(text: leaderMine ? '내 차례: 앞단' : '내 차례: 뒷단'),
-        Text(
-          step.leaderText,
-          style: leaderMine
-              ? style(big, onSurface, bold: true)
-              : style(small, dim),
-        ),
-        Text(
-          step.responderText,
-          style: leaderMine
-              ? style(small, dim)
-              : style(big, onSurface, bold: true),
-        ),
-      ],
+    // 넓은 화면(태블릿·가로): 왼쪽 기도문, 오른쪽 띠 + 큰 묵주 지도 + 버튼.
+    final scheme = Theme.of(context).colorScheme;
+    return _clampChrome(
+      Column(
+        children: [
+          header,
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(flex: 5, child: text),
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 16, 16),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: scheme.surface,
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(color: scheme.outlineVariant),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(27),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: PrayerBeadStrip(step: step),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: RosaryMap(
+                                  step: step,
+                                  style: _settings.rosaryStyle,
+                                  showLabel: false,
+                                  onStep: _scrubStep,
+                                ),
+                              ),
+                            ),
+                            actions,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _RoleLabel extends StatelessWidget {
-  const _RoleLabel({required this.text});
+enum _PrayerMenu { map, shortPrayers, end }
 
-  final String text;
+/// 고정 48dp 머리줄: 뒤로, 제목(+부제), 글자 크기, ⋮.
+class _PrayerHeader extends StatelessWidget {
+  const _PrayerHeader({
+    required this.title,
+    required this.onBack,
+    this.subtitle,
+    this.onTextSize,
+    this.menuBuilder,
+    this.onMenu,
+  });
+
+  final String title;
+  final String? subtitle;
+  final VoidCallback onBack;
+  final VoidCallback? onTextSize;
+  final List<PopupMenuEntry<_PrayerMenu>> Function(BuildContext)? menuBuilder;
+  final ValueChanged<_PrayerMenu>? onMenu;
+
+  static const double height = 48;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Pill(
-          label: text,
-          dense: true,
-          background: scheme.secondaryContainer,
-          foreground: scheme.onSecondaryContainer,
-        ),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    // 글자가 1.15배를 넘으면 48dp에 두 줄이 들어가지 않으므로 부제를 뺀다.
+    final showSubtitle =
+        subtitle != null && MediaQuery.textScalerOf(context).scale(12) <= 14;
+    return SizedBox(
+      key: const ValueKey('prayer-header'),
+      height: height,
+      child: Row(
+        children: [
+          IconButton(
+            key: const ValueKey('prayer-header-back'),
+            tooltip: '뒤로',
+            icon: const Icon(Icons.arrow_back),
+            onPressed: onBack,
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (showSubtitle)
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (onTextSize != null)
+            IconButton(
+              key: const ValueKey('prayer-text-size'),
+              tooltip: '글자 크기',
+              icon: const Icon(Icons.text_fields),
+              onPressed: onTextSize,
+            ),
+          if (menuBuilder != null)
+            PopupMenuButton<_PrayerMenu>(
+              key: const ValueKey('prayer-menu'),
+              tooltip: '메뉴',
+              icon: const Icon(Icons.more_vert),
+              onSelected: onMenu,
+              itemBuilder: menuBuilder!,
+            ),
+          if (onTextSize == null && menuBuilder == null)
+            const SizedBox(width: 48),
+        ],
       ),
     );
   }
