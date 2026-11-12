@@ -1,12 +1,9 @@
 # 로그인·분석 백엔드 설정 가이드 (비개발자용)
 
-> **알림(2026-11 결정)**: 이 앱은 애플 앱스토어에 올리지 않습니다(맥이 없음). 그래서 **애플 로그인 설정은 건너뛰세요.** 앱에서는 애플 로그인 버튼이 기본으로 숨겨져 있습니다(`AuthConfig.enableAppleSignIn = false`). 아래의 애플 항목은 나중에 iOS로 확장할 때만 필요합니다. 구글 플레이 기준으로는 카카오, 구글, 이메일만 설정하면 됩니다.
-
-
 이 문서는 **직접 해야 하는 클릭 작업**만 순서대로 적었습니다. 코드는 이미 준비되어 있습니다.
-각 서비스(Supabase, 카카오, 구글, 애플, GitHub, Cloudflare)의 화면 이름·메뉴 위치는 자주 바뀌고 이 문서를 쓸 때 직접 열어 확인하지 못했으므로, **"확인 필요"** 라고 적힌 곳은 실제 화면과 공식 문서를 보고 맞춰 주세요.
+각 서비스(Supabase, 카카오, 구글, GitHub, Cloudflare)의 화면 이름·메뉴 위치는 자주 바뀌고 이 문서를 쓸 때 직접 열어 확인하지 못했으므로, **"확인 필요"** 라고 적힌 곳은 실제 화면과 공식 문서를 보고 맞춰 주세요.
 
-준비물: 이메일 계정, 신용카드(애플 개발자 등록은 유료 — 비용은 **확인 필요**), GitHub 계정, 이 저장소 접근 권한.
+준비물: 이메일 계정, GitHub 계정, 이 저장소 접근 권한.
 
 > **하지 말아야 할 것**: `service_role` 키(또는 "secret" 키)를 앱, 관리자 페이지, GitHub 저장소 어디에도 넣지 마세요. 앱과 관리자 페이지에는 공개용 **anon(publishable) 키**만 씁니다. 이 키는 공개돼도 되고, 데이터는 행 단위 보안(RLS)과 관리자 로그인이 지킵니다.
 
@@ -67,19 +64,9 @@ https://<project-ref>.supabase.co/auth/v1/callback
 3. **Credentials > Create credentials > OAuth client ID** → 유형 **Web application**.
 4. **Authorized redirect URIs** 에 Supabase 콜백 URL `https://<project-ref>.supabase.co/auth/v1/callback` 을 추가합니다.
 5. 만들어진 **Client ID** 와 **Client secret** 을 Supabase **Providers > Google** 에 입력하고 **Enable**.
-6. (나중에 네이티브 구글 로그인으로 바꿀 경우) Android용 OAuth client(패키지 `kr.rosary.rosary_app` + 서명 SHA-1), iOS용 OAuth client(번들 ID)를 추가로 만들고, 그 Client ID 들을 Supabase Google 설정의 "허용 클라이언트 ID" 칸에 넣어야 할 수 있습니다 — **확인 필요**. 지금 앱이 웹 브라우저(OAuth) 방식이면 3~5번만 필요합니다.
+6. (나중에 네이티브 구글 로그인으로 바꿀 경우) Android용 OAuth client(패키지 `kr.rosary.rosary_app` + 서명 SHA-1)를 추가로 만들고, 그 Client ID 들을 Supabase Google 설정의 "허용 클라이언트 ID" 칸에 넣어야 할 수 있습니다 — **확인 필요**. 지금 앱이 웹 브라우저(OAuth) 방식이면 3~5번만 필요합니다.
 
-### 3-3. 애플 (Apple Developer 계정 필요)
-1. https://developer.apple.com 의 **Apple Developer Program** 에 가입해야 합니다(유료, 연회비 **확인 필요**).
-2. **Certificates, Identifiers & Profiles > Identifiers** 에서 앱의 **App ID** 를 만들고 **Sign in with Apple** 기능을 켭니다.
-3. **Identifiers > Services IDs** 에서 **Services ID** 를 만들고(이 값이 Supabase의 *Client ID* 가 됩니다) **Sign in with Apple** 을 구성합니다. **Return URLs** 에 Supabase 콜백 URL, **Domains** 에 `<project-ref>.supabase.co` 를 넣습니다.
-4. **Keys** 에서 **Sign in with Apple** 이 켜진 키를 만들고 **.p8 파일** 을 내려받습니다(한 번만 내려받을 수 있음). **Key ID** 를 메모합니다.
-5. 우측 상단 또는 Membership 화면에서 **Team ID** 를 메모합니다.
-6. Supabase는 애플 로그인에 쓰는 **Client Secret(JWT)** 을 .p8 키·Key ID·Team ID·Services ID 로 만들어 입력하게 합니다(Supabase 문서에 생성 도구/방법 안내가 있습니다 — **확인 필요**). 이 비밀 값은 **최대 6개월 뒤 만료**되는 것으로 알고 있으니(**확인 필요**) 달력에 갱신 알림을 넣으세요. 만료되면 애플 로그인이 갑자기 안 됩니다.
-7. Supabase **Providers > Apple** 에 Client ID(Services ID)와 Secret 을 입력하고 **Enable**.
-8. iOS 앱 심사에서 소셜 로그인이 있으면 애플 로그인이 필요할 수 있고, 계정 삭제 시 애플 토큰 철회가 필요할 수 있습니다(`docs/legal/store_disclosures.md` 5.) — **확인 필요**.
-
-### 3-4. 이메일
+### 3-3. 이메일
 1. **Authentication > Providers > Email** 을 **Enable**.
 2. **Confirm email(이메일 인증)** 을 켜는 것을 권장합니다(가짜 이메일 방지). 켜면 가입 후 메일의 링크를 눌러야 로그인됩니다.
 3. 기본으로 제공되는 메일 발송은 **시간당 발송 수가 매우 적고 테스트 용도**로 알려져 있습니다(정확한 한도 **확인 필요**). 출시 전에는 **Authentication > SMTP Settings** 에서 **직접 운영하는 메일 서비스(SMTP)** 를 연결하는 것을 권장합니다(예: Resend, Amazon SES, SendGrid 등 — 서비스 선택과 설정값은 **확인 필요**). 발신 도메인에는 SPF/DKIM 설정이 필요합니다. 이메일 발송 업체를 쓰면 처리방침의 "처리업무 위탁" 표에 그 업체를 추가하세요.
@@ -194,7 +181,7 @@ select cron.schedule('purge-old-data', '30 18 * * *', $$select public.purge_old_
 
 **로그인**
 - [ ] 이메일 가입 → 인증 메일 수신 → 앱 로그인 성공.
-- [ ] 카카오 / 구글 / 애플 로그인 각각 성공하고 앱으로 돌아온다(딥링크 `kr.rosary.rosaryapp://login-callback`).
+- [ ] 카카오 / 구글 로그인 각각 성공하고 앱으로 돌아온다(딥링크 `kr.rosary.rosaryapp://login-callback`).
 - [ ] 첫 로그인 후 `profiles` 에 내 행이 생겼다.
 
 **동의·데이터**
@@ -221,7 +208,6 @@ select cron.schedule('purge-old-data', '30 18 * * *', $$select public.purge_old_
 |---|---|
 | 소셜 로그인 후 앱으로 돌아오지 않음 | 4단계 Redirect URLs 에 `kr.rosary.rosaryapp://login-callback` 가 있는지, 앱의 딥링크 설정(AndroidManifest/Info.plist)이 같은 스킴인지 |
 | 카카오 로그인 오류 "KOE..." | 카카오 콘솔의 Redirect URI, 동의항목(이메일), Client Secret 활성화, 앱 팀원 등록 여부 — 오류 코드의 뜻은 **확인 필요** |
-| 애플 로그인이 갑자기 실패 | Client Secret(JWT) 만료 여부(최대 6개월 — **확인 필요**) |
 | 가입 메일이 안 옴 | 기본 메일의 발송 한도, 스팸함, SMTP 설정 |
 | 대시보드 "관리자 권한이 없습니다" | 6단계의 UID 가 로그인한 계정의 UID 인지 |
 | 대시보드 "설정이 필요합니다" | `admin/config.js` 가 배포되었는지, 값이 `YOUR-...` 그대로가 아닌지 |
