@@ -9,7 +9,8 @@ Future<int?> showCandleSheet(BuildContext context) {
     isScrollControlled: true,
     showDragHandle: true,
     useSafeArea: true,
-    builder: (context) => const CandleSheet(),
+    // 시스템 내비게이션 바(3버튼·제스처 막대)에 버튼이 가려지지 않게 한다.
+    builder: (context) => const SafeArea(top: false, child: CandleSheet()),
   );
 }
 

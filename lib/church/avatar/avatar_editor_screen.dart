@@ -54,7 +54,8 @@ class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => _NameSheet(selected: _config.name),
+      builder: (context) =>
+          SafeArea(top: false, child: _NameSheet(selected: _config.name)),
     );
     if (picked != null) _update(_config.copyWith(name: picked));
   }

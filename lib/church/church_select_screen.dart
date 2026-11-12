@@ -141,7 +141,10 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
       isScrollControlled: true,
       showDragHandle: true,
       useSafeArea: true,
-      builder: (context) => _DetailSheet(info: info, note: _noteFor(info)),
+      builder: (context) => SafeArea(
+        top: false,
+        child: _DetailSheet(info: info, note: _noteFor(info)),
+      ),
     );
     if (enter == true) {
       widget.settings.churchId = info.id;

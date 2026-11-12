@@ -85,7 +85,10 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => EmailAuthSheet(authService: widget.authService),
+      builder: (_) => SafeArea(
+        top: false,
+        child: EmailAuthSheet(authService: widget.authService),
+      ),
     );
   }
 

@@ -12,7 +12,8 @@ Future<void> showConsentDetailSheet(BuildContext context, String kind) {
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => ConsentDetailContent(item: item),
+    builder: (context) =>
+        SafeArea(top: false, child: ConsentDetailContent(item: item)),
   );
 }
 
