@@ -8,7 +8,7 @@ SPEC: `docs/auth/SPEC.md`. 동의 문구의 원본: `docs/legal/consent_texts.md
 
 | 파일 | 역할 |
 |---|---|
-| `auth_config.dart` | `AuthConfig.requireLogin`(기본 `true`) |
+| `auth_config.dart` | `AuthConfig.requireLogin`(기본 `false` = 게스트 우선) |
 | `backend_config.dart` | `BackendConfig.supabaseUrl/anonKey/isConfigured`, 딥링크 `kr.rosary.rosaryapp://login-callback` |
 | `auth_bootstrap.dart` | `AuthBootstrap.init()` — 설정된 경우에만 `Supabase.initialize`(PKCE, 키스토어 세션). 두 번 불러도 안전. 설정 여부(bool) 반환 |
 | `secure_session_storage.dart` | 세션·PKCE 검증값을 플랫폼 키스토어(`flutter_secure_storage`)에 저장. 키스토어를 못 쓰면 shared_preferences로 대체 |
@@ -20,7 +20,10 @@ SPEC: `docs/auth/SPEC.md`. 동의 문구의 원본: `docs/legal/consent_texts.md
 | `auth_gate.dart` | `AuthGate` |
 | `login_screen.dart`, `email_auth_sheet.dart` | 로그인 화면, 이메일 가입/로그인 시트 |
 | `consent_screen.dart`, `consent_detail_sheet.dart` | 첫 로그인 동의 화면, '자세히' 시트 |
-| `account_screen.dart` | 설정 > 계정 |
+| `account_screen.dart` | 더보기 > 계정(게스트이면 '기록 지키기' 카드) |
+| `guest_start.dart`, `guest_start_screen.dart` | 게스트 시작 컨트롤러(`signInAnonymously`, 오프라인·서버 막힘 처리)와 오류 화면 |
+| `guest_link_card.dart` | `GuestLinkCard`: 다른 화면에도 넣을 수 있는 '기록 지키기' 카드(게스트가 아니면 아무것도 그리지 않음) |
+| `guest_link_prompt.dart` | `shouldSuggestLinking({firstSeen, records})`, `markLinkingSuggested()`, `guestFirstSeen()` |
 | `legal_screen.dart`, `legal_texts.dart`, `legal_docs.dart` | 약관·방침 표시, 동의 문구 상수, 문서 본문(생성 파일) |
 | `tool/gen_legal_docs.py` | `docs/legal/*.md` → `legal_docs.dart` 생성 |
 
@@ -79,9 +82,10 @@ home: AuthGate(
 ),
 ```
 
-단계 규칙: 백엔드 미설정 → 본문 / 인증 확인 중 → 스플래시 / 로그아웃 + `requireLogin` → `LoginScreen` / 로그인 + 필수 동의 미완(또는 `consentVersion` 불일치) → `ConsentScreen` / 그 외 → 본문.
+단계 규칙(게스트 우선): 백엔드 미설정 → 본문 / 인증 확인 중 → 스플래시 / 로그아웃 + 필수 동의 미완 → `ConsentScreen`(로그인 전에 받아 기기에 저장) / 로그아웃 + 동의 완료 → 게스트 시작 중 스플래시, 서버가 막으면 `GuestStartErrorScreen`(다시 시도 · 이 기기에서만 사용하기), 오프라인이면 본문(돌아오면 조용히 재시도) / 로그인(게스트 포함) + 필수 동의 미완(또는 `consentVersion` 불일치) → `ConsentScreen` / 그 외 → 본문. `requireLogin = true`이면 로그아웃 상태에서 `LoginScreen`이 앞을 막는다(예전 동작).
+`LoginScreen`은 더보기 > 계정 > '기록 지키기' > '이미 계정이 있어요'로만 열린다.
 단계가 바뀌면 본문 위에 쌓인 화면(계정 화면, 시트)은 자동으로 닫히고, 로그아웃하면 `LoginScreen`으로 돌아옵니다.
-로그인 필수 해제(스토어 심사 대응)는 `lib/auth/auth_config.dart`의 `requireLogin = false` 한 줄.
+로그인 필수로 되돌리는 것은 `lib/auth/auth_config.dart`의 `requireLogin = true` 한 줄(게스트 시작 안 함).
 
 ## 3. 설정 화면의 '계정' 항목
 
@@ -146,3 +150,14 @@ A3의 `ConsentGate`는 `consentStore.has`를 그대로 넘기면 됩니다(`Cons
 
 `flutter test test/auth_gate_test.dart test/auth_login_test.dart test/auth_consent_test.dart test/auth_account_test.dart test/auth_layout_test.dart test/auth_misc_test.dart`
 (`test/auth_test_support.dart`는 공용 가짜·호스트 도우미.)
+
+## 8. 게스트(익명 로그인)
+
+- `AuthState.isAnonymous`: 게스트도 `isSignedIn == true`이고 `userId`가 있다(RLS·분석·동기화는 그대로). 실제 계정인지는 `isRealAccount`, 화면용 이름은 `accountLabel`('게스트' / 로그인 방법 / '로그인하지 않음').
+- `AuthService.signInAnonymously({captchaToken})`, `linkWithKakao()/linkWithGoogle()/linkWithEmail(email, password)`: 같은 사용자 id를 유지한 채 연결한다. 소셜은 브라우저 복귀 뒤 `state`의 `isAnonymous`가 false로 바뀌고, 이메일은 확인 메일이 필요하면 `EmailSignUpOutcome.confirmationRequired`.
+- 실패는 `AuthFailure.kind`: `network`(오프라인) / `guestUnavailable`(서버에서 익명 로그인 꺼짐·CAPTCHA) / `generic`.
+- 로그인 전 동의는 `ConsentStore`가 기기 캐시(`deviceKey`)에 저장하고 `has()`는 사용자 행이 생길 때까지 false. 게스트가 만들어지면 그 사용자로 옮겨 서버에 올린다.
+- 분석: 게스트 시작은 `login_success`가 아니다. 연결 성공은 `AppWiring`이 상태 전이(같은 id, 익명 → 실제)를 보고 `guest_link{provider}`를 남긴다.
+- 설정 화면의 계정 줄은 `s.isSignedIn ? ... : ...` 대신 `s.accountLabel`을 쓰면 게스트가 '게스트'로 보인다.
+- 연결 권유: `final first = await guestFirstSeen(); if (await shouldSuggestLinking(firstSeen: first, records: n)) { ...GuestLinkCard...; await markLinkingSuggested(); }`
+- Supabase 대시보드 설정(익명 로그인·수동 연결·CAPTCHA/속도 제한)은 `docs/auth/SETUP.md` 3-0.

@@ -23,11 +23,14 @@
 
 ## 2. 데이터베이스 마이그레이션 실행
 
-이 저장소의 `supabase/migrations/20261112000000_init.sql` 이 표·보안 정책·함수를 한 번에 만듭니다. 여러 번 실행해도 안전하게 만들어져 있습니다.
+이 저장소의 `supabase/migrations/` 아래 파일을 **파일 이름 순서대로** 실행합니다. 여러 번 실행해도 안전하게 만들어져 있습니다.
+
+1. `20261112000000_init.sql` — 표·보안 정책·함수
+2. `20261113100000_guest.sql` — 게스트(익명 사용자) 정리 함수 `purge_stale_guests()` (아래 3-0 설정과 함께 쓰입니다)
 
 **방법 A: SQL 편집기 (가장 쉬움)**
 1. Supabase 대시보드 왼쪽의 **SQL Editor** → **New query**.
-2. `supabase/migrations/20261112000000_init.sql` 파일 내용을 전부 복사해 붙여 넣고 **Run**.
+2. 위 파일 내용을 **순서대로 하나씩** 전부 복사해 붙여 넣고 **Run**.
 3. 오류 없이 "Success" 가 나오면 됩니다. 왼쪽 **Table Editor** 에 `profiles, consents, prayer_records, events, devices, admins` 가 보이고 모두 "RLS enabled" 이면 정상입니다.
 
 **방법 B: Supabase CLI (개발자용)**
@@ -37,7 +40,7 @@ supabase link --project-ref <project-ref>
 supabase db push
 ```
 
-이 SQL은 로컬 시험(`tools/auth_sql_tests`, 39개 검사)을 통과했지만, **진짜 Supabase 위에서의 실행은 아직 해보지 않았습니다.** 실행 중 오류가 나면 메시지를 그대로 개발자에게 전달하세요.
+이 SQL은 로컬 시험(`tools/auth_sql_tests`: `node run.mjs` 39개, `node guest_sql.test.mjs` 12개 검사)을 통과했지만, **진짜 Supabase 위에서의 실행은 아직 해보지 않았습니다.** 실행 중 오류가 나면 메시지를 그대로 개발자에게 전달하세요.
 
 ## 3. 로그인 방식 켜기
 
@@ -47,6 +50,39 @@ supabase db push
 https://<project-ref>.supabase.co/auth/v1/callback
 ```
 (`<project-ref>` 를 1단계에서 메모한 값으로 바꿉니다. 대시보드의 각 Provider 설정 화면에도 복사용으로 표시됩니다 — **확인 필요**.)
+
+### 3-0. 게스트 시작(익명 로그인) — **필수 설정 3가지**
+
+앱은 첫 실행에서 동의 한 화면을 거친 뒤 **로그인 없이 게스트로 시작**합니다(Supabase 익명 로그인 `signInAnonymously`). 게스트도 실제 사용자 행(`auth.users`)이 생겨서 기존 보안 정책·동의·분석·동기화가 그대로 동작합니다. 카카오·구글·이메일 로그인은 **더보기 > 계정 > '기록 지키기'** 에서 나중에 같은 계정에 연결합니다.
+
+**아래 설정을 하지 않으면 앱은 "게스트로 시작하지 못했어요" 화면을 보여 주고, 사용자는 '이 기기에서만 사용하기'로 계속할 수는 있지만 서버 기능(동기화·분석)은 쓸 수 없습니다.**
+
+1. **Allow anonymous sign-ins 켜기 (필수)**
+   대시보드 **Authentication > Sign In / Providers** (이름 **확인 필요**) 맨 위쪽 설정에서 **Allow anonymous sign-ins** 를 **ON** 으로 바꾸고 저장합니다.
+2. **Allow manual linking 켜기 (필수)**
+   같은 화면(**Authentication > Sign In / Providers** 의 "User Signups" 영역, 이름 **확인 필요**)에서 **Allow manual linking** 을 **ON**. 이게 꺼져 있으면 '기록 지키기'(카카오·구글 연결)가 실패합니다. 이메일 연결은 **Email** 공급자가 켜져 있어야 하고(3-3), 확인 메일을 켠 경우 메일의 링크를 눌러야 연결이 끝납니다.
+3. **남용 방지 (강력 권장)**
+   익명 로그인은 누구나 앱 없이도 API로 반복해서 호출할 수 있어, 가짜 계정이 쌓이거나 요청이 몰릴 수 있습니다.
+   - **Authentication > Rate Limits** (이름 **확인 필요**)에서 "Anonymous users"(IP당 시간당 익명 로그인 수) 한도를 낮게(예: 시간당 30 안팎) 설정합니다. **지금 바로 할 수 있는 방법입니다.**
+   - **CAPTCHA(Cloudflare Turnstile)** 는 **Authentication > Attack Protection** (이름 **확인 필요**)에서 켤 수 있고 Supabase도 익명 로그인에 권장합니다. **단, 현재 앱에는 CAPTCHA 토큰을 받는 화면이 없습니다.** 지금 켜면 모든 게스트 시작이 실패합니다. 앱 코드는 `AuthService.signInAnonymously({captchaToken})` 로 토큰을 받을 자리만 준비되어 있으니, 켜기 전에 Turnstile 위젯을 앱에 붙이는 작업(개발자)을 먼저 하세요.
+4. **쌓인 익명 계정 정리** — 아래 3-0-1.
+
+#### 3-0-1. 오래된 게스트 계정 정리 (수동 실행, 자동 예약 안 함)
+
+앱을 지우거나 로그아웃한 게스트는 서버에 빈 사용자 행으로 남습니다. `20261113100000_guest.sql` 이 만드는 함수 `purge_stale_guests()` 가 정리합니다. **일반 사용자와 anon 은 호출할 수 없고**, SQL 편집기(`postgres`)나 service role 만 호출할 수 있습니다. 자동 예약은 하지 않습니다(운영자가 결과를 보고 실행).
+
+```sql
+-- 먼저 대상 수만 확인(지우지 않음)
+select public.purge_stale_guests(30, true);
+-- 실제 삭제 (30일 이상 쓰이지 않았고 서버에 기도 기록이 없는 익명 사용자만)
+select public.purge_stale_guests();
+```
+- 대상: `is_anonymous` 이고, 만든 지 30일이 지났으며, 그 기간에 세션 갱신·접속·이벤트·기기 기록이 없고, 서버에 `prayer_records` 가 한 건도 없는 게스트. 일수는 첫 인자로 바꿀 수 있고 최소 7일입니다.
+- 연결(로그인)된 계정은 절대 지우지 않습니다. 기도 기록이 서버에 있는 게스트도 지우지 않습니다.
+- 삭제하면 그 사용자의 동의 기록·이벤트·기기 정보가 연쇄로 함께 삭제됩니다(개인정보 보유 기간 관점에서도 권장).
+- 정기 실행을 원하면 pg_cron 을 켠 뒤 직접 예약하세요(예시, **원하는 때만**): `select cron.schedule('purge-stale-guests', '40 18 * * 0', $$select public.purge_stale_guests()$$);` (주 1회 일요일 UTC 18:40 = 한국 월요일 03:40)
+
+> 한계: 게스트 기록은 **기기의 로컬 세션에 묶여** 있습니다. 앱을 지우거나 로그아웃(게스트)하면 같은 게스트로 돌아올 방법이 없습니다. 그래서 앱은 기록이 쌓이면 '기록 지키기'를 권합니다.
 
 ### 3-1. 카카오
 1. https://developers.kakao.com (카카오 디벨로퍼스)에 로그인하고 **내 애플리케이션 > 애플리케이션 추가하기** 로 앱을 만듭니다. (메뉴 이름 **확인 필요**)
@@ -91,7 +127,7 @@ flutter build apk --release \
   --dart-define=SUPABASE_ANON_KEY=<anon public key>
 ```
 개발 중 실행은 `flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`.
-두 값이 없으면 앱은 **로그인 없이 열리고 아무것도 업로드하지 않습니다**(개발용). **출시 빌드에는 반드시 넣으세요.**
+두 값이 없으면 앱은 **로그인·동의 없이 열리고 아무것도 업로드하지 않습니다**(개발용). **출시 빌드에는 반드시 넣으세요.**
 
 ### GitHub Actions(자동 빌드)에서 쓰기
 1. GitHub 저장소 **Settings > Secrets and variables > Actions > New repository secret** (이름 **확인 필요**).
@@ -105,7 +141,7 @@ flutter build apk --release \
 
 ## 6. 나를 관리자로 지정하기
 
-1. 앱에서 **먼저 한 번 로그인**하여 내 계정을 만듭니다. (관리자 페이지는 이메일+비밀번호 로그인만 지원하므로, 관리자는 **이메일로 가입한 계정**이어야 합니다. 소셜 계정을 관리자로 쓰려면 같은 이메일로 이메일 가입을 추가로 하거나 Supabase 대시보드에서 사용자를 만드세요 — **확인 필요**.)
+1. 앱에서 **'기록 지키기'로 이메일 계정을 연결**하거나 대시보드에서 사용자를 만들어 내 계정을 준비합니다. **게스트(익명) 사용자는 관리자로 지정하지 마세요.** (관리자 페이지는 이메일+비밀번호 로그인만 지원하므로, 관리자는 **이메일로 가입한 계정**이어야 합니다. 소셜 계정을 관리자로 쓰려면 같은 이메일로 이메일 가입을 추가로 하거나 Supabase 대시보드에서 사용자를 만드세요 — **확인 필요**.)
 2. Supabase 대시보드 **Authentication > Users** 에서 내 이메일 행의 **User UID** 를 복사합니다.
 3. **SQL Editor** 에서 실행합니다 (UID와 이메일을 바꾸세요).
 ```sql
