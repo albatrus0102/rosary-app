@@ -6,10 +6,13 @@ import '../app/leader_audio_store.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
+import '../app/theme.dart';
+import '../app/window_class.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import 'prayer_screen.dart';
+import 'widgets/page_body.dart';
 import 'widgets/pill.dart';
 import 'widgets/section_header.dart';
 
@@ -98,54 +101,32 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, _) => CustomScrollView(
           slivers: [
             const SliverAppBar.large(title: Text('묵주기도')),
-            SliverToBoxAdapter(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: _maxWidth),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    child: _buildContent(context),
-                  ),
-                ),
-              ),
-            ),
+            SliverPageBody(maxWidth: _maxWidth, child: _buildContent(context)),
           ],
         ),
       ),
     );
   }
 
-  /// 아래에 고정된 '기도 시작' 버튼.
+  /// 아래에 고정된 '기도 시작' 버튼: M3 [BottomAppBar](톤 표면, 하단 inset 자동 처리).
   Widget _buildStartBar(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    return Material(
-      color: scheme.surface,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: scheme.outlineVariant)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Center(
-            heightFactor: 1,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _maxWidth),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(56),
-                    textStyle: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('기도 시작'),
-                  onPressed: () => unawaited(_startPrayer()),
-                ),
-              ),
+    final scheme = Theme.of(context).colorScheme;
+    final margin = windowClassOf(context).margin;
+    return BottomAppBar(
+      color: scheme.surfaceContainerLow,
+      elevation: 0,
+      height: AppTheme.largeButtonHeight + 2 * AppSpace.sm,
+      padding: EdgeInsets.symmetric(horizontal: margin, vertical: AppSpace.sm),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _maxWidth),
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(AppTheme.largeButtonHeight),
             ),
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('기도 시작'),
+            onPressed: () => unawaited(_startPrayer()),
           ),
         ),
       ),
@@ -173,48 +154,41 @@ class _HomeScreenState extends State<HomeScreen> {
       relativeTimeKo(saved.savedAt, DateTime.now()),
     ];
     return Card.filled(
-      margin: EdgeInsets.zero,
       color: scheme.secondaryContainer,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpace.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.history,
-                  size: 20,
-                  color: scheme.onSecondaryContainer,
-                ),
-                const SizedBox(width: 8),
+                Icon(Icons.history, color: scheme.onSecondaryContainer),
+                const SizedBox(width: AppSpace.xs),
                 Expanded(
                   child: Text(
                     '이어서 기도하기',
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: scheme.onSecondaryContainer,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpace.xs),
             Text(
               parts.join(' · '),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: scheme.onSecondaryContainer,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpace.sm),
             Wrap(
               alignment: WrapAlignment.end,
-              spacing: 8,
-              runSpacing: 4,
+              spacing: AppSpace.xs,
+              runSpacing: AppSpace.xxs,
               children: [
                 TextButton(
                   style: TextButton.styleFrom(
-                    minimumSize: const Size(48, 48),
                     foregroundColor: scheme.onSecondaryContainer,
                   ),
                   onPressed: () => unawaited(
@@ -227,9 +201,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Text('처음부터'),
                 ),
                 FilledButton(
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(48, 48),
-                  ),
                   onPressed: () => unawaited(
                     _startPrayer(
                       set: saved.mysterySet,
@@ -267,19 +238,19 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         if (saved != null) ...[
           _buildResumeCard(context, saved),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpace.md),
         ],
         _HeroCard(style: settings.rosaryStyle, onTap: widget.onOpenStyles),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpace.md),
         const SectionHeader('오늘의 신비'),
         for (var i = 0; i < sets.length; i += 2) ...[
-          if (i > 0) const SizedBox(height: 12),
+          if (i > 0) const SizedBox(height: AppSpace.sm),
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 mysteryCard(sets[i]),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpace.sm),
                 if (i + 1 < sets.length)
                   mysteryCard(sets[i + 1])
                 else
@@ -288,9 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpace.sm),
         _MysteryList(set: settings.mysterySet),
-        const SizedBox(height: 28),
+        const SizedBox(height: AppSpace.md),
         const SectionHeader('기도 모드'),
         SegmentedButton<PrayerMode>(
           segments: const [
@@ -314,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onSelectionChanged: (v) => settings.prayerMode = v.first,
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Text(
             settings.prayerMode.description,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -323,12 +294,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         AnimatedSize(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
+          duration: AppMotion.of(context, Durations.medium1),
+          curve: Easing.emphasizedDecelerate,
           alignment: Alignment.topCenter,
           child: settings.prayerMode == PrayerMode.responder
               ? Padding(
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.only(top: AppSpace.sm),
                   child: _buildResponderHint(context),
                 )
               : const SizedBox(width: double.infinity),
@@ -341,28 +312,23 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Card.outlined(
-      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+        padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Icon(
-                    Icons.info_outline,
-                    size: 20,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(width: 12),
+                Icon(Icons.info_outline, color: scheme.onSurfaceVariant),
+                const SizedBox(width: AppSpace.sm),
                 Expanded(
-                  child: Text(
-                    '선창 음성은 설정 > 선창 음성에서 바꿀 수 있어요',
-                    style: theme.textTheme.bodyMedium,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpace.xxs),
+                    child: Text(
+                      '선창 음성은 설정 > 선창 음성에서 바꿀 수 있어요',
+                      style: theme.textTheme.bodyMedium,
+                    ),
                   ),
                 ),
               ],
@@ -370,7 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                 onPressed: widget.onOpenSettings,
                 child: const Text('설정 열기'),
               ),
@@ -387,6 +352,7 @@ String _shortMeditation(String meditation) =>
     meditation.replaceFirst(RegExp(r'[을를]? 묵상합시다\.$'), '');
 
 /// 선택한 묵주 그림(최대 높이 160). 누르면 묵주 고르기로 이동한다.
+/// M3 채운(tonal) 카드 + [InkWell] 상태 레이어. 카드 전체가 하나의 버튼 의미를 갖는다.
 class _HeroCard extends StatelessWidget {
   const _HeroCard({required this.style, this.onTap});
 
@@ -403,21 +369,16 @@ class _HeroCard extends StatelessWidget {
       excludeSemantics: true,
       onTap: onTap,
       child: Card.filled(
-        margin: EdgeInsets.zero,
-        color: scheme.surfaceContainer,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
+        color: scheme.surfaceContainerHigh,
+        shape: AppShape.largeBorder,
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppSpace.sm),
             child: Row(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: AppShape.medium,
                   child: Image.asset(
                     style.fullImage,
                     height: 160,
@@ -426,20 +387,15 @@ class _HeroCard extends StatelessWidget {
                     semanticLabel: '묵주 그림',
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpace.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        style.label,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      Text(style.label, style: theme.textTheme.titleMedium),
                       if (onTap != null) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpace.xxs),
                         Row(
                           children: [
                             Flexible(
@@ -450,11 +406,7 @@ class _HeroCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.chevron_right,
-                              size: 20,
-                              color: scheme.primary,
-                            ),
+                            Icon(Icons.chevron_right, color: scheme.primary),
                           ],
                         ),
                       ],
@@ -470,6 +422,8 @@ class _HeroCard extends StatelessWidget {
   }
 }
 
+/// 신비 선택 카드. 선택됨: primaryContainer 채움 + 채워진 아이콘 원, 선택 안 됨: 윤곽선.
+/// 상태는 색뿐 아니라 아이콘 원의 채움과 접근성 selected 의미로도 전달한다.
 class _MysteryCard extends StatelessWidget {
   const _MysteryCard({
     required this.set,
@@ -497,45 +451,30 @@ class _MysteryCard extends StatelessWidget {
     final content = InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppSpace.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: selected
-                        ? scheme.primary
-                        : scheme.surfaceContainerHigh,
-                  ),
-                  child: Icon(
-                    _icon,
-                    size: 22,
-                    color: selected
-                        ? scheme.onPrimary
-                        : scheme.onSurfaceVariant,
-                  ),
+                CircleAvatar(
+                  backgroundColor: selected
+                      ? scheme.primary
+                      : scheme.surfaceContainerHighest,
+                  foregroundColor: selected
+                      ? scheme.onPrimary
+                      : scheme.onSurfaceVariant,
+                  child: Icon(_icon),
                 ),
                 const Spacer(),
-                if (isToday)
-                  Pill(
-                    label: '오늘',
-                    dense: true,
-                    background: scheme.secondaryContainer,
-                    foreground: scheme.onSecondaryContainer,
-                  ),
+                if (isToday) const Pill(label: '오늘', dense: true),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpace.sm),
             Text(
               set.koreanName,
               style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
                 color: selected ? scheme.onPrimaryContainer : null,
               ),
             ),
@@ -543,31 +482,12 @@ class _MysteryCard extends StatelessWidget {
         ),
       ),
     );
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-      side: BorderSide(
-        color: selected ? scheme.primary : scheme.outlineVariant,
-        width: selected ? 2 : 1,
-      ),
-    );
     return Semantics(
       button: true,
       selected: selected,
       child: selected
-          ? Card.filled(
-              margin: EdgeInsets.zero,
-              color: scheme.primaryContainer,
-              shape: shape,
-              clipBehavior: Clip.antiAlias,
-              child: content,
-            )
-          : Card.outlined(
-              margin: EdgeInsets.zero,
-              color: scheme.surface,
-              shape: shape,
-              clipBehavior: Clip.antiAlias,
-              child: content,
-            ),
+          ? Card.filled(color: scheme.primaryContainer, child: content)
+          : Card.outlined(child: content),
     );
   }
 }
@@ -582,36 +502,34 @@ class _MysteryList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    // 글자 크기 배율에 맞춰 '1단' 머리표 폭도 함께 키운다.
+    final labelWidth = MediaQuery.textScalerOf(context).scale(40);
     return Card.filled(
-      margin: EdgeInsets.zero,
-      color: scheme.surfaceContainer,
+      color: scheme.surfaceContainerHigh,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        padding: const EdgeInsets.all(AppSpace.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (final m in set.mysteries)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: AppSpace.xxs),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      width: 40,
+                      width: labelWidth,
                       child: Text(
                         '${m.index}단',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.secondary,
-                          fontWeight: FontWeight.w700,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                     ),
                     Expanded(
                       child: Text(
                         _shortMeditation(m.meditation),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurface,
-                        ),
+                        style: theme.textTheme.bodyMedium,
                       ),
                     ),
                   ],

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../app/rosary_style.dart';
-import '../../app/theme.dart';
 import '../../domain/rosary_sequence.dart';
 
 // ---------------------------------------------------------------------------
@@ -693,10 +692,7 @@ class _RosaryMapState extends State<RosaryMap>
                     bottom: 2,
                     child: Text(
                       label,
-                      style: (text.labelMedium ?? const TextStyle()).copyWith(
-                        fontFamily: AppTheme.sansFamily,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      style: text.labelMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
                     ),
@@ -708,7 +704,7 @@ class _RosaryMapState extends State<RosaryMap>
                     child: Icon(
                       Icons.open_in_full_rounded,
                       size: 16,
-                      color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
               ],

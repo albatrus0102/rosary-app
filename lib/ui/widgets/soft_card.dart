@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
 
-/// 부드러운 카드: 그림자 없이 옅은 윤곽선과 톤 차이로만 구분한다.
+/// 호환용 얇은 래퍼: M3 [Card]를 그대로 쓴다.
+///
+/// 새 코드는 `Card.filled`/`Card.outlined`를 직접 쓴다. [borderColor]를 주면
+/// 윤곽선 카드, 아니면 [color]를 쓰는 채운(tonal) 카드로 그린다. 탭 가능하면
+/// 상태 레이어(hover/focus/pressed)가 있는 [InkWell]을 쓴다.
 class SoftCard extends StatelessWidget {
   const SoftCard({
     super.key,
@@ -12,7 +16,6 @@ class SoftCard extends StatelessWidget {
     this.borderColor,
     this.borderWidth = 1,
     this.onTap,
-    this.radius = AppTheme.cardRadius,
   });
 
   final Widget child;
@@ -21,28 +24,26 @@ class SoftCard extends StatelessWidget {
   final Color? borderColor;
   final double borderWidth;
   final VoidCallback? onTap;
-  final double radius;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(radius),
-      side: BorderSide(
-        color: borderColor ?? scheme.outlineVariant,
-        width: borderWidth,
-      ),
-    );
-    return Material(
-      color: color ?? scheme.surface,
-      shape: shape,
-      clipBehavior: Clip.antiAlias,
-      child: onTap == null
-          ? Padding(padding: padding, child: child)
-          : InkWell(
-              onTap: onTap,
-              child: Padding(padding: padding, child: child),
-            ),
-    );
+    final content = onTap == null
+        ? Padding(padding: padding, child: child)
+        : InkWell(
+            onTap: onTap,
+            child: Padding(padding: padding, child: child),
+          );
+    final side = borderColor;
+    if (side != null && side != Colors.transparent) {
+      return Card.outlined(
+        color: color,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppShape.medium,
+          side: BorderSide(color: side, width: borderWidth),
+        ),
+        child: content,
+      );
+    }
+    return Card.filled(color: color, child: content);
   }
 }

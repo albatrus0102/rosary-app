@@ -17,6 +17,17 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_tts: ^4.2.5
+  web_socket_channel: ^3.0.3
+  webview_flutter: ^4.14.1
+  webview_flutter_android: ^4.14.1
+  webview_flutter_wkwebview: ^3.27.2
+  # 1.9.x: Flutter 3.47의 material.dart ColorScheme을 그대로 쓴다
+  # (2.x는 material_ui 패키지의 별도 ColorScheme 타입을 사용한다).
+  dynamic_color: ^1.9.0
+  package_info_plus: ^10.2.2
+  device_info_plus: ^13.3.0
+  supabase_flutter: ^2.18.3
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:
@@ -44,6 +55,8 @@ flutter:
           weight: 500
   assets:
     - assets/images/
+    - assets/church/
+    - assets/church_thumbs/
     - assets/sounds/
     - assets/leader_voice/sister/
     - assets/leader_voice/priest/

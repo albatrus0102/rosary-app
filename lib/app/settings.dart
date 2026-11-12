@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../church/avatar/avatar_config.dart';
+import '../church/church_catalog.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import 'leader_voice.dart';
@@ -8,6 +10,9 @@ import 'rosary_style.dart';
 
 /// 기도문 본문 글꼴: 고딕(Pretendard) 또는 명조(Noto Serif KR).
 enum PrayerFont { sans, serif }
+
+/// 사이버 성당 3D 화면 품질.
+enum ChurchQuality { low, high }
 
 /// 이어서 기도하기를 위해 저장해 두는 진행 상태.
 class SavedPrayer {
@@ -62,9 +67,26 @@ class AppSettings extends ChangeNotifier {
     _chimeVolume = (_prefs.getDouble(_kChimeVolume) ?? defaultChimeVolume)
         .clamp(minChimeVolume, maxChimeVolume);
     _hapticOnAdvance = _prefs.getBool(_kHaptic) ?? true;
+    _useDynamicColor = _prefs.getBool(_kUseDynamicColor) ?? false;
     _prayerTextScale = (_prefs.getDouble(_kTextScale) ?? defaultTextScale)
         .clamp(minTextScale, maxTextScale);
     _savedPrayer = _readSavedPrayer();
+    _churchAvatar = AvatarConfig.fromJsonString(
+      _prefs.getString(_kChurchAvatar),
+    );
+    _churchAvatarChosen = _prefs.getBool(_kChurchAvatarChosen) ?? false;
+    _churchAmbient = _prefs.getBool(_kChurchAmbient) ?? true;
+    _churchId = ChurchCatalog.resolve(_prefs.getString(_kChurchId)).id;
+    _churchFavorites = {
+      for (final id
+          in _prefs.getStringList(_kChurchFavorites) ?? const <String>[])
+        if (ChurchCatalog.byId.containsKey(id)) id,
+    };
+    _churchQuality = _enumByName(
+      ChurchQuality.values,
+      _prefs.getString(_kChurchQuality),
+      ChurchQuality.high,
+    );
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -79,10 +101,17 @@ class AppSettings extends ChangeNotifier {
   static const _kPrayerFont = 'prayer_font';
   static const _kChimeVolume = 'chime_volume';
   static const _kHaptic = 'haptic';
+  static const _kUseDynamicColor = 'use_dynamic_color';
   static const _kTextScale = 'prayer_text_scale';
   static const _kResumeSet = 'resume_set';
   static const _kResumeIndex = 'resume_index';
   static const _kResumeAt = 'resume_at';
+  static const _kChurchAvatar = 'church_avatar';
+  static const _kChurchAvatarChosen = 'church_avatar_chosen';
+  static const _kChurchAmbient = 'church_ambient';
+  static const _kChurchQuality = 'church_quality';
+  static const _kChurchId = 'church_id';
+  static const _kChurchFavorites = 'church_favorites';
 
   /// 기도문 글자 크기 배율(1.0이 기본 24sp).
   static const double minTextScale = 0.85;
@@ -100,6 +129,7 @@ class AppSettings extends ChangeNotifier {
   final SharedPreferences _prefs;
 
   late bool _hapticOnAdvance;
+  late bool _useDynamicColor;
   late double _prayerTextScale;
   SavedPrayer? _savedPrayer;
 
@@ -128,6 +158,12 @@ class AppSettings extends ChangeNotifier {
   late PrayerFont _prayerFont;
   late double _chimeVolume;
   late MysterySet _mysterySet;
+  late AvatarConfig _churchAvatar;
+  late bool _churchAvatarChosen;
+  late bool _churchAmbient;
+  late ChurchQuality _churchQuality;
+  late String _churchId;
+  late Set<String> _churchFavorites;
 
   static Future<AppSettings> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -258,6 +294,16 @@ class AppSettings extends ChangeNotifier {
   /// 중단한 기도가 있으면 그 상태, 없으면 null.
   SavedPrayer? get savedPrayer => _savedPrayer;
 
+  /// 기기 배경화면 색(Material You 동적 색상)을 쓸지 여부. 기본은 끔(앱 고유 테라코타).
+  bool get useDynamicColor => _useDynamicColor;
+
+  set useDynamicColor(bool v) {
+    if (v == _useDynamicColor) return;
+    _useDynamicColor = v;
+    _prefs.setBool(_kUseDynamicColor, v);
+    notifyListeners();
+  }
+
   set hapticOnAdvance(bool v) {
     if (v == _hapticOnAdvance) return;
     _hapticOnAdvance = v;
@@ -292,6 +338,70 @@ class AppSettings extends ChangeNotifier {
     _prefs.remove(_kResumeSet);
     _prefs.remove(_kResumeIndex);
     _prefs.remove(_kResumeAt);
+    notifyListeners();
+  }
+
+  /// 사이버 성당 내 아바타.
+  AvatarConfig get churchAvatar => _churchAvatar;
+
+  /// 아바타 편집기에서 한 번이라도 저장했는지.
+  bool get churchAvatarChosen => _churchAvatarChosen;
+
+  /// 성당 배경음(환경음) 켜기.
+  bool get churchAmbient => _churchAmbient;
+
+  /// 성당 3D 화면 품질.
+  ChurchQuality get churchQuality => _churchQuality;
+
+  /// 마지막으로 고른 성당 id(카탈로그에 없으면 'basic').
+  String get churchId => _churchId;
+
+  /// 즐겨찾기한 성당 id들.
+  Set<String> get churchFavorites => Set.unmodifiable(_churchFavorites);
+
+  bool isChurchFavorite(String id) => _churchFavorites.contains(id);
+
+  /// 즐겨찾기를 켜고 끈다.
+  void toggleChurchFavorite(String id) {
+    if (!ChurchCatalog.byId.containsKey(id)) return;
+    if (!_churchFavorites.remove(id)) _churchFavorites.add(id);
+    _prefs.setStringList(_kChurchFavorites, _churchFavorites.toList()..sort());
+    notifyListeners();
+  }
+
+  set churchId(String v) {
+    final id = ChurchCatalog.resolve(v).id;
+    if (id == _churchId) return;
+    _churchId = id;
+    _prefs.setString(_kChurchId, id);
+    notifyListeners();
+  }
+
+  set churchAvatar(AvatarConfig v) {
+    if (v == _churchAvatar) return;
+    _churchAvatar = v;
+    _prefs.setString(_kChurchAvatar, v.toJsonString());
+    notifyListeners();
+  }
+
+  set churchAvatarChosen(bool v) {
+    if (v == _churchAvatarChosen) return;
+    _churchAvatarChosen = v;
+    _prefs.setBool(_kChurchAvatarChosen, v);
+    notifyListeners();
+  }
+
+  set churchAmbient(bool v) {
+    if (v == _churchAmbient) return;
+    _churchAmbient = v;
+    _prefs.setBool(_kChurchAmbient, v);
+    notifyListeners();
+  }
+
+  set churchQuality(ChurchQuality v) {
+    if (v == _churchQuality) return;
+    _churchQuality = v;
+    _prefs.setString(_kChurchQuality, v.name);
     notifyListeners();
   }
 }

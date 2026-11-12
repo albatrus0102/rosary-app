@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// 작은 소제목. 올리브색에 자간을 넓힌 스타일.
+/// M3 목록 소제목(subheader): labelLarge + primary. 접근성 제목(header) 의미를 더한다.
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.text, {super.key, this.trailing});
 
@@ -11,16 +11,17 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.secondary,
-                letterSpacing: 1,
-                fontWeight: FontWeight.w600,
+            child: Semantics(
+              header: true,
+              child: Text(
+                text,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
           ),

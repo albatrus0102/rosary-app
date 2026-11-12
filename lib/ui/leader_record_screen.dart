@@ -6,9 +6,10 @@ import 'package:record/record.dart';
 
 import '../app/leader_audio_store.dart';
 import '../app/sound_player.dart';
+import '../app/theme.dart';
 import '../domain/leader_cues.dart';
+import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
-import 'widgets/soft_card.dart';
 
 /// 선창(앞단) 음성 녹음 관리 화면. 큐 26개를 하나씩 녹음/듣기/삭제한다.
 class LeaderRecordScreen extends StatefulWidget {
@@ -208,34 +209,28 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
   Widget build(BuildContext context) {
     final cues = allLeaderCues;
     return Scaffold(
-      appBar: AppBar(title: const Text('선창 녹음 관리'), centerTitle: true),
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: _store,
-          builder: (context, _) {
-            // 0: 머리말, 1: '기도' 구역, 2..7: 기도 6개, 8: '신비' 구역, 9..: 신비
-            final itemCount = cues.length + 3;
-            return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  itemCount: itemCount,
-                  itemBuilder: (context, i) {
-                    if (i == 0) return _buildHeader(context, cues.length);
-                    if (i == 1) return const SectionHeader('기도');
-                    if (i <= 1 + leaderPrayerCueCount) {
-                      return _buildRow(context, cues[i - 2]);
-                    }
-                    if (i == 2 + leaderPrayerCueCount) {
-                      return const SectionHeader('신비');
-                    }
-                    return _buildRow(context, cues[i - 3]);
-                  },
-                ),
+      body: ListenableBuilder(
+        listenable: _store,
+        builder: (context, _) => CustomScrollView(
+          slivers: [
+            const SliverAppBar.medium(title: Text('선창 녹음 관리')),
+            SliverPageBody(
+              maxWidth: 640,
+              bottomPadding: AppSpace.md,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildHeader(context, cues.length),
+                  const SectionHeader('기도'),
+                  for (var i = 0; i < leaderPrayerCueCount; i++)
+                    _buildRow(context, cues[i]),
+                  const SectionHeader('신비'),
+                  for (var i = leaderPrayerCueCount; i < cues.length; i++)
+                    _buildRow(context, cues[i]),
+                ],
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );
@@ -243,35 +238,32 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
 
   Widget _buildHeader(BuildContext context, int total) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final count = _store.recordedCount;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: SoftCard(
-        color: theme.colorScheme.surfaceContainer,
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$total개 중 $count개 녹음됨',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+      padding: const EdgeInsets.only(bottom: AppSpace.sm),
+      child: Card.filled(
+        color: scheme.surfaceContainerHigh,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpace.sm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$total개 중 $count개 녹음됨', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpace.sm),
+              LinearProgressIndicator(
+                value: total == 0 ? 0 : count / total,
+                semanticsLabel: '녹음 진행률',
               ),
-            ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: total == 0 ? 0 : count / total,
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              _guidance,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: AppSpace.sm),
+              Text(
+                _guidance,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -284,93 +276,98 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
     final recording = _recordingId == cue.id;
     final playing = _playingId == cue.id;
     final otherRecording = _recordingId != null && !recording;
+    // 녹음 중에는 오류색 대신 errorContainer 톤으로 바뀌고(+ 아이콘·문구) 알린다.
+    final onCard = recording ? scheme.onErrorContainer : null;
+
+    final body = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                recording
+                    ? Icons.fiber_manual_record
+                    : has
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color: recording
+                    ? scheme.error
+                    : has
+                    ? scheme.primary
+                    : scheme.outline,
+                semanticLabel: recording
+                    ? '녹음 중'
+                    : has
+                    ? '녹음됨'
+                    : '녹음 없음',
+              ),
+              const SizedBox(width: AppSpace.sm),
+              Expanded(
+                child: Text(
+                  cue.title,
+                  style: theme.textTheme.titleMedium?.copyWith(color: onCard),
+                ),
+              ),
+              if (recording)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpace.xs),
+                  child: Text(
+                    '녹음 중...',
+                    style: theme.textTheme.labelMedium?.copyWith(color: onCard),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpace.xs),
+          Text(
+            cue.text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: recording
+                  ? scheme.onErrorContainer
+                  : scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: AppSpace.xxs),
+          Wrap(
+            spacing: AppSpace.xs,
+            children: [
+              TextButton.icon(
+                style: onCard == null
+                    ? null
+                    : TextButton.styleFrom(foregroundColor: onCard),
+                onPressed: otherRecording || _busy
+                    ? null
+                    : () => recording ? _stopRecording() : _startRecording(cue),
+                icon: Icon(recording ? Icons.stop : Icons.mic),
+                label: Text(recording ? '정지' : '녹음 시작'),
+              ),
+              TextButton.icon(
+                onPressed: has && _recordingId == null
+                    ? () => _togglePlay(cue)
+                    : null,
+                icon: Icon(playing ? Icons.stop : Icons.play_arrow),
+                label: Text(playing ? '듣기 정지' : '듣기'),
+              ),
+              TextButton.icon(
+                onPressed: has && _recordingId == null
+                    ? () => _delete(cue)
+                    : null,
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('삭제'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: SoftCard(
-        borderColor: recording ? scheme.error : null,
-        borderWidth: recording ? 2 : 1,
-        padding: const EdgeInsets.fromLTRB(16, 14, 12, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  recording
-                      ? Icons.fiber_manual_record
-                      : has
-                      ? Icons.check_circle
-                      : Icons.radio_button_unchecked,
-                  size: 22,
-                  color: recording
-                      ? scheme.error
-                      : has
-                      ? scheme.secondary
-                      : scheme.outline,
-                  semanticLabel: recording
-                      ? '녹음 중'
-                      : has
-                      ? '녹음됨'
-                      : '녹음 없음',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    cue.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                if (recording)
-                  Text(
-                    '녹음 중...',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: scheme.error,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              cue.text,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 8,
-              children: [
-                TextButton.icon(
-                  onPressed: otherRecording || _busy
-                      ? null
-                      : () =>
-                            recording ? _stopRecording() : _startRecording(cue),
-                  icon: Icon(recording ? Icons.stop : Icons.mic),
-                  label: Text(recording ? '정지' : '녹음 시작'),
-                ),
-                TextButton.icon(
-                  onPressed: has && _recordingId == null
-                      ? () => _togglePlay(cue)
-                      : null,
-                  icon: Icon(playing ? Icons.stop : Icons.play_arrow),
-                  label: Text(playing ? '듣기 정지' : '듣기'),
-                ),
-                TextButton.icon(
-                  onPressed: has && _recordingId == null
-                      ? () => _delete(cue)
-                      : null,
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('삭제'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      padding: const EdgeInsets.only(bottom: AppSpace.sm),
+      child: recording
+          ? Card.filled(color: scheme.errorContainer, child: body)
+          : Card.outlined(child: body),
     );
   }
 }

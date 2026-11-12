@@ -11,6 +11,8 @@ import '../app/theme.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
 import 'leader_record_screen.dart';
+import 'widgets/page_body.dart';
+import 'widgets/section_header.dart';
 
 /// 설정 화면: 소리·진동, 기도문 표시, 선창 음성, 정보.
 class SettingsScreen extends StatefulWidget {
@@ -155,28 +157,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context, _) => CustomScrollView(
           slivers: [
             const SliverAppBar.large(title: Text('설정')),
-            SliverToBoxAdapter(
-              child: SafeArea(
-                top: false,
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: _maxContentWidth,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildSoundSection(context),
-                          _buildDisplaySection(context),
-                          _buildLeaderSection(context),
-                          _buildAboutSection(context),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+            SliverPageBody(
+              maxWidth: _maxContentWidth,
+              bottomPadding: AppSpace.lg,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSoundSection(context),
+                  _buildDisplaySection(context),
+                  _buildLeaderSection(context),
+                  _buildAboutSection(context),
+                ],
               ),
             ),
           ],
@@ -200,9 +191,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: Icons.volume_up_outlined,
           title: '신호음 크기',
           valueText: '${(settings.chimeVolume * 100).round()}%',
-          trailing: IconButton(
+          trailing: IconButton.filledTonal(
             tooltip: '들어보기',
-            icon: const Icon(Icons.play_circle_outline),
+            icon: const Icon(Icons.play_arrow),
             onPressed: () => unawaited(_previewChime()),
           ),
           slider: Slider(
@@ -210,6 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             max: AppSettings.maxChimeVolume,
             divisions: 9,
             label: '${(settings.chimeVolume * 100).round()}%',
+            semanticFormatterCallback: (v) => '${(v * 100).round()}%',
             value: settings.chimeVolume,
             onChanged: (v) => settings.chimeVolume = v,
           ),
@@ -241,13 +233,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return _Section(
       title: '기도문 표시',
       children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.palette_outlined),
+          title: const Text('기기 배경화면 색 사용(Material You)'),
+          subtitle: const Text('지원하지 않는 기기에서는 앱 기본 색을 씁니다'),
+          value: settings.useDynamicColor,
+          onChanged: (v) => settings.useDynamicColor = v,
+        ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('글꼴', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpace.xs),
               SizedBox(
                 width: double.infinity,
                 child: SegmentedButton<PrayerFont>(
@@ -291,24 +290,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             max: AppSettings.maxTextScale,
             divisions: 15,
             label: '${(scale * 100).round()}%',
+            semanticFormatterCallback: (v) => '${(v * 100).round()}%',
             value: scale,
             onChanged: (v) => settings.prayerTextScale = v,
           ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(16),
-            ),
+          child: Card.filled(
+            color: scheme.surfaceContainerLowest,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.all(AppSpace.sm),
               child: SizedBox(
                 width: double.infinity,
                 child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
+                  duration: AppMotion.of(context, Durations.short4),
+                  curve: Easing.standard,
                   style: AppTheme.prayerStyle(
                     context,
                     settings.prayerFont,
@@ -345,8 +342,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: (v) => settings.leaderAudioEnabled = v,
         ),
         AnimatedSize(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
+          duration: AppMotion.of(context, Durations.medium1),
+          curve: Easing.emphasizedDecelerate,
           alignment: Alignment.topCenter,
           child: !settings.leaderAudioEnabled
               ? const SizedBox(width: double.infinity)
@@ -354,7 +351,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                       child: SizedBox(
                         width: double.infinity,
                         child: SegmentedButton<LeaderVoiceSource>(
@@ -384,10 +381,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _buildTtsControls(context)
                     else
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: Wrap(
-                          spacing: 12,
-                          runSpacing: 8,
+                          spacing: AppSpace.sm,
+                          runSpacing: AppSpace.xs,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             ListenableBuilder(
@@ -429,24 +426,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, snap) {
         // 알 수 없으면(아직 확인 중이거나 오류) 경고하지 않는다.
         if (snap.data != false) return const SizedBox.shrink();
+        final scheme = theme.colorScheme;
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '기기에 한국어 음성이 설치되어 있지 않습니다. '
-                  '설정 > 텍스트 음성 변환에서 한국어 음성을 받아 주세요.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
-                    height: 1.4,
+          padding: const EdgeInsets.only(bottom: AppSpace.xs),
+          child: Card.filled(
+            color: scheme.errorContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpace.sm),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: scheme.onErrorContainer,
                   ),
-                ),
+                  const SizedBox(width: AppSpace.xs),
+                  Expanded(
+                    child: Text(
+                      '기기에 한국어 음성이 설치되어 있지 않습니다. '
+                      '설정 > 텍스트 음성 변환에서 한국어 음성을 받아 주세요.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -458,12 +464,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     final dim = theme.textTheme.bodyMedium?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
-      height: 1.4,
     );
     final persona = settings.leaderPersona;
     final total = allLeaderCues.length;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: FutureBuilder<int>(
         key: ValueKey('bundled_clips_${persona.name}'),
         future: _clipCountFor(persona),
@@ -495,9 +500,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpace.xs),
               Text(aiVoiceDisclosure, style: dim),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpace.sm),
               if (usesFallback) _koreanWarning(context, _ensureTts()),
               if (count != null) ...[
                 Text('자연스러운 음성 파일 $count개 / $total개', style: dim),
@@ -512,7 +517,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text('$total개 미만이면 부족한 부분은 기기 음성으로 읽어요', style: dim),
                   ),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpace.xs),
               Align(
                 alignment: Alignment.centerRight,
                 child: FilledButton.tonalIcon(
@@ -532,7 +537,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     final tts = _ensureTts();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -595,7 +600,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-/// 섹션 머리글 + 채워진 카드 안의 타일 묶음.
+/// 섹션 머리글 + 채워진 카드(tonal 표면) 안의 타일 묶음.
 class _Section extends StatelessWidget {
   const _Section({required this.title, required this.children});
 
@@ -604,27 +609,15 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: AppSpace.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Semantics(
-            header: true,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ),
+          SectionHeader(title),
           Card.filled(
-            margin: EdgeInsets.zero,
-            clipBehavior: Clip.antiAlias,
+            color: scheme.surfaceContainerLow,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: children,
@@ -657,7 +650,7 @@ class _SliderTile extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -666,7 +659,7 @@ class _SliderTile extends StatelessWidget {
             child: Row(
               children: [
                 Icon(icon, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpace.sm),
                 Expanded(
                   child: Text.rich(
                     TextSpan(

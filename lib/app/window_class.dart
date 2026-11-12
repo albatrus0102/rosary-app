@@ -18,4 +18,7 @@ extension WindowClassX on WindowClass {
 
   /// 폭이 600dp 이상(태블릿·폴더블 펼침·가로 모드).
   bool get isWide => this != WindowClass.compact;
+
+  /// M3 레이아웃 좌우 여백(dp): compact 16, medium 24, expanded 24.
+  double get margin => this == WindowClass.compact ? 16 : 24;
 }
