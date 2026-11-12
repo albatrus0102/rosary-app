@@ -21,6 +21,7 @@ import 'church_prayer_card.dart';
 import 'church_scene_controller.dart';
 import 'net/church_net.dart';
 import 'net/church_net_factory.dart';
+import 'net/solo_church_net.dart';
 
 /// 사이버 성당 화면: 3D 웹 장면(WebView) 위에 Flutter HUD를 얹는다.
 class ChurchScreen extends StatefulWidget {
@@ -131,7 +132,12 @@ class _ChurchScreenState extends State<ChurchScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _ownsNet = widget.net == null;
-    _net = widget.net ?? createChurchNet(_settings);
+    // 감상실(`glass_room`)은 혼자 보는 곳이라 실시간 접속을 만들지 않는다.
+    _net =
+        widget.net ??
+        (widget.churchId == ChurchCatalog.glassRoomId
+            ? SoloChurchNet()
+            : createChurchNet(_settings));
     _ownsScene = widget.scene == null;
     _scene = widget.scene ?? WebViewChurchSceneController();
     _lastAmbient = _settings.churchAmbient;
@@ -319,6 +325,12 @@ class _ChurchScreenState extends State<ChurchScreen>
         if (!_background) _net.sendPos(e.x, e.z, e.r, e.moving);
       case ScenePerf():
         _onPerf(e);
+      case ViewReady() ||
+          ViewEnd() ||
+          ViewError() ||
+          ViewPerf() ||
+          ViewGesture():
+        break; // 창 감상 이벤트는 GlassViewScreen이 쓴다.
     }
   }
 

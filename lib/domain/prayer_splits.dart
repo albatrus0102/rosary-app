@@ -4,7 +4,8 @@ import 'prayer_data.dart';
 ///
 /// 목록에 없는 기도(성호경)는 나뉘지 않고 전부 함께 바친다.
 const Map<String, int> responderStartLine = {
-  'apostles_creed': 8, // 그리로부터 산 이와 죽은 이를 심판하러 오시리라 믿나이다.
+  // 앞단은 '…오시리라 믿나이다.'까지, 뒷단은 '성령을 믿으며'부터(소유자 확정).
+  'apostles_creed': 9, // 성령을 믿으며
   'our_father': 5, // 오늘 저희에게 일용할 양식을 주시고
   'hail_mary': 3, // 천주의 성모 마리아님,
   'glory_be': 1, // 처음과 같이

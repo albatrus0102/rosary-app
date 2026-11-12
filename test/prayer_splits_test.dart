@@ -6,7 +6,7 @@ import 'package:rosary_app/domain/rosary_sequence.dart';
 
 void main() {
   const expectedFirstResponderLine = {
-    'apostles_creed': '그리로부터 산 이와 죽은 이를 심판하러 오시리라 믿나이다.',
+    'apostles_creed': '성령을 믿으며',
     'our_father': '오늘 저희에게 일용할 양식을 주시고',
     'hail_mary': '천주의 성모 마리아님,',
     'glory_be': '처음과 같이',

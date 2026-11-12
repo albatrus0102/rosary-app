@@ -80,6 +80,48 @@ sealed class SceneEvent {
             seated: j['sat'] == 1 || j['sat'] == true,
             auto: j['a'] == 1 || j['a'] == true,
           );
+        // --- 창 감상(viewWindow) 이벤트 ---
+        case 'viewReady':
+          final win = j['win'];
+          if (win is! String) return null;
+          final tier = j['tier'];
+          final ms = j['ms'];
+          return ViewReady(
+            win: win,
+            tier: tier is String ? tier : 't1',
+            ms: ms is num ? ms.toInt() : 0,
+          );
+        case 'viewEnd':
+          final win = j['win'];
+          if (win is! String) return null;
+          final seconds = j['seconds'];
+          final zoomMax = j['zoomMax'] ?? j['zoom_max'];
+          return ViewEnd(
+            win: win,
+            seconds: seconds is num ? seconds.toDouble() : 0,
+            zoomMax: zoomMax is num ? zoomMax.toDouble() : 1,
+            panned: j['panned'] == 1 || j['panned'] == true,
+          );
+        case 'viewError':
+          final win = j['win'];
+          if (win is! String) return null;
+          return ViewError(
+            win: win,
+            reason: ViewErrorReason.parse(j['reason']),
+          );
+        case 'viewPerf':
+          final win = j['win'];
+          final fps = j['fps'];
+          if (win is! String || fps is! num) return null;
+          final texMb = j['texMb'] ?? j['tex_mb'];
+          return ViewPerf(
+            win: win,
+            fps: fps.toDouble(),
+            texMb: texMb is num ? texMb.toDouble() : 0,
+          );
+        case 'viewGesture':
+          final kind = ViewGestureKind.parse(j['kind']);
+          return kind == null ? null : ViewGesture(kind);
       }
     } catch (_) {}
     return null;
@@ -176,6 +218,81 @@ class ScenePerf extends SceneEvent {
   final bool auto;
 }
 
+/// 창 감상 장면이 첫 화면을 그렸다. [tier]는 질감 단계('t1'|'t2'|'t3'|'tile'),
+/// [ms]는 `viewWindow` 호출부터 걸린 시간.
+class ViewReady extends SceneEvent {
+  const ViewReady({required this.win, this.tier = 't1', this.ms = 0});
+  final String win;
+  final String tier;
+  final int ms;
+}
+
+/// 감상을 끝냈다(`endView` 응답). [seconds]는 머문 시간, [zoomMax]는 가장 크게 확대한 배율,
+/// [panned]는 끌어서 옮겨 본 적이 있는지.
+class ViewEnd extends SceneEvent {
+  const ViewEnd({
+    required this.win,
+    this.seconds = 0,
+    this.zoomMax = 1,
+    this.panned = false,
+  });
+  final String win;
+  final double seconds;
+  final double zoomMax;
+  final bool panned;
+}
+
+/// 감상 장면 오류의 종류. 값은 웹이 보내는 문자열과 같다.
+enum ViewErrorReason {
+  texture,
+  webgl,
+  memory,
+  unknown;
+
+  static ViewErrorReason parse(Object? v) {
+    for (final r in values) {
+      if (r.name == v) return r;
+    }
+    return unknown;
+  }
+
+  /// WebGL·메모리 문제는 같은 창을 다시 그려도 소용이 없어 평면 보기로 내려간다.
+  bool get needsFlatFallback => this == webgl || this == memory;
+}
+
+class ViewError extends SceneEvent {
+  const ViewError({required this.win, required this.reason});
+  final String win;
+  final ViewErrorReason reason;
+}
+
+/// 감상 중 성능 표본. [texMb]는 질감 회계(MB).
+class ViewPerf extends SceneEvent {
+  const ViewPerf({required this.win, required this.fps, this.texMb = 0});
+  final String win;
+  final double fps;
+  final double texMb;
+}
+
+enum ViewGestureKind {
+  zoom,
+  pan,
+  reset;
+
+  static ViewGestureKind? parse(Object? v) {
+    for (final k in values) {
+      if (k.name == v) return k;
+    }
+    return null;
+  }
+}
+
+/// 감상 중 사용자 제스처(확대·이동·두 번 탭 복귀). 덮개 UI를 숨기는 신호로 쓴다.
+class ViewGesture extends SceneEvent {
+  const ViewGesture(this.kind);
+  final ViewGestureKind kind;
+}
+
 /// 웹 장면의 로딩 상태.
 enum SceneLoad { loading, ready, error }
 
@@ -235,7 +352,9 @@ abstract class ChurchSceneController {
       // 걷기 입력·탭·걷기 취소는 오래된 값이 의미가 없으니 쌓지 않는다.
       if (method == 'setJoystick' ||
           method == 'tapAt' ||
-          method == 'cancelWalk') {
+          method == 'cancelWalk' ||
+          method == 'resetView' ||
+          method == 'endView') {
         return;
       }
       if (_queue.length < 300) _queue.add((method, args));
@@ -324,6 +443,38 @@ abstract class ChurchSceneController {
   /// 왼쪽 절반 터치는 Flutter가 가로채므로, 거기서 일어난 탭을 화면 좌표(논리 픽셀)로 웹에 넘긴다.
   /// 웹이 표식(촛불 봉헌대·제대 앞 등)을 맞히면 그곳으로 걷기 시작한다.
   Future<void> tapAt(double x, double y) => _call('tapAt', {'x': x, 'y': y});
+
+  // --- 창 감상 브리지(GLASS_APP_PLAN §3). 응답은 View* 이벤트로 온다. ---
+
+  /// 창 [win](카탈로그 id)을 감상 모드로 연다. [mode]는 'room'(감상실, `init`의 church가
+  /// 'glass_room')|'church'(성당 안 창), [tier]는 질감 단계 't1'|'t2'|'t3',
+  /// [light]는 'ref'(기준광)|'sun'|'night'. [hour]는 'sun'일 때의 시각(6~20).
+  Future<void> viewWindow({
+    required String win,
+    String mode = 'room',
+    String tier = 't1',
+    String light = 'ref',
+    double? hour,
+  }) => _call('viewWindow', {
+    'win': win,
+    'mode': mode,
+    'tier': tier,
+    'light': light,
+    'hour': ?hour,
+  });
+
+  /// 감상을 끝낸다. 웹이 [ViewEnd]로 머문 시간·확대·이동 여부를 알린다.
+  Future<void> endView() => _call('endView', const {});
+
+  /// 빛을 바꾼다('ref'|'sun'|'night').
+  Future<void> setViewLight({required String light, double? hour}) =>
+      _call('setViewLight', {'light': light, 'hour': ?hour});
+
+  /// 질감 단계를 바꾼다('t1'|'t2'|'t3').
+  Future<void> setViewTier(String tier) => _call('setViewTier', {'tier': tier});
+
+  /// 확대·이동을 처음 구도로 되돌린다.
+  Future<void> resetView() => _call('resetView', const {});
 
   /// 서버가 좌석 요청을 거부했을 때(웹이 앉기를 취소하고 일어서도록).
   Future<void> setSeatTaken(String seat) =>
@@ -464,6 +615,33 @@ class FakeChurchSceneController extends ChurchSceneController {
   void emit(SceneEvent e) => dispatch(e);
 
   void failLoad() => setLoadError();
+
+  // --- 창 감상 ---
+  void emitViewReady({String win = '', String tier = 't1', int ms = 300}) =>
+      dispatch(ViewReady(win: win, tier: tier, ms: ms));
+  void emitViewEnd({
+    String win = '',
+    double seconds = 10,
+    double zoomMax = 1,
+    bool panned = false,
+  }) => dispatch(
+    ViewEnd(win: win, seconds: seconds, zoomMax: zoomMax, panned: panned),
+  );
+  void emitViewError(ViewErrorReason reason, {String win = ''}) =>
+      dispatch(ViewError(win: win, reason: reason));
+
+  /// 마지막 `viewWindow` 인자.
+  Map<String, Object?>? get lastView => lastArgs('viewWindow');
+
+  /// `endView`가 오면 이 이벤트로 바로 응답한다(없으면 응답 없음).
+  ViewEnd? endViewReply;
+
+  @override
+  Future<void> endView() async {
+    await super.endView();
+    final r = endViewReply;
+    if (r != null) dispatch(r);
+  }
 
   /// `walkTo`로 요청한 kind들(순서대로).
   List<String> get walkKinds => [
