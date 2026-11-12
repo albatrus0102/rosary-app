@@ -67,11 +67,21 @@ class _CandleSheetState extends State<CandleSheet> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
           child: FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(_selected),
             icon: const Icon(Icons.local_fire_department),
             label: const Text('초 켜기'),
+          ),
+        ),
+        // 걸어서 도착하면 저절로 열리는 시트이므로, 부담 없이 닫을 수 있게 한다.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+          child: TextButton(
+            key: const ValueKey('candle-later'),
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
+            child: const Text('나중에'),
           ),
         ),
       ],

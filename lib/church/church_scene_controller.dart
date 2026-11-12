@@ -22,9 +22,11 @@ sealed class SceneEvent {
         case 'near':
           final seat = j['seat'];
           final candle = j['candle'];
+          final station = j['station'];
           return SceneNear(
             seat: seat is String ? seat : null,
             candle: candle is num ? candle.toInt() : null,
+            station: station is String ? station : null,
           );
         case 'seated':
           final seat = j['seat'];
@@ -42,6 +44,32 @@ sealed class SceneEvent {
             r is num ? r.toDouble() : 0,
             j['m'] == 1 || j['m'] == true,
           );
+        case 'stations':
+          int n(Object? v) => v is num ? v.toInt() : 0;
+          return SceneStations(
+            candle: n(j['candle']),
+            altar: n(j['altar']),
+            font: n(j['font']),
+          );
+        case 'walkStart':
+          final kind = j['kind'];
+          return kind is String ? SceneWalkStart(kind) : null;
+        case 'walkDone':
+          final kind = j['kind'];
+          final index = j['index'];
+          final seat = j['seat'];
+          if (kind is! String) return null;
+          return SceneWalkDone(
+            kind,
+            index: index is num ? index.toInt() : 0,
+            seat: seat is String ? seat : null,
+          );
+        case 'walkFail':
+          final kind = j['kind'];
+          return kind is String ? SceneWalkFail(kind) : null;
+        case 'walkCancel':
+          final kind = j['kind'];
+          return kind is String ? SceneWalkCancel(kind) : null;
         case 'perf':
           final fps = j['fps'];
           if (fps is! num) return null;
@@ -62,17 +90,57 @@ class SceneReady extends SceneEvent {
   const SceneReady();
 }
 
+/// 가까이 있는 것. [seat]은 앉을 수 있는 빈 좌석, [candle]은 촛불 슬롯,
+/// [station]은 서 있는 스테이션('altar' 제대 앞, 'font' 성수대)이다.
 class SceneNear extends SceneEvent {
-  const SceneNear({this.seat, this.candle});
+  const SceneNear({this.seat, this.candle, this.station});
   final String? seat;
   final int? candle;
+  final String? station;
 
   @override
   bool operator ==(Object other) =>
-      other is SceneNear && other.seat == seat && other.candle == candle;
+      other is SceneNear &&
+      other.seat == seat &&
+      other.candle == candle &&
+      other.station == station;
 
   @override
-  int get hashCode => Object.hash(seat, candle);
+  int get hashCode => Object.hash(seat, candle, station);
+}
+
+/// 성당을 불러온 뒤 한 번: 갈 수 있는 스테이션 개수(성수대는 없는 성당이 있다).
+class SceneStations extends SceneEvent {
+  const SceneStations({this.candle = 0, this.altar = 0, this.font = 0});
+  final int candle;
+  final int altar;
+  final int font;
+}
+
+/// 자동 걷기 시작(걷는 중 표시).
+class SceneWalkStart extends SceneEvent {
+  const SceneWalkStart(this.kind);
+  final String kind;
+}
+
+/// 자동 걷기 도착. [kind]는 candle|altar|seat|entrance|font.
+class SceneWalkDone extends SceneEvent {
+  const SceneWalkDone(this.kind, {this.index = 0, this.seat});
+  final String kind;
+  final int index;
+  final String? seat;
+}
+
+/// 길을 못 찾았거나 갈 곳이 없음.
+class SceneWalkFail extends SceneEvent {
+  const SceneWalkFail(this.kind);
+  final String kind;
+}
+
+/// 걷던 중 사용자가 끊음(스틱·터치·앉기).
+class SceneWalkCancel extends SceneEvent {
+  const SceneWalkCancel(this.kind);
+  final String kind;
 }
 
 class SceneSeated extends SceneEvent {
@@ -164,8 +232,12 @@ abstract class ChurchSceneController {
   Future<void> _call(String method, Map<String, Object?> args) async {
     if (_disposed) return;
     if (method != 'init' && !_initDone) {
-      // 걷기 입력은 오래된 값이 의미가 없으니 쌓지 않는다.
-      if (method == 'setJoystick') return;
+      // 걷기 입력·탭·걷기 취소는 오래된 값이 의미가 없으니 쌓지 않는다.
+      if (method == 'setJoystick' ||
+          method == 'tapAt' ||
+          method == 'cancelWalk') {
+        return;
+      }
       if (_queue.length < 300) _queue.add((method, args));
       return;
     }
@@ -240,6 +312,18 @@ abstract class ChurchSceneController {
   Future<void> setQuality(String quality) =>
       _call('setQuality', {'quality': quality});
   Future<void> emote(int e) => _call('emote', {'e': e});
+
+  /// 스테이션으로 걸어간다(자동 걷기). [kind]는 candle|altar|seat|entrance|font.
+  /// 웹이 walkStart → walkDone/walkFail/walkCancel 이벤트로 결과를 알린다.
+  Future<void> walkTo(String kind, {int? index, String? seat}) =>
+      _call('walkTo', {'kind': kind, 'index': ?index, 'seat': ?seat});
+
+  /// 자동 걷기를 멈춘다.
+  Future<void> cancelWalk() => _call('cancelWalk', const {});
+
+  /// 왼쪽 절반 터치는 Flutter가 가로채므로, 거기서 일어난 탭을 화면 좌표(논리 픽셀)로 웹에 넘긴다.
+  /// 웹이 표식(촛불 봉헌대·제대 앞 등)을 맞히면 그곳으로 걷기 시작한다.
+  Future<void> tapAt(double x, double y) => _call('tapAt', {'x': x, 'y': y});
 
   /// 서버가 좌석 요청을 거부했을 때(웹이 앉기를 취소하고 일어서도록).
   Future<void> setSeatTaken(String seat) =>
@@ -380,6 +464,11 @@ class FakeChurchSceneController extends ChurchSceneController {
   void emit(SceneEvent e) => dispatch(e);
 
   void failLoad() => setLoadError();
+
+  /// `walkTo`로 요청한 kind들(순서대로).
+  List<String> get walkKinds => [
+    for (final a in argsOf('walkTo')) a['kind'] as String,
+  ];
 
   int count(String method) => calls.where((c) => c.$1 == method).length;
   List<Map<String, Object?>> argsOf(String method) => [

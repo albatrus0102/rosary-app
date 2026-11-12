@@ -22,14 +22,15 @@
 
   var METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap',
     'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality',
-    'emote', 'setSeatTaken', 'setChurch'];
+    'emote', 'setSeatTaken', 'setChurch', 'walkTo', 'cancelWalk', 'tapAt'];
+  var NO_QUEUE = { setJoystick: 1, tapAt: 1, cancelWalk: 1 };   // 오래되면 의미 없는 입력은 쌓지 않는다
   var API = {};
   METHODS.forEach(function (m) {
     API[m] = function (a) {
       a = arg(a);
       if (app) {
         try { app.api[m](a); } catch (e) { if (root.console) console.error('[church] ' + m + ' failed', e); }
-      } else if (m !== 'setJoystick' && queue.length < 400) queue.push([m, a]);
+      } else if (!NO_QUEUE[m] && queue.length < 400) queue.push([m, a]);
     };
   });
   API._methods = METHODS;

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/app_services.dart';
@@ -15,6 +16,7 @@ import 'avatar/avatar_editor_screen.dart';
 import 'church_candle_sheet.dart';
 import 'church_catalog.dart';
 import 'church_constants.dart';
+import 'church_go_sheet.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
 import 'church_scene_controller.dart';
@@ -85,6 +87,21 @@ class _ChurchScreenState extends State<ChurchScreen>
   bool _wasOnline = false;
 
   SceneNear _near = const SceneNear();
+  SceneStations _stations = const SceneStations();
+
+  // 자동 걷기(스테이션으로 가기). 걷는 동안 칩을 보이고, 도착하면 그 자리의 행동을 보인다.
+  String? _walkKind;
+  final Set<String> _stationDone = {}; // 이 자리에서 이미 한 스테이션 동작('altar'|'font')
+  bool _sheetOpen = false;
+
+  // 첫 방문 안내(한 번만): 'church_walk_hint_seen'을 SharedPreferences에 직접 저장한다.
+  static const _hintKey = 'church_walk_hint_seen';
+  static const _hintDuration = Duration(seconds: 6);
+  bool _hintSeen = true; // 불러오기 전에는 보이지 않는다
+  bool _hintLoaded = false;
+  bool _hintVisible = false;
+  Timer? _hintTimer;
+
   String? _pendingSeat;
   String? _mySeat;
 
@@ -125,7 +142,46 @@ class _ChurchScreenState extends State<ChurchScreen>
     _netSub = _net.events.listen(_onNet);
     _net.state.addListener(_onNetState);
     _settings.addListener(_onSettings);
+    unawaited(_loadHintFlag());
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
+  }
+
+  Future<void> _loadHintFlag() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _hintSeen = prefs.getBool(_hintKey) ?? false;
+    } catch (e) {
+      debugPrint('church hint flag load failed: $e');
+      _hintSeen = true; // 못 읽으면 보이지 않는다(반복해서 뜨는 것보다 낫다).
+    }
+    _hintLoaded = true;
+    _maybeShowHint();
+  }
+
+  /// 장면이 준비되고 아직 안내를 본 적 없으면 6초 동안 보인다. 보인 순간 '봤음'으로 저장한다.
+  void _maybeShowHint() {
+    if (_disposed || !mounted || _hintVisible || _hintSeen) return;
+    if (!_hintLoaded || !_sceneReady) return;
+    _hintSeen = true;
+    _hintVisible = true;
+    _hintTimer = Timer(_hintDuration, _hideHint);
+    unawaited(_saveHintFlag());
+    setState(() {});
+  }
+
+  Future<void> _saveHintFlag() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_hintKey, true);
+    } catch (e) {
+      debugPrint('church hint flag save failed: $e');
+    }
+  }
+
+  void _hideHint() {
+    _hintTimer?.cancel();
+    _hintTimer = null;
+    if (_hintVisible && mounted) setState(() => _hintVisible = false);
   }
 
   /// 접속한다. 처음 들어오는 사람에게는 편집기를 강제하지 않고 기본 아바타와
@@ -220,8 +276,29 @@ class _ChurchScreenState extends State<ChurchScreen>
         _sceneReady = true;
         _inited = false;
         _maybeInit();
+        _maybeShowHint();
       case SceneNear():
-        if (e != _near) setState(() => _near = e);
+        if (e != _near) {
+          setState(() {
+            _near = e;
+            // 그 자리를 벗어나면 다음에 다시 '기도하기'/'성호 긋기'가 나온다.
+            if (e.station == null) {
+              _stationDone.clear();
+            } else {
+              _stationDone.removeWhere((k) => k != e.station);
+            }
+          });
+        }
+      case SceneStations():
+        setState(() => _stations = e);
+      case SceneWalkStart():
+        setState(() => _walkKind = e.kind);
+      case SceneWalkDone():
+        _onWalkDone(e);
+      case SceneWalkFail():
+        _onWalkFail(e);
+      case SceneWalkCancel():
+        if (_walkKind != null) setState(() => _walkKind = null);
       case SceneSeated():
         _onSeated(e.seat);
       case SceneStood():
@@ -473,9 +550,64 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   // --- 사용자 동작 ---
 
+  /// '가기' 시트에서 고른 곳으로 자동 걷기. 그 자리에 도착해야 그곳의 행동(초 켜기·기도하기·앉기)이 나온다.
+  Future<void> _onGo() async {
+    if (_sheetOpen) return;
+    _hideHint();
+    _sheetOpen = true;
+    final ChurchGoTarget? target;
+    try {
+      target = await showChurchGoSheet(context, hasFont: _stations.font > 0);
+    } finally {
+      _sheetOpen = false;
+    }
+    if (target == null || _disposed) return;
+    unawaited(_scene.setJoystick(0, 0));
+    unawaited(_scene.walkTo(target.kind));
+  }
+
+  void _cancelWalk() {
+    unawaited(_scene.cancelWalk());
+    if (_walkKind != null) setState(() => _walkKind = null);
+  }
+
+  void _onWalkDone(SceneWalkDone e) {
+    if (_walkKind != null) setState(() => _walkKind = null);
+    Track.church('church_gesture', widget.churchId, {'e': 'walk_${e.kind}'});
+    // 촛불 봉헌대에 도착하면 봉헌 시트가 저절로 열린다(한 번). 닫아도 '초 켜기' 버튼은 남는다.
+    if (e.kind == 'candle' &&
+        _near.candle != null &&
+        _mySeat == null &&
+        _pendingSeat == null) {
+      unawaited(_onLight());
+    }
+  }
+
+  void _onWalkFail(SceneWalkFail e) {
+    if (_walkKind != null) setState(() => _walkKind = null);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('그곳으로 가는 길을 찾지 못했어요'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  /// 제대 앞의 '기도하기'(고개 숙임) / 성수대의 '성호 긋기'. 그 자리에 서 있을 때만 나온다.
+  void _onStationAction() {
+    final station = _near.station;
+    if (station == null) return;
+    setState(() => _stationDone.add(station));
+    _emote(station == 'font' ? 1 : 2);
+  }
+
   void _onSit() {
     final seat = _near.seat;
     if (seat == null || _pendingSeat != null || _mySeat != null) return;
+    if (_walkKind != null) _walkKind = null;
     setState(() => _pendingSeat = seat);
     unawaited(_scene.setJoystick(0, 0));
     _net.requestSit(seat);
@@ -484,8 +616,14 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   Future<void> _onLight() async {
     final slot = _near.candle;
-    if (slot == null) return;
-    final intention = await showCandleSheet(context);
+    if (slot == null || _sheetOpen) return;
+    _sheetOpen = true;
+    final int? intention;
+    try {
+      intention = await showCandleSheet(context);
+    } finally {
+      _sheetOpen = false;
+    }
     if (intention == null || _disposed) return;
     _net.lightCandle(slot, intention);
     // 촛불을 켰다는 사실만 기록한다. 지향 값은 절대 넘기지 않는다.
@@ -584,6 +722,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _emote(int e) {
     _net.emote(e);
+    Track.church('church_gesture', widget.churchId, {'e': e});
     // 접속 중에는 서버 에코가 오면 재생하고, 혼자 모드는 에코가 없으니 바로 재생한다.
     if (_net.state.value != NetState.online) unawaited(_scene.emote(e));
   }
@@ -592,6 +731,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   void dispose() {
     _disposed = true;
     _perfBannerTimer?.cancel();
+    _hintTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _settings.removeListener(_onSettings);
     _net.state.removeListener(_onNetState);
@@ -667,6 +807,11 @@ class _ChurchScreenState extends State<ChurchScreen>
               child: ChurchMoveZone(
                 hint: '왼쪽 화면을 누르고 끌면 걸어요',
                 onChanged: (x, y) => unawaited(_scene.setJoystick(x, y)),
+                // 왼쪽 절반을 건드리면 자동 걷기가 끊기고, 짧은 탭은 웹 표식 누르기로 넘긴다.
+                onTouchDown: () {
+                  if (_walkKind != null) _cancelWalk();
+                },
+                onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
               ),
             ),
           Positioned.fill(child: _LoadOverlay(scene: _scene)),
@@ -704,6 +849,35 @@ class _ChurchScreenState extends State<ChurchScreen>
                       ),
                     ],
                   ),
+                  // 둘째 줄: (걷는 중이면 칩) ··· '가기'. 앉아 있으면 줄이 없다.
+                  if (walking)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          if (_walkKind != null)
+                            Flexible(
+                              child: ChurchWalkChip(
+                                key: const ValueKey('walk-chip'),
+                                onCancel: _cancelWalk,
+                              ),
+                            ),
+                          const Spacer(),
+                          ChurchGoButton(
+                            key: const ValueKey('go-button'),
+                            onPressed: _onGo,
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (_hintVisible && walking)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: ChurchWalkHint(),
+                      ),
+                    ),
                   if (_perfBanner)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -727,12 +901,28 @@ class _ChurchScreenState extends State<ChurchScreen>
                     // 오른쪽 아래: 상황 버튼 하나(앉기 / 초 켜기), 없으면 숨는다.
                     Align(
                       alignment: Alignment.centerRight,
-                      child: ChurchContextAction(
-                        action: ChurchContextAction.forNear(
-                          canSit: _near.seat != null,
-                          canLight: _near.candle != null,
-                        ),
-                        onPressed: _near.seat != null ? _onSit : _onLight,
+                      child: Builder(
+                        builder: (context) {
+                          final pending =
+                              _near.station != null &&
+                                  !_stationDone.contains(_near.station)
+                              ? _near.station
+                              : null;
+                          final action = ChurchContextAction.forNear(
+                            canSit: _near.seat != null,
+                            canLight: _near.candle != null,
+                            station: pending,
+                          );
+                          return ChurchContextAction(
+                            action: action,
+                            onPressed: switch (action) {
+                              ChurchAction.pray ||
+                              ChurchAction.cross => _onStationAction,
+                              ChurchAction.sit => _onSit,
+                              _ => _onLight,
+                            },
+                          );
+                        },
                       ),
                     ),
                 ],

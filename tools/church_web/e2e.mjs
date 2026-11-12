@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../assets/church');
-const SPEC_METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap', 'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality', 'emote', 'setSeatTaken'];
+const SPEC_METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap', 'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality', 'emote', 'setSeatTaken', 'walkTo', 'cancelWalk', 'tapAt'];
 let fail = 0;
 function check(name, cond, extra) { console.log((cond ? 'PASS ' : 'FAIL ') + name + (extra !== undefined ? '  ' + JSON.stringify(extra) : '')); if (!cond) fail++; }
 
@@ -102,6 +102,66 @@ await page.waitForFunction(() => window.__ev.filter((e) => e.e === 'stood').leng
 const st2 = await page.evaluate(() => ({ mode: __church.me.mode, stood: window.__ev.filter((e) => e.e === 'stood').length, taken: __church.net.isTaken('L03-2') }));
 check('setSeatTaken while sitting -> stands up and posts stood', st2.mode === 'walk' && st2.stood === 2 && st2.taken, st2);
 check('taken seat is not offered again', await page.evaluate(() => __church.logic.nearestSeat(-5.2, -10 + 1.9 * 3 + 1.0, (id) => __church.net.isTaken(id)) !== 'L03-2'));
+// 스테이션으로 걸어가기(walkTo): 촛불 봉헌대·제대 앞·가까운 빈 자리, 취소, 앉은 채 요청, 표식 탭
+{
+  const evs = (kind) => page.evaluate((k) => window.__ev.filter((e) => e.e === k), kind);
+  const clearEv = () => page.evaluate(() => { window.__ev.length = 0; });
+  const waitEv = (name, t = 150000) => page.waitForFunction((n) => window.__ev.some((e) => e.e === n), name, { timeout: t }).then(() => true).catch(() => false);
+  const tp = (x, z) => page.evaluate(([x, z]) => { const m = __church.me; m.x = x; m.z = z; m.vx = m.vz = 0; }, [x, z]);
+  check('basic: 2 station markers (candle + altar), no font', await page.evaluate(() => __church.markers && __church.markers.items.map((i) => i.kind).sort().join(',') === 'altar,candle'));
+  const stEv = await page.evaluate(() => window.__ev.filter((e) => e.e === 'stations').pop());
+  check('stations event announces candle/altar/font counts', stEv && stEv.candle === 1 && stEv.altar === 1 && stEv.font === 0, stEv);
+  // 1) 촛불 봉헌대
+  await tp(5, 3); await clearEv();
+  await page.evaluate(() => ChurchAPI.walkTo({ kind: 'candle' }));
+  check('walkTo candle: walkDone arrives', await waitEv('walkDone'));
+  const w1 = await page.evaluate(() => { const ev = window.__ev; const di = ev.findIndex((e) => e.e === 'walkDone'); const si = ev.findIndex((e) => e.e === 'walkStart'); let ni = -1; ev.forEach((e, i) => { if (e.e === 'near' && e.candle !== null && i <= di) ni = i; }); return { si, di, ni, done: ev[di], m: __church.me }; });
+  check('walkStart precedes walkDone and near.candle is reported before walkDone', w1.si >= 0 && w1.si < w1.di && w1.ni >= 0 && w1.done.kind === 'candle', { si: w1.si, di: w1.di, ni: w1.ni });
+  check('walkTo candle: ended at the stand (x~9.5, z~0) and faces it', Math.hypot(w1.m.x - 9.5, w1.m.z - 0) < 0.5, { x: w1.m.x, z: w1.m.z });
+  check('after the walk the avatar is back in control (no walk state)', await page.evaluate(() => __church.walkSt === null && __church.me.mode === 'walk'));
+  // 2) 제대 앞
+  await tp(0, -8); await clearEv();
+  await page.evaluate(() => ChurchAPI.walkTo({ kind: 'altar' }));
+  check('walkTo altar: walkDone', await waitEv('walkDone'));
+  const w2 = await page.evaluate(() => ({ near: window.__ev.filter((e) => e.e === 'near' && e.station === 'altar').length, m: { x: __church.me.x, z: __church.me.z }, done: window.__ev.find((e) => e.e === 'walkDone') }));
+  check('walkTo altar: near.station is "altar" at the front of the altar', w2.near >= 1 && w2.done.kind === 'altar' && Math.abs(w2.m.z + 16) < 0.4, w2);
+  // 3) 조이스틱이 걷기를 끊는다
+  await tp(0, -8); await clearEv();
+  await page.evaluate(() => ChurchAPI.walkTo({ kind: 'entrance' }));
+  check('walkTo entrance: walkStart', await waitEv('walkStart'));
+  await page.evaluate(() => ChurchAPI.setJoystick({ x: 1, y: 0 }));
+  check('joystick input cancels the auto-walk (walkCancel, no walkDone)', await waitEv('walkCancel') && (await evs('walkDone')).length === 0);
+  await page.evaluate(() => ChurchAPI.setJoystick({ x: 0, y: 0 }));
+  // 4) 가까운 빈 자리 -> near.seat; 앉은 채 요청하면 먼저 일어선다
+  await tp(0, 0); await clearEv();
+  await page.evaluate(() => ChurchAPI.walkTo({ kind: 'seat' }));
+  check('walkTo seat: walkDone with a seat id', await waitEv('walkDone'));
+  const w4 = await page.evaluate(() => ({ done: window.__ev.find((e) => e.e === 'walkDone'), near: __church.near.seat, taken: __church.net.isTaken(window.__ev.find((e) => e.e === 'walkDone').seat) }));
+  check('walkTo seat: lands where that seat is nearby and free (near.seat set)', w4.done.kind === 'seat' && !!w4.done.seat && !!w4.near && !w4.taken, w4);
+  await page.evaluate(() => ChurchAPI.sit({}));
+  check('sits at the arrival spot', await waitEv('seated'));
+  await clearEv();
+  await page.evaluate(() => ChurchAPI.walkTo({ kind: 'candle' }));
+  check('walkTo while seated stands up first, then starts walking', await waitEv('stood') && await waitEv('walkStart'));
+  await page.evaluate(() => ChurchAPI.cancelWalk({}));
+  check('cancelWalk api posts walkCancel', await waitEv('walkCancel', 20000));
+  // 5) 없는 스테이션(성수대)은 walkFail
+  await clearEv();
+  await page.evaluate(() => ChurchAPI.walkTo({ kind: 'font' }));
+  await page.waitForTimeout(300);
+  check('walkTo font on a church without one -> walkFail', (await evs('walkFail')).some((e) => e.kind === 'font'));
+  // 6) 표식을 탭하면 걸어간다(레이캐스트 + 화면 좌표)
+  await tp(0, 6); await clearEv();
+  await page.waitForFunction(() => __church.markers.items.every((i) => i.a > 0.6), null, { timeout: 120000 }).catch(() => {});
+  const tapXY = await page.evaluate(() => { const it = __church.markers.items.find((i) => i.kind === 'altar'); const v = it.ring.position.clone().project(__church.camera); return { x: (v.x * 0.5 + 0.5) * innerWidth, y: (-v.y * 0.5 + 0.5) * innerHeight, onScreen: v.z < 1 && Math.abs(v.x) < 1 && Math.abs(v.y) < 1 }; });
+  const pick = await page.evaluate((t) => __church.markers.pick(t.x / innerWidth * 2 - 1, -(t.y / innerHeight * 2 - 1), __church.camera, innerWidth, innerHeight), tapXY);
+  check('marker pick() finds the altar marker at its ring', tapXY.onScreen && pick && pick.kind === 'altar', { tapXY, pick });
+  await page.evaluate((t) => ChurchAPI.tapAt({ x: t.x, y: t.y }), tapXY);
+  check('tapAt on a marker starts walking there (walkStart altar)', await waitEv('walkStart', 20000) && (await evs('walkStart'))[0].kind === 'altar');
+  await page.evaluate(() => ChurchAPI.cancelWalk({}));
+  check('marker fades out when you stand at it', await (async () => { await tp(0, -16); await page.waitForFunction(() => __church.markers.items.find((i) => i.kind === 'altar').a < 0.1, null, { timeout: 60000 }).catch(() => {}); return page.evaluate(() => __church.markers.items.find((i) => i.kind === 'altar').a < 0.1); })());
+  await tp(-5.2, -10 + 1.9 * 3 + 1.0);
+}
 // 혼자 모드 NPC
 await page.evaluate(() => ChurchAPI.setSolo({ on: true }));
 const npc = await page.evaluate(() => Object.keys(__church.crowd.isTaken ? (() => { const o = {}; __church.logic.seatIds.forEach((id) => { if (__church.crowd.isTaken(id)) o[id] = 1; }); return o; })() : {}).length);
@@ -132,6 +192,44 @@ await page.evaluate(() => ChurchAPI.peerLeave({ id: 'p7' }));
 check('true leave removes record', await page.evaluate(() => __church.net.count() === 2999));
 const ft = await page.evaluate(async () => { const t = performance.now(); let n = 0; for (let i = 0; i < 200; i++) { ChurchAPI.peerSnap({ p: Array.from({ length: 200 }, (_, k) => ['p' + (k + 100), 1, 2, 0, 'w']) }); n++; } return performance.now() - t; });
 check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft));
+// 실제 성당(피렌체)에서도 입구 -> 촛불 봉헌대를 걸어서 도착한다
+{
+  const pg = await browser.newPage({ viewport: { width: 640, height: 360 } });
+  await pg.addInitScript(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
+  pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
+  await pg.goto('file://' + root + '/index.html');
+  await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
+  await pg.evaluate(() => ChurchAPI.init({ church: 'florence', hour: 12, quality: 'low', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
+  await pg.waitForFunction(() => window.__church && window.__church.world && window.__church.world.id === 'florence', null, { timeout: 180000 });
+  const sev = await pg.evaluate(() => window.__ev.find((e) => e.e === 'stations'));
+  check('florence: stations event (2 candle stands, altar)', sev && sev.church === 'florence' && sev.candle === 2 && sev.altar === 1, sev);
+  await pg.evaluate(() => ChurchAPI.walkTo({ kind: 'candle', index: 0 }));
+  const ok = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'walkDone'), null, { timeout: 240000 }).then(() => true).catch(() => false);
+  const fl = await pg.evaluate(() => ({ near: __church.near, m: { x: __church.me.x, z: __church.me.z }, fail: window.__ev.filter((e) => e.e === 'walkFail').length }));
+  check('florence: walkTo candle reaches the stand (walkDone, near.candle set)', ok && fl.near.candle !== null && Math.hypot(fl.m.x - 6.0, fl.m.z - 29.2) < 0.5 && fl.fail === 0, fl);
+  await pg.close();
+}
+// 카메라: 스폰 지점에서 피치를 최소로 내리면 걷지 않고도 정면 높이 시야에 닿는다(카메라 높이가 눈높이 위 1.6m 이하)
+{
+  const pg = await browser.newPage({ viewport: { width: 640, height: 360 } });
+  await pg.addInitScript(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
+  pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
+  await pg.goto('file://' + root + '/index.html');
+  await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
+  await pg.evaluate(() => ChurchAPI.init({ church: 'basic', hour: 12, quality: 'low', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
+  await pg.waitForFunction(() => window.__church && window.__church.world && window.__church.frameCount > 3, null, { timeout: 180000 });
+  await pg.evaluate(() => {
+    const pe = (t, id, x, y) => document.getElementById('c').dispatchEvent(new PointerEvent(t, { pointerId: id, clientX: x, clientY: y, bubbles: true, pointerType: 'touch' }));
+    pe('pointerdown', 9, 500, 300);
+    for (let i = 0; i < 8; i++) pe('pointermove', 9, 500, 300 - (i + 1) * 80);   // 위로 끌기 = 피치 감소(최소까지)
+    pe('pointerup', 9, 500, -400);
+  });
+  const f0 = await pg.evaluate(() => __church.frameCount);
+  await pg.waitForFunction((f) => __church.frameCount > f + 25, f0, { timeout: 120000 });
+  const cam = await pg.evaluate(() => ({ pitch: __church.ctl.pitch, camY: __church.camera.position.y, eye: __church.me.y + 1.0, meZ: __church.me.z, camZ: __church.camera.position.z }));
+  check('spawn + minimal pitch: camera is at most 1.6 m above the eye (level view without walking)', cam.pitch <= 0.061 && cam.camY - cam.eye <= 1.6 && cam.camY >= 0.7, cam);
+  await pg.close();
+}
 // 화질 자동 하향: 고화질로 시작한 뒤 프레임 시간이 길면 tier 'low' perf 이벤트가 온다(소프트웨어 렌더에서는 보통 발생)
 {
   const pg = await browser.newPage({ viewport: { width: 640, height: 360 } });

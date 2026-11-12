@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>묵주기도 화면 재설계 목업</title>
+<!--
+  사용법: prayer_redesign.html?s=prayer|map|church|home|loading&theme=light|dark&scale=1|1.5|2&from=church
+  뷰포트 360x800 또는 360x640에서 캡처한다(render.mjs). 글꼴은 저장소의 Pretendard를 상대 경로로 쓰고,
+  없으면 시스템 한글 글꼴로 대체한다.
+-->
+<style>
+@font-face { font-family: "PretendardLocal"; font-weight: 400; src: url("../../../assets/fonts/Pretendard-Regular.otf"); }
+@font-face { font-family: "PretendardLocal"; font-weight: 500; src: url("../../../assets/fonts/Pretendard-Medium.otf"); }
+@font-face { font-family: "PretendardLocal"; font-weight: 600; src: url("../../../assets/fonts/Pretendard-SemiBold.otf"); }
+@font-face { font-family: "PretendardLocal"; font-weight: 700; src: url("../../../assets/fonts/Pretendard-Bold.otf"); }
+
+:root {
+  --bg: #FFF8F5; --surface: #FFFFFF; --surface2: #F7ECE7; --line: #E6D5CE;
+  --on: #231917; --on2: #6B5A54; --primary: #8E4B35; --onPrimary: #FFFFFF;
+  --tonal: #F3DDD4; --onTonal: #3A1D12; --accent: #4C6527; --accentBg: #E3EFC9;
+  --dot: #D9C6BE; --scrim: rgba(35,25,23,.42); --cardGlass: rgba(255,248,245,.97);
+  --s: 1; --cs: 1;
+}
+:root[data-theme="dark"] {
+  --bg: #1A1210; --surface: #271D1A; --surface2: #322623; --line: #4A3A35;
+  --on: #F1DFD9; --on2: #C9B5AE; --primary: #FFB59D; --onPrimary: #561F0C;
+  --tonal: #4A3027; --onTonal: #FFDBCF; --accent: #B6D18B; --accentBg: #33421E;
+  --dot: #5A4842; --scrim: rgba(0,0,0,.55); --cardGlass: rgba(39,29,26,.97);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; }
+body {
+  background: var(--bg); color: var(--on);
+  font-family: "PretendardLocal", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+.phone { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.status { height: 24px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 12px; font-weight: 600; color: var(--on); }
+.navbar { height: 24px; flex: none; display: flex; align-items: center; justify-content: center; }
+.navbar i { width: 108px; height: 4px; border-radius: 2px; background: var(--on); opacity: .55; }
+
+/* ---------- 기도 화면 ---------- */
+.hdr { height: calc(48px * var(--cs)); flex: none; display: flex; align-items: center; padding: 0 4px; gap: 2px; }
+.icon { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 24px; font-size: 22px; color: var(--on); }
+.hdr .title { flex: 1; min-width: 0; font-size: calc(16px * var(--cs)); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr .title small { display: block; font-size: calc(12px * var(--cs)); font-weight: 500; color: var(--on2); }
+.chip { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--tonal); color: var(--onTonal); display: inline-flex; align-items: center; gap: 6px; font-size: calc(13px * var(--cs)); font-weight: 600; flex: none; }
+.backlbl { display: inline-flex; align-items: center; gap: 2px; height: 48px; padding: 0 10px 0 6px; font-size: 15px; font-weight: 600; color: var(--primary); flex: none; }
+
+.strip { flex: none; height: calc(36px * var(--cs)); display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+.strip .lbl { font-size: calc(14px * var(--cs)); font-weight: 700; color: var(--accent); white-space: nowrap; }
+.dots { display: flex; gap: 5px; align-items: center; flex: 1; justify-content: flex-end; }
+.dots b { width: 9px; height: 9px; border-radius: 50%; background: var(--dot); display: block; }
+.dots b.done { background: var(--primary); opacity: .55; }
+.dots b.cur { width: 14px; height: 14px; background: var(--primary); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--primary); }
+.dots b.big { width: 12px; height: 12px; border-radius: 3px; }
+.dec { font-size: calc(12px * var(--cs)); color: var(--on2); white-space: nowrap; }
+.decbar { display: flex; gap: 3px; padding: 0 20px; height: 3px; margin-top: -2px; flex: none; }
+.decbar i { flex: 1; background: var(--line); border-radius: 2px; }
+.decbar i.on { background: var(--primary); }
+.decbar i.half { background: linear-gradient(90deg, var(--primary) 40%, var(--line) 40%); }
+
+.textwrap { position: relative; flex: 1; min-height: 0; }
+.text { position: absolute; inset: 0; overflow: hidden; padding: 16px 20px 28px; }
+.prayer { font-size: calc(24px * var(--s)); line-height: 1.55; letter-spacing: -0.2px; word-break: keep-all; overflow-wrap: anywhere; }
+.prayer p { margin: 0; }
+.more { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; pointer-events: none; background: linear-gradient(to bottom, transparent, var(--bg) 70%); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; }
+.more span { pointer-events: auto; font-size: 13px; font-weight: 600; color: var(--primary); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px 12px; }
+.pageno { position: absolute; right: 14px; top: 8px; font-size: 12px; color: var(--on2); background: var(--surface2); border-radius: 10px; padding: 2px 8px; }
+
+.actions { flex: none; display: flex; gap: 10px; align-items: center; padding: 8px 16px 10px; background: var(--bg); }
+.btn { height: 56px; border-radius: 28px; display: grid; place-items: center; font-weight: 600; font-size: 17px; }
+.btn.prev { width: 92px; background: var(--tonal); color: var(--onTonal); flex: none; }
+.btn.next { flex: 1; background: var(--primary); color: var(--onPrimary); font-size: 20px; height: 60px; border-radius: 30px; }
+.hint { position: absolute; left: 50%; transform: translateX(-50%); bottom: 34px; font-size: 12px; color: var(--on2); white-space: nowrap; }
+
+/* ---------- 묵주 지도(이동 모드) ---------- */
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 28px 28px 0 0; padding: 8px 16px 24px; box-shadow: 0 -6px 24px rgba(0,0,0,.18); }
+.grab { width: 40px; height: 4px; border-radius: 2px; background: var(--on2); opacity: .5; margin: 4px auto 10px; }
+.sheet h3 { font-size: 16px; font-weight: 700; }
+.sheet .sub { font-size: 13px; color: var(--on2); margin-top: 2px; }
+.sheet .row { display: flex; gap: 8px; margin-top: 12px; }
+.sheet .row .btn { flex: 1; height: 48px; font-size: 15px; background: var(--tonal); color: var(--onTonal); }
+.sheet .row .btn.primary { background: var(--primary); color: var(--onPrimary); }
+.peek { padding: 12px 20px 0; font-size: 15px; color: var(--on2); line-height: 1.5; }
+.peek b { color: var(--on); }
+
+/* ---------- 성당 ---------- */
+.scene { position: absolute; inset: 0; background:
+  radial-gradient(ellipse 55% 28% at 50% 16%, rgba(255,214,150,.55), transparent 70%),
+  linear-gradient(#5B4636 0%, #3A2C23 45%, #221A15 100%); }
+.scene svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hud { position: absolute; left: 12px; right: 12px; top: 32px; display: flex; gap: 8px; align-items: center; }
+.hudchip { height: 40px; border-radius: 20px; background: rgba(20,14,12,.55); color: #F6E9E3; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; font-size: 14px; font-weight: 600; backdrop-filter: blur(6px); }
+.hudchip .live { width: 8px; height: 8px; border-radius: 50%; background: #7BD88F; }
+.hudicon { width: 40px; height: 40px; border-radius: 20px; background: rgba(20,14,12,.55); color: #F6E9E3; display: grid; place-items: center; font-size: 18px; }
+.card { position: absolute; left: 8px; right: 8px; bottom: 32px; background: var(--cardGlass); border-radius: 24px; box-shadow: 0 8px 28px rgba(0,0,0,.35); display: flex; flex-direction: column; overflow: hidden; }
+.card .chdr { display: flex; align-items: center; padding: 6px 4px 0 16px; gap: 4px; flex: none; }
+.card .chdr .t { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--on2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .chdr .t b { color: var(--accent); }
+.card .icon { width: 44px; height: 44px; font-size: 19px; }
+.card .strip { border: 0; height: 26px; padding: 0 16px; }
+.card .textwrap { flex: 1; min-height: 0; }
+.card .text { padding: 4px 16px 14px; }
+.card .more { background: linear-gradient(to bottom, transparent, var(--cardGlass) 70%); }
+.card .actions { background: transparent; padding: 4px 12px 12px; }
+.toast { position: absolute; left: 16px; right: 16px; top: 84px; background: rgba(20,14,12,.72); color: #F6E9E3; border-radius: 14px; padding: 10px 14px; font-size: 13px; line-height: 1.45; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; }
+.loading div { text-align: center; color: #F6E9E3; font-size: 14px; margin-top: -180px; }
+.loading i { display: block; width: 140px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.25); margin: 0 auto 12px; position: relative; overflow: hidden; }
+.loading i::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 45%; background: #FFB59D; border-radius: 2px; }
+
+/* ---------- 오늘 ---------- */
+.home { flex: 1; min-height: 0; overflow: hidden; padding: 8px 16px 0; }
+.date { font-size: 13px; color: var(--on2); padding: 8px 4px 0; }
+.h1 { font-size: 26px; font-weight: 700; padding: 2px 4px 14px; }
+.hcard { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px 16px; margin-bottom: 12px; }
+.hcard.active { background: var(--tonal); border-color: transparent; color: var(--onTonal); }
+.hcard .k { font-size: 12px; font-weight: 700; letter-spacing: .3px; opacity: .8; }
+.hcard .v { font-size: 18px; font-weight: 700; margin-top: 4px; }
+.hcard .d { font-size: 14px; margin-top: 2px; opacity: .85; line-height: 1.45; }
+.hcard .row { display: flex; gap: 8px; margin-top: 12px; }
+.hcard .row .btn { flex: 1; height: 48px; font-size: 15px; }
+.btn.fill { background: var(--primary); color: var(--onPrimary); }
+.btn.out { border: 1.5px solid currentColor; color: inherit; background: transparent; }
+.mlist { font-size: 14px; color: var(--on2); line-height: 1.7; margin-top: 6px; }
+.mini { flex: none; margin: 0 8px 6px; height: 64px; border-radius: 18px; background: var(--surface2); border: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding: 0 6px 0 14px; }
+.mini .mt { flex: 1; min-width: 0; }
+.mini .mt b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .mt span { font-size: 12px; color: var(--on2); }
+.mini .mbar { position: absolute; }
+.mini .go { height: 44px; padding: 0 16px; border-radius: 22px; background: var(--primary); color: var(--onPrimary); display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+.mini .ch { width: 44px; height: 44px; border-radius: 22px; display: grid; place-items: center; font-size: 19px; background: var(--tonal); color: var(--onTonal); }
+.tabs { flex: none; height: 64px; display: flex; background: var(--surface2); border-top: 1px solid var(--line); }
+.tabs div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12px; color: var(--on2); }
+.tabs div.on { color: var(--on); font-weight: 700; }
+.tabs div.on em { background: var(--tonal); }
+.tabs em { font-style: normal; width: 56px; height: 28px; border-radius: 14px; display: grid; place-items: center; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="phone" id="phone"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const S = q.get('s') || 'prayer';
+const theme = q.get('theme') || 'light';
+const scale = parseFloat(q.get('scale') || '1');
+const from = q.get('from') || 'today';
+document.documentElement.dataset.theme = theme;
+document.documentElement.style.setProperty('--s', scale);
+// 머리·버튼 같은 '틀'은 글자 배율을 1.3까지만 따른다(기도문은 2.0까지).
+document.documentElement.style.setProperty('--cs', Math.min(scale, 1.3));
+
+const HM = ['은총이 가득하신 마리아님, 기뻐하소서!', '주님께서 함께 계시니 여인 중에 복되시며', '태중의 아들 예수님 또한 복되시나이다.', '천주의 성모 마리아님,', '이제와 저희 죽을 때에', '저희 죄인을 위하여 빌어 주소서.', '아멘.'];
+const prayerHtml = () => '<div class="prayer">' + HM.map(l => `<p>${l}</p>`).join('') + '</div>';
+const status = `<div class="status"><span>9:41</span><span>▾ ▴ ▮</span></div>`;
+const nav = `<div class="navbar"><i></i></div>`;
+function dots(cur = 4) {
+  let h = '<span class="dots"><b class="big done"></b>';
+  for (let i = 1; i <= 10; i++) h += `<b class="${i < cur ? 'done' : i === cur ? 'cur' : ''}"></b>`;
+  return h + '<b class="big"></b></span>';
+}
+const strip = (lbl = '성모송 4/10') => `<div class="strip"><span class="lbl">${lbl}</span>${dots()}<span class="dec">1/5단</span></div>
+  <div class="decbar"><i class="half"></i><i></i><i></i><i></i><i></i></div>`;
+const actions = `<div class="actions"><div class="btn prev">이전</div><div class="btn next">다음</div></div>`;
+
+function prayerScreen() {
+  const back = from === 'church'
+    ? `<div class="backlbl">‹ 성당</div>`
+    : `<div class="icon">‹</div>`;
+  const church = from === 'church' ? '' : (scale >= 1.5 ? `<div class="chip" style="padding:0 10px" title="성당에서 이어서">⛪</div>` : `<div class="chip">⛪ 성당에서</div>`);
+  const sub = scale >= 1.5 ? '' : '<small>예수님께서 피땀 흘리심</small>';
+  return status + `<div class="hdr">${back}<div class="title">고통의 신비 · 1단${sub}</div>${church}<div class="icon" style="font-size:17px;font-weight:700">Aa</div><div class="icon">⋮</div></div>`
+    + strip()
+    + `<div class="textwrap"><div class="text" id="text">${q.get('short') ? shortHtml() : prayerHtml()}</div></div>`
+    + actions + nav;
+}
+// 외운 기도 짧게 보기(선택): 반복되는 성모송은 첫 줄과 뒷단 첫 줄만 크게, 숫자를 크게.
+function shortHtml() {
+  return `<div style="font-size:calc(52px * var(--cs));font-weight:700;color:var(--primary);line-height:1">4<span style="font-size:.45em;color:var(--on2);font-weight:600"> / 10</span></div>
+  <div class="prayer" style="margin-top:8px"><p>은총이 가득하신 마리아님,&nbsp;…</p><p style="color:var(--on2);font-size:.72em">천주의 성모 마리아님,&nbsp;…</p></div>
+  <div style="margin-top:8px;font-size:13px;color:var(--on2)">외운 기도 짧게 보기 · 글을 누르면 전체 기도문</div>`;
+}
+
+function rosarySvg(w, h) {
+  const cx = w / 2, cy = h * 0.44, r = Math.min(w, h * 0.78) * 0.36;
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`;
+  s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`;
+  const n = 55; let idx = 0;
+  for (let i = 0; i < n; i++) {
+    const a = Math.PI / 2 + (i + 0.5) * 2 * Math.PI / n;
+    const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+    const big = i % 11 === 0;
+    const done = i < 5; const cur = i === 5;
+    const rad = big ? 7 : 5;
+    const fill = cur ? 'var(--primary)' : done ? 'var(--primary)' : 'var(--dot)';
+    s += `<circle cx="${x}" cy="${y}" r="${cur ? 9 : rad}" fill="${fill}" opacity="${done ? .55 : 1}"/>`;
+    if (cur) s += `<circle cx="${x}" cy="${y}" r="15" fill="none" stroke="var(--primary)" stroke-width="2.5"/>`;
+    idx++;
+  }
+  // 펜던트와 십자가
+  for (let k = 0; k < 5; k++) s += `<circle cx="${cx}" cy="${cy + r + 16 + k * 16}" r="${k === 0 || k === 4 ? 6 : 5}" fill="var(--primary)" opacity=".55"/>`;
+  s += `<path d="M${cx} ${cy + r + 96} v34 M${cx - 11} ${cy + r + 108} h22" stroke="#C9A23F" stroke-width="4" stroke-linecap="round"/>`;
+  [['1단', 0], ['2단', 1], ['3단', 2], ['4단', 3], ['5단', 4]].forEach(([t, k]) => {
+    const a = Math.PI / 2 + (k * 11 + 6) * 2 * Math.PI / n;
+    s += `<text x="${cx + (r + 26) * Math.cos(a)}" y="${cy + (r + 26) * Math.sin(a) + 4}" font-size="12" text-anchor="middle" fill="var(--on2)">${t}</text>`;
+  });
+  return s + '</svg>';
+}
+
+function mapScreen() {
+  const H = innerHeight;
+  const sheetH = Math.round(H * 0.66);
+  return status + `<div class="hdr"><div class="icon">‹</div><div class="title">고통의 신비 · 1단<small>예수님께서 피땀 흘리심</small></div><div class="chip">⛪ 성당에서</div><div class="icon" style="font-size:17px;font-weight:700">Aa</div><div class="icon">⋮</div></div>`
+    + strip()
+    + `<div class="peek"><b>읽던 곳</b> · 성모송 4/10<br>은총이 가득하신 마리아님, 기뻐하소서! …</div>`
+    + `<div class="scrim"></div>`
+    + `<div class="sheet" style="height:${sheetH}px"><div class="grab"></div><h3>묵주 전체 보기</h3><div class="sub">구슬을 누르면 그 자리로 갑니다 · 4초 동안 손대지 않으면 닫힘</div>`
+    + `<div style="height:${sheetH - 170}px;display:grid;place-items:center">${rosarySvg(328, sheetH - 170)}</div>`
+    + `<div class="row"><div class="btn">이 단 처음으로</div><div class="btn primary">닫고 계속</div></div></div>`;
+}
+
+function sceneSvg(w, h) {
+  let s = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`;
+  // 기둥과 아치
+  for (const x of [40, 110, 250, 320]) s += `<rect x="${x - 9}" y="70" width="18" height="${h * 0.55}" fill="rgba(0,0,0,.22)"/>`;
+  s += `<path d="M110 110 Q180 20 250 110" fill="none" stroke="rgba(255,226,180,.35)" stroke-width="3"/>`;
+  s += `<rect x="150" y="120" width="60" height="44" rx="4" fill="rgba(255,220,160,.55)"/>`;
+  s += `<rect x="176" y="96" width="8" height="26" fill="#E8C27A"/><rect x="168" y="104" width="24" height="6" fill="#E8C27A"/>`;
+  // 장의자
+  for (let i = 0; i < 9; i++) {
+    const y = 190 + i * i * 4.2 + i * 18, inset = 120 - i * 13, hh = 6 + i * 1.6;
+    s += `<rect x="${inset}" y="${y}" width="${150 - inset + 10}" height="${hh}" rx="2" fill="rgba(90,58,38,.95)"/>`;
+    s += `<rect x="${200}" y="${y}" width="${150 - inset + 10}" height="${hh}" rx="2" fill="rgba(90,58,38,.95)"/>`;
+  }
+  // 앉은 사람들(아바타)
+  [[120, 214], [236, 238], [96, 262], [262, 300], [150, 238]].forEach(([x, y], i) => {
+    s += `<circle cx="${x}" cy="${y - 10 - i}" r="${5 + i * .7}" fill="rgba(240,220,200,.85)"/><rect x="${x - 6 - i * .5}" y="${y - 5 - i}" width="${12 + i}" height="${12 + i * 2}" rx="5" fill="rgba(60,80,120,.9)"/>`;
+  });
+  return s + '</svg>';
+}
+
+function churchScreen(loading) {
+  const H = innerHeight;
+  const cardMax = Math.round(H * (H < 700 ? 0.68 : 0.64));
+  const card = `<div class="card" id="card" style="max-height:${cardMax}px">
+    <div class="chdr"><div class="t">${loading ? '자리로 가는 중 · ' : ''}고통의 신비 · 1단 · <b>성모송 4/10</b></div><div class="icon" title="전체 화면">⤢</div><div class="icon">⋮</div></div>
+    <div class="strip" style="height:22px">${dots()}<span class="dec">1/5단</span></div>
+    <div class="textwrap" id="ctw"><div class="text" id="text" style="--s:${scale * 20 / 24}">${prayerHtml()}</div></div>
+    <div class="actions"><div class="btn prev">이전</div><div class="btn next">다음</div></div></div>`;
+  return `<div class="scene">${sceneSvg(360, H)}</div>`
+    + (loading ? `<div class="loading" style="background:rgba(20,14,12,.55)"><div><i></i>명동대성당 문을 여는 중…</div></div>` : '')
+    + `<div class="status" style="color:#F6E9E3;position:absolute;left:0;right:0;top:0">${'<span>9:41</span><span>▾ ▴ ▮</span>'}</div>`
+    + `<div class="hud"><div class="hudchip"><span class="live"></span>명동대성당 · 23명</div><div style="flex:1"></div><div class="hudicon">🔈</div><div class="hudicon">☰</div></div>`
+    + (loading ? `<div class="toast">기도는 그대로 이어집니다. 성당이 열리면 빈자리에 앉혀 드려요.</div>` : '')
+    + card
+    + `<div class="navbar" style="position:absolute;left:0;right:0;bottom:0"><i style="background:#F6E9E3"></i></div>`;
+}
+
+function homeScreen() {
+  return status + `<div class="home">
+    <div class="date">11월 12일 수요일 · 연중 시기</div>
+    <div class="h1">오늘의 묵주기도</div>
+    <div class="hcard active"><div class="k">기도 중 · 3분 전에 멈춤</div><div class="v">고통의 신비 1단</div><div class="d">성모송 4번째부터 이어서</div>
+      <div class="row"><div class="btn out">⛪ 성당에서 이어서</div><div class="btn fill">이어서 기도</div></div></div>
+    <div class="hcard"><div class="k" style="color:var(--accent)">오늘의 신비 · 수요일</div><div class="v">영광의 신비</div>
+      <div class="mlist">1 예수 부활 · 2 승천 · 3 성령 강림<br>4 성모 승천 · 5 천상 모후의 관</div><div style="margin-top:8px;font-size:14px;font-weight:600;color:var(--primary)">▶ 영광의 신비로 새로 시작</div></div>
+    <div class="hcard"><div class="k">명동대성당 · 지금 23명 기도 중</div><div class="d">마지막으로 다녀온 성당 · 들어가면 바로 앉아 기도</div></div>
+  </div>
+  ${''}<div class="mini" style="display:${q.get('mini') ? 'flex' : 'none'}"><div class="mt"><b>고통의 신비 · 1단 · 성모송 4/10</b><span><i style="display:inline-block;vertical-align:middle;width:120px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--primary) 9%,var(--line) 9%)"></i> &nbsp;기도 중</span></div><div class="ch">⛪</div><div class="go">이어서 ›</div></div>
+  <div class="tabs"><div class="on"><em>✚</em>오늘</div><div><em>⛪</em>성당</div><div><em>▦</em>기록</div><div><em>⋯</em>더보기</div></div>` + nav;
+}
+
+function statsScreen() {
+  let cal = '';
+  for (let i = 1; i <= 30; i++) cal += `<div style="height:34px;border-radius:10px;display:grid;place-items:center;font-size:13px;${[2,3,5,8,9,10,11,12].includes(i) ? 'background:var(--tonal);color:var(--onTonal);font-weight:700' : 'color:var(--on2)'}">${i}</div>`;
+  return status + `<div class="home"><div class="date">기록</div><div class="h1">11월</div>
+    <div class="hcard"><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cal}</div></div>
+    <div class="hcard"><div class="k">이번 달</div><div class="v">8번 바침</div></div></div>`
+    + document.createElement('div').outerHTML
+    + `<div class="mini"><div class="mt"><b>고통의 신비 · 1단 · 성모송 4/10</b><span><i style="display:inline-block;vertical-align:middle;width:120px;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--primary) 9%,var(--line) 9%)"></i> &nbsp;기도 중</span></div><div class="ch">⛪</div><div class="go">이어서 ›</div></div>
+    <div class="tabs"><div><em>✚</em>오늘</div><div><em>⛪</em>성당</div><div class="on"><em>▦</em>기록</div><div><em>⋯</em>더보기</div></div>` + nav;
+}
+const P = document.getElementById('phone');
+P.innerHTML = S === 'map' ? mapScreen() : S === 'church' ? churchScreen(false) : S === 'loading' ? churchScreen(true) : S === 'home' ? homeScreen() : S === 'stats' ? statsScreen() : prayerScreen();
+if (S === 'church' || S === 'loading') P.style.background = 'transparent';
+
+// 넘침 측정: 기도문이 칸을 넘으면 '가리는' 대신 쪽 번호와 '이어서 ↓'를 붙인다.
+function fitCard() {
+  const card = document.getElementById('card'), t = document.getElementById('text');
+  if (!card || !t) return;
+  card.style.height = card.style.maxHeight;
+  const natural = t.querySelector(".prayer").offsetHeight + 18;
+  const slack = t.clientHeight - natural;
+  if (slack > 0) card.style.height = (card.offsetHeight - slack) + 'px';
+}
+function markOverflow() {
+  fitCard();
+  const t = document.getElementById('text');
+  if (!t) return;
+  const need = t.scrollHeight, have = t.clientHeight;
+  const pages = Math.max(1, Math.ceil((need - 8) / (have - 40)));
+  document.body.dataset.overflow = need > have + 1 ? String(need - have) : '0';
+  document.body.dataset.need = String(need); document.body.dataset.have = String(have);
+  if (need > have + 1) {
+    const lineH = parseFloat(getComputedStyle(t.querySelector('.prayer')).lineHeight);
+    const hiddenLines = Math.ceil((need - have) / lineH);
+    t.insertAdjacentHTML('afterend', `<div class="more"><span>↓ ${hiddenLines}줄 더 (1/${pages}) · 글을 누르면 아래로</span></div>`);
+  }
+}
+document.fonts.ready.then(() => { markOverflow(); document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

@@ -101,7 +101,7 @@ class ChurchStatusChip extends StatelessWidget {
   }
 }
 
-/// 상단 오른쪽 둥근 아이콘 버튼 줄: 소리, 아바타 편집, 인사/이모트.
+/// 상단 오른쪽 둥근 아이콘 버튼 줄: 소리, 아바타 편집, 인사/이모트. (그 아래 줄에 [ChurchGoButton])
 class ChurchTopActions extends StatelessWidget {
   const ChurchTopActions({
     super.key,
@@ -165,9 +165,37 @@ class ChurchTopActions extends StatelessWidget {
   }
 }
 
-/// 오른쪽 아래 상황 버튼(하나만): 가까이 앉을 자리가 있으면 '앉기', 촛불대가 있으면 '초 켜기',
-/// 아무것도 없으면 숨는다. 앉은 동안의 '일어나기'는 기도 카드의 같은 자리(오른쪽 아래)에 있다.
-enum ChurchAction { none, sit, light }
+/// '가기' 버튼(지도 핀 아이콘 + 글자): 촛불 봉헌대·제대 앞·빈 자리·입구로 바로 걸어간다.
+/// 위쪽 아이콘 줄 바로 아래 오른쪽에 둔다.
+class ChurchGoButton extends StatelessWidget {
+  const ChurchGoButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return FilledButton.icon(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: scheme.primaryContainer,
+        foregroundColor: scheme.onPrimaryContainer,
+        minimumSize: const Size(48, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        shape: const StadiumBorder(),
+        elevation: 2,
+      ),
+      icon: const Icon(Icons.location_on),
+      label: const Text('가기'),
+    );
+  }
+}
+
+/// 오른쪽 아래 상황 버튼(하나만): 제대 앞/성수대에 서 있으면 '기도하기'/'성호 긋기'(한 번 누르면 그 자리에서는 사라진다),
+/// 가까이 앉을 자리가 있으면 '앉기', 촛불대가 있으면 '초 켜기', 아무것도 없으면 숨는다.
+/// 앉은 동안의 '일어나기'는 기도 카드의 같은 자리(오른쪽 아래)에 있다.
+/// 행동은 그 자리에 서 있어야만 나온다(멀리서 하는 방법은 없다).
+enum ChurchAction { none, sit, light, pray, cross }
 
 class ChurchContextAction extends StatelessWidget {
   const ChurchContextAction({
@@ -179,11 +207,19 @@ class ChurchContextAction extends StatelessWidget {
   final ChurchAction action;
   final VoidCallback onPressed;
 
+  /// [station]은 아직 하지 않은 스테이션 동작('altar'|'font')이다. 있으면 그것을 먼저 보여 주고,
   /// 자리와 촛불대가 모두 가까우면 자리(더 좁은 반경)를 먼저 보여 준다.
-  static ChurchAction forNear({required bool canSit, required bool canLight}) =>
-      canSit
-      ? ChurchAction.sit
-      : (canLight ? ChurchAction.light : ChurchAction.none);
+  static ChurchAction forNear({
+    required bool canSit,
+    required bool canLight,
+    String? station,
+  }) {
+    if (station == 'altar') return ChurchAction.pray;
+    if (station == 'font') return ChurchAction.cross;
+    return canSit
+        ? ChurchAction.sit
+        : (canLight ? ChurchAction.light : ChurchAction.none);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,6 +245,16 @@ class ChurchContextAction extends StatelessWidget {
           Icons.local_fire_department,
           '초 켜기',
         ),
+        ChurchAction.pray => _button(
+          const ValueKey('ctx-pray'),
+          Icons.self_improvement,
+          '기도하기',
+        ),
+        ChurchAction.cross => _button(
+          const ValueKey('ctx-cross'),
+          Icons.add,
+          '성호 긋기',
+        ),
       },
     );
   }
@@ -227,6 +273,86 @@ class ChurchContextAction extends StatelessWidget {
   );
 }
 
+/// 자동 걷기 중에 뜨는 작은 칩: '걷는 중… (취소)'. 누르면 멈춘다.
+class ChurchWalkChip extends StatelessWidget {
+  const ChurchWalkChip({super.key, required this.onCancel});
+
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: scheme.inverseSurface.withValues(alpha: 0.92),
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
+      elevation: 2,
+      child: InkWell(
+        onTap: onCancel,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.directions_walk,
+                  size: 20,
+                  color: scheme.onInverseSurface,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '걷는 중… (취소)',
+                    style: text.labelLarge?.copyWith(
+                      color: scheme.onInverseSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 처음 한 번 '가기' 버튼 아래에 뜨는 안내 말풍선(6초 뒤 또는 처음 쓰면 사라진다).
+class ChurchWalkHint extends StatelessWidget {
+  const ChurchWalkHint({super.key});
+
+  static const message = '가기 버튼으로 촛불 봉헌대·제대 앞에 바로 갈 수 있어요';
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final maxW = (MediaQuery.sizeOf(context).width - 32).clamp(0.0, 260.0);
+    return IgnorePointer(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxW),
+        child: DecoratedBox(
+          key: const ValueKey('walk-hint'),
+          decoration: BoxDecoration(
+            color: scheme.inverseSurface.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Text(
+              message,
+              style: text.bodySmall?.copyWith(color: scheme.onInverseSurface),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 왼쪽 절반 이동 영역(Roblox 방식, C-01): 어디든 누르면 그 자리에 스틱이 생기고, 끌면 [-1,1] 값을 낸다.
 /// y > 0 이 앞(위로 끌기). 갱신은 최대 30Hz, 손을 떼면 (0,0)을 한 번 보낸다.
 ///
@@ -239,9 +365,17 @@ class ChurchMoveZone extends StatefulWidget {
     this.size = 120,
     this.minInterval = const Duration(milliseconds: 33),
     this.hint,
+    this.onTap,
+    this.onTouchDown,
   });
 
   final void Function(double x, double y) onChanged;
+
+  /// 거의 끌지 않고 짧게 눌렀다 뗀 '탭'(이 영역 좌표 = 화면 좌표). 웹 장면의 표식을 누르는 데 쓴다.
+  final ValueChanged<Offset>? onTap;
+
+  /// 이 영역에 손이 닿을 때(자동 걷기를 멈추는 데 쓴다).
+  final VoidCallback? onTouchDown;
 
   /// 스틱 바탕의 지름.
   final double size;
@@ -264,12 +398,17 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   bool _dirty = false;
   bool _sent = false;
   bool _used = false;
+  Offset _downAt = Offset.zero;
+  double _maxDrag = 0;
+  Duration _downTime = Duration.zero;
 
   double get _radius => widget.size / 2;
 
   void _update(Offset local) {
     final o = _origin;
     if (o == null) return;
+    final drag = (local - _downAt).distance;
+    if (drag > _maxDrag) _maxDrag = drag;
     var v = (local - o) / _radius;
     if (v.distance > 1) v = v / v.distance;
     setState(() => _knob = v);
@@ -343,6 +482,10 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
           if (_pointer != null) return;
           _pointer = e.pointer;
           _used = true;
+          _downAt = e.localPosition;
+          _maxDrag = 0;
+          _downTime = _clock.elapsed;
+          widget.onTouchDown?.call();
           setState(() {
             _origin = e.localPosition;
             _knob = Offset.zero;
@@ -352,7 +495,12 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
           if (e.pointer == _pointer) _update(e.localPosition);
         },
         onPointerUp: (e) {
-          if (e.pointer == _pointer) _release();
+          if (e.pointer != _pointer) return;
+          final isTap =
+              _maxDrag < 12 &&
+              _clock.elapsed - _downTime < const Duration(milliseconds: 450);
+          _release();
+          if (isTap) widget.onTap?.call(e.localPosition);
         },
         onPointerCancel: (e) {
           if (e.pointer == _pointer) _release();

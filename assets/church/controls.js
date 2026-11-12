@@ -11,6 +11,8 @@
       dragging: false, lastDragT: -99, now: 0,
       // 웹 떠다니는 스틱: 왼쪽 절반 터치(걷는 중에만). 값은 [-1,1], y>0 이 앞.
       moveZone: true, webX: 0, webY: 0, webActive: false,
+      // 탭(거의 안 움직이고 짧게 뗌) -> onTap(clientX, clientY). 이동 영역(왼쪽 절반)에 처음 닿으면 onMoveTouch() (자동 걷기 취소용).
+      onTap: null, onMoveTouch: null,
       setJoystick: function (x, y) { ctl.joyX = Math.max(-1, Math.min(1, +x || 0)); ctl.joyY = Math.max(-1, Math.min(1, +y || 0)); },
       // 이동 입력(키보드 우선)
       getMove: function (out) {
@@ -59,13 +61,15 @@
       count = n;
       if (n === 0) ctl.dragging = false;
     }
+    function countAll() { var n = 0; for (var k in pts) n++; return n; }
     function orbitIds() { var o = []; for (var k in pts) if (pts[k].role === 'orbit') o.push(k); return o; }
     function pd() { var ks = orbitIds(); var a = pts[ks[0]], b = pts[ks[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
     canvas.addEventListener('pointerdown', function (e) {
       var role = 'orbit';
       if (ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX) && count < 2) role = 'move';
-      pts[e.pointerId] = { x: e.clientX, y: e.clientY, role: role };
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY, role: role, sx: e.clientX, sy: e.clientY, t0: Date.now(), alone: countAll() === 0, moved: 0 };
       if (role === 'move') {
+        if (ctl.onMoveTouch) ctl.onMoveTouch();
         movePid = e.pointerId; moveO = { x: e.clientX, y: e.clientY };
         ctl.webX = ctl.webY = 0; ctl.webActive = true; stick(true, moveO.x, moveO.y, 0, 0);
       } else {
@@ -80,6 +84,7 @@
       if (!p) return;
       var dx = e.clientX - p.x, dy = e.clientY - p.y;
       p.x = e.clientX; p.y = e.clientY;
+      p.moved = Math.max(p.moved, Math.hypot(e.clientX - p.sx, e.clientY - p.sy));
       if (p.role === 'move') {
         var vx = (e.clientX - moveO.x) / MOVE_R, vy = (e.clientY - moveO.y) / MOVE_R, l = Math.hypot(vx, vy);
         if (l > 1) { vx /= l; vy /= l; l = 1; }
@@ -101,10 +106,13 @@
     function up(e) {
       var p = pts[e.pointerId];
       if (!p) return;
-      if (p.role === 'move') { releaseMove(); return; }
+      // 탭: 안 끌었고(10px 이하) 짧고(450ms 이하) 한 손가락일 때만(취소 이벤트는 제외)
+      var isTap = e.type === 'pointerup' && p.alone && p.moved < 10 && Date.now() - p.t0 < 450;
+      if (p.role === 'move') { releaseMove(); if (isTap && ctl.onTap) ctl.onTap(e.clientX, e.clientY); return; }
       delete pts[e.pointerId];
       recount();
       ctl.lastDragT = ctl.now;
+      if (isTap && ctl.onTap) ctl.onTap(e.clientX, e.clientY);
     }
     canvas.addEventListener('pointerup', up);
     canvas.addEventListener('pointercancel', up);

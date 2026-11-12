@@ -9,7 +9,7 @@
   var App = {
     started: false, quality: 'high', renderer: null, scene: null, camera: null, world: null, logic: null,
     maxFrames: +(qs.frames || 0), frameCount: 0, done: false, me: null, meAv: null, ctl: null, net: null, crowd: null, cfg: { skin: 1, style: 0, hair: 2, outfit: 6, name: 0 },
-    near: { seat: null, candle: null }, frames: 0, perfT: 0, t: 0, last: 0, posT: 0, wasMoving: false, stepT: 0, fps: 60,
+    near: { seat: null, candle: null, station: null }, stations: null, markers: null, walkSt: null, pendingWalk: null, turn: null, frames: 0, perfT: 0, t: 0, last: 0, posT: 0, wasMoving: false, stepT: 0, fps: 60,
     camPos: new T.Vector3(), camLook: new T.Vector3(), camInit: false, sitF: 0, church: 'basic', solo: false, ambient: false
   };
   root.__church = App;
@@ -31,16 +31,19 @@
   root.addEventListener('resize', resize);
   root.addEventListener('orientationchange', function () { setTimeout(resize, 150); });
 
-  function setNear(seat, candle) {
-    if (seat === App.near.seat && candle === App.near.candle) return;
-    App.near.seat = seat; App.near.candle = candle;
+  function setNear(seat, candle, station) {
+    if (station === undefined) station = null;
+    if (seat === App.near.seat && candle === App.near.candle && station === App.near.station) return;
+    App.near.seat = seat; App.near.candle = candle; App.near.station = station;
     if (App.world) App.world.setHighlight(seat, candle);
-    post({ e: 'near', seat: seat, candle: candle });
+    post({ e: 'near', seat: seat, candle: candle, station: station });
   }
 
   function isTaken(id) { return App.net.isTaken(id) || App.crowd.isTaken(id); }
 
   function loadWorld(id) {
+    if (App.markers) { App.markers.dispose(); App.markers = null; }
+    App.walkSt = null; App.pendingWalk = null; App.turn = null;
     if (App.world) { App.world.dispose(); App.world = null; }
     var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer });
     if (App.R.envTex) w.setEnvironment(App.R.envTex);
@@ -52,7 +55,12 @@
     App.net.setMySeat(null);
     App.ctl.yaw = me.yaw; App.camInit = false;
     App.meAv.setSeated(false); App.meAv.setPray(false);
-    App.near.seat = App.near.candle = undefined;
+    App.near.seat = App.near.candle = undefined; App.near.station = null;
+    // 스테이션(촛불 봉헌대·제대 앞·성수대): 걸어서 가는 자리와 표식
+    App.stations = root.ChurchStations.create(w.logic);
+    var stn = App.stations.stations();
+    if (!qs.thumb && qs.markers !== '0') App.markers = root.ChurchMarkers.create(w.group, App.stations, w.logic);
+    post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1 });
     if (console && console.log) console.log('[church] world ' + w.id + ' stats', JSON.stringify(w.stats));
   }
 
@@ -76,6 +84,8 @@
       App.camera = new T.PerspectiveCamera(52, 1, 0.3, 700);
       App.meAvReady = false;
       App.ctl = root.ChurchControls.create(canvas);
+      App.ctl.onTap = function (x, y) { tapAt(x, y); };
+      App.ctl.onMoveTouch = function () { cancelWalk('touch'); };
       App.me = { x: 0, z: 17, y: 0, yaw: 0, vx: 0, vz: 0, mode: 'walk', seat: null, t: 0, fx: 0, fz: 0, fyaw: 0, tx: 0, tz: 0, tyaw: 0, pendingStand: false, speed: 0 };
       App.meAv = new root.ChurchAvatar.Avatar(App.cfg, {});
       App.scene.add(App.meAv.root);
@@ -115,6 +125,7 @@
   function beginSit(seatId) {
     var me = App.me, sp = App.logic.seatPos(seatId);
     if (!sp) return;
+    cancelWalk('sit');
     me.mode = 'sitting'; me.seat = seatId; me.t = 0; me.fx = me.x; me.fz = me.z; me.fyaw = me.yaw;
     me.tx = sp.x; me.tz = sp.z; me.tyaw = sp.yaw; me.pendingStand = false;
     App.net.setMySeat(seatId);
@@ -166,6 +177,11 @@
     setSolo: function (o) { App.solo = !!o.on; if (App.crowd) App.crowd.set(App.solo); },
     setQuality: function (o) { App.quality = o.quality === 'low' ? 'low' : 'high'; if (App.R) { App.R.autoTier = App.quality === 'high' && qs.autotier !== '0'; App.R.setTier(App.quality, App.world); } resize(); },
     emote: function (o) { if (App.meAv) App.meAv.playEmote(o.e); },
+    // 스테이션으로 걸어간다. kind: candle|altar|seat|entrance|font, index: 스탠드/성수대 번호, seat: 특정 좌석 id
+    walkTo: function (o) { walkTo(o || {}); },
+    cancelWalk: function () { cancelWalk('api'); },
+    // Flutter 가 왼쪽 절반 터치를 가로채므로, 거기서 일어난 탭을 화면 좌표(CSS px)로 넘겨 받는다.
+    tapAt: function (o) { tapAt(+o.x, +o.y); },
     setSeatTaken: function (o) {
       if (!App.net || !o.seat) return;
       App.net.occ[o.seat] = o.id || '?';
@@ -182,14 +198,90 @@
   };
   App.api = api;
 
+  // ---- 자동 걷기(스테이션으로 가기) ----
+  var wv = { vx: 0, vz: 0, speed: 0, yaw: 0, done: false, stuck: false };
+  function cancelWalk(reason) {
+    App.pendingWalk = null;
+    var w = App.walkSt;
+    if (!w) return;
+    App.walkSt = null;
+    post({ e: 'walkCancel', kind: w.kind, why: reason || '' });
+  }
+  function failWalk(kind, why) { App.walkSt = null; post({ e: 'walkFail', kind: kind, why: why || '' }); }
+  function startWalk(o) {
+    var S = App.stations, me = App.me, kind = o.kind, tg = null;
+    if (!S) return;
+    if (kind === 'seat') {
+      if (o.seat && !isTaken(o.seat)) tg = S.seatStation(o.seat);
+      if (!tg) tg = S.nearestFreeSeat(me, isTaken);
+    } else if (kind === 'candle' || kind === 'altar' || kind === 'entrance' || kind === 'font') {
+      tg = S.station(kind, o.index, me);
+    }
+    if (!tg) { failWalk(kind, 'none'); return; }
+    var d = Math.hypot(tg.x - me.x, tg.z - me.z);
+    var path = d < 0.15 ? { pts: [{ x: me.x, z: me.z }, { x: tg.x, z: tg.z }], len: d } : S.findPath(me, tg);
+    if (!path) { failWalk(kind, 'nopath'); return; }
+    App.walkSt = S.startWalk(path, tg, kind, tg.index);
+    App.walkSt.seat = tg.id;
+    App.turn = null;
+    post({ e: 'walkStart', kind: kind, m: Math.round(path.len) });
+  }
+  function walkTo(o) {
+    if (!App.started || !App.stations || !o || !o.kind) return;
+    var me = App.me;
+    if (me.mode !== 'walk') {
+      // 앉아 있으면 먼저 일어선 뒤 걷는다
+      App.pendingWalk = o;
+      if (me.mode === 'seated') beginStand(); else if (me.mode === 'sitting') me.pendingStand = true;
+      return;
+    }
+    startWalk(o);
+  }
+  function tapAt(x, y) {
+    if (!App.markers || !App.camera || App.me.mode !== 'walk' || !(x >= 0) || !(y >= 0)) return;
+    var w = root.innerWidth || 360, h = root.innerHeight || 640;
+    var hit = App.markers.pick(x / w * 2 - 1, -(y / h * 2 - 1), App.camera, w, h);
+    if (hit) walkTo({ kind: hit.kind, index: hit.index });
+  }
+
   var joy = { x: 0, y: 0 }, vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 };
+
+  // 제대 앞/성수대 자리에 서 있나(드나들 때 깜빡이지 않게 들어갈 때 1.3m, 나갈 때 2.0m). 촛불은 near.candle 이 따로 맡는다.
+  function nearStation(me) {
+    var S = App.stations;
+    if (!S) return null;
+    var st = S.stations(), best = null, bd = 1e9, cur = App.near.station;
+    var list = [['altar', st.altar]];
+    st.font.forEach(function (f) { list.push(['font', f]); });
+    for (var i = 0; i < list.length; i++) {
+      var k = list[i][0], s = list[i][1], d = Math.hypot(me.x - s.x, me.z - s.z);
+      var lim = cur === k ? 2.0 : 1.3;
+      if (d <= lim && d < bd) { bd = d; best = k; }
+    }
+    return best;
+  }
 
   function updateMe(dt, t) {
     var me = App.me, av = App.meAv, logic = App.logic;
     var mode = me.mode;
     if (mode === 'walk') {
       App.ctl.getMove(joy);
-      logic.joyToVelocity(joy.x, joy.y, App.ctl.yaw, vel);
+      var walked = null;   // 이번 프레임에 도착한 자동 걷기
+      var W = App.walkSt;
+      if (W && joy.x * joy.x + joy.y * joy.y > 0.04) { cancelWalk('input'); W = null; }   // 스틱·키보드는 자동 걷기를 끊는다
+      if (W) {
+        App.stations.stepWalk(W, me, dt, wv);
+        if (wv.done) { walked = { kind: W.kind, index: W.index, seat: W.seat, yaw: W.target.yaw }; App.walkSt = null; W = null; }
+        else if (wv.stuck || W.t > 90) {
+          // 끼었다: 지금 자리에서 길을 다시 찾는다(두 번까지). 안 되면 실패.
+          var np = W.t > 90 || W.replans >= 2 ? null : App.stations.findPath(me, W.target);
+          if (!np) { failWalk(W.kind, 'stuck'); W = null; }
+          else { var nw = App.stations.startWalk(np, W.target, W.kind, W.index); nw.replans = W.replans + 1; nw.seat = W.seat; nw.t = W.t; App.walkSt = W = nw; }
+        }
+      }
+      if (W) { vel.vx = wv.vx; vel.vz = wv.vz; vel.speed = wv.speed; vel.yaw = wv.yaw; }
+      else logic.joyToVelocity(joy.x, joy.y, App.ctl.yaw, vel);
+      if (walked) { vel.vx = vel.vz = vel.speed = 0; App.turn = { yaw: walked.yaw, t: 0.8 }; }
       var k = Math.min(1, dt * 12);
       me.vx += (vel.vx - me.vx) * k; me.vz += (vel.vz - me.vz) * k;
       var sp = Math.sqrt(me.vx * me.vx + me.vz * me.vz);
@@ -201,6 +293,11 @@
       if (vel.speed > 0.05) {
         var df = wrap(vel.yaw - me.yaw);
         me.yaw += df * Math.min(1, dt * 11);
+        App.turn = null;
+      } else if (App.turn) {
+        // 도착: 대상(스탠드/제대)을 바라본다
+        me.yaw += wrap(App.turn.yaw - me.yaw) * Math.min(1, dt * 8);
+        App.turn.t -= dt; if (App.turn.t <= 0) App.turn = null;
       }
       me.speed = sp;
       av.setWalk(Math.min(1, sp / 3.2 * 1.05));
@@ -218,7 +315,8 @@
       var seat = logic.nearestSeat(me.x, me.z, isTaken);
       var cs = logic.nearestCandleSlot(me.x, me.z, function (s) { return App.world.isLit(s); });
       if (cs === null) cs = logic.nearestCandleSlot(me.x, me.z, null);
-      setNear(seat, cs);
+      setNear(seat, cs, nearStation(me));
+      if (walked) post({ e: 'walkDone', kind: walked.kind, index: walked.index === undefined ? 0 : walked.index, seat: walked.seat || null });
     } else if (mode === 'sitting' || mode === 'standing') {
       me.t += dt;
       var dur = mode === 'sitting' ? 0.8 : 0.55, u = Math.min(1, me.t / dur), s = u * u * (3 - 2 * u);
@@ -237,7 +335,8 @@
           App.net.setMySeat(null);
           post({ e: 'stood' });
           post({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 0 });
-          App.wasMoving = false; App.near.seat = App.near.candle = undefined;
+          App.wasMoving = false; App.near.seat = App.near.candle = undefined; App.near.station = null;
+          if (App.pendingWalk) { var pw = App.pendingWalk; App.pendingWalk = null; startWalk(pw); }
         }
       }
     } else { av.setWalk(0); }
@@ -255,6 +354,8 @@
     if (seated && !ctl.dragging && App.t - ctl.lastDragT > 1.2) {
       ctl.yaw += wrap((me.seat ? App.logic.seatInfo(me.seat).yaw : 0) - ctl.yaw) * (1 - Math.exp(-dt * 1.8));
     }
+    // 자동 걷기 중에는 카메라가 천천히 아바타 뒤로 돌아 가는 길이 보이게 한다(직접 돌린 뒤 1.5초는 그대로 둔다)
+    if (App.walkSt && !seated && !ctl.dragging && App.t - ctl.lastDragT > 1.5) ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 1.6));
     var D = (7.2 * (1 - sf) + 4.4 * sf) * ctl.zoom;
     var pitch = ctl.pitch * (1 - 0.3 * sf);
     var fy = me.y + 1.0 + sf * (0.45 - 0.2);
@@ -295,6 +396,7 @@
     App.net.update(dt, App.t, now);
     App.crowd.update(dt, App.t);
     App.world.update(dt, App.t, App.me, App.camera);
+    if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk');
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
     // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).

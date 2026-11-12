@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기도 화면 재설계 보드</title>
+<!-- 사용법: boards.html?b=current|recommended|transition|church|senior . 같은 폴더의 PNG를 나란히 놓는다. -->
+<style>
+@font-face { font-family: "PretendardLocal"; font-weight: 400; src: url("../../../assets/fonts/Pretendard-Regular.otf"); }
+@font-face { font-family: "PretendardLocal"; font-weight: 700; src: url("../../../assets/fonts/Pretendard-Bold.otf"); }
+:root { --bg: #F4EEEB; --on: #231917; --on2: #6B5A54; --bad: #C62828; --good: #2E7D32; --line: #DCCBC4; }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--on); font-family: "PretendardLocal", Pretendard, "Noto Sans KR", system-ui, sans-serif; padding: 28px 32px 32px; display: inline-block; }
+h1 { font-size: 24px; } .lead { color: var(--on2); font-size: 15px; margin: 6px 0 20px; max-width: 1400px; line-height: 1.5; }
+.row { display: flex; gap: 24px; align-items: flex-start; }
+figure { width: 270px; flex: none; }
+figure.w { width: 300px; }
+figure img { width: 100%; border-radius: 22px; border: 6px solid #1d1715; display: block; background: #000; }
+figcaption { font-size: 14px; line-height: 1.45; margin-top: 10px; }
+figcaption b { display: block; font-size: 15px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; margin-bottom: 4px; }
+.bad { background: var(--bad); } .good { background: var(--good); } .neu { background: #6B5A54; }
+.arrow { align-self: center; font-size: 40px; color: var(--on2); flex: none; margin-top: -60px; }
+.meas { color: var(--on2); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const B = new URLSearchParams(location.search).get('b') || 'current';
+const f = (src, tag, cls, title, text, w) => `<figure class="${w ? 'w' : ''}"><img src="${src}"><figcaption><span class="tag ${cls}">${tag}</span><b>${title}</b>${text}</figcaption></figure>`;
+const A = '<div class="arrow">→</div>';
+const boards = {
+  current: ['현재: 기도문이 가려지는 지점 (실제 Flutter 렌더링, 상태바 24dp·제스처 바 24dp 가정)',
+    '앱 코드를 그대로 그린 화면이다. 아래 묵주 판(손잡이 36 + 지도 141~176 + 버튼 56 + 여백)이 화면의 45%를 차지하고, 기도문 칸은 스크롤 표시 없이 판 밑으로 잘린다.',
+    [f('cur_prayer_640_x1.png', '현재', 'bad', '360×640 · 기본 글자', '기도문 칸 255dp, 성모송에 필요한 442dp의 58%만 보임. 뒷단(천주의 성모…)이 통째로 안 보임.'),
+     f('cur_prayer_800_x1.png', '현재', 'bad', '360×800 · 기본 글자', '칸 380dp. 마지막 줄(아멘.)이 판 밑에 가림(62dp). 스크롤 표시 없음.'),
+     f('cur_prayer_800_x2.png', '현재', 'bad', '360×800 · 글자 2.0', '필요 1314dp 중 29%만 보임. 탭하면 다음 구슬로 넘어가 나머지를 읽을 길이 사실상 없음.'),
+     f('cur_prayer_800_x2_expanded.png', '현재', 'bad', '묵주를 펼친 상태', '어느 화면이든 기도문 칸이 136dp로 줄어듦(maxH = 높이-260). 2.0에서는 첫 단어만.'),
+     f('cur_card_640_x2.png', '현재', 'bad', '성당 기도 카드 · 2.0', '카드가 화면의 62%(397dp), 기도문은 185dp(35%). 글자는 15sp 기준이라 전체 화면(24sp)과 크기가 다름.')]],
+  recommended: ['추천: 텍스트 우선 + 얇은 묵주 띠 + 엄지 영역 [다음]',
+    '머리 48 + 묵주 띠 36 + 버튼 76만 고정이다. 남는 높이는 모두 기도문 몫이고, 넘치면 판 밑으로 숨기지 않고 "↓ n줄 더(쪽 번호)"를 보여 준다.',
+    [f('rec_prayer_light_640_x1.png', '추천', 'good', '360×640 · 기본 글자', '성모송 전체가 한 화면에 들어감(필요 ≈ 칸 429dp).'),
+     f('rec_prayer_dark_800_x1.png', '추천', 'good', '360×800 · 어두운 화면', '아래 여백이 남는다. 같은 배치를 밤 기도용으로.'),
+     f('rec_prayer_light_800_x1.5.png', '추천', 'good', '360×800 · 1.5', '넘치는 2줄을 숨기지 않고 표시. 글을 누르면 한 쪽 아래로, [다음]은 언제나 다음 구슬.'),
+     f('rec_prayer_dark_800_x2.png', '추천', 'good', '360×800 · 2.0', '틀(머리·버튼)은 1.3배까지만 커지고 기도문은 2.0배. 3쪽으로 나뉨을 명시.'),
+     f('rec_map_light_800.png', '추천', 'neu', '묵주 전체 보기(이동 모드)', '읽기와 분리된 이동 모드. 띠를 누르면 열리고 구슬을 누르면 이동, 4초 뒤 닫힘.')]],
+  senior: ['큰 글씨(2.0) 비교: 현재 · 추천 · 외운 기도 짧게 보기(선택)',
+    '360dp 폭에서 48sp 글자로는 어떤 배치도 성모송을 한 화면에 담지 못한다. 그래서 "가리지 않기 + 쪽 표시"를 기본으로, 외운 기도를 짧게 보는 선택지를 더한다.',
+    [f('cur_prayer_640_x2.png', '현재', 'bad', '360×640 · 2.0', '기도문 칸 255dp, 19%만 보임.'),
+     f('rec_prayer_light_640_x2.png', '추천', 'good', '360×640 · 2.0', '칸 404dp. 1/4쪽, 남은 줄 수 표시.'),
+     f('rec_prayer_short_light_640_x2.png', '선택', 'neu', '외운 기도 짧게 보기', '반복 성모송은 숫자와 앞·뒷단 첫머리만. 글을 누르면 전체 기도문.'),
+     f('rec_prayer_short_light_800_x2.png', '선택', 'neu', '360×800 · 짧게 보기', '눈 감고 바치는 사람·실물 묵주 사용자에게.')]],
+  church: ['성당 기도 카드: 현재 vs 추천 (같은 세션, 같은 글자 체계)',
+    '추천 카드는 전체 화면과 같은 기도문 구성요소를 0.83배(20sp 기준)로 쓰고, 내용에 맞춰 높이를 줄인다(최대 64~68%). 전체 화면(⤢)은 메뉴에 숨기지 않고 머리줄에 둔다.',
+    [f('cur_card_800_x1.png', '현재', 'bad', '360×800 · 기본', '버튼 3줄(이전·다음 / 일어나기) + 전체 화면은 ⋮ 안에.'),
+     f('cur_card_800_x2.png', '현재', 'bad', '360×800 · 2.0', '기도문 284dp에 528dp 내용, 넘침 표시 없음.'),
+     f('rec_church_light_800_x1.png', '추천', 'good', '360×800 · 기본', '성모송 전체가 카드 안에. 장면이 위 절반에 보임.'),
+     f('rec_church_light_640_x1.png', '추천', 'good', '360×640 · 기본', '카드 최대 68%, 넘침 없음.'),
+     f('rec_church_dark_800_x1.png', '추천', 'good', '어두운 화면', '같은 구성.')]],
+  transition: ['기도 ↔ 성당: 한 세션이 화면만 바꿔 이어진다',
+    '오늘(전체 화면)에서 [⛪ 성당에서]를 누르면 같은 단계 그대로 성당 탭으로 간다. 장면을 여는 동안에도 카드로 계속 기도할 수 있고, 열리면 빈자리에 앉는다. 성당의 ⤢는 같은 세션을 전체 화면으로 펼치고, 뒤로 가기는 확인 없이 성당으로 돌아온다.',
+    [f('rec_prayer_light_800_x1.png', '1', 'neu', '오늘 · 전체 화면 기도', '머리줄의 [⛪ 성당에서] 한 번.'),
+     A,
+     f('rec_trans_loading_800.png', '2', 'neu', '성당 여는 중', '카드가 먼저 뜬다. 기도는 멈추지 않음. "빈자리에 앉혀 드려요".'),
+     A,
+     f('rec_church_light_800_x1.png', '3', 'neu', '앉은 상태', '같은 성모송 4/10. 기록은 여전히 1건.'),
+     A,
+     f('rec_prayer_fromchurch_800.png', '4', 'neu', '⤢ 전체 화면', '뒤로 가기 = "‹ 성당". 중단 확인 없음.'),
+     A,
+     f('rec_stats_mini_800.png', '5', 'neu', '다른 탭으로 가도', '미니 막대로 세션이 남는다. [이어서]·[⛪].')]],
+  home: ['오늘 탭: 진행 중인 기도와 성당 진입',
+    '진행 중인 세션이 있으면 맨 위 카드가 [성당에서 이어서]와 [이어서 기도]를 함께 준다. 다른 탭에서는 미니 막대가 같은 세션을 보여 준다.',
+    [f('rec_home_light_800.png', '추천', 'good', '오늘 · 360×800', ''),
+     f('rec_home_light_640.png', '추천', 'good', '오늘 · 360×640', ''),
+     f('rec_home_dark_800.png', '추천', 'good', '오늘 · 어두운 화면', ''),
+     f('rec_stats_mini_dark_800.png', '추천', 'good', '기록 탭 + 미니 막대', '')]],
+};
+const [t, lead, items] = boards[B];
+document.getElementById('root').innerHTML = `<h1>${t}</h1><p class="lead">${lead}</p><div class="row">${items.join('')}</div>`;
+Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => document.fonts.ready).then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

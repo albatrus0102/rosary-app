@@ -212,7 +212,13 @@ void main() {
       // 앉을 자리와 촛불대가 모두 가까워도 버튼은 하나(자리 우선).
       h.scene.emit(const SceneNear(seat: 'L03-2', candle: 5));
       await _anim(tester);
-      expect(find.byType(FilledButton), findsOneWidget);
+      // 상황 버튼(ctx-*)은 하나만(위쪽 '가기' 버튼은 따로 있다).
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is FilledButton && '${w.key}'.contains('ctx-'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('앉기'), findsOneWidget);
       expect(find.text('초 켜기'), findsNothing);
       h.scene.emit(const SceneNear(candle: 5));
