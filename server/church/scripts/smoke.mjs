@@ -109,10 +109,10 @@ async function main() {
   check('B가 A의 snap 수신', !!entry && Math.abs(entry[2] - 16.5) < 0.01 && entry[4] === 'w', JSON.stringify(snap));
   check('A는 자기 snap을 받지 않음', !a.msgs.some((m) => m.t === 'snap' && m.p.some((e) => e[0] === a.id)));
 
-  // 앉기: basic 의 L11-0 은 (-3.2, 11.25). 스폰(0,17)에서 5.5m 라 far → 걸어가서 앉는다.
-  a.send({ t: 'sit', seat: 'L11-0' });
+  // 앉기: 허용 거리는 8m. basic 의 L00-0 은 (-3.2, -9.3)으로 스폰(0,17)에서 26m → far.
+  a.send({ t: 'sit', seat: 'L00-0' });
   const far = await a.waitFor((m) => m.t === 'seat_denied');
-  check('멀리서 앉기 → seat_denied far', far && far.reason === 'far' && far.seat === 'L11-0', JSON.stringify(far));
+  check('멀리서 앉기 → seat_denied far', far && far.reason === 'far' && far.seat === 'L00-0', JSON.stringify(far));
 
   // 속도 제한(7m/s) 때문에 몇 걸음 나눠서 이동
   const target = { x: -3.2, z: 12.9 };
@@ -154,13 +154,13 @@ async function main() {
   }
   b.send({ t: 'candle', slot: 5, intention: 3 });
   const candleA = await a.waitFor((m) => m.t === 'candle' && m.slot === 5);
-  const now = Date.now();
-  check('A가 candle 수신 (until ≈ +30분)', candleA && candleA.intention === 3 && Math.abs(candleA.until - (now + 30 * 60 * 1000)) < 60_000, JSON.stringify(candleA));
+  check('A가 candle 수신 (until 0 = 만료 없음)', candleA && candleA.intention === 3 && candleA.until === 0, JSON.stringify(candleA));
 
-  // 이모트
+  // 이모트 (본인에게도 에코)
   b.send({ t: 'emote', e: 1 });
   const em = await a.waitFor((m) => m.t === 'emote' && m.id === b.id && m.e === 1);
   check('A가 emote 수신', !!em);
+  check('B도 자기 emote 에코 수신', !!(await b.waitFor((m) => m.t === 'emote' && m.id === b.id)));
 
   // ping/pong, bad_msg
   a.send({ t: 'ping' });
@@ -178,10 +178,24 @@ async function main() {
   await c.connect();
   c.send({ t: 'hello', id: c.id, v: 1, avatar: avatarA });
   const wc = await c.waitFor((m) => m.t === 'welcome');
-  check('C welcome에 촛불 포함', wc && wc.n === 3 && wc.candles.some((x) => x.slot === 5 && x.until > Date.now()), JSON.stringify(wc));
+  check('C welcome에 촛불 포함', wc && wc.n === 3 && wc.candles.some((x) => x.slot === 5 && x.until === 0), JSON.stringify(wc));
   c.close();
   const lc = await a.waitFor((m) => m.t === 'leave' && m.n === 2);
   check('C 퇴장 → leave n=2', !!lc, JSON.stringify(a.msgs.filter((m) => m.t === 'leave')));
+
+  // 인원 제한 없음: 같은 방에 35명이 더 들어와도 full 이 오지 않는다.
+  const crowd = [];
+  for (let i = 0; i < 35; i++) {
+    const x = new Client('X' + i);
+    await x.connect();
+    x.send({ t: 'hello', id: x.id, v: 1, avatar: avatarA });
+    crowd.push(x);
+  }
+  const welcomes = await Promise.all(crowd.map((x) => x.waitFor((m) => m.t === 'welcome' || m.t === 'full' || (m.t === 'error' && m.code === 'busy'))));
+  check('35명 추가 입장: 전원 welcome, full 없음', welcomes.every((w) => w && w.t === 'welcome'), JSON.stringify(welcomes.find((w) => !w || w.t !== 'welcome')));
+  check('마지막 입장자의 n = 전체 인원(3+35 중 A,B 포함 37 이하)', Math.max(...welcomes.map((w) => (w ? w.n : 0))) === 37, String(Math.max(...welcomes.map((w) => (w ? w.n : 0)))));
+  for (const x of crowd) x.close();
+  await sleep(300);
 
   // 퇴장
   b.close();

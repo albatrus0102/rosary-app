@@ -28,8 +28,8 @@ export interface Layout {
   candles: { stands: CandleStand[] };
 }
 
-/** 서버가 촛불대 반경(reach)에 더해 주는 지연 여유(m). */
-export const CANDLE_REACH_SLACK = 1.2;
+/** 서버가 촛불대 반경(reach)에 더해 주는 여유(m). v3: 1.2 → 5. */
+export const CANDLE_REACH_SLACK = 5;
 
 const SEAT_SHAPE_RE = /^[A-Z]{1,2}\d{2}-\d{1,2}$/;
 
@@ -69,11 +69,14 @@ export function totalCandleSlots(layout: Layout): number {
   return layout.candles.stands.reduce((s, st) => s + st.slots, 0);
 }
 
-/** 전역 슬롯 번호가 속한 촛불대. 범위 밖이면 null. */
-export function standForSlot(layout: Layout, slot: number): CandleStand | null {
+/** 전역 슬롯 번호가 속한 촛불대와 그 스탠드의 슬롯 범위 [base, base+stand.slots). 범위 밖이면 null. */
+export function standRangeForSlot(
+  layout: Layout,
+  slot: number,
+): { stand: CandleStand; base: number } | null {
   let base = 0;
   for (const st of layout.candles.stands) {
-    if (slot >= base && slot < base + st.slots) return st;
+    if (slot >= base && slot < base + st.slots) return { stand: st, base };
     base += st.slots;
   }
   return null;

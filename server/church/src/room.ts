@@ -1,13 +1,14 @@
 // Durable Object: 방 하나(`<churchId>-<N>`). WebSocket Hibernation API 사용.
 //
-// 상태 정책(하이버네이션):
-//  - 방 상태(피어·좌석·촛불)는 메모리(RoomLogic)에만 둔다. 저장소(storage)에는 아무것도 쓰지 않는다.
-//  - 각 소켓의 attachment에 {connId, room, 피어 스냅샷}을 직렬화해 둔다. DO가 메모리에서 내려갔다
-//    깨어나면(생성자 재실행) ctx.getWebSockets()의 attachment로 피어와 좌석을 복원한다.
-//  - 촛불은 attachment에 담지 않으므로 DO가 퇴출(배포·장애·장시간 무활동)되면 사라진다(30분짜리 임시 상태).
-//  - 접속자가 있는 동안 200ms 알람이 계속 돌아 DO는 사실상 깨어 있다. 알람은 접속자가 0이 되면 멈춘다.
+// 상태 정책(하이버네이션, v3):
+//  - 피어·좌석은 메모리(RoomLogic)에만 둔다. 각 소켓의 attachment에 {connId, room, 피어 스냅샷}을
+//    직렬화해 두고, DO가 깨어나면(생성자 재실행) ctx.getWebSockets()로 피어와 좌석을 복원한다.
+//  - 촛불은 만료가 없으므로 ctx.storage(슬롯당 키 `c:<slot>`)에 보존하고, 방이 처음 쓰일 때
+//    (생성자 복원 경로 또는 첫 접속) 저장소에서 읽어 복원한다. 쓰기는 촛불을 켤 때만 일어난다.
+//  - 접속자가 있는 동안 200ms 알람이 계속 돌고, 접속자가 0이 되면 멈춘다.
 import { DurableObject } from 'cloudflare:workers';
 import type { Env } from './index';
+import { CandleStore } from './candle_store';
 import { LAYOUTS } from './layouts';
 import { RoomLogic, parseRoomName, type Message, type PeerSnapshot } from './room_logic';
 
@@ -24,9 +25,12 @@ export class ChurchRoom extends DurableObject<Env> {
   private room = '';
   private sockets = new Map<string, WebSocket>();
   private alarmArmed = false;
+  private candleStore: CandleStore;
+  private candlesLoaded: Promise<void> | null = null;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
+    this.candleStore = new CandleStore(ctx.storage);
     // 핑은 DO를 깨우지 않고 런타임이 자동 응답한다(정확히 이 문자열일 때).
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('{"t":"ping"}', '{"t":"pong"}'));
 
@@ -40,8 +44,12 @@ export class ChurchRoom extends DurableObject<Env> {
       logic.onConnect(att.connId);
       if (att.peer) logic.restorePeer(att.connId, att.peer);
     }
-    if (this.logic && this.logic.peerCount() > 0) {
-      ctx.blockConcurrencyWhile(async () => this.ensureAlarm());
+    if (this.logic) {
+      this.logic.rebuildVisibility();
+      ctx.blockConcurrencyWhile(async () => {
+        await this.loadCandles();
+        if (this.logic && this.logic.peerCount() > 0) await this.ensureAlarm();
+      });
     }
   }
 
@@ -57,8 +65,24 @@ export class ChurchRoom extends DurableObject<Env> {
       send: (connId, msg) => this.sendTo(connId, msg),
       close: (connId, code, reason) => this.closeConn(connId, code, reason),
       persist: (connId, snap) => this.persistPeer(connId, snap),
+      persistCandle: (c) => {
+        // 쓰기 실패는 방 동작을 막지 않는다(출력 게이트가 완료 전 응답을 보류한다).
+        this.candleStore.save(c).catch(() => {});
+      },
     });
     return this.logic;
+  }
+
+  private loadCandles(): Promise<void> {
+    if (!this.candlesLoaded) {
+      this.candlesLoaded = this.candleStore
+        .load()
+        .then((list) => this.logic?.restoreCandles(list))
+        .catch(() => {
+          this.candlesLoaded = null; // 다음 기회에 다시 시도
+        });
+    }
+    return this.candlesLoaded;
   }
 
   private sendTo(connId: string, msg: Message): void {
@@ -99,6 +123,7 @@ export class ChurchRoom extends DurableObject<Env> {
     const room = request.headers.get('x-church-room') ?? '';
     const logic = this.ensureLogic(room);
     if (!logic) return new Response('bad room', { status: 400 });
+    await this.loadCandles();
 
     const pair = new WebSocketPair();
     const client = pair[0];
