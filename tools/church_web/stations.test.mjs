@@ -79,6 +79,19 @@ for (const c of churches) {
     }
   });
 
+  test(`paths ${c.id}: any station reaches any other station (and walks there)`, () => {
+    const { L, S } = mk(c);
+    const st = S.stations();
+    const all = [['entrance', st.entrance], ['altar', st.altar]].concat(st.candle.map((k, i) => ['candle' + i, k]));
+    for (const [an, a] of all) for (const [bn, b] of all) {
+      if (a === b) continue;
+      const path = S.findPath(a, b);
+      assert.ok(path, `${c.id} ${an}->${bn}: no path`);
+      const sim = simulate(L, S, a, path, b);
+      assert.ok(sim.ok, `${c.id} ${an}->${bn}: walk did not arrive ${JSON.stringify(sim)}`);
+    }
+  });
+
   test(`paths ${c.id}: every seat's aisle spot is reachable; candle/seat arrival triggers near`, () => {
     const { L, S } = mk(c);
     const sp = c.layout.spawn;
