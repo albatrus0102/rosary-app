@@ -97,7 +97,7 @@ class _LaunchScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('묵주기도'),
+                const Text('로사리움'),
                 const SizedBox(height: 24),
                 if (failed) ...[
                   const Text(

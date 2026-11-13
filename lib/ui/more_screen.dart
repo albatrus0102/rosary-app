@@ -179,7 +179,7 @@ class MoreScreen extends StatelessWidget {
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => showLicensePage(
                         context: context,
-                        applicationName: '묵주기도',
+                        applicationName: '로사리움',
                         applicationLegalese: prayerSourceNote,
                       ),
                     ),

@@ -74,7 +74,7 @@ void main() {
     final settings = await _load();
     await _pumpHome(tester, settings);
 
-    expect(find.text('묵주기도'), findsWidgets);
+    expect(find.text('로사리움'), findsWidgets);
     expect(find.textContaining('신비 시작'), findsOneWidget);
     for (final set in MysterySet.values) {
       expect(find.text(set.koreanName), findsOneWidget);

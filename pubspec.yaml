@@ -1,5 +1,5 @@
 name: rosary_app
-description: "묵주기도문을 보여 주고 버튼·탭·스와이프로 넘겨 주는 묵주기도 도우미 앱."
+description: "로사리움 — 아바타로 성당을 걷고 함께 기도하는 가상 가톨릭 공간(묵주기도·스테인드글라스·십자가의 길)."
 publish_to: 'none'
 version: 0.1.0+1
 

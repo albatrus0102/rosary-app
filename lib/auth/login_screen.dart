@@ -203,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Semantics(
                       header: true,
                       child: Text(
-                        '묵주기도',
+                        '로사리움',
                         textAlign: TextAlign.center,
                         style: text.headlineLarge,
                       ),

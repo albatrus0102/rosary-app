@@ -1,4 +1,4 @@
-/* 묵주기도 관리자 — '로드맵' 탭.
+/* 로사리움 관리자 — '로드맵' 탭.
    - 관리자 RPC admin_roadmap() / admin_roadmap_set() 로 읽고 쓴다.
    - RPC 가 없거나(마이그레이션 전) 실패하면 roadmap_seed.json 의 읽기 전용 사본을 보여 준다.
    - 데이터는 모두 textContent 로만 넣는다(innerHTML 사용 안 함). */

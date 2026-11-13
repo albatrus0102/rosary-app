@@ -22,7 +22,7 @@ Future<FakeAuthService> _pumpLogin(
 void main() {
   testWidgets('제공자 버튼이 순서대로 있고 문구가 맞다', (tester) async {
     await _pumpLogin(tester);
-    expect(find.text('묵주기도'), findsOneWidget);
+    expect(find.text('로사리움'), findsOneWidget);
     final ys = [
       for (final k in ['login-kakao', 'login-google', 'login-email'])
         tester.getTopLeft(find.byKey(Key(k))).dy,

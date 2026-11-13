@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
         listenable: settings,
         builder: (context, _) => CustomScrollView(
           slivers: [
-            const SliverAppBar.large(title: Text('묵주기도')),
+            const SliverAppBar.large(title: Text('로사리움')),
             SliverPageBody(maxWidth: _maxWidth, child: _buildContent(context)),
           ],
         ),

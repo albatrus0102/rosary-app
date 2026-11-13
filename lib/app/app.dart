@@ -50,7 +50,7 @@ class _RosaryAppState extends State<RosaryApp> {
           builder: (context, _) {
             final dynamicOn = settings.useDynamicColor;
             return MaterialApp(
-              title: '묵주기도',
+              title: '로사리움',
               debugShowCheckedModeBanner: false,
               themeMode: ThemeMode.system,
               theme: AppTheme.light(
