@@ -210,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: AppSpace.xs),
                     Text(
-                      '가상 3D 성당',
+                      '3D 가상 성당',
                       textAlign: TextAlign.center,
                       style: text.titleMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
