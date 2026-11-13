@@ -10,6 +10,8 @@ import '../app/settings.dart';
 import '../app/track.dart';
 import '../domain/prayer_data.dart';
 import '../domain/rosary_session.dart';
+import '../glass/glass_catalog.dart';
+import '../glass/glass_info_sheet.dart';
 import '../ui/prayer_screen.dart';
 import 'avatar/avatar_config.dart';
 import 'avatar/avatar_editor_screen.dart';
@@ -91,6 +93,14 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   // 자동 걷기(스테이션으로 가기). 걷는 동안 칩을 보이고, 도착하면 그 자리의 행동을 보인다.
   String? _walkKind;
+
+  // 성당 안 진본 사진 창(G-29): 가까이 있는 창과 눌러서 고른 창(잠깐). 칩 하나로 보여 준다.
+  static const _glassTapHold = Duration(seconds: 8);
+  String? _glassNearId;
+  String? _glassTapId;
+  Timer? _glassTapTimer;
+  GlassCatalog? _glassCatalog;
+  bool _glassCatalogAsked = false;
   final Set<String> _stationDone = {}; // 이 자리에서 이미 한 스테이션 동작('altar'|'font')
   bool _sheetOpen = false;
 
@@ -325,6 +335,18 @@ class _ChurchScreenState extends State<ChurchScreen>
         if (!_background) _net.sendPos(e.x, e.z, e.r, e.moving);
       case ScenePerf():
         _onPerf(e);
+      case SceneGlassNear():
+        _ensureGlassCatalog();
+        if (e.id != _glassNearId) setState(() => _glassNearId = e.id);
+      case SceneGlassTap():
+        _ensureGlassCatalog();
+        _glassTapTimer?.cancel();
+        _glassTapTimer = Timer(_glassTapHold, () {
+          if (mounted && _glassTapId != null) {
+            setState(() => _glassTapId = null);
+          }
+        });
+        setState(() => _glassTapId = e.id);
       case ViewReady() ||
           ViewEnd() ||
           ViewError() ||
@@ -332,6 +354,32 @@ class _ChurchScreenState extends State<ChurchScreen>
           ViewGesture():
         break; // 창 감상 이벤트는 GlassViewScreen이 쓴다.
     }
+  }
+
+  /// 창 이름·출처는 유리화 카탈로그(번들)에서 읽는다. 처음 창 이벤트가 올 때 한 번만 부른다.
+  void _ensureGlassCatalog() {
+    if (_glassCatalogAsked) return;
+    _glassCatalogAsked = true;
+    GlassCatalog.shared().then(
+      (c) {
+        if (!_disposed && mounted) setState(() => _glassCatalog = c);
+      },
+      onError: (Object e) {
+        debugPrint('glass catalog load failed: $e');
+        _glassCatalogAsked = false;
+      },
+    );
+  }
+
+  /// 지금 칩으로 보여 줄 창(누른 창이 가까운 창보다 먼저). 카탈로그에 없으면 null.
+  GlassWindow? get _glassWindow {
+    final id = _glassTapId ?? _glassNearId;
+    if (id == null) return null;
+    return _glassCatalog?.byId(id);
+  }
+
+  void _openGlassInfo(GlassWindow w) {
+    unawaited(showGlassInfoSheet(context, w));
   }
 
   /// 성능 표본(C-04). 입장 직후 첫 표본이 너무 느리면 간단 모드를 '권한다'(강제하지 않는다).
@@ -756,6 +804,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _disposed = true;
     _perfBannerTimer?.cancel();
     _hintTimer?.cancel();
+    _glassTapTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _settings.removeListener(_onSettings);
     _net.state.removeListener(_onNetState);
@@ -814,6 +863,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     final cardOn = _prayerActive && _prayer != null;
     final walking = !seatedOrPending && !cardOn;
     final halfWidth = MediaQuery.sizeOf(context).width / 2;
+    final glassWin = _glassWindow;
     return Scaffold(
       backgroundColor: scheme.inverseSurface,
       body: Stack(
@@ -892,6 +942,19 @@ class _ChurchScreenState extends State<ChurchScreen>
                             onPressed: _onGo,
                           ),
                         ],
+                      ),
+                    ),
+                  // 셋째 줄(왼쪽): 진본 사진 창 앞이면 '이 창: ○○ · 자세히 보기'(G-29).
+                  if (walking && glassWin != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ChurchGlassChip(
+                          key: const ValueKey('glass-chip'),
+                          title: glassWin.titleKo,
+                          onTap: () => _openGlassInfo(glassWin),
+                        ),
                       ),
                     ),
                   if (_perfBanner)

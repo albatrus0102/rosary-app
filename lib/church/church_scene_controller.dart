@@ -11,6 +11,9 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 sealed class SceneEvent {
   const SceneEvent();
 
+  /// 사진 창 id 형식(웹 `glass_math.js`의 ID_RE와 같다).
+  static final RegExp _glassId = RegExp(r'^[a-z0-9_]{1,40}$');
+
   /// 채널 메시지(JSON 문자열)를 해석한다. 알 수 없거나 깨진 메시지는 null.
   static SceneEvent? parse(String raw) {
     try {
@@ -122,6 +125,22 @@ sealed class SceneEvent {
         case 'viewGesture':
           final kind = ViewGestureKind.parse(j['kind']);
           return kind == null ? null : ViewGesture(kind);
+        // --- 성당 안 진본 창(G-29) ---
+        case 'glassNear':
+          final id = j['id'];
+          final slot = j['slot'];
+          if (id != null && (id is! String || !_glassId.hasMatch(id))) {
+            return null;
+          }
+          return SceneGlassNear(
+            id: id as String?,
+            slot: slot is String ? slot : null,
+          );
+        case 'glassTap':
+          final id = j['id'];
+          final slot = j['slot'];
+          if (id is! String || !_glassId.hasMatch(id)) return null;
+          return SceneGlassTap(id: id, slot: slot is String ? slot : null);
       }
     } catch (_) {}
     return null;
@@ -291,6 +310,21 @@ enum ViewGestureKind {
 class ViewGesture extends SceneEvent {
   const ViewGesture(this.kind);
   final ViewGestureKind kind;
+}
+
+/// 성당 안을 걷다가 진본 사진 창이 가까이·시야 안에 들어왔다(G-29). [id]가 null이면 벗어났다.
+/// [id]는 유리화 카탈로그 id, [slot]은 그 성당 안의 자리 이름.
+class SceneGlassNear extends SceneEvent {
+  const SceneGlassNear({this.id, this.slot});
+  final String? id;
+  final String? slot;
+}
+
+/// 성당 안의 진본 사진 창을 눌렀다(G-29).
+class SceneGlassTap extends SceneEvent {
+  const SceneGlassTap({required this.id, this.slot});
+  final String id;
+  final String? slot;
 }
 
 /// 웹 장면의 로딩 상태.

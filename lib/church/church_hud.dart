@@ -320,6 +320,66 @@ class ChurchWalkChip extends StatelessWidget {
   }
 }
 
+/// 성당 안의 진본 사진 창 앞에 서거나 창을 누르면 뜨는 칩(G-29): '이 창: ○○ · 자세히 보기'.
+/// 누르면 창 정보(출처·설명)를 연다. 둘째 줄('가기') 아래 왼쪽에 놓여 다른 HUD와 겹치지 않는다.
+class ChurchGlassChip extends StatelessWidget {
+  const ChurchGlassChip({super.key, required this.title, required this.onTap});
+
+  /// 창 이름(유리화 카탈로그의 한국어 제목).
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final fg = scheme.onInverseSurface;
+    return Semantics(
+      button: true,
+      label: '이 창: $title. 자세히 보기',
+      excludeSemantics: true,
+      child: Material(
+        color: scheme.inverseSurface.withValues(alpha: 0.92),
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        elevation: 2,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome_mosaic_outlined, size: 20, color: fg),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      '이 창: $title',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.labelLarge?.copyWith(color: fg),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '자세히 보기',
+                    style: text.labelMedium?.copyWith(
+                      color: fg.withValues(alpha: 0.8),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, size: 18, color: fg),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 처음 한 번 뜨는 '가기' 안내 말풍선(6초 뒤 또는 처음 쓰면 사라진다).
 /// 3D 이름표·표식이 뜨는 위쪽을 가리지 않도록 오른쪽 아래(상황 버튼 위)에 놓는다.
 /// 폭은 왼쪽 이동 안내(왼쪽 16 + 140 + 간격 8)와 겹치지 않게 줄이고, 260을 넘지 않는다.
