@@ -397,19 +397,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                       child: SizedBox(
                         width: double.infinity,
+                        // 세 칸에 아이콘+긴 이름을 넣으면 세 줄로 접혀서, 이름만 두고
+                        // 선택 표시(체크)도 숨긴다(선택 칸은 채움 색과 selected 의미로 구분).
                         child: SegmentedButton<LeaderVoiceSource>(
+                          showSelectedIcon: false,
                           segments: [
                             for (final v in LeaderVoiceSource.values)
                               ButtonSegment(
                                 value: v,
-                                icon: Icon(switch (v) {
-                                  LeaderVoiceSource.bundled =>
-                                    Icons.auto_awesome,
-                                  LeaderVoiceSource.tts =>
-                                    Icons.smart_toy_outlined,
-                                  LeaderVoiceSource.recorded => Icons.mic,
-                                }),
-                                label: Text(v.label),
+                                label: Text(
+                                  v.label,
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                           ],
                           selected: {source},

@@ -12,6 +12,7 @@ import 'consent_store.dart';
 import 'guest_link_card.dart';
 import 'legal_screen.dart';
 import 'legal_texts.dart';
+import '../ui/widgets/section_header.dart';
 
 /// 로그인 방법별 아이콘(공식 로고 아님: 출시 전 공식 자산 적용 TODO).
 IconData providerIcon(LoginProvider? p) => switch (p) {
@@ -250,7 +251,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                         if (s.isSignedOut) ...[
                           const SizedBox(height: AppSpace.sm),
-                          Card.outlined(
+                          Card.filled(color: scheme.surfaceContainerLow,
                             child: Padding(
                               padding: const EdgeInsets.all(AppSpace.sm),
                               child: Column(
@@ -287,7 +288,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                           const SizedBox(height: AppSpace.xs),
-                          Card.outlined(
+                          Card.filled(color: scheme.surfaceContainerLow,
                             child: Column(
                               children: [
                                 for (final kind in ConsentKind.optional)
@@ -298,7 +299,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                         const SizedBox(height: AppSpace.sm),
                         _header(context, '내 정보'),
-                        Card.outlined(
+                        Card.filled(color: scheme.surfaceContainerLow,
                           child: Column(
                             children: [
                               if (s.isSignedIn)
@@ -336,7 +337,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         if (s.isSignedIn) ...[
                           const SizedBox(height: AppSpace.sm),
                           _header(context, '계정 관리'),
-                          Card.outlined(
+                          Card.filled(color: scheme.surfaceContainerLow,
                             child: Column(
                               children: [
                                 ListTile(
@@ -376,26 +377,7 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _header(BuildContext context, String s) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpace.sm,
-        AppSpace.xs,
-        AppSpace.sm,
-        AppSpace.xs,
-      ),
-      child: Semantics(
-        header: true,
-        child: Text(
-          s,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.primary,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _header(BuildContext context, String s) => SectionHeader(s);
 
   Widget _consentRow(BuildContext context, String kind) {
     final item = consentItemTexts[kind]!;

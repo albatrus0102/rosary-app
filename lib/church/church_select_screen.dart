@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app/theme.dart';
 import '../app/settings.dart';
 import '../app/window_class.dart';
 import 'church_catalog.dart';
@@ -252,11 +253,14 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
     return [
       SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-          child: Text(
-            group,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(color: Theme.of(context).colorScheme.primary),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Semantics(
+            header: true,
+            child: Text(
+              group,
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
+            ),
           ),
         ),
       ),
@@ -266,11 +270,10 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
 
   Widget _searchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: SearchBar(
         controller: _search,
         hintText: '성당 이름이나 도시로 검색하기',
-        elevation: const WidgetStatePropertyAll(0),
         leading: const Icon(Icons.search),
         trailing: [
           if (_query.isNotEmpty)
@@ -292,7 +295,7 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
     final none = _region == null && _style == null && _query.isEmpty;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           FilterChip(
@@ -355,13 +358,13 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
       itemBuilder: (context, r) {
         final row = rows[r];
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 for (var c = 0; c < cols; c++) ...[
-                  if (c > 0) const SizedBox(width: 12),
+                  if (c > 0) const SizedBox(width: 16),
                   Expanded(
                     child: c < row.length
                         ? _ChurchCard(
@@ -388,7 +391,8 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
   }
 }
 
-/// 부드러운 그라데이션 히어로 헤더.
+/// 화면 머리글: M3 큰 앱 바와 같은 타이포(headlineMedium + bodyLarge 보조 문장).
+/// 2026-11 재감사: 그라디언트·워터마크 아이콘·알파 합성 글자색을 없애고 surface 위 역할 색만 쓴다.
 class _Hero extends StatelessWidget {
   const _Hero({this.onBack});
 
@@ -398,64 +402,45 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [scheme.primaryContainer, scheme.surface],
-        ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Stack(
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(onBack != null ? 4 : 16, 8, 16, 0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Positioned(
-              right: 12,
-              top: 12,
-              child: Icon(
-                Icons.church,
-                size: 104,
-                color: scheme.onPrimaryContainer.withValues(alpha: 0.12),
-              ),
-            ),
             if (onBack != null)
-              Positioned(
-                left: 4,
-                top: 4,
-                child: IconButton(
-                  key: const ValueKey('select-back'),
-                  tooltip: '마지막 성당으로',
-                  onPressed: onBack,
-                  icon: const Icon(Icons.arrow_back),
+              IconButton(
+                key: const ValueKey('select-back'),
+                tooltip: '마지막 성당으로',
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back),
+              ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: onBack != null ? 4 : 0,
+                  top: onBack != null ? 4 : 8,
                 ),
-              ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                24,
-                onBack != null ? 48 : 32,
-                24,
-                28,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '성당 고르기',
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onPrimaryContainer,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        '성당 고르기',
+                        style: theme.textTheme.headlineMedium,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '마음에 드는 성당을 골라보세요.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: scheme.onPrimaryContainer.withValues(alpha: 0.8),
+                    const SizedBox(height: 4),
+                    Text(
+                      '마음에 드는 성당을 골라보세요.',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -604,25 +589,16 @@ class _ChurchCard extends StatelessWidget {
                         alignment: Alignment.bottomLeft,
                         child: Padding(
                           padding: const EdgeInsets.all(8),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: scheme.inverseSurface.withValues(
-                                alpha: 0.8,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
+                          child: Chip(
+                            label: const Text('준비 중'),
+                            labelStyle: theme.textTheme.labelMedium?.copyWith(
+                              color: scheme.onInverseSurface,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              child: Text(
-                                '준비 중',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: scheme.onInverseSurface,
-                                ),
-                              ),
-                            ),
+                            backgroundColor: scheme.inverseSurface,
+                            side: BorderSide.none,
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
                           ),
                         ),
                       ),
@@ -644,7 +620,7 @@ class _ChurchCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -652,7 +628,7 @@ class _ChurchCard extends StatelessWidget {
                       info.nameKo,
                       style: theme.textTheme.titleSmall?.copyWith(color: fg),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -660,11 +636,11 @@ class _ChurchCard extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 2),
                           child: Icon(
                             Icons.place_outlined,
-                            size: 14,
+                            size: 16,
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(width: 2),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             info.place,
@@ -677,7 +653,7 @@ class _ChurchCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Wrap(
-                      spacing: 6,
+                      spacing: 8,
                       runSpacing: 4,
                       children: [_Tag(info.kind)],
                     ),
@@ -730,14 +706,14 @@ class _Tag extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: scheme.surfaceContainerLowest,
+        borderRadius: AppShape.small,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall
+          style: Theme.of(context).textTheme.labelMedium
               ?.copyWith(color: scheme.onSurfaceVariant),
         ),
       ),

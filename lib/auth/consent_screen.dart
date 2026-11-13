@@ -92,12 +92,12 @@ class _ConsentScreenState extends State<ConsentScreen> {
     final text = theme.textTheme;
 
     Widget sectionTitle(String s) => Padding(
-      padding: const EdgeInsets.only(top: AppSpace.md, bottom: AppSpace.xxs),
+      padding: const EdgeInsets.only(top: AppSpace.md, bottom: AppSpace.xs),
       child: Semantics(
         header: true,
         child: Text(
           s,
-          style: text.titleMedium?.copyWith(color: scheme.primary),
+          style: text.labelLarge?.copyWith(color: scheme.primary),
         ),
       ),
     );
@@ -142,7 +142,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                       ),
                     ),
                     sectionTitle('필수 동의'),
-                    Card.outlined(
+                    Card.filled(color: scheme.surfaceContainerLow,
                       child: Column(
                         children: [
                           for (final kind in ConsentKind.required)
@@ -172,7 +172,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpace.xs),
-                    Card.outlined(
+                    Card.filled(color: scheme.surfaceContainerLow,
                       child: Column(
                         children: [
                           for (final kind in ConsentKind.optional)

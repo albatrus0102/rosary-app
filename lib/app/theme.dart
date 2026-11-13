@@ -28,6 +28,14 @@ abstract final class AppShape {
     Radius.circular(extraLargeRadius),
   );
 
+  /// 시트(바텀 시트) 위쪽 모서리: extra large(28) 위쪽만.
+  static const RoundedRectangleBorder extraLargeTopBorder =
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(extraLargeRadius),
+        ),
+      );
+
   /// 완전히 둥근(full) 모양.
   static const StadiumBorder full = StadiumBorder();
 
@@ -64,16 +72,19 @@ abstract final class AppMotion {
       MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;
 }
 
-/// 밝고 따뜻한 Material 3 테마: 테라코타 시드 + 올리브/골드 보조 시드.
+/// 밝고 따뜻한 Material 3 테마: 테라코타 시드 하나에서 모든 역할을 만들고(tonalSpot),
+/// 3차(tertiary)만 골드 시드로 둔다.
+///
+/// 2026-11 재감사: 예전에는 secondary를 올리브 시드로 덮어써서 secondaryContainer를 쓰는 M3
+/// 기본 컴포넌트(내비게이션 바 표시기, 세그먼트 버튼 선택, tonal 버튼, 필터 칩, 선택된 목록 항목,
+/// 슬라이더 비활성 트랙)가 전부 연두색이 되어 테라코타 primary와 어긋났다. M3 tonalSpot은
+/// secondary를 primary와 같은 색상(hue)의 저채도 톤으로 만들도록 설계되어 있으므로 덮어쓰지 않는다.
 abstract final class AppTheme {
   /// 번들 고딕 글꼴 이름(pubspec.yaml의 family).
   static const String sansFamily = 'Pretendard';
 
   /// 브랜드 시드(테라코타). 두 모드의 모든 색 역할이 여기서 나온다.
   static const Color seedColor = Color(0xFFC2613E);
-
-  /// 보조(secondary) 역할의 시드(올리브). 앱의 따뜻한 올리브 느낌을 유지한다.
-  static const Color secondarySeedColor = Color(0xFF7A8A5A);
 
   /// 3차(tertiary) 역할의 시드(골드).
   static const Color tertiarySeedColor = Color(0xFFC9A04A);
@@ -84,15 +95,15 @@ abstract final class AppTheme {
   /// 화면 하단 '기도 시작' 같은 주 행동 버튼의 높이(M3 큰 버튼, 8dp 격자).
   static const double largeButtonHeight = 56;
 
-  /// 시드에서 만든 M3 색 구성(tonalSpot). 테라코타 시드의 primary/neutral에
-  /// 올리브(secondary)·골드(tertiary) 시드의 같은 톤 역할을 얹는다.
+  /// 시드에서 만든 M3 색 구성(tonalSpot). 테라코타 시드의 primary/secondary/neutral에
+  /// 골드(tertiary) 시드의 같은 톤 역할을 얹는다.
   ///
-  /// 문서화된 유일한 덮어쓰기: secondary·tertiary 4개 역할씩. 각 시드도 tonalSpot의
+  /// 문서화된 유일한 덮어쓰기: tertiary 4개 역할. 골드 시드도 tonalSpot의
   /// primary 톤 쌍(40/100, 90/10 등)을 그대로 가져오므로 대비 관계가 유지된다.
   static ColorScheme seedScheme(Brightness brightness) =>
       brightness == Brightness.dark ? _seedDark : _seedLight;
 
-  // 시드 구성은 입력이 상수라 한 번만 계산한다(ColorScheme.fromSeed ×3은 싸지 않다).
+  // 시드 구성은 입력이 상수라 한 번만 계산한다(ColorScheme.fromSeed ×2는 싸지 않다).
   static final ColorScheme _seedLight = _computeSeedScheme(Brightness.light);
   static final ColorScheme _seedDark = _computeSeedScheme(Brightness.dark);
 
@@ -103,13 +114,8 @@ abstract final class AppTheme {
       dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
     );
     final base = from(seedColor);
-    final olive = from(secondarySeedColor);
     final gold = from(tertiarySeedColor);
     return base.copyWith(
-      secondary: olive.primary,
-      onSecondary: olive.onPrimary,
-      secondaryContainer: olive.primaryContainer,
-      onSecondaryContainer: olive.onPrimaryContainer,
       tertiary: gold.primary,
       onTertiary: gold.onPrimary,
       tertiaryContainer: gold.primaryContainer,
@@ -226,7 +232,17 @@ abstract final class AppTheme {
         thickness: 1,
         space: 1,
       ),
-      appBarTheme: AppBarTheme(systemOverlayStyle: overlay),
+      appBarTheme: AppBarTheme(
+        systemOverlayStyle: overlay,
+        // M3 small/medium/large 앱 바는 제목을 시작 쪽에 둔다.
+        centerTitle: false,
+      ),
+      // M3 검색 바: surfaceContainerHigh, 그림자 없음(톤으로 구분), full 모양.
+      searchBarTheme: SearchBarThemeData(
+        elevation: const WidgetStatePropertyAll(0),
+        backgroundColor: WidgetStatePropertyAll(scheme.surfaceContainerHigh),
+        constraints: const BoxConstraints(minHeight: 56),
+      ),
       cardTheme: const CardThemeData(
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
@@ -239,11 +255,7 @@ abstract final class AppTheme {
       bottomSheetTheme: const BottomSheetThemeData(
         showDragHandle: true,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppShape.extraLargeRadius),
-          ),
-        ),
+        shape: AppShape.extraLargeTopBorder,
         constraints: BoxConstraints(maxWidth: 640),
       ),
       snackBarTheme: const SnackBarThemeData(

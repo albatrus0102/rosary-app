@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- 시험 하니스(번들 아님): node tools/avatar_glb/runtime_check.mjs 가 file:// 로 연다. ?packs=S01,S02,anims (work/pack/apack_<id>.js) -->
+<html><head><meta charset="utf-8"><title>glb avatar harness</title>
+<style>html,body{margin:0;height:100%;background:#20232a;overflow:hidden}canvas{display:block}</style>
+<script src="../../assets/church/three.min.js"></script>
+<script src="../../assets/church/geo.js"></script>
+<script src="../../assets/church/palette.js"></script>
+<script src="../../assets/church/baptismal_names.js"></script>
+<script src="../../assets/church/label_fit.js"></script>
+<script src="../../assets/church/avatar.js"></script>
+<script src="dist/three_glb.js"></script>
+<script src="../../assets/church/avatar_glb.js"></script>
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    (q.get('packs') || '').split(',').filter(Boolean).forEach(function (id) { document.write('<script src="work/pack/apack_' + id + '.js"><\/script>'); });
+  })();
+</script>
+</head><body>
+<script>
+(function () {
+  var T = THREE, G = ChurchGlb;
+  var renderer = new T.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
+  renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping;
+  document.body.appendChild(renderer.domElement);
+  var scene = new T.Scene(); scene.background = new T.Color('#2a2e38');
+  scene.add(new T.HemisphereLight(0xdfe9ff, 0x6a5a48, 1.1));
+  var dl = new T.DirectionalLight(0xfff1da, 1.6); dl.position.set(3, 6, 4); scene.add(dl);
+  var floor = new T.Mesh(new T.PlaneGeometry(60, 60), new T.MeshStandardMaterial({ color: 0x8a8070, roughness: 0.9 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  var cam = new T.PerspectiveCamera(40, innerWidth / innerHeight, 0.05, 200);
+  var avs = [], t = 0;
+  // 좌석 블록(시각 확인용): 의자 윗면 높이 seat.h, 앞 등받이·무릎 받침
+  function bench(x, z, h) {
+    var m = new T.MeshStandardMaterial({ color: 0x6b4a32, roughness: 0.8 }), g = new T.Group();
+    var s = new T.Mesh(new T.BoxGeometry(0.8, 0.05, 0.45), m); s.position.set(0, h - 0.025, 0.02); g.add(s);
+    var b = new T.Mesh(new T.BoxGeometry(0.8, 0.9, 0.05), m); b.position.set(0, h + 0.4, 0.27); g.add(b);
+    g.position.set(x, 0, z); scene.add(g); return g;
+  }
+  function kneeler(x, z, fwd, y) {
+    var m = new T.MeshStandardMaterial({ color: 0x5a3a2a, roughness: 0.8 });
+    var k = new T.Mesh(new T.BoxGeometry(0.8, y, 0.16), m); k.position.set(x, y / 2, z - fwd); scene.add(k);
+    var r = new T.Mesh(new T.BoxGeometry(0.8, 0.9, 0.05), m); r.position.set(x, 0.45, z - fwd - 0.3); scene.add(r);
+  }
+  window.H = {
+    T: T, scene: scene, renderer: renderer, cam: cam, avs: avs, bench: bench, kneeler: kneeler,
+    ready: function (chars, anims) {
+      return Promise.all(chars.map(function (c) { return G.load(c); }).concat([G.loadAnims(anims)]));
+    },
+    view: function (x, y, z, tx, ty, tz) { cam.position.set(x, y, z); cam.lookAt(tx, ty, tz); cam.updateMatrixWorld(); },
+    add: function (av, x, z, yaw) { av.setPose(x, 0, z, yaw || 0); scene.add(av.root); avs.push(av); return av; },
+    clear: function () { avs.forEach(function (a) { if (a.dispose) a.dispose(); else scene.remove(a.root); }); avs.length = 0; },
+    step: function (n, dt) { dt = dt || 1 / 30; for (var i = 0; i < n; i++) { t += dt; G.tick(dt, t); for (var k = 0; k < avs.length; k++) avs[k].update(dt, t); } G.setView(cam, innerHeight); ChurchAvatar.setView(cam, innerHeight); renderer.render(scene, cam); },
+    // 프레임 비용(ms): update + render + gl 동기화(readPixels 1px) 를 n 프레임 평균
+    perf: function (n) {
+      var gl = renderer.getContext(), px = new Uint8Array(4), ups = 0, rds = 0, dt = 1 / 30;
+      for (var w = 0; w < 5; w++) H.step(1);
+      for (var i = 0; i < n; i++) {
+        var a = performance.now(); t += dt; G.tick(dt, t); for (var k = 0; k < avs.length; k++) avs[k].update(dt, t);
+        var b = performance.now(); renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+        var c = performance.now(); ups += b - a; rds += c - b;
+      }
+      return { update: ups / n, render: rds / n, total: (ups + rds) / n, calls: renderer.info.render.calls, tris: renderer.info.render.triangles };
+    },
+    info: function () { return { geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, prog: renderer.info.programs.length, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; }
+  };
+  window.__ready = true;
+})();
+</script>
+</body></html>

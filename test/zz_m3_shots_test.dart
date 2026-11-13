@@ -320,7 +320,7 @@ void main() {
 
       testWidgets('10 glass info sheet', (t) async {
         _view(t);
-        final w = testGlassCatalog().windows.first;
+        final w = testGlassCatalog().visible.first;
         await t.pumpWidget(_host(
           _opener((c) => showGlassInfoSheet(c, w, onPray: () {})),
           b: b,
@@ -342,7 +342,7 @@ void main() {
       });
       testWidgets('12 glass flat', (t) async {
         _view(t);
-        final w = testGlassCatalog().windows.first;
+        final w = testGlassCatalog().visible.first;
         await t.pumpWidget(_host(
           Scaffold(body: GlassFlatViewer(window: w, onBack: () {}, onInfo: () {})),
           b: b,
@@ -353,7 +353,7 @@ void main() {
       });
       testWidgets('13 glass view', (t) async {
         _view(t);
-        final w = testGlassCatalog().windows.first;
+        final w = testGlassCatalog().visible.first;
         final scene = FakeChurchSceneController();
         await t.pumpWidget(_host(
           GlassViewScreen(window: w, scene: scene, onPray: () {}, immersive: false),

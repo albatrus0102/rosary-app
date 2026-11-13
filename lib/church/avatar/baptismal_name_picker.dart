@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
+
 import '../church_constants.dart';
 
 /// 세례명 고르기 화면을 전체 화면(M3 full-screen dialog)으로 열고, 고른 이름의 통합 목록
@@ -198,7 +200,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
         selected: selected,
         selectedColor: scheme.onSecondaryContainer,
         selectedTileColor: scheme.secondaryContainer,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: const StadiumBorder(),
         contentPadding: const EdgeInsetsDirectional.only(start: 16, end: 16),
         minTileHeight: 56,
         leading: CircleAvatar(
@@ -216,7 +218,6 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
             ),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: selected ? scheme.onPrimary : scheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -226,7 +227,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             height: _nameLineHeight,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: selected ? FontWeight.w600 : null,
           ),
         ),
         subtitle: subtitle == null ? null : Text(subtitle),
@@ -255,18 +256,14 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
           children: [
             if (s.popular) ...[
               Icon(Icons.star_rounded, size: 18, color: scheme.primary),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
             ],
             Flexible(
               child: Text(
                 s.popular ? '많이 쓰는 이름' : s.id,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: (s.popular ? text.titleSmall : text.titleMedium)
-                    ?.copyWith(
-                      color: scheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: text.titleSmall?.copyWith(color: scheme.primary),
               ),
             ),
           ],
@@ -420,11 +417,6 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                   key: const ValueKey('name-search'),
                   controller: _query,
                   hintText: '이름 검색 (예: 마리, ㅁㄹㅇ)',
-                  elevation: const WidgetStatePropertyAll(0),
-                  backgroundColor: WidgetStatePropertyAll(
-                    scheme.surfaceContainerHigh,
-                  ),
-                  constraints: const BoxConstraints(minHeight: 56),
                   textInputAction: TextInputAction.search,
                   onChanged: (_) => setState(() {}),
                   leading: const Icon(Icons.search),
@@ -447,12 +439,12 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                     runSpacing: 4,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Chip(
+                      // 정보 표시는 칩(대화형 컴포넌트)이 아니라 글자로 둔다(M3).
+                      Text(
+                        '세례명 ${_thousands(baptismalNames.length)}개',
                         key: const ValueKey('name-count'),
-                        label: Text(
-                          '세례명 ${_thousands(baptismalNames.length)}개',
-                        ),
-                        visualDensity: VisualDensity.compact,
+                        style: Theme.of(context).textTheme.labelLarge
+                            ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
                       if (searching && results.isNotEmpty)
                         Text(
@@ -662,7 +654,7 @@ class _IndexRailState extends State<_IndexRail> {
                                                 : scheme.onSurfaceVariant,
                                             fontWeight: i == shown
                                                 ? FontWeight.w700
-                                                : FontWeight.w500,
+                                                : null,
                                           ),
                                         ),
                                 ),
@@ -685,36 +677,31 @@ class _IndexRailState extends State<_IndexRail> {
                           32)
                       .clamp(0.0, max(0.0, widget.areaHeight - 64)),
               child: IgnorePointer(
-                child: Container(
+                child: Material(
                   key: const ValueKey('name-rail-bubble'),
-                  width: 64,
-                  height: 64,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: scheme.shadow.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                  // M3: 떠 있는 표시는 그림자 직접 그리기 대신 엘리베이션 레벨 2(3dp).
+                  color: scheme.primaryContainer,
+                  elevation: 3,
+                  shape: AppShape.largeBorder,
+                  child: SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: Center(
+                      child: widget.ids[_active!] == _popularId
+                          ? Icon(
+                              Icons.star_rounded,
+                              size: 36,
+                              color: scheme.onPrimaryContainer,
+                            )
+                          : Text(
+                              widget.ids[_active!],
+                              textScaler: TextScaler.noScaling,
+                              style: text.headlineMedium?.copyWith(
+                                color: scheme.onPrimaryContainer,
+                              ),
+                            ),
+                    ),
                   ),
-                  child: widget.ids[_active!] == _popularId
-                      ? Icon(
-                          Icons.star_rounded,
-                          size: 36,
-                          color: scheme.onPrimaryContainer,
-                        )
-                      : Text(
-                          widget.ids[_active!],
-                          textScaler: TextScaler.noScaling,
-                          style: text.headlineMedium?.copyWith(
-                            color: scheme.onPrimaryContainer,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
                 ),
               ),
             ),

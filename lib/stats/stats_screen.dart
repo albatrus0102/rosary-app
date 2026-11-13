@@ -357,8 +357,8 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Card.outlined(
-      margin: EdgeInsets.zero,
+    return Card.filled(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Padding(
         padding: padding,
         child: Column(
@@ -458,7 +458,7 @@ class _MetricTile extends StatelessWidget {
                   style: text.headlineSmall?.copyWith(color: scheme.onSurface),
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 metric.label,
                 style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
@@ -550,7 +550,6 @@ class _RecordTile extends StatelessWidget {
       if (r.source == PrayerRecord.sourceChurch) '성당',
     ];
     return ListTile(
-      minTileHeight: 56,
       leading: Icon(
         r.completed ? Icons.check_circle : Icons.timelapse,
         color: r.completed ? scheme.primary : scheme.onSurfaceVariant,
