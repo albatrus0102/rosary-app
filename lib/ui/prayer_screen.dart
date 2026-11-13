@@ -924,13 +924,17 @@ class _PrayerHeader extends StatelessWidget {
               onPressed: onTextSize,
             ),
           if (menuBuilder != null)
-            PopupMenuButton<_PrayerMenu>(
-              key: const ValueKey('prayer-menu'),
+            // 묵주 전체 보기를 메뉴에서 열었다 닫으면 포커스가 이 단추로 돌아온다.
+            Focus(
               focusNode: menuFocusNode,
-              tooltip: '메뉴',
-              icon: const Icon(Icons.more_vert),
-              onSelected: onMenu,
-              itemBuilder: menuBuilder!,
+              skipTraversal: true,
+              child: PopupMenuButton<_PrayerMenu>(
+                key: const ValueKey('prayer-menu'),
+                tooltip: '메뉴',
+                icon: const Icon(Icons.more_vert),
+                onSelected: onMenu,
+                itemBuilder: menuBuilder!,
+              ),
             ),
           if (onTextSize == null && menuBuilder == null)
             const SizedBox(width: 48),

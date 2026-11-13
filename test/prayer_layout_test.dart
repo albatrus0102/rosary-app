@@ -1,12 +1,14 @@
 import 'dart:io';
-import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/prayer_text_short.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
+import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/prayer_mode.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
@@ -46,7 +48,11 @@ Future<AppSettings> _settings([Map<String, Object> values = const {}]) async {
   return AppSettings.load();
 }
 
+/// 스크린샷을 남길 폴더(`--dart-define=UX_P0_SHOTS=<dir>`). 비어 있으면 찍지 않는다.
+const _shotDir = String.fromEnvironment('UX_P0_SHOTS');
+
 /// 논리 [size]의 화면(상태바·제스처 바 24dp 가정)에 기도 화면을 그린다.
+/// [bottomInset]은 시스템 내비게이션 높이(제스처 24, 3버튼 48).
 Future<void> _pump(
   WidgetTester tester,
   AppSettings settings, {
@@ -54,26 +60,39 @@ Future<void> _pump(
   double systemScale = 1.0,
   int? index,
   RosarySession? session,
+  Brightness? brightness,
+  double bottomInset = 24,
 }) async {
   const dpr = 2.0;
   tester.view.devicePixelRatio = dpr;
   tester.view.physicalSize = size * dpr;
-  tester.view.padding = const FakeViewPadding(top: 48, bottom: 48);
-  tester.view.viewPadding = const FakeViewPadding(top: 48, bottom: 48);
+  final padding = FakeViewPadding(top: 48, bottom: bottomInset * dpr);
+  tester.view.padding = padding;
+  tester.view.viewPadding = padding;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
-    MaterialApp(
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context)
-            .copyWith(textScaler: TextScaler.linear(systemScale)),
-        child: child!,
-      ),
-      home: PrayerScreen(
-        settings: settings,
-        mysterySet: _set,
-        initialIndex: index ?? 0,
-        session: session,
-        soundPlayer: _SilentSoundPlayer(),
+    RepaintBoundary(
+      key: const ValueKey('shot-root'),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        // 밝기를 주면 앱의 실제 테마로 그린다(스크린샷, 다크 검증).
+        theme: switch (brightness) {
+          Brightness.light => AppTheme.light(),
+          Brightness.dark => AppTheme.dark(),
+          null => null,
+        },
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(systemScale)),
+          child: child!,
+        ),
+        home: PrayerScreen(
+          settings: settings,
+          mysterySet: _set,
+          initialIndex: index ?? 0,
+          session: session,
+          soundPlayer: _SilentSoundPlayer(),
+        ),
       ),
     ),
   );
@@ -81,10 +100,25 @@ Future<void> _pump(
   await tester.pump(const Duration(milliseconds: 300));
 }
 
+Future<void> _shot(WidgetTester tester, String name) async {
+  if (_shotDir.isEmpty) return;
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(const ValueKey('shot-root')),
+  );
+  await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 2);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final f = File('$_shotDir/$name.png');
+    await f.parent.create(recursive: true);
+    await f.writeAsBytes(bytes!.buffer.asUint8List());
+  });
+}
+
 Rect _rect(WidgetTester tester, Finder f) => tester.getRect(f);
 
 Finder get _scroll => find.byKey(const ValueKey('prayer-text-scroll'));
-Finder get _pill => find.byKey(const ValueKey('prayer-overflow-pill'));
+Finder get _more => find.byKey(const ValueKey('prayer-read-more'));
+Finder get _next => find.byKey(const ValueKey('prayer-next'));
 Finder get _header => find.byKey(const ValueKey('prayer-header'));
 Finder get _strip => find.byKey(const ValueKey('prayer-strip'));
 Finder get _actions => find.byType(PrayerActions);
@@ -109,21 +143,40 @@ Future<void> _loadFonts() async {
     sans.addFont(load(f));
   }
   await sans.load();
+  const icons = String.fromEnvironment('MATERIAL_ICONS');
+  if (icons.isNotEmpty) {
+    final l = FontLoader('MaterialIcons')
+      ..addFont(
+        Future.value(ByteData.sublistView(await File(icons).readAsBytes())),
+      );
+    await l.load();
+  }
 }
 
 void main() {
   setUpAll(_loadFonts);
 
   group('layout budget (no control ever overlaps the prayer text)', () {
-    for (final size in const [Size(360, 640), Size(360, 800)]) {
+    // (시스템 글자 배율, 테마 밝기, 시스템 내비 높이): 제스처 24dp, 3버튼 48dp.
+    const variants = <(double, Brightness?, double)>[
+      (1.0, null, 24),
+      (1.3, null, 24),
+      (1.0, Brightness.light, 48),
+      (1.0, Brightness.dark, 24),
+      (1.3, Brightness.dark, 48),
+    ];
+    for (final size in const [Size(360, 640), Size(360, 800), Size(412, 915)]) {
       for (final prayerScale in const [1.0, 1.5, 2.0]) {
-        for (final system in const [1.0, 1.3]) {
+        for (final (system, brightness, nav) in variants) {
           testWidgets(
             'Hail Mary at ${size.width.toInt()}x${size.height.toInt()} '
-            'prayer x$prayerScale system x$system',
+            'prayer x$prayerScale system x$system '
+            '${brightness?.name ?? 'default'} nav ${nav.toInt()}',
             (tester) async {
               final settings = await _settings({
                 'prayer_text_scale': prayerScale,
+                // 한 번 권하는 안내 막대가 측정에 끼지 않게.
+                'short_prayers_asked': true,
               });
               await _pump(
                 tester,
@@ -131,6 +184,8 @@ void main() {
                 size: size,
                 systemScale: system,
                 index: _hailMary4,
+                brightness: brightness,
+                bottomInset: nav,
               );
               expect(tester.takeException(), isNull);
 
@@ -138,6 +193,11 @@ void main() {
               final strip = _rect(tester, _strip);
               final actions = _rect(tester, _actions);
               final viewport = _rect(tester, _scroll);
+              final next = _rect(tester, _next);
+              final back = _rect(
+                tester,
+                find.byKey(const ValueKey('prayer-back')),
+              );
 
               // 고정 높이: 머리 48, 띠 36, 하단 76. 시스템 글자가 커져도 변하지 않는다.
               expect(header.height, 48);
@@ -152,47 +212,95 @@ void main() {
               expect(viewport.top, greaterThanOrEqualTo(strip.bottom));
               expect(viewport.bottom, lessThanOrEqualTo(actions.top));
 
-              // 남는 높이는 모두 기도문 몫(넘침 표시 칸 48 제외).
-              final budget = size.height - 24 - 24 - 48 - 36 - 76;
-              final pillShown = _pill.evaluate().isNotEmpty;
+              // 구슬 단추는 시스템 내비게이션(3버튼 포함) 위에 온전히 있다.
+              expect(
+                actions.bottom,
+                lessThanOrEqualTo(size.height - nav + 0.01),
+              );
+              expect(next.height, greaterThanOrEqualTo(48));
+              expect(back.overlaps(next), isFalse);
+              // 단추 글이 단추 밖으로 넘치지 않는다.
+              final nextText = _rect(
+                tester,
+                find.descendant(of: _next, matching: find.byType(Text)),
+              );
+              expect(nextText.left, greaterThanOrEqualTo(next.left));
+              expect(nextText.right, lessThanOrEqualTo(next.right));
+              expect(find.text('다음 구슬'), findsOneWidget);
+
+              // 남는 높이는 모두 기도문 몫('기도문 계속 읽기' 칸 48 제외).
+              final budget = size.height - 24 - nav - 48 - 36 - 76;
+              final extent = _position(tester).maxScrollExtent;
+              final overflow = extent > 0;
               expect(
                 viewport.height,
-                closeTo(budget - (pillShown ? 48 : 0), 0.6),
+                closeTo(budget - (overflow ? 48 : 0), 0.6),
               );
               // 기본 글자·기본 배율에서는 성모송 전문이 한 화면에 들어간다(360x640 포함).
-              if (prayerScale == 1.0 && system == 1.0) {
-                expect(pillShown, isFalse);
-                expect(_position(tester).maxScrollExtent, 0);
+              if (prayerScale == 1.0 && system == 1.0 && nav == 24) {
+                expect(overflow, isFalse);
               }
 
-              // 맨 위: 첫 글자가 칸 안. 끝까지 밀면 마지막 글자(아멘)도 칸 안에서 보인다.
+              // 맨 위: 첫 글자가 칸 안.
               final text = find.textContaining('은총이 가득하신');
               expect(
                 _rect(tester, text).top,
                 greaterThanOrEqualTo(viewport.top),
               );
-              final extent = _position(tester).maxScrollExtent;
-              final eff = math.max(prayerScale, system);
-              if (extent > 0) {
-                expect(pillShown, isTrue);
-                // 숨은 줄 수와 쪽 수가 실제 스크롤 거리와 맞는다.
-                final lines = (extent / (24 * eff * 1.6)).ceil();
-                final pages = 1 + (extent / (viewport.height * 0.9)).ceil();
-                expect(
-                  find.text('↓ $lines줄 더 (쪽 1/$pages)'),
-                  findsOneWidget,
-                  reason: 'extent=$extent viewport=${viewport.height}',
-                );
-                _position(tester).jumpTo(extent);
-                await tester.pump();
+
+              if (!overflow) {
+                expect(_more, findsNothing);
                 expect(
                   _rect(tester, text).bottom,
-                  lessThanOrEqualTo(viewport.bottom + 0.5),
+                  lessThanOrEqualTo(viewport.bottom),
                 );
-                // 끝에 닿으면 표시가 사라진다.
-                expect(_pill, findsNothing);
-                expect(tester.takeException(), isNull);
+                return;
               }
+
+              // 넘치면: '기도문 계속 읽기'가 글 칸과 구슬 단추 사이의 제 칸에 있고,
+              // 구슬 단추와 겹치지 않으며 이름이 다르다.
+              expect(_more, findsOneWidget);
+              expect(find.text('기도문 계속 읽기'), findsOneWidget);
+              final more = _rect(tester, _more);
+              expect(more.height, greaterThanOrEqualTo(48));
+              expect(more.top, greaterThanOrEqualTo(viewport.bottom - 0.01));
+              expect(more.bottom, lessThanOrEqualTo(actions.top + 0.01));
+              expect(more.overlaps(next), isFalse);
+              expect(more.overlaps(viewport), isFalse);
+              // 스크롤 막대가 늘 보인다.
+              expect(
+                tester
+                    .widget<Scrollbar>(
+                      find.byKey(const ValueKey('prayer-text-scrollbar')),
+                    )
+                    .thumbVisibility,
+                isTrue,
+              );
+
+              // '기도문 계속 읽기'만 눌러 끝까지 간다. 매번 앞으로 나아가고, 건너뛴 글이 없고
+              // (새 쪽의 맨 윗줄은 앞 쪽에서 이미 보였거나 잘려 보이던 줄), 구슬은 그대로다.
+              var taps = 0;
+              while (_more.evaluate().isNotEmpty) {
+                final before = _position(tester).pixels;
+                await tester.tap(_more);
+                await tester.pumpAndSettle();
+                final after = _position(tester).pixels;
+                expect(after, greaterThan(before));
+                expect(
+                  after - before,
+                  lessThanOrEqualTo(viewport.height),
+                  reason: 'a page never skips unread text',
+                );
+                expect(find.text('성모송 4/10'), findsOneWidget);
+                expect(++taps, lessThan(40));
+              }
+              expect(_position(tester).pixels, closeTo(extent, 0.5));
+              // 끝: 마지막 글자(아멘)가 칸 안에서 온전히 보이고, 계속 읽기 단추는 사라진다.
+              expect(
+                _rect(tester, text).bottom,
+                lessThanOrEqualTo(viewport.bottom + 0.5),
+              );
+              expect(tester.takeException(), isNull);
             },
           );
         }
@@ -222,37 +330,119 @@ void main() {
     expect(title.maxLines, 1);
   });
 
-  group('overflow', () {
-    testWidgets('pill appears, tap scrolls one page, text tap still advances', (
-      tester,
-    ) async {
-      final settings = await _settings({'prayer_text_scale': 2.0});
+  group('overflow (독립 스크롤 영역)', () {
+    testWidgets('reading on never changes the bead; the bead button always '
+        'does, even before the end of the text', (tester) async {
+      final settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers_asked': true,
+      });
       await _pump(tester, settings, index: _hailMary4);
-      expect(_pill, findsOneWidget);
+      expect(_more, findsOneWidget);
       expect(find.text('성모송 4/10'), findsOneWidget);
       final position = _position(tester);
-      final page = position.viewportDimension * PrayerTextView.pageFraction;
       expect(position.pixels, 0);
 
-      await tester.tap(_pill);
+      // 계속 읽기: 아래로만 내리고 구슬은 그대로.
+      await tester.tap(_more);
       await tester.pumpAndSettle();
-      expect(position.pixels, closeTo(page, 1));
-      expect(find.textContaining('(쪽 2/'), findsOneWidget);
-
-      // 손가락으로 밀면 스크롤된다(구슬은 그대로).
-      await tester.drag(_scroll, const Offset(0, -200));
-      await tester.pumpAndSettle();
-      expect(position.pixels, greaterThan(page));
+      final afterMore = position.pixels;
+      expect(afterMore, greaterThan(0));
       expect(find.text('성모송 4/10'), findsOneWidget);
 
-      // 짧게 누르면 다음 구슬.
+      // 손가락으로 밀어도 스크롤된다(구슬은 그대로).
+      await tester.drag(_scroll, const Offset(0, -120));
+      await tester.pumpAndSettle();
+      expect(position.pixels, greaterThan(afterMore));
+      expect(find.text('성모송 4/10'), findsOneWidget);
+
+      // 글을 짧게 눌러도, 읽지 않은 글이 남아 있으면 구슬이 아니라 글이 내려간다.
+      final beforeTap = position.pixels;
+      expect(beforeTap, lessThan(position.maxScrollExtent));
       await tester.tap(_scroll);
+      await tester.pumpAndSettle();
+      expect(position.pixels, greaterThan(beforeTap));
+      expect(find.text('성모송 4/10'), findsOneWidget);
+
+      // 끝까지 읽지 않았어도 '다음 구슬'은 바로 넘긴다.
+      position.jumpTo(0);
+      await tester.pump();
+      expect(_more, findsOneWidget);
+      await tester.tap(_next);
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('성모송 5/10'), findsOneWidget);
       expect(_position(tester).pixels, 0);
+
+      // 끝까지 읽은 뒤에 글을 누르면 다음 구슬.
+      _position(tester).jumpTo(_position(tester).maxScrollExtent);
+      await tester.pump();
+      expect(_more, findsNothing);
+      await tester.tap(_scroll);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('성모송 6/10'), findsOneWidget);
     });
 
-    testWidgets('no pill and no reserved space when the text fits', (
+    testWidgets('each page starts on a whole line that was cut or unseen', (
+      tester,
+    ) async {
+      for (final scale in const [1.5, 2.0]) {
+        final settings = await _settings({
+          'prayer_text_scale': scale,
+          'short_prayers_asked': true,
+        });
+        await _pump(tester, settings, index: _hailMary4);
+        final viewport = _rect(tester, _scroll);
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.textContaining('은총이 가득하신'),
+        );
+        final length = paragraph.text.toPlainText().length;
+
+        /// 화면 좌표의 (위, 아래) 줄 목록.
+        List<Rect> lines() {
+          final origin = paragraph.localToGlobal(Offset.zero);
+          final out = <Rect>[];
+          for (final b in paragraph.getBoxesForSelection(
+            TextSelection(baseOffset: 0, extentOffset: length),
+            boxHeightStyle: ui.BoxHeightStyle.max,
+          )) {
+            final r = b.toRect().shift(origin);
+            if (out.isNotEmpty && r.top < out.last.bottom - 1) continue;
+            out.add(r);
+          }
+          return out;
+        }
+
+        var pages = 0;
+        while (_more.evaluate().isNotEmpty) {
+          await tester.tap(_more);
+          await tester.pumpAndSettle();
+          final atEnd =
+              _position(tester).pixels >=
+              _position(tester).maxScrollExtent - 0.5;
+          if (!atEnd) {
+            // 칸 맨 위에 걸친(반만 보이는) 줄이 없다: 앞 줄은 흐림 띠 안에서 끝나고,
+            // 첫 줄은 흐림 바로 아래에서 온전히 시작한다.
+            final ls = lines();
+            final cutAtTop = ls.where(
+              (r) =>
+                  r.top < viewport.top - 0.5 &&
+                  r.bottom > viewport.top + PrayerTextView.fadeExtent + 0.5,
+            );
+            expect(cutAtTop, isEmpty, reason: 'x$scale page ${pages + 2}');
+            final first = ls.firstWhere((r) => r.top >= viewport.top - 0.5);
+            expect(
+              first.top - viewport.top,
+              closeTo(PrayerTextView.fadeExtent, 1),
+              reason: 'x$scale page ${pages + 2}',
+            );
+          }
+          expect(++pages, lessThan(40));
+        }
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('no button and no reserved space when the text fits', (
       tester,
     ) async {
       final settings = await _settings();
@@ -262,20 +452,67 @@ void main() {
         size: const Size(360, 800),
         index: _hailMary4,
       );
-      expect(_pill, findsNothing);
+      expect(_more, findsNothing);
       final viewport = _rect(tester, _scroll);
       expect(viewport.bottom, _rect(tester, _actions).top);
+      // 넘치지 않으면 글을 누르면 다음 구슬(기존 동작).
+      await tester.tap(_scroll);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('성모송 5/10'), findsOneWidget);
     });
 
-    test('page math', () {
-      expect(PrayerTextView.pageCount(0, 400), 1);
-      expect(PrayerTextView.pageCount(100, 400), 2);
-      expect(PrayerTextView.pageCount(360, 400), 2);
-      expect(PrayerTextView.pageCount(361, 400), 3);
-      expect(PrayerTextView.pageAt(0, 361, 400), 1);
-      expect(PrayerTextView.pageAt(361, 361, 400), 3);
-      expect(PrayerTextView.linesLeft(0.5, 38), 1);
-      expect(PrayerTextView.linesLeft(77, 38), 3);
+    testWidgets('semantics: reading button says the bead does not change', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers_asked': true,
+      });
+      await _pump(tester, settings, index: _hailMary4);
+      expect(
+        find.bySemanticsLabel(RegExp('기도문 계속 읽기.*구슬은 바뀌지 않습니다')),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsLabel('다음 구슬'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('the last step says 기도 마치기 instead of 다음 구슬', (tester) async {
+      final settings = await _settings();
+      await _pump(tester, settings, index: _steps.length - 1);
+      expect(find.text('기도 마치기'), findsOneWidget);
+      expect(find.text('다음 구슬'), findsNothing);
+    });
+
+    test('page math: line snapped, with a fallback', () {
+      // 줄 높이 40, 칸 100: 0..40, 40..80, 80..120(잘림), 120..160 …
+      final lines = [for (var i = 0; i < 10; i++) (i * 40.0, i * 40.0 + 40)];
+      double next(double offset) => PrayerTextView.nextPageOffset(
+        offset: offset,
+        viewport: 100,
+        maxExtent: 300,
+        lines: lines,
+        lineHeight: 40,
+        topInset: 0,
+      );
+      // 흐림(20) 위로 온전히 보이는 줄은 0..80. 잘린 셋째 줄(80)이 다음 쪽의 첫 줄.
+      expect(next(0), 80);
+      expect(next(80), 160);
+      expect(next(160), 240);
+      expect(next(240), 300); // 끝에서 멈춘다
+      // 줄을 모르면 칸 높이에서 한 줄을 뺀 만큼.
+      expect(
+        PrayerTextView.nextPageOffset(
+          offset: 0,
+          viewport: 100,
+          maxExtent: 300,
+          lines: const [],
+          lineHeight: 40,
+        ),
+        60,
+      );
+      expect(PrayerTextView.fallbackPageStep(100, 90), 50);
     });
   });
 
@@ -312,7 +549,7 @@ void main() {
         expect(find.textContaining('기뻐하소서'), findsNothing);
         expect(find.textContaining('복되시나이다'), findsNothing);
         expect(find.text('외운 기도 짧게 보기'), findsOneWidget);
-        expect(_pill, findsNothing, reason: '$size');
+        expect(_more, findsNothing, reason: '$size');
         expect(_position(tester).maxScrollExtent, 0, reason: '$size');
       }
     });
@@ -503,64 +740,152 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    testWidgets('opens from the strip; bead tap jumps; auto closes after 4 s '
-        'of no touch', (tester) async {
+    Finder key(String k) => find.byKey(ValueKey(k));
+
+    /// 지도의 현재 구슬이 계속 숨쉬듯 움직이므로 pumpAndSettle 대신 넉넉히 기다린다.
+    Future<void> settle(WidgetTester tester) async {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+    }
+
+    bool enabled(WidgetTester tester, String k) =>
+        tester.widget<ButtonStyleButton>(key(k)).onPressed != null;
+
+    Future<void> tapBead(WidgetTester tester, int slot) async {
+      final box = tester.getRect(key('prayer-map-sheet-map'));
+      final slots = layoutBeads(box.size);
+      await tester.tapAt(slots[slot].center + box.topLeft);
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    testWidgets('opens from the strip and never closes by itself', (
+      tester,
+    ) async {
       final settings = await _settings();
       await _pump(tester, settings, index: _hailMary4);
       expect(find.byType(RosaryMap), findsNothing);
       await openSheet(tester);
       expect(find.byType(RosaryMapSheet), findsOneWidget);
       expect(find.text('묵주 전체 보기'), findsOneWidget);
-      expect(find.text('이 단 처음으로'), findsOneWidget);
       expect(find.text('닫고 계속'), findsOneWidget);
+      expect(find.textContaining('닫을 때까지 열려 있습니다'), findsOneWidget);
+      expect(find.textContaining('초 뒤'), findsNothing);
 
-      // 2단 3번째 성모송 구슬을 누른다.
-      final map = find.byKey(const ValueKey('prayer-map-sheet-map'));
-      final box = tester.getRect(map);
-      final slots = layoutBeads(box.size);
-      final target = slots[RosarySlots.decadeBead(2, 3)].center + box.topLeft;
-      await tester.tapAt(target);
-      await tester.pump(const Duration(milliseconds: 100));
-      final expected = _indexOf(
-        (s) => s.kind == StepKind.hailMary && s.decade == 2 && s.beadIndex == 3,
-      );
-      expect(settings.savedPrayer?.stepIndex, expected);
-      expect(find.text('성모송 3/10'), findsWidgets);
-
-      // 닿을 때마다 4초를 다시 센다.
-      await tester.pump(const Duration(seconds: 3));
+      // 손대지 않고 10초, 다시 1분이 지나도 열려 있다(걸린 타이머도 없다).
+      await tester.pump(const Duration(seconds: 10));
       expect(find.byType(RosaryMapSheet), findsOneWidget);
-      await tester.tapAt(box.topLeft + const Offset(2, 2)); // 빈 곳
-      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(minutes: 1));
       expect(find.byType(RosaryMapSheet), findsOneWidget);
-      await tester.pump(const Duration(milliseconds: 1200));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(find.byType(RosaryMapSheet), findsNothing);
+      // 구슬은 그대로.
+      expect(settings.savedPrayer?.stepIndex ?? _hailMary4, _hailMary4);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('이 단 처음으로 and 닫고 계속', (tester) async {
+    testWidgets('bead tap jumps, 되돌리기 restores the previous place, '
+        '기도하던 자리로 returns to where the sheet was opened', (tester) async {
       final settings = await _settings();
       await _pump(tester, settings, index: _hailMary4);
       await openSheet(tester);
-      await tester.tap(find.text('이 단 처음으로'));
+      expect(find.text('1단 성모송 4번째 구슬'), findsNothing); // Text.rich
+      expect(
+        tester
+            .widget<RichText>(
+              find.descendant(
+                of: key('prayer-map-position'),
+                matching: find.byType(RichText),
+              ),
+            )
+            .text
+            .toPlainText(),
+        '현재 위치  1단 성모송 4번째 구슬',
+      );
+      // 아직 옮기지 않았으면 두 단추는 꺼져 있다.
+      expect(enabled(tester, 'prayer-map-undo'), isFalse);
+      expect(enabled(tester, 'prayer-map-origin'), isFalse);
+
+      // 2단 3번째 성모송 구슬을 누른다.
+      await tapBead(tester, RosarySlots.decadeBead(2, 3));
+      final d2b3 = _indexOf(
+        (s) => s.kind == StepKind.hailMary && s.decade == 2 && s.beadIndex == 3,
+      );
+      expect(settings.savedPrayer?.stepIndex, d2b3);
+      expect(find.text('성모송 3/10'), findsWidgets);
+      expect(enabled(tester, 'prayer-map-undo'), isTrue);
+      expect(enabled(tester, 'prayer-map-origin'), isTrue);
+
+      // 한 번 더 옮긴다: 4단 처음(큰 단추).
+      await tester.tap(key('prayer-map-decade-4'));
+      await tester.pump(const Duration(milliseconds: 100));
+      final d4 = _indexOf((s) => s.kind == StepKind.ourFather && s.decade == 4);
+      expect(settings.savedPrayer?.stepIndex, d4);
+
+      // 되돌리기 = 직전 자리(2단 3번째). 한 번 더 = 그 앞(연 자리).
+      await tester.tap(key('prayer-map-undo'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(settings.savedPrayer?.stepIndex, d2b3);
+      await tester.tap(key('prayer-map-undo'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(settings.savedPrayer?.stepIndex, _hailMary4);
+      expect(enabled(tester, 'prayer-map-undo'), isFalse);
+      expect(enabled(tester, 'prayer-map-origin'), isFalse);
+
+      // 기도하던 자리로: 여러 번 옮긴 뒤에도 한 번에 돌아온다. 그것도 되돌릴 수 있다.
+      await tester.tap(key('prayer-map-decade-5'));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tapBead(tester, RosarySlots.decadeBead(3, 7));
+      final d3b7 = _indexOf(
+        (s) => s.kind == StepKind.hailMary && s.decade == 3 && s.beadIndex == 7,
+      );
+      expect(settings.savedPrayer?.stepIndex, d3b7);
+      await tester.tap(key('prayer-map-origin'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(settings.savedPrayer?.stepIndex, _hailMary4);
+      await tester.tap(key('prayer-map-undo'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(settings.savedPrayer?.stepIndex, d3b7);
+
+      // 옮긴 뒤에도 저절로 닫히지 않는다.
+      await tester.pump(const Duration(seconds: 10));
+      expect(find.byType(RosaryMapSheet), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('decade buttons are large, go to the start of each decade, and '
+        '닫고 계속 closes', (tester) async {
+      final settings = await _settings();
+      await _pump(tester, settings, index: _hailMary4);
+      await openSheet(tester);
+      for (var d = 0; d <= 5; d++) {
+        final r = tester.getRect(key('prayer-map-decade-$d'));
+        expect(r.height, greaterThanOrEqualTo(48), reason: 'decade $d');
+        expect(r.width, greaterThanOrEqualTo(48), reason: 'decade $d');
+      }
+      for (final k in const ['prayer-map-undo', 'prayer-map-origin']) {
+        expect(tester.getSize(key(k)).height, greaterThanOrEqualTo(48));
+      }
+      expect(tester.getSize(key('prayer-map-close')).height, 52);
+
+      await tester.tap(key('prayer-map-decade-1'));
       await tester.pump(const Duration(milliseconds: 100));
       final start = _indexOf(
         (s) => s.kind == StepKind.ourFather && s.decade == 1,
       );
       expect(settings.savedPrayer?.stepIndex, start);
+      await tester.tap(key('prayer-map-decade-0'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.textContaining('성부와 성자와 성령의 이름으로.'), findsWidgets);
+      await tester.tap(key('prayer-map-decade-1'));
+      await tester.pump(const Duration(milliseconds: 100));
 
       await tester.tap(find.text('닫고 계속'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+      await settle(tester);
       expect(find.byType(RosaryMapSheet), findsNothing);
       // 신비 안내가 있는 첫 구슬로 돌아와 있다.
       expect(find.textContaining('피땀 흘리심'), findsWidgets);
     });
 
-    testWidgets('a long drag on the sheet map still moves exactly one bead', (
-      tester,
-    ) async {
+    testWidgets('a long drag on the sheet map still moves exactly one bead and '
+        'can be undone', (tester) async {
       final settings = await _settings();
       await _pump(
         tester,
@@ -569,7 +894,7 @@ void main() {
         index: _hailMary4,
       );
       await openSheet(tester);
-      final map = find.byKey(const ValueKey('prayer-map-sheet-map'));
+      final map = key('prayer-map-sheet-map');
       final g = await tester.startGesture(tester.getCenter(map));
       for (var i = 0; i < 12; i++) {
         await g.moveBy(const Offset(0, 20));
@@ -578,19 +903,145 @@ void main() {
       await g.up();
       await tester.pump(const Duration(milliseconds: 400));
       expect(settings.savedPrayer?.stepIndex, _hailMary4 + 1);
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(key('prayer-map-undo'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(settings.savedPrayer?.stepIndex, _hailMary4);
     });
 
-    testWidgets('sheet has no timers left when closed by the button', (
+    for (final size in const [Size(360, 640), Size(360, 800), Size(412, 915)]) {
+      for (final (system, nav) in const [
+        (1.0, 24.0),
+        (1.3, 48.0),
+        (2.0, 48.0),
+      ]) {
+        testWidgets('sheet fits ${size.width.toInt()}x${size.height.toInt()} '
+            'system x$system nav ${nav.toInt()}: nothing under the system bars, '
+            'no overflow', (tester) async {
+          final settings = await _settings();
+          await _pump(
+            tester,
+            settings,
+            size: size,
+            systemScale: system,
+            index: _hailMary4,
+            bottomInset: nav,
+          );
+          await openSheet(tester);
+          await settle(tester);
+          expect(tester.takeException(), isNull);
+          final sheet = tester.getRect(find.byType(RosaryMapSheet));
+          expect(sheet.top, greaterThanOrEqualTo(24));
+          final close = tester.getRect(key('prayer-map-close'));
+          expect(close.bottom, lessThanOrEqualTo(size.height - nav));
+          final map = tester.getRect(key('prayer-map-sheet-map'));
+          expect(map.height, greaterThanOrEqualTo(150));
+          // 위에서 아래로 겹치지 않고 쌓인다.
+          final decade = tester.getRect(key('prayer-map-decade-0'));
+          final undo = tester.getRect(key('prayer-map-undo'));
+          expect(map.bottom, lessThanOrEqualTo(decade.top));
+          expect(decade.bottom, lessThanOrEqualTo(undo.top));
+          expect(undo.bottom, lessThanOrEqualTo(close.top));
+        });
+      }
+    }
+
+    testWidgets('focus returns to the button that opened the sheet', (
       tester,
     ) async {
       final settings = await _settings();
       await _pump(tester, settings, index: _hailMary4);
+
+      FocusNode stripNode() => Focus.of(
+        tester.element(
+          find.descendant(of: _strip, matching: find.byType(SizedBox)).first,
+        ),
+      );
+
+      // 띠에서 열고 닫는다.
+      expect(stripNode().hasFocus, isFalse);
       await openSheet(tester);
+      expect(stripNode().hasFocus, isFalse);
       await tester.tap(find.text('닫고 계속'));
-      await tester.pumpAndSettle();
+      await settle(tester);
       expect(find.byType(RosaryMapSheet), findsNothing);
+      expect(stripNode().hasPrimaryFocus, isTrue);
+
+      // 뒤로 가기(시스템)로 닫아도 같다.
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+      expect(stripNode().hasFocus, isFalse);
+      await openSheet(tester);
+      await tester.binding.handlePopRoute();
+      await settle(tester);
+      expect(find.byType(RosaryMapSheet), findsNothing);
+      expect(stripNode().hasPrimaryFocus, isTrue);
+
+      // ⋮ 메뉴에서 열면 ⋮ 단추로 돌아온다.
+      await tester.tap(key('prayer-menu'));
+      await settle(tester);
+      await tester.tap(find.text('묵주 전체 보기'));
+      await settle(tester);
+      expect(find.byType(RosaryMapSheet), findsOneWidget);
+      await tester.tap(find.text('닫고 계속'));
+      await settle(tester);
+      final menuNode = Focus.of(tester.element(key('prayer-menu')));
+      expect(menuNode.hasFocus, isTrue);
+      expect(stripNode().hasFocus, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('screen readers: the sheet reads the current place and every '
+        'button has a label', (tester) async {
+      final handle = tester.ensureSemantics();
+      final settings = await _settings();
+      await _pump(tester, settings, index: _hailMary4);
+      await openSheet(tester);
+      expect(find.bySemanticsLabel('현재 위치, 1단 성모송 4번째 구슬'), findsOneWidget);
+      expect(find.bySemanticsLabel('3단 처음으로'), findsOneWidget);
+      expect(find.bySemanticsLabel('맨 처음으로, 서두 성호경'), findsOneWidget);
+      expect(find.bySemanticsLabel('되돌리기'), findsOneWidget);
+      expect(find.bySemanticsLabel('닫고 계속'), findsOneWidget);
+      final live = tester.getSemantics(
+        find.bySemanticsLabel('현재 위치, 1단 성모송 4번째 구슬'),
+      );
+      expect(live.flagsCollection.isLiveRegion, isTrue);
+
+      await tester.tap(key('prayer-map-decade-3'));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.bySemanticsLabel('현재 위치, 3단 주님의 기도'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp('기도하던 자리로, 1단 성모송 4번째 구슬')),
+        findsOneWidget,
+      );
+      // 화면 읽기로 확인하는 동안에도 닫히지 않는다.
+      await tester.pump(const Duration(seconds: 30));
+      expect(find.byType(RosaryMapSheet), findsOneWidget);
+      handle.dispose();
+    });
+
+    test('position names', () {
+      String at(bool Function(RosaryStep) t) =>
+          describeRosaryPosition(_steps[_indexOf(t)]);
+      expect(describeRosaryPosition(_steps.first), '서두 성호경');
+      expect(describeRosaryPosition(_steps[1]), '서두 사도신경');
+      expect(
+        at((s) => s.kind == StepKind.hailMary && s.decade == null),
+        '서두 성모송 1번째 구슬',
+      );
+      expect(
+        at(
+          (s) =>
+              s.kind == StepKind.hailMary && s.decade == 3 && s.beadIndex == 2,
+        ),
+        '3단 성모송 2번째 구슬',
+      );
+      expect(
+        at((s) => s.kind == StepKind.ourFather && s.decade == 5),
+        '5단 주님의 기도',
+      );
+      expect(at((s) => s.kind == StepKind.gloryBe && s.decade == 2), '2단 영광송');
+      expect(at((s) => s.kind == StepKind.fatima && s.decade == 2), '2단 구원송');
+      expect(describeRosaryPosition(_steps.last), '마침 기도');
     });
 
     test('slot hit testing and slot -> step mapping', () {
@@ -678,5 +1129,141 @@ void main() {
     expect(text.overlaps(header), isFalse);
     expect(text.overlaps(actions), isFalse);
     expect(tester.takeException(), isNull);
+  });
+
+  // 눈으로 확인하는 화면 모음. `--dart-define=UX_P0_SHOTS=<dir>`를 주면 PNG로 남긴다
+  // (아이콘까지 그리려면 `--dart-define=MATERIAL_ICONS=<MaterialIcons-Regular.otf>`).
+  group('screens (기도문 큰 글씨 · 묵주 전체 보기)', () {
+    String tag(Size s, double scale, Brightness b) =>
+        '${s.width.toInt()}x${s.height.toInt()}_x${scale}_${b.name}';
+
+    for (final size in const [Size(360, 640), Size(360, 800), Size(412, 915)]) {
+      for (final scale in const [1.0, 1.5, 2.0]) {
+        for (final b in Brightness.values) {
+          testWidgets('Hail Mary ${tag(size, scale, b)}', (tester) async {
+            final settings = await _settings({
+              'prayer_text_scale': scale,
+              'short_prayers_asked': true,
+            });
+            await _pump(
+              tester,
+              settings,
+              size: size,
+              index: _hailMary4,
+              brightness: b,
+            );
+            await _shot(tester, 'prayer_${tag(size, scale, b)}_1top');
+            if (_more.evaluate().isNotEmpty) {
+              await tester.tap(_more);
+              await tester.pumpAndSettle();
+              await _shot(tester, 'prayer_${tag(size, scale, b)}_2more');
+              _position(tester).jumpTo(_position(tester).maxScrollExtent);
+              await tester.pumpAndSettle();
+              await _shot(tester, 'prayer_${tag(size, scale, b)}_3end');
+              expect(_more, findsNothing);
+            }
+            expect(tester.takeException(), isNull);
+          });
+        }
+      }
+    }
+
+    testWidgets('3-button navigation, responder mode, mystery card at x2', (
+      tester,
+    ) async {
+      var settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers_asked': true,
+      });
+      await _pump(
+        tester,
+        settings,
+        size: const Size(360, 640),
+        index: _hailMary4,
+        brightness: Brightness.light,
+        bottomInset: 48,
+      );
+      await _shot(tester, 'prayer_360x640_x2.0_light_3button');
+
+      await tester.pumpWidget(const SizedBox());
+      settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers_asked': true,
+        'prayer_mode': PrayerMode.responder.name,
+        'leader_audio': false,
+      });
+      await _pump(
+        tester,
+        settings,
+        size: const Size(360, 800),
+        index: _hailMary4,
+        brightness: Brightness.light,
+      );
+      expect(find.text('내 차례: 뒷단'), findsOneWidget);
+      await _shot(tester, 'prayer_360x800_x2.0_light_responder');
+
+      await tester.pumpWidget(const SizedBox());
+      settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers_asked': true,
+      });
+      await _pump(
+        tester,
+        settings,
+        size: const Size(360, 800),
+        index: _indexOf((s) => s.kind == StepKind.ourFather && s.decade == 1),
+        brightness: Brightness.dark,
+      );
+      await _shot(tester, 'prayer_360x800_x2.0_dark_mystery_1top');
+      await tester.tap(_more);
+      await tester.pumpAndSettle();
+      await _shot(tester, 'prayer_360x800_x2.0_dark_mystery_2more');
+
+      await tester.pumpWidget(const SizedBox());
+      settings = await _settings();
+      await _pump(
+        tester,
+        settings,
+        size: const Size(360, 800),
+        index: _steps.length - 1,
+        brightness: Brightness.light,
+      );
+      await _shot(tester, 'prayer_360x800_x1.0_light_last_step');
+      expect(tester.takeException(), isNull);
+    });
+
+    for (final (size, b, system, nav) in const [
+      (Size(360, 640), Brightness.light, 1.0, 24.0),
+      (Size(360, 640), Brightness.dark, 1.3, 48.0),
+      (Size(360, 800), Brightness.light, 1.0, 24.0),
+      (Size(360, 800), Brightness.dark, 1.0, 48.0),
+      (Size(412, 915), Brightness.light, 1.3, 24.0),
+    ]) {
+      testWidgets('map sheet ${size.width.toInt()}x${size.height.toInt()} '
+          '${b.name} system x$system nav ${nav.toInt()}', (tester) async {
+        final settings = await _settings();
+        await _pump(
+          tester,
+          settings,
+          size: size,
+          index: _hailMary4,
+          brightness: b,
+          systemScale: system,
+          bottomInset: nav,
+        );
+        await tester.tap(_strip);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
+        final name =
+            'map_${size.width.toInt()}x${size.height.toInt()}_${b.name}'
+            '_sys${system}_nav${nav.toInt()}';
+        await _shot(tester, '${name}_1open');
+        await tester.tap(find.byKey(const ValueKey('prayer-map-decade-3')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
+        await _shot(tester, '${name}_2moved');
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 }

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
@@ -107,12 +105,7 @@ class _RosaryMapSheetState extends State<RosaryMapSheet> {
       if (_history.length > RosaryMapSheet.maxUndo) _history.removeAt(0);
     }
     _lastIndex = now;
-    if (!_undoing && mounted)
-      _announce('${describeRosaryPosition(_session.current)}(으)로 옮겼습니다');
-  }
-
-  void _announce(String message) {
-    unawaited(SemanticsService.announce(message, Directionality.of(context)));
+    // 새 자리는 '현재 위치' 줄(liveRegion)이 화면 읽기 프로그램에 알린다.
   }
 
   void _undo() {
@@ -122,7 +115,6 @@ class _RosaryMapSheetState extends State<RosaryMapSheet> {
     _session.jumpTo(target);
     _undoing = false;
     _lastIndex = _session.index;
-    _announce('${describeRosaryPosition(_session.current)}(으)로 되돌렸습니다');
     setState(() {});
   }
 
