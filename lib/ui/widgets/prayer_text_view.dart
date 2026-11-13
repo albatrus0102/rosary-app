@@ -383,12 +383,7 @@ class _Content extends StatelessWidget {
         if (leaderSpeaking) const _LeaderPlayingBadge(),
         if (step.heading != null)
           _HeadingCard(heading: step.heading!, scale: scale),
-        _PrayerText(
-          step: step,
-          mode: mode,
-          scale: scale,
-          short: short,
-        ),
+        _PrayerText(step: step, mode: mode, scale: scale, short: short),
       ],
     );
   }
@@ -492,12 +487,7 @@ class _PrayerText extends StatelessWidget {
     final small = big - 6 * scale;
 
     TextStyle style(double size, Color color, {bool bold = false}) =>
-        AppTheme.prayerStyle(
-          context,
-          size: size,
-          color: color,
-          bold: bold,
-        );
+        AppTheme.prayerStyle(context, size: size, color: color, bold: bold);
 
     final short = this.short;
     // 짧게 보기의 보조 줄은 더 작게 해서 큰 글자에서도 한 줄에 들어가게 한다.

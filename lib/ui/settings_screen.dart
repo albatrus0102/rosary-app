@@ -311,10 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: AnimatedDefaultTextStyle(
                   duration: AppMotion.of(context, Durations.short4),
                   curve: Easing.standard,
-                  style: AppTheme.prayerStyle(
-                    context,
-                    size: baseSize * scale,
-                  ),
+                  style: AppTheme.prayerStyle(context, size: baseSize * scale),
                   child: const Text(
                     SettingsScreen.previewSentence,
                     key: ValueKey('text_scale_preview'),
