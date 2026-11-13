@@ -414,7 +414,8 @@
         panel(F, [XI, XO], 0, Y_BAL, cfStone, 0); panel(F, [-XO, -XI], 0, Y_BAL, cfStone, 0);
         [[hC, 15.0, 1.5, 0], [hL, 8.3, 1.0, -AIS_C], [hR, 8.3, 1.0, AIS_C]].forEach(function (q) {
           reveal(F, { cu: q[3], cy: q[1], loop: q[0].loop }, 1.0);
-          ctx.rose({ x: q[3], y: q[1], z: Z_IN + 0.75, face: [0, -1], r: q[2], petals: 12, colors: GLASS, seed: 90 + Math.round(q[3]), beam: false });
+          // G-29: 가운데 오큘러스 = 기베르티 「성모 승천」 사진 창(대응표 glass_placements.js 'facade_center')
+          ctx.rose({ x: q[3], y: q[1], z: Z_IN + 0.75, face: [0, -1], r: q[2], petals: 12, colors: GLASS, seed: 90 + Math.round(q[3]), beam: false, photo: q[3] === 0 ? ctx.glassPhoto('facade_center') : null });
         });
         // 문 3개(중앙 + 좌우 측랑) — 어두운 나무와 돌 틀
         [[0, 3.0, 5.0], [-AIS_C, 2.0, 4.2], [AIS_C, 2.0, 4.2]].forEach(function (d) {
@@ -486,7 +487,8 @@
         }
         reveal(F, { cu: 0, cy: 21.6, loop: ho.loop }, 1.0);
         var gp = FP(k, 0, RI + 0.75);
-        ctx.rose({ x: gp[0], y: 21.6, z: gp[1], face: [-q.d[0], -q.d[1]], r: DRUM_R, petals: 10, colors: GLASS, seed: 130 + k, beam: false });
+        // G-29: 드럼 동쪽 면(k=4, 제대 위) = 도나텔로 「성모 대관」, 북동 면(k=5) = 기베르티 「주님 승천」(면 위치 미확인)
+        ctx.rose({ x: gp[0], y: 21.6, z: gp[1], face: [-q.d[0], -q.d[1]], r: DRUM_R, petals: 10, colors: GLASS, seed: 130 + k, beam: false, photo: k === 4 ? ctx.glassPhoto('drum_e') : (k === 5 ? ctx.glassPhoto('drum_ne') : null) });
         // 가로 띠: 발코니(13.5) · 드럼 아래 돌림띠(18.9) · 돔 시작 띠(24.3)
         var cp = FP(k, 0, RI - 0.21);
         sbx({ x: cp[0], y: Y_BAL - 0.35, z: cp[1], w: 2 * LH + 0.5, h: 0.35, d: 0.42, ry: ryK(k), color: ST_L });

@@ -611,6 +611,8 @@
       var pA = PF(F, c[0], c[1], dg + 0.04), pB = PF(F, G[0][0], G[0][1], dg + 0.04), pC = PF(F, G[1][0], G[1][1], dg + 0.04); back.push(pA[0], pA[1], pA[2], pB[0], pB[1], pB[2], pC[0], pC[1], pC[2]);
       var pD = PF(F, G[G.length - 1][0], G[G.length - 1][1], dg + 0.04); back.push(pA[0], pA[1], pA[2], pD[0], pD[1], pD[2], pB[0], pB[1], pB[2]);
       S.addTris(back, 0x2c241f, PF(F, 0, sill + h * 0.5, -4), { vary: 0 });
+      // G-29: 사진 창(가로로 긴 '아래 여섯 단')을 이 창 아랫부분에 건다 → 그 높이(phH)까지는 사진 속 돌 창살이 보이므로 우리 창살·가로대를 만들지 않는다
+      var ph = win.photo || null, phH = ph ? Math.min(h, win.w / ph.aspect) : 0;
       // 유리 칸
       var pal = win.pal || PAL_HI, wr = GG.rng(win.seed || 1), lights = win.lights || 2, rows = win.rows || Math.max(2, Math.round(h / 0.8)), gd = dg + 0.02;
       function pick() { return pal[Math.floor(wr() * pal.length)]; }
@@ -650,9 +652,14 @@
       cell([cA, [-a, top], [a, top]], pick());
       // 중간 문설주 + 가로대
       var stoneC = tone(base, 1.12);
-      for (li = 1; li < lights; li++) { var mu = -a + lw * li; mullion(F, mu, sill, top + rise * 0.2, dg - 0.02, 0.1, stoneC); }
+      for (li = 1; li < lights; li++) { var mu = -a + lw * li; mullion(F, mu, sill + phH, top + rise * 0.2, dg - 0.02, 0.1, stoneC); }
       mullion(F, 0, top - 0.04, top + 0.04, dg - 0.02, 2 * a, stoneC);
-      for (rj = 1; rj < rows; rj += 2) mullion(F, 0, sill + h * rj / rows - 0.03, sill + h * rj / rows + 0.03, dg - 0.02, 2 * a, tone(base, 1.04));
+      for (rj = 1; rj < rows; rj += 2) { if (sill + h * rj / rows > sill + phH + 0.1) mullion(F, 0, sill + h * rj / rows - 0.03, sill + h * rj / rows + 0.03, dg - 0.02, 2 * a, tone(base, 1.04)); }
+      if (ph) {
+        mullion(F, 0, sill + phH - 0.05, sill + phH + 0.05, dg - 0.02, 2 * a, stoneC);   // 사진 위 가로대
+        var pc = PF(F, 0, sill + phH / 2, gd - 0.012);
+        ctx.glassSlot({ photo: ph, x: pc[0], y: pc[1], z: pc[2], face: [F.nx, F.nz], w: 2 * a, h: phH });
+      }
       // 창 둘레 석재 틀(아치 몰딩)
       var oc = tone(base, 1.18);
       for (i = 2; i < O.length - 1; i++) {
@@ -749,7 +756,7 @@
         var toC = [0 - mid[0], -26.0 - mid[1]];
         if (nx * toC[0] + nz * toC[1] < 0) { nx = -nx; nz = -nz; }
         var F = fr(mid[0], mid[1], nx, nz), center = e === 2;
-        windowPanel({ F: F, W: len, y0: 0, y1: 15.2, color: WALLC, win: center ? { sill: 2.0, w: 4.8, h: 5.5, rise: 3.6, lights: 4, rows: 8, medal: true, pal: PAL_APSE, seed: 7, splay: 0.45, dg: 0.55, beam: 1, beamReach: 14, n: 14 } : { sill: 2.0, w: 3.5, h: 5.0, rise: 3.1, lights: 3, rows: 7, medal: true, pal: PAL_APSE, seed: e * 13, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12, n: 12 } });
+        windowPanel({ F: F, W: len, y0: 0, y1: 15.2, color: WALLC, win: center ? { sill: 2.0, w: 4.8, h: 5.5, rise: 3.6, lights: 4, rows: 8, medal: true, pal: PAL_APSE, seed: 7, splay: 0.45, dg: 0.55, beam: 1, beamReach: 14, n: 14, photo: ctx.glassPhoto('apse_center_lower') } : { sill: 2.0, w: 3.5, h: 5.0, rise: 3.1, lights: 3, rows: 7, medal: true, pal: PAL_APSE, seed: e * 13, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12, n: 12 } });
         S.add(Geo.box(), STONE_L, { x: mid[0] + F.nx * 0.08, y: 12.4, z: mid[1] + F.nz * 0.08, ry: Math.atan2(F.nx, F.nz), sx: len, sy: 0.2, sz: 0.2, flat: true, vary: 0.02 });
       }
     })();

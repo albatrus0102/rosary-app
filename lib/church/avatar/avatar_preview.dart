@@ -57,6 +57,9 @@ class AvatarPreview extends StatelessWidget {
                 ),
                 child: Text(
                   name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: scheme.onSecondaryContainer,
                     fontWeight: FontWeight.w600,

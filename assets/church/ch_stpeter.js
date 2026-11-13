@@ -879,20 +879,36 @@
           if (long) ctx.sphere({ x: tip[0], y: tip[1], z: tip[2] + 0.02, r: 0.1, color: 0xf6d35e, w: 6, h: 4 });
         }
         // 타원 창(호박색 유리) + 금 테두리
+        // G-29: 진본 사진 창(비둘기 창)을 걸면 타원을 사진 비율(가로/세로 0.69)에 맞추고 유리를 평면으로 짓는다.
+        // 사진에 비둘기가 있으므로 절차적 비둘기·빛 원반은 따로 떼어 둔다(사진이 덮이면 숨김, 못 읽으면 그대로 = 폴백).
+        var ph = ctx.glassPhoto('gloria');
         var ow = 0.95, oh = 1.25, seg = 20;
+        if (ph) ow = oh * ph.aspect;
+        var GZ = function (x) { return (ph ? WZ(ow) : WZ(x)) + 0.16; };
         for (i = 0; i < seg; i++) {
           var a0 = i / seg * PI * 2, a1 = (i + 1) / seg * PI * 2;
           var x0 = Math.cos(a0) * ow, y0 = gy + Math.sin(a0) * oh, x1 = Math.cos(a1) * ow, y1 = gy + Math.sin(a1) * oh;
-          glass.addTris([0, gy, WZ(0) + 0.16, x0, y0, WZ(x0) + 0.16, x1, y1, WZ(x1) + 0.16], i % 2 ? 0xffc948 : 0xffdf80, [0, gy, -20], { vary: 0.04 });
+          glass.addTris([0, gy, GZ(0), x0, y0, GZ(x0), x1, y1, GZ(x1)], i % 2 ? 0xffc948 : 0xffdf80, [0, gy, -20], { vary: 0.04 });
           var f0 = Math.cos(a0) * (ow + 0.13), g0 = gy + Math.sin(a0) * (oh + 0.13), f1 = Math.cos(a1) * (ow + 0.13), g1 = gy + Math.sin(a1) * (oh + 0.13);
-          solid.addQuad([x0, y0, WZ(x0) + 0.15], [x1, y1, WZ(x1) + 0.15], [f1, g1, WZ(f1) + 0.15], [f0, g0, WZ(f0) + 0.15], GOLD, [0, gy, -20], { vary: 0 });
+          solid.addQuad([x0, y0, GZ(x0) - 0.01], [x1, y1, GZ(x1) - 0.01], [f1, g1, WZ(f1) + 0.15], [f0, g0, WZ(f0) + 0.15], GOLD, [0, gy, -20], { vary: 0 });
         }
         // 비둘기(성령): 흰 몸 + 날개
-        ctx.sphere({ x: 0, y: gy + 0.05, z: WZ(0) + 0.24, r: 0.2, sx: 0.28, sy: 0.18, sz: 0.1, color: 0xffffff, w: 8, h: 6 });
-        ctx.box({ x: -0.34, y: gy + 0.1, z: WZ(0) + 0.24, w: 0.45, h: 0.05, d: 0.04, color: 0xffffff, rz: 0.4 });
-        ctx.box({ x: 0.34, y: gy + 0.1, z: WZ(0) + 0.24, w: 0.45, h: 0.05, d: 0.04, color: 0xffffff, rz: -0.4 });
-        glow.add(Geo.cyl(16, 1), 0xfff4c0, { x: 0, y: gy, z: WZ(0) + 0.19, sx: 0.4, sy: 0.02, sz: 0.55, rx: PI / 2, flat: true, vary: 0 });
-        ctx.addGlow({ x: 0, y: gy, z: WZ(0) + 1.0, size: 9, color: 0xffc860, kind: 'always' });
+        if (!ph) {
+          ctx.sphere({ x: 0, y: gy + 0.05, z: WZ(0) + 0.24, r: 0.2, sx: 0.28, sy: 0.18, sz: 0.1, color: 0xffffff, w: 8, h: 6 });
+          ctx.box({ x: -0.34, y: gy + 0.1, z: WZ(0) + 0.24, w: 0.45, h: 0.05, d: 0.04, color: 0xffffff, rz: 0.4 });
+          ctx.box({ x: 0.34, y: gy + 0.1, z: WZ(0) + 0.24, w: 0.45, h: 0.05, d: 0.04, color: 0xffffff, rz: -0.4 });
+          glow.add(Geo.cyl(16, 1), 0xfff4c0, { x: 0, y: gy, z: WZ(0) + 0.19, sx: 0.4, sy: 0.02, sz: 0.55, rx: PI / 2, flat: true, vary: 0 });
+          ctx.addGlow({ x: 0, y: gy, z: WZ(0) + 1.0, size: 9, color: 0xffc860, kind: 'always' });
+        } else {
+          var fb = [], zf = GZ(0), white = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+          var body = new T.Mesh(new T.SphereGeometry(1, 8, 6), white); body.scale.set(0.28, 0.18, 0.1); body.position.set(0, gy + 0.05, zf + 0.08); fb.push(body);
+          [-1, 1].forEach(function (sg) { var wg = new T.Mesh(new T.BoxGeometry(0.45, 0.05, 0.04), white); wg.position.set(sg * 0.34, gy + 0.125, zf + 0.08); wg.rotation.z = -sg * 0.4; fb.push(wg); });
+          var disc = new T.Mesh(new T.CircleGeometry(1, 16), new T.MeshBasicMaterial({ color: 0xfff4c0 })); disc.scale.set(0.4, 0.55, 1); disc.position.set(0, gy, zf + 0.03); fb.push(disc);
+          fb.forEach(function (m) { ctx.add(m); ctx.stats.meshes++; });
+          ctx.addGlow({ x: 0, y: gy, z: WZ(0) + 1.0, size: 9, color: 0xffc860, kind: 'always' });
+          var ge = ctx._.glows[ctx._.glows.length - 1];
+          ctx.glassSlot({ photo: ph, x: 0, y: gy, z: zf + 0.012, face: [0, 1], w: 2 * ow, h: 2 * oh, fallback: fb, glows: [ge] });
+        }
         // 구름·아기천사
         for (i = 0; i < 16; i++) {
           var ca = -PI * 0.1 + (i / 15) * PI * 1.2, cr = 1.9 + (i % 3) * 0.5, cxp = Math.cos(ca + PI) * cr * 1.15, cyp = gy - 0.4 + Math.sin(ca + PI) * cr * 0.9;

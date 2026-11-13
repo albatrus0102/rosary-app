@@ -140,14 +140,15 @@ test('hello: welcome 형식, join 브로드캐스트, 스폰 위치', () => {
 });
 
 test('hello: 범위·형식 검증', () => {
-  const good = { skin: 3, style: 3, hair: 9, outfit: 11, name: 39 };
+  const good = { skin: 3, style: 3, hair: 9, outfit: 11, name: 4095 };
   const bad: Message[] = [
     { ...good, skin: 4 },
     { ...good, skin: -1 },
     { ...good, style: 4 },
     { ...good, hair: 10 },
     { ...good, outfit: 12 },
-    { ...good, name: 40 },
+    { ...good, name: 4096 },
+    { ...good, name: -1 },
     { ...good, name: 1.5 },
     { ...good, name: '3' },
     { skin: 0, style: 0, hair: 0, outfit: 0 },
@@ -174,27 +175,41 @@ test('hello: 범위·형식 검증', () => {
   assert.equal(h.msgs('x', 'error').length, 1); // 중복 hello
 });
 
-test('hello: 성별 g(추가 필드)는 0/1만, 없으면 옛 형식(name 0..39), 있으면 name 0..99', () => {
+test('hello: name 0..NAME_MAX(4095), 성별 g(추가 필드)는 0/1만, nv 는 2만 중계', () => {
   const base = { skin: 1, style: 2, hair: 3, outfit: 4 };
   const ok: Message[] = [
-    { ...base, name: 39 }, // g 없음 = 옛 클라이언트
+    { ...base, name: 39 }, // g·nv 없음
     { ...base, name: 0, g: 0 },
     { ...base, name: 99, g: 1 },
-    { ...base, name: 70, g: 0 },
+    { ...base, name: 0, g: 0, nv: 2 },
+    { ...base, name: 3787, g: 1, nv: 2 }, // 통합 목록의 마지막 이름
+    { ...base, name: 4095, g: 0, nv: 2 }, // 상한
+    { ...base, name: 759, nv: 2 }, // g 없이 nv 만
   ];
   for (const [i, av] of ok.entries()) {
     const h = new Harness();
     const a = h.join(1, av);
     const welcome = h.msgs(a, 'welcome');
     assert.equal(welcome.length, 1, `ok case ${i}`);
-    // 나중에 들어온 사람의 welcome에 g 포함 그대로 중계된다.
+    // 나중에 들어온 사람의 welcome에 g·nv 포함 그대로 중계된다.
     const b = h.join(2);
     const peers = h.msgs(b, 'welcome')[0].peers as Message[];
     assert.deepEqual(peers[0].avatar, { ...av }, `relay ${i}`);
   }
+  // 알 수 없는 nv 는 버리고(없는 것으로) 중계한다: 받는 쪽이 옛 형식으로 안전하게 읽는다.
+  for (const nv of [1, 3, 0, -2, 2.5, '2', true, null]) {
+    const h = new Harness();
+    const a = h.join(1, { ...base, name: 7, g: 1, nv });
+    assert.equal(h.msgs(a, 'welcome').length, 1, `nv ${nv}`);
+    const b = h.join(2);
+    const peers = h.msgs(b, 'welcome')[0].peers as Message[];
+    assert.deepEqual(peers[0].avatar, { ...base, name: 7, g: 1 }, `nv ${nv}`);
+  }
   const bad: Message[] = [
-    { ...base, name: 40 }, // g 없으면 옛 상한
-    { ...base, name: 100, g: 0 },
+    { ...base, name: 4096 }, // 상한 초과
+    { ...base, name: 4096, g: 0, nv: 2 },
+    { ...base, name: 100000, g: 0, nv: 2 },
+    { ...base, name: -1, g: 0, nv: 2 },
     { ...base, name: 5, g: 2 },
     { ...base, name: 5, g: -1 },
     { ...base, name: 5, g: 0.5 },
@@ -208,7 +223,7 @@ test('hello: 성별 g(추가 필드)는 0/1만, 없으면 옛 형식(name 0..39)
     assert.deepEqual(h.msgs('x'), [{ t: 'error', code: 'bad_msg' }], `bad case ${i}`);
     assert.equal(h.logic.peerCount(), 0);
   }
-  // g: null 은 없는 것으로 본다(옛 형식 상한 적용).
+  // g: null 은 없는 것으로 본다.
   const h = new Harness();
   const a = h.join(1, { ...base, name: 39, g: null });
   assert.equal(h.msgs(a, 'welcome').length, 1);

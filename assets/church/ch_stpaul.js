@@ -123,7 +123,7 @@
       function win(W, u, h, nsign, o) {
         o = o || {};
         var p = WP(W, u, 0, 0);
-        ctx.window({ x: p[0], y: h.yb, z: p[2], face: W.axis === 'z' ? [nsign, 0] : [0, nsign], w: h.hw * 2, h: h.ys - h.yb, top: 'round', pattern: o.pattern || 'lancet', colors: o.colors || ALAB, seed: o.seed || 3, frame: false, beam: !!o.beam, beamReach: o.reach || 12 });
+        ctx.window({ x: p[0], y: h.yb, z: p[2], face: W.axis === 'z' ? [nsign, 0] : [0, nsign], w: h.hw * 2, h: h.ys - h.yb, top: 'round', pattern: o.pattern || 'lancet', colors: o.colors || ALAB, seed: o.seed || 3, frame: false, beam: !!o.beam, beamReach: o.reach || 12, photo: h.photo || null });
       }
 
       // ---------- 질감 ----------
@@ -198,6 +198,15 @@
         holesArc2.push({ c: zc, hw: 0.72, yb: CH, ys: CH, rise: 0.78, n: 6, ring: C.ring });
         if (i % 2 === 0) holesOut.push({ c: zc, hw: 0.55, yb: 2.4, ys: 5.0, rise: 0.55, n: 6, ring: C.ring, ringW: 0.16 });
       }
+      // G-29: 알라바스터 창 사진(가로/세로 ≈0.52)을 거는 창은 개구부를 사진 비율에 맞춘다(같은 중심 높이, 폭을 넓히고 키를 줄임).
+      // 고창: 0.92×3.86 → 1.32×약2.55, 측랑 창: 1.1×3.15 → 1.5×약2.9. 사진을 못 읽어도 같은 개구부에 절차적 알라바스터가 남는다.
+      function fitHole(h, ph, hw) {
+        if (!ph) return;
+        var yc = (h.yb + h.ys + h.rise) / 2, tot = 2 * hw / ph.aspect;
+        h.hw = hw; h.rise = hw; h.yb = yc - tot / 2; h.ys = h.yb + tot - hw; h.photo = ph;
+      }
+      holesHigh.forEach(function (h, j) { fitHole(h, ctx.glassPhoto('clerestory', j), 0.66); });
+      holesOut.forEach(function (h, j) { fitHole(h, ctx.glassPhoto('aisle', j), 0.75); });
       var YM = 8.45, YT = 15.35;
       [-1, 1].forEach(function (sx) {
         var navSide = -sx; // 신랑 쪽 면의 부호

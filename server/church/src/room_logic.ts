@@ -98,9 +98,10 @@ export const PRESENCE_MAX_MS = 60_000;
 export type St = 'w' | 's' | 'p';
 
 /**
- * 아바타. `g`(성별 0 여성/1 남성)는 추가 필드다. 있으면 `name`은 성별별 세례명 목록 안의
- * 인덱스(0..NAME_MAX), 없으면(옛 클라이언트) 옛 목록 인덱스(0..LEGACY_NAME_MAX)이며
- * 그대로 중계한다(해석은 받는 클라이언트가 한다).
+ * 아바타. `name`은 세례명 인덱스(0..NAME_MAX)이고 서버는 그대로 중계한다(해석은 받는
+ * 클라이언트가 한다). `g`(성별 0 여성/1 남성)와 `nv`(이름 형식 버전)는 추가 필드다.
+ * `nv`가 NAME_VERSION(2)이면 `name`은 성별과 무관한 통합 세례명 목록 인덱스다. 그 밖의
+ * `nv` 값은 버린다(없는 것으로 중계 → 받는 쪽이 옛 형식으로 읽고, 범위를 벗어나면 기본 이름).
  */
 export interface Avatar {
   skin: number;
@@ -109,12 +110,13 @@ export interface Avatar {
   outfit: number;
   name: number;
   g?: number;
+  nv?: number;
 }
 
 /** 세례명 인덱스 상한(Flutter `baptismalNameMaxIndex`와 같다). */
-export const NAME_MAX = 99;
-/** `g`가 없는 옛 클라이언트의 세례명 인덱스 상한. */
-export const LEGACY_NAME_MAX = 39;
+export const NAME_MAX = 4095;
+/** 아바타 이름 형식 버전(Flutter `avatarNameVersion`): 2 = 통합 세례명 목록 인덱스. */
+export const NAME_VERSION = 2;
 
 export interface PeerView {
   id: string;
@@ -226,13 +228,14 @@ function parseAvatar(a: unknown): Avatar | null {
     !isInt(o.style, 0, 3) ||
     !isInt(o.hair, 0, 9) ||
     !isInt(o.outfit, 0, 11) ||
-    !isInt(o.name, 0, hasG ? NAME_MAX : LEGACY_NAME_MAX) ||
+    !isInt(o.name, 0, NAME_MAX) ||
     (hasG && !isInt(o.g, 0, 1))
   ) {
     return null;
   }
   const out: Avatar = { skin: o.skin, style: o.style, hair: o.hair, outfit: o.outfit, name: o.name };
   if (hasG) out.g = o.g as number;
+  if (o.nv === NAME_VERSION) out.nv = NAME_VERSION;
   return out;
 }
 
