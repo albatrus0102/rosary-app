@@ -297,7 +297,8 @@
     "risk": "interiors 문서에 창 위치 미기록",
     "depends": "G-05,G-20",
     "value": "성당 안에서 진짜 창",
-    "evidence": "GLASS_APP_PLAN §5 진본/참고, §7"
+    "evidence": "GLASS_APP_PLAN §5 진본/참고, §7",
+    "status": "review"
   },
   {
     "id": "G-30",

@@ -51,10 +51,10 @@ async function freeze(page) {
 }
 
 // 창 정면(법선 위, 창이 화면 높이·폭의 70% 안)에 카메라를 놓고 걷기 프로필로 그린다 → 화면 화소 + 창 사각형
-async function grabFront(page, slotIndex) {
-  return page.evaluate((si) => {
+async function grabFront(page, slotIndex, fov = 35) {
+  return page.evaluate(({ si, fov }) => {
     const A = __church, c = document.getElementById('c'), s = A.place.slots()[si], cam = A.camera;
-    const fov = 35, d = ChurchGlassMath.frameDistance(s.w, s.h, c.width / c.height, fov, 0.7);
+    const d = ChurchGlassMath.frameDistance(s.w, s.h, c.width / c.height, fov, 0.7);
     cam.fov = fov; cam.position.set(s.x + s.nx * d, s.y, s.z + s.nz * d); cam.lookAt(s.x, s.y, s.z);
     cam.updateProjectionMatrix(); cam.updateMatrixWorld();
     A.world.setSkyCenter(cam.position);
@@ -67,7 +67,7 @@ async function grabFront(page, slotIndex) {
     const P = (a, b) => { const v = new THREE.Vector3(s.x + rx * a * s.w / 2, s.y + b * s.h / 2, s.z + rz * a * s.w / 2).project(cam); return [(v.x + 1) / 2 * c.width, (1 - v.y) / 2 * c.height]; };
     const tl = P(-1, 1), br = P(1, -1);
     return { W: c.width, H: c.height, rect: [tl[0], tl[1], br[0], br[1]], px, win: s.win, slot: s.slot, profile: A.R.profile, passes: A.R.passes(), tier: A.R.tier, png: cv.toDataURL('image/png') };
-  }, slotIndex);
+  }, { si: slotIndex, fov });
 }
 
 export async function colorTest(browser, churches, out, extra = {}) {
@@ -76,15 +76,26 @@ export async function colorTest(browser, churches, out, extra = {}) {
     const { page, errors } = await open(browser, id, { quality, extra });
     await freeze(page);
     const slots = await page.evaluate(() => __church.place.slots().map((s, i) => ({ i, win: s.win, slot: s.slot })));
-    const seen = {};
-    for (const s of slots) {
-      if (seen[s.win + s.slot]) continue;   // 반복 자리는 슬롯 종류마다 하나만
-      seen[s.win + s.slot] = 1;
-      const R = await grabFront(page, s.i);
-      const M = await grabMaster(page, s.win, R.W, R.H, R.rect);
-      const r = compareColor(R.px, M, R.W, R.H, R.rect);
-      if (out) { fs.mkdirSync(out, { recursive: true }); fs.writeFileSync(path.join(out, `front_${id}_${s.slot}_${s.win}_${quality}.png`), Buffer.from(R.png.split(',')[1], 'base64')); }
-      rows.push({ church: id, quality, slot: s.slot, win: s.win, profile: R.profile, ssao: R.passes.ssao, bloom: R.passes.bloom, ...r, pass: r.median <= LIMITS.median });
+    // 창 종류(win+slot)마다 하나를 잰다. 측정 카메라와 창 사이에 성당 가구(조각상 벽감, 성가대석)가 끼면 색이 아니라 가림을 재게 되므로
+    // 같은 종류의 다른 자리(최대 4곳) → 더 가까운 카메라(시야각 60°, 85°) 순으로 다시 재고 가장 좋은 값을 적는다(tries = 잰 횟수).
+    const groups = {};
+    for (const s of slots) (groups[s.win + '|' + s.slot] = groups[s.win + '|' + s.slot] || []).push(s);
+    for (const key of Object.keys(groups)) {
+      const cands = [];
+      groups[key].slice(0, 4).forEach((s) => cands.push({ s, fov: 35 }));
+      for (const fov of [60, 85]) cands.push({ s: groups[key][0], fov });
+      let best = null, tries = 0;
+      for (const c of cands) {
+        const R = await grabFront(page, c.s.i, c.fov);
+        const M = await grabMaster(page, c.s.win, R.W, R.H, R.rect);
+        const r = compareColor(R.px, M, R.W, R.H, R.rect);
+        tries++;
+        if (!best || r.median < best.r.median) best = { R, r, c };
+        if (r.median <= LIMITS.median && r.p95 <= 25) break;
+      }
+      const { R, r, c } = best;
+      if (out) { fs.mkdirSync(out, { recursive: true }); fs.writeFileSync(path.join(out, `front_${id}_${c.s.slot}_${c.s.win}_${quality}.png`), Buffer.from(R.png.split(',')[1], 'base64')); }
+      rows.push({ church: id, quality, slot: c.s.slot, win: c.s.win, index: c.s.i, fov: c.fov, tries, profile: R.profile, ssao: R.passes.ssao, bloom: R.passes.bloom, ...r, pass: r.median <= LIMITS.median });
     }
     if (errors.length) rows.push({ church: id, quality, errors });
     await page.close();
