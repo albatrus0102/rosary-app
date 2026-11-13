@@ -211,6 +211,44 @@ export function compactSkin(doc, skin, prims) {
   return joints.length - keep.length;
 }
 
+/** 틴트 기준색(sRGB 0..255): 모델이 원래 가진 피부·머리 색. 런타임은 (팔레트색 ÷ 기준색) 을 곱해 원래 텍스처의 명암을 살린다.
+ *  - 마스크가 있으면: 텍스처에서 마스크 R(피부)/G(머리) > 0.5 인 텍셀 평균
+ *  - 없으면: skin/hair 재질 프리미티브의 정점 UV 위치 텍셀 평균(텍스처가 없으면 baseColorFactor) */
+export async function tintRefs(prims, maskPath) {
+  const out = {};
+  const decode = async (img) => { const { data, info } = await sharp(Buffer.from(img)).removeAlpha().resize(256, 256, { fit: 'fill' }).raw().toBuffer({ resolveWithObject: true }); return { data, w: info.width, h: info.height }; };
+  const f2s = (v) => Math.round(255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055));
+  if (maskPath) {
+    const tex = prims.map((p) => p.getMaterial() && p.getMaterial().getBaseColorTexture()).find(Boolean);
+    if (!tex) return out;
+    const a = await decode(tex.getImage()), m = await decode(fs.readFileSync(maskPath));
+    for (const [slot, ch] of [['skin', 0], ['hair', 1]]) {
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let i = 0; i < a.w * a.h; i++) if (m.data[i * 3 + ch] > 127) { r += a.data[i * 3]; g += a.data[i * 3 + 1]; b += a.data[i * 3 + 2]; n++; }
+      if (n) out[slot] = [Math.round(r / n), Math.round(g / n), Math.round(b / n)];
+    }
+    return out;
+  }
+  const cache = new Map();
+  for (const p of prims) {
+    const mat = p.getMaterial(), slot = mat && tintSlotFor(mat.getName());
+    if (!slot || out[slot]) continue;
+    const f = mat.getBaseColorFactor(), tex = mat.getBaseColorTexture(), uv = p.getAttribute('TEXCOORD_0');
+    if (!tex || !uv) { out[slot] = [f2s(f[0]), f2s(f[1]), f2s(f[2])]; continue; }
+    if (!cache.has(tex)) cache.set(tex, await decode(tex.getImage()));
+    const a = cache.get(tex), e = [0, 0];
+    let r = 0, g = 0, b = 0, n = 0;
+    const step = Math.max(1, Math.floor(uv.getCount() / 4000));
+    for (let i = 0; i < uv.getCount(); i += step) {
+      uv.getElement(i, e);
+      const x = Math.min(a.w - 1, Math.max(0, Math.floor((e[0] - Math.floor(e[0])) * a.w))), y = Math.min(a.h - 1, Math.max(0, Math.floor((e[1] - Math.floor(e[1])) * a.h))), o = (y * a.w + x) * 3;
+      r += a.data[o]; g += a.data[o + 1]; b += a.data[o + 2]; n++;
+    }
+    out[slot] = [Math.round(r / n * f[0]), Math.round(g / n * f[1]), Math.round(b / n * f[2])];
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------ LOD 단순화(meshoptimizer)
 function triCount(prim) { const idx = prim.getIndices(); return idx ? idx.getCount() / 3 : prim.getAttribute('POSITION').getCount() / 3; }
 /** prim 을 목표 삼각형 수 근처로 단순화(제자리). 오차 한도를 늘려 가며 시도하고, 끝까지 안 되면 sloppy. */
@@ -295,6 +333,7 @@ export async function buildCharacter(opts) {
   const meta = characterMeta(doc, skin);   // 휴식 자세 기준 키·좌석 수치(LOD 를 만들기 전에)
   const dropped = compactSkin(doc, skin, base);
   if (dropped) warnings.push(`무게 없는 관절 ${dropped}개를 스킨에서 뺌(끝 뼈·눈 등) → ${skin.listJoints().length}개`);   // 휴식 자세 기준 키·좌석 수치(LOD 를 만들기 전에)
+  meta.tintRef = await tintRefs(base, opts.mask);
   for (const n of meshNodes) { n.setMesh(null); n.setSkin(null); }
   const total0 = base.reduce((s, p) => s + triCount(p), 0);
   const lodT = opts.lods || LIMITS.tris;
