@@ -546,7 +546,9 @@ void main() {
       matching: find.text(label),
     );
 
-    testWidgets('성당은 유리화 탭의 [창 | 성당] 전환 안에서 게으르게 만들어진다', (tester) async {
+    testWidgets('성당 탭: 성당 보기가 먼저 만들어지고 창 갤러리는 \'창\'을 고를 때 만들어진다', (
+      tester,
+    ) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings();
       var built = 0;
@@ -566,18 +568,31 @@ void main() {
       await tester.pumpAndSettle();
       final bar = find.byType(NavigationBar);
       expect(tester.widget<NavigationBar>(bar).destinations, hasLength(4));
-      // 탭 줄에는 더 이상 '성당'이 없다.
-      expect(find.descendant(of: bar, matching: find.text('성당')), findsNothing);
+      // 첫 탭이 '성당'이고 옛 '유리화' 탭 이름은 없다.
       expect(
-        find.descendant(of: bar, matching: find.text('유리화')),
+        find.descendant(of: bar, matching: find.text('성당')),
         findsOneWidget,
       );
-      expect(built, 0);
-
-      await tester.tap(segment('성당'));
-      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: bar, matching: find.text('유리화')),
+        findsNothing,
+      );
+      // 앱을 열면 성당 보기가 바로 만들어지고 창 갤러리는 아직 없다.
       expect(built, greaterThan(0));
       expect(find.text('PROBE'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('glass-today'), skipOffstage: false),
+        findsNothing,
+      );
+      await tester.tap(segment('창'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
+      expect(find.text('PROBE'), findsNothing);
+      expect(find.text('PROBE', skipOffstage: false), findsOneWidget);
+      await tester.tap(segment('성당'));
+      await tester.pumpAndSettle();
+      expect(find.text('PROBE'), findsOneWidget);
+      expect(disposed, 0);
 
       // 다른 탭으로 가도 성당 화면은 남는다(돌아오면 있던 자리 그대로). 보이지 않을 뿐이다.
       await tester.tap(find.descendant(of: bar, matching: find.text('오늘')));
@@ -585,13 +600,13 @@ void main() {
       expect(disposed, 0);
       expect(find.text('PROBE'), findsNothing);
       expect(find.text('PROBE', skipOffstage: false), findsOneWidget);
-      await tester.tap(find.descendant(of: bar, matching: find.text('유리화')));
+      await tester.tap(find.descendant(of: bar, matching: find.text('성당')));
       await tester.pumpAndSettle();
       expect(find.text('PROBE'), findsOneWidget);
       expect(disposed, 0);
     });
 
-    testWidgets('시스템 뒤로가기: 성당 보기 → 창 보기', (tester) async {
+    testWidgets('시스템 뒤로가기: 창 보기 → 성당 보기', (tester) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings();
       await tester.pumpWidget(
@@ -604,13 +619,15 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(segment('성당'));
-      await tester.pumpAndSettle();
       expect(find.text('PROBE'), findsOneWidget);
-      await tester.binding.handlePopRoute();
+      await tester.tap(segment('창'));
       await tester.pumpAndSettle();
       expect(find.text('PROBE'), findsNothing);
       expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('PROBE'), findsOneWidget);
+      expect(find.byKey(const ValueKey('glass-today')), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -640,7 +657,7 @@ void main() {
       expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
     });
 
-    testWidgets('wide layout rail shows 유리화·오늘·기록·더보기', (tester) async {
+    testWidgets('wide layout rail shows 성당·오늘·기록·더보기', (tester) async {
       setView(tester, const Size(1000, 800));
       final settings = await loadSettings();
       await tester.pumpWidget(
@@ -651,9 +668,13 @@ void main() {
       await tester.pumpAndSettle();
       final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
       expect(rail.destinations, hasLength(4));
-      expect((rail.destinations.first.label as Text).data, '유리화');
+      expect((rail.destinations.first.label as Text).data, '성당');
       expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
-      expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
+      // 기본 보기는 성당이다(창 갤러리는 '창'을 고를 때 만든다).
+      expect(
+        find.byKey(const ValueKey('glass-today'), skipOffstage: false),
+        findsNothing,
+      );
     });
   });
 }

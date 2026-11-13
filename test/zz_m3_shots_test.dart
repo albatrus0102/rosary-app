@@ -245,7 +245,7 @@ void main() {
       }
 
       testWidgets('01 glass tab', (t) async {
-        await shell(t, AppShellTab.glass, '01_glass', scrolls: [500]);
+        await shell(t, AppShellTab.church, '01_glass', scrolls: [500]);
       });
       testWidgets('02 today', (t) async {
         await shell(t, AppShellTab.today, '02_today', scrolls: [600, 600]);

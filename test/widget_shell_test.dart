@@ -4,6 +4,7 @@ import 'package:rosary_app/app/app_services.dart';
 import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/stats/stats_screen.dart';
+import 'package:rosary_app/glass/glass_gallery.dart';
 import 'package:rosary_app/glass/glass_tab.dart';
 import 'package:rosary_app/ui/app_shell.dart';
 import 'package:rosary_app/ui/home_screen.dart';
@@ -48,39 +49,147 @@ Future<void> _pumpShell(
   await tester.pumpAndSettle();
 }
 
+bool _hasText(Semantics w, String t) {
+  final c = w.child;
+  return c is Text && c.data == t;
+}
+
 Finder _nav(String label) =>
     find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
 void main() {
-  testWidgets('compact width uses NavigationBar: 유리화 · 오늘 · 기록 · 더보기', (
+  testWidgets('compact width uses NavigationBar: 성당 · 오늘 · 기록 · 더보기', (
     tester,
   ) async {
-    await _pumpShell(tester, const Size(360, 640));
+    await _pumpShell(
+      tester,
+      const Size(360, 640),
+      initialTab: AppShellTab.church,
+    );
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(4));
     final xs = [
-      for (final l in ['유리화', '오늘', '기록', '더보기']) tester.getCenter(_nav(l)).dx,
+      for (final l in ['성당', '오늘', '기록', '더보기']) tester.getCenter(_nav(l)).dx,
     ];
     expect(xs, orderedEquals([...xs]..sort()));
-    for (final old in ['성당', '기도', '묵주', '설정']) {
+    // 첫 탭은 성당(M3: 아이콘·라벨, 선택 표시).
+    final dests = bar.destinations.cast<NavigationDestination>();
+    expect((dests.first.icon as Icon).icon, Icons.church_outlined);
+    expect((dests.first.selectedIcon as Icon).icon, Icons.church);
+    expect(bar.selectedIndex, 0);
+    for (final old in ['유리화', '기도', '묵주', '설정']) {
       expect(_nav(old), findsNothing, reason: old);
     }
   });
 
-  testWidgets('앱을 열면 유리화 탭이 먼저 나오고 오늘은 한 번 눌러 간다', (tester) async {
+  testWidgets('앱을 열면 성당 탭이 선택돼 있고 성당 보기가 먼저 보인다', (tester) async {
     await _pumpShell(
       tester,
       const Size(360, 800),
-      initialTab: AppShellTab.glass,
+      initialTab: AppShellTab.church,
     );
     final stack = find.byType(IndexedStack);
     expect(tester.widget<IndexedStack>(stack).index, 0);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      0,
+    );
     expect(find.byType(GlassTab), findsOneWidget);
-    expect(find.text('스테인드글라스'), findsWidgets);
+    // 성당 보기(메인)가 바로 보이고, 창 갤러리는 아직 만들지 않았다.
+    expect(find.text('church-body'), findsOneWidget);
+    expect(find.byType(GlassGallery, skipOffstage: false), findsNothing);
+    expect(find.byKey(const ValueKey('glass-prayer-strip')), findsNothing);
     expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
-    // 갤러리 아래 띠로도 기도에 한 번에 간다.
+  });
+
+  testWidgets('세그먼트는 [성당 | 창] 순서이고 기본은 성당이다', (tester) async {
+    await _pumpShell(
+      tester,
+      const Size(360, 800),
+      initialTab: AppShellTab.church,
+    );
+    final seg = tester.widget<SegmentedButton<GlassSegment>>(
+      find.byKey(const ValueKey('glass-segment')),
+    );
+    expect(seg.segments.map((e) => e.value), [
+      GlassSegment.church,
+      GlassSegment.window,
+    ]);
+    expect(seg.selected, {GlassSegment.church});
+    final labels = [
+      for (final l in ['성당', '창'])
+        tester
+            .getCenter(
+              find.descendant(
+                of: find.byKey(const ValueKey('glass-segment')),
+                matching: find.text(l),
+              ),
+            )
+            .dx,
+    ];
+    expect(labels[0], lessThan(labels[1]));
+  });
+
+  testWidgets('헤더: 성당은 \'가상 성당\'(하트 없음), 창은 \'스테인드글라스\'(하트)', (tester) async {
+    await _pumpShell(
+      tester,
+      const Size(360, 800),
+      initialTab: AppShellTab.church,
+    );
+    Finder title(String t) => find.byWidgetPredicate(
+      (w) => w is Semantics && w.properties.header == true && _hasText(w, t),
+    );
+    expect(find.text('가상 성당'), findsOneWidget);
+    expect(find.text('스테인드글라스'), findsNothing);
+    expect(find.byKey(const ValueKey('glass-favorites')), findsNothing);
+    final h1 = tester
+        .getSize(find.byKey(const ValueKey('glass-segment')))
+        .height;
+    final y1 = tester
+        .getTopLeft(find.byKey(const ValueKey('glass-segment')))
+        .dy;
+    expect(title('가상 성당'), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('glass-segment')),
+        matching: find.text('창'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('스테인드글라스'), findsOneWidget);
+    expect(find.text('가상 성당'), findsNothing);
+    expect(find.byKey(const ValueKey('glass-favorites')), findsOneWidget);
+    expect(title('스테인드글라스'), findsOneWidget);
+    // 보기를 바꿔도 전환 줄이 아래위로 움직이지 않는다.
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('glass-segment'))).dy,
+      y1,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('glass-segment'))).height,
+      h1,
+    );
+  });
+
+  testWidgets('창 보기: 오늘의 창 아래 띠로 기도(오늘)에 한 번에 간다', (tester) async {
+    await _pumpShell(
+      tester,
+      const Size(360, 800),
+      initialTab: AppShellTab.church,
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const ValueKey('glass-segment')),
+        matching: find.text('창'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(GlassGallery), findsOneWidget);
+    expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
+    final stack = find.byType(IndexedStack);
     expect(find.byKey(const ValueKey('glass-prayer-strip')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('glass-prayer-strip')));
     await tester.pumpAndSettle();
@@ -108,11 +217,11 @@ void main() {
     expect(rail.extended, isTrue);
   });
 
-  testWidgets('tabs switch between 유리화, 오늘, 기록, 더보기', (tester) async {
+  testWidgets('tabs switch between 성당, 오늘, 기록, 더보기', (tester) async {
     await _pumpShell(
       tester,
       const Size(360, 800),
-      initialTab: AppShellTab.glass,
+      initialTab: AppShellTab.church,
     );
     final stack = find.byType(IndexedStack);
     expect(tester.widget<IndexedStack>(stack).index, 0);
@@ -133,38 +242,48 @@ void main() {
     expect(tester.widget<IndexedStack>(stack).index, 3);
     expect(find.byType(MoreScreen), findsOneWidget);
 
-    await tester.tap(_nav('유리화'));
+    await tester.tap(_nav('성당'));
     await tester.pumpAndSettle();
     expect(tester.widget<IndexedStack>(stack).index, 0);
   });
 
-  testWidgets('성당은 유리화 탭의 [창 | 성당] 전환 안에 있다', (tester) async {
+  testWidgets('창 갤러리는 처음 \'창\'을 고를 때 만들고, 뒤로가기는 창에서 성당으로 간다', (tester) async {
     await _pumpShell(
       tester,
       const Size(360, 800),
-      initialTab: AppShellTab.glass,
+      initialTab: AppShellTab.church,
     );
-    expect(find.text('church-body'), findsNothing);
+    expect(find.text('church-body'), findsOneWidget);
+    expect(find.byType(GlassGallery, skipOffstage: false), findsNothing);
     await tester.tap(
       find.descendant(
         of: find.byKey(const ValueKey('glass-segment')),
-        matching: find.text('성당'),
+        matching: find.text('창'),
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('church-body'), findsOneWidget);
-    // 다른 탭으로 가면 성당 보기는 정리되고, 돌아오면 다시 만든다.
+    expect(find.byType(GlassGallery), findsOneWidget);
+    // 성당 보기는 안 보이지만 그대로 남아 있다.
+    expect(find.text('church-body'), findsNothing);
+    expect(find.text('church-body', skipOffstage: false), findsOneWidget);
+    // 다른 탭에 다녀와도 창 보기가 그대로다.
     await tester.tap(_nav('기록'));
     await tester.pumpAndSettle();
-    expect(find.text('church-body'), findsNothing);
-    await tester.tap(_nav('유리화'));
+    await tester.tap(_nav('성당'));
     await tester.pumpAndSettle();
-    expect(find.text('church-body'), findsOneWidget);
-    // 뒤로가기는 창 보기로, 한 번 더 누르면 앱 종료(탭은 첫 탭).
+    expect(find.byType(GlassGallery), findsOneWidget);
+    // 뒤로가기: 창 → 성당(탭은 그대로 첫 탭).
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.text('church-body'), findsNothing);
-    expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
+    expect(find.text('church-body'), findsOneWidget);
+    expect(find.byType(GlassGallery), findsNothing);
+    expect(find.text('가상 성당'), findsOneWidget);
+    expect(tester.widget<IndexedStack>(find.byType(IndexedStack)).index, 0);
+    // 성당 보기(메인)에서는 뒤로가기를 막지 않는다(= 앱 기본 동작: 종료).
+    final popScopes = tester
+        .widgetList<PopScope>(find.byType(PopScope))
+        .where((p) => !p.canPop);
+    expect(popScopes, isEmpty);
   });
 
   testWidgets('더보기: 묵주 스타일·설정은 새 화면으로 열리고 뒤로 오면 더보기다', (tester) async {
@@ -218,7 +337,7 @@ void main() {
     expect(find.byType(SettingsScreen), findsOneWidget);
   });
 
-  testWidgets('뒤로가기는 다른 탭에서 유리화 탭으로 돌아간다', (tester) async {
+  testWidgets('뒤로가기는 다른 탭에서 성당 탭으로 돌아간다', (tester) async {
     await _pumpShell(tester, const Size(360, 640));
     await tester.tap(_nav('기록'));
     await tester.pumpAndSettle();
@@ -236,11 +355,11 @@ void main() {
         tester,
         const Size(360, 640),
         textScale: scale,
-        initialTab: AppShellTab.glass,
+        initialTab: AppShellTab.church,
       );
       expect(tester.takeException(), isNull);
       expect(find.byType(NavigationBar), findsOneWidget);
-      for (final tab in ['오늘', '기록', '더보기', '유리화']) {
+      for (final tab in ['오늘', '기록', '더보기', '성당']) {
         await tester.tap(_nav(tab));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: tab);

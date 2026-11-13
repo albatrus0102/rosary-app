@@ -108,7 +108,7 @@ void main() {
     final accent = const Color(0xFF3366CC);
 
     setUp(() {
-      // 유리화 탭(첫 탭)의 카탈로그는 자산 읽기 대신 동기 값을 쓴다.
+      // 성당 탭 '창' 보기(갤러리)의 카탈로그는 자산 읽기 대신 동기 값을 쓴다.
       GlassCatalog.debugSetShared(testGlassCatalogFuture());
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (call) async {

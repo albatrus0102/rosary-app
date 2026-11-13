@@ -11,15 +11,17 @@ import 'glass_catalog.dart';
 import 'glass_gallery.dart';
 import 'glass_view_screen.dart';
 
-/// 유리화 탭의 두 보기: 창(갤러리) | 성당(기존 성당 탭 내용).
-enum GlassSegment { window, church }
+/// 성당 탭의 두 보기: 성당(메인, 기본) | 창(스테인드글라스 갤러리, 보조).
+enum GlassSegment { church, window }
 
-/// '유리화' 탭(G-01): 위쪽 제목·[창 | 성당] 전환 아래에 갤러리 홈 또는 성당 흐름을 둔다.
+/// '성당' 탭(앱의 메인): 위쪽 제목·[성당 | 창] 전환 아래에 성당 흐름(기본) 또는 창 갤러리 홈을 둔다.
+/// (클래스 이름은 갤러리 시절 그대로다.)
 ///
-/// 성당 보기는 '성당'을 처음 고를 때 만들고, 그 뒤로는 다른 탭이나 '창' 보기로 가도 남겨 둔다
+/// 성당 보기는 이 탭이 처음 보일 때 만들고, 그 뒤로는 다른 탭이나 '창' 보기로 가도 남겨 둔다
 /// (성당 안에 있던 자리·좌석·기도 카드가 그대로다). 보이지 않는 동안에는 [ChurchHost.visible]이
 /// false가 되어 성당 화면이 장면 그리기·소리를 멈추고, 오래 안 보이면 접속과 장면을 놓았다가
-/// 돌아올 때 같은 자리로 복원한다. 갤러리도 계속 둔다(필터·스크롤 유지).
+/// 돌아올 때 같은 자리로 복원한다. 갤러리는 '창'을 처음 고를 때 만들고 그 뒤로 계속 둔다
+/// (필터·스크롤 유지).
 class GlassTab extends StatefulWidget {
   const GlassTab({
     super.key,
@@ -29,7 +31,8 @@ class GlassTab extends StatefulWidget {
     this.churchBuilder,
     this.sceneFactory,
     this.onOpenPrayer,
-    this.initialSegment = GlassSegment.window,
+    this.onSegmentChanged,
+    this.initialSegment = GlassSegment.church,
   });
 
   final AppSettings settings;
@@ -49,6 +52,9 @@ class GlassTab extends StatefulWidget {
   /// 오늘의 묵주기도(오늘 탭)로 간다.
   final VoidCallback? onOpenPrayer;
 
+  /// 보기가 바뀌었다(셸이 화면 id를 맞추는 데 쓴다).
+  final ValueChanged<GlassSegment>? onSegmentChanged;
+
   final GlassSegment initialSegment;
 
   @override
@@ -61,16 +67,26 @@ class _GlassTabState extends State<GlassTab> {
       widget.catalog ?? GlassCatalog.shared();
   bool _inChurch = false;
 
-  /// 성당 보기를 한 번이라도 열었는가(그때 만들고, 그 뒤로는 남겨 둔다).
-  late bool _churchBuilt = widget.initialSegment == GlassSegment.church;
+  /// 성당 보기를 한 번이라도 보였는가(그때 만들고, 그 뒤로는 남겨 둔다). 이 탭이 아직 안 보이면
+  /// (알림으로 '오늘' 탭에서 열린 경우 등) 만들지 않는다: 만들면 보이지 않는 성당 화면이
+  /// 화면 기록(screen_view)을 남긴다.
+  late bool _churchBuilt =
+      widget.initialSegment == GlassSegment.church && widget.active;
+
+  /// 창 갤러리를 한 번이라도 골랐는가(그때 만들고, 그 뒤로는 남겨 둔다).
+  late bool _windowBuilt =
+      widget.initialSegment == GlassSegment.window && widget.active;
 
   @override
   void didUpdateWidget(GlassTab old) {
     super.didUpdateWidget(old);
-    if (old.active != widget.active &&
-        widget.active &&
-        _segment == GlassSegment.window) {
-      Track.screen('glass_gallery');
+    if (old.active != widget.active && widget.active) {
+      if (_segment == GlassSegment.church) {
+        _churchBuilt = true;
+      } else {
+        _windowBuilt = true;
+        Track.screen('glass_gallery');
+      }
     }
   }
 
@@ -79,7 +95,9 @@ class _GlassTabState extends State<GlassTab> {
     setState(() {
       _segment = s;
       if (s == GlassSegment.church) _churchBuilt = true;
+      if (s == GlassSegment.window) _windowBuilt = true;
     });
+    widget.onSegmentChanged?.call(s);
     if (s == GlassSegment.window) Track.screen('glass_gallery');
   }
 
@@ -135,17 +153,9 @@ class _GlassTabState extends State<GlassTab> {
     final Widget body = Stack(
       fit: StackFit.expand,
       children: [
-        _Kept(
-          show: _segment == GlassSegment.window,
-          // 머리줄이 위쪽 안전 영역을 이미 썼다.
-          child: MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            child: gallery,
-          ),
-        ),
         if (_churchBuilt)
           _Kept(
+            key: const ValueKey('glass-church-view'),
             show: _segment == GlassSegment.church,
             child: ChurchHost(
               visible: widget.active && _segment == GlassSegment.church,
@@ -167,15 +177,27 @@ class _GlassTabState extends State<GlassTab> {
               ),
             ),
           ),
+        if (_windowBuilt)
+          _Kept(
+            key: const ValueKey('glass-window-view'),
+            show: _segment == GlassSegment.window,
+            // 머리줄이 위쪽 안전 영역을 이미 썼다.
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: gallery,
+            ),
+          ),
       ],
     );
 
     return PopScope(
-      // 성당 보기에서 뒤로 가면 창 보기로 돌아온다(탭 자체의 뒤로는 셸이 처리한다).
-      canPop: _segment == GlassSegment.window,
+      // 창 보기에서 뒤로 가면 성당 보기(메인)로 돌아온다. 성당 보기에서는 막지 않는다
+      // (다른 탭이면 셸이 첫 탭으로, 첫 탭이면 앱 기본 동작).
+      canPop: _segment == GlassSegment.church,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _segment == GlassSegment.church) {
-          _select(GlassSegment.window);
+        if (!didPop && _segment == GlassSegment.window) {
+          _select(GlassSegment.church);
         }
       },
       child: Material(
@@ -198,7 +220,7 @@ class _GlassTabState extends State<GlassTab> {
 
 /// 보이지 않아도 상태를 그대로 두는 자리: 그리지 않고, 터치·포커스·애니메이션을 끈다.
 class _Kept extends StatelessWidget {
-  const _Kept({required this.show, required this.child});
+  const _Kept({super.key, required this.show, required this.child});
 
   final bool show;
   final Widget child;
@@ -229,6 +251,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isWindow = segment == GlassSegment.window;
     return SafeArea(
       bottom: false,
       child: Padding(
@@ -236,22 +259,30 @@ class _Header extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Semantics(
-                    header: true,
-                    child: Text('스테인드글라스', style: theme.textTheme.titleLarge),
+            // 보기가 바뀌어도 머리줄 높이가 같도록 하트 버튼 높이(48)를 최소로 둔다.
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        isWindow ? '스테인드글라스' : '가상 성당',
+                        style: theme.textTheme.titleLarge,
+                      ),
+                    ),
                   ),
-                ),
-                // 내 컬렉션(즐겨찾기)은 G2. 자리만 둔다.
-                IconButton(
-                  key: const ValueKey('glass-favorites'),
-                  tooltip: '내 컬렉션',
-                  onPressed: onFavorites,
-                  icon: const Icon(Icons.favorite_border),
-                ),
-              ],
+                  // 내 컬렉션(즐겨찾기)은 창 보기에서만(G2, 자리만 둔다).
+                  if (isWindow)
+                    IconButton(
+                      key: const ValueKey('glass-favorites'),
+                      tooltip: '내 컬렉션',
+                      onPressed: onFavorites,
+                      icon: const Icon(Icons.favorite_border),
+                    ),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -260,14 +291,14 @@ class _Header extends StatelessWidget {
                 showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(
-                    value: GlassSegment.window,
-                    label: Text('창'),
-                    icon: Icon(Icons.window_outlined),
-                  ),
-                  ButtonSegment(
                     value: GlassSegment.church,
                     label: Text('성당'),
                     icon: Icon(Icons.church_outlined),
+                  ),
+                  ButtonSegment(
+                    value: GlassSegment.window,
+                    label: Text('창'),
+                    icon: Icon(Icons.window_outlined),
                   ),
                 ],
                 selected: {segment},

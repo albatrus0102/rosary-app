@@ -173,7 +173,7 @@ void _select(int i) {
 | `glass_download` | `scope`(win/all), `mb`, `ok`, `wifi` | G2(CDN 내려받기)에서 연결. |
 
 diagnostics: `glass_load{win,tier(t1/t2/t3/tile),ms,ok}`, `glass_mem{tex_mb,budget_mb,downgraded,tier(low/mid/high)}`.
-화면 id: `glass_gallery`(유리화 탭 '창'), `glass_view`(감상 라우트), `glass_info`(정보 시트), `glass_licenses`(출처 화면).
+화면 id: `glass_gallery`(성당 탭의 '창' 보기), `glass_view`(감상 라우트), `glass_info`(정보 시트), `glass_licenses`(출처 화면).
 
 ### church (동의 `church`)
 

@@ -15,9 +15,10 @@ class AnalyticsObserver extends NavigatorObserver {
     this.rootScreen,
   }) : _now = now ?? DateTime.now;
 
-  /// '/' 라우트(앱 셸)의 화면 id. 앱 셸은 탭마다 화면이 달라서(유리화·오늘·기록·더보기)
-  /// 지금 보이는 탭의 id를 돌려준다. 없으면 'home'.
-  final String Function()? rootScreen;
+  /// '/' 라우트(앱 셸)의 화면 id. 앱 셸은 탭마다 화면이 달라서(성당·오늘·기록·더보기)
+  /// 지금 보이는 탭의 id를 돌려준다. 이 함수가 없으면 'home'. null을 돌려주면 그 화면이 스스로
+  /// 기록하므로(성당 탭의 성당 보기) 기록하지 않는다.
+  final String? Function()? rootScreen;
 
   final Analytics? _analytics;
   final Duration debounce;
@@ -29,7 +30,7 @@ class AnalyticsObserver extends NavigatorObserver {
   Analytics get _a => _analytics ?? Analytics.instance;
 
   /// `RouteSettings.name` → 화면 id(이름 없으면 null).
-  static String? screenIdFor(Route<dynamic>? route, {String root = 'home'}) {
+  static String? screenIdFor(Route<dynamic>? route, {String? root = 'home'}) {
     if (route == null || route is! PageRoute) return null;
     final raw = route.settings.name;
     if (raw == null || raw.trim().isEmpty) return null;
@@ -44,7 +45,10 @@ class AnalyticsObserver extends NavigatorObserver {
   }
 
   void _record(Route<dynamic>? route) {
-    final id = screenIdFor(route, root: rootScreen?.call() ?? 'home');
+    final id = screenIdFor(
+      route,
+      root: rootScreen == null ? 'home' : rootScreen!(),
+    );
     if (id == null) return;
     final now = _now();
     if (id == _lastScreen &&

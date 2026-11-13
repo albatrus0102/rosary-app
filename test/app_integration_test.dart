@@ -204,7 +204,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginScreen), findsNothing);
-      // 앱을 열면 유리화 탭이 먼저 나오고, 기도(오늘)는 한 번 눌러 간다.
+      // 앱을 열면 성당 탭(성당 보기)이 먼저 나오고, 기도(오늘)는 한 번 눌러 간다.
       expect(find.byType(GlassTab), findsOneWidget);
       expect(find.textContaining('신비 시작'), findsNothing);
       await tester.tap(
@@ -386,7 +386,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(StatsScreen), findsOneWidget);
       expect(_screens(), [
-        'glass_gallery', // '/' 라우트(앱 셸의 첫 탭)
+        // '/' 라우트(앱 셸의 첫 탭=성당 보기)는 성당 화면이 스스로 기록한다(옵저버는 세지 않는다).
+        'church_select',
         'more',
         'stats',
         'home',

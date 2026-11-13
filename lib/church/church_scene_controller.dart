@@ -383,7 +383,7 @@ class ViewGesture extends SceneEvent {
 }
 
 /// 성당 안을 걷다가 진본 사진 창이 가까이·시야 안에 들어왔다(G-29). [id]가 null이면 벗어났다.
-/// [id]는 유리화 카탈로그 id, [slot]은 그 성당 안의 자리 이름.
+/// [id]는 스테인드글라스 카탈로그 id, [slot]은 그 성당 안의 자리 이름.
 class SceneGlassNear extends SceneEvent {
   const SceneGlassNear({this.id, this.slot});
   final String? id;

@@ -11,7 +11,7 @@ import 'church_select_screen.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
 
-/// '성당' 탭의 흐름(C-02): 마지막 성당 카드 + [입장] → [ChurchScreen].
+/// '성당' 탭 '성당' 보기의 흐름(C-02): 마지막 성당 카드 + [입장] → [ChurchScreen].
 /// '다른 성당 고르기'와 HUD의 '성당 바꾸기'는 선택 화면으로 간다. 처음(아직 성당에 들어간 적이
 /// 없음)에는 바로 선택 화면이 열린다.
 ///
@@ -41,8 +41,8 @@ class ChurchTab extends StatefulWidget {
   final WidgetBuilder? avatarEditorBuilder;
   final Set<String>? availableIds;
 
-  /// 성당 장면 안에 들어갔는지(true)/나왔는지(false) 알린다. 유리화 탭이 이 값으로
-  /// [창 | 성당] 전환 줄을 장면 위에서는 숨긴다. 없으면 [ChurchHost]의 것을 부른다.
+  /// 성당 장면 안에 들어갔는지(true)/나왔는지(false) 알린다. 성당 탭이 이 값으로
+  /// [성당 | 창] 전환 줄을 장면 위에서는 숨긴다. 없으면 [ChurchHost]의 것을 부른다.
   final ValueChanged<bool>? onInChurchChanged;
 
   /// 성당별 접속 인원(테스트용 주입). 없으면 [ChurchLoads.shared].

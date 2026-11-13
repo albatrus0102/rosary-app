@@ -41,7 +41,7 @@ class _LauncherState extends State<_Launcher> {
         SystemUiMode.edgeToEdge,
       );
       registerFontLicenses();
-      // 첫 탭(유리화)이 쓸 창 목록을 미리 읽어 둔다. 실패는 탭이 직접 알린다.
+      // 성당 탭의 '창' 보기가 쓸 창 목록(그리고 성당 안 창 정보)을 미리 읽어 둔다. 실패는 화면이 직접 알린다.
       GlassCatalog.shared().ignore();
       // Supabase(설정된 경우)·설정·기록 → 인증/동의 → 분석·동기화. 미설정이면 로그인 없이 열린다.
       final services = await bootstrapServices();

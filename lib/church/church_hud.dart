@@ -383,7 +383,7 @@ class ChurchWalkChip extends StatelessWidget {
 class ChurchGlassChip extends StatelessWidget {
   const ChurchGlassChip({super.key, required this.title, required this.onTap});
 
-  /// 창 이름(유리화 카탈로그의 한국어 제목).
+  /// 창 이름(스테인드글라스 카탈로그의 한국어 제목).
   final String title;
   final VoidCallback onTap;
 

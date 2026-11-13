@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-/// 성당 보기를 품은 쪽(유리화 탭)이 아래 성당 화면들에 알려 주는 것.
+/// 성당 보기를 품은 쪽(성당 탭)이 아래 성당 화면들에 알려 주는 것.
 ///
 /// 성당 화면([ChurchTab]·[ChurchScreen])은 다른 탭·'창' 보기로 가도 사라지지 않고 그대로 남는다.
 /// 대신 [visible]이 false인 동안 장면 그리기와 소리를 멈추고(일시정지), 오래 안 보이면 접속을
@@ -13,7 +13,7 @@ class ChurchHost extends InheritedWidget {
     required super.child,
   });
 
-  /// 성당 보기가 지금 화면에 보이는가(유리화 탭이 선택돼 있고 '성당' 보기일 때).
+  /// 성당 보기가 지금 화면에 보이는가(성당 탭이 선택돼 있고 '성당' 보기일 때).
   final bool visible;
 
   /// 성당 장면 안에 들어갔는지(true)/나왔는지(false).

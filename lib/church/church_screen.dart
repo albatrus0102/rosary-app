@@ -679,7 +679,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     }
   }
 
-  /// 창 이름·출처는 유리화 카탈로그(번들)에서 읽는다. 처음 창 이벤트가 올 때 한 번만 부른다.
+  /// 창 이름·출처는 스테인드글라스 카탈로그(번들)에서 읽는다. 처음 창 이벤트가 올 때 한 번만 부른다.
   void _ensureGlassCatalog() {
     if (_glassCatalogAsked) return;
     _glassCatalogAsked = true;

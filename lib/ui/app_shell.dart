@@ -17,12 +17,13 @@ import 'more_screen.dart';
 import 'rosary_style_screen.dart';
 import 'settings_screen.dart';
 
-/// 탭 번호. 앱을 열면 [glass](유리화)가 먼저 나온다. 알림·위젯·'이어서 기도하기'처럼
+/// 탭 번호. 앱을 열면 [church](성당)가 먼저 나온다. 알림·위젯·'이어서 기도하기'처럼
 /// 기도로 바로 가는 진입점은 `initialTab: AppShellTab.today`를 넘긴다.
-enum AppShellTab { glass, today, stats, more }
+enum AppShellTab { church, today, stats, more }
 
 /// M3 적응형 내비게이션 셸: 좁은 화면은 NavigationBar, 넓은 화면은 NavigationRail.
-/// 탭: 유리화(기본) · 오늘 · 기록 · 더보기. 옛 '성당' 탭은 유리화 탭의 [창 | 성당] 전환 안에 있다.
+/// 탭: 성당(기본·메인) · 오늘 · 기록 · 더보기. 성당 탭 안의 [성당 | 창] 전환에서 '창'이
+/// 스테인드글라스 갤러리(보조)다.
 class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
@@ -30,14 +31,19 @@ class AppShell extends StatefulWidget {
     this.leaderAudio,
     this.soundPlayer,
     this.churchBuilder,
-    this.initialTab = AppShellTab.glass,
+    this.initialTab = AppShellTab.church,
     this.glassCatalog,
     this.glassSceneFactory,
   });
 
   /// 지금 보이는 탭의 화면 id(`glass_gallery`·`home`·`stats`·`more`). 내비게이터가 '/' 화면으로
   /// 돌아올 때 어느 탭인지 기록하는 데 쓴다([AnalyticsObserver.rootScreen]).
-  static String currentScreenId = _tabScreenIds[AppShellTab.glass.index];
+  /// 성당 탭의 '성당' 보기는 화면 id(church_entry/church_select/church)를 [ChurchTab]이 스스로
+  /// 기록하므로 null이다(옵저버가 같은 화면을 한 번 더 세지 않는다).
+  static String? currentScreenId = _tabScreenId(
+    AppShellTab.church.index,
+    GlassSegment.church,
+  );
 
   /// 열 때 보이는 탭.
   final AppShellTab initialTab;
@@ -54,7 +60,7 @@ class AppShell extends StatefulWidget {
   final LeaderAudioStore? leaderAudio;
   final SoundPlayer? soundPlayer;
 
-  /// 테스트용 주입: 유리화 탭 '성당' 보기의 내용을 대신 만든다.
+  /// 테스트용 주입: 성당 탭 '성당' 보기의 내용을 대신 만든다.
   final WidgetBuilder? churchBuilder;
 
   @override
@@ -62,34 +68,60 @@ class AppShell extends StatefulWidget {
 }
 
 /// 탭 번호 → 화면 id(SPEC §4). 탭은 라우트가 아니라서 여기서 직접 기록한다.
-/// 유리화 탭의 성당 보기 화면(church_select/church)은 [ChurchTab]이 기록한다.
-const _tabScreenIds = ['glass_gallery', 'home', 'stats', 'more'];
+/// 성당 탭의 '성당' 보기 화면(church_entry/church_select/church)은 [ChurchTab]이 기록하므로
+/// null이고, '창' 보기는 `glass_gallery`다.
+String? _tabScreenId(int tab, GlassSegment segment) {
+  switch (tab) {
+    case 0:
+      return segment == GlassSegment.window ? 'glass_gallery' : null;
+    case 1:
+      return 'home';
+    case 2:
+      return 'stats';
+    default:
+      return 'more';
+  }
+}
 
 class _AppShellState extends State<AppShell> {
-  static const _glass = 0;
+  static const _church = 0;
   static const _today = 1;
   static const _stats = 2;
 
   late int _index = widget.initialTab.index;
 
+  /// 성당 탭의 보기(기본 '성당'). 화면 id가 보기에 따라 달라 셸도 안다.
+  GlassSegment _segment = GlassSegment.church;
+
   @override
   void initState() {
     super.initState();
-    AppShell.currentScreenId = _tabScreenIds[_index];
+    AppShell.currentScreenId = _tabScreenId(_index, _segment);
   }
 
   @override
   void dispose() {
-    AppShell.currentScreenId = _tabScreenIds[AppShellTab.glass.index];
+    AppShell.currentScreenId = _tabScreenId(
+      AppShellTab.church.index,
+      GlassSegment.church,
+    );
     super.dispose();
   }
 
   void _select(int i) {
     if (i == _index) return;
     setState(() => _index = i);
-    AppShell.currentScreenId = _tabScreenIds[i];
-    // 유리화 탭의 화면 기록은 GlassTab이 한다(창/성당 보기에 따라 다르다).
-    if (i != _glass) Track.screen(_tabScreenIds[i]);
+    final id = _tabScreenId(i, _segment);
+    AppShell.currentScreenId = id;
+    // 성당 탭의 화면 기록은 GlassTab/ChurchTab이 한다(성당/창 보기에 따라 다르다).
+    if (i != _church && id != null) Track.screen(id);
+  }
+
+  void _onSegment(GlassSegment s) {
+    _segment = s;
+    if (_index == _church) {
+      AppShell.currentScreenId = _tabScreenId(_church, s);
+    }
   }
 
   /// 묵주 스타일 화면은 탭이 아니라 더보기·오늘에서 여는 화면이다.
@@ -122,12 +154,13 @@ class _AppShellState extends State<AppShell> {
     final body = IndexedStack(
       index: _index,
       children: [
-        // 유리화 탭: 갤러리도 성당 보기도 계속 둔다(성당 안에 있던 자리 그대로 돌아온다).
+        // 성당 탭: 성당 보기(메인)도 창 갤러리도 계속 둔다(성당 안에 있던 자리 그대로 돌아온다).
         // 이 탭이 보이지 않는 동안 성당 장면은 일시정지한다(active → ChurchHost.visible).
         GlassTab(
           key: const ValueKey('glass-tab'),
           settings: widget.settings,
-          active: _index == _glass,
+          active: _index == _church,
+          onSegmentChanged: _onSegment,
           catalog: widget.glassCatalog,
           churchBuilder: widget.churchBuilder,
           sceneFactory: widget.glassSceneFactory,
@@ -159,11 +192,11 @@ class _AppShellState extends State<AppShell> {
       ],
     );
 
-    // 다른 탭에서 뒤로가기를 누르면 앱을 닫지 않고 첫 탭(유리화)으로 돌아간다.
+    // 다른 탭에서 뒤로가기를 누르면 앱을 닫지 않고 첫 탭(성당)으로 돌아간다.
     return PopScope(
-      canPop: _index == _glass,
+      canPop: _index == _church,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _select(_glass);
+        if (!didPop) _select(_church);
       },
       child: wc.isWide ? _buildWide(context, wc, body) : _buildCompact(body),
     );
@@ -218,7 +251,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   static const _destinations = [
-    _Dest('유리화', Icons.window_outlined, Icons.window),
+    _Dest('성당', Icons.church_outlined, Icons.church),
     _Dest('오늘', Icons.self_improvement_outlined, Icons.self_improvement),
     _Dest('기록', Icons.insights_outlined, Icons.insights),
     _Dest('더보기', Icons.more_horiz, Icons.more_horiz),

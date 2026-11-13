@@ -78,7 +78,7 @@ const _state = SceneState(
   camLook: 0,
 );
 
-/// 앱 셸(유리화 탭 → 성당) 안에서 성당에 들어가 장면 준비까지 진행한다.
+/// 앱 셸(성당 탭의 성당 보기) 안에서 성당에 들어가 장면 준비까지 진행한다.
 Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _enterViaShell(
   WidgetTester tester,
 ) async {
@@ -106,8 +106,6 @@ Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _enterViaShell(
       ),
     ),
   );
-  await tester.pumpAndSettle();
-  await tester.tap(_segment('성당'));
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('entry-enter')));
   await _p(tester);
@@ -199,7 +197,7 @@ void main() {
       await _startAnalytics();
       final (_, net, scene) = await _enterViaShell(tester);
       expect(find.byType(ChurchScreen), findsOneWidget);
-      // 성당 안에서는 [창 | 성당] 전환 줄이 숨는다(입장도 한 번이면 된다).
+      // 성당 안에서는 [성당 | 창] 전환 줄이 숨는다(입장도 한 번이면 된다).
       expect(find.byKey(const ValueKey('glass-segment')), findsNothing);
       final state = tester.state(find.byType(ChurchScreen));
       expect(scene.count('init'), 1);
@@ -230,7 +228,7 @@ void main() {
         reason: '보이지 않는 동안 기도 시간을 세지 않는다',
       );
 
-      await tester.tap(_nav('유리화'));
+      await tester.tap(_nav('성당'));
       await _p(tester);
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(ChurchScreen), findsOneWidget);
@@ -256,33 +254,50 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets("뒤로가기로 '창' 보기에 갔다가 '성당'으로 돌아와도 그대로다", (tester) async {
+    testWidgets("성당 안에서는 뒤로가기를 가로채지 않고(성당이 메인), '창'은 나온 뒤에 고른다", (
+      tester,
+    ) async {
       final (_, net, scene) = await _enterViaShell(tester);
       final state = tester.state(find.byType(ChurchScreen));
       scene.emit(const SceneWalkStart('altar'));
       await _p(tester);
       expect(find.byKey(const ValueKey('walk-chip')), findsOneWidget);
-
-      await tester.binding.handlePopRoute();
-      await _p(tester);
-      await tester.pump(const Duration(seconds: 1));
-      // 창 보기: 갤러리와 전환 줄이 보이고 성당은 숨어 멈춘다.
-      expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
-      expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
-      expect(find.byType(ChurchScreen), findsNothing);
-      expect(scene.count('pause'), 1);
-
-      await tester.tap(_segment('성당'));
-      await _p(tester);
-      await tester.pump(const Duration(seconds: 1));
+      // 성당 보기(메인)에서는 어떤 PopScope도 뒤로가기를 막지 않는다(앱 기본 동작).
+      expect(
+        tester
+            .widgetList<PopScope>(find.byType(PopScope))
+            .where((p) => !p.canPop),
+        isEmpty,
+      );
+      // 장면 안에서는 전환 줄이 숨고, 장면은 멈추지 않았다.
+      expect(find.byKey(const ValueKey('glass-segment')), findsNothing);
+      expect(scene.count('pause'), 0);
       expect(tester.state(find.byType(ChurchScreen)), same(state));
-      expect(find.byKey(const ValueKey('entry-enter')), findsNothing);
-      expect(scene.count('resume'), 1);
-      expect(scene.count('init'), 1);
-      expect(scene.count('cancelWalk'), 0);
-      // 걷던 중 표시(목적지)도 그대로.
       expect(find.byKey(const ValueKey('walk-chip')), findsOneWidget);
       expect(net.disconnects, 0);
+      Analytics.debugReset();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets("성당에서 나와 '창'을 보고 뒤로가기로 '성당'에 돌아온다", (tester) async {
+      await _startAnalytics();
+      final (_, net, scene) = await _enterViaShell(tester);
+      scene.emit(const ScenePos(3, 4, 0, false));
+      await _p(tester);
+      await tester.tap(find.byTooltip('성당 바꾸기'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ChurchScreen, skipOffstage: false), findsNothing);
+      expect(net.disconnects, 1);
+
+      await tester.tap(_segment('창'));
+      await _p(tester);
+      expect(find.byKey(const ValueKey('glass-today')), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await _p(tester);
+      expect(find.byKey(const ValueKey('glass-today')), findsNothing);
+      // 성당 보기: 방금 있던 선택 화면이 그대로다.
+      expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
+      expect(_screens().last, 'church_select');
       Analytics.debugReset();
       expect(tester.takeException(), isNull);
     });
@@ -350,7 +365,7 @@ void main() {
       await _p(tester);
       scene.emit(_state);
       await _p(tester);
-      await tester.tap(_nav('유리화'));
+      await tester.tap(_nav('성당'));
       await _p(tester);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString(ChurchResumeState.prefsKey), isNotNull);
@@ -401,7 +416,7 @@ void main() {
   });
 
   group("'입장'은 한 번만 누르면 된다", () {
-    // 예전에는 유리화 탭이 입장 순간 성당 보기를 감싸는 위젯 모양을 바꿔(머리줄 숨김) ChurchTab이
+    // 예전에는 성당 탭이 입장 순간 성당 보기를 감싸는 위젯 모양을 바꿔(머리줄 숨김) ChurchTab이
     // 새로 만들어졌고, 입장 상태가 풀려 입장 카드가 다시 떠서 [입장]을 두 번 눌러야 했다.
     Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> pumpShell(
       WidgetTester tester, {
@@ -433,10 +448,65 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(_segment('성당'));
-      await tester.pumpAndSettle();
       return (settings, net, scene);
     }
+
+    testWidgets('앱을 열면 성당 입장 카드가 바로 보이고 screen_view는 한 번만 남는다', (tester) async {
+      await _startAnalytics();
+      await pumpShell(tester);
+      expect(find.byKey(const ValueKey('entry-enter')), findsOneWidget);
+      expect(_screens(), ['church_entry']);
+      // 창 보기에 다녀와도(갤러리는 처음 고를 때 만든다) 성당 화면은 한 번만 만들어진다.
+      await tester.tap(_segment('창'));
+      await tester.pumpAndSettle();
+      await tester.tap(_segment('성당'));
+      await tester.pumpAndSettle();
+      expect(_screens(), ['church_entry', 'glass_gallery', 'church_entry']);
+      Analytics.debugReset();
+    });
+
+    testWidgets('처음(아바타 미선택)에는 성당 고르기가 바로 열린다', (tester) async {
+      await _startAnalytics();
+      await pumpShell(tester, avatarChosen: false);
+      expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
+      expect(find.byKey(const ValueKey('entry-enter')), findsNothing);
+      expect(_screens(), ['church_select']);
+      Analytics.debugReset();
+    });
+
+    testWidgets('다른 탭(오늘)으로 열면 성당 보기를 만들지 않고, 성당 탭에 오면 그때 만든다', (tester) async {
+      await _startAnalytics();
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings();
+      final services = AppServices.inMemory(settings);
+      addTearDown(services.disposeInMemory);
+      await tester.pumpWidget(
+        AppServicesScope(
+          services: services,
+          child: wrapApp(
+            AppShell(
+              settings: settings,
+              initialTab: AppShellTab.today,
+              glassCatalog: testGlassCatalogFuture(),
+              churchBuilder: (_) => ChurchTab(
+                settings: settings,
+                net: FakeChurchNet(),
+                scene: FakeChurchSceneController(),
+                availableIds: const {'basic'},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(ChurchTab, skipOffstage: false), findsNothing);
+      expect(_screens(), isEmpty);
+      await tester.tap(_nav('성당'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('entry-enter')), findsOneWidget);
+      expect(_screens(), ['church_entry']);
+      Analytics.debugReset();
+    });
 
     testWidgets('입장 카드의 [입장] 1번 → 성당 화면(ChurchTab이 새로 만들어지지 않는다)', (
       tester,
@@ -451,7 +521,7 @@ void main() {
       expect(find.byKey(const ValueKey('entry-enter')), findsNothing);
       expect(find.byKey(const ValueKey('entry-card')), findsNothing);
       expect(tester.state(find.byKey(const ValueKey('church-tab'))), same(tab));
-      // 머리줄([창 | 성당])은 숨는다.
+      // 머리줄([성당 | 창])은 숨는다.
       expect(find.byKey(const ValueKey('glass-segment')), findsNothing);
       scene.emit(const SceneReady());
       await _p(tester);
