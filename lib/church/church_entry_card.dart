@@ -32,7 +32,6 @@ class ChurchEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final fiction = info.id == ChurchCatalog.defaultId;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -107,9 +106,7 @@ class ChurchEntryCard extends StatelessWidget {
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      fiction
-                                          ? '${info.place} · ${info.kind}'
-                                          : '${info.place} · ${info.kind} · 실제의 ${info.scalePercent}%',
+                                      '${info.place} · ${info.kind}',
                                       style: theme.textTheme.bodyMedium
                                           ?.copyWith(
                                             color: scheme.onSurfaceVariant,

@@ -120,11 +120,6 @@
       });
     }
 
-    function inView(s, cam, minDot) {
-      vTo.set(s.x - cam.position.x, s.y - cam.position.y, s.z - cam.position.z);
-      var l = vTo.length() || 1;
-      return vTo.dot(vDir) / l >= minDot;
-    }
     function nearLimit(s) { return Math.max(4.5, s.y * 0.9 + s.h * 0.5); }
     function findNear(me, cam) {
       cam.getWorldDirection(vDir);

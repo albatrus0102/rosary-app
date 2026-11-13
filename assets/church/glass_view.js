@@ -17,14 +17,14 @@
   var GLASS_VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
   var SRGB_GLSL = 'vec3 s2l(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }\n';
   var GLASS_FS = 'uniform sampler2D uMapA; uniform sampler2D uMapB; uniform float uMix; uniform float uBias; uniform float uK; uniform vec3 uTint; uniform vec3 uRefl;\n' +
-    'uniform float uDecode; uniform float uSelfTone; uniform float uDebug; varying vec2 vUv;\n' + SRGB_GLSL +
+    'uniform float uDecode; uniform float uSelfTone; uniform float uDebug; uniform float uFade; varying vec2 vUv;\n' + SRGB_GLSL +
     'vec3 glassTM(vec3 c){ float p = max(c.r, max(c.g, c.b)); if (p <= 1.0) return c; float w = 1.0 - 1.0 / (1.0 + 0.6 * (p - 1.0)); return mix(c / p, vec3(1.0), w); }\n' +
     'void main(){\n' +
     ' vec4 a = texture2D(uMapA, vUv, uBias);\n' +
     ' if (uMix > 0.0) a = mix(a, texture2D(uMapB, vUv, uBias), uMix);\n' +
     ' if (uDecode > 0.5) a.rgb = s2l(a.rgb);\n' +
     ' float fw = max(fwidth(a.a), 1e-4);\n' +
-    ' float cov = clamp((a.a - 0.5) / fw + 0.5, 0.0, 1.0);\n' +
+    ' float cov = clamp((a.a - 0.5) / fw + 0.5, 0.0, 1.0) * uFade;\n' +
     ' if (cov < 0.004) discard;\n' +
     ' vec3 c = a.rgb * uK * uTint + uRefl;\n' +
     ' if (uDebug > 0.5) c = vec3(1.0);\n' +
@@ -43,6 +43,37 @@
     ' float rim = 0.0; if (od <= 0.0) { float na = texture2D(uMap, vW, 1.5).a; rim = smoothstep(0.02, 0.45, na); }\n' +
     ' gl_FragColor = vec4(glow, 1.0 - uRim * rim);\n' +
     '#include <encodings_fragment>\n}';
+
+  // gpack_<id>_<1k|2k>.js(data URI) 를 script 로 읽어 Image 로 돌려준다. 감상 모드와 성당 안 창(glass_place.js)이 같이 쓴다:
+  // 같은 팩을 동시에 부르면 한 번만 읽고 같은 Image 를 나눠 쓴다(문자열은 디코드 뒤 GC 되게 바로 놓는다).
+  var packFlight = {};
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script'); s.src = src; s.async = true;
+      s.onload = function () { s.parentNode && s.parentNode.removeChild(s); res(); };
+      s.onerror = function () { s.parentNode && s.parentNode.removeChild(s); rej(new Error('script ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function loadPackImage(id, tier) {
+    var key = GM.packKey(id, tier);
+    if (packFlight[key]) return packFlight[key];
+    var P = root.ChurchGlassPack = root.ChurchGlassPack || {};
+    var got = P[key] ? Promise.resolve() : loadScript(GM.packFile(id, tier));
+    var pr = got.then(function () {
+      var uri = P[key]; delete P[key];
+      if (!uri) throw new Error('texture');
+      return new Promise(function (res, rej) {
+        var img = new Image();
+        img.onload = function () { res(img); }; img.onerror = function () { rej(new Error('texture')); };
+        img.src = uri;
+      });
+    });
+    packFlight[key] = pr;
+    var done = function () { if (packFlight[key] === pr) delete packFlight[key]; };
+    pr.then(done, done);
+    return pr;
+  }
 
   function create(App, H) {
     var post = H.post;
@@ -71,14 +102,6 @@
 
     // ---------------- 카탈로그 ----------------
     var catIndex = null, catPromise = null;
-    function loadScript(src) {
-      return new Promise(function (res, rej) {
-        var s = document.createElement('script'); s.src = src; s.async = true;
-        s.onload = function () { s.parentNode && s.parentNode.removeChild(s); res(); };
-        s.onerror = function () { s.parentNode && s.parentNode.removeChild(s); rej(new Error('script ' + src)); };
-        document.head.appendChild(s);
-      });
-    }
     function loadCatalog() {
       if (catIndex) return Promise.resolve(catIndex);
       if (catPromise) return catPromise;
@@ -101,18 +124,7 @@
           img.src = (base || '') + GM.tierFile(id, tier);
         });
       }
-      var key = GM.packKey(id, tier);
-      var P = root.ChurchGlassPack = root.ChurchGlassPack || {};
-      var got = P[key] ? Promise.resolve() : loadScript(GM.packFile(id, tier));
-      return got.then(function () {
-        var uri = P[key]; delete P[key];   // 문자열은 디코드 뒤 GC 되게 바로 놓는다
-        if (!uri) throw new Error('texture');
-        return new Promise(function (res, rej) {
-          var img = new Image();
-          img.onload = function () { res(img); }; img.onerror = function () { rej(new Error('texture')); };
-          img.src = uri;
-        });
-      });
+      return loadPackImage(id, tier);
     }
     function tainted(img) {
       try { var c = document.createElement('canvas'); c.width = c.height = 1; var g = c.getContext('2d'); g.drawImage(img, 0, 0, 1, 1); g.getImageData(0, 0, 1, 1); return false; } catch (e) { return true; }
@@ -226,7 +238,7 @@
       var c = capsOf(), q = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, 1), new T.Vector3(s.nx, 0, s.nz));
       glassMat = new T.ShaderMaterial({
         uniforms: { uMapA: { value: null }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: LOD_BIAS }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
-          uDecode: { value: c.gl2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 } },
+          uDecode: { value: c.gl2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 1 } },
         vertexShader: GLASS_VS, fragmentShader: GLASS_FS, extensions: { derivatives: true },
         fog: false, lights: false, toneMapped: false, transparent: false, depthWrite: true,
         blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.SrcAlphaFactor, blendDst: T.OneMinusSrcAlphaFactor,
@@ -443,7 +455,10 @@
         startGlide(fromPos, fromQuat, fromFov, first ? GLIDE : GLIDE * 0.6);
       } else {
         // 지금 성당의 가장 가까운 창 자리(앞쪽에 있는 것)
+        // G-29: 그 창이 이 성당의 제자리에 걸려 있으면 그 자리(판은 걸린 사진 판 4mm 앞). 아니면 앞쪽의 가장 가까운 창 자리.
         var slots = App.world.windowSlots(), me = App.me, best = null, bd = 1e9;
+        var placed = App.place ? App.place.slotFor(V.win, me) : null;
+        if (placed) { best = { x: placed.x + placed.nx * 0.004, y: placed.y, z: placed.z + placed.nz * 0.004, nx: placed.nx, nz: placed.nz, w: placed.w, h: placed.h }; slots = []; }
         slots.forEach(function (s) {
           var dx = me.x - s.x, dz = me.z - s.z, front = dx * s.nx + dz * s.nz;
           if (front < 0.3) return;
@@ -585,5 +600,5 @@
     return V;
   }
 
-  root.ChurchGlassView = { create: create, FOV: FOV };
+  root.ChurchGlassView = { create: create, FOV: FOV, shaders: { vs: GLASS_VS, fs: GLASS_FS }, loadPackImage: loadPackImage };
 })(typeof window !== 'undefined' ? window : this);

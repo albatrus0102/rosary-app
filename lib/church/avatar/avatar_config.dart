@@ -9,7 +9,7 @@ import '../church_constants.dart';
 /// 사이버 성당 아바타 설정. 모든 값은 인덱스이며 항상 허용 범위로 맞춰진다.
 ///
 /// [gender]는 0 여성, 1 남성. [style]은 성별마다 따로 있는 머리 모양 0..3이고,
-/// [name]은 성별별 세례명 목록 안의 인덱스다(church_constants.dart 참고).
+/// [name]은 성별과 무관한 통합 세례명 목록([baptismalNames]) 안의 인덱스다.
 /// 색상표는 웹(`assets/church/palette.js`)과 같은 HEX 값을 가진다.
 @immutable
 class AvatarConfig {
@@ -38,12 +38,21 @@ class AvatarConfig {
       style: style.clamp(0, styleCount - 1),
       hair: hair.clamp(0, hairColors.length - 1),
       outfit: outfit.clamp(0, outfitColors.length - 1),
-      name: name.clamp(0, baptismalNamesFor(g).length - 1),
+      name: name >= 0 && name < baptismalNames.length
+          ? name
+          : defaultBaptismalNameIndex,
     );
   }
 
-  /// JSON에서 읽는다. `g`(성별)가 있으면 새 형식이고, 없으면 옛 형식(세례명이 옛 목록
-  /// 인덱스, 머리 모양이 옛 4종)으로 보고 성별과 이름·머리 모양을 옮겨 읽는다.
+  /// JSON에서 읽는다(저장값·와이어 공용). 이름 형식은 `nv`로 가린다.
+  ///
+  /// - `nv` = [avatarNameVersion]: `name`은 통합 목록 인덱스.
+  /// - `nv` 없음 + `g` 있음: 옛 형식. `name`은 옛 성별별 목록(여 65 / 남 71) 인덱스라
+  ///   이름을 거쳐 통합 목록 인덱스로 옮긴다.
+  /// - `nv`·`g` 둘 다 없음: 더 옛 형식(이름이 옛 40개 목록 인덱스, 머리 모양이 옛 4종).
+  ///   성별을 이름에서 유추하고 이름·머리 모양을 옮긴다.
+  ///
+  /// 어느 경우든 범위를 벗어난 이름은 기본 이름(마리아)이 된다.
   factory AvatarConfig.fromJson(Map<String, dynamic> json) {
     int read(String key) {
       final v = json[key];
@@ -52,9 +61,23 @@ class AvatarConfig {
     }
 
     final g = json['g'];
+    final nv = json['nv'];
+    final unified = nv is num && nv == avatarNameVersion;
     if (g is num && g.isFinite) {
+      final gender = g.toInt() == avatarMale ? avatarMale : avatarFemale;
       return AvatarConfig.clamped(
-        gender: g.toInt(),
+        gender: gender,
+        skin: read('skin'),
+        style: read('style'),
+        hair: read('hair'),
+        outfit: read('outfit'),
+        name: unified
+            ? read('name')
+            : migrateBaptismalName(read('name'), gender: gender),
+      );
+    }
+    if (unified) {
+      return AvatarConfig.clamped(
         skin: read('skin'),
         style: read('style'),
         hair: read('hair'),
@@ -62,10 +85,9 @@ class AvatarConfig {
         name: read('name'),
       );
     }
-    // 옛 형식: 0..19 여성 이름, 20..39 남성 이름.
-    final oldName = read('name').clamp(0, legacyBaptismalNames.length - 1);
+    // 가장 옛 형식: 0..19 여성 이름, 20..39 남성 이름.
+    final oldName = read('name');
     final gender = oldName >= 20 ? avatarMale : avatarFemale;
-    final newName = baptismalIndexOf(gender, legacyBaptismalNames[oldName]);
     final oldStyle = read('style').clamp(0, 3);
     return AvatarConfig.clamped(
       gender: gender,
@@ -73,8 +95,20 @@ class AvatarConfig {
       style: _legacyStyle[gender][oldStyle],
       hair: read('hair'),
       outfit: read('outfit'),
-      name: newName < 0 ? 0 : newName,
+      name: migrateBaptismalName(oldName),
     );
+  }
+
+  /// 저장된 JSON 문자열이 지금 형식(`nv` = [avatarNameVersion])인지. 아니면 읽은 뒤 다시
+  /// 저장해 한 번만 옮긴다(app/settings.dart).
+  static bool isCurrentFormat(String? source) {
+    if (source == null || source.isEmpty) return true;
+    try {
+      final decoded = jsonDecode(source);
+      return decoded is Map && decoded['nv'] == avatarNameVersion;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// 옛 머리 모양(짧은 머리·단발·올림머리·곱슬) → 성별별 새 머리 모양.
@@ -101,7 +135,7 @@ class AvatarConfig {
     style: 0,
     hair: 3,
     outfit: 5,
-    name: 0,
+    name: defaultBaptismalNameIndex,
   );
 
   /// 첫 입장 때 미리 골라 두는 모습: 성별·머리 모양·머리색·세례명(인기 이름 중)을
@@ -114,15 +148,20 @@ class AvatarConfig {
       style: random.nextInt(styleCount),
       hair: random.nextInt(4), // 검정·갈색 계열
       outfit: defaultConfig.outfit,
-      name: random.nextInt(popularBaptismalCount),
+      name: commonBaptismalIndicesFor(
+        g,
+      )[random.nextInt(popularBaptismalCount)],
     );
   }
 
   /// 성별마다의 머리 모양 개수.
   static const int styleCount = 4;
 
-  /// 성별별 세례명 개수.
-  static int nameCountFor(int gender) => baptismalNamesFor(gender).length;
+  /// 성별 [gender]에서 흔히 쓰는 이름 중 하나를 무작위로 고른다(통합 목록 인덱스).
+  static int randomCommonName(int gender, Random random) {
+    final pool = commonBaptismalIndicesFor(gender);
+    return pool[random.nextInt(pool.length)];
+  }
 
   // assets/church/palette.js(window.ChurchPalette)와 같은 HEX 값.
   static const List<Color> skinColors = [
@@ -233,10 +272,7 @@ class AvatarConfig {
   bool get isMale => gender == avatarMale;
 
   /// 이름표에 보일 세례명.
-  String get nameText {
-    final list = baptismalNamesFor(gender);
-    return list[name.clamp(0, list.length - 1)];
-  }
+  String get nameText => baptismalNameOf(name);
 
   List<String> get styleNameList => styleNamesFor(gender);
 
@@ -246,8 +282,8 @@ class AvatarConfig {
   Color get outfitColor =>
       outfitColors[outfit.clamp(0, outfitColors.length - 1)];
 
-  /// 성별을 바꾸면 세례명은 새 목록에 같은 이름이 있을 때 유지하고, 없으면 가장 인기 있는
-  /// 이름으로 바꾼다. 머리 모양 번호는 그대로 둔다(성별마다 모양이 다르다).
+  /// 성별을 바꿔도 세례명은 그대로다(이름 목록은 성별과 무관). 머리 모양 번호도 그대로
+  /// 둔다(성별마다 모양이 다르다).
   AvatarConfig withGender(int g) {
     if (g == gender) return this;
     return AvatarConfig.clamped(
@@ -256,7 +292,7 @@ class AvatarConfig {
       style: style,
       hair: hair,
       outfit: outfit,
-      name: convertBaptismalName(gender, name, g),
+      name: name,
     );
   }
 
@@ -283,6 +319,7 @@ class AvatarConfig {
     'outfit': outfit,
     'name': name,
     'g': gender,
+    'nv': avatarNameVersion,
   };
 
   String toJsonString() => jsonEncode(toJson());

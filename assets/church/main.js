@@ -55,6 +55,7 @@
   function loadWorld(id, vopts) {
     if (App.markers) { App.markers.dispose(); App.markers = null; }
     App.walkSt = null; App.pendingWalk = null; App.turn = null;
+    if (App.place) App.place.clear();   // 성당 안 사진 창(G-29): 월드를 버리기 전에 판·질감 해제
     if (App.world) { App.world.dispose(); App.world = null; }
     if (App.view) App.view.unpark();
     var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer, view: vopts && vopts.view });
@@ -69,6 +70,7 @@
       return;
     }
     App.net.setLogic(w.logic); App.crowd.setLogic(w.logic);
+    if (App.place) App.place.load(w);   // 이 성당의 진본 사진 창을 비동기로 건다(없거나 못 읽으면 절차적 유리 그대로)
     var sp = w.layout.spawn;
     var me = App.me;
     me.x = sp.x; me.z = sp.z; me.yaw = sp.r || 0; me.y = w.logic.floorY(sp.x, sp.z); me.vx = 0; me.vz = 0; me.mode = 'walk'; me.seat = null;
@@ -113,6 +115,7 @@
       App.net = root.ChurchNetView.create(App.scene);
       App.crowd = root.ChurchNetView.createCrowd(App.scene);
       App.view = root.ChurchGlassView.create(App, { start: start, loadWorld: loadWorld, kick: kick, post: post, resize: resize });
+      if (root.ChurchGlassPlace) App.place = root.ChurchGlassPlace.create(App, { post: post });
       resize();
       App.rafOn = true;   // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다
       loadWorld(church);
@@ -270,10 +273,12 @@
   }
   function tapAt(x, y) {
     if (viewing()) return;
-    if (!App.markers || !App.camera || App.me.mode !== 'walk' || !(x >= 0) || !(y >= 0)) return;
+    if (!App.camera || App.me.mode !== 'walk' || !(x >= 0) || !(y >= 0)) return;
     var w = root.innerWidth || 360, h = root.innerHeight || 640;
-    var hit = App.markers.pick(x / w * 2 - 1, -(y / h * 2 - 1), App.camera, w, h);
-    if (hit) walkTo({ kind: hit.kind, index: hit.index });
+    var hit = App.markers ? App.markers.pick(x / w * 2 - 1, -(y / h * 2 - 1), App.camera, w, h) : null;
+    if (hit) { walkTo({ kind: hit.kind, index: hit.index }); return; }
+    // 표식이 아니면 사진 창을 눌렀는지 본다(G-29) → {e:'glassTap'}
+    if (App.place) App.place.tap(x / w * 2 - 1, -(y / h * 2 - 1), App.camera);
   }
 
   var joy = { x: 0, y: 0 }, vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 };
@@ -464,6 +469,7 @@
     App.net.update(dt, App.t, now);
     App.crowd.update(dt, App.t);
     App.world.update(dt, App.t, App.me, App.camera);
+    if (App.place) App.place.update(dt, App.me, App.camera);
     if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     var chg = App.R.render(App.scene, App.camera, dt, App.world);

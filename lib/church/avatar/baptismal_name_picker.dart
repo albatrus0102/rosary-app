@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 
 import '../church_constants.dart';
 
-/// 세례명 고르기 화면을 전체 화면(M3 full-screen dialog)으로 열고, 고른 이름의 인덱스(성별
-/// 목록 기준)를 돌려준다. 닫으면 null. 성별은 호출한 화면에서 정하므로 여기서는 보여 주기만 한다.
+/// 세례명 고르기 화면을 전체 화면(M3 full-screen dialog)으로 열고, 고른 이름의 통합 목록
+/// 인덱스를 돌려준다. 닫으면 null. [gender]는 '많이 쓰는 이름' 구역을 고르는 데만 쓴다
+/// (이름 선택 범위는 성별과 무관하게 전체).
 Future<int?> showBaptismalNamePicker(
   BuildContext context, {
   required int gender,
@@ -81,8 +82,22 @@ class _Metrics {
 
 class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
   final TextEditingController _query = TextEditingController();
+  // 초성 묶음과 인기 이름은 한 번 계산해 둔 것을 쓴다(이름이 수천 개다).
   late final List<({String initial, List<int> indices})> _groups =
-      groupBaptismalNames(widget.gender);
+      groupBaptismalNames();
+  late final List<int> _popular = popularBaptismalIndices(widget.gender);
+
+  // 검색 결과는 검색어가 바뀔 때만 다시 구한다.
+  String _searched = '';
+  List<int> _results = const <int>[];
+
+  List<int> _search(String query) {
+    if (query != _searched) {
+      _searched = query;
+      _results = searchBaptismalNames(query);
+    }
+    return _results;
+  }
 
   ScrollController? _scroll;
   late _Metrics _metrics;
@@ -103,12 +118,12 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
 
   _Metrics _computeMetrics(BuildContext context) {
     final scaler = MediaQuery.textScalerOf(context);
-    final itemExtent = max(56.0, scaler.scale(16) * 1.5 + 20);
+    // 긴 이름은 두 줄까지 보여 준다(줄 높이 1.2 x 2줄 + 위아래 여백).
+    final itemExtent = max(56.0, scaler.scale(16) * _nameLineHeight * 2 + 16);
     final headerExtent = max(40.0, scaler.scale(14) * 1.5 + 18);
     final tail = MediaQuery.paddingOf(context).bottom + 16;
-    final popular = [for (var i = 0; i < popularBaptismalShown; i++) i];
     final entries = <(String, List<int>)>[
-      (_popularId, popular),
+      (_popularId, _popular),
       for (final g in _groups) (g.initial, g.indices),
     ];
     final sections = <_Section>[];
@@ -123,7 +138,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
   /// 처음 열 때의 스크롤 위치: 고른 이름이 '많이 쓰는 이름'에 있으면 맨 위, 아니면 가나다
   /// 목록 안의 그 이름이 화면 가운데쯤 오게 한다.
   double _initialOffset(double viewport) {
-    if (widget.selected < popularBaptismalShown) return 0;
+    if (_popular.contains(widget.selected)) return 0;
     for (var k = 1; k < _metrics.sections.length; k++) {
       final row = _metrics.sections[k].indices.indexOf(widget.selected);
       if (row >= 0) {
@@ -173,9 +188,9 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
     String? subtitle,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    final names = baptismalNamesFor(widget.gender);
+    final name = baptismalNames[i];
     final selected = i == widget.selected;
-    final letter = names[i].characters.first;
+    final letter = name.characters.first;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: ListTile(
@@ -206,8 +221,11 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
           ),
         ),
         title: Text(
-          names[i],
+          name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            height: _nameLineHeight,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
@@ -225,7 +243,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
     final text = Theme.of(context).textTheme;
     return Semantics(
       header: true,
-      label: s.popular ? '많이 쓰는 이름' : '초성 ${s.id}',
+      label: s.popular ? '많이 쓰는 이름' : _sectionLabel(s.id),
       excludeSemantics: true,
       child: Container(
         key: ValueKey('name-header-${s.id}'),
@@ -351,7 +369,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
       itemCount: results.length,
       itemBuilder: (context, k) {
         final i = results[k];
-        final alias = baptismalAliasMatch(widget.gender, i, _query.text);
+        final alias = baptismalAliasMatch(i, _query.text);
         return _tile(
           context,
           i,
@@ -375,12 +393,8 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final names = baptismalNamesFor(widget.gender);
-    final female = widget.gender != avatarMale;
     final searching = _query.text.trim().isNotEmpty;
-    final results = searching
-        ? searchBaptismalNames(widget.gender, _query.text)
-        : const <int>[];
+    final results = searching ? _search(_query.text) : const <int>[];
     _metrics = _computeMetrics(context);
     final scale = MediaQuery.textScalerOf(context).scale(16) / 16;
 
@@ -405,7 +419,7 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                 child: SearchBar(
                   key: const ValueKey('name-search'),
                   controller: _query,
-                  hintText: '이름 검색 (예: 요, 마리)',
+                  hintText: '이름 검색 (예: 마리, ㅁㄹㅇ)',
                   elevation: const WidgetStatePropertyAll(0),
                   backgroundColor: WidgetStatePropertyAll(
                     scheme.surfaceContainerHigh,
@@ -434,16 +448,15 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Chip(
-                        key: const ValueKey('name-gender'),
-                        avatar: Icon(female ? Icons.female : Icons.male),
+                        key: const ValueKey('name-count'),
                         label: Text(
-                          '${female ? '여성' : '남성'} 세례명 ${names.length}개',
+                          '세례명 ${_thousands(baptismalNames.length)}개',
                         ),
                         visualDensity: VisualDensity.compact,
                       ),
                       if (searching && results.isNotEmpty)
                         Text(
-                          '찾은 이름 ${results.length}개',
+                          '찾은 이름 ${_thousands(results.length)}개',
                           key: const ValueKey('name-result-count'),
                           style: Theme.of(context).textTheme.labelLarge
                               ?.copyWith(color: scheme.onSurfaceVariant),
@@ -510,8 +523,21 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
   }
 }
 
+/// 이름 한 줄의 줄 높이 배수(두 줄까지 한 칸에 들어가게 조금 촘촘히).
+const double _nameLineHeight = 1.2;
+
+/// 1234 → '1,234'.
+String _thousands(int n) => n.toString().replaceAllMapped(
+  RegExp(r'\B(?=(\d{3})+$)'),
+  (_) => ',',
+);
+
+String _sectionLabel(String id) =>
+    id == baptismalOtherInitial ? '그 밖의 이름' : '초성 $id';
+
 String _railLabel(String id) {
   if (id == _popularId) return '많이 쓰는 이름으로 이동';
+  if (id == baptismalOtherInitial) return '그 밖의 이름으로 이동';
   // 'ㄹ' 뒤에만 '로', 나머지 자음 이름(기역, 니은…)은 '으로'.
   return '초성 $id${id == 'ㄹ' ? '로' : '으로'} 이동';
 }

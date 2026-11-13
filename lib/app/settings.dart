@@ -75,9 +75,12 @@ class AppSettings extends ChangeNotifier {
     _shortPrayers = _prefs.getBool(_kShortPrayers) ?? false;
     _shortPrayersAsked = _prefs.getBool(_kShortPrayersAsked) ?? false;
     _savedPrayer = _readSavedPrayer();
-    _churchAvatar = AvatarConfig.fromJsonString(
-      _prefs.getString(_kChurchAvatar),
-    );
+    final storedAvatar = _prefs.getString(_kChurchAvatar);
+    _churchAvatar = AvatarConfig.fromJsonString(storedAvatar);
+    // 옛 형식(성별별 세례명 인덱스)으로 저장돼 있으면 통합 목록 형식으로 한 번만 옮겨 적는다.
+    if (!AvatarConfig.isCurrentFormat(storedAvatar)) {
+      _prefs.setString(_kChurchAvatar, _churchAvatar.toJsonString());
+    }
     _churchAvatarChosen = _prefs.getBool(_kChurchAvatarChosen) ?? false;
     _churchAmbient = _prefs.getBool(_kChurchAmbient) ?? true;
     _churchId = ChurchCatalog.resolve(_prefs.getString(_kChurchId)).id;

@@ -77,7 +77,7 @@
     var S_ = ctx._ = {
       colliders: [], zones: [], lights: [], glows: [], flames: [], beams: [], hourHooks: [], updateHooks: [],
       cameraBounds: null, sky: { outside: false }, thumb: null, candleStands: [], lamps: [],
-      walls: [], windows: [], roses: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {},
+      walls: [], windows: [], roses: [], glassSlots: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {},
       lampSlots: [], batches: B_
     };
 
@@ -272,6 +272,17 @@
     ctx.envOverride = function (fn) { S_.envOverride = fn; };
     // 감상실의 창 자리 등록(GlassView 가 사진 창을 이 자리에 끼운다)
     ctx.setViewSlot = function (o) { S_.viewSlot = o; };
+    // G-29 성당 안 진본 창: 대응표(glass_placements.js)에서 이 성당·슬롯·자리 번호에 걸 사진 창을 찾는다 → {win, aspect, slot, index, shape} | null.
+    // 빌더는 개구부를 그 비율(aspect = 가로/세로)에 맞춰 짓고, ctx.window/ctx.rose 에 photo 로 넘기거나 ctx.glassSlot 으로 자리를 알린다.
+    ctx.glassPhoto = function (slot, index) { var GP = root.ChurchGlassPlacements; return GP ? GP.forSlot(layout.id, slot, index || 0) : null; };
+    // 사진 판 자리: {photo, x, y(중심), z, face:[nx,nz](실내 방향), w, h, fallback?:[Object3D], glows?:[glow 항목]}
+    ctx.glassSlot = function (o) {
+      if (!o || !o.photo) return null;
+      var n = o.face, nl = Math.sqrt(n[0] * n[0] + n[1] * n[1]) || 1;
+      var s = { win: o.photo.win, slot: o.photo.slot, index: o.photo.index, shape: o.photo.shape, x: o.x, y: o.y, z: o.z, nx: n[0] / nl, nz: n[1] / nl, w: o.w, h: o.h, fallback: o.fallback || null, glows: o.glows || null };
+      S_.glassSlots.push(s);
+      return s;
+    };
     ctx.setAO = function (o) { if (o === false) S_.aoOn = false; else { S_.aoOn = true; S_.aoOpts = o || {}; } };
     ctx.addLight = function (o) {
       if (S_.lights.length >= 1) { if (root.console) console.warn('[church] only one builder point light allowed; ignored'); return null; }

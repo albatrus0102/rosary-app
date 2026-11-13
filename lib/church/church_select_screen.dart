@@ -7,8 +7,7 @@ import 'church_catalog.dart';
 /// 정렬 기준.
 enum ChurchSort {
   recommended('추천순'),
-  name('이름순'),
-  scale('축소 비율순');
+  name('이름순');
 
   const ChurchSort(this.label);
   final String label;
@@ -101,7 +100,6 @@ class ChurchSelectScreen extends StatefulWidget {
       final byKey = switch (sort) {
         ChurchSort.recommended => 0,
         ChurchSort.name => a.nameKo.compareTo(b.nameKo),
-        ChurchSort.scale => b.scalePercent - a.scalePercent,
       };
       return byKey != 0 ? byKey : order[a.id]! - order[b.id]!;
     });
@@ -113,7 +111,7 @@ class ChurchSelectScreen extends StatefulWidget {
 }
 
 class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
-  static const String _note = '실제 건축을 단순화한 3D 모형이며 실제 크기의 %d%%입니다';
+  static const String _note = '실제 건축을 단순화한 3D 모형입니다';
 
   final TextEditingController _search = TextEditingController();
   String _query = '';
@@ -161,7 +159,7 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
 
   static String _noteFor(ChurchInfo info) => info.id == ChurchCatalog.defaultId
       ? '실제 성당이 아닌 가상의 본당입니다'
-      : _note.replaceFirst('%d%%', '${info.scalePercent}%');
+      : _note;
 
   void _resetFilters() => setState(() {
     _region = null;
@@ -534,7 +532,6 @@ class _ChurchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final fiction = info.id == ChurchCatalog.defaultId;
     final fg = available ? scheme.onSurface : scheme.onSurfaceVariant;
     return Semantics(
       button: true,
@@ -654,7 +651,6 @@ class _ChurchCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 4,
                       children: [
-                        if (!fiction) _Tag('실제의 ${info.scalePercent}%'),
                         _Tag(info.kind),
                       ],
                     ),

@@ -402,10 +402,12 @@ class BaptismalNameField extends StatelessWidget {
           key: const ValueKey('name-change'),
           minTileHeight: 56,
           contentPadding: const EdgeInsetsDirectional.only(start: 16, end: 8),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: AlignmentDirectional.centerStart,
-            child: Text(config.nameText, style: nameStyle, maxLines: 1),
+          // 긴 이름('히야친토 조르다노 안살로네' 등)은 두 줄까지, 그래도 넘치면 말줄임.
+          title: Text(
+            config.nameText,
+            style: nameStyle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
           onTap: () => _open(context),

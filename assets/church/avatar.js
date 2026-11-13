@@ -4,7 +4,7 @@
    - 근접(LOD0) <= 약 6k 삼각형, 중간(LOD1) <= 약 1.5k, 원거리(LOD2)는 비스킨 임포스터(약 300).
    - 성별(cfg.g: 0 여성, 1 남성): 머리 모양 4종×2성별(사실적인 단발/어깨 길이/포니테일/낮은 쪽머리, 짧게 친 머리/가르마/웨이브/넓은 이마),
      체형(어깨·가슴·허리·엉덩이 폭), 턱선, 목, 눈썹 굵기가 조금씩 다르다. 뼈 길이와 자세는 그대로(스케일만 다름).
-     g 가 없는 옛 설정은 옛 세례명 인덱스에서 성별을 유추해 옮긴다(setConfig 의 normalizeCfg).
+     세례명(cfg.name)은 통합 목록 인덱스(cfg.nv = 2). nv 없는 옛 설정은 setConfig 의 normalizeCfg 가 옮긴다(g 도 없으면 성별을 유추).
    - 공개 API(변경 없음): new Avatar(cfg, {showTag, self}), root, setConfig, setLod(0|1|2), lod, setWalk, setSeated, setPray, playEmote(0 인사|1 성호|2 절),
      setPose(x,y,z,yaw), snapPose(), update(dt,t), nod/nodPh, seatLift, ChurchAvatar.tagMaterial/HEIGHT.
    좌표: 앞 = -z, 위 = +y, +x = 아바타의 오른쪽. 휴식 자세(팔이 아래로 늘어진 자세)로 모델링하고 뼈 회전으로 포즈를 만든다. */
@@ -723,25 +723,27 @@
 
   // ------------------------------------------------------------------ 이름표·그림자
   var tagCache = {};
-  function nameList(g) { return g === 1 ? P.namesM : P.namesF; }
-  function tagMaterial(g, nameIdx) {
-    var ck = g + '_' + nameIdx;
+  // 세례명: 통합 목록(baptismal_names.js 의 ChurchNames.list) 인덱스. 같은 이름은 텍스처(256x64) 한 장을 함께 쓴다.
+  function NAMES() { return root.ChurchNames; }
+  function tagMaterial(nameIdx) {
+    var ck = 'n' + nameIdx;
     if (tagCache[ck]) return tagCache[ck];
-    var text = nameList(g)[nameIdx] || '';
+    var text = NAMES().list[nameIdx] || '';
     var c = G.makeCanvas(256, 64), g = c.getContext('2d');
-    // 긴 이름('마리아 막달레나' 등)은 알약 안에 들어가도록 글자 크기를 줄인다(최소 16px). 그래도 넘치면 알약 폭이 최대(236)다.
-    var fs = 27, FAM = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
-    g.font = '600 ' + fs + 'px ' + FAM;
-    var tw = g.measureText(text).width;
-    if (tw > 202) { fs = Math.max(16, Math.floor(27 * 202 / tw)); g.font = '600 ' + fs + 'px ' + FAM; tw = g.measureText(text).width; }
-    var w = Math.min(236, tw + 34), x = (256 - w) / 2;
+    // 긴 이름은 알약 안에 들어가도록 글자 크기를 줄이고(최소 16px), 그래도 넘치면 두 줄로 나눈다(label_fit.js 의 tagLayout).
+    // 알약 높이(40)는 그대로다. 폭은 가장 넓은 줄에 맞추고 최대 236.
+    var FAM = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif', LF = root.ChurchLabelFit;
+    function measure(str, fs) { g.font = '600 ' + fs + 'px ' + FAM; return g.measureText(str).width; }
+    var lay = LF.tagLayout(text, measure), ys = LF.tagLineYs(lay, 33), li;
+    g.font = '600 ' + lay.fs + 'px ' + FAM;
+    var w = Math.min(236, lay.w + 34), x = (256 - w) / 2;
     g.fillStyle = 'rgba(250,246,238,0.80)';
     g.beginPath();
     if (g.roundRect) g.roundRect(x, 12, w, 40, 20); else g.rect(x, 12, w, 40);
     g.fill();
     g.lineWidth = 1.5; g.strokeStyle = 'rgba(90,70,55,0.25)'; g.stroke();
     g.fillStyle = '#3d312a'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(text, 128, 33);
+    for (li = 0; li < lay.lines.length; li++) g.fillText(lay.lines[li], 128, ys[li]);
     var t = new T.CanvasTexture(c);
     t.encoding = T.sRGBEncoding;
     var m = new T.SpriteMaterial({ map: t, transparent: true, depthWrite: false, fog: false });
@@ -841,19 +843,23 @@
   };
   // 옛 머리 모양(짧은 머리·단발·올림머리·곱슬) → 성별별 새 머리 모양(Flutter AvatarConfig._legacyStyle 과 같다)
   var LEGACY_STYLE = [[0, 0, 3, 1], [1, 0, 0, 2]];
-  // 입력(cfg)을 허용 범위의 {g, skin, style, hair, outfit, name}으로 맞춘다. g 가 없으면 옛 형식으로 보고 옮긴다.
+  // 입력(cfg)을 허용 범위의 {g, skin, style, hair, outfit, name, nv}으로 맞춘다. name 은 통합 세례명 목록 인덱스(nv = 2).
+  // nv 가 2 가 아니면 옛 형식으로 보고 옮긴다(Flutter AvatarConfig.fromJson 과 같다):
+  //   g 있음 = 옛 성별별 목록 인덱스(oldF/oldM), g 없음 = 옛 40개 목록 인덱스(legacy; 성별도 이름에서 유추).
+  // 범위를 벗어난 이름은 기본 이름(def = 마리아).
   function normalizeCfg(cfg) {
     cfg = cfg || {};
     function iv(v) { v = v | 0; return v < 0 ? 0 : v; }
-    var g, name, style = iv(cfg.style) % 4;
-    if (cfg.g === 0 || cfg.g === 1) { g = cfg.g; name = iv(cfg.name); }
+    var N = NAMES(), g, name = iv(cfg.name), style = iv(cfg.style) % 4, hasG = cfg.g === 0 || cfg.g === 1, tab;
+    if (cfg.nv === 2) { g = cfg.g === 1 ? 1 : 0; if (name >= N.list.length) name = N.def; }
+    else if (hasG) { g = cfg.g; tab = g === 1 ? N.oldM : N.oldF; name = name < tab.length ? tab[name] : N.def; }
     else {
-      var old = iv(cfg.name) % P.namesLegacy.length;
+      var old = name % N.legacy.length;
       g = old >= 20 ? 1 : 0;
-      name = Math.max(0, nameList(g).indexOf(P.namesLegacy[old]));
+      name = N.legacy[old];
       style = LEGACY_STYLE[g][style];
     }
-    return { g: g, skin: iv(cfg.skin) % 4, style: style, hair: iv(cfg.hair) % 10, outfit: iv(cfg.outfit) % 12, name: name % nameList(g).length };
+    return { g: g, skin: iv(cfg.skin) % 4, style: style, hair: iv(cfg.hair) % 10, outfit: iv(cfg.outfit) % 12, name: name, nv: 2 };
   }
   Avatar.prototype.setConfig = function (cfg) {
     var c = normalizeCfg(cfg);
@@ -861,8 +867,8 @@
     this.key = c.g + '_' + c.skin + '_' + c.style + '_' + c.hair + '_' + c.outfit;
     this._applyGeom();
     if (this.showTag) {
-      if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.g, c.name)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 1.9; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
-      else this.tag.material = tagMaterial(c.g, c.name);
+      if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.name)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 1.9; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
+      else this.tag.material = tagMaterial(c.name);
     }
   };
   Avatar.prototype._mesh = function (level, kind) {

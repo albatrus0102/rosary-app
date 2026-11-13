@@ -71,10 +71,10 @@ void main() {
       -300,
       scrollable: _vScroll,
     );
-    // 첫 구역의 카드 내용: 이름, 도시, 비율 칩, 종류.
+    // 첫 구역의 카드 내용: 이름, 도시, 종류. 축소 비율 문구는 없다.
     await _reveal(tester, _card('stpeter'));
     expect(find.text('성 베드로 대성전'), findsOneWidget);
-    expect(find.textContaining('실제의 '), findsWidgets);
+    expect(find.textContaining('실제의 '), findsNothing);
     // 썸네일이 없어도 색 블록으로 대체되므로 예외가 없다.
     expect(find.byType(Image), findsWidgets);
     expect(tester.takeException(), isNull);
@@ -143,7 +143,7 @@ void main() {
     );
     expect(find.text('설명 준비 중'), findsOneWidget);
     expect(
-      find.text('실제 건축을 단순화한 3D 모형이며 실제 크기의 ${info.scalePercent}%입니다'),
+      find.text('실제 건축을 단순화한 3D 모형입니다'),
       findsOneWidget,
     );
     expect(find.textContaining(info.kind), findsWidgets);
@@ -287,8 +287,6 @@ void main() {
     expect({favs[0].id, favs[1].id}, {'stpeter', 'basic'});
     final rec = ChurchSelectScreen.arrange(all);
     expect(rec.first.id, all.first.id);
-    final scale = ChurchSelectScreen.arrange(all, sort: ChurchSort.scale);
-    expect(scale.first.scalePercent, 100);
   });
 
   testWidgets('favorite toggle persists in settings', (tester) async {
@@ -332,9 +330,9 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('chip-sort')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(MenuItemButton, '축소 비율순'));
+    await tester.tap(find.widgetWithText(MenuItemButton, '이름순'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(FilterChip, '축소 비율순'), findsOneWidget);
+    expect(find.widgetWithText(FilterChip, '이름순'), findsOneWidget);
     await tester.ensureVisible(find.byKey(const ValueKey('chip-region')));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('chip-region')));

@@ -40,7 +40,6 @@ class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
 
   /// 성별은 그대로 두고 나머지를 무작위로 바꾼다.
   void _randomize() {
-    final names = AvatarConfig.nameCountFor(_config.gender);
     _update(
       AvatarConfig(
         gender: _config.gender,
@@ -48,7 +47,7 @@ class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
         style: _random.nextInt(AvatarConfig.styleCount),
         hair: _random.nextInt(AvatarConfig.hairColors.length),
         outfit: _random.nextInt(AvatarConfig.outfitColors.length),
-        name: _random.nextInt(names),
+        name: AvatarConfig.randomCommonName(_config.gender, _random),
       ),
     );
   }

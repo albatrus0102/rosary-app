@@ -1,6 +1,11 @@
 /// 사이버 성당 공용 상수 (SPEC §1, §2, §4).
 library;
 
+import 'baptismal_names_data.dart';
+
+export 'baptismal_names_data.dart'
+    show baptismalNameCount, defaultBaptismalNameIndex;
+
 /// 서버 설정. [serverUrl]이 빈 문자열이면 혼자 모드만 동작한다.
 ///
 /// 배포 후 빌드 시 `--dart-define=CHURCH_SERVER_URL=wss://host/ws` 로 주입하거나
@@ -30,215 +35,68 @@ abstract final class ChurchConfig {
   }
 }
 
-/// 아바타 성별 값(와이어 `g`): 0 여성, 1 남성.
+/// 아바타 성별 값(와이어 `g`): 0 여성, 1 남성. 아바타 외형에만 쓴다(세례명 범위와 무관).
 const int avatarFemale = 0;
 const int avatarMale = 1;
 
 /// 세례명 인덱스 상한(서버 `NAME_MAX`와 같다). 와이어의 `name`은 0..[baptismalNameMaxIndex].
 ///
-/// 방식: `name`은 **성별(`g`)별 목록 안의 인덱스**다. `g=0`이면 [femaleBaptismalNames],
-/// `g=1`이면 [maleBaptismalNames]를 본다. 두 목록은 각각 100개 이하여야 한다.
-/// `g`가 없는 옛 클라이언트의 `name`은 [legacyBaptismalNames] 인덱스(0..39)다.
-const int baptismalNameMaxIndex = 99;
+/// 방식: `name`은 성별과 무관한 **통합 세례명 목록**([baptismalNames]) 안의 인덱스다.
+/// 아바타 JSON 의 `nv`가 [avatarNameVersion]이면 이 형식이고, `nv`가 없으면 옛 형식
+/// (성별별 목록 인덱스, 또는 `g`도 없으면 옛 40개 목록 인덱스)이라 [migrateBaptismalName]으로
+/// 옮겨 읽는다.
+const int baptismalNameMaxIndex = 4095;
 
-/// 인기 순으로 칩에 크게 보여 줄 세례명 개수(각 목록의 앞쪽).
+/// 아바타 JSON 의 이름 형식 버전(`nv`). 2 = 통합 목록 인덱스.
+const int avatarNameVersion = 2;
+
+/// 첫 입장 때 무작위로 고르는 인기 세례명 개수(성별별 인기순 앞쪽).
 const int popularBaptismalCount = 12;
 
-/// 세례명 고르기 화면의 '많이 쓰는 이름' 구역에 보여 줄 개수(각 목록의 앞쪽).
+/// 세례명 고르기 화면의 '많이 쓰는 이름' 구역에 보여 줄 개수(성별별 인기순 앞쪽).
 const int popularBaptismalShown = 8;
 
-/// 여성 세례명(앞 12개가 인기순 상위). 순서 고정: 인덱스가 곧 와이어 값이다.
-const List<String> femaleBaptismalNames = [
-  '마리아',
-  '안나',
-  '엘리사벳',
-  '데레사',
-  '아녜스',
-  '루치아',
-  '마르타',
-  '클라라',
-  '카타리나',
-  '체칠리아',
-  '비비안나',
-  '율리안나',
-  '헬레나',
-  '모니카',
-  '로사',
-  '막달레나',
-  '소피아',
-  '젬마',
-  '베로니카',
-  '에밀리아',
-  '아가타',
-  '바르바라',
-  '마르가리타',
-  '도로테아',
-  '프란체스카',
-  '로살리아',
-  '리디아',
-  '마틸다',
-  '브리지다',
-  '사비나',
-  '수산나',
-  '스콜라스티카',
-  '안젤라',
-  '에디타',
-  '오틸리아',
-  '우르술라',
-  '유스티나',
-  '이레네',
-  '크리스티나',
-  '파비올라',
-  '프리스카',
-  '필로메나',
-  '율리아',
-  '레지나',
-  '베아트리체',
-  '클라우디아',
-  '라우라',
-  '마리나',
-  '마르첼라',
-  '데보라',
-  '레베카',
-  '리타',
-  '사라',
-  '아나스타시아',
-  '에우페미아',
-  '에스테르',
-  '요안나',
-  '카롤리나',
-  '카밀라',
-  '콜레타',
-  '테클라',
-  '펠리치타스',
-  '플로라',
-  '힐데가르트',
-  '게르트루다',
-];
+/// 통합 세례명 목록(성별 구분 없음, 가나다순 + 끝에 옛 목록에만 있던 이름). 순서 고정:
+/// 인덱스가 곧 와이어 값이다. `tools/names/build_names.py`가 만든 데이터에서 한 번만 푼다.
+final List<String> baptismalNames = List.unmodifiable(
+  baptismalNamesJoined.split('\n'),
+);
 
-/// 남성 세례명(앞 12개가 인기순 상위). 순서 고정: 인덱스가 곧 와이어 값이다.
-const List<String> maleBaptismalNames = [
-  '요셉',
-  '베드로',
-  '바오로',
-  '요한',
-  '안드레아',
-  '토마스',
-  '프란치스코',
-  '미카엘',
-  '가브리엘',
-  '라파엘',
-  '스테파노',
-  '마르코',
-  '루카',
-  '마태오',
-  '야고보',
-  '필립보',
-  '바르톨로메오',
-  '시몬',
-  '유다 타대오',
-  '마티아',
-  '이냐시오',
-  '알로이시오',
-  '도미니코',
-  '베네딕토',
-  '아우구스티노',
-  '요아킴',
-  '라우렌시오',
-  '세바스티아노',
-  '니콜라오',
-  '다니엘',
-  '안토니오',
-  '빈첸시오',
-  '레오',
-  '비오',
-  '그레고리오',
-  '암브로시오',
-  '바실리오',
-  '보나벤투라',
-  '예로니모',
-  '클레멘스',
-  '막시밀리아노',
-  '마르티노',
-  '루도비코',
-  '로베르토',
-  '가롤로',
-  '카밀로',
-  '펠릭스',
-  '다미아노',
-  '에드문도',
-  '에우세비오',
-  '아드리아노',
-  '알베르토',
-  '엘리야',
-  '율리오',
-  '디오니시오',
-  '이시도로',
-  '크리스토포로',
-  '에우제니오',
-  '치릴로',
-  '메토디오',
-  '라자로',
-  '모세',
-  '레오나르도',
-  '안셀모',
-  '베르나르도',
-  '보니파시오',
-  '실베스테르',
-  '마르첼로',
-  '아타나시오',
-  '스타니슬라오',
-  '파트리치오',
-];
+final Map<String, int> _nameIndex = {
+  for (var i = 0; i < baptismalNames.length; i++) baptismalNames[i]: i,
+};
 
-/// 성별 `g`에 맞는 세례명 목록(0 여성, 그 밖은 남성).
-List<String> baptismalNamesFor(int gender) =>
-    gender == avatarMale ? maleBaptismalNames : femaleBaptismalNames;
+/// 인덱스 [index]의 세례명. 범위를 벗어나면 기본 이름(마리아).
+String baptismalNameOf(int index) =>
+    baptismalNames[index >= 0 && index < baptismalNames.length
+        ? index
+        : defaultBaptismalNameIndex];
 
-/// 옛 클라이언트(성별 필드 `g` 없음)가 쓰던 세례명 목록(인덱스 0..39).
-/// 0..19는 여성, 20..39는 남성이었다. 옛 저장값·옛 상대방을 읽을 때만 쓴다.
-const List<String> legacyBaptismalNames = [
-  '마리아',
-  '안나',
-  '엘리사벳',
-  '마르타',
-  '데레사',
-  '아녜스',
-  '체칠리아',
-  '클라라',
-  '루치아',
-  '막달레나',
-  '소피아',
-  '로사',
-  '카타리나',
-  '베로니카',
-  '젬마',
-  '모니카',
-  '비비안나',
-  '율리안나',
-  '헬레나',
-  '에밀리아',
-  '베드로',
-  '바오로',
-  '요한',
-  '요셉',
-  '안드레아',
-  '토마스',
-  '프란치스코',
-  '미카엘',
-  '가브리엘',
-  '라파엘',
-  '스테파노',
-  '마르코',
-  '루카',
-  '마태오',
-  '야고보',
-  '필립보',
-  '시몬',
-  '다미아노',
-  '아우구스티노',
-  '베네딕토',
-];
+/// 통합 목록에서 [name]의 인덱스. 없으면 -1.
+int baptismalIndexOf(String name) => _nameIndex[name] ?? -1;
+
+/// 성별 [gender]에서 흔히 쓰는 이름들의 통합 목록 인덱스(인기순; 여성 65개, 남성 71개).
+/// '많이 쓰는 이름'·무작위 고르기에 쓴다. 이름 선택 범위 자체는 성별과 무관하게 전체다.
+List<int> commonBaptismalIndicesFor(int gender) =>
+    gender == avatarMale ? oldMaleNameIndices : oldFemaleNameIndices;
+
+/// 성별 [gender]의 인기 이름 [count]개(통합 목록 인덱스, 인기순).
+List<int> popularBaptismalIndices(
+  int gender, [
+  int count = popularBaptismalShown,
+]) => commonBaptismalIndicesFor(gender).take(count).toList(growable: false);
+
+/// 옛 형식의 세례명 인덱스를 통합 목록 인덱스로 옮긴다. [gender]가 있으면 옛 성별별 목록
+/// 인덱스, null이면 `g`가 없던 옛 40개 목록 인덱스다. 범위를 벗어나면 기본 이름(마리아).
+int migrateBaptismalName(int oldIndex, {int? gender}) {
+  final table = gender == null
+      ? legacyNameIndices
+      : commonBaptismalIndicesFor(gender);
+  if (oldIndex < 0 || oldIndex >= table.length) {
+    return defaultBaptismalNameIndex;
+  }
+  return table[oldIndex];
+}
 
 /// 검색 때 같은 이름으로 취급하는 다른 표기(개신교·외래식 표기 포함). 정식 이름 → 별칭.
 const Map<String, List<String>> baptismalNameAliases = {
@@ -281,21 +139,64 @@ const Map<String, List<String>> baptismalNameAliases = {
   '알로이시오': ['알로이시우스'],
 };
 
-/// 세례명 검색. [query]가 비면 전체를 돌려준다. 앞부분이 맞는 이름을 먼저, 그다음 포함하는
-/// 이름(별칭 포함)을 원래(인기) 순서대로 돌려준다. 공백은 무시한다. 결과는 목록 인덱스.
-List<int> searchBaptismalNames(int gender, String query) {
-  final names = baptismalNamesFor(gender);
+// 가나다순으로 늘어놓은 통합 목록 인덱스(끝에 덧붙인 이름도 제자리에 들어간다). 한 번만 계산.
+final List<int> _sortedNameOrder = List.unmodifiable(
+  [for (var i = 0; i < baptismalNames.length; i++) i]
+    ..sort((a, b) => baptismalNames[a].compareTo(baptismalNames[b])),
+);
+
+const String _choseongCompat = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+
+/// 글의 한글 음절을 초성 글자로 바꾼다(공백 제거, 다른 글자는 그대로). 예: '마리아' → 'ㅁㄹㅇ'.
+String baptismalChoseong(String text) {
+  final b = StringBuffer();
+  for (final r in text.runes) {
+    if (r == 0x20) continue;
+    final code = r - 0xAC00;
+    if (code >= 0 && code <= 11171) {
+      b.write(_choseongCompat[code ~/ 588]);
+    } else {
+      b.writeCharCode(r);
+    }
+  }
+  return b.toString();
+}
+
+// 검색용 색인(이름마다 공백 뺀 이름, 초성 줄, 공백 뺀 별칭). 처음 검색할 때 한 번만 만든다.
+final List<({String plain, String initials, List<String> aliases})>
+_searchIndex = List.unmodifiable([
+  for (final n in baptismalNames)
+    (
+      plain: n.replaceAll(' ', ''),
+      initials: baptismalChoseong(n),
+      aliases: [
+        for (final a in baptismalNameAliases[n] ?? const <String>[])
+          a.replaceAll(' ', ''),
+      ],
+    ),
+]);
+
+final RegExp _onlyChoseong = RegExp('^[ㄱ-ㅎ]+\$');
+
+/// 세례명 검색. [query]가 비면 전체(가나다순)를 돌려준다. 앞부분이 맞는 이름을 먼저, 그다음
+/// 포함하는 이름(별칭 포함)을 가나다순으로 돌려준다. 공백은 무시한다. 검색어가 자음만이면
+/// (예: 'ㅁㄹㅇ') 초성으로 찾는다. 결과는 통합 목록 인덱스.
+List<int> searchBaptismalNames(String query) {
   final q = query.replaceAll(RegExp(r'\s+'), '');
-  if (q.isEmpty) return [for (var i = 0; i < names.length; i++) i];
+  if (q.isEmpty) return _sortedNameOrder;
+  final byInitials = _onlyChoseong.hasMatch(q);
   final starts = <int>[], contains = <int>[];
-  for (var i = 0; i < names.length; i++) {
-    final terms = [
-      names[i],
-      ...?baptismalNameAliases[names[i]],
-    ].map((t) => t.replaceAll(' ', '')).toList();
-    if (terms.any((t) => t.startsWith(q))) {
+  for (final i in _sortedNameOrder) {
+    final e = _searchIndex[i];
+    if (byInitials) {
+      if (e.initials.startsWith(q)) {
+        starts.add(i);
+      } else if (e.initials.contains(q)) {
+        contains.add(i);
+      }
+    } else if (e.plain.startsWith(q) || e.aliases.any((t) => t.startsWith(q))) {
       starts.add(i);
-    } else if (terms.any((t) => t.contains(q))) {
+    } else if (e.plain.contains(q) || e.aliases.any((t) => t.contains(q))) {
       contains.add(i);
     }
   }
@@ -320,6 +221,9 @@ const List<String> baptismalInitials = [
   'ㅎ',
 ];
 
+/// 한글로 시작하지 않는 이름(숫자·영문 등)을 묶는 구역 이름.
+const String baptismalOtherInitial = '#';
+
 // 한글 음절의 초성 19개(유니코드 순서)를 [baptismalInitials]의 기본 자음으로 옮긴다.
 const List<String> _choseongBase = [
   'ㄱ', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅂ', 'ㅅ', //
@@ -334,45 +238,37 @@ String baptismalInitial(String name) {
   return _choseongBase[code ~/ 588];
 }
 
-/// 성별 [gender] 목록을 초성별로 묶는다. 있는 초성만 가나다순으로, 묶음 안은 가나다순 인덱스.
-List<({String initial, List<int> indices})> groupBaptismalNames(int gender) {
-  final names = baptismalNamesFor(gender);
-  final order = [for (var i = 0; i < names.length; i++) i]
-    ..sort((a, b) => names[a].compareTo(names[b]));
+/// 통합 목록을 초성별로 묶는다. 있는 초성만 가나다순으로, 묶음 안은 가나다순 인덱스.
+/// 한글로 시작하지 않는 이름이 있으면 맨 끝 [baptismalOtherInitial] 구역에 모은다.
+/// 한 번만 계산해 둔다(이름이 수천 개여도 화면을 열 때마다 다시 정렬하지 않는다).
+List<({String initial, List<int> indices})> groupBaptismalNames() =>
+    _nameGroups;
+
+final List<({String initial, List<int> indices})> _nameGroups = () {
   final groups = <String, List<int>>{};
-  for (final i in order) {
-    groups.putIfAbsent(baptismalInitial(names[i]), () => []).add(i);
+  for (final i in _sortedNameOrder) {
+    final ini = baptismalInitial(baptismalNames[i]);
+    groups
+        .putIfAbsent(ini.isEmpty ? baptismalOtherInitial : ini, () => [])
+        .add(i);
   }
-  return [
-    for (final ini in baptismalInitials)
-      if (groups[ini] != null) (initial: ini, indices: groups[ini]!),
-  ];
-}
+  return List<({String initial, List<int> indices})>.unmodifiable([
+    for (final ini in [...baptismalInitials, baptismalOtherInitial])
+      if (groups[ini] != null)
+        (initial: ini, indices: List<int>.unmodifiable(groups[ini]!)),
+  ]);
+}();
 
 /// 검색어 [query]가 이름 자체가 아니라 다른 표기(별칭)로만 맞았을 때 그 표기. 아니면 null.
-String? baptismalAliasMatch(int gender, int index, String query) {
+String? baptismalAliasMatch(int index, String query) {
   final q = query.replaceAll(RegExp(r'\s+'), '');
-  if (q.isEmpty) return null;
-  final name = baptismalNamesFor(gender)[index];
+  if (q.isEmpty || index < 0 || index >= baptismalNames.length) return null;
+  final name = baptismalNames[index];
   if (name.replaceAll(' ', '').contains(q)) return null;
   for (final a in baptismalNameAliases[name] ?? const <String>[]) {
     if (a.replaceAll(' ', '').contains(q)) return a;
   }
   return null;
-}
-
-/// 성별 [gender] 목록에서 [name]의 인덱스. 없으면 -1.
-int baptismalIndexOf(int gender, String name) =>
-    baptismalNamesFor(gender).indexOf(name);
-
-/// 성별을 바꿀 때의 세례명 인덱스: 같은 이름이 새 목록에 있으면 그것을, 없으면 가장 인기 있는
-/// 첫 이름(0)을 쓴다.
-int convertBaptismalName(int fromGender, int index, int toGender) {
-  if (fromGender == toGender) return index;
-  final from = baptismalNamesFor(fromGender);
-  if (index < 0 || index >= from.length) return 0;
-  final i = baptismalIndexOf(toGender, from[index]);
-  return i < 0 ? 0 : i;
 }
 
 /// 촛불 지향 프리셋(인덱스 0..7).

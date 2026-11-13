@@ -451,6 +451,21 @@
         S.roses.forEach(function (o) { out.push({ kind: 'rose', x: o.x + o.F.nx * 0.06, y: o.y, z: o.z + o.F.nz * 0.06, nx: o.F.nx, nz: o.F.nz, w: o.r * 2, h: o.r * 2 }); });
         return out;
       },
+      // G-29: 진본 사진 창을 걸 자리(빌더가 ctx.window/ctx.rose 에 photo 를 넘겼거나 ctx.glassSlot 으로 알린 것).
+      // {win, slot, index, shape, x, y(중심), z, nx, nz(실내 방향), w, h}. 판은 절차적 유리 1.2cm 앞.
+      glassSlots: function () {
+        var out = [];
+        function add(o, s) { s.win = o.photo.win; s.slot = o.photo.slot; s.index = o.photo.index; s.shape = o.photo.shape; out.push(s); }
+        S.windows.forEach(function (o) {
+          if (o.painted || !o.photo) return;
+          var rise = o.top === 'pointed' ? o.w * 0.72 : (o.top === 'round' || o.top === 'trefoil' ? o.w / 2 : 0);
+          var gd = (o.host ? -Math.min(0.28, o.host.t * 0.5) : 0.04) + 0.012;
+          add(o, { x: o.x + o.F.nx * gd, y: o.y + (o.h + rise) / 2, z: o.z + o.F.nz * gd, nx: o.F.nx, nz: o.F.nz, w: o.w, h: o.h + rise });
+        });
+        S.roses.forEach(function (o) { if (o.photo) add(o, { x: o.x + o.F.nx * 0.052, y: o.y, z: o.z + o.F.nz * 0.052, nx: o.F.nx, nz: o.F.nz, w: o.r * 2, h: o.r * 2 }); });
+        (S.glassSlots || []).forEach(function (s) { out.push(s); });
+        return out;
+      },
       setCandles: function (list) {
         var keep = {};
         (list || []).forEach(function (c) { keep[c.slot] = 1; lightSlot(c); });

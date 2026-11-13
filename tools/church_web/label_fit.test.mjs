@@ -99,3 +99,79 @@ test('overlapRaise: 겹치지 않으면 0, 겹치면 표식을 내 이름표 위
   const r2 = LF.overlapRaise(me, { cx: 180, cy: 384, w: 80, h: 22 }, 0);
   assert.ok(r2 > 0 && r2 < 22);
 });
+
+// ---- 이름표 글자 배치(tagLayout): 긴 세례명이 알약(폭 236, 높이 40; 글자 폭 202) 안에 들어가는지 ----
+// 캔버스 없이 재는 근사 폭: 한글·전각 1em, 숫자·영문 0.6em, 공백 0.3em, 괄호류 0.4em (굵은 고딕 기준으로 넉넉하게).
+const NAMES = require('../../assets/church/baptismal_names.js');
+function measure(text, fs) {
+  let em = 0;
+  for (const ch of text) {
+    if (ch === ' ') em += 0.3;
+    else if ('()[]'.includes(ch)) em += 0.4;
+    else if (ch === '…') em += 1;
+    else if (ch.charCodeAt(0) < 0x80) em += 0.6;
+    else em += 1;
+  }
+  return em * fs;
+}
+const T = LF.TAG;
+function assertFits(name) {
+  const lay = LF.tagLayout(name, measure);
+  assert.ok(lay.lines.length >= 1 && lay.lines.length <= 2, name);
+  for (const l of lay.lines) assert.ok(measure(l, lay.fs) <= T.maxW + 1e-6, `${name}: "${l}" ${measure(l, lay.fs)}px @${lay.fs}`);
+  assert.ok(lay.w <= T.maxW + 1e-6);
+  assert.ok(Math.min(236, lay.w + 34) <= 236);
+  // 세로: 줄 중심 ± 글자 높이 절반이 알약(중심 32±20; 글자는 33 기준) 안
+  const ys = LF.tagLineYs(lay, 33);
+  assert.equal(ys.length, lay.lines.length);
+  assert.ok(ys[0] - lay.fs / 2 >= 12 && ys[ys.length - 1] + lay.fs / 2 <= 52, `${name}: 세로 ${ys} @${lay.fs}`);
+  if (lay.lines.length === 2) assert.ok(lay.fs <= T.twoFs && lay.fs >= T.twoMinFs, `${name}: ${lay.fs}`);
+  else assert.ok(lay.fs >= T.minFs && lay.fs <= T.fs);
+  return lay;
+}
+
+test('tagLayout: short names stay on one line at the base size', () => {
+  for (const n of ['마리아', '요셉', '스콜라스티카']) {
+    const lay = assertFits(n);
+    assert.deepEqual(lay.lines, [n]);
+    assert.equal(lay.fs, T.fs);
+  }
+  // 조금 긴 이름은 한 줄로 두고 글자만 줄인다
+  const mid = assertFits('마리아 막달레나');
+  assert.equal(mid.lines.length, 1);
+  assert.ok(mid.fs < T.fs && mid.fs >= T.minFs);
+});
+
+test('tagLayout: the five longest names fit the pill on two lines without losing text', () => {
+  const longest = Array.from(NAMES.list).sort((a, b) => measure(b, 16) - measure(a, 16)).slice(0, 5);
+  assert.ok(longest.includes('바울라 몬탈 포르네스(성 요셉 데 갈라산즈의)'));
+  for (const n of longest) {
+    const lay = assertFits(n);
+    assert.equal(lay.lines.length, 2, n);
+    // 말줄임 없이 전부 보인다(나눈 자리의 공백 하나만 빠진다)
+    assert.equal(lay.lines.join('').replace(/ /g, ''), n.replace(/ /g, ''), n);
+    // 가운데 근처에서 나뉜다: 두 줄의 폭 차이가 전체의 절반 이하
+    const [a, b] = lay.lines.map((l) => measure(l, lay.fs));
+    assert.ok(Math.abs(a - b) <= (a + b) / 2, `${n}: ${lay.lines.join(' / ')}`);
+  }
+  assert.deepEqual(LF.tagLayout('히야친토 조르다노 안살로네', measure).lines, ['히야친토 조르다노', '안살로네']);
+  assert.deepEqual(LF.tagLayout('바울라 몬탈 포르네스(성 요셉 데 갈라산즈의)', measure).lines, ['바울라 몬탈 포르네스', '(성 요셉 데 갈라산즈의)']);
+});
+
+test('tagLayout: every bundled name fits the pill; ellipsis only as a last resort', () => {
+  let two = 0, cut = 0;
+  for (const n of NAMES.list) {
+    const lay = assertFits(n);
+    if (lay.lines.length === 2) two++;
+    if (lay.lines.join('').includes('…')) cut++;
+  }
+  assert.ok(two > 0 && two < NAMES.list.length / 10, `two-line names: ${two}`);
+  assert.equal(cut, 0);
+  // 나눌 곳이 없는 아주 긴 글도 두 줄 + 말줄임으로 알약 안에 든다
+  const lay = assertFits('가'.repeat(60));
+  assert.equal(lay.lines.length, 2);
+  assert.ok(lay.lines[1].endsWith('…'));
+  // 폭이 실제보다 30% 넓게 재져도(글꼴 차이) 넘치지 않는다
+  const wide = (t, fs) => measure(t, fs) * 1.3;
+  for (const n of NAMES.list) for (const l of LF.tagLayout(n, wide).lines) assert.ok(wide(l, LF.tagLayout(n, wide).fs) <= T.maxW + 1e-6, n);
+});
