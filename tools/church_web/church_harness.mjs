@@ -33,8 +33,9 @@ function makeSandbox() {
 }
 
 /** 모든 성당을 빌드해 [{id, layout, colliders, zones}] 를 돌려준다(실제 world.js 와 같은 방식으로 충돌체를 모은다). */
-export function loadChurches() {
+export function loadChurches(opts = {}) {
   const sb = makeSandbox();
+  if (opts.search) sb.location.search = opts.search;   // 예: '?photoglass=0' (G-29 대응표 끄기)
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
   ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js'].forEach(run);
   fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort().forEach(run);

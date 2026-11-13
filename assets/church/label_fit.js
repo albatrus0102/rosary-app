@@ -57,8 +57,8 @@
   }
 
   // ---- 아바타 이름표 글자 배치(캔버스 256x64, 알약 높이 40 고정) ----
-  // 폭 maxW 안에 들어가게: ① 기본 크기 한 줄 → ② 글자를 줄인 한 줄(minFs 까지) → ③ 두 줄(공백·여는 괄호 중 가운데에
-  // 가장 가까운 곳에서 나눔, 글자 twoFs 이하) → ④ 그래도 넘치면 두 줄 + 말줄임(…).
+  // 폭 maxW 안에 들어가게: ① 기본 크기 한 줄 → ② 글자를 줄인 한 줄(minFs 까지) → ③ 두 줄(여는 괄호 앞, 아니면 공백 중
+  // 가운데에 가장 가까운 곳에서 나눔, 글자 twoFs 이하) → ④ 그래도 넘치면 두 줄 + 말줄임(…).
   // measure(text, fs) 는 그 글자 크기에서의 폭(px)을 돌려주는 함수(캔버스 measureText). -> {fs, lines:[..], w(가장 넓은 줄 폭)}
   var TAG = { maxW: 202, fs: 27, minFs: 16, twoFs: 16, twoMinFs: 13, pillH: 40, lineGap: 1.12 };
   function splitPoints(text) {
@@ -84,14 +84,17 @@
       while (w > o.maxW && fs > o.minFs) { fs--; w = measure(text, fs); }
       if (w <= o.maxW) return { fs: fs, lines: [text], w: w };
     }
-    // 두 줄: 두 줄 중 넓은 쪽이 가장 좁아지는 자리에서 나눈다. 나눌 곳이 없으면 글자 수의 가운데.
-    var pts = splitPoints(text), best = null, i, a, b, m;
+    // 두 줄: 여는 괄호 앞에서 나눠도 들어가면 거기서('이름' / '(수식)'), 아니면 두 줄 중 넓은 쪽이 가장 좁아지는 자리에서
+    // 나눈다. 나눌 곳이 없으면 글자 수의 가운데.
+    var pts = splitPoints(text), best = null, paren = null, i, a, b, m;
     if (!pts.length) { i = Math.ceil(text.length / 2); pts = [[i, i]]; }
     for (i = 0; i < pts.length; i++) {
       a = text.slice(0, pts[i][0]); b = text.slice(pts[i][1]);
       m = Math.max(measure(a, o.twoFs), measure(b, o.twoFs));
       if (!best || m < best.m) best = { a: a, b: b, m: m };
+      if (b.charAt(0) === '(' && m <= o.maxW && (!paren || m < paren.m)) paren = { a: a, b: b, m: m };
     }
+    if (paren) best = paren;
     fs = o.twoFs;
     if (best.m > o.maxW) fs = Math.max(o.twoMinFs, Math.floor(o.twoFs * o.maxW / best.m));
     var l1 = ellipsize(best.a, fs, o.maxW, measure), l2 = ellipsize(best.b, fs, o.maxW, measure);

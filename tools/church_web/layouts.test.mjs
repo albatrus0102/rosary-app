@@ -22,7 +22,7 @@ for (const lay of layouts) {
     assert.ok(lay.spawn.x > b.x0 && lay.spawn.x < b.x1 && lay.spawn.z > b.z0 && lay.spawn.z < b.z1);
     assert.ok(lay.candles.stands.length >= 1 && lay.candles.stands.every((s) => s.slots >= 1));
   });
-  test(`layout ${lay.id}: spawn is not inside a seat band, corridor behind each seat is free`, () => {
+  test(`layout ${lay.id}: spawn is not inside a seat band, corridor in front of each seat is free`, () => {
     const L = Logic.create(lay, {});
     const p = { x: lay.spawn.x, z: lay.spawn.z };
     assert.equal(L.moveCircle(p, 0, 0), false, 'spawn collides');

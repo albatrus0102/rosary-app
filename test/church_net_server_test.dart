@@ -45,6 +45,7 @@ class _LocalServer {
                       'outfit': 6,
                       'name': 10,
                       'g': 0,
+                      'nv': 2,
                     },
                     'x': 1.5,
                     'z': 12,
@@ -149,6 +150,7 @@ void main() {
         'outfit': 5,
         'name': 7,
         'g': 0,
+        'nv': 2,
       },
     });
 

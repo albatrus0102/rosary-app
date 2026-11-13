@@ -8,8 +8,30 @@
 
   var C = {
     WALK_SPEED: 3.2, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
-    SEAT_H: 0.45, BAND_NEAR: 0.1, BAND_FAR: 0.6, STAND_BACK: 0.65
+    SEAT_H: 0.45, BAND_NEAR: -0.62, BAND_FAR: 0.20, STAND_FWD: 0.72
   };
+  // 신자석(긴 의자) 기하. u = 좌석 중심에서 제대 쪽(f)으로 잰 거리(m), y = 바닥에서의 높이(m). SPEC §23.
+  // 한 줄 = [등받이(뒤로 기울임) + 좌석판] 이고, 등받이 뒷면에 '뒷줄 사람'이 쓰는 책 선반과 무릎틀(kneeler)이 달린다.
+  // 좌석 앞끝(SEAT_FRONT)과 앞줄 무릎틀 사이가 발 둘 곳이자 줄 안 통로다. 충돌 띠 = [BAND_NEAR, BAND_FAR].
+  // kit.js(그리기)·avatar.js(무릎 꿇는 자리)·시험이 모두 이 값을 쓴다. 좌석 중심 좌표·id 는 바뀌지 않는다.
+  var PEW = {
+    SEAT_FRONT: 0.20, SEAT_REAR: -0.29, SEAT_TOP: 0.45, SEAT_T: 0.05,
+    BACK_U: -0.29, BACK_T: 0.05, BACK_TILT: 0.17, BACK_Y0: 0.36, BACK_TOP: 0.95,   // BACK_U = 좌석 높이에서 등받이 앞면
+    SHELF_U0: -0.58, SHELF_U1: -0.40, SHELF_Y: 0.69, SHELF_T: 0.03, SHELF_LIP: 0.035,
+    KNEEL_U0: -0.80, KNEEL_U1: -0.56, KNEEL_TOP: 0.145, KNEEL_T: 0.085,
+    END_T: 0.07, END_U0: -0.50, END_U1: 0.25, END_ARM: 0.70, END_TOP: 1.02
+  };
+  // 줄 간격 pitch 일 때, 좌석 중심에서 본 '앞줄 등받이' 쪽 치수(뒷줄 사람 기준)
+  function pewAhead(pitch) {
+    var tilt = Math.tan(PEW.BACK_TILT);
+    return {
+      legroom: pitch + PEW.KNEEL_U0 - PEW.SEAT_FRONT,                    // 좌석 앞끝 ~ 앞줄 무릎틀
+      clear: pitch + PEW.SHELF_U0 - PEW.SEAT_FRONT,                      // 좌석 앞끝 ~ 앞줄 책 선반 끝
+      backFace: pitch + PEW.BACK_U - PEW.BACK_T - tilt * (PEW.BACK_TOP - PEW.SEAT_TOP),   // 앞줄 등받이 윗단 뒷면
+      shelf: pitch + (PEW.SHELF_U0 + PEW.SHELF_U1) / 2,
+      kneel: pitch + (PEW.KNEEL_U0 + PEW.KNEEL_U1) / 2                  // 무릎틀 중심
+    };
+  }
 
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
   function seatId(g, row, idx) { return g + pad2(row) + '-' + idx; }
@@ -34,7 +56,7 @@
     return out;
   }
 
-  // 줄마다 "앞줄 등받이 띠"(충돌 AABB) + 시각화용 정보
+  // 줄마다 신자석 띠(등받이+좌석+뒷면 선반: 충돌 AABB) + 시각화용 정보. 그룹마다 맨 앞줄 앞 가림판(front:true, row -1) 하나 추가.
   function rowBands(layout) {
     var out = [];
     for (var gi = 0; gi < layout.seatGroups.length; gi++) {
@@ -59,10 +81,24 @@
         }
         out.push({
           g: G.g, row: r, yaw: yaw, f: f, e: [ex, ez],
-          start: [sx, sz], end: [tx, tz],               // 줄 방향 양 끝(여백 포함)
+          start: [sx, sz], end: [tx, tz],               // 줄 방향 양 끝(여백 포함). 좌석 중심선 위
           x0: minX, x1: maxX, z0: minZ, z1: maxZ,       // 외접 AABB(충돌)
           rect: { s: [sx, sz], t: [tx, tz] }
         });
+        if (r === 0 && G.frontal !== false) {
+          // 맨 앞줄 앞의 가림판(frontal): 좌석 없이 등받이 판 + 책 선반 + 무릎틀만 있다(맨 앞줄 사람이 쓴다).
+          // start/end 는 '있었을 앞줄'의 좌석 중심선(= 첫 줄에서 pitch 만큼 앞). 기둥 등에 막히는 곳은 그룹에 frontal:false.
+          var pt = Math.abs(G.dz) || 1.9, n0 = pt + C.BAND_NEAR, n1 = pt + PEW.BACK_U + 0.02;
+          var fp = [[sx + f[0] * n0, sz + f[1] * n0], [sx + f[0] * n1, sz + f[1] * n1], [tx + f[0] * n0, tz + f[1] * n0], [tx + f[0] * n1, tz + f[1] * n1]];
+          var fx0 = 1e9, fx1 = -1e9, fz0 = 1e9, fz1 = -1e9;
+          for (k = 0; k < 4; k++) { fx0 = Math.min(fx0, fp[k][0]); fx1 = Math.max(fx1, fp[k][0]); fz0 = Math.min(fz0, fp[k][1]); fz1 = Math.max(fz1, fp[k][1]); }
+          out.push({
+            g: G.g, row: -1, front: true, yaw: yaw, f: f, e: [ex, ez],
+            start: [sx + f[0] * pt, sz + f[1] * pt], end: [tx + f[0] * pt, tz + f[1] * pt],
+            x0: fx0, x1: fx1, z0: fz0, z1: fz1,
+            rect: { s: [sx + f[0] * pt, sz + f[1] * pt], t: [tx + f[0] * pt, tz + f[1] * pt] }
+          });
+        }
       }
     }
     return out;
@@ -120,7 +156,7 @@
     rebuild(extra.colliders || []);
 
     var L = {
-      layout: layout, C: C, seats: seats, seatIds: seats.map(function (s) { return s.id; }),
+      layout: layout, C: C, PEW: PEW, seats: seats, seatIds: seats.map(function (s) { return s.id; }),
       bands: bands, slots: slots, colliders: colliders, bounds: walk, spawn: layout.spawn,
       seatInfo: function (id) { return byId[id] || null; },
       setColliders: function (list) { rebuild(list || []); },
@@ -137,14 +173,25 @@
         var s = byId[id]; if (!s) return null;
         return { x: s.x, z: s.z, y: L.floorY(s.x, s.z) + C.SEAT_H, yaw: s.yaw };
       },
-      // 일어설 때 가는 곳: 좌석 뒤쪽(-f) 통로
+      // 일어설 때 가는 곳: 좌석 앞(+f)의 줄 안 통로(좌석 앞끝과 앞줄 무릎틀 사이)
       standPos: function (id) {
+        var s = byId[id]; if (!s) return null;
+        var fw = Math.min(C.STAND_FWD, L.seatPitch(id) * 0.4);
+        return { x: s.x + s.f[0] * fw, z: s.z + s.f[1] * fw, yaw: s.yaw };
+      },
+      seatPitch: function (id) {
+        var s = byId[id]; if (!s) return 1.9;
+        for (var q = 0; q < layout.seatGroups.length; q++) if (layout.seatGroups[q].g === s.g) return Math.abs(layout.seatGroups[q].dz) || 1.9;
+        return 1.9;
+      },
+      // 무릎 꿇는 자리: {fwd: 좌석 중심에서 무릎까지 앞으로(m), y: 무릎 받침 윗면 높이, rail: 앞에 등받이(손 얹을 곳)가 있는지}.
+      // 앞줄(또는 가림판)의 무릎틀 위. 가림판이 없는 맨 앞줄은 좌석 바로 앞 바닥.
+      kneelSpot: function (id) {
         var s = byId[id]; if (!s) return null;
         var G = null;
         for (var q = 0; q < layout.seatGroups.length; q++) if (layout.seatGroups[q].g === s.g) G = layout.seatGroups[q];
-        var pitch = Math.abs(G.dz) || 1.9;
-        var back = Math.min(C.STAND_BACK, pitch * 0.4);
-        return { x: s.x - s.f[0] * back, z: s.z - s.f[1] * back, yaw: s.yaw };
+        if (s.row === 0 && G.frontal === false) return { fwd: 0.5, y: 0, rail: false };
+        return { fwd: pewAhead(L.seatPitch(id)).kneel, y: PEW.KNEEL_TOP, rail: true };
       },
       // isTaken: function(id)->bool 또는 {id:truthy}
       nearestSeat: function (x, z, isTaken, reach) {
@@ -155,7 +202,7 @@
           var s = seats[q];
           var dx = x - s.x, dz = z - s.z, d2 = dx * dx + dz * dz;
           if (d2 > r2 || d2 >= bd) continue;
-          if (dx * s.f[0] + dz * s.f[1] > 0.1) continue; // 앞줄 띠 너머(반대편 통로)는 불가
+          if (dx * s.f[0] + dz * s.f[1] < -0.1) continue; // 등받이 뒤(뒷줄 통로)에서는 불가: 좌석은 앞쪽 통로에서 앉는다
           if (fn ? fn(s.id) : (isTaken && isTaken[s.id])) continue;
           bd = d2; best = s.id;
         }
@@ -239,5 +286,5 @@
     return L;
   }
 
-  return { C: C, create: create, seatsOf: seatsOf, rowBands: rowBands, candleSlots: candleSlots, seatId: seatId, fwd: fwd };
+  return { C: C, PEW: PEW, pewAhead: pewAhead, create: create, seatsOf: seatsOf, rowBands: rowBands, candleSlots: candleSlots, seatId: seatId, fwd: fwd };
 });

@@ -148,9 +148,7 @@ class AvatarConfig {
       style: random.nextInt(styleCount),
       hair: random.nextInt(4), // 검정·갈색 계열
       outfit: defaultConfig.outfit,
-      name: commonBaptismalIndicesFor(
-        g,
-      )[random.nextInt(popularBaptismalCount)],
+      name: commonBaptismalIndicesFor(g)[random.nextInt(popularBaptismalCount)],
     );
   }
 

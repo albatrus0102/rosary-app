@@ -1165,66 +1165,107 @@
     };
     ctx.pilaster = function (o) { ctx.column({ x: o.x, z: o.z, y: o.y, h: o.h, r: o.r || 0.4, style: 'round', capital: o.capital || 'corinthian', color: o.color, capColor: o.capColor, collide: o.collide, ry: o.ry, surf: o.surf }); };
 
-    // ---- 좌석 (실제 비율의 신자석: 등받이·팔걸이 옆판·기도대·좌석판) ----
+    // ---- 좌석 (실제 성당 신자석: 기울인 등받이 + 좌석판 + 등받이 뒷면 책 선반 + 무릎틀 + 옆판. 치수는 ChurchLogic.PEW, SPEC §23) ----
+    // 모든 부품은 기존 묶음(batch)에 합쳐지므로 draw call 은 늘지 않는다.
     ctx.renderSeats = function (lay, style, o) {
       o = o || {};
       var woodSurf = o.surf === undefined ? 'wood_dark' : o.surf;
       var useSurf = woodSurf && ctx.hasPhoto(woodSurf) ? woodSurf : null;
       var wood = o.wood === undefined ? 0x6d4429 : o.wood, seatC = o.seat === undefined ? 0x7a4c2e : o.seat, backC = o.back === undefined ? 0x5f3a24 : o.back, cushion = o.cushion;
-      function W(color) { return useSurf ? { surf: useSurf, color: ctx.shade(0xffffff, color === wood ? 0.95 : 0.8) } : { mat: 'wood', color: color }; }
-      var Lg = root.ChurchLogic;
+      var Lg = root.ChurchLogic, PW = Lg.PEW;
       var bands = Lg.rowBands(lay);
       var seats = Lg.seatsOf(lay);
       var bySR = {};
       for (var i = 0; i < seats.length; i++) { var s = seats[i]; (bySR[s.g + s.row] = bySR[s.g + s.row] || []).push(s); }
-      var bb = (useSurf ? surfBatchFor(useSurf) : B_.wood);
-      function bx(color, x, y, z, ry, sx, sy, sz) { bb.add(Geo.box(), color, { x: x, y: y, z: z, ry: ry, sx: sx, sy: sy, sz: sz, flat: true, vary: 0.03 }); }
+      var bb = (useSurf ? surfBatchFor(useSurf) : B_.wood), cb = B_.solid;
+      var colW = useSurf ? 0xffffff : wood, colB = useSurf ? 0xe8d8d0 : backC, colS = useSurf ? 0xf0e0d8 : seatC;
+      var kc = o.kneelerColor === undefined ? 0x6f2b2f : o.kneelerColor;
+      var BOOKS = [0x7a1f2b, 0x1f3a6b, 0x2c2a28, 0x5a3d1e, 0x23503a];
+      var rr = G.rng(77);
+      var tilt = PW.BACK_TILT, tanT = Math.tan(tilt);
       for (var b = 0; b < bands.length; b++) {
-        var Bd = bands[b], f = Bd.f, e = Bd.e;
+        var Bd = bands[b], f = Bd.f, e = Bd.e, yaw = Bd.yaw, front = !!Bd.front;
         var len = Math.sqrt(Math.pow(Bd.end[0] - Bd.start[0], 2) + Math.pow(Bd.end[1] - Bd.start[1], 2));
         var mx = (Bd.start[0] + Bd.end[0]) / 2, mz = (Bd.start[1] + Bd.end[1]) / 2;
-        var angE = Math.atan2(-e[1], e[0]);
-        var colW = useSurf ? 0xffffff : wood, colB = useSurf ? 0xe8d8d0 : backC, colS = useSurf ? 0xf0e0d8 : seatC;
-        var cx = mx + f[0] * 0.3, cz = mz + f[1] * 0.3;       // 앞줄 등받이 위치(충돌 띠 중앙)
-        if (style === 'chair') {
-          bx(colB, cx, 0, cz, angE, len, 0.95, 0.07);
-          bx(colW, cx, 0.5, cz, angE, len, 0.06, 0.12);
-        } else {
-          // 등받이 판(살짝 뒤로 기울인 느낌: 두 겹) + 상단 레일 + 하단 패널(그림자 틈)
-          bx(colB, cx, 0.32, cz, angE, len, 0.62, 0.07);                 // 하단 패널(넓은 널빤지)
-          bx(colW, cx, 0.27, cz, angE, len, 0.07, 0.12);                  // 하단 가로대(몰딩)
-          bx(colB, cx + f[0] * 0.01, 0.92, cz + f[1] * 0.01, angE, len, 0.28, 0.06);  // 상단 널
-          bx(colW, cx + f[0] * 0.02, 1.07, cz + f[1] * 0.02, angE, len, 0.06, 0.15);  // 상단 둥근 레일
-          // 기도대(앞줄 뒷면에서 앉는 사람 쪽으로 튀어나온 무릎받이)
-          bx(colW, cx - f[0] * 0.22, 0.13, cz - f[1] * 0.22, angE, len - 0.2, 0.08, 0.28);
-          if (cushion !== false) {
-            var cb = B_.solid; var kc = o.kneelerColor === undefined ? 0x6f2b2f : o.kneelerColor;
-            cb.add(Geo.box(), kc, { x: cx - f[0] * 0.22, y: 0.21, z: cz - f[1] * 0.22, ry: angE, sx: len - 0.3, sy: 0.035, sz: 0.22, flat: true, vary: 0.03 });
-          }
+        var y0 = 0;
+        // 줄 좌표(a = 줄 방향, u = 제대 쪽) 상자. 밑면 중심 기준. rx > 0 이면 윗단이 뒤(-f)로 눕는다.
+        var part = function (batch, color, a, u, y, w, h, d, rx, vary) {
+          batch.add(Geo.box(), color, { x: mx + e[0] * a + f[0] * u, y: y0 + y, z: mz + e[1] * a + f[1] * u, ry: yaw, rx: rx || 0, sx: w, sy: h, sz: d, flat: true, vary: vary === undefined ? 0.03 : vary });
+        };
+        var bx = function (color, a, u, y, w, h, d, rx) { part(bb, color, a, u, y, w, h, d, rx); };
+        // 받침(좌석 아래 칸막이 겸 무릎틀 다리)의 줄 방향 위치
+        var nSup = Math.max(1, Math.round(len / 1.7) - 1), sup = [];
+        for (var q = 1; q <= nSup; q++) sup.push(-len / 2 + len * q / (nSup + 1));
+        var bench = style !== 'chair' || front;
+        // --- 등받이(뒤로 기울임) + 윗단 손잡이 + 뒷면 책 선반(턱) + 무릎틀: 긴 의자와 가림판 공통 ---
+        var backY0 = front ? 0.05 : PW.BACK_Y0, backH = (PW.BACK_TOP - 0.04 - backY0) / Math.cos(tilt);
+        var backU = PW.BACK_U - PW.BACK_T / 2 + tanT * (PW.SEAT_TOP - backY0);     // 등받이 밑단 중심
+        var topU = PW.BACK_U - PW.BACK_T / 2 - tanT * (PW.BACK_TOP - PW.SEAT_TOP);  // 윗단 중심
+        if (bench) {
+          bx(colB, 0, backU, backY0, len, backH, PW.BACK_T, tilt);
+          bx(colW, 0, topU, PW.BACK_TOP - 0.05, len + 0.02, 0.05, 0.085);
         }
-        var seatRow = bySR[Bd.g + Bd.row] || [];
-        if (style === 'chair') {
-          for (var q = 0; q < seatRow.length; q++) {
-            var st = seatRow[q];
-            bx(colS, st.x + f[0] * 0.02, 0.4, st.z + f[1] * 0.02, angE, 0.46, 0.06, 0.46);
-            bx(colW, st.x - f[0] * 0.2, 0.46, st.z - f[1] * 0.2, angE, 0.46, 0.5, 0.05);
-            [[-0.19, -0.19], [0.19, -0.19], [-0.19, 0.19], [0.19, 0.19]].forEach(function (lg) { bx(colW, st.x + e[0] * lg[0] + f[0] * lg[1], 0, st.z + e[1] * lg[0] + f[1] * lg[1], 0, 0.05, 0.4, 0.05); });
+        var shW = bench ? len - 0.06 : 0;
+        if (bench) {
+          bx(colW, 0, (PW.SHELF_U0 + PW.SHELF_U1) / 2, PW.SHELF_Y - PW.SHELF_T, shW, PW.SHELF_T, PW.SHELF_U1 - PW.SHELF_U0 + 0.03);
+          bx(colW, 0, PW.SHELF_U0 + 0.01, PW.SHELF_Y, shW, PW.SHELF_LIP, 0.02);
+        }
+        // 무릎틀: 널 + 쿠션 + 다리
+        var knU = (PW.KNEEL_U0 + PW.KNEEL_U1) / 2, knD = PW.KNEEL_U1 - PW.KNEEL_U0, knL = len - 0.24;
+        bx(colW, 0, knU, PW.KNEEL_TOP - PW.KNEEL_T, knL, PW.KNEEL_T - 0.035, knD);
+        if (cushion !== false) part(cb, kc, 0, knU, PW.KNEEL_TOP - 0.035, knL - 0.04, 0.035, knD - 0.03);
+        else bx(colS, 0, knU, PW.KNEEL_TOP - 0.035, knL, 0.035, knD);
+        var legs = sup.concat([-len / 2 + 0.2, len / 2 - 0.2]);
+        for (q = 0; q < legs.length; q++) bx(colW, legs[q], (PW.KNEEL_U0 + 0.03 + PW.BACK_U) / 2, 0, 0.05, PW.KNEEL_TOP - PW.KNEEL_T, PW.BACK_U - PW.KNEEL_U0 - 0.03);
+        var seatRow = front ? [] : (bySR[Bd.g + Bd.row] || []);
+        // 선반 위 책(뒷줄 좌석마다 0~1권): 장식
+        var nb = front ? (bySR[Bd.g + 0] || []).length : seatRow.length, pitchA = nb > 0 ? len / nb : len;
+        for (q = 0; q < nb; q++) {
+          if (rr() < 0.42) continue;
+          var ba = -len / 2 + pitchA * (q + 0.5) + (rr() - 0.5) * 0.2, bu = (PW.SHELF_U0 + PW.SHELF_U1) / 2 + 0.01;
+          var bcol = BOOKS[(rr() * BOOKS.length) | 0], bw = 0.13 + rr() * 0.03;
+          if (!bench) continue;
+          var bY = PW.SHELF_Y;
+          cb.add(Geo.box(), bcol, { x: mx + e[0] * ba + f[0] * bu, y: y0 + bY, z: mz + e[1] * ba + f[1] * bu, ry: yaw + (rr() - 0.5) * 0.25, sx: bw, sy: 0.026 + rr() * 0.012, sz: 0.125, flat: true, vary: 0.02 });
+        }
+        if (front) {
+          // 가림판 양 끝 기둥
+          [-len / 2, len / 2].forEach(function (ea) { bx(colW, ea, (PW.END_U0 + PW.BACK_U + 0.04) / 2, 0, PW.END_T, PW.END_TOP - 0.02, PW.BACK_U + 0.04 - PW.END_U0); });
+        } else if (style === 'chair') {
+          // 낱개 의자: 좌석 + 기울인 등받이 + 다리 4개 + 등받이 뒤 책꽂이. 무릎틀은 줄 전체가 하나(위에서 그림).
+          for (q = 0; q < seatRow.length; q++) {
+            var st = seatRow[q], ca = (st.x - mx) * e[0] + (st.z - mz) * e[1];
+            bx(colS, ca, -0.04, PW.SEAT_TOP - 0.05, 0.46, 0.05, 0.48);
+            bx(colW, ca, backU, PW.SEAT_TOP, 0.44, (PW.BACK_TOP - PW.SEAT_TOP) / Math.cos(tilt), 0.04, tilt);
+            bx(colW, ca, (PW.SHELF_U0 + PW.SHELF_U1) / 2 + 0.03, PW.SHELF_Y - PW.SHELF_T, 0.36, PW.SHELF_T, 0.14);
+            bx(colW, ca, PW.SHELF_U0 + 0.05, PW.SHELF_Y, 0.36, PW.SHELF_LIP, 0.02);
+            if (rr() > 0.5) cb.add(Geo.box(), BOOKS[(rr() * BOOKS.length) | 0], { x: st.x + f[0] * (PW.SHELF_U0 + 0.12), y: y0 + PW.SHELF_Y, z: st.z + f[1] * (PW.SHELF_U0 + 0.12), ry: yaw + (rr() - 0.5) * 0.25, sx: 0.14, sy: 0.03, sz: 0.11, flat: true, vary: 0.02 });
+            [[-0.2, 0.17], [0.2, 0.17], [-0.2, -0.26], [0.2, -0.26]].forEach(function (lg) { bx(colW, ca + lg[0], lg[1], 0, 0.045, PW.SEAT_TOP - 0.05, 0.045); });
           }
+          bx(colW, 0, -0.26, 0.2, len - 0.3, 0.04, 0.04);     // 의자를 잇는 가로대
         } else {
-          var sx0 = (seatRow.length ? (seatRow[0].x + seatRow[seatRow.length - 1].x) / 2 : mx), sz0 = (seatRow.length ? (seatRow[0].z + seatRow[seatRow.length - 1].z) / 2 : mz);
-          bx(colS, sx0, 0.4, sz0, angE, len, 0.05, 0.52);                  // 좌석판
-          bx(colW, sx0 + f[0] * 0.02, 0.0, sz0 + f[1] * 0.02, angE, len - 0.1, 0.4, 0.34);   // 좌석 아래 몸통
-          bx(colS, sx0 - f[0] * 0.18, 0.44, sz0 - f[1] * 0.18, angE, len, 0.05, 0.14);        // 좌석 뒤쪽 가장자리 모서리 몰딩
-          // 앉는 사람 뒤쪽 낮은 등받이(통로 쪽)는 충돌 때문에 생략. 대신 줄 양 끝 옆판(팔걸이 겸 장식): 높고 둥근 윗면 + 원형 장식
-          [Bd.start, Bd.end].forEach(function (ex, ei) {
-            bx(colW, ex[0], 0, ex[1], angE, 0.09, 1.18, 0.9);
-            bb.add(Geo.cyl(14, 1), colW, { x: ex[0], y: 1.18, z: ex[1], rz: PI / 2, ry: angE, sx: 0.45, sy: 0.09, sz: 0.45, flat: true, vary: 0.02 });
-            bb.add(Geo.cyl(16, 1), colB, { x: ex[0] + (ei ? -0.05 : 0.05) * e[0], y: 0.78, z: ex[1] + (ei ? -0.05 : 0.05) * e[1], rz: PI / 2, ry: angE, sx: 0.2, sy: 0.02, sz: 0.2, flat: true, vary: 0 });
+          // 긴 의자: 좌석판 + 앞 가로대 + 받침 + 통로 쪽 옆판(앞은 팔걸이 높이, 뒤는 등받이 높이 + 둥근 머리)
+          var seatD = PW.SEAT_FRONT - PW.SEAT_REAR, seatU = (PW.SEAT_FRONT + PW.SEAT_REAR) / 2;
+          bx(colS, 0, seatU, PW.SEAT_TOP - PW.SEAT_T, len, PW.SEAT_T, seatD);
+          bx(colW, 0, PW.SEAT_FRONT - 0.05, PW.SEAT_TOP - PW.SEAT_T - 0.08, len, 0.08, 0.035);
+          for (q = 0; q < sup.length; q++) bx(colW, sup[q], seatU - 0.02, 0, 0.06, PW.SEAT_TOP - PW.SEAT_T, seatD - 0.1);
+          [-len / 2, len / 2].forEach(function (ea, ei) {
+            var eD = PW.END_U1 - PW.END_U0, hiD = 0.34, hiU = PW.END_U0 + hiD / 2;
+            bx(colW, ea, (PW.END_U0 + PW.END_U1) / 2, 0, PW.END_T, PW.END_ARM, eD);
+            bx(colW, ea, hiU, PW.END_ARM, PW.END_T, PW.END_TOP - hiD / 2 - PW.END_ARM, hiD);
+            // 둥근 머리(등받이 쪽)와 팔걸이 앞 둥근 모서리: 줄 방향으로 누운 원통
+            var lx = Math.cos(yaw), lz = -Math.sin(yaw), hx = mx + e[0] * ea + lx * PW.END_T / 2, hz = mz + e[1] * ea + lz * PW.END_T / 2;
+            bb.add(Geo.cyl(14, 1), colW, { x: hx + f[0] * hiU, y: y0 + PW.END_TOP - hiD / 2, z: hz + f[1] * hiU, ry: yaw, rz: PI / 2, sx: hiD / 2, sy: PW.END_T, sz: hiD / 2, flat: true, vary: 0.02 });
+            bb.add(Geo.cyl(12, 1), colW, { x: hx + f[0] * (PW.END_U1 - 0.09), y: y0 + PW.END_ARM - 0.09, z: hz + f[1] * (PW.END_U1 - 0.09), ry: yaw, rz: PI / 2, sx: 0.125, sy: PW.END_T + 0.02, sz: 0.125, flat: true, vary: 0.02 });
+            void ei;
           });
         }
         // 바닥 접촉 AO
-        ctx.aoDecal({ x0: Math.min(Bd.start[0], Bd.end[0]) - 0.1, x1: Math.max(Bd.start[0], Bd.end[0]) + 0.1, z0: Math.min(Bd.start[1], Bd.end[1]) - 0.1, z1: Math.max(Bd.start[1], Bd.end[1]) + 0.1, y: 0, pad: 0.12 });
-        void st;
+        var aU0 = PW.KNEEL_U0, aU1 = front ? PW.BACK_U : PW.END_U1;
+        ctx.aoDecal({
+          x0: Math.min(Bd.start[0], Bd.end[0]) + Math.min(f[0] * aU0, f[0] * aU1), x1: Math.max(Bd.start[0], Bd.end[0]) + Math.max(f[0] * aU0, f[0] * aU1),
+          z0: Math.min(Bd.start[1], Bd.end[1]) + Math.min(f[1] * aU0, f[1] * aU1), z1: Math.max(Bd.start[1], Bd.end[1]) + Math.max(f[1] * aU0, f[1] * aU1), y: 0, pad: 0.14
+        });
       }
     };
 

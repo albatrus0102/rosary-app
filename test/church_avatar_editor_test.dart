@@ -43,10 +43,8 @@ int _n(String name) {
 List<int> get _popF => popularBaptismalIndices(avatarFemale);
 List<int> get _popM => popularBaptismalIndices(avatarMale);
 
-String _count(int n) => n.toString().replaceAllMapped(
-  RegExp(r'\B(?=(\d{3})+$)'),
-  (_) => ',',
-);
+String _count(int n) =>
+    n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+$)'), (_) => ',');
 
 /// 이름 고르기 화면을 열어 결과를 받는 도우미.
 
@@ -128,11 +126,7 @@ void main() {
               ),
             ),
           );
-          expect(
-            find.text('데레사'),
-            findsOneWidget,
-            reason: 'g$g style$style',
-          );
+          expect(find.text('데레사'), findsOneWidget, reason: 'g$g style$style');
           expect(tester.takeException(), isNull);
         }
       }
@@ -170,7 +164,9 @@ void main() {
     expect(settings.churchAvatarChosen, isTrue);
   });
 
-  testWidgets('gender switch changes the hair choices and keeps the name', (tester) async {
+  testWidgets('gender switch changes the hair choices and keeps the name', (
+    tester,
+  ) async {
     _view(tester, const Size(360, 800));
     final settings = await _settings();
     await _open(tester, settings, firstEntry: true, random: Random(5));
@@ -300,7 +296,8 @@ void main() {
                     host.result = await showBaptismalNamePicker(
                       context,
                       gender: gender,
-                      selected: selected ?? popularBaptismalIndices(gender).first,
+                      selected:
+                          selected ?? popularBaptismalIndices(gender).first,
                     );
                     host.closed = true;
                   },
@@ -381,7 +378,10 @@ void main() {
       await pick(tester, gender: avatarMale);
       expect(find.text('요셉'), findsWidgets);
       expect(find.text('마리아'), findsNothing); // 인기 구역은 남성 이름
-      expect(find.text('세례명 ${_count(baptismalNames.length)}개'), findsOneWidget);
+      expect(
+        find.text('세례명 ${_count(baptismalNames.length)}개'),
+        findsOneWidget,
+      );
       expect(
         [for (final i in _popM) baptismalNames[i]],
         ['요셉', '베드로', '바오로', '요한', '안드레아', '토마스', '프란치스코', '미카엘'],
@@ -406,7 +406,10 @@ void main() {
       tester,
     ) async {
       await pick(tester, gender: avatarFemale);
-      expect(find.text('세례명 ${_count(baptismalNames.length)}개'), findsOneWidget);
+      expect(
+        find.text('세례명 ${_count(baptismalNames.length)}개'),
+        findsOneWidget,
+      );
       expect(find.text('마리아'), findsWidgets);
       expect(find.text('요셉'), findsNothing);
     });
@@ -448,7 +451,10 @@ void main() {
 
     testWidgets('search by 초성 (consonants only)', (tester) async {
       final host = await pick(tester);
-      await tester.enterText(find.byKey(const ValueKey('name-search')), 'ㅅㅋㄹㅅㅌㅋ');
+      await tester.enterText(
+        find.byKey(const ValueKey('name-search')),
+        'ㅅㅋㄹㅅㅌㅋ',
+      );
       await tester.pumpAndSettle();
       expect(tile(_n('스콜라스티카')), findsOneWidget);
       await tester.tap(tile(_n('스콜라스티카')));
@@ -583,10 +589,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('name-rail-ㅎ')));
       await tester.pumpAndSettle();
       expect(header('ㅎ'), findsOneWidget);
-      expect(
-        tile(groupBaptismalNames().last.indices.first),
-        findsOneWidget,
-      );
+      expect(tile(groupBaptismalNames().last.indices.first), findsOneWidget);
       // 맨 위 ★로 돌아온다.
       await tester.tap(find.byKey(const ValueKey('name-rail-★')));
       await tester.pumpAndSettle();
@@ -629,10 +632,7 @@ void main() {
         tester.getSize(find.byKey(const ValueKey('name-rail'))).width,
         greaterThanOrEqualTo(24),
       );
-      final ids = [
-        '★',
-        for (final g in groupBaptismalNames()) g.initial,
-      ];
+      final ids = ['★', for (final g in groupBaptismalNames()) g.initial];
       for (var i = 0; i + 1 < ids.length; i++) {
         final a = tester.getCenter(find.byKey(ValueKey('name-rail-${ids[i]}')));
         final b = tester.getCenter(
@@ -656,10 +656,7 @@ void main() {
       expect(list.contains(tester.getCenter(tile(idx))), isTrue);
       expect(find.byIcon(Icons.check), findsOneWidget);
       // 다른 칸은 선택 표시가 없다.
-      expect(
-        selectedTile(tester, tile(idx + 1)),
-        isFalse,
-      );
+      expect(selectedTile(tester, tile(idx + 1)), isFalse);
     });
 
     testWidgets('a selection in the popular range stays at the top of the '
@@ -783,10 +780,7 @@ void main() {
     final k = groupBaptismalNames().firstWhere((g) => g.initial == 'ㅋ');
     final at = k.indices.indexOf(_n('카타리나'));
     expect(at, greaterThan(0));
-    expect(
-      baptismalNames[k.indices[at - 1]].compareTo('카타리나'),
-      lessThan(0),
-    );
+    expect(baptismalNames[k.indices[at - 1]].compareTo('카타리나'), lessThan(0));
     expect(baptismalChoseong('마리아 막달레나'), 'ㅁㄹㅇㅁㄷㄹㄴ');
     expect(baptismalChoseong('레오 1세(대)'), 'ㄹㅇ1ㅅ(ㄷ)');
     expect(baptismalAliasMatch(_n('베드로'), '피터'), '피터');

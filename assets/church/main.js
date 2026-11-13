@@ -158,11 +158,21 @@
     me.tx = sp.x; me.tz = sp.z; me.tyaw = sp.yaw; me.pendingStand = false;
     App.net.setMySeat(seatId);
     App.meAv.setSeated(true); App.meAv.setWalk(0);
+    App.posture = 'sit'; me.standWait = false; applyPosture(false);
     setNear(null, null);
     me.vx = me.vz = 0;
   }
+  // 기도 자세(SPEC §23.4): 'sit' 앉아서 | 'kneel' 무릎 꿇고. 앉아 있을 때만 적용하고, 전환이 끝나면 posture 이벤트를 보낸다.
+  function applyPosture(notify) {
+    var me = App.me, kneel = App.posture === 'kneel' && (me.mode === 'seated' || me.mode === 'sitting') && !me.standWait;
+    App.meAv.setKneel(kneel, kneel ? App.logic.kneelSpot(me.seat) : null);
+    me.postureNote = notify ? (kneel ? 'kneel' : 'sit') : null;
+  }
   function beginStand() {
     var me = App.me, st = App.logic.standPos(me.seat);
+    // 무릎 꿇고 있었으면 먼저 앉은 자세로 돌아온 다음 일어난다
+    if (App.meAv.kneelAmt > 0.12) { me.standWait = true; App.meAv.setKneel(false); me.postureNote = null; return; }
+    me.standWait = false;
     me.mode = 'standing'; me.t = 0; me.fx = me.x; me.fz = me.z; me.fyaw = me.yaw;
     me.tx = st.x; me.tz = st.z; me.tyaw = st.yaw;
     App.meAv.setSeated(false); App.meAv.setPray(false);
@@ -195,6 +205,12 @@
       else if (me.mode === 'sitting') me.pendingStand = true;
     },
     setPraying: function (o) { if (App.meAv && App.me.mode !== 'walk') App.meAv.setPray(!!o.on); },
+    // 기도 자세 고르기. 앉아 있지 않으면 무시한다(다음에 앉아도 적용하지 않는다: 앉은 뒤 Flutter 가 다시 보낸다).
+    setPrayerPosture: function (o) {
+      var me = App.me, p = o && o.posture === 'kneel' ? 'kneel' : 'sit';
+      if (!App.meAv || !me || (me.mode !== 'seated' && me.mode !== 'sitting') || me.standWait) return;
+      App.posture = p; applyPosture(true);
+    },
     setAvatar: function (o) { if (o.avatar) { App.cfg = o.avatar; if (App.meAv) App.meAv.setConfig(o.avatar); } },
     setPeers: function (o) { if (App.net) App.net.setPeers(o.peers || [], o.seats || {}); },
     peerJoin: function (o) { if (App.net && o.peer) App.net.peerJoin(o.peer); },
@@ -202,7 +218,7 @@
     peerSnap: function (o) { if (App.net && o.p) App.net.peerSnap(o.p); },
     peerSeat: function (o) { if (App.net) App.net.peerSeat(o.id, o.seat); },
     peerStand: function (o) { if (App.net) App.net.peerStand(o.id); },
-    peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms); },
+    peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms, o.k ? 1 : 0); },
     peerEmote: function (o) { if (App.net) App.net.peerEmote(o.id, o.e); },
     setCandles: function (o) { if (App.world) App.world.setCandles(o.candles || []); },
     lightCandle: function (o) { if (App.world) { App.world.lightCandle(o); root.ChurchAudio.chime(); } },
@@ -376,7 +392,11 @@
           if (App.pendingWalk) { var pw = App.pendingWalk; App.pendingWalk = null; startWalk(pw); }
         }
       }
-    } else { av.setWalk(0); }
+    } else {
+      av.setWalk(0);
+      if (me.standWait && av.kneelAmt <= 0.12) beginStand();
+      else if (me.postureNote && av.kneelLin === av.kneelTarget) { post({ e: 'posture', posture: me.postureNote, seat: me.seat }); me.postureNote = null; }
+    }
     av.setPose(me.x, me.y, me.z, me.yaw);
     av.update(dt, t);
   }
@@ -397,24 +417,26 @@
     var pitch = ctl.pitch * (1 - 0.3 * sf);
     var fy = me.y + 1.0 + sf * (0.45 - 0.2);
     var dx = Math.sin(ctl.yaw), dz = Math.cos(ctl.yaw);
+    // 무릎 꿇으면 몸이 좌석 앞 무릎틀로 나간다: 카메라가 보는 점도 그만큼 앞으로(아바타가 향한 쪽)
+    var ko = App.meAv.kneelOffset(), mx = me.x - Math.sin(me.yaw) * ko, mz = me.z - Math.cos(me.yaw) * ko;
     // 벽 쪽(경계)에 가까우면 거리를 줄여서 같은 각도(pitch)를 유지한다. 예전에는 경계에서 잘라 내고
     // 높이만 올려서, 입구 근처에서는 화면을 정면 높이까지 내릴 수 없었다(조금 걸어야 가능했다).
     var reach = 1;
-    if (dx > 1e-4) reach = Math.min(reach, (cb.x1 - me.x) / (dx * Math.cos(pitch) * D));
-    else if (dx < -1e-4) reach = Math.min(reach, (cb.x0 - me.x) / (dx * Math.cos(pitch) * D));
-    if (dz > 1e-4) reach = Math.min(reach, (cb.z1 - me.z) / (dz * Math.cos(pitch) * D));
-    else if (dz < -1e-4) reach = Math.min(reach, (cb.z0 - me.z) / (dz * Math.cos(pitch) * D));
+    if (dx > 1e-4) reach = Math.min(reach, (cb.x1 - mx) / (dx * Math.cos(pitch) * D));
+    else if (dx < -1e-4) reach = Math.min(reach, (cb.x0 - mx) / (dx * Math.cos(pitch) * D));
+    if (dz > 1e-4) reach = Math.min(reach, (cb.z1 - mz) / (dz * Math.cos(pitch) * D));
+    else if (dz < -1e-4) reach = Math.min(reach, (cb.z0 - mz) / (dz * Math.cos(pitch) * D));
     reach = Math.max(0.3, Math.min(1, reach));
     var Dd = D * reach;
     var ch = Math.cos(pitch) * Dd, cv = Math.sin(pitch) * Dd;
-    var desX = me.x + dx * ch, desZ = me.z + dz * ch, desY = fy + cv;
+    var desX = mx + dx * ch, desZ = mz + dz * ch, desY = fy + cv;
     var cx = Math.max(cb.x0, Math.min(cb.x1, desX)), cz = Math.max(cb.z0, Math.min(cb.z1, desZ));
     var cyv = desY;
     cyv = Math.min(cb.yMax, Math.max(0.7, cyv));
-    if (!App.camInit) { App.camPos.set(cx, cyv, cz); App.camLook.set(me.x, fy, me.z); App.camInit = true; }
+    if (!App.camInit) { App.camPos.set(cx, cyv, cz); App.camLook.set(mx, fy, mz); App.camInit = true; }
     var kp = 1 - Math.exp(-dt * 7), kl = 1 - Math.exp(-dt * 11);
     App.camPos.x += (cx - App.camPos.x) * kp; App.camPos.y += (cyv - App.camPos.y) * kp; App.camPos.z += (cz - App.camPos.z) * kp;
-    App.camLook.x += (me.x - App.camLook.x) * kl; App.camLook.y += (fy - App.camLook.y) * kl; App.camLook.z += (me.z - App.camLook.z) * kl;
+    App.camLook.x += (mx - App.camLook.x) * kl; App.camLook.y += (fy - App.camLook.y) * kl; App.camLook.z += (mz - App.camLook.z) * kl;
     // 천장 올려다보기: ctl.look(라디안)만큼 시선을 위로 든다. 아바타를 보는 시선과 부드럽게 섞는다.
     // 걷기 시작하면 서서히 원래 시점으로 돌아온다.
     if (ctl.look > 0 && me.mode === 'walk' && Math.hypot(me.vx, me.vz) > 0.6 && !ctl.dragging) {

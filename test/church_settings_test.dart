@@ -109,7 +109,8 @@ void main() {
       'and written back in the unified format (nv 2)', () async {
     // 옛 형식: 여성 목록 5번 = 루치아.
     SharedPreferences.setMockInitialValues({
-      'church_avatar': '{"skin":2,"style":1,"hair":4,"outfit":6,"name":5,"g":0}',
+      'church_avatar':
+          '{"skin":2,"style":1,"hair":4,"outfit":6,"name":5,"g":0}',
       'church_avatar_chosen': true,
     });
     final s = await AppSettings.load();
@@ -135,33 +136,38 @@ void main() {
     expect(prefs.getString('church_avatar'), stored);
   });
 
-  test('old male and legacy(no g) stored avatars are also rewritten with nv 2',
-      () async {
-    SharedPreferences.setMockInitialValues({
-      'church_avatar': '{"skin":1,"style":0,"hair":0,"outfit":0,"name":6,"g":1}',
-    });
-    var s = await AppSettings.load();
-    expect(s.churchAvatar.nameText, '프란치스코');
-    var prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('church_avatar'), contains('"nv":2'));
+  test(
+    'old male and legacy(no g) stored avatars are also rewritten with nv 2',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'church_avatar':
+            '{"skin":1,"style":0,"hair":0,"outfit":0,"name":6,"g":1}',
+      });
+      var s = await AppSettings.load();
+      expect(s.churchAvatar.nameText, '프란치스코');
+      var prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('church_avatar'), contains('"nv":2'));
 
-    SharedPreferences.setMockInitialValues({
-      'church_avatar': '{"skin":1,"style":0,"hair":0,"outfit":0,"name":12}',
-    });
-    s = await AppSettings.load();
-    expect(s.churchAvatar.nameText, '카타리나');
-    expect(s.churchAvatar.gender, avatarFemale);
-    prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('church_avatar'), contains('"nv":2'));
-    expect(
-      AvatarConfig.fromJsonString(prefs.getString('church_avatar')).nameText,
-      '카타리나',
-    );
-  });
+      SharedPreferences.setMockInitialValues({
+        'church_avatar': '{"skin":1,"style":0,"hair":0,"outfit":0,"name":12}',
+      });
+      s = await AppSettings.load();
+      expect(s.churchAvatar.nameText, '카타리나');
+      expect(s.churchAvatar.gender, avatarFemale);
+      prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('church_avatar'), contains('"nv":2'));
+      expect(
+        AvatarConfig.fromJsonString(prefs.getString('church_avatar')).nameText,
+        '카타리나',
+      );
+    },
+  );
 
   test('a current-format stored avatar is not rewritten on load', () async {
-    final json = AvatarConfig(gender: 1, name: baptismalIndexOf('요한'))
-        .toJsonString();
+    final json = AvatarConfig(
+      gender: 1,
+      name: baptismalIndexOf('요한'),
+    ).toJsonString();
     SharedPreferences.setMockInitialValues({'church_avatar': json});
     final s = await AppSettings.load();
     expect(s.churchAvatar.nameText, '요한');

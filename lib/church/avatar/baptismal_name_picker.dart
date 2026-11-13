@@ -527,10 +527,8 @@ class _BaptismalNameScreenState extends State<BaptismalNameScreen> {
 const double _nameLineHeight = 1.2;
 
 /// 1234 → '1,234'.
-String _thousands(int n) => n.toString().replaceAllMapped(
-  RegExp(r'\B(?=(\d{3})+$)'),
-  (_) => ',',
-);
+String _thousands(int n) =>
+    n.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+$)'), (_) => ',');
 
 String _sectionLabel(String id) =>
     id == baptismalOtherInitial ? '그 밖의 이름' : '초성 $id';

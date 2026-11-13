@@ -827,6 +827,7 @@
     this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9; this.tagPx = 0; this.tagPpm = 0;
     this.walkTarget = 0; this.walkAmt = 0; this.phase = Math.random() * 6;
     this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
+    this.kneelTarget = 0; this.kneelLin = 0; this.kneelAmt = 0; this.kneelFwd = 0; this.kneelY = 0; this.kneelRail = 0;
     this.emote = -1; this.emoteT = 0; this.nod = false; this.nodPh = Math.random() * 6;
     this.off = Math.random() * 6.28;
     this.cfg = null; this.key = '';
@@ -925,18 +926,37 @@
   Avatar.prototype.setWalk = function (v) { this.walkTarget = v; };
   Avatar.prototype.setSeated = function (b) { this.sitTarget = b ? 1 : 0; };
   Avatar.prototype.setPray = function (b) { this.prayTarget = b ? 1 : 0; };
+  // 무릎 꿇기(앉아 있을 때만 보인다). spot = ChurchLogic.kneelSpot(seatId): {fwd 좌석 중심에서 무릎까지 앞으로(m), y 무릎 받침 높이, rail 앞에 손 얹을 등받이}.
+  // 몸 전체가 뿌리(좌석 중심)에서 앞으로 fwd 만큼 나가 무릎틀 위에 무릎을 꿇는다. 전환은 KNEEL_DUR 초(부드러운 보간).
+  Avatar.prototype.setKneel = function (b, spot) {
+    this.kneelTarget = b ? 1 : 0;
+    if (b) { spot = spot || KNEEL_DEFAULT; this.kneelFwd = spot.fwd; this.kneelY = spot.y; this.kneelRail = spot.rail ? 1 : 0; }
+  };
+  // 지금 몸(골반)이 좌석 중심에서 앞으로 나가 있는 거리(m). 카메라·이름표가 따라간다.
+  Avatar.prototype.kneelOffset = function () { return this.kneelAmt * this.sitAmt * this.kneelFwd; };
   Avatar.prototype.playEmote = function (e) { this.emote = e | 0; this.emoteT = 0; };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
-  Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; };
+  Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; };
+  var KNEEL_DUR = 0.7, KNEEL_THIGH = 0.12, KNEEL_KNEE_R = 0.075, KNEEL_DEFAULT = { fwd: 1.22, y: 0.145, rail: true };
+  // 무릎 꿇은 자세의 다리 각도와 관절 위치(순수 계산, 시험용으로도 공개). y = 무릎 받침 윗면 높이.
+  // 반환: t1 허벅지, t2 종아리(허벅지 기준), hipY 고관절 높이, kneeY 무릎 관절 높이, hipBack 무릎에서 고관절까지 뒤로(m), shinBack 무릎에서 발목까지 뒤로(m)
+  function kneelPose(y) {
+    var a = -Math.acos(clamp((y + KNEEL_KNEE_R - ANKLE) / LEN_S, 0, 1));   // 종아리 절대 각(무릎에서 뒤·아래로, 발목은 바닥)
+    var kneeY = ANKLE + LEN_S * Math.cos(a);
+    return { t1: KNEEL_THIGH, t2: a - KNEEL_THIGH, hipY: kneeY + LEN_T * Math.cos(KNEEL_THIGH), kneeY: kneeY, hipBack: LEN_T * Math.sin(KNEEL_THIGH), shinBack: -LEN_S * Math.sin(a) };
+  }
 
   var LAP_T = [[0.095, -0.205, -0.19], [0.0, -1, 0]];   // 무릎 위 손목 목표(가슴 로컬)
+  var KNEEL_FOOT = -1.45, KNEEL_HAND_Y = 0.05, KNEEL_HAND_Z = -0.30;   // 무릎 꿇을 때: 발목 각(발등 펴기), 등받이 윗단에 얹는 손목 목표(가슴 로컬)
 
   Avatar.prototype.update = function (dt, t) {
     var k = Math.min(1, dt * 10);
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
     this.sitAmt += (this.sitTarget - this.sitAmt) * Math.min(1, dt * 7);
     this.prayAmt += (this.prayTarget - this.prayAmt) * Math.min(1, dt * 5);
-    var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa;
+    var kl = this.kneelLin, kt = this.kneelTarget;
+    if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / KNEEL_DUR; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
+    var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa, ka = this.kneelAmt * sa;
     // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 3.2*walkAmt m/s)
     var A = (0.09 + 0.27 * w) * sm(w * 6);
     if (w > 0.01) {
@@ -952,6 +972,8 @@
     if (this.lod === 2) {
       var fv = this._variant();
       if (fv !== this._fv) { this._fv = fv; this._applyFar(fv); }
+      // 원거리 임포스터: 무릎 꿇으면 앉은 모양을 앞으로 옮기고 조금 올린다
+      if (this.imp) this.imp.position.set(0, ka > 0.001 ? (kneelPose(this.kneelY).hipY - 0.529) * ka : 0, -ka * (this.kneelFwd + SEAT_BACK));
       this.shadow.visible = false;
       return;
     }
@@ -970,16 +992,24 @@
     kR += relax * (1 - w); kL += relaxL * (1 - w);
     var t1R = lerp(hR, 1.45, sa), t1L = lerp(hL, 1.45, sa);
     var t2R = lerp(-kR, -1.65, sa), t2L = lerp(-kL, -1.65, sa);
+    var KP = null;
+    if (ka > 0.001) {   // 무릎 꿇기: 허벅지는 거의 수직, 종아리는 뒤로 눕고 발목은 바닥
+      KP = kneelPose(this.kneelY);
+      t1R = lerp(t1R, KP.t1, ka); t1L = lerp(t1L, KP.t1, ka); t2R = lerp(t2R, KP.t2, ka); t2L = lerp(t2L, KP.t2, ka);
+    }
     // 발 피치(바닥과 평행 + 걸을 때 앞꿈치 들기/발끝 뒤꿈치)
     function footPitch(h, a, sw) { return (-0.5 * sm((-h / Math.max(a, 0.05) - 0.35) / 0.65) + 0.18 * sm((h / Math.max(a, 0.05) - 0.5) / 0.5)) * sw; }
     var pR = footPitch(hR, A, w), pL = footPitch(hL, A, w);
     var fR = pR - (t1R + t2R), fL = pL - (t1L + t2L);
+    if (KP) { fR = lerp(fR, KNEEL_FOOT, ka); fL = lerp(fL, KNEEL_FOOT, ka); }   // 발등을 펴서 발끝이 뒤로
     // 골반 높이: 발이 바닥 아래로 가지 않도록(더 낮은 쪽 다리에 맞춤)
     var hjR = ANKLE + LEN_T * Math.cos(t1R) + LEN_S * Math.cos(t1R + t2R), hjL = ANKLE + LEN_T * Math.cos(t1L) + LEN_S * Math.cos(t1L + t2L);
     var hipJ = Math.max(hjR, hjL);
     var bob = Math.sin(t * 2.1 + this.off) * 0.0015;
     var hips = bs[B.hips];
-    hips.position.set(0.012 * ws + 0.008 * w * sR * 0.0, hipJ + (HIPS_Y - HIP_JOINT) + bob, SEAT_BACK * sa);
+    var hipZ = SEAT_BACK * sa;
+    if (KP) hipZ = lerp(hipZ, -(this.kneelFwd - KP.hipBack), ka);   // 무릎이 무릎틀 중심 위에 오도록 몸을 앞으로
+    hips.position.set(0.012 * ws + 0.008 * w * sR * 0.0, hipJ + (HIPS_Y - HIP_JOINT) + bob, hipZ);
     setE(bs[B.ulR], t1R, 0, -0.019 * ws + 0.05 * sa + (-0.02) * w * 0);
     setE(bs[B.ulL], t1L, 0, -0.019 * ws - 0.05 * sa);
     setE(bs[B.llR], t2R, 0, 0); setE(bs[B.llL], t2L, 0, 0);
@@ -992,7 +1022,8 @@
     var spX = lerp(lean - 0.02, -0.02, sa) + (-0.10) * pa + (-0.40) * bow;
     var chX = lerp(-0.012 + br * 0.006, -0.03, sa) + (-0.07) * pa + (-0.25) * bow;
     setE(hips, 0, hipsRy, 0.0);
-    setE(bs[B.skirt], -0.30 * sa, 0, 0); bs[B.skirt].scale.set(1, lerp(1, 0.30, sa), 1);
+    var sk = sa * (1 - ka);
+    setE(bs[B.skirt], -0.30 * sk, 0, 0); bs[B.skirt].scale.set(1, lerp(1, 0.30, sk), 1);
     var ck = 0.45 + 0.5 * sa;
     setE(bs[B.ckR], t1R * ck, 0, 0.04 * sa); setE(bs[B.ckL], t1L * ck, 0, -0.04 * sa);
     setE(bs[B.spine], spX, spineRy, -0.012 * ws * 0);
@@ -1027,7 +1058,9 @@
         qU.slerp(qs.lU[idx], sa); qF.slerp(qs.lF[idx], sa); qH.slerp(qs.lH[idx], sa);
       }
       if (pa > 0.001) {
-        arm2(side, side * 0.021, 0.065, -0.185, side * 0.55, -1, 0.35, qs.pU[idx], qs.pF[idx]);
+        // 무릎 꿇고 앞에 등받이가 있으면 모은 손을 그 윗단(손잡이) 위에 얹는다
+        var kr = ka * this.kneelRail;
+        arm2(side, side * 0.021, lerp(0.065, KNEEL_HAND_Y, kr), lerp(-0.185, KNEEL_HAND_Z, kr), side * 0.55, -1, 0.35, qs.pU[idx], qs.pF[idx]);
         handQ(side, 0, 0.72, -0.69, -side, 0, 0, _q1);
         qs.pH[idx].copy(_q2.copy(qs.pU[idx]).multiply(qs.pF[idx]).invert()).multiply(_q1);
         qU.slerp(qs.pU[idx], pa); qF.slerp(qs.pF[idx], pa); qH.slerp(qs.pH[idx], pa);
@@ -1054,9 +1087,10 @@
     }
     // 이름표 높이
     if (this.tag) {
-      var ty = 1.88 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w;
+      var ty = 1.88 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w + (KP ? (KP.hipY - 0.529) * ka : 0);
       this.tagY = ty;
       this.tag.position.y = ty;
+      this.tag.position.z = hipZ - SEAT_BACK * sa;
       // 화면에서 읽기 좋은 크기로(가까우면 작게, 멀면 크게; 다른 사람은 멀면 흐려져 사라진다). 아바타 로드 후 첫 프레임부터 적용.
       var LF = root.ChurchLabelFit;
       if (LF && VIEW.on && this.lod === 0) {
@@ -1073,11 +1107,13 @@
       }
     }
     this.shadow.position.y = 0.03;
+    this.shadow.position.z = hipZ - SEAT_BACK * sa;
   };
 
   root.ChurchAvatar = {
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
+    kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
     stats: function () {
       var out = { near: {}, mid: {}, far: [] }, s, g;

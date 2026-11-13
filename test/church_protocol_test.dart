@@ -8,6 +8,7 @@ import 'package:rosary_app/church/net/church_protocol.dart';
 import 'package:rosary_app/church/net/client_id.dart';
 import 'package:rosary_app/church/net/web_socket_church_net.dart';
 
+// 옛 형식(g·nv 없음): name 7 = 옛 40개 목록의 클라라.
 const _avatar = {'skin': 1, 'style': 0, 'hair': 3, 'outfit': 5, 'name': 7};
 
 void main() {
@@ -59,9 +60,15 @@ void main() {
       expect(w.peers[0].id, 'p1');
       expect(
         w.peers[0].avatar,
-        const AvatarConfig(skin: 1, style: 0, hair: 3, outfit: 5, name: 7),
+        AvatarConfig(
+          skin: 1,
+          style: 0,
+          hair: 3,
+          outfit: 5,
+          name: baptismalIndexOf('클라라'),
+        ),
       );
-      // 옛 형식(g 없음, name 7 = 클라라)은 여성 목록의 같은 이름으로 읽힌다.
+      // 옛 형식(g 없음, name 7 = 클라라)은 통합 목록의 같은 이름으로 읽힌다.
       expect(w.peers[0].avatar.gender, avatarFemale);
       expect(w.peers[0].avatar.nameText, '클라라');
       expect(w.peers[0].seat, isNull);
@@ -88,7 +95,7 @@ void main() {
       expect(j.peer.avatar.nameText, '데레사');
       expect(j.n, 13);
 
-      // 새 형식(g 포함): 그대로 읽는다.
+      // 옛 성별별 형식(g 있음, nv 없음): 옛 남성 목록 23 = 베네딕토.
       final j2 = parseChurchEvent(
         '{"t":"join","peer":{"id":"p10","avatar":{"skin":0,"style":3,"hair":2,"outfit":3,"name":23,"g":1},"x":1,"z":2},"n":14}',
       );
@@ -97,6 +104,19 @@ void main() {
       expect(a2.style, 3);
       expect(a2.nameText, '베네딕토');
       expect(a2.toJson()['g'], 1);
+
+      // 지금 형식(nv 2): name 은 통합 목록 인덱스 그대로. 범위를 벗어나면 기본 이름.
+      final j3 = parseChurchEvent(
+        '{"t":"join","peer":{"id":"p11","avatar":{"skin":0,"style":3,"hair":2,"outfit":3,"name":3754,"g":1,"nv":2},"x":1,"z":2},"n":15}',
+      );
+      final a3 = (j3 as Join).peer.avatar;
+      expect(a3.name, 3754);
+      expect(a3.nameText, baptismalNames[3754]);
+      expect(a3.toJson()['nv'], avatarNameVersion);
+      final j4 = parseChurchEvent(
+        '{"t":"join","peer":{"id":"p12","avatar":{"skin":0,"style":3,"hair":2,"outfit":3,"name":4095,"g":1,"nv":2},"x":1,"z":2},"n":16}',
+      );
+      expect((j4 as Join).peer.avatar.nameText, '마리아');
 
       final l = parseChurchEvent('{"t":"leave","id":"p9","n":12}');
       expect(l, isA<Leave>());

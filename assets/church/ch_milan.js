@@ -14,8 +14,8 @@
     seatGroups: [
       { g: 'NL', rows: 12, perRow: 3, origin: { x: -1.3, z: -3.0 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.5] },
       { g: 'NR', rows: 12, perRow: 3, origin: { x: 1.3, z: -3.0 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.5] },
-      { g: 'TL', rows: 4, perRow: 6, origin: { x: -10.6, z: -13.3 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6] },
-      { g: 'TR', rows: 4, perRow: 6, origin: { x: 10.6, z: -13.3 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6] }
+      { g: 'TL', rows: 4, perRow: 6, origin: { x: -10.6, z: -13.3 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6], frontal: false },
+      { g: 'TR', rows: 4, perRow: 6, origin: { x: 10.6, z: -13.3 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6], frontal: false }
     ],
     candles: {
       stands: [

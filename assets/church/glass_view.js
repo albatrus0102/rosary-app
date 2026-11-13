@@ -394,6 +394,8 @@
       hideAvatars(true);
       if (fade) { fade.t += dt; glassMat.uniforms.uMix.value = Math.min(1, fade.t / FADE); }
       if (glassMat) glassMat.uniforms.uSelfTone.value = App.R.tier === 'high' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
+      // 후처리가 없으면(low) 캔버스에 바로 그린다: 알파 0 표시가 캔버스 알파로 남지 않게(일부 기기는 alpha:false 캔버스도 알파를 합성에 쓴다) 보통 알파 합성으로
+      if (glassMat) glassMat.blendSrcAlpha = glassMat.uniforms.uSelfTone.value > 0.5 ? T.OneFactor : T.ZeroFactor;
       applyCamera(dt);
       if (App.world) { App.world.setSkyCenter(App.camera.position); App.R.setExposure(App.world.env.exp); }   // 하늘·해 스프라이트는 카메라를 따라간다(안 하면 원점에 남아 창을 가린다)
       App.R.render(App.scene, App.camera, dt, App.world);

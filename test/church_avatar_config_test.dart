@@ -78,7 +78,10 @@ void main() {
         expect(a.nameText, '마리아', reason: '$json');
       }
       // 알 수 없는 nv 는 옛 형식으로 읽는다(절대 예외를 던지지 않는다).
-      expect(AvatarConfig.fromJson({'g': 1, 'nv': 3, 'name': 1}).nameText, '베드로');
+      expect(
+        AvatarConfig.fromJson({'g': 1, 'nv': 3, 'name': 1}).nameText,
+        '베드로',
+      );
       expect(
         AvatarConfig.fromJson({'g': 1, 'nv': 'x', 'name': 1}).nameText,
         '베드로',
@@ -94,9 +97,9 @@ void main() {
     });
 
     test('migration: old per-gender indices (g, no nv) keep the same name', () {
-      final known =
-          jsonDecode(File('tools/names/known_names.json').readAsStringSync())
-              as Map<String, dynamic>;
+      final known = jsonDecode(
+        File('tools/names/known_names.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
       final female = (known['female'] as List).cast<String>();
       final male = (known['male'] as List).cast<String>();
       expect(female, hasLength(65));
@@ -142,9 +145,7 @@ void main() {
       expect(AvatarConfig.isCurrentFormat(null), isTrue);
       expect(AvatarConfig.isCurrentFormat(''), isTrue);
       expect(
-        AvatarConfig.isCurrentFormat(
-          AvatarConfig.defaultConfig.toJsonString(),
-        ),
+        AvatarConfig.isCurrentFormat(AvatarConfig.defaultConfig.toJsonString()),
         isTrue,
       );
       expect(AvatarConfig.isCurrentFormat('{"name":3,"g":1}'), isFalse);
@@ -225,7 +226,10 @@ void main() {
       for (final g in [0, 1]) {
         final pool = commonBaptismalIndicesFor(g);
         for (var seed = 0; seed < 30; seed++) {
-          expect(pool, contains(AvatarConfig.randomCommonName(g, Random(seed))));
+          expect(
+            pool,
+            contains(AvatarConfig.randomCommonName(g, Random(seed))),
+          );
         }
       }
       expect(a.skinColor, AvatarConfig.skinColors[a.skin]);

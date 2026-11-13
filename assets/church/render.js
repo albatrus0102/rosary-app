@@ -121,9 +121,34 @@
           orig(r, mat, target, cc, ca);
           hidden.forEach(function (o) { o.visible = true; });
         };
+        // 사진 창 화소(G-29, beauty 알파 0 표시)에는 AO 를 곱하지 않는다: 마지막 'AO 곱하기' 합성만 알파로 가린 재질로 바꾼다
+        // (알파 1 인 나머지 화소는 예전과 같은 값 = AO × 장면). 창 판 자체는 noAO 라 AO 계산에도 들어가지 않는다.
+        var aoMix = new T.ShaderMaterial({
+          uniforms: { tAO: { value: null }, tBeauty: { value: null } },
+          vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: 'uniform sampler2D tAO; uniform sampler2D tBeauty; varying vec2 vUv; void main(){ vec3 ao = texture2D(tAO, vUv).rgb; float a = clamp(texture2D(tBeauty, vUv).a, 0.0, 1.0); gl_FragColor = vec4(mix(vec3(1.0), ao, a), 1.0); }',
+          transparent: true, depthTest: false, depthWrite: false, toneMapped: false, blending: T.CustomBlending, blendEquation: T.AddEquation,
+          blendSrc: T.DstColorFactor, blendDst: T.ZeroFactor, blendSrcAlpha: T.DstAlphaFactor, blendDstAlpha: T.ZeroFactor
+        });
+        var rp = ssao.renderPass.bind(ssao), ssaoRef = ssao;
+        ssao.renderPass = function (r, mat, target, cc, ca) {
+          if (mat === ssaoRef.copyMaterial && mat.blending === T.CustomBlending) { aoMix.uniforms.tAO.value = ssaoRef.blurRenderTarget.texture; aoMix.uniforms.tBeauty.value = ssaoRef.beautyRenderTarget.texture; mat = aoMix; }
+          rp(r, mat, target, cc, ca);
+        };
         c.addPass(ssao);
       }
-      if (X.UnrealBloomPass) { bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92); c.addPass(bloom); }
+      if (X.UnrealBloomPass) {
+        bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92); c.addPass(bloom);
+        // 블룸을 장면에 더하는 마지막 합성(G-29): 예전(AdditiveBlending = 블룸 rgb × 블룸 알파를 더함)과 같은 값을 미리 곱해서 내보내고,
+        // 걷기 프로필에서는 '대상 알파'를 곱해 더한다 → 사진 창 화소(알파 0 표시)에는 주변의 밝은 금·돌 블룸이 번지지 않고(창 색 불변, 알파 표시도 유지),
+        // 그 밖의 화소(알파 1)는 예전과 같은 값. 감상 프로필은 예전 식 그대로(applyProfile).
+        var mc = bloom.materialCopy;
+        if (mc) {
+          mc.fragmentShader = 'uniform float opacity; uniform sampler2D tDiffuse; varying vec2 vUv; void main(){ vec4 t = texture2D(tDiffuse, vUv) * opacity; gl_FragColor = vec4(t.rgb * t.a, t.a); }';
+          mc.blending = T.CustomBlending; mc.blendEquation = T.AddEquation; mc.blendDst = T.OneFactor; mc.blendDstAlpha = T.OneFactor;
+          mc.needsUpdate = true;
+        }
+      }
       finalPass = new X.ShaderPass(FINAL_SHADER);
       finalPass.material.toneMapped = false;
       c.addPass(finalPass);
@@ -163,6 +188,8 @@
       // 감상: SSAO 끔(유리·창틀이 어두워지지 않게, 8비트 beauty 타깃도 피한다). 블룸은 햇빛의 HDR(>1.6)만, 강도 0.15·반경 0.4.
       if (ssao) ssao.enabled = !v;
       if (bloom) {
+        var mc = bloom.materialCopy;
+        if (mc && mc.blending === T.CustomBlending) { mc.blendSrc = v ? T.OneFactor : T.DstAlphaFactor; mc.blendSrcAlpha = v ? T.SrcAlphaFactor : T.ZeroFactor; }
         bloom.enabled = !v || !!o.bloom;
         if (v) { bloom.threshold = 1.6; bloom.strength = 0.15; bloom.radius = 0.4; } else { bloom.threshold = 0.92; bloom.strength = 0.3; bloom.radius = 0.55; }
       }

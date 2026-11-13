@@ -127,6 +127,8 @@ export interface PeerView {
   st: St;
   seat: string | null;
   ms: number;
+  /** 무릎 꿇고 기도 중이면 1 (st === 'p' 일 때만). 앉아서 기도면 필드 없음. */
+  k?: 1;
 }
 
 export interface Candle {
@@ -173,6 +175,8 @@ interface Peer {
   st: St;
   seat: string | null;
   ms: number;
+  /** 기도 자세: 0 앉아서, 1 무릎 꿇고 (st === 'p' 일 때만 1) */
+  k: 0 | 1;
   lastPosAt: number;
   moveBudget: number;
   dirty: boolean;
@@ -427,6 +431,7 @@ export class RoomLogic {
       st: seat ? (snap.st === 'p' ? 'p' : 's') : 'w',
       seat,
       ms: seat && snap.st === 'p' && isInt(snap.ms, 0, 3) ? snap.ms : -1,
+      k: seat && snap.st === 'p' && snap.k === 1 ? 1 : 0,
       lastPosAt: now,
       moveBudget: MOVE_BUDGET_MAX,
       dirty: false,
@@ -600,6 +605,7 @@ export class RoomLogic {
       st: 'w',
       seat: null,
       ms: -1,
+      k: 0,
       lastPosAt: now,
       moveBudget: MOVE_BUDGET_MAX,
       dirty: false,
@@ -734,6 +740,7 @@ export class RoomLogic {
     peer.seat = null;
     peer.st = 'w';
     peer.ms = -1;
+    peer.k = 0;
     peer.lastPosAt = now;
     peer.moveBudget = MOVE_BUDGET_MAX;
     peer.dirty = true;
@@ -741,15 +748,24 @@ export class RoomLogic {
   }
 
   private onPray(peer: Peer, m: Message): void {
-    if (typeof m.on !== 'boolean' || !isInt(m.ms, -1, 3) || (m.on && m.ms < 0)) {
+    // k(선택): 기도 자세. 0 앉아서(기본), 1 무릎 꿇고. 있으면 0|1 이어야 한다.
+    if (
+      typeof m.on !== 'boolean' ||
+      !isInt(m.ms, -1, 3) ||
+      (m.on && m.ms < 0) ||
+      (m.k !== undefined && !isInt(m.k, 0, 1))
+    ) {
       this.send(peer.connId, { t: 'error', code: 'bad_msg' });
       return;
     }
     if (peer.seat === null) return; // 앉아 있을 때만 유효(조용히 무시)
     peer.st = m.on ? 'p' : 's';
     peer.ms = m.on ? m.ms : -1;
+    peer.k = m.on && m.k === 1 ? 1 : 0;
     peer.dirty = true;
-    this.broadcastNear(peer, { t: 'praying', id: peer.id, on: m.on, ms: m.ms });
+    const out: Message = { t: 'praying', id: peer.id, on: m.on, ms: m.ms };
+    if (peer.k) out.k = 1;
+    this.broadcastNear(peer, out);
   }
 
   private onCandle(peer: Peer, m: Message): void {
@@ -923,7 +939,7 @@ export class RoomLogic {
   }
 
   private view(p: Peer): PeerView {
-    return {
+    const v: PeerView = {
       id: p.id,
       avatar: { ...p.avatar },
       x: round(p.x, 2),
@@ -933,6 +949,8 @@ export class RoomLogic {
       seat: p.seat,
       ms: p.ms,
     };
+    if (p.k) v.k = 1;
+    return v;
   }
 
   private persist(peer: Peer): void {

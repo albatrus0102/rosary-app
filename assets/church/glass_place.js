@@ -152,6 +152,8 @@
         if (g.state === 'fading') { g.fade += dt; if (g.fade >= FADE) { g.state = 'ready'; settle(g); } }
         u.uFade.value = g.state === 'ready' ? 1 : Math.min(1, g.fade / FADE);
         u.uK.value = k; u.uSelfTone.value = self;
+        // 후처리가 없을 때(low)는 캔버스에 바로 그린다: 알파 0 표시가 캔버스 알파로 남지 않게 보통 알파 합성으로 바꾼다
+        g.mat.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
         var r = 0.012 * night; u.uRefl.value.set(r, r * 0.7, r * 0.45);
       }
       nearT += dt;

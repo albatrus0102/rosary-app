@@ -195,6 +195,7 @@ void main() {
             'outfit': 5,
             'name': 7,
             'g': 0,
+            'nv': 2,
           },
         });
         h.welcome(room: 'stpeter-1', n: 12);

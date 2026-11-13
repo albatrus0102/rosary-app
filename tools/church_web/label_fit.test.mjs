@@ -150,14 +150,17 @@ test('tagLayout: the five longest names fit the pill on two lines without losing
     assert.equal(lay.lines.length, 2, n);
     // 말줄임 없이 전부 보인다(나눈 자리의 공백 하나만 빠진다)
     assert.equal(lay.lines.join('').replace(/ /g, ''), n.replace(/ /g, ''), n);
-    // 가운데 근처에서 나뉜다: 두 줄의 폭 차이가 전체의 절반 이하
+    // 괄호가 있으면 여는 괄호 앞에서, 없으면 가운데 근처(두 줄의 폭 차이가 전체의 절반 이하)에서 나뉜다
     const [a, b] = lay.lines.map((l) => measure(l, lay.fs));
-    assert.ok(Math.abs(a - b) <= (a + b) / 2, `${n}: ${lay.lines.join(' / ')}`);
+    assert.ok(lay.lines[1].startsWith('(') || Math.abs(a - b) <= (a + b) / 2, `${n}: ${lay.lines.join(' / ')}`);
   }
   // 16px 한 줄에 겨우 드는 이름은 한 줄, 조금만 넘쳐도 두 줄(가운데에 가장 가까운 공백에서)
   assert.deepEqual(LF.tagLayout('히야친토 조르다노 안살로네', measure), { fs: 16, lines: ['히야친토 조르다노 안살로네'], w: measure('히야친토 조르다노 안살로네', 16) });
   assert.deepEqual(LF.tagLayout('히야친토 조르다노 안살로네', (t, fs) => measure(t, fs) * 1.1).lines, ['히야친토', '조르다노 안살로네']);
   assert.deepEqual(LF.tagLayout('바울라 몬탈 포르네스(성 요셉 데 갈라산즈의)', measure).lines, ['바울라 몬탈 포르네스', '(성 요셉 데 갈라산즈의)']);
+  assert.deepEqual(LF.tagLayout('데레사 마르가리타(예수 성심의)', measure).lines, ['데레사 마르가리타', '(예수 성심의)']);
+  // 괄호 줄이 너무 길어 안 들어가면 가운데에서 나눈다
+  assert.deepEqual(LF.tagLayout('가나(다라마바사 아자차카타파하 가나다라마)', measure).lines, ['가나(다라마바사', '아자차카타파하 가나다라마)']);
 });
 
 test('tagLayout: every bundled name fits the pill; ellipsis only as a last resort', () => {

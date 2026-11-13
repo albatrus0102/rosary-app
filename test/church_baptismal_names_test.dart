@@ -41,7 +41,10 @@ void main() {
     test('list = TSV order + old-only names appended; N within the cap', () {
       expect(baptismalNames.length, baptismalNameCount);
       expect(baptismalNames.length, 3788);
-      expect(baptismalNames.length, lessThanOrEqualTo(baptismalNameMaxIndex + 1));
+      expect(
+        baptismalNames.length,
+        lessThanOrEqualTo(baptismalNameMaxIndex + 1),
+      );
       expect(baptismalNames.take(tsv.length), tsv);
       final extra = baptismalNames.skip(tsv.length).toList();
       expect(extra, [
@@ -62,54 +65,56 @@ void main() {
       ]);
       for (final n in extra) {
         expect(tsv, isNot(contains(n)));
-        expect(
-          [...known['female']!, ...known['male']!, ...known['legacy']!],
-          contains(n),
-        );
+        expect([
+          ...known['female']!,
+          ...known['male']!,
+          ...known['legacy']!,
+        ], contains(n));
       }
     });
 
-    test('names are clean: unique, trimmed, no feast dates, no odd characters', () {
-      expect(baptismalNames.toSet(), hasLength(baptismalNames.length));
-      final ok = RegExp(r'^[가-힣0-9 ()\[\]]+$');
-      for (final n in baptismalNames) {
-        expect(n.trim(), n);
-        expect(n, isNot(contains('  ')));
-        expect(ok.hasMatch(n), isTrue, reason: n);
-        expect(RegExp(r'\d\d-\d\d').hasMatch(n), isFalse, reason: n);
-      }
-      // 축일 데이터는 앱에 넣지 않는다.
-      final data = File('lib/church/baptismal_names_data.dart').readAsStringSync();
-      expect(RegExp(r'\d\d-\d\d').hasMatch(data), isFalse);
-      // 이상치 표본: 숫자·괄호·대괄호·아주 긴 이름이 그대로 들어 있다.
-      for (final n in [
-        '가누토 4세',
-        '가롤로(성 안드레아의)',
-        '펠릭스 3[2]세',
-        '히야친토 조르다노 안살로네',
-        '바울라 몬탈 포르네스(성 요셉 데 갈라산즈의)',
-      ]) {
-        expect(baptismalIndexOf(n), isNonNegative, reason: n);
-        expect(baptismalNameOf(baptismalIndexOf(n)), n);
-      }
-    });
+    test(
+      'names are clean: unique, trimmed, no feast dates, no odd characters',
+      () {
+        expect(baptismalNames.toSet(), hasLength(baptismalNames.length));
+        final ok = RegExp(r'^[가-힣0-9 ()\[\]]+$');
+        for (final n in baptismalNames) {
+          expect(n.trim(), n);
+          expect(n, isNot(contains('  ')));
+          expect(ok.hasMatch(n), isTrue, reason: n);
+          expect(RegExp(r'\d\d-\d\d').hasMatch(n), isFalse, reason: n);
+        }
+        // 축일 데이터는 앱에 넣지 않는다.
+        final data = File('lib/church/baptismal_names_data.dart')
+            .readAsStringSync();
+        expect(RegExp(r'\d\d-\d\d').hasMatch(data), isFalse);
+        // 이상치 표본: 숫자·괄호·대괄호·아주 긴 이름이 그대로 들어 있다.
+        for (final n in [
+          '가누토 4세',
+          '가롤로(성 안드레아의)',
+          '펠릭스 3[2]세',
+          '히야친토 조르다노 안살로네',
+          '바울라 몬탈 포르네스(성 요셉 데 갈라산즈의)',
+        ]) {
+          expect(baptismalIndexOf(n), isNonNegative, reason: n);
+          expect(baptismalNameOf(baptismalIndexOf(n)), n);
+        }
+      },
+    );
 
     test('every old name exists and maps to the same name', () {
       expect(known['female'], hasLength(65));
       expect(known['male'], hasLength(71));
       expect(known['legacy'], hasLength(40));
-      expect(
-        [for (final i in oldFemaleNameIndices) baptismalNames[i]],
-        known['female'],
-      );
-      expect(
-        [for (final i in oldMaleNameIndices) baptismalNames[i]],
-        known['male'],
-      );
-      expect(
-        [for (final i in legacyNameIndices) baptismalNames[i]],
-        known['legacy'],
-      );
+      expect([
+        for (final i in oldFemaleNameIndices) baptismalNames[i],
+      ], known['female']);
+      expect([
+        for (final i in oldMaleNameIndices) baptismalNames[i],
+      ], known['male']);
+      expect([
+        for (final i in legacyNameIndices) baptismalNames[i],
+      ], known['legacy']);
       for (var i = 0; i < 65; i++) {
         expect(
           baptismalNames[migrateBaptismalName(i, gender: avatarFemale)],
@@ -136,21 +141,17 @@ void main() {
     test('popular names keep the old per-gender order, looked up by name', () {
       expect(popularBaptismalShown, 8);
       expect(popularBaptismalCount, 12);
-      expect(
-        [for (final i in popularBaptismalIndices(avatarFemale)) baptismalNames[i]],
-        known['female']!.take(8),
-      );
-      expect(
-        [for (final i in popularBaptismalIndices(avatarMale)) baptismalNames[i]],
-        known['male']!.take(8),
-      );
-      expect(
-        [
-          for (final i in popularBaptismalIndices(avatarMale, 12))
-            baptismalNames[i],
-        ],
-        known['male']!.take(12),
-      );
+      expect([
+        for (final i in popularBaptismalIndices(avatarFemale))
+          baptismalNames[i],
+      ], known['female']!.take(8));
+      expect([
+        for (final i in popularBaptismalIndices(avatarMale)) baptismalNames[i],
+      ], known['male']!.take(8));
+      expect([
+        for (final i in popularBaptismalIndices(avatarMale, 12))
+          baptismalNames[i],
+      ], known['male']!.take(12));
       expect(commonBaptismalIndicesFor(avatarFemale), hasLength(65));
       expect(commonBaptismalIndicesFor(avatarMale), hasLength(71));
     });
@@ -242,12 +243,13 @@ void main() {
           .toList();
       expect(list.length, baptismalNames.length);
       expect(list, baptismalNames);
-      List<int> ints(String key) => RegExp('$key: \\[([0-9,]*)\\]')
-          .firstMatch(js)!
-          .group(1)!
-          .split(',')
-          .map(int.parse)
-          .toList();
+      List<int> ints(String key) =>
+          RegExp('$key: \\[([0-9,]*)\\]')
+              .firstMatch(js)!
+              .group(1)!
+              .split(',')
+              .map(int.parse)
+              .toList();
       expect(ints('oldF'), oldFemaleNameIndices);
       expect(ints('oldM'), oldMaleNameIndices);
       expect(ints('legacy'), legacyNameIndices);

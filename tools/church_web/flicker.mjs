@@ -40,6 +40,8 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
   await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality, solo: '0' }));   // solo:'0' = 군중 NPC 없음(움직이는 사람은 깜빡임이 아니다)
   await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 180000, polling: 500 });
   await page.waitForTimeout(2000);
+  // 성당 안 사진 창(G-29)이 다 올라온 뒤에 잰다(질감이 늦게 와서 교차 페이드가 측정 구간에 걸리지 않게)
+  await page.waitForFunction(() => !window.__church.place || window.__church.place.debug().pending === 0, null, { timeout: 120000, polling: 250 });
   await page.evaluate(() => { document.body.classList.add('hideui'); if (__church.meAv) __church.meAv.root.visible = false; });
   const res = [];
   for (const v of (views || VIEWS[id] || DEFAULT_VIEW)) {
@@ -48,7 +50,7 @@ export async function measure(browser, id, { frames = 10, size = '640x360', qual
       A.world.setHour(v.hour);
       if (v.x !== undefined) { A.me.x = v.x; A.me.z = v.z; A.me.y = A.logic.floorY(v.x, v.z); }
       if (v.yaw !== undefined) { A.ctl.yaw = v.yaw * D; A.me.yaw = A.ctl.yaw; }
-      A.ctl.pitch = v.pitch * D; A.ctl.look = 0; A.camInit = false;
+      A.ctl.pitch = v.pitch * D; A.ctl.look = (v.look || 0) * D; A.camInit = false;   // look: 올려다보기(창이 높은 성당, glassplace.mjs)
     }, v);
     // 카메라·성당 훅(피렌체 돔 기울기 등 시간 상수 ~0.3s)이 완전히 안착하도록 2초(50ms×40) 흘린다. 움직이는 카메라는 깜빡임이 아니다.
     for (let i = 0; i < 4; i++) await page.evaluate(() => __step(10, 50));

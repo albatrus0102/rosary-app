@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../assets/church');
-const SPEC_METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap', 'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality', 'emote', 'setSeatTaken', 'walkTo', 'cancelWalk', 'tapAt'];
+const SPEC_METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setPrayerPosture', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap', 'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality', 'emote', 'setSeatTaken', 'walkTo', 'cancelWalk', 'tapAt'];
 let fail = 0;
 function check(name, cond, extra) { console.log((cond ? 'PASS ' : 'FAIL ') + name + (extra !== undefined ? '  ' + JSON.stringify(extra) : '')); if (!cond) fail++; }
 
