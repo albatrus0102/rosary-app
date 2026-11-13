@@ -2,10 +2,10 @@
 """십자가의 길·신비 배경 그림을 번들용 WebP 로 줄인다(원본은 번들 밖 art/images_unused/ 에 둔다).
 
 출력
-  assets/images/stations/station_NN.webp   가로 600px, 장당 40KB 이하(묵상 시트·고통의 신비 배경 3·4·5단)
-  assets/images/mysteries/<set>_<n>.webp   짧은 변 540px(긴 변 900px 이하), 장당 32KB 이하(기도 화면 배경)
+  assets/images/stations/station_NN.webp   가로 600px, 장당 33KB 이하(묵상 시트·고통의 신비 배경 3·4·5단)
+  assets/images/mysteries/<set>_<n>.webp   짧은 변 540px(긴 변 900px 이하), 장당 24KB 이하(기도 화면 배경)
                                            고통의 신비 3·4·5단은 십자가의 길 그림(1·2·12처)을 쓰므로 만들지 않는다.
-  assets/church/cross_pack.js              성당 3D 14처 판용 그림 아틀라스(7×2칸, 칸 240×296) WebP data URI
+  assets/church/cross_pack.js              성당 3D 14처 판용 그림 아틀라스(7×2칸, 칸 216×266) WebP data URI
                                            (file:// WebView 에서는 WebGL 이 같은 폴더 그림도 막으므로 <script> 로 싣는다)
 출처·라이선스: docs/ux/ART_REFERENCES.md (모두 Public domain 또는 CC0).
 
@@ -25,7 +25,7 @@ OUT_PACK = os.path.join(ROOT, 'assets', 'church', 'cross_pack.js')
 
 SETS = ['joyful', 'luminous', 'sorrowful', 'glorious']
 SKIP = {('sorrowful', 3), ('sorrowful', 4), ('sorrowful', 5)}
-CELL_W, CELL_H, COLS = 240, 296, 7
+CELL_W, CELL_H, COLS = 216, 266, 7
 
 
 def webp_under(img, limit, q0=82, qmin=30):
@@ -47,7 +47,7 @@ def main():
         im = Image.open(os.path.join(SRC, f'station_{n:02d}.jpg')).convert('RGB')
         w, h = im.size
         big = im.resize((600, round(h * 600 / w)), Image.LANCZOS)
-        data, q = webp_under(big, 40 * 1024)
+        data, q = webp_under(big, 33 * 1024)
         with open(os.path.join(OUT_ST, f'station_{n:02d}.webp'), 'wb') as f:
             f.write(data)
         total += len(data)
@@ -69,19 +69,19 @@ def main():
             if max(w, h) * s > 900:
                 s = 900 / max(w, h)
             sm = im.resize((round(w * s), round(h * s)), Image.LANCZOS)
-            data, q = webp_under(sm, 32 * 1024, q0=72)
+            data, q = webp_under(sm, 24 * 1024, q0=70)
             with open(os.path.join(OUT_MY, f'{st}_{n}.webp'), 'wb') as f:
                 f.write(data)
             total += len(data)
             print(f'{st}_{n}.webp {sm.size} q{q} {len(data)}B')
-    data, q = webp_under(atlas, 150 * 1024, q0=80)
+    data, q = webp_under(atlas, 80 * 1024, q0=80)
     with open(os.path.join(ROOT, 'art', 'images_unused', 'cross_atlas.webp'), 'wb') as f:
         f.write(data)
     js = ('/* cross_pack.js — 생성 파일(tools/stations/build_art.py). 십자가의 길 14처 그림 아틀라스(7×2칸, 칸 %dx%d),\n'
           '   게프하르트 푸겔 〈십자가의 길〉(1921), 사진 Andreas Praefcke, Public domain (docs/ux/ART_REFERENCES.md §3). */\n'
           'window.ChurchCrossPack = { cols: %d, rows: 2, cellW: %d, cellH: %d, w: %d, h: %d, src: "data:image/webp;base64,%s" };\n'
           % (CELL_W, CELL_H, COLS, CELL_W, CELL_H, atlas.width, atlas.height, base64.b64encode(data).decode('ascii')))
-    with open(OUT_PACK, 'w', encoding='ascii') as f:
+    with open(OUT_PACK, 'w', encoding='utf-8') as f:
         f.write(js)
     total += len(js)
     print(f'cross_pack.js atlas {atlas.size} q{q} webp {len(data)}B js {len(js)}B')
