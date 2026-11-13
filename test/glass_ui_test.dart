@@ -7,6 +7,7 @@ import 'package:rosary_app/glass/glass_flat_viewer.dart';
 import 'package:rosary_app/glass/glass_gallery.dart';
 import 'package:rosary_app/glass/glass_info_sheet.dart';
 import 'package:rosary_app/glass/glass_licenses_screen.dart';
+import 'package:rosary_app/glass/glass_pack_image.dart';
 import 'package:rosary_app/glass/glass_policy.dart';
 import 'package:rosary_app/glass/glass_view_screen.dart';
 
@@ -69,9 +70,11 @@ bool chromeShown(WidgetTester tester) {
 }
 
 void main() {
+  // 화면 일반 동작 시험은 46점 전체로 돌린다(분류·치수·긴 제목 등 다양한 창). 앱이 실제로
+  // 읽는 8점 카탈로그의 동작은 맨 아래 'bundled-only policy' 묶음에서 따로 시험한다.
   late GlassCatalog catalog;
   setUp(() {
-    catalog = testGlassCatalog();
+    catalog = testFullGlassCatalog();
   });
   tearDown(Analytics.debugReset);
 
@@ -700,7 +703,7 @@ void main() {
       _size(tester, const Size(400, 900));
       await tester.pumpWidget(
         MaterialApp(
-          home: GlassLicensesScreen(catalog: testGlassCatalogFuture()),
+          home: GlassLicensesScreen(catalog: testFullGlassCatalogFuture()),
         ),
       );
       await tester.pump();
@@ -763,11 +766,136 @@ void main() {
       _size(tester);
       await tester.pumpWidget(
         _app(
-          GlassLicensesScreen(catalog: testGlassCatalogFuture()),
+          GlassLicensesScreen(catalog: testFullGlassCatalogFuture()),
           textScale: 2.0,
         ),
       );
       await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+  });
+  // APK 용량 정책: 성당 안에 걸 8점만 번들에 싣고, 나머지 38점은 앱에서 존재를 숨긴다.
+  group('bundled-only policy (8 windows)', () {
+    const bundled = {
+      'dove_stpeter',
+      'alabaster_stpaul_1',
+      'alabaster_stpaul_2',
+      'alabaster_slab',
+      'oculus_florence_donatello',
+      'oculus_florence_ghiberti_1',
+      'oculus_florence_ghiberti_2',
+      'milan_apse_lower',
+    };
+    final fixedDay = DateTime(2026, 11, 12, 9);
+
+    Future<void> pumpApp(WidgetTester tester, {double textScale = 1.0}) async {
+      _size(tester, const Size(360, 2400));
+      await tester.pumpWidget(
+        _app(
+          GlassGallery(
+            catalog: testGlassCatalog(),
+            now: () => fixedDay,
+            onOpen: (_, _) {},
+          ),
+          textScale: textScale,
+        ),
+      );
+      await tester.pump();
+    }
+
+    testWidgets('gallery shows exactly the 8 bundled windows, no crash', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      expect(find.text('창 8개'), findsOneWidget);
+      expect(find.text('창 46개'), findsNothing);
+      for (final id in bundled) {
+        expect(
+          find.byKey(ValueKey('glass-card-$id')),
+          findsOneWidget,
+          reason: id,
+        );
+      }
+      expect(find.byType(GlassCard), findsNWidgets(8));
+      // 번들 밖 창의 카드·제목은 어디에도 없다.
+      final all = testFullGlassCatalog().all;
+      for (final w in all.where((w) => !bundled.contains(w.id))) {
+        expect(find.byKey(ValueKey('glass-card-${w.id}')), findsNothing);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('today\'s window is always one of the bundled ones', (
+      tester,
+    ) async {
+      final c = testGlassCatalog();
+      for (var i = 0; i < 60; i++) {
+        final d = DateTime(2026, 11, 12 + i);
+        expect(bundled, contains(c.windowOfTheDay(d)!.id));
+      }
+      await pumpApp(tester);
+      final today = c.windowOfTheDay(fixedDay)!;
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('glass-today')),
+          matching: find.text(today.titleKo),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('filter options only count bundled windows', (tester) async {
+      await pumpApp(tester);
+      await tester.tap(find.byKey(const ValueKey('filter-church')));
+      await tester.pumpAndSettle();
+      // 번들 밖 소재지(샤르트르 등)는 선택지에 없다.
+      expect(find.textContaining('샤르트르'), findsNothing);
+      expect(find.byType(FilterChip), findsWidgets);
+      final c = testGlassCatalog();
+      for (final site in c.sites) {
+        expect(find.textContaining(site), findsWidgets, reason: site);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('licenses screen lists only the 8 bundled credits', (
+      tester,
+    ) async {
+      _size(tester, const Size(400, 900));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GlassLicensesScreen(catalog: testGlassCatalogFuture()),
+        ),
+      );
+      await tester.pump();
+      expect(find.textContaining('창 사진 8점'), findsOneWidget);
+      expect(find.textContaining('창 사진 46점'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('flat viewer of a bundled window builds from the photo pack', (
+      tester,
+    ) async {
+      _size(tester);
+      final w = testGlassCatalog().byId('alabaster_stpaul_1')!;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GlassFlatViewer(window: w, onBack: () {}, onInfo: () {}),
+        ),
+      );
+      await tester.pump();
+      final img = tester.widget<Image>(
+        find.descendant(
+          of: find.byKey(const ValueKey('flat-viewer')),
+          matching: find.byType(Image),
+        ),
+      );
+      expect(
+        img.image,
+        const GlassPackImage('assets/church/gpack_alabaster_stpaul_1_1k.js'),
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 5));
       expect(tester.takeException(), isNull);
     });
   });

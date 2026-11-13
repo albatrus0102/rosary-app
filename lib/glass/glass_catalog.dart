@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show AssetImage, ImageProvider;
+
+import 'glass_pack_image.dart';
 
 /// 창 감상실에서 창 식별에 쓰는 id 규칙(분석 속성 `win`의 값 규칙과 같다).
 final RegExp glassIdPattern = RegExp(r'^[a-z0-9_]{1,40}$');
@@ -140,12 +143,29 @@ class GlassFile {
     required this.width,
     required this.height,
     required this.bundled,
+    this.pack,
+    this.bytes = 0,
   });
 
+  /// 원본 WebP 경로. 번들 밖(art/…)일 수 있다. [bundled]가 true이고 [pack]이 없을 때만
+  /// 이 경로가 곧 자산이다(썸네일).
   final String path;
   final int width;
   final int height;
+
+  /// 앱 번들에 실리는가. 1k가 false인 창은 번들 밖이라 앱이 존재를 모르는 척한다.
   final bool bundled;
+
+  /// 번들에 실린 창 사진 팩(`assets/church/gpack_<id>_1k.js`). 있으면 .webp 가 번들에 없고
+  /// 3D 감상실과 평면 보기가 이 팩 하나를 읽는다(용량). 없으면 [path]가 자산이다.
+  final String? pack;
+
+  /// 원본 WebP 의 바이트 수(카탈로그 `bytes`, 없으면 0).
+  final int bytes;
+
+  /// 이 파일을 그리는 이미지 공급자.
+  ImageProvider get provider =>
+      pack != null ? GlassPackImage(pack!) : AssetImage(path);
 }
 
 class GlassPlacement {
@@ -235,7 +255,7 @@ class GlassWindow {
     return t != null && t.bundled && t.path.isNotEmpty ? t : file1k;
   }
 
-  /// 평면 보기가 그리는 파일: 번들에 2k가 있으면(성당 안에 걸리는 창) 2k, 아니면 1k.
+  /// 평면 보기가 그리는 파일: 번들에 2k가 있으면 2k, 아니면 1k(지금은 1k 사진 팩).
   GlassFile get flatFile => file2k.bundled ? file2k : file1k;
 
   /// 실제 치수(가로·세로를 모두 아는 경우)의 비율이 사진 비율과 어긋나는 정도(0.02 = 2%).
@@ -453,16 +473,17 @@ List<GlassIssue> validateGlassWindow(GlassWindow w, {int? thisYear}) {
     err('CC BY 라이선스 링크 없음');
   }
   if (w.aspect <= 0 || !w.aspect.isFinite) err('aspect_w_over_h가 올바르지 않음');
-  if (!w.file1k.path.endsWith('.webp') || !w.file1k.bundled) {
-    err('1k 파일이 번들되지 않음');
+  // 번들 밖 창(file1k.bundled == false)은 [GlassCatalog.parse]가 오류 없이 건너뛴다.
+  if (!w.file1k.path.endsWith('.webp')) err('1k 파일 경로가 올바르지 않음');
+  final pack = w.file1k.pack;
+  if (w.file1k.bundled && pack != null && !pack.endsWith('.js')) {
+    err('1k 사진 팩 경로가 올바르지 않음');
   }
-  // 2k는 성당 3D 안에 걸리는 창만 번들에 둔다(나머지는 art/glass_2k/, 앱은 1k를 쓴다).
+  // 2k는 번들에 싣지 않는다(art/glass_2k/). 서버가 생기면 내려받는다.
   if (!w.file2k.path.endsWith('.webp')) err('2k 파일 경로가 올바르지 않음');
-  if (w.isAuthentic && !w.file2k.bundled) {
-    err('진본 배치 창인데 2k 파일이 번들되지 않음');
-  }
   final thumb = w.fileThumb;
-  if (thumb != null && (!thumb.path.endsWith('.webp') || !thumb.bundled)) {
+  if (thumb != null &&
+      (!thumb.path.endsWith('.webp') || (w.file1k.bundled && !thumb.bundled))) {
     err('썸네일이 번들되지 않음');
   }
 
@@ -499,7 +520,7 @@ List<GlassIssue> validateGlassWindow(GlassWindow w, {int? thisYear}) {
 // ---------------------------------------------------------------------------
 
 class GlassCatalog {
-  GlassCatalog._(this.all, this.issues)
+  GlassCatalog._(this.all, this.issues, this.unbundledIds)
     : _byId = {for (final w in all) w.id: w};
 
   /// 검증을 통과한 창(원래 순서).
@@ -507,6 +528,10 @@ class GlassCatalog {
 
   /// 읽는 동안 나온 문제. 오류가 난 창은 [all]에서 빠져 있다.
   final List<GlassIssue> issues;
+
+  /// 카탈로그에는 있지만 번들에 싣지 않은 창의 id(앱은 존재를 숨긴다. 서버가 생기면 내려받는다).
+  /// [GlassCatalog.parse]의 `includeUnbundled`가 true이면 이 창들이 [all]에도 들어 있다.
+  final List<String> unbundledIds;
   final Map<String, GlassWindow> _byId;
 
   static const String assetPath = 'assets/church/glass_catalog.json';
@@ -522,13 +547,22 @@ class GlassCatalog {
   GlassWindow? byId(String id) => _byId[id];
 
   /// JSON 문자열을 읽는다. 오류가 있는 창은 [issues]에 남기고 목록에서 뺀다.
-  static GlassCatalog parse(String source, {int? thisYear}) {
+  ///
+  /// 번들에 싣지 않은 창(`files.1k.bundled:false`)은 갤러리·오늘의 창·필터·검색·라이선스
+  /// 화면 어디에도 나오지 않도록 [all]에서 뺀다([unbundledIds]에만 남는다). 분류·검증
+  /// 시험처럼 전체 카탈로그가 필요할 때만 [includeUnbundled]를 켠다.
+  static GlassCatalog parse(
+    String source, {
+    int? thisYear,
+    bool includeUnbundled = false,
+  }) {
     final root = jsonDecode(source);
     if (root is! Map) throw const FormatException('카탈로그 최상위가 객체가 아님');
     final list = root['windows'];
     if (list is! List) throw const FormatException('windows 목록이 없음');
     final windows = <GlassWindow>[];
     final issues = <GlassIssue>[];
+    final unbundled = <String>[];
     final seen = <String>{};
     for (final raw in list) {
       if (raw is! Map) continue;
@@ -541,6 +575,10 @@ class GlassCatalog {
         );
         continue;
       }
+      if (!w.file1k.bundled) {
+        unbundled.add(w.id);
+        if (!includeUnbundled) continue;
+      }
       final found = validateGlassWindow(w, thisYear: thisYear);
       if (!seen.add(w.id)) {
         found.add(GlassIssue(GlassIssueLevel.error, w.id, 'id 중복'));
@@ -551,6 +589,7 @@ class GlassCatalog {
     return GlassCatalog._(
       List.unmodifiable(windows),
       List.unmodifiable(issues),
+      List.unmodifiable(unbundled),
     );
   }
 
@@ -673,6 +712,10 @@ GlassFile _file(Object? raw) {
         ? (px[1] as num).toInt()
         : 0,
     bundled: m['bundled'] == true,
+    bytes: m['bytes'] is num ? (m['bytes'] as num).toInt() : 0,
+    pack: m['pack'] is String && (m['pack'] as String).isNotEmpty
+        ? m['pack'] as String
+        : null,
   );
 }
 

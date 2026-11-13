@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../app/prayer_text_short.dart';
+import '../../app/settings.dart';
 import '../../app/theme.dart';
 import '../../domain/prayer_mode.dart';
 import '../../domain/rosary_sequence.dart';
@@ -24,6 +25,7 @@ class PrayerTextView extends StatefulWidget {
     required this.step,
     required this.stepIndex,
     required this.mode,
+    required this.font,
     required this.scale,
     required this.onAdvance,
     this.short = false,
@@ -36,6 +38,7 @@ class PrayerTextView extends StatefulWidget {
   /// 스텝이 바뀌면 맨 위로 되돌리고 페이드인을 다시 한다.
   final int stepIndex;
   final PrayerMode mode;
+  final PrayerFont font;
 
   /// 기도문 글자 크기 배율(앱 설정, 필요하면 시스템 배율과 합친 값).
   final double scale;
@@ -190,6 +193,7 @@ class _PrayerTextViewState extends State<PrayerTextView> {
     final content = _Content(
       step: step,
       mode: widget.mode,
+      font: widget.font,
       scale: scale,
       short: shortShown ? shortForm : null,
       leaderSpeaking: widget.leaderSpeaking,
@@ -364,6 +368,7 @@ class _Content extends StatelessWidget {
   const _Content({
     required this.step,
     required this.mode,
+    required this.font,
     required this.scale,
     required this.short,
     required this.leaderSpeaking,
@@ -371,6 +376,7 @@ class _Content extends StatelessWidget {
 
   final RosaryStep step;
   final PrayerMode mode;
+  final PrayerFont font;
   final double scale;
   final ShortPrayer? short;
   final bool leaderSpeaking;
@@ -383,7 +389,13 @@ class _Content extends StatelessWidget {
         if (leaderSpeaking) const _LeaderPlayingBadge(),
         if (step.heading != null)
           _HeadingCard(heading: step.heading!, scale: scale),
-        _PrayerText(step: step, mode: mode, scale: scale, short: short),
+        _PrayerText(
+          step: step,
+          mode: mode,
+          font: font,
+          scale: scale,
+          short: short,
+        ),
       ],
     );
   }
@@ -466,12 +478,14 @@ class _PrayerText extends StatelessWidget {
   const _PrayerText({
     required this.step,
     required this.mode,
+    required this.font,
     required this.scale,
     required this.short,
   });
 
   final RosaryStep step;
   final PrayerMode mode;
+  final PrayerFont font;
   final double scale;
 
   /// 있으면 전문 대신 이 첫머리를 보인다.
@@ -487,7 +501,13 @@ class _PrayerText extends StatelessWidget {
     final small = big - 6 * scale;
 
     TextStyle style(double size, Color color, {bool bold = false}) =>
-        AppTheme.prayerStyle(context, size: size, color: color, bold: bold);
+        AppTheme.prayerStyle(
+          context,
+          font,
+          size: size,
+          color: color,
+          bold: bold,
+        );
 
     final short = this.short;
     // 짧게 보기의 보조 줄은 더 작게 해서 큰 글자에서도 한 줄에 들어가게 한다.

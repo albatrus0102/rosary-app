@@ -4,7 +4,25 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/glass/glass_catalog.dart';
 
+const _bundledIds = {
+  'dove_stpeter',
+  'alabaster_stpaul_1',
+  'alabaster_stpaul_2',
+  'alabaster_slab',
+  'oculus_florence_donatello',
+  'oculus_florence_ghiberti_1',
+  'oculus_florence_ghiberti_2',
+  'milan_apse_lower',
+};
+
+/// 전체 카탈로그 46점(번들 밖 38점 포함): 분류·검증 시험용.
 GlassCatalog _real() => GlassCatalog.parse(
+  File('assets/church/glass_catalog.json').readAsStringSync(),
+  includeUnbundled: true,
+);
+
+/// 앱이 실제로 읽는 카탈로그: 번들된 8점뿐.
+GlassCatalog _app() => GlassCatalog.parse(
   File('assets/church/glass_catalog.json').readAsStringSync(),
 );
 
@@ -76,18 +94,59 @@ void main() {
       for (final w in c.all) {
         expect(glassIdPattern.hasMatch(w.id), isTrue, reason: w.id);
         expect(w.source.licenseKind, isNotNull, reason: w.id);
-        expect(w.file1k.bundled, isTrue);
+        // 원본 WebP는 번들 안이든 밖(art/)이든 저장소에 있다. 2k는 어느 창도 번들에 없다.
         expect(File(w.file1k.path).existsSync(), isTrue, reason: w.file1k.path);
-        // 2k는 성당 안에 걸리는 창만 번들에 있다. 나머지는 art/glass_2k/에 보존한다.
         expect(File(w.file2k.path).existsSync(), isTrue, reason: w.file2k.path);
-        expect(
-          w.file2k.path.startsWith('assets/church/'),
-          w.file2k.bundled,
-          reason: w.id,
-        );
-        if (w.isAuthentic) expect(w.file2k.bundled, isTrue, reason: w.id);
+        expect(w.file2k.bundled, isFalse, reason: w.id);
+        expect(w.file2k.path, startsWith('art/glass_2k/'), reason: w.id);
+        expect(w.file1k.bundled, _bundledIds.contains(w.id), reason: w.id);
       }
       expect({for (final w in c.all) w.id}, hasLength(46));
+    });
+
+    test('app catalog: only the 8 in-church windows, 38 are hidden', () {
+      final c = _app();
+      expect(c.issues.where((i) => i.isError), isEmpty);
+      expect({for (final w in c.all) w.id}, _bundledIds);
+      expect(c.visible, hasLength(8));
+      expect(c.unbundledIds, hasLength(38));
+      expect(c.unbundledIds.toSet().intersection(_bundledIds), isEmpty);
+      // 번들 밖 창은 어떤 질의에도 나오지 않는다.
+      for (final id in c.unbundledIds) {
+        expect(c.byId(id), isNull, reason: id);
+      }
+      expect(c.sites.length, lessThanOrEqualTo(8));
+      expect(c.sites, isNot(contains('샤르트르')), reason: '번들 밖 소재지는 필터에 없다');
+      for (final w in c.all) {
+        // 번들에는 1k 사진 팩과 썸네일만 있다(같은 그림을 .webp로 또 싣지 않는다).
+        expect(w.file1k.pack, 'assets/church/gpack_${w.id}_1k.js');
+        expect(File(w.file1k.pack!).existsSync(), isTrue, reason: w.id);
+        expect(w.fileThumb!.bundled, isTrue, reason: w.id);
+        expect(File(w.fileThumb!.path).existsSync(), isTrue, reason: w.id);
+        expect(w.galleryFile.path, startsWith('assets/church/'));
+        expect(w.flatFile, same(w.file1k));
+        expect(
+          File('assets/church/glass_${w.id}_1k.webp').existsSync(),
+          isFalse,
+          reason: '${w.id}: 1k webp는 번들에 없다',
+        );
+        expect(
+          File('assets/church/glass_${w.id}_2k.webp').existsSync(),
+          isFalse,
+        );
+        expect(File('assets/church/gpack_${w.id}_2k.js').existsSync(), isFalse);
+      }
+      // 번들 밖 창의 파일은 assets/church 에 하나도 남지 않았다.
+      for (final id in c.unbundledIds) {
+        for (final suffix in ['1k.webp', 'th.webp']) {
+          expect(
+            File('assets/church/glass_${id}_$suffix').existsSync(),
+            isFalse,
+            reason: '$id $suffix',
+          );
+        }
+        expect(File('assets/church/gpack_${id}_1k.js').existsSync(), isFalse);
+      }
     });
 
     test('license counts and CC BY credit rules', () {
@@ -151,6 +210,15 @@ void main() {
       expect(c.byForm(GlassForm.rose), isNotEmpty);
       expect(c.byForm(GlassForm.alabaster), hasLength(3));
       expect(c.byColor(GlassColorTag.clear), isNotEmpty);
+    });
+
+    test('window of the day only picks bundled windows', () {
+      final c = _app();
+      final ids = <String>{};
+      for (var i = 0; i < 40; i++) {
+        ids.add(c.windowOfTheDay(DateTime(2026, 11, 12 + i))!.id);
+      }
+      expect(ids, _bundledIds);
     });
 
     test('window of the day: deterministic, rotates, covers everything', () {
@@ -259,15 +327,29 @@ void main() {
       );
     });
 
-    test('duplicate ids and unbundled files are errors', () {
+    test('duplicate ids are errors; unbundled windows are skipped quietly', () {
       expect(_of([_win('dup'), _win('dup')]).all, hasLength(1));
       final unb = _win('unb');
       (unb['files'] as Map)['1k'] = {
-        'path': 'x.webp',
+        'path': 'art/glass_unbundled/x.webp',
         'px': [1, 1],
         'bundled': false,
       };
-      expect(_of([unb]).all, isEmpty);
+      final c = _of([unb, _win('kept')]);
+      expect(c.all.map((w) => w.id), ['kept']);
+      expect(c.unbundledIds, ['unb']);
+      expect(c.issues.where((i) => i.isError), isEmpty);
+      expect(c.byId('unb'), isNull);
+      expect(c.windowOfTheDay(DateTime(2026, 11, 1))!.id, 'kept');
+      // 전체가 필요한 시험용 스위치
+      final full = GlassCatalog.parse(
+        jsonEncode({
+          'version': 1,
+          'windows': [unb],
+        }),
+        includeUnbundled: true,
+      );
+      expect(full.all.map((w) => w.id), ['unb']);
     });
 
     test('CC BY without credit_required is an error', () {

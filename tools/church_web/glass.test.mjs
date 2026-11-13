@@ -21,25 +21,31 @@ test('catalog index and lookup', () => {
   assert.equal(GM.lookup(idx, 'no_such_window'), null);
 });
 
-test('every catalog window has a bundled 1k file and data pack; 2k only where the catalog says bundled', () => {
-  // 앱의 감상실은 t1 만 요청한다. 2k 는 성당 3D 안에 걸 창만 번들에 남긴다(tools/glass_bundle/glass_bundle.py unbundle2k).
-  let kept2k = 0;
+const bundledWins = cat.windows.filter((w) => w.files['1k'].bundled !== false);
+const BUNDLED_IDS = ['dove_stpeter', 'alabaster_stpaul_1', 'alabaster_stpaul_2', 'alabaster_slab', 'oculus_florence_donatello', 'oculus_florence_ghiberti_1', 'oculus_florence_ghiberti_2', 'milan_apse_lower'];
+
+test('only the 8 in-church windows are bundled: 1k data pack only (no webp, no 2k); the rest stay out of assets', () => {
+  // 번들 정책(tools/glass_bundle/glass_bundle.py slim): 성당 안에 걸 8점만, gpack_1k 하나만(평면 보기도 이 파일을 읽는다).
+  assert.deepEqual(bundledWins.map((w) => w.id).sort(), [...BUNDLED_IDS].sort());
   for (const w of cat.windows) {
+    const bundled = w.files['1k'].bundled !== false;
+    assert.equal(fs.existsSync(path.join(assets, GM.packFile(w.id, 't1'))), bundled, GM.packFile(w.id, 't1') + ' (node tools/church_web/build_glasspack.mjs)');
+    if (bundled) assert.equal(w.files['1k'].pack, 'assets/church/' + GM.packFile(w.id, 't1'), w.id);
     for (const t of ['t1', 't2']) {
       const px = GM.tierPx(w, t);
       assert.ok(px && px[0] > 0 && px[1] > 0, w.id + ' ' + t);
-      const bundled = t === 't1' ? true : w.files['2k'].bundled !== false;
-      if (t === 't1') assert.equal(w.files['1k'].bundled, true, w.id);
-      if (t === 't2' && bundled) kept2k++;
-      assert.equal(fs.existsSync(path.join(assets, GM.tierFile(w.id, t))), bundled, GM.tierFile(w.id, t));
-      assert.equal(fs.existsSync(path.join(assets, GM.packFile(w.id, t))), bundled, GM.packFile(w.id, t) + ' (node tools/church_web/build_glasspack.mjs)');
+      // 1k webp·2k webp·gpack_2k 는 어떤 창도 번들에 없다
+      assert.equal(fs.existsSync(path.join(assets, GM.tierFile(w.id, t))), false, GM.tierFile(w.id, t));
     }
-    // 성당 안의 실제 자리(authentic)에 걸 창은 2k 를 번들에 둔다(G-29).
-    if ((w.suggestedChurches || []).some((p) => p.use === 'authentic')) assert.notEqual(w.files['2k'].bundled, false, w.id);
+    assert.equal(fs.existsSync(path.join(assets, GM.packFile(w.id, 't2'))), false, GM.packFile(w.id, 't2'));
+    assert.equal(w.files['2k'].bundled, false, w.id);
     assert.equal(Math.max(...GM.tierPx(w, 't2')), w.files['2k'].px[0] >= w.files['2k'].px[1] ? w.files['2k'].px[0] : w.files['2k'].px[1]);
+    if (bundled) assert.ok(fs.existsSync(path.join(here, '../..', w.files['1k'].path)), 'source webp ' + w.files['1k'].path);
   }
-  assert.ok(kept2k >= 7, 'authentic windows keep 2k');
-  assert.ok(fs.existsSync(path.join(assets, 'glass_catalog.js')));
+  // 앱에 실리는 카탈로그 사본에는 번들된 창만 들어 있다
+  const sandbox = { window: {} };
+  new Function('window', fs.readFileSync(path.join(assets, 'glass_catalog.js'), 'utf8'))(sandbox.window);
+  assert.deepEqual(sandbox.window.ChurchGlassCatalog.windows.map((w) => w.id).sort(), [...BUNDLED_IDS].sort());
 });
 
 test('sizeOf keeps the photo aspect and uses known sizes', () => {

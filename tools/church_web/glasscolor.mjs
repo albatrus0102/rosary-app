@@ -23,13 +23,15 @@ const repo = path.resolve(here, '../..');
 const root = path.join(repo, 'assets/church');
 
 export const LIMITS = { median: 1.5, p95: 4.0, hue: 2.0, iou: 0.98, flicker: FLICKER_THRESH, resident: 2 };
-export const COLOR_IDS = ['rose_notredame_north', 'rose_chartres_north', 'lancet_cologne', 'oculus_florence_donatello', 'dove_stpeter', 'alabaster_stpaul_1', 'medallion_chartres'];
-export const IOU_IDS = ['rose_notredame_north', 'lancet_chartres_belle', 'oculus_florence_donatello'];
+// 번들된 창(성당 안에 걸 8점, tools/glass_bundle)만 시험한다. 번들 밖 창은 gpack 이 없어 file:// 로 열 수 없다.
+// 번들에는 1k 만 있으므로 t2 를 요청해도 t1 로 내려가고(glass_view.js), 마스터(art/glass_masters)와 비교한다.
+export const COLOR_IDS = ['oculus_florence_donatello', 'dove_stpeter', 'alabaster_stpaul_1', 'milan_apse_lower'];
+export const IOU_IDS = ['oculus_florence_donatello', 'oculus_florence_ghiberti_1', 'dove_stpeter'];
 const ARGS = ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 
 function masterPath(id) {
   const m = path.join(repo, 'art/glass_masters', `glass_${id}.webp`);
-  return fs.existsSync(m) ? m : path.join(root, `glass_${id}_2k.webp`);
+  return fs.existsSync(m) ? m : path.join(repo, 'art/glass_2k', `glass_${id}_2k.webp`);
 }
 
 export async function openView(browser, id, { size = '800x800', light = 'ref', tier = 't2', lodbias } = {}) {
@@ -174,7 +176,7 @@ async function flickerTest(browser, id, o) {
 
 async function memTest(browser, o) {
   const cat = JSON.parse(fs.readFileSync(path.join(root, 'glass_catalog.json'), 'utf8'));
-  const ids = cat.windows.map((w) => w.id).slice(0, 30);
+  const ids = cat.windows.filter((w) => w.files['1k'].bundled !== false).map((w) => w.id).slice(0, 30);
   const page = await browser.newPage({ viewport: { width: 360, height: 640 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror ' + e.message));
@@ -187,7 +189,7 @@ async function memTest(browser, o) {
     // 반은 t2 가 다 올라오기 전에(페이드 도중) 다음 창으로 넘긴다
     await page.evaluate((id) => ChurchAPI.viewWindow({ win: id, mode: 'room', tier: 't2', light: 'ref' }), id);
     await page.waitForFunction((id) => { const d = __church.view.debug(); return d.win === id && d.tierShown; }, id, { timeout: 120000, polling: 50 });
-    if (k % 2 === 0) await page.waitForFunction(() => { const d = __church.view.debug(); return d.idle && d.tierShown === 't2'; }, null, { timeout: 120000, polling: 50 });
+    if (k % 2 === 0) await page.waitForFunction(() => { const d = __church.view.debug(); return d.idle && d.tierShown === d.tierReq; }, null, { timeout: 120000, polling: 50 });
     trace.push(await page.evaluate(() => __church.view.debug().stats));
   }
   await page.evaluate(() => ChurchAPI.endView());
@@ -211,7 +213,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const show = (r) => { console.log(`${r.pass ? 'ok  ' : 'FAIL'} ${JSON.stringify(r)}`); ok = ok && r.pass && !(r.errors && r.errors.length); };
   if (only.includes('color')) for (const id of ids || COLOR_IDS) show(await colorTest(browser, id, o));
   if (only.includes('iou')) for (const id of ids || IOU_IDS) show(await iouTest(browser, id, o));
-  if (only.includes('flicker')) for (const id of (ids || ['rose_notredame_north', 'dove_stpeter'])) show(await flickerTest(browser, id, o));
+  if (only.includes('flicker')) for (const id of (ids || ['oculus_florence_ghiberti_2', 'dove_stpeter'])) show(await flickerTest(browser, id, o));
   if (only.includes('mem')) show(await memTest(browser, o));
   console.log('limits', JSON.stringify(LIMITS));
   await browser.close();

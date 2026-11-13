@@ -1,5 +1,8 @@
 // 성능 회귀 시험: 갤러리가 디코드하는 픽셀 양, 번들 구성, 테마 재사용, 스크롤 다시 그리기.
+import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +13,7 @@ import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/glass/glass_catalog.dart';
 import 'package:rosary_app/glass/glass_flat_viewer.dart';
 import 'package:rosary_app/glass/glass_gallery.dart';
+import 'package:rosary_app/glass/glass_pack_image.dart';
 import 'package:rosary_app/glass/glass_widgets.dart';
 import 'package:rosary_app/ui/widgets/page_body.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,20 +66,25 @@ void main() {
       expect(bytes, lessThan(5 * 1024 * 1024));
     });
 
-    test('2k는 성당 안에 걸리는 창만 번들에 있고, 나머지는 1k로 평면 보기를 한다', () {
+    test('번들에는 성당 안에 걸 8점의 1k 사진 팩만 있다(2k·1k webp 없음, 같은 그림을 두 번 싣지 않는다)', () {
       final kept = <String>[];
       for (final w in catalog.all) {
-        final pack2k = File('assets/church/gpack_${w.id}_2k.js');
-        final webp2k = File('assets/church/glass_${w.id}_2k.webp');
-        expect(pack2k.existsSync(), w.file2k.bundled, reason: w.id);
-        expect(webp2k.existsSync(), w.file2k.bundled, reason: w.id);
-        // 감상실(t1)과 평면 보기에 쓰는 파일은 언제나 번들에 있다.
+        // 2k는 어느 창도 번들에 없다(art/glass_2k/).
+        expect(File('assets/church/gpack_${w.id}_2k.js').existsSync(), isFalse);
+        expect(
+          File('assets/church/glass_${w.id}_2k.webp').existsSync(),
+          isFalse,
+        );
+        // 감상실(t1)과 평면 보기는 1k 사진 팩 하나를 읽고, .webp 는 따로 싣지 않는다.
         expect(File('assets/church/gpack_${w.id}_1k.js').existsSync(), isTrue);
+        expect(
+          File('assets/church/glass_${w.id}_1k.webp').existsSync(),
+          isFalse,
+        );
         expect(w.flatFile.bundled, isTrue, reason: w.id);
-        expect(w.flatFile.path, startsWith('assets/church/'), reason: w.id);
-        expect(File(w.flatFile.path).existsSync(), isTrue, reason: w.id);
-        if (w.isAuthentic) expect(w.file2k.bundled, isTrue, reason: w.id);
-        if (w.file2k.bundled) kept.add(w.id);
+        expect(w.flatFile.pack, startsWith('assets/church/'), reason: w.id);
+        expect(w.flatFile.provider, isA<GlassPackImage>(), reason: w.id);
+        kept.add(w.id);
       }
       // 피렌체 오큘러스 3점, 성 베드로 비둘기 창, 성 바오로 알라바스터 3점, 밀라노 창.
       expect(kept.toSet(), {
@@ -108,6 +117,8 @@ void main() {
     });
 
     test('갤러리 전체(46점)·오늘의 창의 디코드 픽셀이 예전보다 크게 줄었다', () {
+      // 번들 밖 창까지 46점의 치수로 계산한다(앱은 지금 8점만 보이지만, 서버가 생기면 46점이다).
+      final full = testFullGlassCatalog();
       var oldGrid = 0.0, newGrid = 0.0, oldToday = 0.0, newToday = 0.0;
       // 코덱이 풀어야 하는 원본 픽셀(예전: 1k 파일 전체, 지금: 썸네일 전체).
       var oldSource = 0.0, newSource = 0.0;
@@ -116,24 +127,24 @@ void main() {
         const Size(_screenW - 2 * 16 - 24, 232 - 24),
         _dpr,
       );
-      for (final w in catalog.visible) {
+      for (final w in full.visible) {
         oldGrid += _area(_oldDecoded(w.file1k, (_colW * _dpr).round()));
         oldSource += _area(_px(w.file1k));
-        newSource += _area(_px(w.galleryFile));
-        final now = glassDecodedSize(_px(w.galleryFile), _cardBox(w));
+        newSource += _area(_px(w.fileThumb!));
+        final now = glassDecodedSize(_px(w.fileThumb!), _cardBox(w));
         newGrid += _area(now);
         // 화면에 쓰이지 않는 픽셀은 디코드하지 않는다.
         expect(now.width, lessThanOrEqualTo(_cardBox(w).width), reason: w.id);
         expect(now.height, lessThanOrEqualTo(_cardBox(w).height), reason: w.id);
 
         final o = _area(_oldDecoded(w.file1k, (600 * _dpr).round()));
-        final n = _area(glassDecodedSize(_px(w.galleryFile), todayBox));
+        final n = _area(glassDecodedSize(_px(w.fileThumb!), todayBox));
         oldToday += o;
         newToday += n;
         if (o > oldTodayMax) oldTodayMax = o;
         if (n > newTodayMax) newTodayMax = n;
       }
-      final n = catalog.visible.length;
+      final n = full.visible.length;
       String mp(double px) => (px / 1e6).toStringAsFixed(2);
       String mb(double px) => (px * 4 / 1048576).toStringAsFixed(1);
       // 보고용 수치(360dp × 3배율 기준).
@@ -211,8 +222,8 @@ void main() {
       expect(card.cacheBox!.width, 441);
     });
 
-    testWidgets('평면 보기: 번들에 2k가 없는 창은 1k를, 있는 창은 2k를 쓴다', (tester) async {
-      Future<String> pathFor(String id) async {
+    testWidgets('평면 보기: 번들된 창은 1k 사진 팩(GlassPackImage)을 읽는다', (tester) async {
+      Future<ImageProvider> providerFor(String id) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -231,19 +242,56 @@ void main() {
             matching: find.byType(Image),
           ),
         );
-        return (img.image as AssetImage).assetName;
+        return img.image;
       }
 
       expect(
-        await pathFor('rose_chartres_north'),
-        'assets/church/glass_rose_chartres_north_1k.webp',
+        await providerFor('alabaster_stpaul_1'),
+        const GlassPackImage('assets/church/gpack_alabaster_stpaul_1_1k.js'),
       );
       expect(
-        await pathFor('dove_stpeter'),
-        'assets/church/glass_dove_stpeter_2k.webp',
+        await providerFor('dove_stpeter'),
+        const GlassPackImage('assets/church/gpack_dove_stpeter_1k.js'),
       );
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 5));
+    });
+
+    test('1k 사진 팩에서 WebP 바이트를 꺼낸다(RIFF/WEBP 머리, 카탈로그 바이트 수와 일치)', () {
+      for (final w in catalog.all) {
+        final bytes = decodeGlassPack(File(w.file1k.pack!).readAsBytesSync());
+        expect(String.fromCharCodes(bytes.sublist(0, 4)), 'RIFF', reason: w.id);
+        expect(
+          String.fromCharCodes(bytes.sublist(8, 12)),
+          'WEBP',
+          reason: w.id,
+        );
+        expect(bytes.length, w.file1k.bytes, reason: w.id);
+      }
+      expect(
+        () => decodeGlassPack(Uint8List.fromList('hello'.codeUnits)),
+        throwsFormatException,
+      );
+    });
+  });
+
+  group('사진 팩 디코드', () {
+    testWidgets('GlassPackImage가 실제 팩을 카탈로그 크기의 그림으로 디코드한다', (tester) async {
+      final w = catalog.byId('milan_apse_lower')!;
+      final image = await tester.runAsync(() async {
+        final provider = w.flatFile.provider;
+        final stream = provider.resolve(ImageConfiguration.empty);
+        final done = Completer<ui.Image>();
+        late ImageStreamListener l;
+        l = ImageStreamListener((info, _) {
+          done.complete(info.image);
+          stream.removeListener(l);
+        }, onError: (e, s) => done.completeError(e, s));
+        stream.addListener(l);
+        return done.future.timeout(const Duration(seconds: 20));
+      });
+      expect(image!.width, w.file1k.width);
+      expect(image.height, w.file1k.height);
     });
   });
 
@@ -261,6 +309,19 @@ void main() {
         isTrue,
       );
       expect(AppTheme.light(dynamicScheme: dyn).colorScheme, dyn);
+    });
+
+    test('글꼴이 다르면 다른 ThemeData(캐시 키에 글꼴 포함), 같으면 같은 인스턴스', () {
+      final gothic = AppTheme.light(font: PrayerFont.gothic);
+      final system = AppTheme.light(font: PrayerFont.system);
+      expect(identical(gothic, AppTheme.light()), isTrue);
+      expect(identical(gothic, system), isFalse);
+      expect(
+        identical(system, AppTheme.light(font: PrayerFont.system)),
+        isTrue,
+      );
+      expect(gothic.textTheme.bodyMedium?.fontFamily, AppTheme.sansFamily);
+      expect(system.textTheme.bodyMedium?.fontFamily, isNull);
     });
 
     testWidgets('설정을 바꿔도 테마 애니메이션(매 프레임 앱 전체 리빌드)이 돌지 않는다', (tester) async {

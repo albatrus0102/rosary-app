@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'app/app.dart';
 import 'app/app_bootstrap.dart';
 import 'app/app_services.dart';
+import 'app/licenses.dart';
+import 'app/theme.dart';
 import 'glass/glass_catalog.dart';
 
 Future<void> main() async {
@@ -38,6 +40,7 @@ class _LauncherState extends State<_Launcher> {
       final chrome = SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.edgeToEdge,
       );
+      registerFontLicenses();
       // 첫 탭(유리화)이 쓸 창 목록을 미리 읽어 둔다. 실패는 탭이 직접 알린다.
       GlassCatalog.shared().ignore();
       // Supabase(설정된 경우)·설정·기록 → 인증/동의 → 분석·동기화. 미설정이면 로그인 없이 열린다.
@@ -85,6 +88,7 @@ class _LaunchScreen extends StatelessWidget {
         child: Center(
           child: DefaultTextStyle(
             style: TextStyle(
+              fontFamily: AppTheme.sansFamily,
               color: fg,
               fontSize: 28,
               fontWeight: FontWeight.w600,
@@ -116,6 +120,7 @@ class _LaunchScreen extends StatelessWidget {
                       child: Text(
                         '다시 시도',
                         style: TextStyle(
+                          fontFamily: AppTheme.sansFamily,
                           color: bg,
                           fontSize: 16,
                           decoration: TextDecoration.none,

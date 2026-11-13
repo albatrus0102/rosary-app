@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(AppSpace.sm),
                           child: Image.asset(
-                            'assets/images/rosary.png',
+                            'assets/images/rosary.webp',
                             width: 96,
                             height: 96,
                             fit: BoxFit.contain,

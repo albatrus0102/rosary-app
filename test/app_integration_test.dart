@@ -673,6 +673,7 @@ void main() {
       await tester.tap(find.text('구슬마다 짧은 소리'));
       await tester.tap(find.text('넘길 때 진동'));
       await tester.tap(find.text('기기 배경화면 색 사용(Material You)'));
+      await tester.tap(find.text('시스템 글꼴'));
       // 선창 음성 스위치(머리글 다음 것)를 껐다 켠다. 켜져 있어야 소스·화자 선택이 보인다.
       await tester.tap(find.text('선창 음성').last);
       await tester.pumpAndSettle();
@@ -715,6 +716,7 @@ void main() {
           'tick_bead',
           'haptic',
           'dynamic_color',
+          'prayer_font',
           'leader_audio',
           'chime_volume',
           'tts_rate',

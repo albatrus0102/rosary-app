@@ -19,34 +19,34 @@ enum RosaryStyle {
 extension RosaryStyleAssets on RosaryStyle {
   /// 묵주 전체 이미지.
   String get fullImage => switch (this) {
-    RosaryStyle.bead => 'assets/images/rosary.png',
-    RosaryStyle.knot => 'assets/images/rosary_knot.png',
-    RosaryStyle.rosewood => 'assets/images/rosary_rosewood.png',
-    RosaryStyle.crystal => 'assets/images/rosary_crystal.png',
-    RosaryStyle.pearl => 'assets/images/rosary_pearl.png',
-    RosaryStyle.jade => 'assets/images/rosary_jade.png',
-    RosaryStyle.pastel => 'assets/images/rosary_pastel.png',
-    RosaryStyle.lourdes => 'assets/images/rosary_lourdes.png',
-    RosaryStyle.fatima => 'assets/images/rosary_fatima.png',
-    RosaryStyle.penal => 'assets/images/rosary_penal.png',
-    RosaryStyle.stuart => 'assets/images/rosary_stuart.png',
-    RosaryStyle.jp2 => 'assets/images/rosary_jp2.png',
+    RosaryStyle.bead => 'assets/images/rosary.webp',
+    RosaryStyle.knot => 'assets/images/rosary_knot.webp',
+    RosaryStyle.rosewood => 'assets/images/rosary_rosewood.webp',
+    RosaryStyle.crystal => 'assets/images/rosary_crystal.webp',
+    RosaryStyle.pearl => 'assets/images/rosary_pearl.webp',
+    RosaryStyle.jade => 'assets/images/rosary_jade.webp',
+    RosaryStyle.pastel => 'assets/images/rosary_pastel.webp',
+    RosaryStyle.lourdes => 'assets/images/rosary_lourdes.webp',
+    RosaryStyle.fatima => 'assets/images/rosary_fatima.webp',
+    RosaryStyle.penal => 'assets/images/rosary_penal.webp',
+    RosaryStyle.stuart => 'assets/images/rosary_stuart.webp',
+    RosaryStyle.jp2 => 'assets/images/rosary_jp2.webp',
   };
 
   /// 구슬(매듭) 하나의 이미지.
   String get unitImage => switch (this) {
-    RosaryStyle.bead => 'assets/images/bead.png',
-    RosaryStyle.knot => 'assets/images/knot.png',
-    RosaryStyle.rosewood => 'assets/images/rosewood.png',
-    RosaryStyle.crystal => 'assets/images/crystal.png',
-    RosaryStyle.pearl => 'assets/images/pearl.png',
-    RosaryStyle.jade => 'assets/images/jade.png',
-    RosaryStyle.pastel => 'assets/images/pastel.png',
-    RosaryStyle.lourdes => 'assets/images/lourdes.png',
-    RosaryStyle.fatima => 'assets/images/fatima.png',
-    RosaryStyle.penal => 'assets/images/penal.png',
-    RosaryStyle.stuart => 'assets/images/stuart.png',
-    RosaryStyle.jp2 => 'assets/images/jp2.png',
+    RosaryStyle.bead => 'assets/images/bead.webp',
+    RosaryStyle.knot => 'assets/images/knot.webp',
+    RosaryStyle.rosewood => 'assets/images/rosewood.webp',
+    RosaryStyle.crystal => 'assets/images/crystal.webp',
+    RosaryStyle.pearl => 'assets/images/pearl.webp',
+    RosaryStyle.jade => 'assets/images/jade.webp',
+    RosaryStyle.pastel => 'assets/images/pastel.webp',
+    RosaryStyle.lourdes => 'assets/images/lourdes.webp',
+    RosaryStyle.fatima => 'assets/images/fatima.webp',
+    RosaryStyle.penal => 'assets/images/penal.webp',
+    RosaryStyle.stuart => 'assets/images/stuart.webp',
+    RosaryStyle.jp2 => 'assets/images/jp2.webp',
   };
 
   /// 묵주 전체 지도에서 이미지가 없을 때 그리는 구슬 색.

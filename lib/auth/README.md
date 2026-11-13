@@ -47,6 +47,7 @@ Future<void> main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final settings = await AppSettings.load();
+  registerFontLicenses();
 
   // 2) 인증 서비스: 설정됐으면 Supabase, 아니면 로그인 없이 열리는 개발용 가짜.
   final AuthService auth = backendConfigured

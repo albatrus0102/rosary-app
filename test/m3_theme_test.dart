@@ -28,7 +28,7 @@ void _size(WidgetTester tester, Size size) {
 
 void main() {
   group('테마 구성', () {
-    test('M3 + 시드 색 구성 + 시스템 글꼴 타입 스케일', () {
+    test('M3 + 시드 색 구성 + Pretendard 타입 스케일', () {
       final theme = AppTheme.light();
       expect(theme.useMaterial3, isTrue);
       expect(
@@ -53,7 +53,7 @@ void main() {
         t.labelMedium,
         t.labelSmall,
       ]) {
-        expect(style?.fontFamily, isNull); // 번들 글꼴 없이 시스템 글꼴
+        expect(style?.fontFamily, AppTheme.sansFamily);
       }
       // M3 타입 스케일 크기.
       expect(t.displayLarge?.fontSize, 57);

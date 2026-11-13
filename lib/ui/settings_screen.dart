@@ -276,6 +276,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Track.setting('dynamic_color');
           },
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('글꼴', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpace.xs),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<PrayerFont>(
+                  segments: const [
+                    ButtonSegment(
+                      value: PrayerFont.gothic,
+                      icon: Icon(Icons.text_fields),
+                      label: Text(
+                        '고딕',
+                        style: TextStyle(fontFamily: AppTheme.sansFamily),
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: PrayerFont.system,
+                      icon: Icon(Icons.smartphone),
+                      label: Text('시스템 글꼴'),
+                    ),
+                  ],
+                  selected: {settings.prayerFont},
+                  onSelectionChanged: (v) {
+                    settings.prayerFont = v.first;
+                    Track.setting('prayer_font');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
         _SliderTile(
           icon: Icons.format_size,
           title: '글자 크기',
@@ -311,7 +346,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: AnimatedDefaultTextStyle(
                   duration: AppMotion.of(context, Durations.short4),
                   curve: Easing.standard,
-                  style: AppTheme.prayerStyle(context, size: baseSize * scale),
+                  style: AppTheme.prayerStyle(
+                    context,
+                    settings.prayerFont,
+                    size: baseSize * scale,
+                  ),
                   child: const Text(
                     SettingsScreen.previewSentence,
                     key: ValueKey('text_scale_preview'),

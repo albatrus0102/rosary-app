@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'settings.dart';
+
 /// Material 3 모양(shape) 스케일 토큰: 0 / 4 / 8 / 12 / 16 / 28 / full.
 abstract final class AppShape {
   static const double extraSmallRadius = 4;
@@ -64,6 +66,9 @@ abstract final class AppMotion {
 
 /// 밝고 따뜻한 Material 3 테마: 테라코타 시드 + 올리브/골드 보조 시드.
 abstract final class AppTheme {
+  /// 번들 고딕 글꼴 이름(pubspec.yaml의 family).
+  static const String sansFamily = 'Pretendard';
+
   /// 브랜드 시드(테라코타). 두 모드의 모든 색 역할이 여기서 나온다.
   static const Color seedColor = Color(0xFFC2613E);
 
@@ -114,11 +119,20 @@ abstract final class AppTheme {
 
   /// 밝은/어두운 테마. [dynamicScheme]이 있으면(기기 배경화면 색, Material You)
   /// 시드 구성 대신 그 구성을 쓴다. 호출자가 미리 `harmonized()`를 적용해 넘긴다.
-  static ThemeData light({ColorScheme? dynamicScheme}) =>
-      _build(dynamicScheme ?? seedScheme(Brightness.light));
+  /// [font]가 고딕이면 앱 전체 글꼴이 Pretendard, 시스템이면 기기 글꼴이다.
+  static ThemeData light({
+    ColorScheme? dynamicScheme,
+    PrayerFont font = PrayerFont.gothic,
+  }) => _build(dynamicScheme ?? seedScheme(Brightness.light), font);
 
-  static ThemeData dark({ColorScheme? dynamicScheme}) =>
-      _build(dynamicScheme ?? seedScheme(Brightness.dark));
+  static ThemeData dark({
+    ColorScheme? dynamicScheme,
+    PrayerFont font = PrayerFont.gothic,
+  }) => _build(dynamicScheme ?? seedScheme(Brightness.dark), font);
+
+  /// [font]에 해당하는 글꼴 이름. 시스템이면 null(기기 기본 글꼴).
+  static String? familyOf(PrayerFont font) =>
+      font == PrayerFont.gothic ? sansFamily : null;
 
   /// 시스템 바: 투명(edge-to-edge) + 밝기에 맞는 아이콘 색.
   static SystemUiOverlayStyle systemOverlayStyle(Brightness brightness) {
@@ -140,15 +154,17 @@ abstract final class AppTheme {
   static const double baseFontSize = 24;
 
   /// 기도문 본문 스타일(문서화된 커스텀 스타일: 읽기용으로 M3 역할보다 크다).
-  /// 글꼴은 지정하지 않아 기기 시스템 글꼴(안드로이드 Roboto/Noto Sans CJK)을 쓴다.
+  /// [font]가 고딕이면 Pretendard, 시스템이면 글꼴을 지정하지 않아 기기 글꼴을 쓴다.
   /// [bold]는 강조(내 차례)용이다.
   static TextStyle prayerStyle(
-    BuildContext context, {
+    BuildContext context,
+    PrayerFont font, {
     double? size,
     Color? color,
     bool bold = false,
   }) {
     return TextStyle(
+      fontFamily: familyOf(font),
       fontSize: size ?? baseFontSize,
       height: 1.6,
       letterSpacing: -0.2,
@@ -157,38 +173,45 @@ abstract final class AppTheme {
     );
   }
 
-  /// M3 타입 스케일(display/headline/title/body/label × L/M/S), 시스템 글꼴.
+  /// M3 타입 스케일(display/headline/title/body/label × L/M/S).
   /// 크기·굵기·행간은 M3 명세의 한글(dense) 기하를 그대로 쓴다.
-  static TextTheme textTheme(ColorScheme scheme) {
+  /// [font]가 시스템이면 글꼴 이름을 지정하지 않는다.
+  static TextTheme textTheme(
+    ColorScheme scheme, [
+    PrayerFont font = PrayerFont.gothic,
+  ]) {
     return Typography.dense2021.apply(
+      fontFamily: familyOf(font),
       displayColor: scheme.onSurface,
       bodyColor: scheme.onSurface,
     );
   }
 
-  /// 색 구성별로 만든 테마를 기억한다.
+  /// 색 구성·글꼴별로 만든 테마를 기억한다.
   ///
   /// 설정이 바뀔 때마다(신비·기도 모드 선택 등) MaterialApp이 다시 만들어지는데, 그때마다
   /// 새 [ThemeData]를 만들면 내용이 같아도 `==`가 false라(상태별 콜백 객체가 매번 새로 생김)
   /// MaterialApp의 AnimatedTheme이 200ms 동안 매 프레임 `ThemeData.lerp` + 앱 전체 리빌드를
   /// 돌린다. 같은 색 구성에는 같은 인스턴스를 돌려주어 그 일을 없앤다.
-  static final Map<ColorScheme, ThemeData> _themeCache = {};
+  static final Map<(ColorScheme, PrayerFont), ThemeData> _themeCache = {};
 
-  static ThemeData _build(ColorScheme scheme) {
-    final cached = _themeCache[scheme];
+  static ThemeData _build(ColorScheme scheme, PrayerFont font) {
+    final key = (scheme, font);
+    final cached = _themeCache[key];
     if (cached != null) return cached;
-    // 기기 색(배경화면)이 바뀔 때만 새 항목이 생긴다. 쌓이지 않게 조금만 둔다.
-    if (_themeCache.length >= 8) _themeCache.clear();
-    return _themeCache[scheme] = _buildUncached(scheme);
+    // 기기 색(배경화면)이나 글꼴이 바뀔 때만 새 항목이 생긴다. 쌓이지 않게 조금만 둔다.
+    if (_themeCache.length >= 12) _themeCache.clear();
+    return _themeCache[key] = _buildUncached(scheme, font);
   }
 
-  static ThemeData _buildUncached(ColorScheme scheme) {
-    final text = textTheme(scheme);
+  static ThemeData _buildUncached(ColorScheme scheme, PrayerFont font) {
+    final text = textTheme(scheme, font);
     final overlay = systemOverlayStyle(scheme.brightness);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: familyOf(font),
       textTheme: text,
       // 키보드/마우스 상태 레이어(M3: hover 8%, focus 10%, pressed 10%).
       hoverColor: scheme.onSurface.withValues(alpha: 0.08),

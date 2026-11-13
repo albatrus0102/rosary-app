@@ -6,15 +6,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-const assets = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../assets/church');
-const files = fs.readdirSync(assets);
-const ids = files.map((f) => /^ch_([a-z]+)\.js$/.exec(f)).filter(Boolean).map((m) => m[1]);
+const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const assets = path.join(repo, 'assets/church');
+// 질감 원본 JPEG 는 앱 번들 밖 art/church_tex_src/ 에 둔다(앱은 data URI 로 묶은 tex_pack.js 만 읽는다: 같은 그림을 두 번 싣지 않는다).
+const texSrc = path.join(repo, 'art/church_tex_src');
+const files = fs.readdirSync(texSrc);
+const ids = fs.readdirSync(assets).map((f) => /^ch_([a-z]+)\.js$/.exec(f)).filter(Boolean).map((m) => m[1]);
 function pack(list, out) {
   if (!list.length) { if (fs.existsSync(path.join(assets, out))) fs.unlinkSync(path.join(assets, out)); console.log('no textures for', out); return; }
   let js = '/* ' + out + ' — build_texpack.mjs 로 생성(직접 고치지 말 것). 사진 질감 data URI 모음 */\n(function(){var P=window.ChurchTexPack=window.ChurchTexPack||{};\n';
   let total = 0;
   for (const f of list.sort()) {
-    const b = fs.readFileSync(path.join(assets, f));
+    const b = fs.readFileSync(path.join(texSrc, f));
     total += b.length;
     js += `P[${JSON.stringify(f)}]='data:image/jpeg;base64,${b.toString('base64')}';\n`;
   }

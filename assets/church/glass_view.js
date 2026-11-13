@@ -465,6 +465,9 @@
       H.resize();
       // 질감: t1 먼저, t2 가 요청이면 이어서(교차 페이드)
       var want = V.tierReq;
+      // 번들에 2k 가 없으면(files['2k'].bundled === false, 앱 번들 정책) gpack_2k 가 없으므로 1k 만 쓴다. base(서버)를 주면 서버에 있을 수 있다.
+      var f2 = entry.files && entry.files['2k'];
+      if (want === 't2' && !V.base && f2 && f2.bundled === false) want = V.tierReq = 't1';
       var chain = fetchTier(V.win, want === 't2' ? 't1' : want, tok);
       if (want === 't2') chain = chain.then(function (r) { if (tok !== token || !r) return null; return fetchTier(V.win, 't2', tok); });
       chain.catch(function (e) { fail(reasonOf(e), tok); });

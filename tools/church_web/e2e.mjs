@@ -276,13 +276,13 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   await pg.evaluate(() => { const m = __church.me; m.x = 1.5; m.z = 6; __church.ctl.yaw = 0.4; });
   await pg.waitForTimeout(500);
   const before = await pg.evaluate(() => ({ x: __church.me.x, z: __church.me.z, yaw: __church.ctl.yaw, church: __church.church }));
-  await pg.evaluate(() => ChurchAPI.viewWindow({ win: 'dove_stpeter', mode: 'room', tier: 't2', light: 'ref' }));
+  await pg.evaluate(() => ChurchAPI.viewWindow({ win: 'dove_stpeter', mode: 'room', tier: 't1', light: 'ref' }));
   const vr = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'viewReady' || e.e === 'viewError'), null, { timeout: 180000 }).then(() => true).catch(() => false);
   const ready = await pg.evaluate(() => window.__ev.find((e) => e.e === 'viewReady'));
   check('viewWindow(room): viewReady {win, tier, ms}', vr && ready && ready.win === 'dove_stpeter' && /^t[12]$/.test(ready.tier) && ready.ms >= 0, ready);
-  await pg.waitForFunction(() => { const d = __church.view.debug(); return d.idle && d.tierShown === 't2'; }, null, { timeout: 180000 });
+  await pg.waitForFunction(() => { const d = __church.view.debug(); return d.idle && d.tierShown === 't1'; }, null, { timeout: 180000 });
   const st = await pg.evaluate(() => ({ church: __church.church, d: __church.view.debug(), me: __church.meAv.root.visible, raf: __church.rafOn, stations: __church.stations, zone: __church.ctl.moveZone, vm: __church.ctl.viewMode }));
-  check('room mode: glass_room scene, t2 shown, <=2 textures, avatar hidden, joystick zone off', st.church === 'glass_room' && st.d.resident.length <= 2 && st.d.resident.includes('dove_stpeter:t2') && !st.me && st.stations === null && st.vm && !st.zone, st);
+  check('room mode: glass_room scene, t1 shown (2k is not bundled), <=2 textures, avatar hidden, joystick zone off', st.church === 'glass_room' && st.d.resident.length <= 2 && st.d.resident.includes('dove_stpeter:t1') && !st.me && st.stations === null && st.vm && !st.zone, st);
   check('render-on-demand: the rAF loop stops when idle', st.raf === false, { raf: st.raf });
   check('view profile: SSAO off, Neutral curve', st.d.passes === null || (st.d.passes.ssao === false && (st.d.passes.curve === 1 || st.d.passes.curve === -1)), st.d.passes);
   const z = await pg.evaluate(() => {

@@ -370,6 +370,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                           '은총이 가득하신 마리아님, 기뻐하소서!',
                           style: AppTheme.prayerStyle(
                             context,
+                            _settings.prayerFont,
                             size: 20 * scale,
                           ),
                         ),
@@ -719,6 +720,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
       step: step,
       stepIndex: _session.index,
       mode: _settings.prayerMode,
+      font: _settings.prayerFont,
       scale: scale,
       short: _settings.shortPrayers,
       leaderSpeaking: _voice?.isSpeaking.value ?? false,

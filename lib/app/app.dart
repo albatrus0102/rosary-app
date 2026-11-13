@@ -55,9 +55,11 @@ class _RosaryAppState extends State<RosaryApp> {
               themeMode: ThemeMode.system,
               theme: AppTheme.light(
                 dynamicScheme: dynamicOn ? lightDynamic?.harmonized() : null,
+                font: settings.prayerFont,
               ),
               darkTheme: AppTheme.dark(
                 dynamicScheme: dynamicOn ? darkDynamic?.harmonized() : null,
+                font: settings.prayerFont,
               ),
               locale: const Locale('ko', 'KR'),
               supportedLocales: const [Locale('ko')],
