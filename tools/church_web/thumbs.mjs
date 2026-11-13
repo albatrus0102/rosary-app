@@ -1,4 +1,4 @@
-// 사용: node tools/church_web/thumbs.mjs [id ...]  ->  assets/church_thumbs/<id>.png (400x240, 팔레트 양자화로 작게)
+// 사용: node tools/church_web/thumbs.mjs [id ...]  ->  assets/church_thumbs/<id>.webp (400x240, WebP q88)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -26,9 +26,9 @@ for (const id of ids) {
   const tmp = path.join(outDir, `${id}.raw.png`);
   await page.screenshot({ path: tmp });
   await page.close();
-  const dest = path.join(outDir, `${id}.png`);
-  // PIL 팔레트 양자화(각 파일 ~60KB 이하 목표)
-  const py = `from PIL import Image\nim=Image.open(r'${tmp}').convert('RGB')\nfor n in (96,64,48,32):\n    q=im.quantize(colors=n,method=Image.Quantize.MEDIANCUT,dither=Image.Dither.NONE)\n    q.save(r'${dest}',optimize=True)\n    import os\n    if os.path.getsize(r'${dest}')<60000: break\n`;
+  const dest = path.join(outDir, `${id}.webp`);
+  // PIL 로 WebP 저장(APK 용량: 팔레트 PNG 보다 작고 색이 더 좋다)
+  const py = `from PIL import Image\nim=Image.open(r'${tmp}').convert('RGB')\nim.save(r'${dest}','WEBP',quality=88,method=6)\n`;
   execFileSync('python3', ['-I', '-c', py]);
   fs.unlinkSync(tmp);
   const kb = (fs.statSync(dest).size / 1024).toFixed(1);

@@ -73,8 +73,8 @@
       707,
       1024
      ],
-     "bytes": 179174,
-     "webp_q": 80,
+     "bytes": 142950,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -83,8 +83,8 @@
       480,
       695
      ],
-     "bytes": 89736,
-     "webp_q": 80,
+     "bytes": 72284,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -878,8 +878,8 @@
       534,
       1024
      ],
-     "bytes": 217210,
-     "webp_q": 80,
+     "bytes": 186138,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -888,8 +888,8 @@
       417,
       800
      ],
-     "bytes": 132248,
-     "webp_q": 80,
+     "bytes": 109798,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -985,8 +985,8 @@
       521,
       1024
      ],
-     "bytes": 219212,
-     "webp_q": 80,
+     "bytes": 186204,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -995,8 +995,8 @@
       407,
       800
      ],
-     "bytes": 126854,
-     "webp_q": 80,
+     "bytes": 106904,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -1092,8 +1092,8 @@
       725,
       1024
      ],
-     "bytes": 85942,
-     "webp_q": 80,
+     "bytes": 67586,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -1102,8 +1102,8 @@
       480,
       678
      ],
-     "bytes": 49136,
-     "webp_q": 80,
+     "bytes": 35168,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -1203,8 +1203,8 @@
       1024,
       1024
      ],
-     "bytes": 235040,
-     "webp_q": 80,
+     "bytes": 195932,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -1213,8 +1213,8 @@
       480,
       480
      ],
-     "bytes": 80750,
-     "webp_q": 80,
+     "bytes": 67882,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -1302,8 +1302,8 @@
       1024,
       1024
      ],
-     "bytes": 230148,
-     "webp_q": 80,
+     "bytes": 190152,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -1312,8 +1312,8 @@
       480,
       480
      ],
-     "bytes": 88872,
-     "webp_q": 80,
+     "bytes": 76816,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -1401,8 +1401,8 @@
       1024,
       1024
      ],
-     "bytes": 173174,
-     "webp_q": 80,
+     "bytes": 143804,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -1411,8 +1411,8 @@
       480,
       480
      ],
-     "bytes": 71810,
-     "webp_q": 80,
+     "bytes": 59860,
+     "webp_q": 72,
      "bundled": true
     }
    },
@@ -3932,8 +3932,8 @@
       1024,
       585
      ],
-     "bytes": 250304,
-     "webp_q": 80,
+     "bytes": 215472,
+     "webp_q": 72,
      "bundled": true
     },
     "thumb": {
@@ -3942,8 +3942,8 @@
       480,
       274
      ],
-     "bytes": 62662,
-     "webp_q": 80,
+     "bytes": 53684,
+     "webp_q": 72,
      "bundled": true
     }
    },

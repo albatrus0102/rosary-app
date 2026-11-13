@@ -54,9 +54,9 @@ ART_UNBUNDLED = os.path.join(ART, 'glass_unbundled')
 ART_LEGACY_JPG = os.path.join(ART, 'glass_legacy_jpg')
 
 THUMB_BOX = (480, 800)
-THUMB_Q = 80
+THUMB_Q = 72
 # 번들에 남는 1k 는 2k 를 절반으로 줄여 이 품질로 다시 저장한다(성당 안에서 보는 크기면 충분).
-PACK_Q = 80
+PACK_Q = 72
 
 # 앱에 싣는 창 8점(사용자 결정): 성당 안(G-29)에 걸 진본 배치 창 + 성 바오로 알라바스터 판.
 BUNDLED_IDS = [

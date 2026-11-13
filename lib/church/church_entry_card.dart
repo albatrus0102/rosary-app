@@ -69,7 +69,7 @@ class ChurchEntryCard extends StatelessWidget {
                         AspectRatio(
                           aspectRatio: 16 / 9,
                           child: Image.asset(
-                            'assets/church_thumbs/${info.id}.png',
+                            'assets/church_thumbs/${info.id}.webp',
                             fit: BoxFit.cover,
                             excludeFromSemantics: true,
                             errorBuilder: (context, _, _) => ColoredBox(

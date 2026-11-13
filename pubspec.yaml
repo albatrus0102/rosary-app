@@ -49,8 +49,9 @@ flutter:
           weight: 700
   assets:
     - assets/images/
-    # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 창마다 썸네일(_th)·1k WebP,
-    # 2k는 성당 3D 안에 걸 창만(나머지는 art/glass_2k/, tools/glass_bundle/glass_bundle.py).
+    # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 성당 안에 걸 8점만 썸네일(_th)과
+    # 1k 사진 팩(gpack_*_1k.js; 3D·평면 보기 공용). 나머지 38점·2k·1k WebP 원본은 번들 밖
+    # (art/glass_unbundled/, art/glass_2k/, art/glass_1k/; tools/glass_bundle/glass_bundle.py).
     # 4096 마스터는 art/glass_masters/에 있고 번들하지 않는다(G2에서 CDN으로 내려받는다).
     - assets/church/
     - assets/church_thumbs/

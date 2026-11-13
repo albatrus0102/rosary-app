@@ -28,7 +28,7 @@
 ## 환경광 HDRI (assets/church/env_church.js)
 | 파일 | 원본 | 작가 | 라이선스 |
 |---|---|---|---|
-| env_church.js (small_cathedral_1k.hdr 의 base64) | https://polyhaven.com/a/small_cathedral (https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/small_cathedral_1k.hdr) | Sergej Majboroda (Poly Haven) | CC0 |
+| env_church.js (small_cathedral_1k.hdr 를 512x256 으로 줄여 base64 로 넣은 것; 원본은 art/env_church_1k.hdr) | https://polyhaven.com/a/small_cathedral (https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/small_cathedral_1k.hdr) | Sergej Majboroda (Poly Haven) | CC0 |
 
 ## 번들된 오픈소스
 | 이름 | 버전 | 파일 | 라이선스 |

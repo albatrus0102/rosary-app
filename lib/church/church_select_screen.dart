@@ -560,7 +560,7 @@ class _ChurchCard extends StatelessWidget {
                     Opacity(
                       opacity: available ? 1 : 0.5,
                       child: Image.asset(
-                        'assets/church_thumbs/${info.id}.png',
+                        'assets/church_thumbs/${info.id}.webp',
                         fit: BoxFit.cover,
                         excludeFromSemantics: true,
                         errorBuilder: (context, _, _) => ColoredBox(
