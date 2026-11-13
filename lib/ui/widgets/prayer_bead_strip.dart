@@ -84,10 +84,18 @@ StripModel stripModelFor(RosaryStep step) {
 /// [onOpenMap]이 있으면 띠 전체가 버튼이 되어 묵주 전체 보기를 연다.
 /// 글자는 부르는 쪽이 정한 시스템 글자 배율(보통 1.3 상한)을 따른다.
 class PrayerBeadStrip extends StatelessWidget {
-  const PrayerBeadStrip({super.key, required this.step, this.onOpenMap});
+  const PrayerBeadStrip({
+    super.key,
+    required this.step,
+    this.onOpenMap,
+    this.focusNode,
+  });
 
   final RosaryStep step;
   final VoidCallback? onOpenMap;
+
+  /// 띠 단추의 포커스. 묵주 전체 보기를 닫으면 여기로 포커스를 돌려준다.
+  final FocusNode? focusNode;
 
   static const double height = 36;
 
@@ -180,6 +188,7 @@ class PrayerBeadStrip extends StatelessWidget {
       onTap: onOpenMap,
       child: InkWell(
         key: const ValueKey('prayer-strip'),
+        focusNode: focusNode,
         onTap: onOpenMap,
         child: body,
       ),

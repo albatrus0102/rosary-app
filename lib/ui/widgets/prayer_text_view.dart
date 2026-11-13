@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../app/prayer_text_short.dart';
@@ -11,14 +12,18 @@ import '../../domain/rosary_sequence.dart';
 import 'pill.dart';
 import 'soft_card.dart';
 
-/// 기도문 칸. 남는 높이를 모두 쓰고, 넘치면 숨기지 않고 스크롤하며 '↓ n줄 더 (쪽 k/N)'를 보여 준다.
+/// 기도문 칸. 남는 높이를 모두 쓰는 **독립 스크롤 영역**이다.
 ///
 /// - 글자 크기는 [scale]만 따른다. 이 위젯 안에서는 시스템 글자 배율을 다시 곱하지 않는다
 ///   (`MediaQuery.withNoTextScaling`). 시스템 배율을 반영할지는 부르는 쪽이 [scale]에 담는다.
-/// - 글을 짧게 눌러 [onAdvance](다음 구슬). 넘친 글은 손가락으로 밀어 스크롤한다.
-///   (끌기가 탭보다 먼저 인식되므로 스크롤과 탭이 서로 방해하지 않는다.)
-/// - 넘침 표시는 글 위에 겹치지 않고, 글 칸 **아래**에 자리를 따로 둔다. 어떤 조작 요소도
-///   기도문을 가리지 않는다.
+/// - 글이 넘치면 숨기지 않는다. 손가락으로 밀어 끝까지 읽을 수 있고, 스크롤 막대와 위·아래
+///   흐림(그라데이션)으로 더 있음을 알린다. 글 칸 **아래**에 따로 자리를 잡은
+///   '기도문 계속 읽기' 단추는 같은 기도문 안에서 아래로만 내린다(구슬은 바뀌지 않는다).
+/// - 내릴 때는 **온전한 줄**에서 끊는다. 아래에서 잘려 보이던 줄이 다음 쪽의 첫 줄이 된다.
+/// - 글을 짧게 누르면: 아직 읽지 않은 글이 아래에 있으면 한 쪽 아래로, 끝까지 읽었으면
+///   [onAdvance](다음 구슬). 구슬을 넘기는 단추([PrayerActions])는 글 칸 밖에 늘 있으므로
+///   끝까지 읽지 않아도 언제든 넘길 수 있다.
+/// - 어떤 조작 요소도 기도문을 가리지 않는다.
 class PrayerTextView extends StatefulWidget {
   const PrayerTextView({
     super.key,
@@ -51,30 +56,41 @@ class PrayerTextView extends StatefulWidget {
   final bool leaderSpeaking;
   final double maxContentWidth;
 
-  /// 넘침 표시 칸의 높이(터치 영역 48).
-  static const double pillRowHeight = 48;
+  /// '기도문 계속 읽기' 칸의 높이(터치 영역 48).
+  static const double moreRowHeight = 48;
 
-  /// 한 쪽 = 칸 높이의 90%(앞 쪽의 마지막 줄이 다음 쪽 맨 위에 걸쳐 읽는 흐름이 끊기지 않게).
-  static const double pageFraction = 0.9;
+  /// 넘친 글의 위·아래 흐림 높이. 잘린 줄이 '끝'이 아니라 '더 있음'으로 읽히게 한다.
+  static const double fadeExtent = 20;
 
-  /// 글이 [extent]만큼 넘칠 때(= 스크롤 가능 거리) 전체 쪽 수.
-  static int pageCount(double extent, double viewport) {
-    if (extent <= 0.5 || viewport <= 0) return 1;
-    return 1 + (extent / (viewport * pageFraction)).ceil();
+  /// 줄 위치를 알 수 없을 때 한 번에 내리는 거리: 칸 높이에서 큰 글자 한 줄을 뺀 만큼
+  /// (잘려 보이던 줄이 다음 쪽에서 온전히 보인다). 칸이 아주 낮아도 절반은 내린다.
+  static double fallbackPageStep(double viewport, double lineHeight) =>
+      math.max(viewport * 0.5, viewport - lineHeight);
+
+  /// 한 쪽 아래의 스크롤 위치를 **줄 경계**에 맞춰 구한다.
+  ///
+  /// [lines]는 스크롤 내용 좌표의 각 줄 (위, 아래). 지금 화면([offset]..[offset]+[viewport])에서
+  /// 아래가 잘렸거나 아직 안 보이는 첫 줄을 찾아, 그 줄이 칸 맨 위([topInset]만큼 아래)에
+  /// 오게 한다. 못 찾으면 [fallbackPageStep].
+  static double nextPageOffset({
+    required double offset,
+    required double viewport,
+    required double maxExtent,
+    required List<(double, double)> lines,
+    required double lineHeight,
+    double topInset = fadeExtent,
+  }) {
+    final visibleBottom = offset + viewport - fadeExtent;
+    double? target;
+    for (final (top, bottom) in lines) {
+      if (bottom > visibleBottom + 0.5 && top - topInset > offset + 0.5) {
+        target = top - topInset;
+        break;
+      }
+    }
+    target ??= offset + fallbackPageStep(viewport, lineHeight);
+    return target.clamp(0.0, maxExtent);
   }
-
-  /// 위치 [offset]에서 보이는 쪽 번호(1부터).
-  static int pageAt(double offset, double extent, double viewport) {
-    final n = pageCount(extent, viewport);
-    if (n == 1) return 1;
-    if (offset >= extent - 0.5) return n; // 끝에 닿으면 마지막 쪽
-    final k = 1 + (offset / (viewport * pageFraction) - 0.01).ceil();
-    return k.clamp(1, n);
-  }
-
-  /// 남은 줄 수(올림). [lineHeight]는 큰 글자 한 줄 높이.
-  static int linesLeft(double remaining, double lineHeight) =>
-      math.max(1, (remaining / lineHeight).ceil());
 
   @override
   State<PrayerTextView> createState() => _PrayerTextViewState();
@@ -87,7 +103,7 @@ class _PrayerTextViewState extends State<PrayerTextView> {
   double _offset = 0;
   double _viewport = 0;
 
-  /// 넘침 표시 칸을 잡아 두었는지. 칸을 잡으면 글 칸이 그만큼 줄어든다.
+  /// '기도문 계속 읽기' 칸을 잡아 두었는지. 칸을 잡으면 글 칸이 그만큼 줄어든다.
   bool _reserve = false;
 
   /// 짧게 보기 중 이 스텝만 전문으로 펼쳤는지.
@@ -132,7 +148,7 @@ class _PrayerTextViewState extends State<PrayerTextView> {
   void _apply(double offset, double extent, double viewport) {
     // 칸을 잡은 상태에서는 칸이 그만큼 줄어 있으므로, 전체 높이 기준으로 넘치는지 판단한다.
     final want = _reserve
-        ? extent > PrayerTextView.pillRowHeight + 0.5
+        ? extent > PrayerTextView.moreRowHeight + 0.5
         : extent > 0.5;
     if (offset == _offset &&
         extent == _extent &&
@@ -160,12 +176,55 @@ class _PrayerTextViewState extends State<PrayerTextView> {
     }
   }
 
+  final GlobalKey _contentKey = GlobalKey();
+
+  /// 스크롤 내용 좌표로 본 모든 글줄의 (위, 아래). 위에서 아래 순서.
+  List<(double, double)> _lineExtents() {
+    final root = _contentKey.currentContext?.findRenderObject();
+    if (root is! RenderBox || !root.attached || !_controller.hasClients) {
+      return const [];
+    }
+    // 내용 상자의 맨 위가 스크롤 내용에서 차지하는 자리(위 여백).
+    const contentTop = _scrollPadding;
+    final lines = <(double, double)>[];
+    void visit(RenderObject o) {
+      if (o is RenderParagraph && o.hasSize) {
+        final dy = o.localToGlobal(Offset.zero, ancestor: root).dy + contentTop;
+        final length = o.text.toPlainText(includeSemanticsLabels: false).length;
+        final boxes = o.getBoxesForSelection(
+          TextSelection(baseOffset: 0, extentOffset: length),
+          boxHeightStyle: BoxHeightStyle.max,
+        );
+        for (final b in boxes) {
+          final top = dy + b.top;
+          final bottom = dy + b.bottom;
+          // 같은 줄의 여러 조각(굵기·크기가 다른 글)은 한 줄로 합친다.
+          if (lines.isNotEmpty && top < lines.last.$2 - 1) {
+            final last = lines.removeLast();
+            lines.add((math.min(last.$1, top), math.max(last.$2, bottom)));
+          } else {
+            lines.add((top, bottom));
+          }
+        }
+      }
+      o.visitChildren(visit);
+    }
+
+    visit(root);
+    lines.sort((a, b) => a.$1.compareTo(b.$1));
+    return lines;
+  }
+
+  /// 같은 기도문 안에서 한 쪽 아래로. 구슬은 바뀌지 않는다.
   void _pageDown() {
     if (!_controller.hasClients) return;
     final p = _controller.position;
-    final target = math.min(
-      p.maxScrollExtent,
-      p.pixels + p.viewportDimension * PrayerTextView.pageFraction,
+    final target = PrayerTextView.nextPageOffset(
+      offset: p.pixels,
+      viewport: p.viewportDimension,
+      maxExtent: p.maxScrollExtent,
+      lines: _lineExtents(),
+      lineHeight: AppTheme.baseFontSize * widget.scale * 1.6,
     );
     if (MediaQuery.disableAnimationsOf(context)) {
       _controller.jumpTo(target);
@@ -178,17 +237,30 @@ class _PrayerTextViewState extends State<PrayerTextView> {
     }
   }
 
+  /// 아직 읽지 않은 글이 아래에 남았는지.
+  bool get _hasMoreBelow => _reserve && _extent - _offset > 2;
+
+  /// 글을 짧게 눌렀을 때: 남은 글이 있으면 계속 읽기, 없으면 다음 구슬.
+  void _onTextTap() {
+    if (_hasMoreBelow) {
+      _pageDown();
+    } else {
+      widget.onAdvance();
+    }
+  }
+
+  static const double _scrollPadding = 8;
+
   @override
   Widget build(BuildContext context) {
     final step = widget.step;
     final scale = widget.scale;
     final reduce = MediaQuery.disableAnimationsOf(context);
-    final bigSize = AppTheme.baseFontSize * scale;
     final shortForm = widget.short ? ShortPrayers.of(step) : null;
     final shortShown = shortForm != null && !_showFull;
 
-    final remaining = _extent - _offset;
-    final showPill = _reserve && remaining > 2;
+    final showMore = _hasMoreBelow;
+    final fadeTop = _reserve && _offset > 2;
 
     final content = _Content(
       step: step,
@@ -210,7 +282,7 @@ class _PrayerTextViewState extends State<PrayerTextView> {
         Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: widget.onAdvance,
+            onTap: _onTextTap,
             child: TweenAnimationBuilder<double>(
               key: ValueKey(widget.stepIndex),
               tween: Tween(begin: 0.25, end: 1),
@@ -222,37 +294,53 @@ class _PrayerTextViewState extends State<PrayerTextView> {
                   Opacity(opacity: value, child: child),
               child: NotificationListener<ScrollMetricsNotification>(
                 onNotification: _onMetrics,
-                child: SingleChildScrollView(
-                  key: const ValueKey('prayer-text-scroll'),
-                  controller: _controller,
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: widget.maxContentWidth,
+                child: _EdgeFade(
+                  top: fadeTop,
+                  bottom: showMore,
+                  child: Scrollbar(
+                    key: const ValueKey('prayer-text-scrollbar'),
+                    controller: _controller,
+                    // 넘칠 때는 늘 보여서 '더 있음'과 지금 위치를 알린다.
+                    thumbVisibility: _reserve,
+                    child: SingleChildScrollView(
+                      key: const ValueKey('prayer-text-scroll'),
+                      controller: _controller,
+                      padding: const EdgeInsets.fromLTRB(
+                        20,
+                        _scrollPadding,
+                        20,
+                        16,
                       ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        // 화면 읽기 프로그램은 쪽이 아니라 전문을 읽는다(짧게 보기 중에도).
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Semantics(
-                              container: true,
-                              label: label,
-                              child: ExcludeSemantics(
-                                child: MediaQuery.withNoTextScaling(
-                                  child: content,
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: widget.maxContentWidth,
+                          ),
+                          child: SizedBox(
+                            width: double.infinity,
+                            // 화면 읽기 프로그램은 쪽이 아니라 전문을 읽는다(짧게 보기 중에도).
+                            child: Column(
+                              key: _contentKey,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Semantics(
+                                  container: true,
+                                  label: label,
+                                  child: ExcludeSemantics(
+                                    child: MediaQuery.withNoTextScaling(
+                                      child: content,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                if (shortForm != null)
+                                  _ShortHint(
+                                    showingFull: _showFull,
+                                    onToggle: () =>
+                                        setState(() => _showFull = !_showFull),
+                                  ),
+                              ],
                             ),
-                            if (shortForm != null)
-                              _ShortHint(
-                                showingFull: _showFull,
-                                onToggle: () =>
-                                    setState(() => _showFull = !_showFull),
-                              ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -264,15 +352,11 @@ class _PrayerTextViewState extends State<PrayerTextView> {
         ),
         if (_reserve)
           SizedBox(
-            height: PrayerTextView.pillRowHeight,
-            child: showPill
+            height: PrayerTextView.moreRowHeight,
+            child: showMore
                 ? Center(
-                    child: _OverflowPill(
-                      key: const ValueKey('prayer-overflow-pill'),
-                      label:
-                          '↓ ${PrayerTextView.linesLeft(remaining, bigSize * 1.6)}줄 더 '
-                          '(쪽 ${PrayerTextView.pageAt(_offset, _extent, _viewport)}'
-                          '/${PrayerTextView.pageCount(_extent, _viewport)})',
+                    child: _ReadMoreButton(
+                      key: const ValueKey('prayer-read-more'),
                       onTap: _pageDown,
                     ),
                   )
@@ -283,18 +367,56 @@ class _PrayerTextViewState extends State<PrayerTextView> {
   }
 }
 
-class _OverflowPill extends StatelessWidget {
-  const _OverflowPill({super.key, required this.label, required this.onTap});
+/// 넘친 글의 위·아래 가장자리를 흐리게 한다(바탕색과 무관하게 글만 옅어진다).
+class _EdgeFade extends StatelessWidget {
+  const _EdgeFade({
+    required this.top,
+    required this.bottom,
+    required this.child,
+  });
 
-  final String label;
-  final VoidCallback onTap;
+  final bool top;
+  final bool bottom;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    if (!top && !bottom) return child;
+    return ShaderMask(
+      blendMode: BlendMode.dstIn,
+      shaderCallback: (rect) {
+        final f = (PrayerTextView.fadeExtent / math.max(1.0, rect.height))
+            .clamp(0.0, 0.5);
+        const clear = Color(0x00000000);
+        const solid = Color(0xFF000000);
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [top ? clear : solid, solid, solid, bottom ? clear : solid],
+          stops: [0, f, 1 - f, 1],
+        ).createShader(rect);
+      },
+      child: child,
+    );
+  }
+}
+
+/// '기도문 계속 읽기': 같은 기도문 안에서 아래로 내린다. 구슬을 넘기는 채운 단추와 헷갈리지
+/// 않도록 테두리만 있는 작은 알약 모양에 아래 화살표를 둔다.
+class _ReadMoreButton extends StatelessWidget {
+  const _ReadMoreButton({super.key, required this.onTap});
+
+  final VoidCallback onTap;
+
+  static const String label = '기도문 계속 읽기';
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Semantics(
       button: true,
-      label: '$label, 아래로 한 쪽 내리기',
+      label: '$label. 같은 기도문을 아래로 내립니다. 구슬은 바뀌지 않습니다',
       excludeSemantics: true,
       onTap: onTap,
       child: InkWell(
@@ -306,20 +428,28 @@ class _OverflowPill extends StatelessWidget {
             widthFactor: 1,
             child: DecoratedBox(
               decoration: ShapeDecoration(
-                color: scheme.secondaryContainer,
-                shape: const StadiumBorder(),
+                shape: StadiumBorder(side: BorderSide(color: scheme.outline)),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: scheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w600,
-                  ),
+                padding: const EdgeInsets.fromLTRB(10, 5, 14, 5),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.keyboard_double_arrow_down,
+                      size: 20,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

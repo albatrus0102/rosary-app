@@ -87,6 +87,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
   int _lastIndex = 0;
   bool _disposed = false;
 
+  // 묵주 전체 보기를 연 단추(띠, ⋮). 시트를 닫으면 포커스를 돌려준다.
+  final FocusNode _stripFocus = FocusNode(debugLabel: 'prayer-strip');
+  final FocusNode _menuFocus = FocusNode(debugLabel: 'prayer-menu');
+
   bool get _leaderAudioActive =>
       _settings.prayerMode == PrayerMode.responder &&
       _settings.leaderAudioEnabled;
@@ -286,6 +290,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _ownedStore?.dispose();
     _eventSub?.cancel();
     if (_ownsSession) _session.dispose();
+    _stripFocus.dispose();
+    _menuFocus.dispose();
     if (_ownsSound) unawaited(_sound.dispose());
     unawaited(
       WakelockPlus.disable().catchError((Object e) {
@@ -553,7 +559,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
       MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: child);
 
   /// 지도를 손가락으로 끌어 구슬을 한 칸씩 넘긴다(넓은 화면의 지도). 끌다가 기도가 끝나 버리지 않도록
-  /// 마지막 스텝에서는 앞으로 넘기지 않는다(마치려면 '다음' 버튼).
+  /// 마지막 스텝에서는 앞으로 넘기지 않는다(마치려면 '기도 마치기' 버튼).
   void _scrubStep(int delta) {
     if (delta > 0) {
       if (_session.index < _session.steps.length - 1) _session.next();
@@ -566,12 +572,14 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _session.restart();
   }
 
-  void _openMap() {
+  /// 묵주 전체 보기를 연다. 닫히면 포커스가 [opener](연 단추)로 돌아온다.
+  void _openMap([FocusNode? opener]) {
     unawaited(
       showRosaryMapSheet(
         context,
         session: _session,
         style: _settings.rosaryStyle,
+        restoreFocus: opener ?? _stripFocus,
       ),
     );
   }
@@ -579,7 +587,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
   void _onMenu(_PrayerMenu item) {
     switch (item) {
       case _PrayerMenu.map:
-        _openMap();
+        _openMap(_menuFocus);
       case _PrayerMenu.shortPrayers:
         _settings.shortPrayers = !_settings.shortPrayers;
         Track.setting('short_prayers');
@@ -726,10 +734,15 @@ class _PrayerScreenState extends State<PrayerScreen> {
       leaderSpeaking: _voice?.isSpeaking.value ?? false,
       onAdvance: _session.next,
     );
+    // 마지막 기도에서는 큰 단추가 기도를 마친다.
+    final nextLabel = _session.index == _session.steps.length - 1
+        ? PrayerActions.finishLabel
+        : PrayerActions.defaultNextLabel;
     final actions = PrayerActions(
       canGoBack: _session.index > 0,
       onBack: _session.back,
       onNext: _session.next,
+      nextLabel: nextLabel,
     );
 
     final header = _PrayerHeader(
@@ -747,6 +760,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
         const PopupMenuItem(value: _PrayerMenu.end, child: Text('기도 끝내기')),
       ],
       onMenu: _onMenu,
+      menuFocusNode: _menuFocus,
     );
 
     if (!wide) {
@@ -754,7 +768,11 @@ class _PrayerScreenState extends State<PrayerScreen> {
         Column(
           children: [
             header,
-            PrayerBeadStrip(step: step, onOpenMap: _openMap),
+            PrayerBeadStrip(
+              step: step,
+              onOpenMap: _openMap,
+              focusNode: _stripFocus,
+            ),
             Expanded(child: text),
             actions,
           ],
@@ -816,6 +834,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                           canGoBack: _session.index > 0,
                           onBack: _session.back,
                           onNext: _session.next,
+                          nextLabel: nextLabel,
                           bordered: false,
                         ),
                       ],
@@ -842,6 +861,7 @@ class _PrayerHeader extends StatelessWidget {
     this.onTextSize,
     this.menuBuilder,
     this.onMenu,
+    this.menuFocusNode,
   });
 
   final String title;
@@ -850,6 +870,7 @@ class _PrayerHeader extends StatelessWidget {
   final VoidCallback? onTextSize;
   final List<PopupMenuEntry<_PrayerMenu>> Function(BuildContext)? menuBuilder;
   final ValueChanged<_PrayerMenu>? onMenu;
+  final FocusNode? menuFocusNode;
 
   static const double height = 48;
 
@@ -905,6 +926,7 @@ class _PrayerHeader extends StatelessWidget {
           if (menuBuilder != null)
             PopupMenuButton<_PrayerMenu>(
               key: const ValueKey('prayer-menu'),
+              focusNode: menuFocusNode,
               tooltip: '메뉴',
               icon: const Icon(Icons.more_vert),
               onSelected: onMenu,
