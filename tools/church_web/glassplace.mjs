@@ -28,7 +28,7 @@ export const VIEWS = {
   florence: [{ tag: 'drum', x: 0, z: 6, yaw: 0, pitch: 5, look: 38, hour: 11 }, { tag: 'facade', x: 0, z: 16, yaw: 180, pitch: 5, look: 40, hour: 11 }],
   stpeter: [{ tag: 'apse', x: 0, z: -22, yaw: 0, pitch: 5, look: 22, hour: 11 }],
   stpaul: [{ tag: 'nave', x: 0, z: 14, yaw: 0, pitch: 6, look: 18, hour: 11 }, { tag: 'aisle', x: 13, z: 12, yaw: -90, pitch: 5, look: 12, hour: 11 }],
-  milan: [{ tag: 'apse', x: 0, z: -18, yaw: 0, pitch: 5, look: 8, hour: 11 }]
+  milan: [{ tag: 'apse', x: 0, z: -18, yaw: 0, pitch: 5, look: 8, hour: 11 }, { tag: 'ambulatory', x: 0, z: -32.2, yaw: 0, pitch: 5, look: 12, hour: 11 }]   // 사진 구간은 성가대석 뒤 회랑에서 보인다
 };
 
 async function open(browser, id, { quality = 'high', size = '640x640', photo = true, extra = {}, block = false } = {}) {

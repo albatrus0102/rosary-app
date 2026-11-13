@@ -316,6 +316,6 @@ ctx.floor({ x0:…, tex: marble, tile: 4 });
 ### 7.8 성당 안 진본 사진 창 (G-29, SPEC §27, `GLASS_PLACEMENTS.md`)
 - `ctx.glassPhoto(slot, index?)` → `{win, aspect, slot, index, shape}` 또는 `null`(대응표에 없음·`?photoglass=0`). 대응표는 `glass_placements.js`.
 - `ctx.window({... photo})`, `ctx.rose({... photo})` — 그 창 자리에 사진 판이 걸린다. **개구부(w, h, r)는 빌더가 `photo.aspect` 에 맞춰 정한다**(`ChurchGlassPlacements.contain(aspect, bw, bh)`).
-- `ctx.glassSlot({photo, x, y, z, face:[nx,nz], w, h, fallback?:[Object3D], glows?:[glow 항목]})` — 손으로 지은 창의 자리. `fallback`(사진이 덮이면 숨길 대역 조형)·`glows`(끌 빛 번짐)는 선택.
+- `ctx.glassSlot({photo, x, y, z, face:[nx,nz], w, h, fallback?:[Object3D], glows?:[glow 항목]})` — 손으로 지은 창의 자리. `fallback`(사진이 덮이면 숨길 대역 조형)·`glows`(끌 빛 번짐)는 선택. `camMax`(미터, 선택): 그 창을 보는 동안 걷기 카메라 거리를 이만큼으로 줄인다(좁은 회랑에서 카메라가 벽 너머로 나가 창이 가려질 때만 쓴다).
 - `photo` 가 `null` 이면 예전 치수의 절차적 창을 그대로 짓는다(폴백과 `?photoglass=0` 비교가 같은 코드 경로). 사진 판·질감·이벤트는 `glass_place.js` 가 맡는다(빌더는 재질을 만들지 않는다).
-- 사진 구간에는 돌 창살·가로대·납선 조형을 만들지 않는다(사진에 실제 창살이 있다). 사진 앞 1.2cm 안에 다른 면을 두지 않는다(깜박임).
+- 사진 구간에는 돌 창살·가로대·납선 조형을 만들지 않는다(사진에 실제 창살이 있다). 사진 판과 같은 깊이·그 앞에 대역 유리 조각을 두지 않는다(판을 가장 앞 조각보다 1.2cm 이상 앞에: 밀라노 메달리온). 창 앞(실내 쪽)에 벽감·가구를 세우지 않는다.

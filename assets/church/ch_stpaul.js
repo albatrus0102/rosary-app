@@ -713,9 +713,10 @@
         [-17.6, -12.6, -7.6].forEach(function (x) { ctx.boxAABB({ x0: x - 0.22, x1: x + 0.22, z0: z - 0.6, z1: ZT, y0: y0, y1: y0 + 6.5, color: 0x5a3d26 }); });
       })();
 
-      // ---------- 외벽 사도상 벽감 10개 ----------
+      // ---------- 외벽 사도상 벽감 8개 ----------
+      // 창이 없는 홀수 베이에 둔다(측랑 창은 짝수 베이). 예전 자리(2·6·10·14)는 창 바로 앞이라 벽감이 알라바스터 창 아랫부분을 가렸다(G-29).
       [-1, 1].forEach(function (sx) {
-        [2, 6, 10, 14].forEach(function (b, j) {
+        [3, 7, 11, 15].forEach(function (b, j) {
           ctx.statueNiche({ x: sx * WX, z: ZF + SP * (b + 0.5), y: 0.95, face: [-sx, 0], w: 1.1, h: 2.6, kind: j % 2 ? 'saint' : 'christ', halo: true, robe: 0xdad4c6, mantle: 0xc9bfaa });
         });
       });

@@ -426,6 +426,7 @@
     else if (dx < -1e-4) reach = Math.min(reach, (cb.x0 - mx) / (dx * Math.cos(pitch) * D));
     if (dz > 1e-4) reach = Math.min(reach, (cb.z1 - mz) / (dz * Math.cos(pitch) * D));
     else if (dz < -1e-4) reach = Math.min(reach, (cb.z0 - mz) / (dz * Math.cos(pitch) * D));
+    if (App.place) reach = Math.min(reach, App.place.camReach(D));   // 좁은 곳의 사진 창을 보는 동안은 카메라를 당긴다(G-29, 밀라노 회랑)
     reach = Math.max(0.3, Math.min(1, reach));
     var Dd = D * reach;
     var ch = Math.cos(pitch) * Dd, cv = Math.sin(pitch) * Dd;

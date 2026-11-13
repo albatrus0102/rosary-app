@@ -657,8 +657,11 @@
       for (rj = 1; rj < rows; rj += 2) { if (sill + h * rj / rows > sill + phH + 0.1) mullion(F, 0, sill + h * rj / rows - 0.03, sill + h * rj / rows + 0.03, dg - 0.02, 2 * a, tone(base, 1.04)); }
       if (ph) {
         mullion(F, 0, sill + phH - 0.05, sill + phH + 0.05, dg - 0.02, 2 * a, stoneC);   // 사진 위 가로대
-        var pc = PF(F, 0, sill + phH / 2, gd - 0.012);
-        ctx.glassSlot({ photo: ph, x: pc[0], y: pc[1], z: pc[2], face: [F.nx, F.nz], w: 2 * a, h: phH });
+        // 판은 메달리온(cellTop, gd - 0.012)보다 1.8cm 앞: 같은 깊이면 대역 메달리온이 사진 위로 비친다.
+        // camMax: 이 창은 성가대석 뒤 좁은 회랑(폭 약 4m)에서만 보인다. 보통 카메라 거리(7.2m)면 카메라가 성가대석 안쪽에 놓여
+        // 등받이 벽이 창을 가리므로, 이 창을 보고 있는 동안은 카메라를 아바타 뒤 2.3m 까지 당긴다(main.js, glass_place.camReach).
+        var pc = PF(F, 0, sill + phH / 2, gd - 0.03);
+        ctx.glassSlot({ photo: ph, x: pc[0], y: pc[1], z: pc[2], face: [F.nx, F.nz], w: 2 * a, h: phH, camMax: 2.3 });
       }
       // 창 둘레 석재 틀(아치 몰딩)
       var oc = tone(base, 1.18);

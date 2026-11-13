@@ -279,7 +279,7 @@
     ctx.glassSlot = function (o) {
       if (!o || !o.photo) return null;
       var n = o.face, nl = Math.sqrt(n[0] * n[0] + n[1] * n[1]) || 1;
-      var s = { win: o.photo.win, slot: o.photo.slot, index: o.photo.index, shape: o.photo.shape, x: o.x, y: o.y, z: o.z, nx: n[0] / nl, nz: n[1] / nl, w: o.w, h: o.h, fallback: o.fallback || null, glows: o.glows || null };
+      var s = { win: o.photo.win, slot: o.photo.slot, index: o.photo.index, shape: o.photo.shape, x: o.x, y: o.y, z: o.z, nx: n[0] / nl, nz: n[1] / nl, w: o.w, h: o.h, fallback: o.fallback || null, glows: o.glows || null, camMax: o.camMax || 0 };
       S_.glassSlots.push(s);
       return s;
     };

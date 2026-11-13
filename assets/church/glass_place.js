@@ -40,12 +40,14 @@
         uniforms: { uMapA: { value: g.tex }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: 0 }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
           uDecode: { value: caps.isWebGL2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 0 } },
         vertexShader: S.vs, fragmentShader: S.fs, extensions: { derivatives: true },
-        fog: false, lights: false, toneMapped: false, transparent: false, depthWrite: true,
+        fog: false, lights: false, toneMapped: false, transparent: true, depthWrite: true,
         blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.SrcAlphaFactor, blendDst: T.OneMinusSrcAlphaFactor,
         blendSrcAlpha: T.ZeroFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor
       });
       var mesh = new T.Mesh(geo, mat);
-      mesh.renderOrder = 2;   // 절차적 유리(1) 뒤에 그려 페이드 동안 그 위에 섞인다
+      // 투명 대기열에서 빛줄기·먼지·빛 번짐(renderOrder ≤ 5) 뒤, 불꽃(6)·표식(7)·이름표(8) 앞에 그린다:
+      // 창 앞을 지나는 빛줄기(가산 혼합)가 사진 색을 물들이거나 알파 표시(톤매핑 건너뛰기)를 흐리지 않게. 불투명한 것(기둥·등·아바타)은 깊이로 가린다.
+      mesh.renderOrder = 5.5;
       mesh.userData.noAO = true; mesh.userData.glassPlace = g.win; mesh.castShadow = false; mesh.receiveShadow = false;
       g.mesh = mesh; g.mat = mat;
       App.world.group.add(mesh);
@@ -55,7 +57,9 @@
       var caps = App.renderer.capabilities, tex = new T.Texture(img);
       tex.encoding = caps.isWebGL2 ? T.sRGBEncoding : T.LinearEncoding;
       tex.generateMipmaps = true; tex.minFilter = T.LinearMipmapLinearFilter; tex.magFilter = T.LinearFilter;
-      tex.wrapS = tex.wrapT = T.ClampToEdgeWrapping; tex.anisotropy = caps.getMaxAnisotropy(); tex.premultiplyAlpha = false;
+      tex.wrapS = tex.wrapT = T.ClampToEdgeWrapping; tex.premultiplyAlpha = false;
+      // 이방성: 비스듬히 보는 창(측랑·드럼)이 흐려지지 않게. 간단 모드(low)는 4배까지만(약한 GPU 의 표본 수를 줄인다, 밉맵은 그대로라 반짝임은 없다).
+      tex.anisotropy = App.R.tier === 'low' ? Math.min(4, caps.getMaxAnisotropy()) : caps.getMaxAnisotropy();
       tex.needsUpdate = true;
       var gl = App.renderer.getContext();
       gl.getError();
@@ -205,6 +209,8 @@
     return {
       load: load, clear: clear, update: update, pick: pick, tap: tap, slotFor: slotFor, stats: stats,
       slots: function () { return slots; },
+      // 걷기 카메라 거리 비율(0..1). 지금 보고 있는 창 자리가 camMax(미터)를 정했으면 D 를 그만큼으로 줄인다. 아니면 1.
+      camReach: function (D) { return nearCur && nearCur.camMax > 0 && D > 0 ? Math.min(1, nearCur.camMax / D) : 1; },
       debug: function () {
         return { pending: pending, near: lastNearId || null, stats: JSON.parse(JSON.stringify(stats)), slots: slots.length,
           groups: groups.map(function (g) { return { win: g.win, state: g.state, slots: g.slots.length, ms: g.ms || 0, mb: Math.round(g.mb * 10) / 10 }; }) };

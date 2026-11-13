@@ -148,3 +148,35 @@ test('photo plane material rules: same glass shader, no fog/lights/tone mapping/
     assert.ok(i('glass_place.js') > i('glass_view.js') && i('glass_place.js') < i('main.js'), html + ': glass_place after glass_view, before main');
   }
 });
+
+test('photo plates draw after light shafts and before flames/markers/name tags; opaque things still occlude by depth', () => {
+  const src = fs.readFileSync(path.join(assets, 'glass_place.js'), 'utf8');
+  const world = fs.readFileSync(path.join(assets, 'world.js'), 'utf8');
+  const order = +/mesh\.renderOrder = ([\d.]+);/.exec(src)[1];
+  const beam = +/m\.frustumCulled = false; m\.renderOrder = (\d+); world\.add\(m\)/.exec(world)[1];   // 빛줄기·바닥 색빛
+  const flame = +/f\.renderOrder = (\d+);/.exec(world)[1];
+  assert.ok(order > beam && order < flame, `beam ${beam} < plate ${order} < flame ${flame}`);
+  assert.ok(src.includes('transparent: true, depthWrite: true'), 'transparent queue (sorted by renderOrder), still writes depth');
+});
+
+test('Milan: the plate sits in front of the stand-in medallions and asks for a close camera in the narrow ambulatory', () => {
+  const mi = church('milan').glassSlots[0];
+  assert.ok(mi.camMax > 1.5 && mi.camMax < 3.5, 'camMax ' + mi.camMax);
+  const src = fs.readFileSync(path.join(assets, 'ch_milan.js'), 'utf8');
+  const top = +/PF\(F, poly\[0\]\[0\], poly\[0\]\[1\], gd - ([\d.]+)\)/.exec(src)[1];        // cellTop(메달리온) 깊이
+  const plate = +/PF\(F, 0, sill \+ phH \/ 2, gd - ([\d.]+)\)/.exec(src)[1];
+  assert.ok(plate >= top + 0.012, `plate ${plate} must be at least 1.2cm in front of medallions ${top}`);
+  // 다른 성당의 자리는 카메라를 당기지 않는다
+  for (const id of ['stpeter']) for (const s of church(id).glassSlots) assert.equal(s.camMax, 0, id);
+  const main = fs.readFileSync(path.join(assets, 'main.js'), 'utf8');
+  assert.ok(main.includes('App.place.camReach(D)'), 'walk camera honours camReach');
+});
+
+test('St Paul: apostle niches stand in the windowless (odd) bays, not in front of the alabaster windows', () => {
+  const src = fs.readFileSync(path.join(assets, 'ch_stpaul.js'), 'utf8');
+  const m = /\[([\d, ]+)\]\.forEach\(function \(b, j\) \{\s*ctx\.statueNiche/.exec(src);
+  assert.ok(m, 'niche bay list found');
+  const bays = m[1].split(',').map(Number);
+  assert.ok(bays.length >= 4 && bays.every((b) => b % 2 === 1), 'bays ' + bays);   // 측랑 창은 짝수 베이(i % 2 === 0)
+  assert.ok(src.includes('if (i % 2 === 0) holesOut.push'), 'aisle windows are in even bays');
+});
