@@ -122,8 +122,8 @@ class _AppShellState extends State<AppShell> {
     final body = IndexedStack(
       index: _index,
       children: [
-        // 유리화 탭: 갤러리는 Flutter 화면이라 계속 두고, 성당 보기(WebView·소켓)는
-        // 이 탭이 보일 때만 만든다.
+        // 유리화 탭: 갤러리도 성당 보기도 계속 둔다(성당 안에 있던 자리 그대로 돌아온다).
+        // 이 탭이 보이지 않는 동안 성당 장면은 일시정지한다(active → ChurchHost.visible).
         GlassTab(
           key: const ValueKey('glass-tab'),
           settings: widget.settings,

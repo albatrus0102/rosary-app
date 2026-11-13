@@ -37,7 +37,7 @@ export function loadChurches(opts = {}) {
   const sb = makeSandbox();
   if (opts.search) sb.location.search = opts.search;   // 예: '?photoglass=0' (G-29 대응표 끄기)
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js'].forEach(run);
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js'].forEach(run);
   fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort().forEach(run);
   const out = [];
   for (const id of Object.keys(sb.ChurchBuilders)) {
@@ -50,7 +50,8 @@ export function loadChurches(opts = {}) {
     if (ret && ret.colliders) ret.colliders.forEach((c) => colliders.push(c));
     if (ret && ret.floorZones) ret.floorZones.forEach((z) => zones.push(z));
     // glassSlots: 진본 사진 창 자리(G-29, world.js glassSlots() 와 같은 목록을 시험에서 쓰려고 원자료를 넘긴다)
-    out.push({ id, layout: b.layout, colliders, zones, windows: S.windows, roses: S.roses, glassSlots: S.glassSlots, prepare: () => ctx._prepare() });
+    // walls: 벽 기록(십자가의 길 판을 거는 자리 유도, way_cross.js derive). _prepare 전이라 창 host 는 아직 없다.
+    out.push({ id, layout: b.layout, colliders, zones, windows: S.windows, roses: S.roses, glassSlots: S.glassSlots, walls: S.walls, prepare: () => ctx._prepare() });
   }
-  return { churches: out, Logic: sb.ChurchLogic, Stations: sb.ChurchStations, Layouts: sb.ChurchLayouts };
+  return { churches: out, Logic: sb.ChurchLogic, Stations: sb.ChurchStations, Layouts: sb.ChurchLayouts, WayCross: sb.ChurchWayCross, CrossData: sb.ChurchCrossData };
 }

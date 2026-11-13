@@ -34,7 +34,7 @@
   }
   // 그리기 고리 다시 돌리기(감상 모드는 멈춰 있을 때 rAF 를 쉰다)
   function kick() {
-    if (!App.started || App.rafOn) return;
+    if (!App.started || App.rafOn || App.paused) return;   // 일시정지(pause) 중에는 깨우지 않는다
     App.rafOn = true; App.last = performance.now();
     requestAnimationFrame(loop);
   }
@@ -131,7 +131,7 @@
     }
     if (o.hour !== undefined) App.world.setHour(+o.hour);
     if (o.solo !== undefined) { App.solo = !!o.solo; App.crowd.set(App.solo); }
-    if (o.ambient !== undefined) { App.ambient = !!o.ambient; root.ChurchAudio.setAmbient(App.ambient); }
+    if (o.ambient !== undefined) { App.ambient = !!o.ambient; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); }
     // 테스트용 URL 초기 자세
     if (qs.x !== undefined && qs.z !== undefined) { App.me.x = +qs.x; App.me.z = +qs.z; }
     if (qs.yaw !== undefined) { App.ctl.yaw = (+qs.yaw) * PI / 180; App.me.yaw = App.ctl.yaw; }
@@ -178,8 +178,82 @@
     App.meAv.setSeated(false); App.meAv.setPray(false);
   }
 
+  // ---- 일시정지·복원(보이지 않는 동안 그리기·소리를 멈추고, 돌아오면 그 자리에서 잇는다) ----
+  function fin(v, d) { v = +v; return isFinite(v) ? v : d; }
+  function clampN(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  // 지금 상태(위치·좌석·자세·카메라·걷는 목적지). 감상실·창 감상 중에는 null.
+  function snapshot() {
+    var me = App.me, ctl = App.ctl;
+    if (!App.started || !me || !ctl || !App.world || App.world.builder.viewing || viewing()) return null;
+    var sit = me.mode === 'seated' || (me.mode === 'sitting' && !me.pendingStand);
+    var x = me.x, z = me.z, r = me.yaw;
+    if (me.mode === 'standing') { x = me.tx; z = me.tz; r = me.tyaw; }
+    else if (me.mode === 'sitting' && me.pendingStand) { x = me.fx; z = me.fz; r = me.fyaw; }
+    var s = { e: 'state', church: App.church, x: r2(x), z: r2(z), r: r2(r), seat: sit ? me.seat : null, posture: sit && App.posture === 'kneel' ? 'kneel' : 'sit',
+      cy: r2(ctl.yaw), cp: r2(ctl.pitch), cz: r2(ctl.zoom), cl: r2(ctl.look) };
+    var w = App.walkSt || App.pendingWalk;
+    if (w && w.kind) s.walk = { kind: w.kind, index: w.index === undefined ? 0 : w.index, seat: w.seat || null };
+    return s;
+  }
+  function pause() {
+    if (App.paused) return;
+    App.paused = true;
+    if (App.ctl) App.ctl.setJoystick(0, 0);
+    var A = root.ChurchAudio;
+    try { A.setAmbient(false); if (A.ctx && A.ctx.suspend) A.ctx.suspend(); } catch (e) { /* ignore */ }
+    var s = snapshot();
+    if (s) post(s);
+  }
+  function resume() {
+    if (!App.paused) return;
+    App.paused = false;
+    if (App.ambient) { try { root.ChurchAudio.setAmbient(true); } catch (e) { /* ignore */ } }
+    kick();   // App.last 를 지금으로 맞추고 다시 그린다(멈춰 있던 시간만큼 건너뛰지 않는다)
+  }
+  // 새 장면(WebView 를 다시 만든 뒤)에 저장해 둔 상태를 적용한다. 좌석에 이미 누가 있으면 그 줄 통로에 세운다. → {e:'restored'}
+  function restore(o) {
+    if (!App.started || !App.world || App.world.builder.viewing || viewing() || !o) return;
+    if (o.church && o.church !== App.church) return;
+    var me = App.me, ctl = App.ctl, logic = App.logic;
+    cancelWalk('restore'); App.turn = null;
+    ctl.yaw = fin(o.cy, ctl.yaw); ctl.pitch = clampN(fin(o.cp, ctl.pitch), 0.06, 1.25);
+    ctl.zoom = clampN(fin(o.cz, ctl.zoom), 0.55, 1.6); ctl.look = clampN(fin(o.cl, 0), 0, 1.35);
+    var seat = typeof o.seat === 'string' && logic.seatInfo(o.seat) ? o.seat : null, sat = false;
+    // 혼자 모드의 배경 신자가 내 자리에 앉았으면 자리를 다시 뽑는다
+    for (var i = 0; seat && i < 8 && App.crowd.isTaken(seat) && !App.net.isTaken(seat); i++) App.crowd.set(App.solo, true);
+    me.vx = me.vz = 0; me.pendingStand = false; me.standWait = false; me.t = 0;
+    if (seat && !isTaken(seat)) {
+      var sp = logic.seatPos(seat);
+      me.mode = 'seated'; me.seat = seat; me.x = sp.x; me.z = sp.z; me.yaw = sp.yaw;
+      App.net.setMySeat(seat);
+      App.meAv.setSeated(true); App.meAv.setWalk(0);
+      App.posture = o.posture === 'kneel' ? 'kneel' : 'sit'; applyPosture(false);
+      App.sitF = 1; setNear(null, null); sat = true;
+    } else {
+      var x = fin(o.x, me.x), z = fin(o.z, me.z), r = fin(o.r, me.yaw);
+      if (seat) { var st = logic.standPos(seat); x = st.x; z = st.z; r = st.yaw; }
+      pp.x = x; pp.z = z; logic.moveCircle(pp, 0, 0);   // 벽·가구 안이면 밀어낸다
+      me.mode = 'walk'; me.seat = null; me.x = pp.x; me.z = pp.z; me.yaw = r;
+      App.net.setMySeat(null);
+      App.meAv.setSeated(false); App.meAv.setPray(false);
+      App.near.seat = App.near.candle = undefined; App.near.station = null;
+    }
+    me.y = logic.floorY(me.x, me.z);
+    App.meAv.setPose(me.x, me.y, me.z, me.yaw);
+    App.camInit = false; App.wasMoving = false;
+    if (sat) post({ e: 'seated', seat: seat });
+    post({ e: 'restored', seat: sat ? seat : null, lost: seat && !sat ? 1 : 0, x: r2(me.x), z: r2(me.z), r: r2(me.yaw) });
+    if (!sat && o.walk && o.walk.kind) walkTo(o.walk);
+    kick();
+  }
+
   var api = {
     init: function (o) { start(o); },
+    // 보이지 않는 동안(다른 탭·다른 화면·앱 백그라운드) 그리기 고리와 소리를 멈춘다. 멈추면서 {e:'state'} 로 지금 상태를 알린다.
+    pause: function () { pause(); },
+    resume: function () { resume(); },
+    getState: function () { var s = snapshot(); if (s) post(s); },
+    restore: function (o) { restore(o); },
     setChurch: function (o) { if (o.church && o.church !== App.church) { if (viewing()) App.view.api.endView(); if (o.church !== App.church) loadWorld(o.church); } },
     // 창 감상(G-07, SPEC §22): 실제 처리는 glass_view.js
     viewWindow: function (o) { if (!App.started) start({ church: 'glass_room', quality: o && o.quality }); App.view.api.viewWindow(o); },
@@ -222,7 +296,7 @@
     peerEmote: function (o) { if (App.net) App.net.peerEmote(o.id, o.e); },
     setCandles: function (o) { if (App.world) App.world.setCandles(o.candles || []); },
     lightCandle: function (o) { if (App.world) { App.world.lightCandle(o); root.ChurchAudio.chime(); } },
-    setAmbient: function (o) { App.ambient = !!o.on; root.ChurchAudio.setAmbient(App.ambient); },
+    setAmbient: function (o) { App.ambient = !!o.on; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); },
     setHour: function (o) { if (App.world) App.world.setHour(+o.hour); },
     setSolo: function (o) { App.solo = !!o.on; if (App.crowd) App.crowd.set(App.solo); },
     setQuality: function (o) { App.quality = o.quality === 'low' ? 'low' : 'high'; if (App.R) { App.R.autoTier = App.quality === 'high' && qs.autotier !== '0'; App.R.setTier(App.quality, App.world); } resize(); },
@@ -467,6 +541,7 @@
   }
 
   function loop(now) {
+    if (App.paused) { App.rafOn = false; return; }   // 보이지 않는 동안: 다음 프레임을 청하지 않는다(resume 이 kick 으로 다시 깨운다)
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
     App.frameCount = (App.frameCount || 0) + 1;
     var raw = (now - App.last) / 1000, dt = Math.min(0.05, raw);

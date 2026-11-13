@@ -4,6 +4,7 @@ import '../app/settings.dart';
 import '../app/track.dart';
 import 'church_catalog.dart';
 import 'church_entry_card.dart';
+import 'church_host.dart';
 import 'church_scene_controller.dart';
 import 'church_screen.dart';
 import 'church_select_screen.dart';
@@ -14,8 +15,12 @@ import 'net/church_net.dart';
 /// '다른 성당 고르기'와 HUD의 '성당 바꾸기'는 선택 화면으로 간다. 처음(아직 성당에 들어간 적이
 /// 없음)에는 바로 선택 화면이 열린다.
 ///
-/// 선택 화면으로 돌아가면 [ChurchScreen]이 사라지므로(퇴장 처리: 일어서기, 진행 저장,
-/// 접속 끊기, WebView 정리) 선택 화면에서는 장면도 네트워크도 돌지 않는다.
+/// 선택 화면으로 돌아가면('성당 바꾸기') [ChurchScreen]이 사라지므로(퇴장 처리: 일어서기,
+/// 진행 저장, 접속 끊기, WebView 정리) 선택 화면에서는 장면도 네트워크도 돌지 않는다.
+///
+/// 다른 탭이나 '창' 보기로 가는 것은 퇴장이 아니다: 이 위젯과 [ChurchScreen]은 그대로 남고
+/// ([ChurchHost.visible]이 false), 돌아오면 방금 있던 자리 그대로다. 보이지 않는 동안 성당
+/// 화면은 장면을 일시정지하고, 선택 화면은 만들지 않는다.
 class ChurchTab extends StatefulWidget {
   const ChurchTab({
     super.key,
@@ -37,7 +42,7 @@ class ChurchTab extends StatefulWidget {
   final Set<String>? availableIds;
 
   /// 성당 장면 안에 들어갔는지(true)/나왔는지(false) 알린다. 유리화 탭이 이 값으로
-  /// [창 | 성당] 전환 줄을 장면 위에서는 숨긴다.
+  /// [창 | 성당] 전환 줄을 장면 위에서는 숨긴다. 없으면 [ChurchHost]의 것을 부른다.
   final ValueChanged<bool>? onInChurchChanged;
 
   /// 성당별 접속 인원(테스트용 주입). 없으면 [ChurchLoads.shared].
@@ -53,6 +58,30 @@ class _ChurchTabState extends State<ChurchTab> {
   /// 선택 화면을 보고 있는지. 성당에 들어간 적이 있어야(첫 입장 때 아바타 선택 표시가
   /// 켜진다) 마지막 성당 카드가 먼저 나온다.
   late bool _browsing = !widget.settings.churchAvatarChosen;
+
+  bool _visible = true;
+  bool _depsReady = false;
+
+  String get _screenId => _inChurch != null
+      ? 'church'
+      : (_browsing ? 'church_select' : 'church_entry');
+
+  void _notifyInChurch(bool v) {
+    final f =
+        widget.onInChurchChanged ?? ChurchHost.read(context)?.onInChurchChanged;
+    f?.call(v);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final visible = ChurchHost.visibleOf(context);
+    final was = _visible;
+    _visible = visible;
+    // 다른 탭·'창' 보기에서 돌아왔다: 지금 화면을 다시 기록한다(입장 이벤트는 새로 남기지 않는다).
+    if (_depsReady && visible && !was) Track.screen(_screenId);
+    _depsReady = true;
+  }
 
   Set<String> get _available =>
       widget.availableIds ?? ChurchSelectScreen.availableIds;
@@ -77,7 +106,7 @@ class _ChurchTabState extends State<ChurchTab> {
     if (picked) Track.church('church_pick', info.id);
     Track.screen('church');
     setState(() => _inChurch = info.id);
-    widget.onInChurchChanged?.call(true);
+    _notifyInChurch(true);
   }
 
   void _leave() {
@@ -86,7 +115,7 @@ class _ChurchTabState extends State<ChurchTab> {
       _inChurch = null;
       _browsing = true;
     });
-    widget.onInChurchChanged?.call(false);
+    _notifyInChurch(false);
   }
 
   /// 접속자 시트에서 다른 성당을 골랐다: 성당 고르기와 같은 상세 시트에서 '입장'을 눌러야
@@ -104,6 +133,8 @@ class _ChurchTabState extends State<ChurchTab> {
   Widget build(BuildContext context) {
     final id = _inChurch;
     if (id == null) {
+      // 보이지 않는 동안에는 선택 화면(접속 인원 조회 등)을 만들지 않는다.
+      if (!_visible) return const SizedBox.shrink();
       if (!_browsing) {
         final last = ChurchEntryCard.lastChurch(widget.settings, _available);
         return ChurchEntryCard(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../app/settings.dart';
 import '../app/track.dart';
+import '../church/church_host.dart';
 import '../church/church_scene_controller.dart';
 import '../church/church_tab.dart';
 import 'glass_catalog.dart';
@@ -15,8 +16,10 @@ enum GlassSegment { window, church }
 
 /// '유리화' 탭(G-01): 위쪽 제목·[창 | 성당] 전환 아래에 갤러리 홈 또는 성당 흐름을 둔다.
 ///
-/// 성당 보기는 [active]일 때만 만든다. 다른 탭으로 가면 [ChurchTab](WebView·소켓·타이머)이
-/// 사라져 배터리를 쓰지 않는다. 갤러리는 Flutter 화면이라 계속 둔다(필터·스크롤 유지).
+/// 성당 보기는 '성당'을 처음 고를 때 만들고, 그 뒤로는 다른 탭이나 '창' 보기로 가도 남겨 둔다
+/// (성당 안에 있던 자리·좌석·기도 카드가 그대로다). 보이지 않는 동안에는 [ChurchHost.visible]이
+/// false가 되어 성당 화면이 장면 그리기·소리를 멈추고, 오래 안 보이면 접속과 장면을 놓았다가
+/// 돌아올 때 같은 자리로 복원한다. 갤러리도 계속 둔다(필터·스크롤 유지).
 class GlassTab extends StatefulWidget {
   const GlassTab({
     super.key,
@@ -58,15 +61,16 @@ class _GlassTabState extends State<GlassTab> {
       widget.catalog ?? GlassCatalog.shared();
   bool _inChurch = false;
 
+  /// 성당 보기를 한 번이라도 열었는가(그때 만들고, 그 뒤로는 남겨 둔다).
+  late bool _churchBuilt = widget.initialSegment == GlassSegment.church;
+
   @override
   void didUpdateWidget(GlassTab old) {
     super.didUpdateWidget(old);
-    if (old.active != widget.active) {
-      if (!widget.active) {
-        _inChurch = false; // 성당 보기는 사라지므로 입장 상태도 푼다.
-      } else if (_segment == GlassSegment.window) {
-        Track.screen('glass_gallery');
-      }
+    if (old.active != widget.active &&
+        widget.active &&
+        _segment == GlassSegment.window) {
+      Track.screen('glass_gallery');
     }
   }
 
@@ -74,7 +78,7 @@ class _GlassTabState extends State<GlassTab> {
     if (s == _segment) return;
     setState(() {
       _segment = s;
-      _inChurch = false;
+      if (s == GlassSegment.church) _churchBuilt = true;
     });
     if (s == GlassSegment.window) Track.screen('glass_gallery');
   }
@@ -107,40 +111,60 @@ class _GlassTabState extends State<GlassTab> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final showHeader = !(_segment == GlassSegment.church && _inChurch);
-    final Widget body = switch (_segment) {
-      GlassSegment.window => FutureBuilder<GlassCatalog>(
-        future: _catalog,
-        builder: (context, snap) {
-          if (snap.hasError) {
-            return const _CatalogError();
-          }
-          final c = snap.data;
-          if (c == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return GlassGallery(
-            catalog: c,
-            onOpen: _open,
-            onOpenPrayer: widget.onOpenPrayer == null
-                ? null
-                : (_) => widget.onOpenPrayer!(),
-          );
-        },
-      ),
-      GlassSegment.church =>
-        !widget.active
-            ? const SizedBox.shrink()
-            : (widget.churchBuilder?.call(context) ??
-                  ChurchTab(
-                    key: const ValueKey('church-tab'),
-                    settings: widget.settings,
-                    onInChurchChanged: (v) {
-                      if (mounted && _inChurch != v) {
-                        setState(() => _inChurch = v);
-                      }
-                    },
-                  )),
-    };
+    final gallery = FutureBuilder<GlassCatalog>(
+      future: _catalog,
+      builder: (context, snap) {
+        if (snap.hasError) {
+          return const _CatalogError();
+        }
+        final c = snap.data;
+        if (c == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return GlassGallery(
+          catalog: c,
+          onOpen: _open,
+          onOpenPrayer: widget.onOpenPrayer == null
+              ? null
+              : (_) => widget.onOpenPrayer!(),
+        );
+      },
+    );
+    // 두 보기를 모두 살려 두고 하나만 보인다. 감싸는 위젯의 모양은 바뀌지 않게 한다
+    // (모양이 바뀌면 성당 화면이 새로 만들어져 다시 입장하게 된다).
+    final Widget body = IndexedStack(
+      index: _segment.index,
+      sizing: StackFit.expand,
+      children: [
+        // 성당 화면들은 자기 앱 바가 있어 위쪽 안전 영역을 한 번만 쓰게 한다.
+        MediaQuery.removePadding(
+          context: context,
+          removeTop: true,
+          child: gallery,
+        ),
+        if (_churchBuilt)
+          ChurchHost(
+            visible: widget.active && _segment == GlassSegment.church,
+            onInChurchChanged: (v) {
+              if (mounted && _inChurch != v) setState(() => _inChurch = v);
+            },
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: showHeader,
+              child: Builder(
+                builder: (context) =>
+                    widget.churchBuilder?.call(context) ??
+                    ChurchTab(
+                      key: const ValueKey('church-tab'),
+                      settings: widget.settings,
+                    ),
+              ),
+            ),
+          )
+        else
+          const SizedBox.shrink(),
+      ],
+    );
 
     return PopScope(
       // 성당 보기에서 뒤로 가면 창 보기로 돌아온다(탭 자체의 뒤로는 셸이 처리한다).
@@ -160,16 +184,7 @@ class _GlassTabState extends State<GlassTab> {
                 onSegment: _select,
                 onFavorites: _comingSoon,
               ),
-            Expanded(
-              child: showHeader
-                  // 성당 화면들은 자기 앱 바가 있어 위쪽 안전 영역을 한 번만 쓰게 한다.
-                  ? MediaQuery.removePadding(
-                      context: context,
-                      removeTop: true,
-                      child: body,
-                    )
-                  : body,
-            ),
+            Expanded(child: body),
           ],
         ),
       ),

@@ -129,6 +129,46 @@ sealed class SceneEvent {
         case 'viewGesture':
           final kind = ViewGestureKind.parse(j['kind']);
           return kind == null ? null : ViewGesture(kind);
+        // --- 일시정지·복원 ---
+        case 'state':
+          final church = j['church'];
+          final x = j['x'];
+          final z = j['z'];
+          if (church is! String || x is! num || z is! num) return null;
+          double? d(Object? v) => v is num ? v.toDouble() : null;
+          final seat = j['seat'];
+          final walk = j['walk'];
+          final wk = walk is Map ? walk['kind'] : null;
+          final wi = walk is Map ? walk['index'] : null;
+          final ws = walk is Map ? walk['seat'] : null;
+          return SceneState(
+            church: church,
+            x: x.toDouble(),
+            z: z.toDouble(),
+            r: d(j['r']) ?? 0,
+            seat: seat is String ? seat : null,
+            kneel: j['posture'] == 'kneel',
+            camYaw: d(j['cy']),
+            camPitch: d(j['cp']),
+            camZoom: d(j['cz']),
+            camLook: d(j['cl']),
+            walkKind: wk is String ? wk : null,
+            walkIndex: wi is num ? wi.toInt() : 0,
+            walkSeat: ws is String ? ws : null,
+          );
+        case 'restored':
+          final seat = j['seat'];
+          final x = j['x'];
+          final z = j['z'];
+          final r = j['r'];
+          if (x is! num || z is! num) return null;
+          return SceneRestored(
+            seat: seat is String ? seat : null,
+            lost: j['lost'] == 1 || j['lost'] == true,
+            x: x.toDouble(),
+            z: z.toDouble(),
+            r: r is num ? r.toDouble() : 0,
+          );
         // --- 성당 안 진본 창(G-29) ---
         case 'glassNear':
           final id = j['id'];
@@ -337,6 +377,56 @@ class SceneGlassTap extends SceneEvent {
   final String? slot;
 }
 
+/// 장면의 지금 상태(`pause`·`getState`의 답): 위치·방향·좌석·자세·카메라·걷던 목적지.
+/// 보이지 않게 될 때 받아 두었다가 장면을 새로 만들어야 하면 `restore`로 되돌린다.
+class SceneState extends SceneEvent {
+  const SceneState({
+    required this.church,
+    required this.x,
+    required this.z,
+    this.r = 0,
+    this.seat,
+    this.kneel = false,
+    this.camYaw,
+    this.camPitch,
+    this.camZoom,
+    this.camLook,
+    this.walkKind,
+    this.walkIndex = 0,
+    this.walkSeat,
+  });
+  final String church;
+  final double x;
+  final double z;
+  final double r;
+  final String? seat;
+  final bool kneel;
+  final double? camYaw;
+  final double? camPitch;
+  final double? camZoom;
+  final double? camLook;
+  final String? walkKind;
+  final int walkIndex;
+  final String? walkSeat;
+}
+
+/// `restore`를 적용했다. [seat]은 다시 앉은 좌석(서 있으면 null), [lost]는 앉아 있던 자리에
+/// 이미 누가 있어 통로에 세웠다는 뜻. [x]·[z]·[r]은 적용된 위치.
+class SceneRestored extends SceneEvent {
+  const SceneRestored({
+    this.seat,
+    this.lost = false,
+    this.x = 0,
+    this.z = 0,
+    this.r = 0,
+  });
+  final String? seat;
+  final bool lost;
+  final double x;
+  final double z;
+  final double r;
+}
+
 /// 웹 장면의 로딩 상태.
 enum SceneLoad { loading, ready, error }
 
@@ -532,6 +622,18 @@ abstract class ChurchSceneController {
 
   /// 확대·이동을 처음 구도로 되돌린다.
   Future<void> resetView() => _call('resetView', const {});
+
+  // --- 일시정지·복원 ---
+
+  /// 보이지 않는 동안: 그리기 고리(rAF)·애니메이션·소리를 멈춘다. 웹이 [SceneState]로 지금 상태를 알린다.
+  Future<void> pause() => _call('pause', const {});
+
+  /// 다시 보일 때: 멈춘 자리에서 잇는다.
+  Future<void> resume() => _call('resume', const {});
+
+  /// 새로 만든 장면에 저장해 둔 상태(`ChurchResumeState.toSceneArgs`)를 적용한다.
+  /// 웹이 (앉았으면 [SceneSeated] 다음에) [SceneRestored]로 결과를 알린다.
+  Future<void> restore(Map<String, Object?> state) => _call('restore', state);
 
   /// 서버가 좌석 요청을 거부했을 때(웹이 앉기를 취소하고 일어서도록).
   Future<void> setSeatTaken(String seat) =>

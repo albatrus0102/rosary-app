@@ -366,6 +366,30 @@ check('perf event carries tier, avg fps and seated flag', perf.length >= 1 && pe
 // 시간대/성당 변경, 이모트, 소리 켜기(헤드리스에서 오류 없이)
 await page.evaluate(() => { ChurchAPI.setHour({ hour: 18.5 }); ChurchAPI.setHour({ hour: 22 }); ChurchAPI.emote({ e: 1 }); ChurchAPI.peerEmote({ id: 'p8', e: 0 }); ChurchAPI.setAvatar({ avatar: { skin: 0, style: 1, hair: 9, outfit: 11, name: 39 } }); ChurchAPI.setAmbient({ on: true }); ChurchAPI.setQuality({ quality: 'high' }); });
 await page.waitForTimeout(1000);
+// 보이지 않는 동안 일시정지(pause/resume): rAF·그리기가 완전히 멈추고, 돌아오면 그 자리에서 잇는다
+{
+  const missingPause = await page.evaluate(() => ['pause', 'resume', 'getState', 'restore'].filter((k) => typeof window.ChurchAPI[k] !== 'function'));
+  check('ChurchAPI has pause/resume/getState/restore', missingPause.length === 0, missingPause);
+  await page.evaluate(() => { window.__ev.length = 0; ChurchAPI.pause(); });
+  await page.waitForTimeout(400);   // 이미 청해 둔 프레임 하나가 끝나길 기다린다
+  const p0 = await page.evaluate(() => ({ f: __church.frameCount, gl: __church.renderer.info.render.frame, raf: __church.rafOn, t: __church.t, x: __church.me.x, z: __church.me.z, yaw: __church.ctl.yaw, st: window.__ev.find((e) => e.e === 'state') }));
+  await page.waitForTimeout(2500);
+  const p1 = await page.evaluate(() => ({ f: __church.frameCount, gl: __church.renderer.info.render.frame, raf: __church.rafOn, t: __church.t, ev: window.__ev.filter((e) => e.e !== 'state').length }));
+  check('pause posts the state snapshot', !!p0.st && p0.st.church === 'basic' && typeof p0.st.x === 'number' && typeof p0.st.cy === 'number', p0.st);
+  check('paused: rAF loop stopped (no frames, no GL draws, no events for 2.5 s)', p0.raf === false && p1.raf === false && p1.f === p0.f && p1.gl === p0.gl && p1.t === p0.t && p1.ev === 0, { p0: { f: p0.f, gl: p0.gl }, p1 });
+  await page.evaluate(() => ChurchAPI.resume());
+  await page.waitForFunction((f) => __church.frameCount > f + 2, p0.f, { timeout: 60000 }).catch(() => {});
+  const p2 = await page.evaluate(() => ({ f: __church.frameCount, raf: __church.rafOn, t: __church.t, x: __church.me.x, z: __church.me.z, yaw: __church.ctl.yaw, mode: __church.me.mode }));
+  check('resume: loop restarts at the same place without a time jump', p2.raf === true && p2.f > p0.f && Math.hypot(p2.x - p0.x, p2.z - p0.z) < 0.05 && Math.abs(p2.yaw - p0.yaw) < 0.05 && p2.t - p0.t < 0.05 * (p2.f - p0.f) + 1e-6, { p0: { x: p0.x, z: p0.z, t: p0.t }, p2 });
+  // 새로 만든 장면에 상태 적용(restore): 좌석·자세·시점
+  const seat = await page.evaluate(() => __church.logic.seatIds.find((id) => !__church.net.isTaken(id) && !__church.crowd.isTaken(id)));
+  await page.evaluate((seat) => { window.__ev.length = 0; ChurchAPI.restore({ church: 'basic', x: 0, z: 0, r: 0, seat, posture: 'kneel', cy: 0.5, cp: 0.3, cz: 1.1, cl: 0 }); }, seat);
+  await page.waitForTimeout(600);
+  const rs = await page.evaluate(() => ({ mode: __church.me.mode, seat: __church.me.seat, posture: __church.posture, pitch: __church.ctl.pitch, ev: window.__ev.filter((e) => e.e === 'seated' || e.e === 'restored') }));
+  check('restore seats the avatar at the saved seat/posture/camera', rs.mode === 'seated' && rs.seat === seat && rs.posture === 'kneel' && Math.abs(rs.pitch - 0.3) < 1e-6 && rs.ev.length === 2 && rs.ev[1].lost === 0, rs);
+  await page.evaluate(() => ChurchAPI.stand());
+  await page.waitForFunction(() => __church.me.mode === 'walk', null, { timeout: 120000 }).catch(() => {});
+}
 // 프레임 시간
 const fps = await page.evaluate(() => new Promise((res) => { let n = 0; const t = performance.now(); (function f() { n++; if (performance.now() - t > 3000) res(n / 3); else requestAnimationFrame(f); })(); }));
 console.log('INFO headless software-GL fps ~', fps.toFixed(1));
