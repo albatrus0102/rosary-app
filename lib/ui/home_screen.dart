@@ -341,7 +341,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Text(
-            settings.prayerMode.description,
+            settings.prayerMode.descriptionWithVoice(
+              voiceOn: settings.leaderAudioEnabled,
+            ),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -351,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
           duration: AppMotion.of(context, Durations.medium1),
           curve: Easing.emphasizedDecelerate,
           alignment: Alignment.topCenter,
-          child: settings.prayerMode == PrayerMode.responder
+          child: settings.prayerMode != PrayerMode.solo
               ? Padding(
                   padding: const EdgeInsets.only(top: AppSpace.sm),
                   child: _buildResponderHint(context),
@@ -380,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: AppSpace.xxs),
                     child: Text(
-                      '선창 음성은 설정 > 선창 음성에서 바꿀 수 있어요',
+                      '상대 목소리는 설정 > 상대 목소리에서 바꿀 수 있어요',
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),

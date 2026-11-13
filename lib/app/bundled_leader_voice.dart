@@ -145,7 +145,24 @@ class BundledLeaderVoice implements LeaderVoice {
   }();
 
   @override
-  Future<void> speakStep(RosaryStep step) async {
+  Future<void> speakStep(RosaryStep step) => _speakCues(
+    step.leaderCueIds,
+    (voice, id) => voice.speakStep(leaderCueStep(id)),
+  );
+
+  /// 선창 모드의 뒷단. 클립은 `resp_<기도 id>`(예: `resp_hail_mary`), 없으면 [fallback]이
+  /// 뒷단 문장을 읽는다. 뒷단이 없는 스텝은 소리 없이 곧바로 끝난다.
+  @override
+  Future<void> speakResponder(RosaryStep step) {
+    final id = step.responderCueId;
+    return _speakCues([?id], (voice, _) => voice.speakResponder(step));
+  }
+
+  /// [ids]의 클립을 차례로 재생한다. 클립이 없거나 재생을 시작하지 못하면 [say]로 [fallback]에 읽힌다.
+  Future<void> _speakCues(
+    List<String> ids,
+    Future<void> Function(LeaderVoice voice, String cueId) say,
+  ) async {
     final gen = ++_gen;
     _finishActive?.call();
     await _stopFallback();
@@ -159,7 +176,6 @@ class BundledLeaderVoice implements LeaderVoice {
       }
       if (gen != _gen || _disposed) return;
     }
-    final ids = step.leaderCueIds;
     if (ids.isEmpty) {
       _speaking.value = false;
       return;
@@ -173,7 +189,7 @@ class BundledLeaderVoice implements LeaderVoice {
         if (gen != _gen || _disposed) return;
         final played = has && await _playClip(id, gen);
         if (gen != _gen || _disposed) return;
-        if (!played) await _speakWithFallback(id, gen);
+        if (!played) await _speakWithFallback(id, gen, say);
       }
     } finally {
       // 다음 스텝이 이미 시작했으면 그쪽 상태를 건드리지 않는다.
@@ -235,14 +251,18 @@ class BundledLeaderVoice implements LeaderVoice {
     } catch (_) {}
   }
 
-  Future<void> _speakWithFallback(String cueId, int gen) async {
+  Future<void> _speakWithFallback(
+    String cueId,
+    int gen,
+    Future<void> Function(LeaderVoice voice, String cueId) say,
+  ) async {
     final voice = fallback;
     if (voice == null) return;
     _fallbackActive = true;
     try {
       await voice.init();
       if (gen != _gen || _disposed) return;
-      await voice.speakStep(leaderCueStep(cueId));
+      await say(voice, cueId);
     } catch (e) {
       debugPrint('bundled leader fallback failed: $e');
     } finally {

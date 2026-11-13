@@ -15,7 +15,7 @@ import 'leader_record_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 
-/// 설정 화면: 소리·진동, 기도 화면(기도문 표시), 선창 음성, 정보. 더보기에서 연다.
+/// 설정 화면: 소리·진동, 기도 화면(기도문 표시), 상대 목소리, 정보. 더보기에서 연다.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
@@ -364,7 +364,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // (c) 선창 음성
+  // (c) 상대 목소리: 앱이 대신 읽어 주는 소리(후창 모드는 앞단, 선창 모드는 뒷단)
   Widget _buildLeaderSection(BuildContext context) {
     final theme = Theme.of(context);
     final source = settings.leaderVoiceSource;
@@ -372,12 +372,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       color: theme.colorScheme.onSurfaceVariant,
     );
     return _Section(
-      title: '선창 음성',
+      title: '상대 목소리',
       children: [
         SwitchListTile(
           secondary: const Icon(Icons.record_voice_over_outlined),
-          title: const Text('선창 음성'),
-          subtitle: const Text('후창 모드에서 뒷단 차례에 앞단을 들려줍니다'),
+          title: const Text('상대 목소리(앱이 읽어 주는 소리)'),
+          subtitle: const Text(
+            '후창 모드에서는 앞단을, 선창 모드에서는 뒷단을 앱이 들려줍니다. '
+            '끄면 소리가 나지 않습니다',
+          ),
           value: settings.leaderAudioEnabled,
           onChanged: (v) {
             settings.leaderAudioEnabled = v;
@@ -431,6 +434,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           runSpacing: AppSpace.xs,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                '직접 녹음은 후창 모드의 앞단에만 쓰입니다. '
+                                '선창 모드의 뒷단은 AI 음성으로 들려 드려요',
+                                style: dim,
+                              ),
+                            ),
                             ListenableBuilder(
                               listenable: _leaderStore,
                               builder: (context, _) => Text(

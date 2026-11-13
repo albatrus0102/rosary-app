@@ -69,7 +69,8 @@ class PrayerScreen extends StatefulWidget {
   State<PrayerScreen> createState() => _PrayerScreenState();
 }
 
-class _PrayerScreenState extends State<PrayerScreen> {
+class _PrayerScreenState extends State<PrayerScreen>
+    with WidgetsBindingObserver {
   late final RosarySession _session;
   late final bool _ownsSession;
   late final SoundPlayer _sound;
@@ -80,20 +81,35 @@ class _PrayerScreenState extends State<PrayerScreen> {
   /// 연 전체 화면 기도는 카드 쪽 컨트롤러가 이미 기록하므로 여기서는 만들지 않는다.
   PrayerTracking? _tracking;
 
-  // 선창 음성(후창 모드 전용).
+  // 앱이 들려주는 상대 목소리: 후창 모드에서는 앞단(스텝에 들어갈 때 자동),
+  // 선창 모드에서는 뒷단(사용자가 앞단을 마치고 넘길 때, 끝나면 자동으로 다음 스텝).
   LeaderVoice? _voice;
   LeaderAudioStore? _ownedStore;
   bool _ownsVoice = false;
   int _lastIndex = 0;
   bool _disposed = false;
 
+  /// 선창 모드: 뒷단을 재생 중인지. true인 동안 화면은 '뒷단 듣는 중…'을 보인다.
+  bool _responding = false;
+
+  /// 뒷단 재생 시도의 번호. 취소·스텝 변경·화면 정리 때 올려서, 늦게 도착한 이전 재생의
+  /// 완료가 새 스텝을 넘기지 못하게 한다.
+  int _respGen = 0;
+
   // 묵주 전체 보기를 연 단추(띠, ⋮). 시트를 닫으면 포커스를 돌려준다.
   final FocusNode _stripFocus = FocusNode(debugLabel: 'prayer-strip');
   final FocusNode _menuFocus = FocusNode(debugLabel: 'prayer-menu');
 
+  /// 후창 모드: 스텝에 들어갈 때 앞단을 들려준다.
   bool get _leaderAudioActive =>
       _settings.prayerMode == PrayerMode.responder &&
       _settings.leaderAudioEnabled;
+
+  /// 선창 모드: 사용자가 넘길 때 뒷단을 받아 준다.
+  bool get _responderAudioActive =>
+      _settings.prayerMode == PrayerMode.leader && _settings.leaderAudioEnabled;
+
+  late final bool _speaksResponder;
 
   AppSettings get _settings => widget.settings;
 
@@ -135,8 +151,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _eventSub = _session.events.listen(_onSessionEvent);
     _session.addListener(_onProgress);
     HardwareKeyboard.instance.addHandler(_onKey);
+    WidgetsBinding.instance.addObserver(this);
 
-    if (_leaderAudioActive) {
+    _speaksResponder = _responderAudioActive;
+    if (_leaderAudioActive || _speaksResponder) {
       _setUpLeaderVoice();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeSuggestShort());
@@ -146,7 +164,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
     var voice = widget.leaderVoice;
     if (voice == null) {
       _ownsVoice = true;
-      voice = switch (_settings.leaderVoiceSource) {
+      // 직접 녹음은 앞단뿐이라, 선창 모드의 뒷단은 AI 음성(없는 부분은 기기 음성)으로 들려준다.
+      final source =
+          _speaksResponder &&
+              _settings.leaderVoiceSource == LeaderVoiceSource.recorded
+          ? LeaderVoiceSource.bundled
+          : _settings.leaderVoiceSource;
+      voice = switch (source) {
         LeaderVoiceSource.bundled => BundledLeaderVoice(
           persona: _settings.leaderPersona,
           fallback: TtsLeaderVoice(rate: () => _settings.ttsRate),
@@ -162,7 +186,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
     _lastIndex = _session.index;
     voice.isSpeaking.addListener(_onSpeakingChanged);
     _session.addListener(_onSessionChanged);
-    unawaited(_startLeaderVoice(voice));
+    // 선창 모드는 스텝에 들어갈 때 아무것도 들려주지 않는다(사용자가 앞단을 한다).
+    if (!_speaksResponder) unawaited(_startLeaderVoice(voice));
   }
 
   Future<void> _startLeaderVoice(LeaderVoice voice) async {
@@ -184,16 +209,79 @@ class _PrayerScreenState extends State<PrayerScreen> {
     final voice = _voice;
     if (voice == null) return;
     if (_session.isFinished) {
+      _cancelResponder();
       unawaited(voice.stop());
       return;
     }
     if (_session.index == _lastIndex) return;
     _lastIndex = _session.index;
+    if (_speaksResponder) {
+      // 뒷단을 듣는 중에 이전/지도 등으로 스텝이 바뀌면 재생을 멈추고 넘기지 않는다.
+      _cancelResponder();
+      return;
+    }
     unawaited(
       voice.speakStep(_session.current).catchError((Object e) {
         debugPrint('leader voice failed: $e');
       }),
     );
+  }
+
+  /// 큰 '다음 구슬' 단추·글 탭·볼륨 키가 부르는 '다음으로'.
+  ///
+  /// 선창 모드(목소리 켜짐)에서는 뒷단이 있는 스텝이면 앱이 뒷단을 먼저 들려주고, 끝나면
+  /// 자동으로 다음 스텝으로 넘어간다. 재생 중에 다시 부르면 재생을 멈추고 바로 넘어간다.
+  /// 뒷단이 없는 스텝(성호경·마침)이나 목소리를 끈 경우는 곧바로 넘어간다.
+  void _advance() {
+    if (_responding) {
+      _cancelResponder();
+      _session.next();
+      return;
+    }
+    final voice = _voice;
+    if (!_speaksResponder ||
+        voice == null ||
+        _session.isFinished ||
+        _session.current.responderCueId == null) {
+      _session.next();
+      return;
+    }
+    unawaited(_playResponderThenNext(voice));
+  }
+
+  Future<void> _playResponderThenNext(LeaderVoice voice) async {
+    final gen = ++_respGen;
+    final index = _session.index;
+    final step = _session.current;
+    setState(() => _responding = true);
+    try {
+      await voice.init();
+      if (gen != _respGen || _disposed) return;
+      await voice.speakResponder(step);
+    } catch (e) {
+      debugPrint('responder voice failed: $e');
+    }
+    // 그 사이 취소·스텝 변경·화면 정리가 있었으면 넘기지 않는다(늦은 완료 신호 무시).
+    if (gen != _respGen || _disposed || _session.index != index) return;
+    _respGen++;
+    if (mounted) setState(() => _responding = false);
+    _session.next();
+  }
+
+  /// 뒷단 재생을 멈추고 자동 넘김을 취소한다. 재생 중이 아니면 아무 일도 하지 않는다.
+  void _cancelResponder() {
+    if (!_responding) return;
+    _respGen++;
+    _responding = false;
+    if (mounted && !_disposed) setState(() {});
+    final voice = _voice;
+    if (voice != null) unawaited(voice.stop());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 앱이 뒤로 가면(화면 꺼짐 포함) 뒷단 재생을 멈추고 자동 넘김을 취소한다.
+    if (state == AppLifecycleState.paused) _cancelResponder();
   }
 
   /// 이어서 기도하기를 위해 스텝이 바뀔 때마다 위치를 저장하고, 마치면 지운다.
@@ -262,7 +350,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
     if (!next && key != LogicalKeyboardKey.audioVolumeUp) return false;
     if (event is KeyDownEvent) {
       if (next) {
-        _session.next();
+        _advance();
       } else {
         _session.back();
       }
@@ -273,7 +361,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void dispose() {
     _disposed = true;
+    _respGen++;
     _closeSnack();
+    WidgetsBinding.instance.removeObserver(this);
     HardwareKeyboard.instance.removeHandler(_onKey);
     _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     _session.removeListener(_onSessionChanged);
@@ -726,8 +816,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
       font: _settings.prayerFont,
       scale: scale,
       short: _settings.shortPrayers,
-      leaderSpeaking: _voice?.isSpeaking.value ?? false,
-      onAdvance: _session.next,
+      leaderSpeaking: !_speaksResponder && (_voice?.isSpeaking.value ?? false),
+      responderPlaying: _responding,
+      onAdvance: _advance,
     );
     // 마지막 기도에서는 큰 단추가 기도를 마친다.
     final nextLabel = _session.index == _session.steps.length - 1
@@ -736,7 +827,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
     final actions = PrayerActions(
       canGoBack: _session.index > 0,
       onBack: _session.back,
-      onNext: _session.next,
+      onNext: _advance,
       nextLabel: nextLabel,
     );
 
@@ -827,7 +918,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                         PrayerActions(
                           canGoBack: _session.index > 0,
                           onBack: _session.back,
-                          onNext: _session.next,
+                          onNext: _advance,
                           nextLabel: nextLabel,
                           bordered: false,
                         ),

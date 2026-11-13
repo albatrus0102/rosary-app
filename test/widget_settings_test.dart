@@ -63,6 +63,10 @@ class _FakeBundledVoice implements LeaderVoice {
       spoken.add('${persona.name}:${step.leaderCueIds.join(',')}');
 
   @override
+  Future<void> speakResponder(RosaryStep step) async =>
+      spoken.add('${persona.name}:resp:${step.responderCueId}');
+
+  @override
   Future<void> stop() async {}
 
   @override
@@ -104,7 +108,7 @@ void main() {
     );
     await tester.pump();
 
-    for (final title in ['소리 · 진동', '기도 화면', '선창 음성', '정보']) {
+    for (final title in ['소리 · 진동', '기도 화면', '상대 목소리', '정보']) {
       expect(find.text(title), findsWidgets, reason: title);
     }
     expect(find.text('설정'), findsWidgets);
@@ -418,7 +422,9 @@ void main() {
       _app(SettingsScreen(settings: settings, leaderAudio: _FakeStore())),
     );
     await tester.pump();
-    await tester.tap(find.text('후창 모드에서 뒷단 차례에 앞단을 들려줍니다'));
+    await tester.tap(
+      find.text('후창 모드에서는 앞단을, 선창 모드에서는 뒷단을 앱이 들려줍니다. 끄면 소리가 나지 않습니다'),
+    );
     await tester.pumpAndSettle();
     expect(settings.leaderAudioEnabled, isFalse);
     expect(find.text('기기 음성'), findsNothing);

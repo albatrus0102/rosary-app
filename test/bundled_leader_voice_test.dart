@@ -48,6 +48,7 @@ class _FakeClipPlayer implements ClipPlayer {
 /// 큐별로 [finish]를 부를 때까지 끝나지 않는 가짜 기기 음성.
 class _FakeFallback implements LeaderVoice {
   final spoken = <List<String>>[];
+  final spokenResponders = <String>[];
   int stops = 0;
   final _pending = <Completer<void>>[];
   final _speaking = ValueNotifier<bool>(false);
@@ -61,6 +62,14 @@ class _FakeFallback implements LeaderVoice {
   @override
   Future<void> speakStep(RosaryStep step) {
     spoken.add(step.leaderCueIds);
+    final c = Completer<void>();
+    _pending.add(c);
+    return c.future;
+  }
+
+  @override
+  Future<void> speakResponder(RosaryStep step) {
+    spokenResponders.add(step.responderText);
     final c = Completer<void>();
     _pending.add(c);
     return c.future;
@@ -399,5 +408,115 @@ void main() {
     expect(voice.isSpeaking.value, isFalse);
     expect(players, isEmpty);
     await voice.dispose();
+  });
+
+  group('speakResponder (선창 모드의 뒷단)', () {
+    final hailMary = steps.firstWhere((s) => s.kind == StepKind.hailMary);
+
+    test('plays resp_<id> from the persona directory and completes', () async {
+      existing = {
+        'assets/leader_voice/priest/resp_hail_mary.mp3',
+        sister('resp_hail_mary'),
+      };
+      final voice = make(persona: LeaderVoicePersona.priest);
+      var done = false;
+      unawaited(voice.speakResponder(hailMary).then((_) => done = true));
+      await pumpEventQueue();
+      expect(checked, ['assets/leader_voice/priest/resp_hail_mary.mp3']);
+      expect(players.single.played, ['leader_voice/priest/resp_hail_mary.mp3']);
+      expect(voice.isSpeaking.value, isTrue);
+      expect(done, isFalse);
+
+      players.single.finish();
+      await pumpEventQueue();
+      expect(done, isTrue);
+      expect(voice.isSpeaking.value, isFalse);
+      expect(players.single.disposed, isTrue);
+      expect(fallback.spokenResponders, isEmpty);
+      await voice.dispose();
+    });
+
+    test('missing clip: the device voice reads the responder text', () async {
+      final voice = make();
+      var done = false;
+      unawaited(voice.speakResponder(hailMary).then((_) => done = true));
+      await pumpEventQueue();
+      expect(players, isEmpty);
+      expect(fallback.spokenResponders, [hailMary.responderText]);
+      expect(fallback.spoken, isEmpty); // 앞단 경로로 읽지 않는다
+      fallback.finish();
+      await pumpEventQueue();
+      expect(done, isTrue);
+      expect(voice.isSpeaking.value, isFalse);
+      await voice.dispose();
+    });
+
+    test('a clip that fails to play falls back to the device voice', () async {
+      existing = {sister('resp_hail_mary')};
+      final voice = make(failPlay: true);
+      unawaited(voice.speakResponder(hailMary));
+      await pumpEventQueue();
+      expect(fallback.spokenResponders, [hailMary.responderText]);
+      fallback.finish();
+      await pumpEventQueue();
+      expect(voice.isSpeaking.value, isFalse);
+      await voice.dispose();
+    });
+
+    test(
+      'a step without a responder part completes at once, silently',
+      () async {
+        existing = {sister('sign_of_cross')};
+        final voice = make();
+        await voice.speakResponder(signOfCross);
+        expect(players, isEmpty);
+        expect(fallback.spokenResponders, isEmpty);
+        expect(voice.isSpeaking.value, isFalse);
+        await voice.dispose();
+      },
+    );
+
+    test('stop() ends a playing responder clip', () async {
+      existing = {sister('resp_hail_mary')};
+      final voice = make();
+      var done = false;
+      unawaited(voice.speakResponder(hailMary).then((_) => done = true));
+      await pumpEventQueue();
+      await voice.stop();
+      await pumpEventQueue();
+      expect(done, isTrue);
+      expect(voice.isSpeaking.value, isFalse);
+      expect(players.single.disposed, isTrue);
+      await voice.dispose();
+    });
+
+    test(
+      'a late finish of the old clip cannot end the next responder',
+      () async {
+        existing = {sister('resp_hail_mary'), sister('resp_apostles_creed')};
+        final voice = make();
+        var firstDone = false;
+        unawaited(voice.speakResponder(hailMary).then((_) => firstDone = true));
+        await pumpEventQueue();
+        final first = players.single;
+
+        var secondDone = false;
+        unawaited(voice.speakResponder(creed).then((_) => secondDone = true));
+        await pumpEventQueue();
+        expect(firstDone, isTrue);
+        expect(players, hasLength(2));
+
+        first.finish(); // 이전 재생기의 늦은 완료 신호
+        await pumpEventQueue();
+        expect(secondDone, isFalse);
+        expect(voice.isSpeaking.value, isTrue);
+
+        players[1].finish();
+        await pumpEventQueue();
+        expect(secondDone, isTrue);
+        expect(voice.isSpeaking.value, isFalse);
+        await voice.dispose();
+      },
+    );
   });
 }

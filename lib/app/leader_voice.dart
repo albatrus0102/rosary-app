@@ -12,7 +12,9 @@ import '../domain/rosary_sequence.dart';
 import 'leader_audio_store.dart';
 import 'sound_player.dart';
 
-/// 후창 모드에서 앞단(선창)을 들려주는 소스. 선언 순서가 설정 화면 순서다.
+/// 앱이 들려주는 상대 목소리의 소스. 선언 순서가 설정 화면 순서다.
+/// 후창 모드에서는 앞단(선창)을, 선창 모드에서는 뒷단(후창)을 들려준다.
+/// (직접 녹음은 앞단뿐이라 선창 모드의 뒷단에는 쓰지 못한다.)
 enum LeaderVoiceSource { bundled, tts, recorded }
 
 extension LeaderVoiceSourceInfo on LeaderVoiceSource {
@@ -66,6 +68,10 @@ abstract class LeaderVoice {
   /// [step]의 큐를 순서대로 말/재생하고 끝나면 완료한다.
   /// 이미 말하는 중이면 먼저 끊는다. 중간에 [stop]이 오면 즉시 끝난다.
   Future<void> speakStep(RosaryStep step);
+
+  /// 선창 모드: [step]의 **뒷단**(후창, [RosaryStep.responderText])을 말/재생하고 끝나면
+  /// 완료한다. 뒷단이 없는 스텝이면 곧바로 완료한다. [speakStep]과 같은 끊기 규칙을 따른다.
+  Future<void> speakResponder(RosaryStep step);
 
   Future<void> stop();
 
@@ -153,6 +159,10 @@ class TtsLeaderVoice implements LeaderVoice {
         if (byId[id] != null) byId[id]!,
     ]);
   }
+
+  @override
+  Future<void> speakResponder(RosaryStep step) =>
+      _speakTexts([if (step.responderText.isNotEmpty) step.responderText]);
 
   Future<void> _speakTexts(List<String> texts) async {
     final gen = ++_gen;
@@ -313,6 +323,10 @@ class RecordedLeaderVoice implements LeaderVoice {
       }
     }
   }
+
+  /// 직접 녹음은 앞단뿐이다. 뒷단은 소리 없이 곧바로 끝낸다(화면은 소스를 바꿔 쓴다).
+  @override
+  Future<void> speakResponder(RosaryStep step) => stop();
 
   @override
   Future<void> stop() async {

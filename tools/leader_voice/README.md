@@ -118,6 +118,27 @@ ElevenLabs 예: `python3 tools/leader_voice/generate.py --provider elevenlabs --
 앱은 `assets/leader_voice/<persona>/<cueId>.mp3`를 번들 에셋으로 읽습니다(`<cueId>`는 `cues.json`의 id, 예: `hail_mary`, `mystery_joyful_1`).
 파일이 없으면 기기 TTS 음성으로 대체됩니다. 생성 후 `pubspec.yaml`의 assets 등록(앱 쪽 작업)을 확인하고 앱을 다시 빌드하세요.
 
+### 선창 모드의 뒷단 클립 (`resp_*`)
+
+선창(leader) 모드에서는 사용자가 앞단을 하고, **앱이 뒷단을 목소리로 받습니다.** 이때 쓰는 클립이
+`assets/leader_voice/<persona>/resp_<기도 id>.mp3` 5개입니다(`resp_apostles_creed`, `resp_our_father`,
+`resp_hail_mary`, `resp_glory_be`, `resp_fatima`). 대본은 `responder_cues.json`, 분할선은
+`lib/domain/prayer_splits.dart`의 `responderStartLine`입니다.
+
+동작 규칙(`PrayerScreen` + `LeaderVoice.speakResponder`):
+
+- 설정의 '상대 목소리'가 켜져 있고 모드가 선창일 때만 동작합니다. 혼자 모드는 소리가 없고, 후창 모드는 기존대로
+  앞단 클립(`<cueId>.mp3`)을 스텝에 들어갈 때 들려줍니다.
+- 스텝에 들어갈 때는 아무 소리도 내지 않습니다(앞단은 사용자가 합니다). 사용자가 앞단을 마치고 **다음 구슬 단추 ·
+  글 탭 · 볼륨 키**로 넘기면, 뒷단이 있는 스텝은 `resp_*` 클립을 먼저 재생하고 **끝나면 자동으로 다음 스텝**으로
+  넘어갑니다. 재생 중에는 '뒷단 듣는 중…' 상태와 뒷단 문장 강조가 보이고, 다시 누르면 재생을 멈추고 바로 넘어갑니다.
+- 뒷단이 없는 스텝(성호경·마침)은 곧바로 넘어갑니다. 클립이 없거나 재생에 실패하면 기기 TTS가 뒷단 문장을 읽습니다.
+- 이전·지도 이동·앱이 백그라운드로 감·화면 종료 때는 재생을 멈추고 넘기지 않으며, 늦게 도착한 이전 재생의 완료
+  신호는 무시합니다(재생 번호 + 클립마다 새 재생기).
+- 소스가 '직접 녹음'이면 뒷단은 AI 음성(선택한 화자)으로 들려줍니다(녹음은 앞단뿐).
+- 화자는 후창 모드와 같은 설정(`leaderPersona`)을 씁니다. 클립 id→스텝 매핑은 `RosaryStep.responderCueId`
+  (순수 함수, `test/leader_cues_test.dart`).
+
 ## 라이선스 / 약관
 
 - 개인용으로 생성하는 것을 전제로 만든 도구입니다. 앱을 **배포**한다면 선택한 제공자의 약관(생성 음성의 재배포/상업적 이용, 출처 표기, 플랜 조건)을 반드시 확인하세요.

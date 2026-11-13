@@ -36,6 +36,7 @@ class PrayerTextView extends StatefulWidget {
     required this.onAdvance,
     this.short = false,
     this.leaderSpeaking = false,
+    this.responderPlaying = false,
     this.maxContentWidth = 560,
   });
 
@@ -55,6 +56,10 @@ class PrayerTextView extends StatefulWidget {
 
   /// 선창 음성이 재생 중이면 '선창 재생 중' 배지를 보인다.
   final bool leaderSpeaking;
+
+  /// 선창 모드에서 앱이 뒷단을 들려주는 중이면, 글 칸 위에 '뒷단 듣는 중…' 상태를 고정해 보이고
+  /// 뒷단 문장을 강조한다(글을 아래로 내려 두어도 상태가 보이도록 스크롤 밖에 둔다).
+  final bool responderPlaying;
   final double maxContentWidth;
 
   /// '기도문 계속 읽기' 칸의 높이(터치 영역 48).
@@ -123,6 +128,40 @@ class _PrayerTextViewState extends State<PrayerTextView> {
       _showFull = false;
       _offset = 0;
       if (_controller.hasClients) _controller.jumpTo(0);
+    }
+    if (widget.responderPlaying && !old.responderPlaying) {
+      // 상태 알약이 생기며 글 칸이 줄고 '계속 읽기' 칸이 잡힌 뒤(두 프레임 뒤)에 맞춘다.
+      final binding = SchedulerBinding.instance;
+      binding.addPostFrameCallback((_) {
+        binding.addPostFrameCallback((_) => _revealResponder());
+        binding.scheduleFrame();
+      });
+    }
+  }
+
+  final GlobalKey _highlightKey = GlobalKey();
+
+  /// 읽는 중인 뒷단 문장이 칸 밖(아래)에 있으면 보이게 내린다. 문장이 칸보다 길면 첫머리부터 보인다.
+  /// 이미 보이거나 위에 있으면 건드리지 않는다.
+  void _revealResponder() {
+    if (!mounted || !widget.responderPlaying || !_controller.hasClients) return;
+    final object = _highlightKey.currentContext?.findRenderObject();
+    if (object == null || !object.attached) return;
+    final viewport = RenderAbstractViewport.maybeOf(object);
+    if (viewport == null) return;
+    final p = _controller.position;
+    final top = viewport.getOffsetToReveal(object, 0).offset;
+    final bottom = viewport.getOffsetToReveal(object, 1).offset;
+    final target = math.min(top, bottom).clamp(0.0, p.maxScrollExtent);
+    if (target <= p.pixels + 0.5) return;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.jumpTo(target);
+    } else {
+      _controller.animateTo(
+        target,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
     }
   }
 
@@ -270,6 +309,8 @@ class _PrayerTextViewState extends State<PrayerTextView> {
       scale: scale,
       short: shortShown ? shortForm : null,
       leaderSpeaking: widget.leaderSpeaking,
+      responderPlaying: widget.responderPlaying,
+      highlightKey: _highlightKey,
     );
 
     final label = [
@@ -280,6 +321,7 @@ class _PrayerTextViewState extends State<PrayerTextView> {
 
     return Column(
       children: [
+        if (widget.responderPlaying) const ResponderStatus(),
         Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -364,6 +406,38 @@ class _PrayerTextViewState extends State<PrayerTextView> {
                 : null,
           ),
       ],
+    );
+  }
+}
+
+/// 선창 모드에서 앱이 뒷단을 읽는 동안 글 칸 위에 고정되는 상태 알약.
+/// 화면 읽기 프로그램에는 상태가 바뀔 때 알린다(liveRegion).
+class ResponderStatus extends StatelessWidget {
+  const ResponderStatus({super.key});
+
+  static const String label = '뒷단 듣는 중…';
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: '뒷단을 듣는 중입니다. 다음 구슬을 누르면 바로 넘어갑니다',
+      excludeSemantics: true,
+      child: Padding(
+        key: const ValueKey('prayer-responder-status'),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Pill(
+            label: label,
+            icon: Icons.volume_up,
+            background: scheme.tertiaryContainer,
+            foreground: scheme.onTertiaryContainer,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -484,14 +558,18 @@ class _Content extends StatelessWidget {
     required this.scale,
     required this.short,
     required this.leaderSpeaking,
+    required this.responderPlaying,
+    this.highlightKey,
   });
 
+  final GlobalKey? highlightKey;
   final RosaryStep step;
   final PrayerMode mode;
   final PrayerFont font;
   final double scale;
   final ShortPrayer? short;
   final bool leaderSpeaking;
+  final bool responderPlaying;
 
   @override
   Widget build(BuildContext context) {
@@ -507,6 +585,8 @@ class _Content extends StatelessWidget {
           font: font,
           scale: scale,
           short: short,
+          responderPlaying: responderPlaying,
+          highlightKey: highlightKey,
         ),
       ],
     );
@@ -593,6 +673,8 @@ class _PrayerText extends StatelessWidget {
     required this.font,
     required this.scale,
     required this.short,
+    this.responderPlaying = false,
+    this.highlightKey,
   });
 
   final RosaryStep step;
@@ -600,8 +682,44 @@ class _PrayerText extends StatelessWidget {
   final PrayerFont font;
   final double scale;
 
+  /// 강조한 뒷단 문장의 위치를 찾는 키([PrayerTextView]가 스크롤을 맞출 때 쓴다).
+  final GlobalKey? highlightKey;
+
   /// 있으면 전문 대신 이 첫머리를 보인다.
   final ShortPrayer? short;
+
+  /// 선창 모드에서 앱이 뒷단을 읽는 중: 뒷단 문장을 강조한다.
+  final bool responderPlaying;
+
+  /// 읽는 중인 뒷단 문장: 색 역할(tertiaryContainer)로 감싸고 글자는 굵고 또렷하게.
+  Widget _playingResponder(
+    BuildContext context,
+    String text,
+    TextStyle Function(double, Color, {bool bold}) style,
+    double size,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    return KeyedSubtree(
+      key: highlightKey,
+      child: DecoratedBox(
+        key: const ValueKey('prayer-responder-highlight'),
+        decoration: BoxDecoration(
+          color: scheme.tertiaryContainer,
+          borderRadius: AppShape.medium,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: SizedBox(
+            width: double.infinity,
+            child: Text(
+              text,
+              style: style(size, scheme.onTertiaryContainer, bold: true),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -653,12 +771,15 @@ class _PrayerText extends StatelessWidget {
               ? style(big, onSurface, bold: true)
               : style(small, dim),
         ),
-        Text(
-          step.responderText,
-          style: leaderMine
-              ? style(small, dim)
-              : style(big, onSurface, bold: true),
-        ),
+        if (leaderMine && responderPlaying)
+          _playingResponder(context, step.responderText, style, small)
+        else
+          Text(
+            step.responderText,
+            style: leaderMine
+                ? style(small, dim)
+                : style(big, onSurface, bold: true),
+          ),
       ],
     );
   }
@@ -697,12 +818,15 @@ class _PrayerText extends StatelessWidget {
                 ? style(big, onSurface, bold: true)
                 : style(small, dim),
           ),
-          Text(
-            short.responder,
-            style: responderMine
-                ? style(big, onSurface, bold: true)
-                : style(small, dim),
-          ),
+          if (leaderMine && responderPlaying)
+            _playingResponder(context, short.responder, style, small)
+          else
+            Text(
+              short.responder,
+              style: responderMine
+                  ? style(big, onSurface, bold: true)
+                  : style(small, dim),
+            ),
         ],
       );
     }

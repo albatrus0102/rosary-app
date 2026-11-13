@@ -105,12 +105,26 @@ void main() {
     await tester.tap(find.text('후창'));
     await tester.pumpAndSettle();
     expect(settings.prayerMode.name, 'responder');
-    expect(find.text('선창 음성은 설정 > 선창 음성에서 바꿀 수 있어요'), findsOneWidget);
+    expect(find.text('상대 목소리는 설정 > 상대 목소리에서 바꿀 수 있어요'), findsOneWidget);
 
     await tester.ensureVisible(find.text('설정 열기'));
     await tester.pump();
     await tester.tap(find.text('설정 열기'));
     expect(opened, 1);
+  });
+
+  testWidgets('leader mode says the app answers; voice off says no sound', (
+    tester,
+  ) async {
+    final settings = await _load({'prayer_mode': 'leader'});
+    await _pumpHome(tester, settings);
+    await tester.ensureVisible(find.text('선창'));
+    expect(find.text('앞단을 선창하면 뒷단은 앱이 목소리로 받아 줍니다'), findsOneWidget);
+    expect(find.text('상대 목소리는 설정 > 상대 목소리에서 바꿀 수 있어요'), findsOneWidget);
+
+    settings.leaderAudioEnabled = false;
+    await tester.pumpAndSettle();
+    expect(find.textContaining('소리는 나지 않습니다'), findsOneWidget);
   });
 
   testWidgets('hero image tap calls onOpenStyles', (tester) async {

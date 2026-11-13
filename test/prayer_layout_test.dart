@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/prayer_text_short.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
@@ -28,6 +31,37 @@ class _SilentSoundPlayer extends SoundPlayer {
   Future<void> playDecadeChime() async {}
   @override
   Future<void> playBeadTick() async {}
+  @override
+  Future<void> dispose() async {}
+}
+
+/// 선창 모드 뒷단 재생을 [finish]까지 붙들어 두는 가짜 목소리.
+class _HoldVoice implements LeaderVoice {
+  final _speaking = ValueNotifier<bool>(false);
+  final _pending = <Completer<void>>[];
+
+  @override
+  ValueListenable<bool> get isSpeaking => _speaking;
+  @override
+  Future<void> init() async {}
+  @override
+  Future<void> speakStep(RosaryStep step) async {}
+  @override
+  Future<void> speakResponder(RosaryStep step) {
+    final c = Completer<void>();
+    _pending.add(c);
+    return c.future;
+  }
+
+  void finish() {
+    for (final c in _pending) {
+      if (!c.isCompleted) c.complete();
+    }
+    _pending.clear();
+  }
+
+  @override
+  Future<void> stop() async => finish();
   @override
   Future<void> dispose() async {}
 }
@@ -62,6 +96,7 @@ Future<void> _pump(
   RosarySession? session,
   Brightness? brightness,
   double bottomInset = 24,
+  LeaderVoice? leaderVoice,
 }) async {
   const dpr = 2.0;
   tester.view.devicePixelRatio = dpr;
@@ -92,6 +127,7 @@ Future<void> _pump(
           initialIndex: index ?? 0,
           session: session,
           soundPlayer: _SilentSoundPlayer(),
+          leaderVoice: leaderVoice,
         ),
       ),
     ),
@@ -1133,6 +1169,177 @@ void main() {
 
   // 눈으로 확인하는 화면 모음. `--dart-define=UX_P0_SHOTS=<dir>`를 주면 PNG로 남긴다
   // (아이콘까지 그리려면 `--dart-define=MATERIAL_ICONS=<MaterialIcons-Regular.otf>`).
+  group('선창 모드: 뒷단 듣는 중 (앱이 뒷단을 읽어 주는 동안)', () {
+    final status = find.byKey(const ValueKey('prayer-responder-status'));
+    final highlight = find.byKey(const ValueKey('prayer-responder-highlight'));
+    final pillFinder = find.descendant(of: status, matching: find.byType(Chip));
+
+    String tag(Size s, double prayer, double system, Brightness b) =>
+        '${s.width.toInt()}x${s.height.toInt()}_p${prayer}_s${system}_${b.name}';
+
+    // (크기, 기도문 배율, 시스템 배율, 밝기). 글자 2배는 기도문 2.0과 시스템 2.0 둘 다 본다.
+    const cases = <(Size, double, double, Brightness)>[
+      (Size(360, 640), 1.0, 1.0, Brightness.light),
+      (Size(360, 640), 2.0, 1.0, Brightness.light),
+      (Size(360, 640), 1.0, 2.0, Brightness.dark),
+      (Size(360, 640), 2.0, 2.0, Brightness.dark),
+      (Size(360, 800), 1.0, 1.0, Brightness.light),
+      (Size(360, 800), 2.0, 1.0, Brightness.dark),
+      (Size(360, 800), 2.0, 2.0, Brightness.light),
+      (Size(360, 800), 1.0, 2.0, Brightness.dark),
+      (Size(412, 915), 2.0, 1.3, Brightness.dark),
+      (Size(1024, 600), 1.5, 1.0, Brightness.light),
+    ];
+
+    for (final (size, prayer, system, b) in cases) {
+      testWidgets('plays without overlap ${tag(size, prayer, system, b)}', (
+        tester,
+      ) async {
+        final settings = await _settings({
+          'prayer_text_scale': prayer,
+          'short_prayers_asked': true,
+          'prayer_mode': PrayerMode.leader.name,
+        });
+        final voice = _HoldVoice();
+        await _pump(
+          tester,
+          settings,
+          size: size,
+          systemScale: system,
+          index: _hailMary4,
+          brightness: b,
+          leaderVoice: voice,
+        );
+        final name = tag(size, prayer, system, b);
+        expect(status, findsNothing);
+        expect(highlight, findsNothing);
+        final before = _rect(tester, _scroll);
+        await _shot(tester, 'leader_$name${'_1before'}');
+
+        await tester.tap(_next);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(tester.takeException(), isNull);
+        expect(status, findsOneWidget);
+        expect(find.text('뒷단 듣는 중…'), findsOneWidget);
+        // 뒷단 문장이 칸 밖에 있었다면 보이도록 내려 준다(칸보다 길면 첫머리부터).
+        {
+          final h = _rect(tester, highlight);
+          final v = _rect(tester, _scroll);
+          expect(h.top, lessThan(v.bottom - 8), reason: 'highlight below fold');
+          expect(h.bottom, greaterThan(v.top + 8));
+        }
+        await _shot(tester, 'leader_$name${'_2playing'}');
+
+        final screen = Offset.zero & size;
+        final pill = _rect(tester, pillFinder);
+        final viewport = _rect(tester, _scroll);
+        final actions = _rect(tester, _actions);
+        expect(screen.contains(pill.topLeft), isTrue);
+        expect(screen.contains(pill.bottomRight), isTrue, reason: '$pill');
+        // 상태 알약은 글 칸 밖(위)에 있고 글과 겹치지 않는다.
+        expect(pill.bottom, lessThanOrEqualTo(viewport.top + 0.5));
+        // 좁은 화면은 단추가 글 칸 아래에, 넓은 화면은 오른쪽 칸에 있다.
+        if (viewport.right > actions.left + 0.5) {
+          expect(viewport.bottom, lessThanOrEqualTo(actions.top + 0.5));
+        }
+        expect(viewport.height, greaterThan(80), reason: 'text pane squeezed');
+        // 알약이 글 칸을 줄이는 양은 알약 높이 정도다.
+        // (글이 넘치게 되면 '기도문 계속 읽기' 칸 48dp가 더 잡힌다.)
+        expect(
+          before.height - viewport.height,
+          lessThanOrEqualTo(pill.height + 8 + PrayerTextView.moreRowHeight + 1),
+        );
+        // 단추는 그대로 눌린다: 크기를 지킨다.
+        expect(_rect(tester, _next).height, greaterThanOrEqualTo(48));
+        if (highlight.evaluate().isNotEmpty) {
+          final h = _rect(tester, highlight);
+          expect(h.left, greaterThanOrEqualTo(viewport.left - 0.5));
+          expect(h.right, lessThanOrEqualTo(viewport.right + 0.5));
+        }
+        // 글 칸을 끝까지 내리면 뒷단 강조의 끝이 칸 안에 온전히 보인다(글이 칸보다 길면
+        // 위쪽은 스크롤로 읽는다).
+        _position(tester).jumpTo(_position(tester).maxScrollExtent);
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(highlight, findsOneWidget);
+        final h = _rect(tester, highlight);
+        final v = _rect(tester, _scroll);
+        expect(h.bottom, lessThanOrEqualTo(v.bottom + 0.5));
+        expect(h.bottom, greaterThan(v.top));
+        expect(h.left, greaterThanOrEqualTo(v.left - 0.5));
+        expect(h.right, lessThanOrEqualTo(v.right + 0.5));
+        await _shot(tester, 'leader_$name${'_3playing_end'}');
+        expect(tester.takeException(), isNull);
+
+        voice.finish();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(status, findsNothing);
+        expect(find.text('성모송 5/10'), findsOneWidget);
+        await _shot(tester, 'leader_$name${'_4after'}');
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('mystery card step (first decade bead) at x2 dark', (
+      tester,
+    ) async {
+      final settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers_asked': true,
+        'prayer_mode': PrayerMode.leader.name,
+      });
+      final voice = _HoldVoice();
+      await _pump(
+        tester,
+        settings,
+        size: const Size(360, 640),
+        index: _indexOf((s) => s.kind == StepKind.ourFather && s.decade == 1),
+        brightness: Brightness.dark,
+        leaderVoice: voice,
+      );
+      await tester.tap(_next);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(status, findsOneWidget);
+      expect(
+        _rect(tester, pillFinder).bottom,
+        lessThanOrEqualTo(_rect(tester, _scroll).top + 0.5),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('short prayers view highlights the responder too', (
+      tester,
+    ) async {
+      final settings = await _settings({
+        'prayer_text_scale': 2.0,
+        'short_prayers': true,
+        'short_prayers_asked': true,
+        'prayer_mode': PrayerMode.leader.name,
+      });
+      final voice = _HoldVoice();
+      await _pump(
+        tester,
+        settings,
+        size: const Size(360, 640),
+        index: _hailMary4,
+        brightness: Brightness.light,
+        leaderVoice: voice,
+      );
+      await tester.tap(_next);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(status, findsOneWidget);
+      expect(highlight, findsOneWidget);
+      await _shot(tester, 'leader_short_360x640_p2.0_light_2playing');
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('screens (기도문 큰 글씨 · 묵주 전체 보기)', () {
     String tag(Size s, double scale, Brightness b) =>
         '${s.width.toInt()}x${s.height.toInt()}_x${scale}_${b.name}';

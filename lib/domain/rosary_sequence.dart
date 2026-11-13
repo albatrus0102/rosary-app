@@ -75,6 +75,21 @@ class RosaryStep {
   /// 성모송 1..10(단) 또는 1..3(서두). 그 외 null.
   final int? beadIndex;
 
+  /// 이 스텝의 기도 id([Prayer.id]). 서두·마침의 성호경도 'sign_of_cross'.
+  String get prayerId => switch (kind) {
+    StepKind.signOfCross || StepKind.closing => Prayers.signOfCross.id,
+    StepKind.apostlesCreed => Prayers.apostlesCreed.id,
+    StepKind.ourFather => Prayers.ourFather.id,
+    StepKind.hailMary => Prayers.hailMary.id,
+    StepKind.gloryBe => Prayers.gloryBe.id,
+    StepKind.fatima => Prayers.fatima.id,
+  };
+
+  /// 선창 모드에서 앱이 들려줄 뒷단 클립 id(예: `resp_hail_mary`).
+  /// 뒷단이 없는 스텝(성호경·마침)은 null.
+  String? get responderCueId =>
+      responderText.isEmpty ? null : responderCueIdForPrayer(prayerId);
+
   /// 후창 모드에서 이 스텝에 들어갈 때 순서대로 재생할 선창 큐 id들.
   /// 신비 묵상 문구가 있으면 [신비 큐, 기도 큐], 아니면 [기도 큐].
   final List<String> leaderCueIds;

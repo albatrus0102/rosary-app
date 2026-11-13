@@ -15,6 +15,20 @@ class LeaderCue {
   final String text;
 }
 
+/// 선창 모드에서 앱이 들려주는 뒷단(후창) 클립 id의 접두어. 예: `resp_hail_mary`.
+const String responderCuePrefix = 'resp_';
+
+/// 기도 id([splitPrayer]로 나뉘는 기도)의 뒷단 클립 id. 나뉘지 않는 기도(성호경)는 null.
+String? responderCueIdForPrayer(String prayerId) =>
+    responderStartLine.containsKey(prayerId)
+    ? '$responderCuePrefix$prayerId'
+    : null;
+
+/// 뒷단 클립 id 전체(5개). `assets/leader_voice/<화자>/<id>.mp3`에 들어 있다.
+final List<String> allResponderCueIds = List.unmodifiable([
+  for (final id in responderStartLine.keys) '$responderCuePrefix$id',
+]);
+
 /// 기도의 선창 큐 id. 기도 id와 같다.
 String prayerCueId(Prayer prayer) => prayer.id;
 

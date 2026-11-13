@@ -84,7 +84,7 @@ class MoreScreen extends StatelessWidget {
                       key: const ValueKey('more-settings'),
                       leading: const Icon(Icons.settings_outlined),
                       title: const Text('설정'),
-                      subtitle: const Text('소리·진동, 글자 크기, 선창 음성'),
+                      subtitle: const Text('소리·진동, 글자 크기, 상대 목소리'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: onOpenSettings,
                     ),

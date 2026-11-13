@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/domain/leader_cues.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
@@ -60,5 +63,75 @@ void main() {
         for (var i = 1; i <= 5; i++) 'mystery_${set.name}_$i',
       ]);
     }
+  });
+
+  group('선창 모드 뒷단 클립 매핑 (resp_<기도 id>)', () {
+    final steps = buildRosarySequence(MysterySet.joyful);
+
+    test('the five split prayers map to resp_<id>', () {
+      String? idOf(StepKind kind) =>
+          steps.firstWhere((s) => s.kind == kind).responderCueId;
+      expect(idOf(StepKind.apostlesCreed), 'resp_apostles_creed');
+      expect(idOf(StepKind.ourFather), 'resp_our_father');
+      expect(idOf(StepKind.hailMary), 'resp_hail_mary');
+      expect(idOf(StepKind.gloryBe), 'resp_glory_be');
+      expect(idOf(StepKind.fatima), 'resp_fatima');
+    });
+
+    test(
+      'unsplit prayers (sign of the cross, opening and closing) are null',
+      () {
+        expect(steps.first.kind, StepKind.signOfCross);
+        expect(steps.first.responderCueId, isNull);
+        expect(steps.last.kind, StepKind.closing);
+        expect(steps.last.responderCueId, isNull);
+        expect(responderCueIdForPrayer('sign_of_cross'), isNull);
+        expect(responderCueIdForPrayer('salve_regina'), isNull);
+      },
+    );
+
+    test('every step with a responder part has a clip id and vice versa', () {
+      for (final s in steps) {
+        expect(
+          s.responderCueId != null,
+          s.responderText.isNotEmpty,
+          reason: s.title,
+        );
+        if (s.responderCueId != null) {
+          expect(allResponderCueIds, contains(s.responderCueId));
+        }
+      }
+      expect(allResponderCueIds.toSet(), {
+        for (final s in steps)
+          if (s.responderCueId != null) s.responderCueId!,
+      });
+    });
+
+    test('prayerId matches the prayer of the step', () {
+      expect(steps[1].prayerId, Prayers.apostlesCreed.id);
+      expect(steps[2].prayerId, Prayers.ourFather.id);
+      expect(steps[3].prayerId, Prayers.hailMary.id);
+      expect(steps.first.prayerId, Prayers.signOfCross.id);
+      expect(steps.last.prayerId, Prayers.signOfCross.id);
+    });
+
+    test('the bundled clips exist for both voices and match the script', () {
+      final script = (jsonDecode(
+        File('tools/leader_voice/responder_cues.json').readAsStringSync(),
+      ) as List).cast<Map<String, dynamic>>();
+      expect({for (final c in script) c['id']}, allResponderCueIds.toSet());
+      for (final persona in ['sister', 'priest']) {
+        for (final id in allResponderCueIds) {
+          final f = File('assets/leader_voice/$persona/$id.mp3');
+          expect(f.existsSync(), isTrue, reason: f.path);
+          expect(f.lengthSync(), greaterThan(1000), reason: f.path);
+        }
+      }
+      // 대본의 뒷단 문장이 앱의 뒷단 문장과 같다.
+      for (final c in script) {
+        final step = steps.firstWhere((s) => s.responderCueId == c['id']);
+        expect(c['text'], step.responderText, reason: '${c['id']}');
+      }
+    });
   });
 }
