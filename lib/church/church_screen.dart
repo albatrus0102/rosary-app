@@ -894,14 +894,6 @@ class _ChurchScreenState extends State<ChurchScreen>
                         ],
                       ),
                     ),
-                  if (_hintVisible && walking)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 6),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: ChurchWalkHint(),
-                      ),
-                    ),
                   if (_perfBanner)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -921,34 +913,48 @@ class _ChurchScreenState extends State<ChurchScreen>
                       onEnd: _endPrayer,
                       onFullScreen: _openFullScreenPrayer,
                     )
-                  else if (!seatedOrPending)
-                    // 오른쪽 아래: 상황 버튼 하나(앉기 / 초 켜기), 없으면 숨는다.
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Builder(
-                        builder: (context) {
-                          final pending =
-                              _near.station != null &&
-                                  !_stationDone.contains(_near.station)
-                              ? _near.station
-                              : null;
-                          final action = ChurchContextAction.forNear(
-                            canSit: _near.seat != null,
-                            canLight: _near.candle != null,
-                            station: pending,
-                          );
-                          return ChurchContextAction(
-                            action: action,
-                            onPressed: switch (action) {
-                              ChurchAction.pray ||
-                              ChurchAction.cross => _onStationAction,
-                              ChurchAction.sit => _onSit,
-                              _ => _onLight,
-                            },
-                          );
-                        },
+                  else if (!seatedOrPending) ...[
+                    // 처음 한 번 뜨는 '가기' 안내: 위쪽(이름표·표식이 뜨는 곳)이 아니라 오른쪽 아래, 상황 버튼 바로 위에 둔다.
+                    // 폭은 왼쪽 이동 안내(맨 왼쪽 140px)와 겹치지 않게 제한한다.
+                    if (_hintVisible && walking)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 8),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: ChurchWalkHint(),
+                        ),
+                      ),
+                    // 오른쪽 아래: 상황 버튼 하나(앉기 / 초 켜기), 없으면 숨는다. 버튼이 없어도 그 높이(64)를 비워 안내가 오르내리지 않게 한다.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 64),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Builder(
+                          builder: (context) {
+                            final pending =
+                                _near.station != null &&
+                                    !_stationDone.contains(_near.station)
+                                ? _near.station
+                                : null;
+                            final action = ChurchContextAction.forNear(
+                              canSit: _near.seat != null,
+                              canLight: _near.candle != null,
+                              station: pending,
+                            );
+                            return ChurchContextAction(
+                              action: action,
+                              onPressed: switch (action) {
+                                ChurchAction.pray ||
+                                ChurchAction.cross => _onStationAction,
+                                ChurchAction.sit => _onSit,
+                                _ => _onLight,
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
+                  ],
                 ],
               ),
             ),

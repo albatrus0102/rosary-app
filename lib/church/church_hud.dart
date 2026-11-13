@@ -320,7 +320,9 @@ class ChurchWalkChip extends StatelessWidget {
   }
 }
 
-/// 처음 한 번 '가기' 버튼 아래에 뜨는 안내 말풍선(6초 뒤 또는 처음 쓰면 사라진다).
+/// 처음 한 번 뜨는 '가기' 안내 말풍선(6초 뒤 또는 처음 쓰면 사라진다).
+/// 3D 이름표·표식이 뜨는 위쪽을 가리지 않도록 오른쪽 아래(상황 버튼 위)에 놓는다.
+/// 폭은 왼쪽 이동 안내(왼쪽 16 + 140 + 간격 8)와 겹치지 않게 줄이고, 260을 넘지 않는다.
 class ChurchWalkHint extends StatelessWidget {
   const ChurchWalkHint({super.key});
 
@@ -330,7 +332,10 @@ class ChurchWalkHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final maxW = (MediaQuery.sizeOf(context).width - 32).clamp(0.0, 260.0);
+    final maxW = (MediaQuery.sizeOf(context).width - 16 - 164).clamp(
+      120.0,
+      260.0,
+    );
     return IgnorePointer(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxW),
@@ -517,13 +522,21 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                     key: const ValueKey('joystick-ring'),
                     width: widget.size,
                     height: widget.size,
+                    // 바닥의 금색·갈색 표식 고리와 헷갈리지 않게 중립색(흰색 반투명 + 옅은 그림자)으로 그린다.
+                    // 밝은 대리석 위에서도 어두운 의자 위에서도 보이도록 바깥에 어두운 그림자를 둔다.
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: scheme.surface.withValues(alpha: 0.35),
+                      color: Colors.white.withValues(alpha: 0.12),
                       border: Border.all(
-                        color: scheme.onSurface.withValues(alpha: 0.4),
-                        width: 2,
+                        color: Colors.white.withValues(alpha: 0.75),
+                        width: 1.5,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 4,
+                        ),
+                      ],
                     ),
                     child: Transform.translate(
                       offset: _knob * (_radius - knobSize / 2),
@@ -533,7 +546,13 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                           height: knobSize,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: scheme.primary.withValues(alpha: 0.85),
+                            color: Colors.white.withValues(alpha: 0.55),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 4,
+                              ),
+                            ],
                           ),
                         ),
                       ),

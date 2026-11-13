@@ -107,7 +107,7 @@
       App.ctl.onTap = function (x, y) { tapAt(x, y); };
       App.ctl.onMoveTouch = function () { cancelWalk('touch'); };
       App.me = { x: 0, z: 17, y: 0, yaw: 0, vx: 0, vz: 0, mode: 'walk', seat: null, t: 0, fx: 0, fz: 0, fyaw: 0, tx: 0, tz: 0, tyaw: 0, pendingStand: false, speed: 0 };
-      App.meAv = new root.ChurchAvatar.Avatar(App.cfg, {});
+      App.meAv = new root.ChurchAvatar.Avatar(App.cfg, { self: true });
       App.scene.add(App.meAv.root);
       root.ChurchRenderUtil.markCaster(App.meAv.root);
       App.net = root.ChurchNetView.create(App.scene);
@@ -426,6 +426,16 @@
     cam.lookAt(lookTarget);
   }
 
+  // 내 이름표의 화면 사각형(CSS px). 표식 이름표가 이 위를 덮지 않게 피하는 데 쓴다(우선순위: 내 이름 > 표식).
+  var tagV = new T.Vector3();
+  function myTagRect(vw, vh) {
+    var av = App.meAv, tg = av && av.tag;
+    if (!tg || !tg.visible || !(av.tagPx > 0)) return null;
+    tagV.set(av.root.position.x, av.root.position.y + tg.position.y, av.root.position.z).project(App.camera);
+    if (tagV.z > 1) return null;
+    return { cx: (tagV.x * 0.5 + 0.5) * vw, cy: (-tagV.y * 0.5 + 0.5) * vh, w: av.tagPx * 3.84, h: av.tagPx };
+  }
+
   function loop(now) {
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
     App.frameCount = (App.frameCount || 0) + 1;
@@ -443,11 +453,16 @@
     App.ctl.setMoveZone(App.me.mode === 'walk');
     updateMe(dt, App.t);
     updateCamera(dt);
+    // 3D 이름표 크기 보정: 카메라 행렬을 갱신하고 아바타·표식에 알린다
+    var vw = root.innerWidth || 360, vh = root.innerHeight || 640;
+    App.camera.updateMatrixWorld();
+    App.camera.matrixWorldInverse.copy(App.camera.matrixWorld).invert();
+    root.ChurchAvatar.setView(App.camera, vh);
     App.net.setFocus(App.me.x, App.me.z);
     App.net.update(dt, App.t, now);
     App.crowd.update(dt, App.t);
     App.world.update(dt, App.t, App.me, App.camera);
-    if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk');
+    if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
     // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).

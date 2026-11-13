@@ -5,7 +5,7 @@
    - 성별(cfg.g: 0 여성, 1 남성): 머리 모양 4종×2성별(사실적인 단발/어깨 길이/포니테일/낮은 쪽머리, 짧게 친 머리/가르마/웨이브/넓은 이마),
      체형(어깨·가슴·허리·엉덩이 폭), 턱선, 목, 눈썹 굵기가 조금씩 다르다. 뼈 길이와 자세는 그대로(스케일만 다름).
      g 가 없는 옛 설정은 옛 세례명 인덱스에서 성별을 유추해 옮긴다(setConfig 의 normalizeCfg).
-   - 공개 API(변경 없음): new Avatar(cfg, {showTag}), root, setConfig, setLod(0|1|2), lod, setWalk, setSeated, setPray, playEmote(0 인사|1 성호|2 절),
+   - 공개 API(변경 없음): new Avatar(cfg, {showTag, self}), root, setConfig, setLod(0|1|2), lod, setWalk, setSeated, setPray, playEmote(0 인사|1 성호|2 절),
      setPose(x,y,z,yaw), snapPose(), update(dt,t), nod/nodPh, seatLift, ChurchAvatar.tagMaterial/HEIGHT.
    좌표: 앞 = -z, 위 = +y, +x = 아바타의 오른쪽. 휴식 자세(팔이 아래로 늘어진 자세)로 모델링하고 뼈 회전으로 포즈를 만든다. */
 (function (root) {
@@ -744,6 +744,14 @@
     tagCache[ck] = m;
     return m;
   }
+  // 이름표 화면 크기 보정용 카메라 정보(main.js 가 프레임마다 setView 로 알려 준다). 없으면 보정 없이 기본 크기.
+  var VIEW = { on: false, c: { x: 0, y: 0, z: 0 }, f: { x: 0, y: 0, z: -1 }, h: 640, fov: 52 };
+  function setView(cam, viewH) {
+    var e = cam.matrixWorld.elements;
+    VIEW.c.x = e[12]; VIEW.c.y = e[13]; VIEW.c.z = e[14];
+    VIEW.f.x = -e[8]; VIEW.f.y = -e[9]; VIEW.f.z = -e[10];
+    VIEW.h = viewH; VIEW.fov = cam.fov; VIEW.on = true;
+  }
   var shadowMat = null, shadowGeo = null;
   function getShadowMat() {
     if (shadowMat) return shadowMat;
@@ -810,7 +818,7 @@
     if (!shadowGeo) shadowGeo = new T.PlaneGeometry(1, 1).rotateX(-PI / 2);
     this.shadow = new T.Mesh(shadowGeo, getShadowMat()); this.shadow.scale.set(0.9, 1, 0.9); this.shadow.position.y = 0.03; this.shadow.renderOrder = 2;
     this.root.add(this.shadow);
-    this.tag = null; this.showTag = opts.showTag !== false;
+    this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9; this.tagPx = 0;
     this.walkTarget = 0; this.walkAmt = 0; this.phase = Math.random() * 6;
     this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
     this.emote = -1; this.emoteT = 0; this.nod = false; this.nodPh = Math.random() * 6;
@@ -1035,13 +1043,30 @@
       ua.quaternion.copy(qU); fa.quaternion.copy(qF); ha.quaternion.copy(qH);
     }
     // 이름표 높이
-    if (this.tag) this.tag.position.y = 1.88 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w;
+    if (this.tag) {
+      var ty = 1.88 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w;
+      this.tagY = ty;
+      this.tag.position.y = ty;
+      // 화면에서 읽기 좋은 크기로(가까우면 작게, 멀면 크게; 다른 사람은 멀면 흐려져 사라진다). 아바타 로드 후 첫 프레임부터 적용.
+      var LF = root.ChurchLabelFit;
+      if (LF && VIEW.on && this.lod === 0) {
+        var pr = LF.PRESETS[this.tagSelf ? 'self' : 'peer'], rp = this.root.position;
+        var dep = LF.depthOf(VIEW.c, VIEW.f, rp.x, rp.y + ty, rp.z);
+        if (dep > 0.1) {
+          var ff = LF.farFade(dep, pr), fh = LF.fit(dep, VIEW.h, VIEW.fov, pr).h * (0.6 + 0.4 * ff);
+          this.tag.visible = ff > 0;
+          this.tag.scale.set(fh * (0.78 / 0.195), fh, 1);
+          this.tag.position.y = ty + LF.anchorLift(fh, pr);
+          this.tagPx = fh * pr.pill * LF.pxPerMeter(dep, VIEW.h, VIEW.fov);   // 알약의 화면 높이(CSS px): 표식 이름표와 겹침을 피하는 데 쓴다
+        }
+      }
+    }
     this.shadow.position.y = 0.03;
   };
 
   root.ChurchAvatar = {
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
-    Avatar: Avatar, tagMaterial: tagMaterial, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
+    Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
     stats: function () {
       var out = { near: {}, mid: {}, far: [] }, s, g;

@@ -1,5 +1,7 @@
 /* markers.js — 성당 안 스테이션 표식(가서 행동하는 자리): 바닥의 부드러운 빛 고리 + 떠 있는 얇은 이름표.
    - 고리 1개 + 이름표 스프라이트 1개 + 보이지 않는 터치 판 1개 / 스테이션. (가려진 건 없음: draw call 은 스테이션 수의 2배)
+   - 이름표는 화면에서 알약 높이 18~26 CSS px 에 머물도록 거리(카메라 앞쪽 깊이)에 맞춰 크기를 보정한다(label_fit.js).
+     내 이름표(avoid 사각형)와 화면에서 겹치면 그만큼 위로 올려 가리지 않는다(우선순위: 내 이름 > 표식).
    - 가까이(도달 범위) 가면 서서히 사라진다. 걷는 중에는 목적지가 아닌 표식이 흐려진다. 앉으면 모두 숨는다.
    - pick(ndcX, ndcY, camera): 레이캐스트(터치 판·이름표·고리), 못 맞히면 화면에서 가까운 표식(36px).
    ChurchMarkers.create(group, stations, logic) -> {update, pick, items, dispose} */
@@ -74,22 +76,31 @@
       // 이름표는 서는 자리가 아니라 대상(스탠드/제대) 쪽 위에 떠 있다
       var tx = s.stand ? s.stand.x : s.x, tz = s.stand ? s.stand.z : s.z;
       if (kind === 'altar') { tx = s.x; tz = s.z; }
-      sp.position.set(tx, floor + (kind === 'altar' ? 2.5 : 2.3), tz); sp.renderOrder = 8;
+      var by = floor + (kind === 'altar' ? 2.5 : 2.3);
+      sp.position.set(tx, by, tz); sp.renderOrder = 8;
       sp.userData.aspect = lt.aspect;
       holder.add(ring); holder.add(hit); holder.add(sp);
-      items.push({ kind: kind, index: s.index === undefined ? 0 : s.index, s: s, ring: ring, hit: hit, sp: sp, a: 0, ph: items.length * 1.7 });
+      items.push({ kind: kind, index: s.index === undefined ? 0 : s.index, s: s, ring: ring, hit: hit, sp: sp, by: by, rz: 0, a: 0, ph: items.length * 1.7 });
     }
     st.candle.forEach(function (s) { add('candle', s); });
     add('altar', st.altar);
     st.font.forEach(function (s) { add('font', s); });
 
+    var LF = root.ChurchLabelFit, PM = LF && LF.PRESETS.marker;
+    var cpos = { x: 0, y: 0, z: 0 }, cfwd = { x: 0, y: 0, z: -1 };
     var ray = new T.Raycaster(), ndc = new T.Vector2(), pv = new T.Vector3();
     var M = {
       items: items,
       holder: holder,
       // active: {kind,index}|null — 걷는 중인 목적지. on: 걷는 중(앉지 않음)
-      update: function (dt, t, me, camera, active, on) {
+      // vp: {w,h,avoid} — 화면 크기(CSS px)와, 피해야 할 내 이름표의 화면 사각형({cx,cy,w,h}|null). 없으면 예전처럼 거리 비례 크기.
+      update: function (dt, t, me, camera, active, on, vp) {
         var k = 1 - Math.exp(-dt * 6);
+        var fitOn = !!(LF && vp && vp.h > 0);
+        if (fitOn) {
+          var ce = camera.matrixWorld.elements;
+          cpos.x = ce[12]; cpos.y = ce[13]; cpos.z = ce[14]; cfwd.x = -ce[8]; cfwd.y = -ce[9]; cfwd.z = -ce[10];
+        }
         for (var i = 0; i < items.length; i++) {
           var it = items[i], s = it.s;
           var d = Math.sqrt((me.x - s.x) * (me.x - s.x) + (me.z - s.z) * (me.z - s.z));
@@ -102,10 +113,28 @@
           var pulse = 0.5 + 0.5 * Math.sin(t * 2.2 + it.ph);
           it.ring.material.opacity = it.a * (0.72 + 0.28 * pulse);
           var sc = 1 + 0.05 * pulse; it.ring.scale.set(sc, sc, 1);
-          // 멀수록 이름표를 키워 읽히게 한다(상한 있음). 아주 멀면(>45m) 조금 흐리게.
           var cd = camera.position.distanceTo(it.sp.position);
-          var hgt = 0.46 * Math.max(1, Math.min(3.6, cd / 9));
-          it.sp.scale.set(hgt * it.sp.userData.aspect, hgt, 1);
+          if (fitOn) {
+            // 화면에서 알약 높이가 18~26px 에 머물도록 월드 높이를 정한다(가까우면 작게, 멀면 크게). 알약 아래 가장자리는 고정.
+            var dep = Math.max(0.3, LF.depthOf(cpos, cfwd, it.sp.position.x, it.by, it.sp.position.z));
+            var ft = LF.fit(dep, vp.h, camera.fov, PM), ppm = LF.pxPerMeter(dep, vp.h, camera.fov);
+            var hgt = ft.h, cy0 = it.by + LF.anchorLift(hgt, PM);
+            // 내 이름표와 화면에서 겹치면 위로 올린다(부드럽게). 올림 px 는 알약 높이의 3배까지.
+            var want2 = 0;
+            if (vp.avoid) {
+              pv.set(it.sp.position.x, cy0, it.sp.position.z).project(camera);
+              if (pv.z < 1) {
+                want2 = Math.min(ft.px * 3, LF.overlapRaise(vp.avoid, { cx: (pv.x * 0.5 + 0.5) * vp.w, cy: (-pv.y * 0.5 + 0.5) * vp.h, w: ft.px * 4.3, h: ft.px }, 3));
+              }
+            }
+            it.rz += (want2 - it.rz) * k;
+            it.sp.position.y = cy0 + it.rz / ppm;
+            it.sp.scale.set(hgt * it.sp.userData.aspect, hgt, 1);
+          } else {
+            // 멀수록 이름표를 키워 읽히게 한다(상한 있음).
+            var hg2 = 0.46 * Math.max(1, Math.min(3.6, cd / 9));
+            it.sp.scale.set(hg2 * it.sp.userData.aspect, hg2, 1);
+          }
           it.sp.material.opacity = it.a * (cd > 45 ? 0.75 : 1);
         }
       },
