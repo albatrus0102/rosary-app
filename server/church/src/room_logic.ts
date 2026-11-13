@@ -94,6 +94,9 @@ export interface OtherRooms {
 }
 export const PRESENCE_MIN_MS = 10_000;
 export const PRESENCE_MAX_MS = 60_000;
+/** `who`(이 방 접속자 명단) 응답에 담는 최대 인원과, 한 연결이 다시 물을 수 있는 최소 간격(ms). */
+export const WHO_MAX = 200;
+export const WHO_MIN_MS = 2000;
 
 export type St = 'w' | 's' | 'p';
 
@@ -190,6 +193,7 @@ interface Conn {
   peerId: string | null;
   recent: number[]; // 최근 수신 시각(최대 13개) — 슬라이딩 윈도 속도 제한
   lastRateErrorAt: number;
+  lastWhoAt: number;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -404,6 +408,7 @@ export class RoomLogic {
       peerId: null,
       recent: [],
       lastRateErrorAt: -Infinity,
+      lastWhoAt: -Infinity,
     });
   }
 
@@ -553,6 +558,9 @@ export class RoomLogic {
       case 'emote':
         this.onEmote(peer, m);
         break;
+      case 'who':
+        this.onWho(conn, peer, now);
+        return; // 상태가 바뀌지 않으므로 저장하지 않는다
       default:
         this.send(connId, { t: 'error', code: 'bad_msg' });
         return;
@@ -814,6 +822,33 @@ export class RoomLogic {
       return;
     }
     this.broadcastNear(peer, { t: 'emote', id: peer.id, e: m.e });
+  }
+
+  /**
+   * 이 방 접속자 명단. 개인 식별 정보는 담지 않는다: 피어 id·위치·좌석 없이 세례명 인덱스
+   * (`name`,`g`,`nv`)와 상태(`st`)만, 요청자 본인은 빼고(클라이언트가 '나'로 그린다) 입장 순으로
+   * 최대 WHO_MAX 명. `room` 은 이 방 인원(본인 포함), `n` 은 성당 전체 인원, 잘렸으면 `more: true`.
+   * 한 연결당 WHO_MIN_MS 에 한 번만 답한다(그보다 잦은 요청은 조용히 무시).
+   */
+  private onWho(conn: Conn, peer: Peer, now: number): void {
+    if (now - conn.lastWhoAt < WHO_MIN_MS) return;
+    conn.lastWhoAt = now;
+    const list: Message[] = [];
+    let more = false;
+    for (const p of this.peersByConn.values()) {
+      if (p === peer) continue;
+      if (list.length >= WHO_MAX) {
+        more = true;
+        break;
+      }
+      const e: Message = { name: p.avatar.name, st: p.st };
+      if (p.avatar.g !== undefined) e.g = p.avatar.g;
+      if (p.avatar.nv !== undefined) e.nv = p.avatar.nv;
+      list.push(e);
+    }
+    const out: Message = { t: 'who', n: this.totalCount(), room: this.peersByConn.size, list };
+    if (more) out.more = true;
+    this.send(conn.connId, out);
   }
 
   // ---------------------------------------------------------------- 주기 작업

@@ -51,6 +51,9 @@ class FakeChurchNet implements ChurchNet {
   void lightCandle(int slot, int intention) => candles.add((slot, intention));
   @override
   void emote(int e) => emotes.add(e);
+  int whoRequests = 0;
+  @override
+  void requestWho() => whoRequests++;
 
   void goOnline(int n) {
     countN.value = n;

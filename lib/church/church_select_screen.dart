@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/settings.dart';
 import '../app/window_class.dart';
 import 'church_catalog.dart';
+import 'net/church_loads.dart';
 
 /// 정렬 기준.
 enum ChurchSort {
@@ -48,6 +49,7 @@ class ChurchSelectScreen extends StatefulWidget {
     required this.onEnter,
     this.available,
     this.onBack,
+    this.loads,
   });
 
   /// 내부 3D 모형이 준비된 성당 id. 새 성당 내부가 들어올 때마다 늘린다.
@@ -72,6 +74,29 @@ class ChurchSelectScreen extends StatefulWidget {
 
   /// 마지막 성당 카드로 돌아가기(있으면 머리글에 뒤로 가기 버튼이 보인다).
   final VoidCallback? onBack;
+
+  /// 성당별 접속 인원(테스트용 주입). 없으면 [ChurchLoads.shared].
+  final ChurchLoads? loads;
+
+  /// 성당 상세 시트를 띄운다. '입장'을 누르면 true.
+  static Future<bool> showDetail(BuildContext context, ChurchInfo info) async {
+    final enter = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (context) => SafeArea(
+        top: false,
+        child: _DetailSheet(info: info, note: _noteFor(info)),
+      ),
+    );
+    return enter == true;
+  }
+
+  static const String _note = '실제 건축을 단순화한 3D 모형입니다';
+
+  static String _noteFor(ChurchInfo info) =>
+      info.id == ChurchCatalog.defaultId ? '실제 성당이 아닌 가상의 본당입니다' : _note;
 
   /// 목록을 걸러 정렬한다(즐겨찾기가 항상 먼저, 같은 즐겨찾기 상태 안에서는 정렬 기준대로).
   static List<ChurchInfo> arrange(
@@ -111,8 +136,6 @@ class ChurchSelectScreen extends StatefulWidget {
 }
 
 class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
-  static const String _note = '실제 건축을 단순화한 3D 모형입니다';
-
   final TextEditingController _search = TextEditingController();
   String _query = '';
   String? _region;
@@ -125,8 +148,18 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
   Set<String> get _available =>
       widget.available ?? ChurchSelectScreen.availableIds;
 
+  late final ChurchLoads _loads = widget.loads ?? ChurchLoads.shared;
+
+  @override
+  void initState() {
+    super.initState();
+    // 이 화면을 보는 동안에만 성당별 접속 인원을 받아 온다.
+    _loads.watch();
+  }
+
   @override
   void dispose() {
+    _loads.unwatch();
     _search.dispose();
     super.dispose();
   }
@@ -141,25 +174,12 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
   }
 
   Future<void> _showDetail(ChurchInfo info) async {
-    final enter = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (context) => SafeArea(
-        top: false,
-        child: _DetailSheet(info: info, note: _noteFor(info)),
-      ),
-    );
-    if (enter == true) {
+    final enter = await ChurchSelectScreen.showDetail(context, info);
+    if (enter && mounted) {
       widget.settings.churchId = info.id;
       widget.onEnter(info);
     }
   }
-
-  static String _noteFor(ChurchInfo info) => info.id == ChurchCatalog.defaultId
-      ? '실제 성당이 아닌 가상의 본당입니다'
-      : _note;
 
   void _resetFilters() => setState(() {
     _region = null;
@@ -174,7 +194,7 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
     final cols = _columns(context);
     return Scaffold(
       body: ListenableBuilder(
-        listenable: widget.settings,
+        listenable: Listenable.merge([widget.settings, _loads]),
         builder: (context, _) {
           final items = ChurchSelectScreen.arrange(
             [
@@ -347,6 +367,7 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
                         ? _ChurchCard(
                             info: row[c],
                             available: _available.contains(row[c].id),
+                            online: _loads.of(row[c].id),
                             selected: widget.settings.churchId == row[c].id,
                             favorite: widget.settings.isChurchFavorite(
                               row[c].id,
@@ -519,10 +540,14 @@ class _ChurchCard extends StatelessWidget {
     required this.favorite,
     required this.onFavorite,
     required this.onTap,
+    this.online = 0,
   });
 
   final ChurchInfo info;
   final bool available;
+
+  /// 지금 접속 중인 인원(0이면 표시하지 않는다).
+  final int online;
   final bool selected;
   final bool favorite;
   final VoidCallback onFavorite;
@@ -536,7 +561,11 @@ class _ChurchCard extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: available,
-      label: available ? info.nameKo : '${info.nameKo}, 준비 중',
+      label: !available
+          ? '${info.nameKo}, 준비 중'
+          : online > 0
+          ? '${info.nameKo}, 지금 $online명 접속 중'
+          : info.nameKo,
       child: Card.filled(
         key: ValueKey('church-card-${info.id}'),
         clipBehavior: Clip.antiAlias,
@@ -650,10 +679,36 @@ class _ChurchCard extends StatelessWidget {
                     Wrap(
                       spacing: 6,
                       runSpacing: 4,
-                      children: [
-                        _Tag(info.kind),
-                      ],
+                      children: [_Tag(info.kind)],
                     ),
+                    if (available && online > 0) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        key: ValueKey('church-online-${info.id}'),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 5, right: 6),
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: scheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              '지금 $online명 접속 중',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: scheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

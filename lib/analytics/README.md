@@ -185,6 +185,8 @@ diagnostics: `glass_load{win,tier(t1/t2/t3/tile),ms,ok}`, `glass_mem{tex_mb,budg
 | `church_sit` | `church` | 좌석에 앉는 동작이 성공한 지점. |
 | `church_candle` | `church` | `church_candle_sheet.dart`에서 촛불을 켠 순간. **지향(intention) 값은 절대 넘기지 않는다**(넘겨도 허용 목록 밖이라 버려진다). |
 | `avatar_save` | (없음) | 아바타 편집기 저장 버튼 콜백. |
+| `presence_sheet_open` | `church`, `online`(bool) | `church_presence_sheet.dart`의 `showChurchPresenceSheet`(칩의 성당 이름·인원을 눌러 '지금 접속 중' 시트를 연 순간). |
+| `presence_toggle` | `church`, `view`(`here`\|`all`) | 같은 시트에서 보기를 바꾼 순간. **세례명·인원 수는 넘기지 않는다.** |
 
 ### diagnostics (동의 `diagnostics`)
 

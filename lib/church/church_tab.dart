@@ -7,6 +7,7 @@ import 'church_entry_card.dart';
 import 'church_scene_controller.dart';
 import 'church_screen.dart';
 import 'church_select_screen.dart';
+import 'net/church_loads.dart';
 import 'net/church_net.dart';
 
 /// '성당' 탭의 흐름(C-02): 마지막 성당 카드 + [입장] → [ChurchScreen].
@@ -24,6 +25,7 @@ class ChurchTab extends StatefulWidget {
     this.avatarEditorBuilder,
     this.availableIds,
     this.onInChurchChanged,
+    this.loads,
   });
 
   final AppSettings settings;
@@ -37,6 +39,9 @@ class ChurchTab extends StatefulWidget {
   /// 성당 장면 안에 들어갔는지(true)/나왔는지(false) 알린다. 유리화 탭이 이 값으로
   /// [창 | 성당] 전환 줄을 장면 위에서는 숨긴다.
   final ValueChanged<bool>? onInChurchChanged;
+
+  /// 성당별 접속 인원(테스트용 주입). 없으면 [ChurchLoads.shared].
+  final ChurchLoads? loads;
 
   @override
   State<ChurchTab> createState() => _ChurchTabState();
@@ -84,6 +89,17 @@ class _ChurchTabState extends State<ChurchTab> {
     widget.onInChurchChanged?.call(false);
   }
 
+  /// 접속자 시트에서 다른 성당을 골랐다: 성당 고르기와 같은 상세 시트에서 '입장'을 눌러야
+  /// 옮겨 간다(옮기면 지금 성당 화면이 사라지며 퇴장 처리된다).
+  Future<void> _pickFromPresence(String id) async {
+    final info = ChurchCatalog.byId[id];
+    if (info == null || id == _inChurch || !_available.contains(id)) return;
+    final enter = await ChurchSelectScreen.showDetail(context, info);
+    if (!enter || !mounted || _inChurch == null) return;
+    widget.settings.churchId = info.id;
+    _enter(info);
+  }
+
   @override
   Widget build(BuildContext context) {
     final id = _inChurch;
@@ -106,6 +122,7 @@ class _ChurchTabState extends State<ChurchTab> {
               }
             : null,
         available: widget.availableIds,
+        loads: widget.loads,
       );
     }
     return ChurchScreen(
@@ -116,6 +133,8 @@ class _ChurchTabState extends State<ChurchTab> {
       scene: widget.scene,
       avatarEditorBuilder: widget.avatarEditorBuilder,
       onChangeChurch: _leave,
+      onPickChurch: _pickFromPresence,
+      loads: widget.loads,
     );
   }
 }

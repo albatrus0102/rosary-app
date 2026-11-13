@@ -20,7 +20,9 @@ import 'church_catalog.dart';
 import 'church_go_sheet.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
+import 'church_presence_sheet.dart';
 import 'church_scene_controller.dart';
+import 'net/church_loads.dart';
 import 'net/church_net.dart';
 import 'net/church_net_factory.dart';
 import 'net/solo_church_net.dart';
@@ -36,6 +38,8 @@ class ChurchScreen extends StatefulWidget {
     this.avatarEditorBuilder,
     this.prayerScreenBuilder,
     this.onChangeChurch,
+    this.onPickChurch,
+    this.loads,
     @visibleForTesting this.random,
   });
 
@@ -59,6 +63,12 @@ class ChurchScreen extends StatefulWidget {
 
   /// '성당 바꾸기'. 호출 쪽이 이 화면을 닫고(=퇴장 처리) 선택 화면으로 돌아간다.
   final VoidCallback? onChangeChurch;
+
+  /// 접속자 시트의 '전체'에서 다른 성당을 골랐을 때. 호출 쪽이 입장 확인 단계를 거쳐 옮긴다.
+  final ValueChanged<String>? onPickChurch;
+
+  /// 성당별 접속 인원(테스트용 주입). 없으면 [ChurchLoads.shared].
+  final ChurchLoads? loads;
 
   /// 첫 입장 설정 화면의 미리 골라 두는 모습을 뽑는 난수(테스트용 주입).
   final Random? random;
@@ -538,6 +548,8 @@ class _ChurchScreenState extends State<ChurchScreen>
         }
       case Full():
         break; // 재접속은 net이 처리한다.
+      case Who():
+        break; // 접속자 시트가 직접 듣는다.
     }
   }
 
@@ -787,6 +799,26 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (!_disposed && _prayerActive) _setWakelock(true);
   }
 
+  /// 칩의 성당 이름·인원 부분: '지금 접속 중' 시트.
+  Future<void> _openPresence() async {
+    final picked = await showChurchPresenceSheet(
+      context,
+      net: _net,
+      loads: widget.loads ?? ChurchLoads.shared,
+      churchId: widget.churchId,
+      selfName: _settings.churchAvatar.nameText,
+      selfSt: () {
+        if (_mySeat == null) return 'w';
+        final p = _prayer;
+        return p != null && p.running && !p.finished ? 'p' : 's';
+      },
+      canEnter: widget.onPickChurch == null ? (_) => false : null,
+    );
+    if (picked != null && mounted && !_disposed) {
+      widget.onPickChurch?.call(picked);
+    }
+  }
+
   void _toggleAmbient() {
     _settings.churchAmbient = !_settings.churchAmbient;
     Track.setting('church_ambient');
@@ -910,6 +942,7 @@ class _ChurchScreenState extends State<ChurchScreen>
                               state: _net.state.value,
                               count: _net.count.value,
                               onChangeChurch: widget.onChangeChurch,
+                              onShowPresence: _openPresence,
                             ),
                           ),
                         ),

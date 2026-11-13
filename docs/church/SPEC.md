@@ -38,6 +38,7 @@
 {"t":"pray","on":true,"ms":2}                          // 앉은 뒤 기도 시작/중단(잠깐 쉬기)
 {"t":"candle","slot":5,"intention":3}
 {"t":"emote","e":1}
+{"t":"who"}                                  // 이 방 접속자 명단 요청(연결당 2초에 1회)
 {"t":"ping"}
 ```
 ### 서버 → 클라이언트
@@ -52,6 +53,7 @@
 {"t":"praying","id":"..","on":true,"ms":2}
 {"t":"candle","slot":5,"until":1760001800000,"intention":3}
 {"t":"emote","id":"..","e":1}
+{"t":"who","n":12,"room":4,"list":[{"name":7,"st":"p","g":0,"nv":2}],"more":true}  // 요청자에게만. 세례명 인덱스·상태만(id·위치 없음), 본인 제외, 최대 200명
 {"t":"full","next":"church-2"}
 {"t":"pong"}
 {"t":"error","code":"bad_msg|rate|version"}

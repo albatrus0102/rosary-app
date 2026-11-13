@@ -156,6 +156,28 @@ ChurchEvent? _parse(Map<String, dynamic> m) {
       final e = _int(m['e']);
       if (id is! String || e == null) return null;
       return Emote(id, e);
+    case 'who':
+      final n = _int(m['n']);
+      final raw = m['list'];
+      if (n == null || raw is! List) return null;
+      final list = <RosterEntry>[];
+      for (final e in raw) {
+        if (e is! Map) continue;
+        final st = e['st'];
+        list.add(
+          RosterEntry(
+            // 이름 형식(`nv`/`g`) 해석은 아바타와 같은 규칙을 쓴다.
+            AvatarConfig.fromJson(e.cast<String, dynamic>()).nameText,
+            st == 's' || st == 'p' ? st as String : 'w',
+          ),
+        );
+      }
+      return Who(
+        n: n,
+        room: _int(m['room']) ?? list.length + 1,
+        list: list,
+        more: m['more'] == true,
+      );
     case 'full':
       final next = m['next'];
       if (next is! String || ChurchConfig.parseRoomName(next) == null) {
@@ -203,5 +225,7 @@ String candleMessage(int slot, int intention) =>
     jsonEncode({'t': 'candle', 'slot': slot, 'intention': intention});
 
 String emoteMessage(int e) => jsonEncode({'t': 'emote', 'e': e});
+
+String whoMessage() => jsonEncode({'t': 'who'});
 
 String pingMessage() => jsonEncode({'t': 'ping'});

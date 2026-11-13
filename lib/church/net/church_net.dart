@@ -234,6 +234,48 @@ class Emote extends ChurchEvent {
   final int e;
 }
 
+/// 접속자 명단의 한 사람. 개인 식별 정보 없이 세례명과 상태만 있다.
+@immutable
+class RosterEntry {
+  const RosterEntry(this.name, this.st);
+
+  /// 세례명(통합 목록에서 풀어 쓴 글).
+  final String name;
+
+  /// 'w' 서 있음/걷기, 's' 앉음, 'p' 기도 중.
+  final String st;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RosterEntry && other.name == name && other.st == st;
+
+  @override
+  int get hashCode => Object.hash(name, st);
+
+  @override
+  String toString() => 'RosterEntry($name, $st)';
+}
+
+/// `who` 요청의 답: 지금 이 방에 접속한 사람들(나는 빠져 있다).
+class Who extends ChurchEvent {
+  const Who({
+    required this.n,
+    required this.room,
+    required this.list,
+    this.more = false,
+  });
+
+  /// 성당 전체 인원.
+  final int n;
+
+  /// 이 방 인원(나 포함).
+  final int room;
+  final List<RosterEntry> list;
+
+  /// 명단이 상한에서 잘렸는지.
+  final bool more;
+}
+
 /// 방이 가득 참. 클라이언트는 [next] 방으로 다시 접속한다(자동 처리됨).
 class Full extends ChurchEvent {
   const Full(this.next);
@@ -261,4 +303,7 @@ abstract class ChurchNet {
   void sendPraying(bool on, int ms);
   void lightCandle(int slot, int intention);
   void emote(int e);
+
+  /// 이 방 접속자 명단을 청한다. 답은 [events]에 [Who]로 온다(online이 아니면 아무 일도 없다).
+  void requestWho();
 }

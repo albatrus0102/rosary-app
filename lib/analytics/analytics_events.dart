@@ -95,6 +95,9 @@ abstract final class AnalyticsEvents {
     'church_gesture': EventSpec(ConsentKinds.church, {'church', 'e'}),
     'church_mode': EventSpec(ConsentKinds.church, {'church', 'mode', 'on'}),
     'church_report': EventSpec(ConsentKinds.church, {'church', 'reason'}),
+    // 접속자 시트: 연 것과 보기 전환(here|all)만. 이름·인원은 보내지 않는다.
+    'presence_sheet_open': EventSpec(ConsentKinds.church, {'church', 'online'}),
+    'presence_toggle': EventSpec(ConsentKinds.church, {'church', 'view'}),
     // diagnostics
     'error': EventSpec(
       ConsentKinds.diagnostics,

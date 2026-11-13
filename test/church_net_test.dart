@@ -253,6 +253,28 @@ void main() {
       ]);
     });
 
+    _fake('requestWho sends who; the answer updates count and is emitted', (h) {
+      h.net.requestWho(); // 접속 전: 아무것도 보내지 않는다
+      h.connect();
+      h.welcome(n: 3);
+      h.net.requestWho();
+      h.flush();
+      expect(h.ch.sent.last, {'t': 'who'});
+      h.ch.serverSend({
+        't': 'who',
+        'n': 9,
+        'room': 2,
+        'list': [
+          {'name': 0, 'st': 'p', 'g': 0, 'nv': 2},
+        ],
+      });
+      h.flush();
+      expect(h.net.count.value, 9);
+      final who = h.events.whereType<Who>().single;
+      expect(who.room, 2);
+      expect(who.list.single.st, 'p');
+    });
+
     _fake('sendPos is throttled to 5 Hz while moving and sends stop at once', (
       h,
     ) {

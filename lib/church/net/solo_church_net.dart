@@ -47,4 +47,7 @@ class SoloChurchNet implements ChurchNet {
 
   @override
   void emote(int e) {}
+
+  @override
+  void requestWho() {}
 }

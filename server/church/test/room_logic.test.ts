@@ -8,6 +8,8 @@ import {
   MOVE_BUDGET_MAX,
   RATE_LIMIT_PER_SEC,
   SEAT_FAR_DISTANCE,
+  WHO_MAX,
+  WHO_MIN_MS,
   parseRoomName,
   type Message,
   type StoredCandle,
@@ -1069,4 +1071,67 @@ test('AOI: rebuildVisibility (복원 후 가시 집합 재계산)', () => {
   assert.deepEqual(h2.logic.visibleTo('r2'), []);
   void a;
   void b;
+});
+
+test('who: 이 방 명단은 세례명·상태만(id·위치·좌석 없음), 본인 제외, AOI 밖도 포함', () => {
+  const h = new Harness(WIDE);
+  const a = h.join(1, { skin: 0, style: 0, hair: 0, outfit: 0, name: 11, g: 1, nv: 2 });
+  const b = h.join(2, { skin: 0, style: 0, hair: 0, outfit: 0, name: 22, g: 0, nv: 2 });
+  const c = h.join(3); // 옛 형식(g·nv 없음)
+  h.walkTo(c, 100, 100); // a 의 AOI 밖
+  const seat = seatIds(WIDE)[0];
+  const sp = seatPosition(WIDE, seat)!;
+  h.walkTo(b, sp.x, sp.z);
+  h.send(b, { t: 'sit', seat });
+  h.send(b, { t: 'pray', on: true, ms: 2 });
+  h.logic.setOthers({ peers: 5, seated: 0, praying: 0, candlesToday: 0 });
+  h.clear();
+  h.t += WHO_MIN_MS;
+  h.send(a, { t: 'who' });
+  const w = h.msgs(a, 'who');
+  assert.equal(w.length, 1);
+  assert.deepEqual(w[0], {
+    t: 'who',
+    n: 8,
+    room: 3,
+    list: [
+      { name: 22, st: 'p', g: 0, nv: 2 },
+      { name: 7, st: 'w' },
+    ],
+  });
+  const text = JSON.stringify(w[0]);
+  for (const i of [1, 2, 3]) assert.ok(!text.includes(h.uuid(i)));
+  // 다른 사람에게는 아무것도 가지 않는다.
+  assert.equal(h.msgs(b).length, 0);
+  assert.equal(h.msgs(c).length, 0);
+});
+
+test('who: 연결당 WHO_MIN_MS 에 한 번만 답하고, hello 전에는 bad_msg', () => {
+  const h = new Harness();
+  const a = h.join(1);
+  h.join(2);
+  h.clear();
+  h.send(a, { t: 'who' });
+  h.t += WHO_MIN_MS - 1;
+  h.send(a, { t: 'who' });
+  assert.equal(h.msgs(a, 'who').length, 1);
+  assert.equal(h.msgs(a, 'error').length, 0);
+  h.t += 1;
+  h.send(a, { t: 'who' });
+  assert.equal(h.msgs(a, 'who').length, 2);
+  h.logic.onConnect('x');
+  h.send('x', { t: 'who' });
+  assert.deepEqual(h.msgs('x'), [{ t: 'error', code: 'bad_msg' }]);
+});
+
+test('who: WHO_MAX 명까지만 담고 more 로 알린다', () => {
+  const h = new Harness();
+  for (let i = 1; i <= WHO_MAX + 3; i++) h.join(i);
+  h.clear();
+  h.t += WHO_MIN_MS;
+  h.send('c1', { t: 'who' });
+  const w = h.msgs('c1', 'who')[0];
+  assert.equal(w.list.length, WHO_MAX);
+  assert.equal(w.more, true);
+  assert.equal(w.room, WHO_MAX + 3);
 });

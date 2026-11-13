@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 
 import 'net/church_net.dart';
 
-/// 상단 왼쪽 칩: 성당 이름 + 접속 상태. 누르면 '성당 바꾸기'.
+/// 상단 왼쪽 칩: 성당 이름 + 접속 상태.
+///
+/// 칩은 두 구역으로 나뉜다. 왼쪽(성당 이름 + 인원)을 누르면 '지금 접속 중' 시트
+/// ([onShowPresence]), 오른쪽 ↔ 아이콘을 누르면 '성당 바꾸기'([onChangeChurch]).
 ///
 /// 접속자 수는 online일 때만 보인다. 혼자 모드/오프라인에서는 숫자를 보이지 않는다.
 class ChurchStatusChip extends StatelessWidget {
@@ -14,23 +17,29 @@ class ChurchStatusChip extends StatelessWidget {
     required this.state,
     required this.count,
     this.onChangeChurch,
+    this.onShowPresence,
   });
 
   final String churchName;
   final NetState state;
   final int count;
   final VoidCallback? onChangeChurch;
+  final VoidCallback? onShowPresence;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final online = state == NetState.online;
-    final Widget status;
-    if (online) {
-      status = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    final String statusText = online
+        ? '$count명'
+        : state == NetState.connecting
+        ? '연결 중…'
+        : '혼자 모드';
+    final status = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (online) ...[
           Container(
             key: const ValueKey('presence-dot'),
             width: 8,
@@ -41,59 +50,89 @@ class ChurchStatusChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          Text(
-            '$count명',
-            style: text.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
-          ),
         ],
-      );
-    } else {
-      status = Text(
-        state == NetState.connecting ? '연결 중…' : '혼자 모드',
-        style: text.labelSmall?.copyWith(color: scheme.onSurfaceVariant),
-      );
-    }
-    return Tooltip(
-      message: '성당 바꾸기',
-      child: Material(
-        color: scheme.surface.withValues(alpha: 0.86),
-        shape: const StadiumBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onChangeChurch,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 6, 10, 6),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          churchName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: text.titleSmall?.copyWith(
-                            color: scheme.onSurface,
-                          ),
+        Flexible(
+          child: Text(
+            statusText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: (online ? text.labelMedium : text.labelSmall)?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        if (onShowPresence != null)
+          // 누르면 접속자 시트가 열린다는 작은 표시.
+          Icon(
+            Icons.expand_more,
+            key: const ValueKey('presence-chevron'),
+            size: 16,
+            color: scheme.onSurfaceVariant,
+          ),
+      ],
+    );
+    return Material(
+      color: scheme.surface.withValues(alpha: 0.86),
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: IntrinsicHeight(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Flexible(
+                child: Semantics(
+                  container: true,
+                  button: onShowPresence != null,
+                  label: online
+                      ? '$churchName, $count명 접속 중'
+                      : '$churchName, $statusText',
+                  hint: onShowPresence != null ? '접속 중인 사람 보기' : null,
+                  onTap: onShowPresence,
+                  child: ExcludeSemantics(
+                    child: InkWell(
+                      key: const ValueKey('presence-chip'),
+                      onTap: onShowPresence,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              churchName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.titleSmall?.copyWith(
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            status,
+                          ],
                         ),
-                        status,
-                      ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.swap_horiz,
-                    size: 18,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ],
+                ),
               ),
-            ),
+              Tooltip(
+                message: '성당 바꾸기',
+                child: InkWell(
+                  onTap: onChangeChurch,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 16, 0),
+                    child: Icon(
+                      Icons.swap_horiz,
+                      size: 20,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

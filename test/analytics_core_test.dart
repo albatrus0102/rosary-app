@@ -479,6 +479,8 @@ void main() {
         'church_gesture',
         'church_mode',
         'church_report',
+        'presence_sheet_open',
+        'presence_toggle',
       ],
       'diagnostics': ['error', 'perf', 'glass_load', 'glass_mem'],
     };

@@ -207,6 +207,8 @@ class WebSocketChurchNet implements ChurchNet {
           _count.value = event.n;
         case Snap():
           _count.value = event.n;
+        case Who():
+          _count.value = event.n;
         case Full():
           _events.add(event);
           _switchRoom(event.next);
@@ -351,4 +353,7 @@ class WebSocketChurchNet implements ChurchNet {
 
   @override
   void emote(int e) => _raw(emoteMessage(e));
+
+  @override
+  void requestWho() => _raw(whoMessage());
 }
