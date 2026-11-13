@@ -362,6 +362,82 @@ void main() {
     });
   });
 
+  group('HUD layout: walk hint / move hint / joystick', () {
+    // 360x800(작은 폰), 412x915(큰 폰), 360x640(낮은 화면): '가기' 안내는 위쪽(이름표·표식이 뜨는 곳)이 아니라
+    // 오른쪽 아래에 놓이고, 왼쪽 이동 안내·상황 버튼·'가기' 버튼·위쪽 아이콘 줄과 겹치지 않는다.
+    for (final size in const [Size(360, 800), Size(412, 915), Size(360, 640)]) {
+      testWidgets(
+        'no overlaps at ${size.width.toInt()}x${size.height.toInt()}',
+        (tester) async {
+          final h = await pumpChurch(tester, size: size);
+          h.scene.emit(
+            const SceneNear(seat: 'L03-2'),
+          ); // '앉기' 버튼이 나온 상태가 가장 붐빈다
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 300));
+          final hint = tester.getRect(find.byKey(const ValueKey('walk-hint')));
+          final move = tester.getRect(find.byKey(const ValueKey('move-hint')));
+          final sit = tester.getRect(find.byKey(const ValueKey('ctx-sit')));
+          final go = tester.getRect(_goButton);
+          final top = [
+            for (final tip in ['성당 바꾸기', '소리 끄기', '아바타 편집', '인사'])
+              tester.getRect(find.byTooltip(tip)),
+          ];
+          expect(hint.top, greaterThan(size.height / 2), reason: '화면 아래쪽 절반');
+          expect(hint.bottom, lessThanOrEqualTo(sit.top), reason: '앉기 버튼 위');
+          expect(hint.right, lessThanOrEqualTo(size.width - 16 + 0.5));
+          expect(hint.width, lessThanOrEqualTo(260));
+          expect(hint.overlaps(move), isFalse, reason: '이동 안내와 겹침');
+          expect(hint.overlaps(sit), isFalse, reason: '앉기 버튼과 겹침');
+          expect(hint.overlaps(go), isFalse, reason: '가기 버튼과 겹침');
+          for (final r in top) {
+            expect(hint.overlaps(r), isFalse, reason: '위쪽 아이콘 줄과 겹침');
+          }
+          expect(move.overlaps(sit), isFalse);
+          expect(tester.takeException(), isNull);
+          await tester.pump(const Duration(seconds: 7)); // 6초 안내 타이머 정리
+        },
+      );
+    }
+
+    testWidgets('the hint keeps its place when the context button appears', (
+      tester,
+    ) async {
+      final h = await pumpChurch(tester, size: const Size(360, 800));
+      final before = tester.getRect(find.byKey(const ValueKey('walk-hint')));
+      h.scene.emit(const SceneNear(seat: 'L03-2'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.getRect(find.byKey(const ValueKey('walk-hint'))), before);
+      await tester.pump(const Duration(seconds: 7));
+    });
+
+    testWidgets('joystick ring is neutral (white/grey), not gold or brown', (
+      tester,
+    ) async {
+      await pumpChurch(tester, size: const Size(360, 800));
+      final g = await tester.startGesture(const Offset(80, 500));
+      await tester.pump();
+      final ring = tester.widget<Container>(
+        find.byKey(const ValueKey('joystick-ring')),
+      );
+      final deco = ring.decoration! as BoxDecoration;
+      final fill = deco.color!;
+      final border = (deco.border! as Border).top;
+      for (final c in [fill, border.color]) {
+        expect(
+          (c.r - c.g).abs() + (c.g - c.b).abs(),
+          lessThan(0.02),
+          reason: '$c',
+        );
+      }
+      expect(fill.a, lessThanOrEqualTo(0.2), reason: '바닥이 비쳐 보이게');
+      expect(border.width, lessThanOrEqualTo(2));
+      await g.up();
+      await tester.pump(const Duration(seconds: 7));
+    });
+  });
+
   group('wire format', () {
     test('SceneEvent.parse understands the walk events and near.station', () {
       expect(
