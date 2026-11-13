@@ -1,0 +1,16 @@
+import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import { getBounds } from '@gltf-transform/functions';
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+const doc = await io.read(process.argv[2]);
+const r = doc.getRoot();
+const sc = r.listScenes()[0];
+console.log('bounds', JSON.stringify(getBounds(sc)));
+console.log('skins', r.listSkins().map(s=>s.listJoints().length));
+console.log('meshes', r.listMeshes().map(m=>m.getName()+':'+m.listPrimitives().map(p=>p.getIndices()?.getCount()/3+' '+p.getMaterial()?.getName()+' attrs '+p.listSemantics().join(','))));
+console.log('mats', r.listMaterials().map(m=>m.getName()));
+console.log('tex', r.listTextures().map(t=>t.getName()+' '+t.getMimeType()+' '+JSON.stringify(t.getSize())));
+console.log('anims', r.listAnimations().map(a=>a.getName()+' ch='+a.listChannels().length));
+const j0=r.listSkins()[0].listJoints(); console.log(j0.slice(0,8).map(n=>n.getName()+' s'+n.getScale().map(v=>v.toFixed(3))+' t'+n.getTranslation().map(v=>v.toFixed(3))));
+for (const n of r.listNodes().filter(n=>!j0.includes(n))) console.log('node', n.getName(), n.getScale(), n.getRotation(), n.listChildren().length, !!n.getMesh(), !!n.getSkin());
+const a=r.listAnimations()[0]; if(a) for(const c of a.listChannels().slice(0,6)) console.log(c.getTargetNode()?.getName(), c.getTargetPath(), c.getSampler().getInput().getCount());
