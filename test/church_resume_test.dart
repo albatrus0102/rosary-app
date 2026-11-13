@@ -400,6 +400,107 @@ void main() {
     });
   });
 
+  group("'입장'은 한 번만 누르면 된다", () {
+    // 예전에는 유리화 탭이 입장 순간 성당 보기를 감싸는 위젯 모양을 바꿔(머리줄 숨김) ChurchTab이
+    // 새로 만들어졌고, 입장 상태가 풀려 입장 카드가 다시 떠서 [입장]을 두 번 눌러야 했다.
+    Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> pumpShell(
+      WidgetTester tester, {
+      bool avatarChosen = true,
+    }) async {
+      setView(tester, const Size(400, 800));
+      final settings = await loadSettings(avatarChosen: avatarChosen);
+      settings.churchId = 'basic';
+      final services = AppServices.inMemory(settings);
+      addTearDown(services.disposeInMemory);
+      final net = FakeChurchNet();
+      final scene = FakeChurchSceneController();
+      await tester.pumpWidget(
+        AppServicesScope(
+          services: services,
+          child: wrapApp(
+            AppShell(
+              settings: settings,
+              glassCatalog: testGlassCatalogFuture(),
+              churchBuilder: (_) => ChurchTab(
+                key: const ValueKey('church-tab'),
+                settings: settings,
+                net: net,
+                scene: scene,
+                availableIds: const {'basic', 'stpeter'},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(_segment('성당'));
+      await tester.pumpAndSettle();
+      return (settings, net, scene);
+    }
+
+    testWidgets('입장 카드의 [입장] 1번 → 성당 화면(ChurchTab이 새로 만들어지지 않는다)', (
+      tester,
+    ) async {
+      final (_, net, scene) = await pumpShell(tester);
+      final tab = tester.state(find.byKey(const ValueKey('church-tab')));
+      expect(find.byKey(const ValueKey('entry-enter')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('entry-enter')));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(ChurchScreen), findsOneWidget);
+      expect(find.byKey(const ValueKey('entry-enter')), findsNothing);
+      expect(find.byKey(const ValueKey('entry-card')), findsNothing);
+      expect(tester.state(find.byKey(const ValueKey('church-tab'))), same(tab));
+      // 머리줄([창 | 성당])은 숨는다.
+      expect(find.byKey(const ValueKey('glass-segment')), findsNothing);
+      scene.emit(const SceneReady());
+      await _p(tester);
+      expect(net.connectedIds, ['basic']);
+      expect(scene.count('init'), 1);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('성당 고르기: 카드 → 상세 시트의 [입장] 1번 → (처음이면 아바타 설정) → 성당 화면', (
+      tester,
+    ) async {
+      // 처음 방문: 선택 목록이 바로 열린다.
+      final (settings, net, scene) = await pumpShell(
+        tester,
+        avatarChosen: false,
+      );
+      expect(find.byKey(const ValueKey('entry-card')), findsNothing);
+      final card = find.byKey(const ValueKey('church-card-stpeter'));
+      await tester.scrollUntilVisible(
+        card,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(card);
+      await tester.pump();
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, '입장'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      // 처음이라 한 페이지 설정 화면이 이어진다. 확인하면 바로 성당 안이다(입장을 다시 누르지 않는다).
+      expect(find.text('처음 오셨네요'), findsOneWidget);
+      await tester.tap(find.text('성당 들어가기'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      scene.emit(const SceneReady());
+      await _p(tester);
+      expect(find.byType(ChurchScreen), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, '입장'), findsNothing);
+      expect(find.text('성당 고르기'), findsNothing);
+      expect(settings.churchId, 'stpeter');
+      expect(net.connectedIds, ['stpeter']);
+      expect(scene.lastArgs('init')!['church'], 'stpeter');
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('오래 보이지 않으면 접속·장면을 놓았다가 복원', () {
     testWidgets('3분 뒤 접속을 끊고, 돌아오면 같은 성당에 다시 접속해 위치와 좌석을 되찾는다', (tester) async {
       await _startAnalytics();
