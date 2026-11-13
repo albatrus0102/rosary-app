@@ -75,6 +75,16 @@
      "bytes": 273024,
      "webp_q": 90,
      "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_dove_stpeter_th.webp",
+     "px": [
+      480,
+      695
+     ],
+     "bytes": 89736,
+     "webp_q": 80,
+     "bundled": true
     }
    },
    "is_4096_master": true,
@@ -145,14 +155,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_tiffany_hinds_2k.webp",
+     "path": "art/glass_2k/glass_tiffany_hinds_2k.webp",
      "px": [
       1034,
       2048
      ],
      "bytes": 717144,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_tiffany_hinds_1k.webp",
@@ -162,6 +172,16 @@
      ],
      "bytes": 233318,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_tiffany_hinds_th.webp",
+     "px": [
+      404,
+      800
+     ],
+     "bytes": 101008,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -233,14 +253,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_panel_crucified_2k.webp",
+     "path": "art/glass_2k/glass_panel_crucified_2k.webp",
      "px": [
       1043,
       2048
      ],
      "bytes": 821258,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_panel_crucified_1k.webp",
@@ -250,6 +270,16 @@
      ],
      "bytes": 217204,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_panel_crucified_th.webp",
+     "px": [
+      408,
+      800
+     ],
+     "bytes": 92400,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -325,14 +355,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_panel_catherine_donor_2k.webp",
+     "path": "art/glass_2k/glass_panel_catherine_donor_2k.webp",
      "px": [
       650,
       2048
      ],
      "bytes": 632318,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_panel_catherine_donor_1k.webp",
@@ -342,6 +372,16 @@
      ],
      "bytes": 157548,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_panel_catherine_donor_th.webp",
+     "px": [
+      254,
+      800
+     ],
+     "bytes": 67922,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -417,14 +457,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_leoben_annunciation_2k.webp",
+     "path": "art/glass_2k/glass_leoben_annunciation_2k.webp",
      "px": [
       1400,
       2048
      ],
      "bytes": 1282662,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_leoben_annunciation_1k.webp",
@@ -434,6 +474,16 @@
      ],
      "bytes": 330284,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_leoben_annunciation_th.webp",
+     "px": [
+      480,
+      702
+     ],
+     "bytes": 108398,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -509,14 +559,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_leoben_magi_2k.webp",
+     "path": "art/glass_2k/glass_leoben_magi_2k.webp",
      "px": [
       1375,
       2048
      ],
      "bytes": 1241440,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_leoben_magi_1k.webp",
@@ -526,6 +576,16 @@
      ],
      "bytes": 318602,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_leoben_magi_th.webp",
+     "px": [
+      480,
+      714
+     ],
+     "bytes": 108072,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -601,14 +661,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_panel_gethsemane_2k.webp",
+     "path": "art/glass_2k/glass_panel_gethsemane_2k.webp",
      "px": [
       1840,
       2048
      ],
      "bytes": 1181284,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_panel_gethsemane_1k.webp",
@@ -618,6 +678,16 @@
      ],
      "bytes": 310628,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_panel_gethsemane_th.webp",
+     "px": [
+      480,
+      534
+     ],
+     "bytes": 61264,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -689,14 +759,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_grisaille_aconite_2k.webp",
+     "path": "art/glass_2k/glass_grisaille_aconite_2k.webp",
      "px": [
       986,
       2048
      ],
      "bytes": 487830,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_grisaille_aconite_1k.webp",
@@ -706,6 +776,16 @@
      ],
      "bytes": 151782,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_grisaille_aconite_th.webp",
+     "px": [
+      385,
+      800
+     ],
+     "bytes": 61378,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -798,6 +878,16 @@
      ],
      "bytes": 297256,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_alabaster_stpaul_1_th.webp",
+     "px": [
+      417,
+      800
+     ],
+     "bytes": 132248,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -895,6 +985,16 @@
      "bytes": 305420,
      "webp_q": 90,
      "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_alabaster_stpaul_2_th.webp",
+     "px": [
+      407,
+      800
+     ],
+     "bytes": 126854,
+     "webp_q": 80,
+     "bundled": true
     }
    },
    "is_4096_master": false,
@@ -990,6 +1090,16 @@
      ],
      "bytes": 155506,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_alabaster_slab_th.webp",
+     "px": [
+      480,
+      678
+     ],
+     "bytes": 49136,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1091,6 +1201,16 @@
      "bytes": 349550,
      "webp_q": 90,
      "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_oculus_florence_donatello_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 80750,
+     "webp_q": 80,
+     "bundled": true
     }
    },
    "is_4096_master": false,
@@ -1178,6 +1298,16 @@
      ],
      "bytes": 352640,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_oculus_florence_ghiberti_1_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 88872,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1267,6 +1397,16 @@
      "bytes": 272502,
      "webp_q": 90,
      "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_oculus_florence_ghiberti_2_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 71810,
+     "webp_q": 80,
+     "bundled": true
     }
    },
    "is_4096_master": false,
@@ -1337,14 +1477,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_chartres_north_2k.webp",
+     "path": "art/glass_2k/glass_rose_chartres_north_2k.webp",
      "px": [
       1317,
       2048
      ],
      "bytes": 1052630,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_chartres_north_1k.webp",
@@ -1354,6 +1494,16 @@
      ],
      "bytes": 326512,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_chartres_north_th.webp",
+     "px": [
+      480,
+      747
+     ],
+     "bytes": 137102,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1429,14 +1579,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_chartres_west_2k.webp",
+     "path": "art/glass_2k/glass_rose_chartres_west_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 973342,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_chartres_west_1k.webp",
@@ -1446,6 +1596,16 @@
      ],
      "bytes": 309210,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_chartres_west_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 62132,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1521,14 +1681,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_chartres_south_2k.webp",
+     "path": "art/glass_2k/glass_rose_chartres_south_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1310764,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_chartres_south_1k.webp",
@@ -1538,6 +1698,16 @@
      ],
      "bytes": 474032,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_chartres_south_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 92596,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1613,14 +1783,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_chartres_belle_2k.webp",
+     "path": "art/glass_2k/glass_lancet_chartres_belle_2k.webp",
      "px": [
       1109,
       2048
      ],
      "bytes": 894006,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_chartres_belle_1k.webp",
@@ -1630,6 +1800,16 @@
      ],
      "bytes": 299442,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_chartres_belle_th.webp",
+     "px": [
+      433,
+      800
+     ],
+     "bytes": 137324,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1705,14 +1885,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_chartres_jesse_2k.webp",
+     "path": "art/glass_2k/glass_lancet_chartres_jesse_2k.webp",
      "px": [
       606,
       2048
      ],
      "bytes": 854370,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_chartres_jesse_1k.webp",
@@ -1722,6 +1902,16 @@
      ],
      "bytes": 231276,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_chartres_jesse_th.webp",
+     "px": [
+      237,
+      800
+     ],
+     "bytes": 105870,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1797,14 +1987,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_chartres_samaritan_2k.webp",
+     "path": "art/glass_2k/glass_lancet_chartres_samaritan_2k.webp",
      "px": [
       634,
       2048
      ],
      "bytes": 726476,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_chartres_samaritan_1k.webp",
@@ -1814,6 +2004,16 @@
      ],
      "bytes": 210264,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_chartres_samaritan_th.webp",
+     "px": [
+      248,
+      800
+     ],
+     "bytes": 95394,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1889,14 +2089,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_medallion_chartres_2k.webp",
+     "path": "art/glass_2k/glass_medallion_chartres_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1072626,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_medallion_chartres_1k.webp",
@@ -1906,6 +2106,16 @@
      ],
      "bytes": 374458,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_medallion_chartres_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 71558,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -1981,14 +2191,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_cologne_2k.webp",
+     "path": "art/glass_2k/glass_lancet_cologne_2k.webp",
      "px": [
       1250,
       2048
      ],
      "bytes": 860518,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_cologne_1k.webp",
@@ -1998,6 +2208,16 @@
      ],
      "bytes": 279296,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_cologne_th.webp",
+     "px": [
+      480,
+      786
+     ],
+     "bytes": 126926,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2073,14 +2293,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_gesta_2k.webp",
+     "path": "art/glass_2k/glass_lancet_gesta_2k.webp",
      "px": [
       506,
       2048
      ],
      "bytes": 517088,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_gesta_1k.webp",
@@ -2090,6 +2310,16 @@
      ],
      "bytes": 150374,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_gesta_th.webp",
+     "px": [
+      198,
+      800
+     ],
+     "bytes": 70492,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2165,14 +2395,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_grisaille_knot_2k.webp",
+     "path": "art/glass_2k/glass_grisaille_knot_2k.webp",
      "px": [
       814,
       2048
      ],
      "bytes": 627530,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_grisaille_knot_1k.webp",
@@ -2182,6 +2412,16 @@
      ],
      "bytes": 172226,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_grisaille_knot_th.webp",
+     "px": [
+      318,
+      800
+     ],
+     "bytes": 75348,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2261,14 +2501,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_saintechapelle_2k.webp",
+     "path": "art/glass_2k/glass_rose_saintechapelle_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 943984,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_saintechapelle_1k.webp",
@@ -2278,6 +2518,16 @@
      ],
      "bytes": 360752,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_saintechapelle_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 75024,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2349,14 +2599,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_york_2k.webp",
+     "path": "art/glass_2k/glass_rose_york_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1230132,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_york_1k.webp",
@@ -2366,6 +2616,16 @@
      ],
      "bytes": 362516,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_york_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 59864,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2437,14 +2697,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_canterbury_n3_2k.webp",
+     "path": "art/glass_2k/glass_canterbury_n3_2k.webp",
      "px": [
       675,
       2048
      ],
      "bytes": 642274,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_canterbury_n3_1k.webp",
@@ -2454,6 +2714,16 @@
      ],
      "bytes": 221988,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_canterbury_n3_th.webp",
+     "px": [
+      264,
+      800
+     ],
+     "bytes": 108800,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2529,14 +2799,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_beverley_west_2k.webp",
+     "path": "art/glass_2k/glass_beverley_west_2k.webp",
      "px": [
       1128,
       2048
      ],
      "bytes": 855960,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_beverley_west_1k.webp",
@@ -2546,6 +2816,16 @@
      ],
      "bytes": 252116,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_beverley_west_th.webp",
+     "px": [
+      441,
+      800
+     ],
+     "bytes": 117482,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2621,14 +2901,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_strasbourg_rose_2k.webp",
+     "path": "art/glass_2k/glass_strasbourg_rose_2k.webp",
      "px": [
       1777,
       1777
      ],
      "bytes": 1114668,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_strasbourg_rose_1k.webp",
@@ -2638,6 +2918,16 @@
      ],
      "bytes": 449872,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_strasbourg_rose_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 85538,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2713,14 +3003,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_augsburg_daniel_2k.webp",
+     "path": "art/glass_2k/glass_augsburg_daniel_2k.webp",
      "px": [
       700,
       2048
      ],
      "bytes": 431222,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_augsburg_daniel_1k.webp",
@@ -2730,6 +3020,16 @@
      ],
      "bytes": 136372,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_augsburg_daniel_th.webp",
+     "px": [
+      273,
+      800
+     ],
+     "bytes": 56166,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2805,14 +3105,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_augsburg_hosea_2k.webp",
+     "path": "art/glass_2k/glass_augsburg_hosea_2k.webp",
      "px": [
       672,
       2048
      ],
      "bytes": 446284,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_augsburg_hosea_1k.webp",
@@ -2822,6 +3122,16 @@
      ],
      "bytes": 146148,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_augsburg_hosea_th.webp",
+     "px": [
+      262,
+      800
+     ],
+     "bytes": 66350,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2897,14 +3207,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_tiffany_angel_resurrection_2k.webp",
+     "path": "art/glass_2k/glass_tiffany_angel_resurrection_2k.webp",
      "px": [
       1216,
       2048
      ],
      "bytes": 713610,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_tiffany_angel_resurrection_1k.webp",
@@ -2914,6 +3224,16 @@
      ],
      "bytes": 235846,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_tiffany_angel_resurrection_th.webp",
+     "px": [
+      475,
+      800
+     ],
+     "bytes": 110268,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -2989,14 +3309,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_tiffany_crown_glory_2k.webp",
+     "path": "art/glass_2k/glass_tiffany_crown_glory_2k.webp",
      "px": [
       1218,
       2048
      ],
      "bytes": 1019082,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_tiffany_crown_glory_1k.webp",
@@ -3006,6 +3326,16 @@
      ],
      "bytes": 292006,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_tiffany_crown_glory_th.webp",
+     "px": [
+      476,
+      800
+     ],
+     "bytes": 134360,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3081,14 +3411,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_tiffany_parakeets_2k.webp",
+     "path": "art/glass_2k/glass_tiffany_parakeets_2k.webp",
      "px": [
       1071,
       2048
      ],
      "bytes": 791620,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_tiffany_parakeets_1k.webp",
@@ -3098,6 +3428,16 @@
      ],
      "bytes": 234728,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_tiffany_parakeets_th.webp",
+     "px": [
+      419,
+      800
+     ],
+     "bytes": 101968,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3169,14 +3509,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_tiffany_wooded_landscape_2k.webp",
+     "path": "art/glass_2k/glass_tiffany_wooded_landscape_2k.webp",
      "px": [
       2048,
       1317
      ],
      "bytes": 1027770,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_tiffany_wooded_landscape_1k.webp",
@@ -3186,6 +3526,16 @@
      ],
      "bytes": 327730,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_tiffany_wooded_landscape_th.webp",
+     "px": [
+      480,
+      308
+     ],
+     "bytes": 63284,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3257,14 +3607,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_chartres_passion_2k.webp",
+     "path": "art/glass_2k/glass_lancet_chartres_passion_2k.webp",
      "px": [
       572,
       2048
      ],
      "bytes": 663782,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_chartres_passion_1k.webp",
@@ -3274,6 +3624,16 @@
      ],
      "bytes": 207862,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_chartres_passion_th.webp",
+     "px": [
+      223,
+      800
+     ],
+     "bytes": 99322,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3349,14 +3709,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_fivesisters_york_2k.webp",
+     "path": "art/glass_2k/glass_fivesisters_york_2k.webp",
      "px": [
       1582,
       2048
      ],
      "bytes": 2101726,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_fivesisters_york_1k.webp",
@@ -3366,6 +3726,16 @@
      ],
      "bytes": 470522,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_fivesisters_york_th.webp",
+     "px": [
+      480,
+      621
+     ],
+     "bytes": 105466,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3441,14 +3811,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_wyspianski_god_father_2k.webp",
+     "path": "art/glass_2k/glass_wyspianski_god_father_2k.webp",
      "px": [
       1061,
       2048
      ],
      "bytes": 591604,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_wyspianski_god_father_1k.webp",
@@ -3458,6 +3828,16 @@
      ],
      "bytes": 214440,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_wyspianski_god_father_th.webp",
+     "px": [
+      414,
+      800
+     ],
+     "bytes": 95754,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3547,6 +3927,16 @@
      "bytes": 341780,
      "webp_q": 90,
      "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_milan_apse_lower_th.webp",
+     "px": [
+      480,
+      274
+     ],
+     "bytes": 62662,
+     "webp_q": 80,
+     "bundled": true
     }
    },
    "is_4096_master": false,
@@ -3617,14 +4007,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_notredame_south_2k.webp",
+     "path": "art/glass_2k/glass_rose_notredame_south_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1222900,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_notredame_south_1k.webp",
@@ -3634,6 +4024,16 @@
      ],
      "bytes": 434012,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_notredame_south_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 87438,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3713,14 +4113,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_canterbury_n14_2k.webp",
+     "path": "art/glass_2k/glass_canterbury_n14_2k.webp",
      "px": [
       1010,
       2048
      ],
      "bytes": 1003832,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_canterbury_n14_1k.webp",
@@ -3730,6 +4130,16 @@
      ],
      "bytes": 322480,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_canterbury_n14_th.webp",
+     "px": [
+      395,
+      800
+     ],
+     "bytes": 151744,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3805,14 +4215,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_siena_duccio_oculus_2k.webp",
+     "path": "art/glass_2k/glass_siena_duccio_oculus_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1409228,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_siena_duccio_oculus_1k.webp",
@@ -3822,6 +4232,16 @@
      ],
      "bytes": 467184,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_siena_duccio_oculus_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 95374,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3897,14 +4317,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lincoln_deans_eye_2k.webp",
+     "path": "art/glass_2k/glass_lincoln_deans_eye_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1506906,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lincoln_deans_eye_1k.webp",
@@ -3914,6 +4334,16 @@
      ],
      "bytes": 425204,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lincoln_deans_eye_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 78904,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -3989,14 +4419,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_burnejones_stgermans_2k.webp",
+     "path": "art/glass_2k/glass_burnejones_stgermans_2k.webp",
      "px": [
       1223,
       2048
      ],
      "bytes": 757810,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_burnejones_stgermans_1k.webp",
@@ -4006,6 +4436,16 @@
      ],
      "bytes": 252058,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_burnejones_stgermans_th.webp",
+     "px": [
+      478,
+      800
+     ],
+     "bytes": 110702,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -4081,14 +4521,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_lancet_chartres_incarnation_2k.webp",
+     "path": "art/glass_2k/glass_lancet_chartres_incarnation_2k.webp",
      "px": [
       710,
       2048
      ],
      "bytes": 784486,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_lancet_chartres_incarnation_1k.webp",
@@ -4098,6 +4538,16 @@
      ],
      "bytes": 223040,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_lancet_chartres_incarnation_th.webp",
+     "px": [
+      277,
+      800
+     ],
+     "bytes": 99132,
+     "webp_q": 80,
      "bundled": true
     }
    },
@@ -4173,14 +4623,14 @@
      "bundled": false
     },
     "2k": {
-     "path": "assets/church/glass_rose_notredame_north_2k.webp",
+     "path": "art/glass_2k/glass_rose_notredame_north_2k.webp",
      "px": [
       2048,
       2048
      ],
      "bytes": 1647780,
      "webp_q": 90,
-     "bundled": true
+     "bundled": false
     },
     "1k": {
      "path": "assets/church/glass_rose_notredame_north_1k.webp",
@@ -4190,6 +4640,16 @@
      ],
      "bytes": 510560,
      "webp_q": 90,
+     "bundled": true
+    },
+    "thumb": {
+     "path": "assets/church/glass_rose_notredame_north_th.webp",
+     "px": [
+      480,
+      480
+     ],
+     "bytes": 96338,
+     "webp_q": 80,
      "bundled": true
     }
    },

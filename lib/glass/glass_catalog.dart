@@ -183,6 +183,7 @@ class GlassWindow {
     required this.source,
     required this.file1k,
     required this.file2k,
+    this.fileThumb,
     required this.placements,
     required this.restoration,
     required this.limitations,
@@ -210,6 +211,9 @@ class GlassWindow {
   final GlassSource source;
   final GlassFile file1k;
   final GlassFile file2k;
+
+  /// 갤러리용 소형 썸네일(가로 480·세로 800 안, `tools/glass_bundle`). 없으면 null.
+  final GlassFile? fileThumb;
   final List<GlassPlacement> placements;
   final String restoration;
   final String limitations;
@@ -223,6 +227,16 @@ class GlassWindow {
   final GlassHeritage? heritageOverride;
 
   bool get hasVerify => verify.trim().isNotEmpty;
+
+  /// 갤러리 카드·오늘의 창 카드가 그리는 파일: 썸네일(없으면 1k). 카드에는 1k 원본을
+  /// 디코드하지 않는다(성능).
+  GlassFile get galleryFile {
+    final t = fileThumb;
+    return t != null && t.bundled && t.path.isNotEmpty ? t : file1k;
+  }
+
+  /// 평면 보기가 그리는 파일: 번들에 2k가 있으면(성당 안에 걸리는 창) 2k, 아니면 1k.
+  GlassFile get flatFile => file2k.bundled ? file2k : file1k;
 
   /// 실제 치수(가로·세로를 모두 아는 경우)의 비율이 사진 비율과 어긋나는 정도(0.02 = 2%).
   /// 허용 범위 안이거나 비교할 수 없으면 null.
@@ -442,8 +456,14 @@ List<GlassIssue> validateGlassWindow(GlassWindow w, {int? thisYear}) {
   if (!w.file1k.path.endsWith('.webp') || !w.file1k.bundled) {
     err('1k 파일이 번들되지 않음');
   }
-  if (!w.file2k.path.endsWith('.webp') || !w.file2k.bundled) {
-    err('2k 파일이 번들되지 않음');
+  // 2k는 성당 3D 안에 걸리는 창만 번들에 둔다(나머지는 art/glass_2k/, 앱은 1k를 쓴다).
+  if (!w.file2k.path.endsWith('.webp')) err('2k 파일 경로가 올바르지 않음');
+  if (w.isAuthentic && !w.file2k.bundled) {
+    err('진본 배치 창인데 2k 파일이 번들되지 않음');
+  }
+  final thumb = w.fileThumb;
+  if (thumb != null && (!thumb.path.endsWith('.webp') || !thumb.bundled)) {
+    err('썸네일이 번들되지 않음');
   }
 
   // 실제 치수의 가로세로비와 사진 비율이 2% 이내인가(둘 다 알 때만). 어긋나도 창은
@@ -691,6 +711,7 @@ GlassWindow _parseWindow(Map<String, Object?> j) {
     ),
     file1k: _file(files['1k']),
     file2k: _file(files['2k']),
+    fileThumb: files['thumb'] is Map ? _file(files['thumb']) : null,
     placements: [
       if (churches is List)
         for (final c in churches)

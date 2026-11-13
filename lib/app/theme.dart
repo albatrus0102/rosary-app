@@ -89,7 +89,14 @@ abstract final class AppTheme {
   ///
   /// 문서화된 유일한 덮어쓰기: secondary·tertiary 4개 역할씩. 각 시드도 tonalSpot의
   /// primary 톤 쌍(40/100, 90/10 등)을 그대로 가져오므로 대비 관계가 유지된다.
-  static ColorScheme seedScheme(Brightness brightness) {
+  static ColorScheme seedScheme(Brightness brightness) =>
+      brightness == Brightness.dark ? _seedDark : _seedLight;
+
+  // 시드 구성은 입력이 상수라 한 번만 계산한다(ColorScheme.fromSeed ×3은 싸지 않다).
+  static final ColorScheme _seedLight = _computeSeedScheme(Brightness.light);
+  static final ColorScheme _seedDark = _computeSeedScheme(Brightness.dark);
+
+  static ColorScheme _computeSeedScheme(Brightness brightness) {
     ColorScheme from(Color seed) => ColorScheme.fromSeed(
       seedColor: seed,
       brightness: brightness,
@@ -166,7 +173,23 @@ abstract final class AppTheme {
     );
   }
 
+  /// 색 구성별로 만든 테마를 기억한다.
+  ///
+  /// 설정이 바뀔 때마다(신비·기도 모드 선택 등) MaterialApp이 다시 만들어지는데, 그때마다
+  /// 새 [ThemeData]를 만들면 내용이 같아도 `==`가 false라(상태별 콜백 객체가 매번 새로 생김)
+  /// MaterialApp의 AnimatedTheme이 200ms 동안 매 프레임 `ThemeData.lerp` + 앱 전체 리빌드를
+  /// 돌린다. 같은 색 구성에는 같은 인스턴스를 돌려주어 그 일을 없앤다.
+  static final Map<ColorScheme, ThemeData> _themeCache = {};
+
   static ThemeData _build(ColorScheme scheme) {
+    final cached = _themeCache[scheme];
+    if (cached != null) return cached;
+    // 기기 색(배경화면)이 바뀔 때만 새 항목이 생긴다. 쌓이지 않게 조금만 둔다.
+    if (_themeCache.length >= 8) _themeCache.clear();
+    return _themeCache[scheme] = _buildUncached(scheme);
+  }
+
+  static ThemeData _buildUncached(ColorScheme scheme) {
     final text = textTheme(scheme);
     final overlay = systemOverlayStyle(scheme.brightness);
 

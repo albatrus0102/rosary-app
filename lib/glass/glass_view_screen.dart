@@ -416,7 +416,7 @@ class _GlassViewScreenState extends State<GlassViewScreen> {
           // 처음부터 평면으로 연 경우만 '불러오기 성공'을 기록한다(대체는 실패가 이미 기록됨).
           Track.glassLoad(
             _w.id,
-            tier: 't2',
+            tier: _w.file2k.bundled ? 't2' : 't1',
             ms: _loadWatch.elapsedMilliseconds,
             ok: true,
           );
@@ -640,7 +640,8 @@ class _LoadingCoverState extends State<_LoadingCover>
                   );
                 },
                 child: GlassPicture(
-                  path: widget.window.file1k.path,
+                  // 어둡게 깔리는 자리표시라 갤러리가 이미 디코드한 소형 썸네일로 충분하다.
+                  path: widget.window.galleryFile.path,
                   opacity: 0.55,
                 ),
               ),

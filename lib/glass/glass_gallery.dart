@@ -318,6 +318,7 @@ class GlassCard extends StatelessWidget {
   static const double _titleLine = 1.3;
   static const double _metaLine = 1.35;
   static const double _captionPad = 10;
+  static const double _picturePad = 6;
 
   /// 글자 크기 배율에 따른 글 칸 높이(제목 2줄 + 소재지·시대 2줄).
   static double captionHeight(TextScaler scaler) =>
@@ -360,12 +361,16 @@ class GlassCard extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(_picturePad),
                           child: GlassPicture(
-                            path: w.file1k.path,
-                            cacheWidth: math.max(
-                              64,
-                              (c.maxWidth * dpr).round(),
+                            // 카드는 소형 썸네일만 디코드한다(1k 원본은 감상 화면용).
+                            path: w.galleryFile.path,
+                            cacheBox: glassCacheBox(
+                              Size(
+                                c.maxWidth - 2 * _picturePad,
+                                c.maxHeight - 2 * _picturePad,
+                              ),
+                              dpr,
                             ),
                           ),
                         ),
@@ -465,9 +470,13 @@ class _TodayCard extends StatelessWidget {
             width: double.infinity,
             child: Padding(
               padding: const EdgeInsets.all(12),
-              child: GlassPicture(
-                path: w.file1k.path,
-                cacheWidth: math.max(256, (600 * dpr).round()),
+              // 칸에 실제로 그려지는 크기까지만 디코드한다. 예전의 `cacheWidth: 600 × 배율`은
+              // 세로로 긴 창을 원본의 몇 배(수십 MB)로 확대 디코드했다.
+              child: LayoutBuilder(
+                builder: (context, c) => GlassPicture(
+                  path: w.galleryFile.path,
+                  cacheBox: glassCacheBox(c.biggest, dpr),
+                ),
               ),
             ),
           ),

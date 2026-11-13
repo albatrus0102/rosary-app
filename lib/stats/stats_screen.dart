@@ -86,17 +86,20 @@ class _StatsScreenState extends State<StatsScreen> {
           ListenableBuilder(
             listenable: widget.store,
             builder: (context, _) {
+              // 스크롤 중에 차트·카드 전체를 매 프레임 다시 그리지 않게 경계를 둔다.
               return SliverToBoxAdapter(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: wide ? _maxWideWidth : _maxWidth,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                      child: widget.store.records.isEmpty
-                          ? const _EmptyState()
-                          : _buildContent(context, wide),
+                child: RepaintBoundary(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: wide ? _maxWideWidth : _maxWidth,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                        child: widget.store.records.isEmpty
+                            ? const _EmptyState()
+                            : _buildContent(context, wide),
+                      ),
                     ),
                   ),
                 ),

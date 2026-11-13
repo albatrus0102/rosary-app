@@ -76,9 +76,16 @@ void main() {
       for (final w in c.all) {
         expect(glassIdPattern.hasMatch(w.id), isTrue, reason: w.id);
         expect(w.source.licenseKind, isNotNull, reason: w.id);
-        expect(w.file1k.bundled && w.file2k.bundled, isTrue);
+        expect(w.file1k.bundled, isTrue);
         expect(File(w.file1k.path).existsSync(), isTrue, reason: w.file1k.path);
+        // 2k는 성당 안에 걸리는 창만 번들에 있다. 나머지는 art/glass_2k/에 보존한다.
         expect(File(w.file2k.path).existsSync(), isTrue, reason: w.file2k.path);
+        expect(
+          w.file2k.path.startsWith('assets/church/'),
+          w.file2k.bundled,
+          reason: w.id,
+        );
+        if (w.isAuthentic) expect(w.file2k.bundled, isTrue, reason: w.id);
       }
       expect({for (final w in c.all) w.id}, hasLength(46));
     });

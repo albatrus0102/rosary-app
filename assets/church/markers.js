@@ -95,7 +95,7 @@
       // active: {kind,index}|null — 걷는 중인 목적지. on: 걷는 중(앉지 않음)
       // vp: {w,h,avoid} — 화면 크기(CSS px)와, 피해야 할 내 이름표의 화면 사각형({cx,cy,w,h}|null). 없으면 예전처럼 거리 비례 크기.
       update: function (dt, t, me, camera, active, on, vp) {
-        var k = 1 - Math.exp(-dt * 6);
+        var k = 1 - Math.exp(-Math.max(0, dt) * 6);   // 첫 프레임의 dt 가 음수여도 보간이 튀지 않게
         var fitOn = !!(LF && vp && vp.h > 0);
         if (fitOn) {
           var ce = camera.matrixWorld.elements;

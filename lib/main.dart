@@ -6,6 +6,7 @@ import 'app/app_bootstrap.dart';
 import 'app/app_services.dart';
 import 'app/licenses.dart';
 import 'app/theme.dart';
+import 'glass/glass_catalog.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,10 +36,16 @@ class _LauncherState extends State<_Launcher> {
     try {
       // Android 15부터 edge-to-edge가 기본/강제다. 모든 버전에서 같게 동작하도록
       // 명시하고, 시스템 바 색은 앱(AnnotatedRegion/AppBar)이 정한다.
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      // 서비스 준비와 함께 시작한다(끝나기를 기다렸다가 서비스 준비를 시작하지 않는다).
+      final chrome = SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.edgeToEdge,
+      );
       registerFontLicenses();
-      // Supabase(설정된 경우) → 설정·기록 → 인증/동의 → 분석·동기화. 미설정이면 로그인 없이 열린다.
+      // 첫 탭(유리화)이 쓸 창 목록을 미리 읽어 둔다. 실패는 탭이 직접 알린다.
+      GlassCatalog.shared().ignore();
+      // Supabase(설정된 경우)·설정·기록 → 인증/동의 → 분석·동기화. 미설정이면 로그인 없이 열린다.
       final services = await bootstrapServices();
+      await chrome;
       if (mounted) setState(() => _services = services);
     } catch (e) {
       // 시작 실패도 빈 화면 대신 알려 준다(내용은 화면에 쓰지 않는다).

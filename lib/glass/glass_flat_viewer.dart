@@ -4,7 +4,7 @@ import 'glass_catalog.dart';
 import 'glass_chrome.dart';
 import 'glass_widgets.dart';
 
-/// 평면 원본 보기(G-10): 보정한 2k WebP를 중성 배경 위에 놓고 Flutter의 [InteractiveViewer]로
+/// 평면 원본 보기(G-10): 보정한 WebP(번들에 2k가 있으면 2k, 아니면 1k)를 중성 배경 위에 놓고 Flutter의 [InteractiveViewer]로
 /// 확대(최대 8배)·이동한다. 두 번 누르면 처음 구도로 돌아간다.
 ///
 /// 3D 장면이 WebGL·메모리 문제로 못 뜰 때의 대체이자 저사양 기기용 선택지다. 3D 장면과 같은
@@ -112,7 +112,7 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
     final w = widget.window;
     final theme = Theme.of(context);
     final image = Image.asset(
-      w.file2k.path,
+      w.flatFile.path,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
       excludeFromSemantics: true,

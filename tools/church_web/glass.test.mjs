@@ -21,16 +21,24 @@ test('catalog index and lookup', () => {
   assert.equal(GM.lookup(idx, 'no_such_window'), null);
 });
 
-test('every catalog window has bundled 1k/2k files and a file:// data pack', () => {
+test('every catalog window has a bundled 1k file and data pack; 2k only where the catalog says bundled', () => {
+  // 앱의 감상실은 t1 만 요청한다. 2k 는 성당 3D 안에 걸 창만 번들에 남긴다(tools/glass_bundle/glass_bundle.py unbundle2k).
+  let kept2k = 0;
   for (const w of cat.windows) {
     for (const t of ['t1', 't2']) {
       const px = GM.tierPx(w, t);
       assert.ok(px && px[0] > 0 && px[1] > 0, w.id + ' ' + t);
-      assert.ok(fs.existsSync(path.join(assets, GM.tierFile(w.id, t))), GM.tierFile(w.id, t));
-      assert.ok(fs.existsSync(path.join(assets, GM.packFile(w.id, t))), GM.packFile(w.id, t) + ' (node tools/church_web/build_glasspack.mjs)');
+      const bundled = t === 't1' ? true : w.files['2k'].bundled !== false;
+      if (t === 't1') assert.equal(w.files['1k'].bundled, true, w.id);
+      if (t === 't2' && bundled) kept2k++;
+      assert.equal(fs.existsSync(path.join(assets, GM.tierFile(w.id, t))), bundled, GM.tierFile(w.id, t));
+      assert.equal(fs.existsSync(path.join(assets, GM.packFile(w.id, t))), bundled, GM.packFile(w.id, t) + ' (node tools/church_web/build_glasspack.mjs)');
     }
+    // 성당 안의 실제 자리(authentic)에 걸 창은 2k 를 번들에 둔다(G-29).
+    if ((w.suggestedChurches || []).some((p) => p.use === 'authentic')) assert.notEqual(w.files['2k'].bundled, false, w.id);
     assert.equal(Math.max(...GM.tierPx(w, 't2')), w.files['2k'].px[0] >= w.files['2k'].px[1] ? w.files['2k'].px[0] : w.files['2k'].px[1]);
   }
+  assert.ok(kept2k >= 7, 'authentic windows keep 2k');
   assert.ok(fs.existsSync(path.join(assets, 'glass_catalog.js')));
 });
 

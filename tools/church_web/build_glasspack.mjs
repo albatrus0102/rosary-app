@@ -21,7 +21,8 @@ for (const w of cat.windows) {
   if (!/^[a-z0-9_]{1,40}$/.test(w.id)) throw new Error('bad id ' + w.id);
   for (const tier of ['1k', '2k']) {
     const f = w.files && w.files[tier];
-    if (!f) continue;
+    // bundled:false 인 단계(성당 안에서 쓰지 않는 창의 2k, tools/glass_bundle)는 앱에 넣지 않는다.
+    if (!f || f.bundled === false) continue;
     const src = path.join(repo, f.path);
     const b64 = fs.readFileSync(src).toString('base64');
     const out = path.join(assets, `gpack_${w.id}_${tier}.js`);

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'glass_catalog.dart';
@@ -9,28 +11,67 @@ const Color kGlassStone = Color(0xFF1C1C1E);
 /// 감상 화면 위에 올리는 글자·아이콘 색.
 const Color kGlassOnStone = Color(0xFFF2F2F4);
 
-/// 창 사진(번들 WebP, 알파 포함)을 돌 바탕 위에 보여 준다. [cacheWidth]는 논리 폭 × 화면 배율로
-/// 디코드 크기를 줄여 목록이 부드럽게 넘어가게 한다.
+/// 창 사진을 그릴 칸(논리 크기)에 필요한 디코드 한계(기기 픽셀). 칸 안에 맞춰(contain)
+/// 그리므로 가로·세로 둘 다 이 값을 넘는 픽셀은 화면에 쓰이지 않는다.
+Size glassCacheBox(Size logicalBox, double devicePixelRatio) => Size(
+  math.max(1, (logicalBox.width * devicePixelRatio).ceil()).toDouble(),
+  math.max(1, (logicalBox.height * devicePixelRatio).ceil()).toDouble(),
+);
+
+/// [source](파일의 픽셀 크기)를 [box](기기 픽셀) 안에 맞춰 디코드할 때의 크기.
+/// 원본보다 키우지 않는다([ResizeImagePolicy.fit] + `allowUpscaling: false`와 같은 규칙).
+/// 화면이 디코드하는 픽셀 양을 시험·보고에서 계산하는 데 쓴다.
+Size glassDecodedSize(Size source, Size box) {
+  if (source.isEmpty) return source;
+  final scale = math.min(
+    1.0,
+    math.min(box.width / source.width, box.height / source.height),
+  );
+  return Size(
+    math.max(1, (source.width * scale).round()).toDouble(),
+    math.max(1, (source.height * scale).round()).toDouble(),
+  );
+}
+
+/// 창 사진(번들 WebP, 알파 포함)을 돌 바탕 위에 보여 준다.
+///
+/// [cacheBox](기기 픽셀)를 주면 그 칸 안에 들어가는 크기로만 디코드한다. 원본보다 크게는
+/// 디코드하지 않는다. 예전에는 `cacheWidth`(칸의 폭)만 넘겨서, 세로로 긴 창은 원본보다
+/// 몇 배 큰 그림으로 '확대 디코드'되어 메모리·시간을 낭비했다.
 class GlassPicture extends StatelessWidget {
   const GlassPicture({
     super.key,
     required this.path,
-    this.cacheWidth,
+    this.cacheBox,
     this.fit = BoxFit.contain,
     this.opacity = 1,
   });
 
   final String path;
-  final int? cacheWidth;
+
+  /// 디코드 한계(기기 픽셀, [glassCacheBox]). null이면 파일 크기 그대로 디코드한다.
+  final Size? cacheBox;
   final BoxFit fit;
   final double opacity;
 
+  /// 이 위젯이 쓰는 이미지 공급자(시험에서도 같은 규칙을 확인한다).
+  static ImageProvider providerFor(String path, Size? cacheBox) {
+    final asset = AssetImage(path);
+    if (cacheBox == null) return asset;
+    return ResizeImage(
+      asset,
+      width: cacheBox.width.round(),
+      height: cacheBox.height.round(),
+      policy: ResizeImagePolicy.fit,
+      allowUpscaling: false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      path,
+    return Image(
+      image: providerFor(path, cacheBox),
       fit: fit,
-      cacheWidth: cacheWidth,
       filterQuality: FilterQuality.medium,
       gaplessPlayback: true,
       excludeFromSemantics: true,

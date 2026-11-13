@@ -9,6 +9,7 @@
 - QA 대조 시트: 작업 스크래치패드의 `glass_contact_dark.jpg` · `glass_contact_white.jpg` · `glass_before_after.jpg`(6점의 보정 전/후 100% 크롭).
 - 라이선스: CC0 13점 · Public domain 19점 · CC BY 14점. CC BY-SA·NC 는 없다. CC BY 14점은 앱 라이선스 화면에 표시 문구가 **필수**다(아래 「출처 표기」).
 - 파일: 창마다 `glass_<id>.webp`(마스터, 긴 변 최대 4096) · `glass_<id>_2k.webp`(2048) · `glass_<id>_1k.webp`(1024). 모두 알파 채널 포함 손실 WebP(q≈90, 6MB 초과 시 q 낮춤), `assets/church/` 바로 아래. 합계 약 166 MB.
+- 번들 정리(성능·용량, `tools/glass_bundle/glass_bundle.py`): 갤러리 카드는 `glass_<id>_th.webp`(480×800 안, q80, 46점 합계 약 4 MB, `files.thumb`)만 디코드한다. 앱의 감상실은 1k(t1)만 요청하므로 2k(`glass_<id>_2k.webp`·`gpack_<id>_2k.js`)는 성당 3D 안에 걸 창 8점(진본 배치 7점 + `alabaster_slab`)만 번들에 남기고, 나머지 38점의 2k WebP는 `art/glass_2k/`로 옮겼다(`files.2k.bundled: false`, 번들 약 80 MB 감소). 평면 보기는 번들에 2k가 있으면 2k, 없으면 1k를 쓴다. 되돌리는 법은 스크립트 머리말 참고.
 - 보관 원본: `assets/church/glass_src/<이름>_orig.jpg` (번들 제외).
 - 기존 `glass_<id>.jpg`(저해상도 질감)는 지우지 않았다. 렌더러가 WebP 로 옮겨 간 뒤 정리하면 된다. 기존 20점 중 `lancet_milan_1`, `panels_milan_2`, `lancet_chartres_1`, `tracery_cologne`, `grisaille_lancet`, `alabaster_*` 일부는 새 카탈로그에서 id 가 바뀌거나 빠졌다(아래 「기존 id 대응」).
 - `authentic` = 그 성당에 실제로 있는 창, `reference` = 같은 양식의 **다른 성당** 창. 앱은 reference 를 쓸 때 반드시 「○○ 대성당의 창(참고용)」처럼 실제 소재지를 밝혀야 한다.

@@ -433,8 +433,17 @@ class _HeroCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: AppShape.medium,
-                  child: Image.asset(
-                    style.fullImage,
+                  child: Image(
+                    // 160dp 칸에 필요한 만큼만 디코드한다(원본은 655~1024px, 키우지는 않는다).
+                    image: ResizeImage(
+                      AssetImage(style.fullImage),
+                      width: (160 * MediaQuery.devicePixelRatioOf(context))
+                          .ceil(),
+                      height: (160 * MediaQuery.devicePixelRatioOf(context))
+                          .ceil(),
+                      policy: ResizeImagePolicy.fit,
+                      allowUpscaling: false,
+                    ),
                     height: 160,
                     width: 160,
                     fit: BoxFit.contain,
