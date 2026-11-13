@@ -210,6 +210,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: AppSpace.xs),
                     Text(
+                      '가상 3D 성당',
+                      textAlign: TextAlign.center,
+                      style: text.titleMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpace.sm),
+                    Text(
                       '이미 계정이 있다면 로그인해 주세요.',
                       textAlign: TextAlign.center,
                       style: text.bodyLarge?.copyWith(

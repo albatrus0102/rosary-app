@@ -98,6 +98,11 @@ class _LaunchScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text('로사리움'),
+                const SizedBox(height: 4),
+                const Text(
+                  '가상 3D 성당',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                ),
                 const SizedBox(height: 24),
                 if (failed) ...[
                   const Text(
