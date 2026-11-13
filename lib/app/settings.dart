@@ -8,9 +8,6 @@ import '../domain/prayer_mode.dart';
 import 'leader_voice.dart';
 import 'rosary_style.dart';
 
-/// 기도문 본문 글꼴: 고딕(Pretendard) 또는 명조(Noto Serif KR).
-enum PrayerFont { sans, serif }
-
 /// 사이버 성당 3D 화면 품질.
 enum ChurchQuality { low, high }
 
@@ -59,11 +56,10 @@ class AppSettings extends ChangeNotifier {
       minTtsRate,
       maxTtsRate,
     );
-    _prayerFont = _enumByName(
-      PrayerFont.values,
-      _prefs.getString(_kPrayerFont),
-      PrayerFont.sans,
-    );
+    // 글꼴 선택(고딕/명조)은 없어졌다(시스템 글꼴만 쓴다). 이전 설치가 남긴 값은 지운다.
+    if (_prefs.containsKey(_kLegacyPrayerFont)) {
+      _prefs.remove(_kLegacyPrayerFont);
+    }
     _chimeVolume = (_prefs.getDouble(_kChimeVolume) ?? defaultChimeVolume)
         .clamp(minChimeVolume, maxChimeVolume);
     _hapticOnAdvance = _prefs.getBool(_kHaptic) ?? true;
@@ -101,7 +97,7 @@ class AppSettings extends ChangeNotifier {
   static const _kLeaderVoiceSource = 'leader_voice_source';
   static const _kLeaderPersona = 'leader_persona';
   static const _kTtsRate = 'tts_rate';
-  static const _kPrayerFont = 'prayer_font';
+  static const _kLegacyPrayerFont = 'prayer_font';
   static const _kChimeVolume = 'chime_volume';
   static const _kHaptic = 'haptic';
   static const _kUseDynamicColor = 'use_dynamic_color';
@@ -164,7 +160,6 @@ class AppSettings extends ChangeNotifier {
   late LeaderVoiceSource _leaderVoiceSource;
   late LeaderVoicePersona _leaderPersona;
   late double _ttsRate;
-  late PrayerFont _prayerFont;
   late double _chimeVolume;
   late MysterySet _mysterySet;
   late AvatarConfig _churchAvatar;
@@ -206,9 +201,6 @@ class AppSettings extends ChangeNotifier {
 
   /// 기기 음성 말하기 속도(0.3~0.7).
   double get ttsRate => _ttsRate;
-
-  /// 기도 화면 본문 글꼴.
-  PrayerFont get prayerFont => _prayerFont;
 
   /// 종소리/구슬 소리 크기(0.1~1.0).
   double get chimeVolume => _chimeVolume;
@@ -270,13 +262,6 @@ class AppSettings extends ChangeNotifier {
     if (clamped == _ttsRate) return;
     _ttsRate = clamped;
     _prefs.setDouble(_kTtsRate, clamped);
-    notifyListeners();
-  }
-
-  set prayerFont(PrayerFont v) {
-    if (v == _prayerFont) return;
-    _prayerFont = v;
-    _prefs.setString(_kPrayerFont, v.name);
     notifyListeners();
   }
 

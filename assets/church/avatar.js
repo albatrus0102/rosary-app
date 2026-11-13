@@ -818,7 +818,7 @@
     if (!shadowGeo) shadowGeo = new T.PlaneGeometry(1, 1).rotateX(-PI / 2);
     this.shadow = new T.Mesh(shadowGeo, getShadowMat()); this.shadow.scale.set(0.9, 1, 0.9); this.shadow.position.y = 0.03; this.shadow.renderOrder = 2;
     this.root.add(this.shadow);
-    this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9; this.tagPx = 0;
+    this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9; this.tagPx = 0; this.tagPpm = 0;
     this.walkTarget = 0; this.walkAmt = 0; this.phase = Math.random() * 6;
     this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
     this.emote = -1; this.emoteT = 0; this.nod = false; this.nodPh = Math.random() * 6;
@@ -1053,11 +1053,12 @@
         var pr = LF.PRESETS[this.tagSelf ? 'self' : 'peer'], rp = this.root.position;
         var dep = LF.depthOf(VIEW.c, VIEW.f, rp.x, rp.y + ty, rp.z);
         if (dep > 0.1) {
-          var ff = LF.farFade(dep, pr), fh = LF.fit(dep, VIEW.h, VIEW.fov, pr).h * (0.6 + 0.4 * ff);
+          var ff = LF.farFade(dep, pr), fh = LF.fit(dep, VIEW.h, VIEW.fov, pr).h * (0.75 + 0.25 * ff);
           this.tag.visible = ff > 0;
           this.tag.scale.set(fh * (0.78 / 0.195), fh, 1);
           this.tag.position.y = ty + LF.anchorLift(fh, pr);
-          this.tagPx = fh * pr.pill * LF.pxPerMeter(dep, VIEW.h, VIEW.fov);   // 알약의 화면 높이(CSS px): 표식 이름표와 겹침을 피하는 데 쓴다
+          this.tagPpm = LF.pxPerMeter(dep, VIEW.h, VIEW.fov);                 // 1m 의 화면 px
+          this.tagPx = fh * pr.pill * this.tagPpm;                            // 알약의 화면 높이(CSS px): 표식 이름표와 겹침을 피하는 데 쓴다
         }
       }
     }

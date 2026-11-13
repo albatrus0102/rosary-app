@@ -239,8 +239,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final scale = settings.prayerTextScale;
-    final serif = settings.prayerFont == PrayerFont.serif;
-    final baseSize = serif ? 25.0 : 24.0;
+    const baseSize = AppTheme.baseFontSize;
     return _Section(
       title: '기도 화면',
       children: [
@@ -276,44 +275,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             settings.useDynamicColor = v;
             Track.setting('dynamic_color');
           },
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('글꼴', style: theme.textTheme.titleMedium),
-              const SizedBox(height: AppSpace.xs),
-              SizedBox(
-                width: double.infinity,
-                child: SegmentedButton<PrayerFont>(
-                  segments: const [
-                    ButtonSegment(
-                      value: PrayerFont.sans,
-                      icon: Icon(Icons.text_fields),
-                      label: Text(
-                        '고딕',
-                        style: TextStyle(fontFamily: AppTheme.sansFamily),
-                      ),
-                    ),
-                    ButtonSegment(
-                      value: PrayerFont.serif,
-                      icon: Icon(Icons.menu_book_outlined),
-                      label: Text(
-                        '명조',
-                        style: TextStyle(fontFamily: AppTheme.serifFamily),
-                      ),
-                    ),
-                  ],
-                  selected: {settings.prayerFont},
-                  onSelectionChanged: (v) {
-                    settings.prayerFont = v.first;
-                    Track.setting('prayer_font');
-                  },
-                ),
-              ),
-            ],
-          ),
         ),
         _SliderTile(
           icon: Icons.format_size,
@@ -352,7 +313,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   curve: Easing.standard,
                   style: AppTheme.prayerStyle(
                     context,
-                    settings.prayerFont,
                     size: baseSize * scale,
                   ),
                   child: const Text(

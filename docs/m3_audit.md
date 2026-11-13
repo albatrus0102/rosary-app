@@ -39,7 +39,7 @@ Flutter 3.47.9 / Material 3(`useMaterial3`) 기준. 이 문서는 (1) 이번에 
 
 | 대상 | 색 역할 | 타입 역할 | 모양 | 컴포넌트 | 모션 | 레이아웃/적응형 | 접근성 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `app/theme.dart` | 완료(시드+2개 덮어쓰기) | 완료(`Typography.dense2021`+Pretendard) | 완료(`AppShape` 0/4/8/12/16/28/full) | 완료(아래 4장) | 완료(`AppMotion.of`) | 완료(시스템 바 스타일) | 완료(상태 레이어) |
+| `app/theme.dart` | 완료(시드+2개 덮어쓰기) | 완료(`Typography.dense2021`+시스템 글꼴) | 완료(`AppShape` 0/4/8/12/16/28/full) | 완료(아래 4장) | 완료(`AppMotion.of`) | 완료(시스템 바 스타일) | 완료(상태 레이어) |
 | `main.dart` | - | - | - | - | - | 완료(`SystemUiMode.edgeToEdge`) | - |
 | `app/app.dart` | 완료(동적 색+harmonize) | - | - | 완료(`DynamicColorBuilder`) | - | 완료(`AnnotatedRegion` 투명 바+아이콘 밝기) | - |
 | `ui/home_screen.dart` | 완료 | 완료(역할 스타일만, `fontSize` 없음) | 완료(카드 12/16, 칩 8) | 완료(`SliverAppBar.large`, `Card.filled/outlined`, `BottomAppBar`+`FilledButton.icon`, `SegmentedButton`, `CircleAvatar`) | 완료(`Durations.medium1`+`Easing.emphasizedDecelerate`) | 완료(`SliverPageBody` 16/24 여백, SafeArea, 8dp 격자, 글자 배율에 맞춘 머리표 폭) | 완료(버튼·선택 의미, 48dp 가이드라인 테스트) |
@@ -58,7 +58,7 @@ Flutter 3.47.9 / Material 3(`useMaterial3`) 기준. 이 문서는 (1) 이번에 
 | 컴포넌트 | 설정 |
 | --- | --- |
 | 색/서피스 | `colorScheme` + 기본 `scaffoldBackground = surface` |
-| 타입 | `Typography.dense2021` + `fontFamily: Pretendard`, M3 크기/굵기/행간 그대로(display 57/45/36, headline 32/28/24, title 22/16/14, body 16/14/12, label 14/12/11) |
+| 타입 | `Typography.dense2021` + 시스템 글꼴(fontFamily 미지정), M3 크기/굵기/행간 그대로(display 57/45/36, headline 32/28/24, title 22/16/14, body 16/14/12, label 14/12/11) |
 | AppBar(large/medium) | M3 기본 + `systemOverlayStyle`(투명 상태/내비 바, 아이콘 밝기 반전, `ContrastEnforced=false`) |
 | Card | `margin: 0`, `clip: antiAlias`(색·모양은 variant별 M3 기본 유지) |
 | FilledButton / tonal / OutlinedButton / TextButton / IconButton | M3 기본(40dp, full 모양, 48dp 터치 영역). 큰 주 행동만 `AppTheme.largeButtonHeight = 56` |

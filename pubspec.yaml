@@ -36,23 +36,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  fonts:
-    - family: Pretendard
-      fonts:
-        - asset: assets/fonts/Pretendard-Regular.otf
-          weight: 400
-        - asset: assets/fonts/Pretendard-Medium.otf
-          weight: 500
-        - asset: assets/fonts/Pretendard-SemiBold.otf
-          weight: 600
-        - asset: assets/fonts/Pretendard-Bold.otf
-          weight: 700
-    - family: NotoSerifKR
-      fonts:
-        - asset: assets/fonts/NotoSerifKR-Regular.otf
-          weight: 400
-        - asset: assets/fonts/NotoSerifKR-Medium.otf
-          weight: 500
   assets:
     - assets/images/
     # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 창마다 썸네일(_th)·1k WebP,
@@ -63,5 +46,3 @@ flutter:
     - assets/sounds/
     - assets/leader_voice/sister/
     - assets/leader_voice/priest/
-    - assets/fonts/OFL-Pretendard.txt
-    - assets/fonts/OFL-NotoSerifKR.txt

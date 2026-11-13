@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/prayer_text_short.dart';
 import 'package:rosary_app/app/settings.dart';
@@ -95,29 +93,7 @@ ScrollPosition _position(WidgetTester tester) => tester
     )
     .position;
 
-/// 글자 폭이 실제와 같도록 Pretendard를 불러온다(테스트 기본 글꼴 Ahem은 훨씬 넓다).
-Future<void> _loadFonts() async {
-  Future<ByteData> load(String file) async =>
-      ByteData.sublistView(await File('assets/fonts/$file').readAsBytes());
-  final sans = FontLoader('Pretendard');
-  for (final f in const [
-    'Pretendard-Regular.otf',
-    'Pretendard-Medium.otf',
-    'Pretendard-SemiBold.otf',
-    'Pretendard-Bold.otf',
-  ]) {
-    sans.addFont(load(f));
-  }
-  await sans.load();
-  final serif = FontLoader('NotoSerifKR');
-  for (final f in const ['NotoSerifKR-Regular.otf', 'NotoSerifKR-Medium.otf']) {
-    serif.addFont(load(f));
-  }
-  await serif.load();
-}
-
 void main() {
-  setUpAll(_loadFonts);
 
   group('layout budget (no control ever overlaps the prayer text)', () {
     for (final size in const [Size(360, 640), Size(360, 800)]) {

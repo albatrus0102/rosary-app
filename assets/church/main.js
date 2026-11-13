@@ -433,7 +433,9 @@
     if (!tg || !tg.visible || !(av.tagPx > 0)) return null;
     tagV.set(av.root.position.x, av.root.position.y + tg.position.y, av.root.position.z).project(App.camera);
     if (tagV.z > 1) return null;
-    return { cx: (tagV.x * 0.5 + 0.5) * vw, cy: (-tagV.y * 0.5 + 0.5) * vh, w: av.tagPx * 3.84, h: av.tagPx };
+    // 이름표 알약 + 그 아래 머리(0.3m)까지를 '내 이름 자리'로 본다: 표식 이름표가 내 머리를 덮지 않게.
+    var head = 0.3 * av.tagPpm, w = Math.max(av.tagPx * 3.84, 0.4 * av.tagPpm), h = av.tagPx + head;
+    return { cx: (tagV.x * 0.5 + 0.5) * vw, cy: (-tagV.y * 0.5 + 0.5) * vh + head / 2, w: w, h: h };
   }
 
   function loop(now) {

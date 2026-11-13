@@ -67,11 +67,11 @@ test('anchorLift: 알약 아래 가장자리를 기준 높이에 고정한다', 
   assert.equal(LF.anchorLift(p.base, p), 0);
 });
 
-test('farFade: 다른 사람 이름표는 21m 부터 줄고 25m 에서 사라진다. 표식·내 이름표는 항상 1', () => {
+test('farFade: 다른 사람 이름표는 16m 부터 줄고 22m 에서 사라진다. 표식·내 이름표는 항상 1', () => {
   assert.equal(LF.farFade(5, P.peer), 1);
-  assert.equal(LF.farFade(21, P.peer), 1);
-  assert.ok(Math.abs(LF.farFade(23, P.peer) - 0.5) < 1e-9);
-  assert.equal(LF.farFade(25, P.peer), 0);
+  assert.equal(LF.farFade(16, P.peer), 1);
+  assert.ok(Math.abs(LF.farFade(19, P.peer) - 0.5) < 1e-9);
+  assert.equal(LF.farFade(22, P.peer), 0);
   assert.equal(LF.farFade(60, P.peer), 0);
   assert.equal(LF.farFade(60, P.self), 1);
   assert.equal(LF.farFade(60, P.marker), 1);

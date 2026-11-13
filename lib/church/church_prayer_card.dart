@@ -286,7 +286,6 @@ class ChurchPrayerCard extends StatelessWidget {
                           key: const ValueKey('prayer-text'),
                           style: AppTheme.prayerStyle(
                             context,
-                            settings.prayerFont,
                             size: 15 * settings.prayerTextScale,
                             color: scheme.onSurfaceVariant,
                           ),

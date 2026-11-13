@@ -10,7 +10,7 @@
   // 아바타 이름표 텍스처 256x64, 알약 높이 40 → 0.625 / 표식 256x72, 알약 높이 56 → 0.778
   var PRESETS = {
     self:   { base: 0.195, pill: 0.625, minPx: 14, maxPx: 20 },   // 내 이름: 머리 위에 작게
-    peer:   { base: 0.195, pill: 0.625, minPx: 14, maxPx: 26, fadeFrom: 21, fadeTo: 25 },   // 다른 사람: 25m 보다 멀면 숨김
+    peer:   { base: 0.195, pill: 0.625, minPx: 14, maxPx: 26, fadeFrom: 16, fadeTo: 22 },   // 다른 사람: 16m 부터 줄고 22m 에서 숨김(먼 줄에서 이름이 겹겹이 쌓이지 않게)
     marker: { base: 0.46,  pill: 0.778, minPx: 18, maxPx: 26 }    // 표식: 글자가 읽히도록 조금 크게(글자 높이 ≈ 알약의 57%)
   };
 

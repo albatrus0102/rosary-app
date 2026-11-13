@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/leader_audio_store.dart';
 import 'package:rosary_app/app/leader_voice.dart';
-import 'package:rosary_app/app/licenses.dart';
 import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
@@ -80,15 +79,6 @@ Widget _app(Widget home, {double textScale = 1.0}) => MaterialApp(
 );
 
 void main() {
-  testWidgets('registerFontLicenses adds the font licenses', (tester) async {
-    registerFontLicenses();
-    final packages = <String>{};
-    await for (final entry in LicenseRegistry.licenses) {
-      packages.addAll(entry.packages);
-    }
-    expect(packages, containsAll(['Pretendard', 'Noto Serif KR']));
-  });
-
   testWidgets('settings: section headers and basic switches', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
@@ -160,22 +150,39 @@ void main() {
     expect(settings.prayerTextScale, AppSettings.defaultTextScale);
   });
 
-  testWidgets('settings: font segmented button changes prayerFont', (
+  testWidgets('settings: no font choice; stale prayer_font value is ignored', (
     tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
+    // 이전 설치가 남긴 명조 선택값.
+    SharedPreferences.setMockInitialValues({
+      'prayer_font': 'serif',
+      'prayer_text_scale': 1.4,
+    });
     final settings = await AppSettings.load();
+    // 남은 값은 읽지 않고 지우며, 다른 설정은 그대로다.
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey('prayer_font'), isFalse);
+    expect(settings.prayerTextScale, closeTo(1.4, 1e-9));
+
     tester.view.physicalSize = const Size(800, 3200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-
     await tester.pumpWidget(
       _app(SettingsScreen(settings: settings, leaderAudio: _FakeStore())),
     );
     await tester.pump();
-    await tester.tap(find.text('명조'));
-    await tester.pump();
-    expect(settings.prayerFont, PrayerFont.serif);
+    expect(find.text('명조'), findsNothing);
+    expect(find.text('고딕'), findsNothing);
+    expect(find.text('글꼴'), findsNothing);
+    // 미리보기는 글꼴을 지정하지 않는다(시스템 글꼴).
+    final preview = tester.widget<Text>(
+      find.byKey(const ValueKey('text_scale_preview')),
+    );
+    final style = DefaultTextStyle.of(
+      tester.element(find.byKey(const ValueKey('text_scale_preview'))),
+    ).style;
+    expect(preview.style?.fontFamily, isNull);
+    expect(style.fontFamily, isNull);
   });
 
   testWidgets('settings: leader voice card (device TTS then recorded)', (

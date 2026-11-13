@@ -109,7 +109,7 @@
           it.a += (want - it.a) * k;
           var vis = it.a > 0.01;
           it.ring.visible = vis; it.sp.visible = vis; it.hit.visible = vis;
-          if (!vis) continue;
+          if (!vis) { it.shown = false; continue; }
           var pulse = 0.5 + 0.5 * Math.sin(t * 2.2 + it.ph);
           it.ring.material.opacity = it.a * (0.72 + 0.28 * pulse);
           var sc = 1 + 0.05 * pulse; it.ring.scale.set(sc, sc, 1);
@@ -119,15 +119,15 @@
             var dep = Math.max(0.3, LF.depthOf(cpos, cfwd, it.sp.position.x, it.by, it.sp.position.z));
             var ft = LF.fit(dep, vp.h, camera.fov, PM), ppm = LF.pxPerMeter(dep, vp.h, camera.fov);
             var hgt = ft.h, cy0 = it.by + LF.anchorLift(hgt, PM);
-            // 내 이름표와 화면에서 겹치면 위로 올린다(부드럽게). 올림 px 는 알약 높이의 3배까지.
+            // 내 이름표와 화면에서 겹치면 위로 올린다(부드럽게). 올림 px 는 알약 높이의 6배까지.
             var want2 = 0;
             if (vp.avoid) {
               pv.set(it.sp.position.x, cy0, it.sp.position.z).project(camera);
               if (pv.z < 1) {
-                want2 = Math.min(ft.px * 3, LF.overlapRaise(vp.avoid, { cx: (pv.x * 0.5 + 0.5) * vp.w, cy: (-pv.y * 0.5 + 0.5) * vp.h, w: ft.px * 4.3, h: ft.px }, 3));
+                want2 = Math.min(ft.px * 6, LF.overlapRaise(vp.avoid, { cx: (pv.x * 0.5 + 0.5) * vp.w, cy: (-pv.y * 0.5 + 0.5) * vp.h, w: ft.px * 4.3, h: ft.px }, 3));
               }
             }
-            it.rz += (want2 - it.rz) * k;
+            if (it.shown) it.rz += (want2 - it.rz) * k; else { it.rz = want2; it.shown = true; }   // 막 나타날 때는 바로 피한 자리에서 시작
             it.sp.position.y = cy0 + it.rz / ppm;
             it.sp.scale.set(hgt * it.sp.userData.aspect, hgt, 1);
           } else {

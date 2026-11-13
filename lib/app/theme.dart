@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'settings.dart';
 
 /// Material 3 모양(shape) 스케일 토큰: 0 / 4 / 8 / 12 / 16 / 28 / full.
 abstract final class AppShape {
@@ -66,9 +65,6 @@ abstract final class AppMotion {
 
 /// 밝고 따뜻한 Material 3 테마: 테라코타 시드 + 올리브/골드 보조 시드.
 abstract final class AppTheme {
-  static const String sansFamily = 'Pretendard';
-  static const String serifFamily = 'NotoSerifKR';
-
   /// 브랜드 시드(테라코타). 두 모드의 모든 색 역할이 여기서 나온다.
   static const Color seedColor = Color(0xFFC2613E);
 
@@ -141,33 +137,31 @@ abstract final class AppTheme {
     );
   }
 
+  /// 기도문 본문 기본 글자 크기(배율 1.0).
+  static const double baseFontSize = 24;
+
   /// 기도문 본문 스타일(문서화된 커스텀 스타일: 읽기용으로 M3 역할보다 크다).
-  /// [bold]는 강조(내 차례)용이며, 명조는 Medium(500)까지만 있다.
+  /// 글꼴은 지정하지 않아 기기 시스템 글꼴(안드로이드 Roboto/Noto Sans CJK)을 쓴다.
+  /// [bold]는 강조(내 차례)용이다.
   static TextStyle prayerStyle(
-    BuildContext context,
-    PrayerFont font, {
+    BuildContext context, {
     double? size,
     Color? color,
     bool bold = false,
   }) {
-    final serif = font == PrayerFont.serif;
     return TextStyle(
-      fontFamily: serif ? serifFamily : sansFamily,
-      fontSize: size ?? (serif ? 25 : 24),
+      fontSize: size ?? baseFontSize,
       height: 1.6,
       letterSpacing: -0.2,
       color: color ?? Theme.of(context).colorScheme.onSurface,
-      fontWeight: bold
-          ? (serif ? FontWeight.w500 : FontWeight.w600)
-          : FontWeight.w400,
+      fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
     );
   }
 
-  /// M3 타입 스케일(display/headline/title/body/label × L/M/S) + Pretendard.
+  /// M3 타입 스케일(display/headline/title/body/label × L/M/S), 시스템 글꼴.
   /// 크기·굵기·행간은 M3 명세의 한글(dense) 기하를 그대로 쓴다.
   static TextTheme textTheme(ColorScheme scheme) {
     return Typography.dense2021.apply(
-      fontFamily: sansFamily,
       displayColor: scheme.onSurface,
       bodyColor: scheme.onSurface,
     );
@@ -196,7 +190,6 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      fontFamily: sansFamily,
       textTheme: text,
       // 키보드/마우스 상태 레이어(M3: hover 8%, focus 10%, pressed 10%).
       hoverColor: scheme.onSurface.withValues(alpha: 0.08),
