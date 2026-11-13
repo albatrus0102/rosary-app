@@ -9,12 +9,15 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { prune, dedup, weld, meshopt, textureCompress, resample, joinPrimitives, compactPrimitive, getBounds } from '@gltf-transform/functions';
 import { MeshoptEncoder, MeshoptDecoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
-import { normalizeBoneName, tintSlotFor, CLIPS, MIXAMO_65, stripRootMotion, LIMITS } from './rules.mjs';
+import { normalizeBoneName, tintSlotFor, CLIPS, MIXAMO_65, MIXAMO_EXTRA, stripRootMotion, LIMITS } from './rules.mjs';
+import { PropertyType } from '@gltf-transform/core';
 import { m4mul, m4point, m4compose, qmul, qrot, nlerpq, qangle } from './mathx.mjs';
 
 const require = createRequire(import.meta.url);
 export const TOOL_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
+// 재질은 합치지 않는다(같은 텍스처를 쓰는 skin/hair/cloth 가 하나로 합쳐져 틴트 슬롯이 사라지지 않게)
+const DEDUP_KEEP_MATS = { propertyTypes: [PropertyType.ACCESSOR, PropertyType.MESH, PropertyType.TEXTURE, PropertyType.SKIN] };
 let _io = null;
 export async function getIO() {
   if (_io) return _io;
@@ -183,6 +186,31 @@ export function mergeSkins(doc) {
   return merged;
 }
 
+/** 무게가 없는 관절(끝 뼈·눈 등)을 스킨에서 뺀다(노드는 남는다). prims 의 JOINTS_0 를 새 번호로 바꾼다. 반환: 뺀 수 */
+export function compactSkin(doc, skin, prims) {
+  const joints = skin.listJoints(), used = new Set();
+  for (const p of prims) {
+    const J = p.getAttribute('JOINTS_0'), W = p.getAttribute('WEIGHTS_0'); if (!J || !W) continue;
+    const j4 = [0, 0, 0, 0], w4 = [0, 0, 0, 0];
+    for (let i = 0, n = J.getCount(); i < n; i++) { J.getElement(i, j4); W.getElement(i, w4); for (let k = 0; k < 4; k++) if (w4[k] > 0) used.add(j4[k]); }
+  }
+  if (used.size === joints.length) return 0;
+  const keep = joints.map((_, i) => i).filter((i) => used.has(i)), remap = new Map(keep.map((o, n) => [o, n]));
+  const ibm = skin.getInverseBindMatrices(), src = ibm ? ibm.getArray() : null, dst = new Float32Array(keep.length * 16);
+  keep.forEach((o, n) => { if (src) dst.set(src.subarray ? src.subarray(o * 16, o * 16 + 16) : src.slice(o * 16, o * 16 + 16), n * 16); });
+  for (const j of joints) skin.removeJoint(j);
+  for (const o of keep) skin.addJoint(joints[o]);
+  if (ibm) ibm.setArray(dst);
+  const done = new Set();
+  for (const p of prims) {
+    const J = p.getAttribute('JOINTS_0'), W = p.getAttribute('WEIGHTS_0'); if (!J || done.has(J)) continue; done.add(J);
+    const a = J.getArray().slice(), w = W.getArray();
+    for (let i = 0; i < a.length; i++) a[i] = w[i] > 0 ? remap.get(a[i]) : 0;
+    J.setArray(a);
+  }
+  return joints.length - keep.length;
+}
+
 // ------------------------------------------------------------------ LOD 단순화(meshoptimizer)
 function triCount(prim) { const idx = prim.getIndices(); return idx ? idx.getCount() / 3 : prim.getAttribute('POSITION').getCount() / 3; }
 /** prim 을 목표 삼각형 수 근처로 단순화(제자리). 오차 한도를 늘려 가며 시도하고, 끝까지 안 되면 sloppy. */
@@ -243,7 +271,7 @@ export async function buildCharacter(opts) {
       }
     } else warnings.push('--textures glb 에 baseColor 텍스처가 없음');
   }
-  await doc.transform(weld(), dedup());
+  await doc.transform(weld(), dedup(DEDUP_KEEP_MATS));
   // 스킨된 메시 노드 수집 → 재질별로 프리미티브 합치기
   const meshNodes = root.listNodes().filter((n) => n.getMesh());
   const skinned = meshNodes.filter((n) => n.getSkin());
@@ -265,6 +293,8 @@ export async function buildCharacter(opts) {
   }
   const scene = root.listScenes()[0] || root.getDefaultScene();
   const meta = characterMeta(doc, skin);   // 휴식 자세 기준 키·좌석 수치(LOD 를 만들기 전에)
+  const dropped = compactSkin(doc, skin, base);
+  if (dropped) warnings.push(`무게 없는 관절 ${dropped}개를 스킨에서 뺌(끝 뼈·눈 등) → ${skin.listJoints().length}개`);   // 휴식 자세 기준 키·좌석 수치(LOD 를 만들기 전에)
   for (const n of meshNodes) { n.setMesh(null); n.setSkin(null); }
   const total0 = base.reduce((s, p) => s + triCount(p), 0);
   const lodT = opts.lods || LIMITS.tris;
@@ -284,11 +314,13 @@ export async function buildCharacter(opts) {
   }
   for (const p of base) p.dispose();
   // 끝 뼈·눈 등 무게 없는 잎 노드와 원래 메시 노드 정리
-  await doc.transform(prune({ keepLeaves: false, keepAttributes: false }), dedup());
+  await doc.transform(prune({ keepLeaves: false, keepAttributes: false }), dedup(DEDUP_KEEP_MATS));
   // 텍스처: 긴 변 tex 로 줄이고 WebP
   const tex = opts.tex || LIMITS.texture;
   if (root.listTextures().length) await doc.transform(textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [tex, tex], quality: opts.quality || 82 }));
-  // 틴트 마스크(쓰지 않는 재질 '__tintmask' 의 baseColor 로 싣는다; 런타임이 parser.getDependency 로 읽는다)
+  if (opts.meshopt !== false) await doc.transform(meshopt({ encoder: MeshoptEncoder, level: 'high', quantizationVolume: 'scene' }));
+  // 틴트 마스크(R=피부, G=머리): 어떤 메시도 쓰지 않는 재질 '__tintmask' 의 baseColor 로 싣는다(정리 단계 뒤에 넣어야 남는다).
+  // 런타임은 gltf.parser.getDependency('material', i) 로 읽는다.
   let tintMask = false;
   if (opts.mask) {
     const buf = await sharp(opts.mask).resize(512, 512, { fit: 'fill' }).webp({ quality: 90 }).toBuffer();
@@ -297,8 +329,6 @@ export async function buildCharacter(opts) {
     tintMask = true;
   }
   scene.setExtras({ ...(scene.getExtras() || {}), rosary: { v: 1, kind: 'character', id: opts.id || path.basename(opts.input).replace(/\.\w+$/, ''), ...meta, lods, tintMask } });
-  if (opts.meshopt !== false) await doc.transform(meshopt({ encoder: MeshoptEncoder, level: 'high', quantizationVolume: 'scene' }));
-  if (tintMask && !root.listMaterials().some((m) => m.getName() === '__tintmask')) warnings.push('틴트 마스크 재질이 정리 과정에서 사라짐');
   const bin = await io.writeBinary(doc);
   if (opts.out) { fs.mkdirSync(path.dirname(opts.out), { recursive: true }); fs.writeFileSync(opts.out, bin); }
   const summary = summarize(doc, bin.byteLength);
@@ -398,7 +428,7 @@ export async function buildAnims(inputs, opts = {}) {
     if (seen.has(name)) { warnings.push(`${name}: 중복(${path.basename(inp.file)} 무시)`); continue; }
     seen.add(name);
     // 트랙 정리: 스케일 트랙과 Hips 외 이동 트랙 제거(캐릭터마다 뼈 길이가 달라도 같은 클립을 쓰게), Mixamo 65 밖 뼈 제거
-    const keep = new Set(MIXAMO_65);
+    const keep = new Set([...MIXAMO_65, ...MIXAMO_EXTRA]);
     for (const ch of anim.listChannels()) {
       const tn = ch.getTargetNode(), p = ch.getTargetPath();
       if (!tn || !keep.has(tn.getName()) || p === 'scale' || p === 'weights' || (p === 'translation' && tn.getName() !== 'Hips')) { const s = ch.getSampler(); ch.dispose(); s.dispose(); }

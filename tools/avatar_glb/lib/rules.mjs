@@ -33,11 +33,13 @@ export const REQUIRED_BONES = [
 ];
 /** Mixamo 65 관절 전체(끝 뼈 포함). 스키닝에는 무게가 있는 뼈만 들어가므로 보통 52개 안팎이 스킨에 남는다. */
 export const MIXAMO_65 = [
-  'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'HeadTop_End', 'LeftEye', 'RightEye',
+  'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'HeadTop_End',
   ...SIDES.flatMap((s) => [`${s}Shoulder`, `${s}Arm`, `${s}ForeArm`, `${s}Hand`,
     ...FINGERS.flatMap((f) => [1, 2, 3, 4].map((k) => `${s}Hand${f}${k}`)),
     `${s}UpLeg`, `${s}Leg`, `${s}Foot`, `${s}ToeBase`, `${s}Toe_End`])
 ];
+/** Mixamo 일부 캐릭터(예: Alpha/X Bot)에 더 있는 뼈(65 에 들지 않음). 동작 트랙은 남겨도 된다. */
+export const MIXAMO_EXTRA = ['LeftEye', 'RightEye'];
 /** 윗몸(기도·손 흔들기 층을 앉기/무릎 꿇기 위에 덮을 때 쓰는 뼈 마스크). */
 export function isUpperBody(bone) {
   const n = normalizeBoneName(bone);
