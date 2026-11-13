@@ -314,7 +314,7 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   // church 모드: 기본 성당의 옆벽 창 앞에서
   await pg.evaluate(() => { const m = __church.me; m.x = -9; m.z = 0; __church.ctl.yaw = -Math.PI / 2; });
   await pg.waitForTimeout(400);
-  await pg.evaluate(() => { window.__ev.length = 0; ChurchAPI.viewWindow({ win: 'lancet_gesta', mode: 'church', tier: 't1' }); });
+  await pg.evaluate(() => { window.__ev.length = 0; ChurchAPI.viewWindow({ win: 'alabaster_slab', mode: 'church', tier: 't1' }); });
   await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'viewReady' || e.e === 'viewError'), null, { timeout: 180000 });
   await pg.waitForFunction(() => __church.view.debug().idle, null, { timeout: 180000 });
   const ch = await pg.evaluate(() => ({ d: __church.view.debug(), church: __church.church, ev: window.__ev.filter((e) => /^view/.test(e.e)) }));
@@ -335,7 +335,7 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
   await pg.goto('file://' + root + '/index.html');
   await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
-  await pg.evaluate(() => ChurchAPI.viewWindow({ win: 'rose_chartres_south', tier: 't1', light: 'night' }));
+  await pg.evaluate(() => ChurchAPI.viewWindow({ win: 'oculus_florence_donatello', tier: 't1', light: 'night' }));
   const ok = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'viewReady'), null, { timeout: 180000 }).then(() => true).catch(() => false);
   const info = await pg.evaluate(() => ({ church: __church.church, stations: window.__ev.filter((e) => e.e === 'stations').length, light: __church.view.debug().light }));
   check('viewWindow before init boots straight into the viewing room (no church, no stations event)', ok && info.church === 'glass_room' && info.stations === 0 && info.light === 'night', info);
