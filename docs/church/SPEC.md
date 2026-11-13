@@ -331,7 +331,7 @@ resetView({})                         // 처음 구도로 0.4초 복귀(두 번 
 {"e":"glassTap","id":"dove_stpeter","slot":"gloria"}    // tapAt 이 표식에 맞지 않았고 사진 창(원·타원·사각 윤곽) 위였음
 ```
   `id` 는 카탈로그 id 규칙(`^[a-z0-9_]{1,40}$`)이 아니면 Flutter 가 버린다(`SceneGlassNear`/`SceneGlassTap`, `church_scene_controller.dart`).
-- **Flutter**: `church_screen.dart` 가 가까운 창(`glassNear`)과 누른 창(`glassTap`, 8초 유지, 누른 창이 먼저)을 **칩 하나**로 보인다: `ChurchGlassChip`('이 창: ○○ · 자세히 보기', 최소 높이 48, 한 줄 말줄임). 자리는 상단 HUD 열의 셋째 줄 왼쪽(첫 줄 = 성당 칩·아이콘, 둘째 줄 = 자동 걷기 칩·'가기'). 걷는 중에만 보이고(앉으면 숨김) 카탈로그에 없는 id 는 무시한다. 누르면 창 정보 시트(`showGlassInfoSheet`: 설명·위치·사진 출처·라이선스)가 열린다. 성당 화면에서 바로 감상 모드(확대)로 들어가는 버튼은 아직 없다(유리화 탭의 감상 화면에서 본다). 겹침 시험: `test/church_glass_test.dart`(360×800, 412×915, 글자 1.3배).
+- **Flutter**: `church_screen.dart` 가 가까운 창(`glassNear`)과 누른 창(`glassTap`, 8초 유지, 누른 창이 먼저)을 **칩 하나**로 보인다: `ChurchGlassChip`('이 창: ○○ · 자세히 보기', 최소 높이 48, 한 줄 말줄임). 자리는 상단 HUD 열의 셋째 줄 왼쪽(첫 줄 = 성당 칩·아이콘, 둘째 줄 = 자동 걷기 칩·'가기'). 걷는 중에만 보이고(앉으면 숨김) 카탈로그에 없는 id 는 무시한다. 누르면 창 정보 시트(`showGlassInfoSheet`: 설명·위치·사진 출처·라이선스)가 열린다. 성당 화면에서 바로 감상 모드(확대)로 들어가는 버튼은 아직 없다(성당 탭 '창' 보기의 감상 화면에서 본다). 겹침 시험: `test/church_glass_test.dart`(360×800, 412×915, 글자 1.3배).
 - **감상 모드 연결**: `viewWindow({mode:'church'})` 는 그 창이 이 성당 제자리에 걸려 있으면 그 자리(걸린 판 4mm 앞)로 활강한다(`place.slotFor`). 아니면 §22 의 기본 동작(앞쪽 가장 가까운 창 자리).
 - **시험**: `glass_place.test.mjs`(`node --test`: 대응표 ↔ 카탈로그 비율·authentic 규칙, 성당별 자리 수, 판 비율 = 사진 비율, `?photoglass=0` 폴백) · `node tools/church_web/glassplace.mjs`(수 분, 헤드리스): 걷기 프로필 색 ΔE2000 중앙값 ≤ 3.0(high/low), 프레임 시간 손실 ≤ 5%, 깜박임 ≤ 2.0, gpack 차단 시 폴백, 성당별 상주 질감 수, `glassNear`/`glassTap`. 결과는 `PERF.md`.
 - **한계**: 밀라노 창은 신랑에서는 닫집·성가대석에 가려 첨두 아치 끝만 보인다(사진 구간은 회랑에서 본다). 사진이 창의 아래 여섯 단뿐이라 그 위는 절차적 유리(메달리온)여서 경계가 눈에 띈다. 1k 질감뿐이라 밀라노 창(폭 4.8m)은 바로 앞에서 1텍셀 ≈ 4.7mm. 성 바오로 64자리는 사진 2장의 반복. 피렌체 드럼의 「주님 승천」 면, 밀라노 창이 세 후진 창 중 어느 것인지는 미확인(`certainty:'assumed'`).
@@ -431,8 +431,8 @@ walkTo({kind:'cross', index:0..13})          // n처 판 앞 서는 자리로 �
 
 ### 31.1 구조(Flutter)
 
-- `GlassTab` 은 [창 | 성당] 두 보기를 모두 살려 두고 하나만 보인다(`_Kept`: Offstage + TickerMode). 성당 보기는 처음 고를 때 만든다. 감싸는 위젯의 모양은 입장 전후로 바뀌지 않는다(바뀌면 `ChurchTab` 이 새로 만들어져 입장이 풀린다).
-- `ChurchHost`(InheritedWidget, `lib/church/church_host.dart`): `visible`(유리화 탭이 선택돼 있고 '성당' 보기일 때 true)과 `onInChurchChanged` 를 아래로 알린다. 없으면(단독 화면·시험) 항상 보이는 것으로 본다.
+- `GlassTab`(성당 탭, 기본 보기 '성당') 은 [성당 | 창] 두 보기를 모두 살려 두고 하나만 보인다(`_Kept`: Offstage + TickerMode). 성당 보기는 탭이 처음 보일 때, 창 갤러리는 '창'을 처음 고를 때 만든다. 감싸는 위젯의 모양은 입장 전후로 바뀌지 않는다(바뀌면 `ChurchTab` 이 새로 만들어져 입장이 풀린다).
+- `ChurchHost`(InheritedWidget, `lib/church/church_host.dart`): `visible`(성당 탭이 선택돼 있고 '성당' 보기일 때 true)과 `onInChurchChanged` 를 아래로 알린다. 없으면(단독 화면·시험) 항상 보이는 것으로 본다.
 - `ChurchTab`: 보이지 않는 동안 선택·입장 카드 화면은 만들지 않는다(접속 인원 조회가 돌지 않게). 다시 보이면 `screen_view` 를 다시 기록한다.
 - `ChurchScreen` 의 '보이지 않음' = `ChurchHost.visible == false` 또는 앱 백그라운드(`paused`·`hidden`·`detached`; `inactive` 는 화면이 보이므로 제외) 또는 이 화면이 연 불투명 화면(아바타 편집·첫 입장 설정·전체 화면 기도)이 위에 있음. 반쯤 덮는 시트(가기·촛불·접속자·창 정보)는 해당하지 않는다.
 

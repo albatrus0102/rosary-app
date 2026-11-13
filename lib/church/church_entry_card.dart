@@ -51,11 +51,10 @@ class ChurchEntryCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('성당', style: theme.textTheme.headlineMedium),
-                  const SizedBox(height: 4),
+                  // 탭 머리줄이 이미 '가상 성당'이므로 별도 큰 제목은 두지 않는다.
                   Text(
                     '마지막으로 다녀온 성당',
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       color: scheme.onSurfaceVariant,
                     ),
                   ),

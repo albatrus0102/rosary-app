@@ -244,8 +244,9 @@ void main() {
         }
       }
 
-      testWidgets('01 glass tab', (t) async {
-        await shell(t, AppShellTab.church, '01_glass', scrolls: [500]);
+      testWidgets('01 church tab', (t) async {
+        // 성당 보기는 시험용 자리표시(스크롤 없음). 창 갤러리는 세그먼트 '창'을 눌러 본다.
+        await shell(t, AppShellTab.church, '01_church');
       });
       testWidgets('02 today', (t) async {
         await shell(t, AppShellTab.today, '02_today', scrolls: [600, 600]);

@@ -347,6 +347,49 @@ void main() {
     expect(find.byType(GlassTab), findsOneWidget);
   });
 
+  for (final size in const [Size(360, 800), Size(412, 915), Size(840, 800)]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets(
+        '성당 탭 머리줄·전환 줄: ${size.width.toInt()}x${size.height.toInt()} 글자 $scale배에서 겹치지 않는다',
+        (tester) async {
+          await _pumpShell(
+            tester,
+            size,
+            textScale: scale,
+            initialTab: AppShellTab.church,
+          );
+          for (final seg in ['성당', '창', '성당']) {
+            await tester.tap(
+              find.descendant(
+                of: find.byKey(const ValueKey('glass-segment')),
+                matching: find.text(seg),
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull, reason: seg);
+            final title = find.text(seg == '성당' ? '가상 성당' : '스테인드글라스');
+            expect(title, findsOneWidget);
+            final seg0 = tester.getRect(
+              find.byKey(const ValueKey('glass-segment')),
+            );
+            // 제목은 전환 줄 위에, 둘은 겹치지 않는다. 하트(창 보기)는 제목과 가로로 겹치지 않는다.
+            expect(tester.getRect(title).bottom, lessThanOrEqualTo(seg0.top));
+            if (seg == '창') {
+              expect(
+                tester.getRect(title).right,
+                lessThanOrEqualTo(
+                  tester
+                      .getRect(find.byKey(const ValueKey('glass-favorites')))
+                      .left,
+                ),
+              );
+            }
+          }
+        },
+      );
+    }
+  }
+
   for (final scale in [1.5, 2.0]) {
     testWidgets('no overflow at 360x640 with text scale $scale', (
       tester,
