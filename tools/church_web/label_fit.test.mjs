@@ -137,7 +137,7 @@ test('tagLayout: short names stay on one line at the base size', () => {
     assert.equal(lay.fs, T.fs);
   }
   // 조금 긴 이름은 한 줄로 두고 글자만 줄인다
-  const mid = assertFits('마리아 막달레나');
+  const mid = assertFits('알렉산데르 사울리');
   assert.equal(mid.lines.length, 1);
   assert.ok(mid.fs < T.fs && mid.fs >= T.minFs);
 });
@@ -154,7 +154,9 @@ test('tagLayout: the five longest names fit the pill on two lines without losing
     const [a, b] = lay.lines.map((l) => measure(l, lay.fs));
     assert.ok(Math.abs(a - b) <= (a + b) / 2, `${n}: ${lay.lines.join(' / ')}`);
   }
-  assert.deepEqual(LF.tagLayout('히야친토 조르다노 안살로네', measure).lines, ['히야친토 조르다노', '안살로네']);
+  // 16px 한 줄에 겨우 드는 이름은 한 줄, 조금만 넘쳐도 두 줄(가운데에 가장 가까운 공백에서)
+  assert.deepEqual(LF.tagLayout('히야친토 조르다노 안살로네', measure), { fs: 16, lines: ['히야친토 조르다노 안살로네'], w: measure('히야친토 조르다노 안살로네', 16) });
+  assert.deepEqual(LF.tagLayout('히야친토 조르다노 안살로네', (t, fs) => measure(t, fs) * 1.1).lines, ['히야친토', '조르다노 안살로네']);
   assert.deepEqual(LF.tagLayout('바울라 몬탈 포르네스(성 요셉 데 갈라산즈의)', measure).lines, ['바울라 몬탈 포르네스', '(성 요셉 데 갈라산즈의)']);
 });
 
