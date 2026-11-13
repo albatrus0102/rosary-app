@@ -1,6 +1,6 @@
 # 관리자 콘솔 '로드맵' 사용법
 
-`docs/ux/UX_PLAN.md` 의 개선 과제 40개(4장), 릴리스 R1~R3(6장), 결정 Q1~Q8(7장)에 더해 **외부 UX 검토 과제 18개(U-01~U-18, `docs/ux/CHATGPT_REVIEW.md`)** 와 **유리화 계획 과제 34개(G-xx, `docs/ux/GLASS_APP_PLAN.md`)** 를 관리자 콘솔(`admin/`)의 **로드맵** 탭에서 보고, 과제별 상태와 메모를 고칠 수 있다. 전체 92개. 결정일 2026-11-12, 권장 기본값을 모두 채택했다.
+`docs/ux/UX_PLAN.md` 의 개선 과제 40개(4장), 릴리스 R1~R3(6장), 결정 Q1~Q8(7장)에 더해 **외부 UX 검토 과제 18개(U-01~U-18, `docs/ux/CHATGPT_REVIEW.md`)** 와 **유리화 계획 과제 34개(G-xx, `docs/ux/GLASS_APP_PLAN.md`)** 를 관리자 콘솔(`admin/`)의 **로드맵** 탭에서 보고, 과제별 상태와 메모를 고칠 수 있다. 1차 기준 92개(2차 화면 캡처 검토 15개를 더하면 107개, 아래 '2차 화면 캡처 검토 과제' 절). 결정일 2026-11-12, 권장 기본값을 모두 채택했다.
 
 ## 1. 서버에 적용하기 (한 번만)
 
@@ -72,3 +72,13 @@ node --check admin/admin.js && node --check admin/roadmap.js
 `roadmap_items2_test.mjs`(두 번째 마이그레이션): 적용 전에는 G 값이 거부됨, 적용 뒤 `R1~R3,G1~G3` 만 허용(`G4`·소문자·빈 값 거부, 다른 검사는 유지), U 18개·G 34개가 JSON 원본과 정확히 같게 들어감(릴리스별 R1 23·R2 28·R3 7·G1 15·G2 13·G3 6), 관리자가 미리 바꾼 행(`C-09` 막힘 등)은 보정에서 건드리지 않음, 재실행 멱등(수정 유지, 제약 1개), 일반 사용자·anon 차단 유지, `admin_roadmap` 이 92개 전부 반환, 정적 사본 `roadmap_seed.json` 이 DB 결과와 일치.
 
 화면 확인은 Playwright 로 한다(`tools/auth_sql_tests/admin_ui_test.cjs` 의 가짜 supabase 방식).
+
+## 2차 화면 캡처 검토 과제 (세 번째 마이그레이션)
+
+- 원본: `docs/ux/UX_REVIEW_ITEMS.json` 의 `round: 2` 항목 15개(U-19~U-33)와 1차 과제의 `review2` 필드 9개. 요약과 현황 대조는 `docs/ux/CHATGPT_REVIEW.md` 8장.
+- `node admin/tools_seed_roadmap.mjs` 가 `supabase/migrations/20261115000000_roadmap_items_3.sql` 과 `admin/roadmap_seed.json`(전체 107개, 세 번째 마이그레이션 적용 뒤 상태)을 만든다. 첫째·둘째 마이그레이션의 내용은 바뀌지 않는다.
+- JSON 의 `status` 는 `todo` / `in_progress`(보드의 `진행 중`) / `review`(구현됨, 실기기 확인 대기) / `done`. `decision` 이 있으면 메모가 `[결정 필요] …` 로 들어간다(U-22, U-28).
+- 1차 과제 메모 보강은 메모가 비었거나 기본 문구(`신규(외부 UX 검토)`)인 행에만 적용한다. 관리자가 쓴 메모와 상태는 건드리지 않는다.
+- 적용: SQL Editor 에서 세 번째 파일을 실행한다(멱등). **이 저장소에서는 아직 실제 Supabase 에 적용하지 않았다.**
+- 시험: `cd tools/auth_sql_tests && npm test` 에 `roadmap_items3_test.mjs` 가 포함된다(시드 일치, 상태 매핑, 결정 메모, 멱등, 관리자 수정 보존, 접근 규칙).
+

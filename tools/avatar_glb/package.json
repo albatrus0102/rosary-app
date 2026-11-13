@@ -2,13 +2,15 @@
   "name": "avatar-glb-tools",
   "private": true,
   "type": "module",
-  "description": "Mixamo FBX -> optimized glb character pipeline for assets/church (see docs/art/CHARACTER_3D_PIPELINE.md)",
+  "description": "Mixamo FBX -> optimized glb character pipeline for assets/church (docs/art/CHARACTER_3D_PIPELINE.md). three must match assets/church/three.min.js r149.",
   "dependencies": {
-    "@gltf-transform/core": "^4.5.1",
-    "@gltf-transform/extensions": "^4.5.1",
-    "@gltf-transform/functions": "^4.5.1",
-    "meshoptimizer": "^1.3.0",
-    "sharp": "^0.35.5",
-    "three": "^0.149.0"
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "esbuild": "0.21.5",
+    "fbx2gltf": "0.9.7-p1",
+    "meshoptimizer": "1.3.0",
+    "sharp": "0.35.5",
+    "three": "0.149.0"
   }
 }

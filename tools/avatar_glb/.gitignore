@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+# 변환 산출물·스탠드인·시험 입력(번들에 넣지 않는다)
+out/
+work/
+dist/
+*.fbx

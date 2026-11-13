@@ -9,7 +9,8 @@
     "risk": "앉은 상태·감상 모드에서의 동작을 따로 정해야 함(앉으면 고정 시점으로)",
     "depends": "C-01",
     "value": "3D 조작이 서툰 사람도 한 번에 제자리로 돌아옴",
-    "evidence": "CHATGPT_REVIEW §2(c) 3D 조작 숙련 의존"
+    "evidence": "CHATGPT_REVIEW §2(c) 3D 조작 숙련 의존",
+    "review2": "다시 제안됨(입구에서 '정면 보기'). 미착수. 입구 카메라 거리·높이 조정은 U-25."
   },
   {
     "id": "U-02",
@@ -33,7 +34,8 @@
     "risk": "WebView 장면은 접근성 트리가 비어 있어 Flutter 쪽 버튼으로만 대체해야 함",
     "depends": "U-02",
     "value": "화면 읽기·스위치 사용자도 기도하고 성당을 이용함",
-    "evidence": "CHATGPT_REVIEW §2(c), §2(j) TalkBack 요약 한 개"
+    "evidence": "CHATGPT_REVIEW §2(c), §2(j) TalkBack 요약 한 개",
+    "review2": "검증표: TalkBack으로 묵주 전체 보기 시트를 열고 위치 확인 후 닫기(시트 유지, 닫은 뒤 포커스가 연 단추로). 앱 쪽 구현은 U-20, 실기기 TalkBack 확인이 남음(U-33)."
   },
   {
     "id": "U-04",
@@ -45,7 +47,8 @@
     "risk": "기록 의미가 늘어남(완주율 지표와 섞이지 않게 분리), 통계 문구 점검",
     "depends": "P-03",
     "value": "시간이 짧은 사람(지하철, 쉬는 시간)이 한 단만 바쳐도 '마쳤다'는 기록이 남음",
-    "evidence": "CHATGPT_REVIEW §2(d), §6 질문 1"
+    "evidence": "CHATGPT_REVIEW §2(d), §6 질문 1",
+    "review2": "'한 단 바치기' 진입점은 오늘 탭 시작 버튼 아래에 둔다(U-21)."
   },
   {
     "id": "U-05",
@@ -69,7 +72,8 @@
     "risk": "프로세스 종료는 실기기·개발자 옵션('활동 유지 안 함')으로만 재현됨",
     "depends": "–",
     "value": "어떤 방해가 있어도 기도가 처음으로 돌아가지 않음",
-    "evidence": "CHATGPT_REVIEW §2(e), §5 지표 3(정확한 이어하기 20/20)"
+    "evidence": "CHATGPT_REVIEW §2(e), §5 지표 3(정확한 이어하기 20/20)",
+    "review2": "검증표: 성당 좌석→큰 기도문→다음 구슬 도중 통화·재실행을 포함, 완료 기록 중복 0(U-33)."
   },
   {
     "id": "U-07",
@@ -81,7 +85,8 @@
     "risk": "기도 재설계 2단계(통합 세션)가 끝나야 통과 가능",
     "depends": "U-06, 기도 재설계 2단계",
     "value": "앱과 성당을 오가도 기도가 끊기지 않음",
-    "evidence": "CHATGPT_REVIEW §2(b),(e); PRAYER_REDESIGN §8 2단계"
+    "evidence": "CHATGPT_REVIEW §2(b),(e); PRAYER_REDESIGN §8 2단계",
+    "review2": "검증표: 성당 좌석→큰 기도문→다음 구슬→성당 복귀, 완료 기록 중복 0. 공유 세션(U-27) 뒤에 통과 가능(U-33)."
   },
   {
     "id": "U-08",
@@ -93,7 +98,8 @@
     "risk": "게스트 익명 로그인(O-01)이 첫 화면을 막을 수 있음: 시간 제한 후 로컬로 진행",
     "depends": "O-01",
     "value": "지하철·산 속에서도 첫 기도가 됨(오프라인 핵심 경로 100%)",
-    "evidence": "CHATGPT_REVIEW §2(f), §5 지표 8"
+    "evidence": "CHATGPT_REVIEW §2(f), §5 지표 8",
+    "review2": "검증표: 비행기 모드 첫 실행, 잠금 중 선창·후창, 새 기기 복원(U-33)."
   },
   {
     "id": "U-09",
@@ -141,7 +147,8 @@
     "risk": "실서버 계정 연결·백업이 미검증(O-01)이라 실제 백업 시각 원본이 필요함",
     "depends": "O-01",
     "value": "새 휴대폰으로 바꿔도 기록이 있는지 스스로 확인함",
-    "evidence": "CHATGPT_REVIEW §2(h), §6 질문 4"
+    "evidence": "CHATGPT_REVIEW §2(h), §6 질문 4",
+    "review2": "계정 연결 시 '기록 지키기'와 마지막 백업 상태를 함께 보인다. 내용은 이 과제와 같다."
   },
   {
     "id": "U-13",
@@ -153,7 +160,8 @@
     "risk": "R-04의 달력과 중복 작업이 되지 않게 컴포넌트를 공유",
     "depends": "M-01",
     "value": "한눈에 내가 얼마나 바쳤는지 봄",
-    "evidence": "CHATGPT_REVIEW §2(h); UX_PLAN R-04"
+    "evidence": "CHATGPT_REVIEW §2(h); UX_PLAN R-04",
+    "review2": "정정: 기록 달력·최근 기록은 이미 있다(lib/stats). 남은 일은 배치(최근 기도·달력 우선)로 U-31에서 다룬다."
   },
   {
     "id": "U-14",
@@ -213,6 +221,225 @@
     "risk": "모집·일정이 외부에 달림. 중앙값·p95 계측 이벤트가 필요함(X-01 확장)",
     "depends": "U-06, U-08, C-04",
     "value": "추측이 아닌 실사용 근거로 R2 우선순위를 확정",
-    "evidence": "CHATGPT_REVIEW §5 사용자 시험 계획·지표 8개"
+    "evidence": "CHATGPT_REVIEW §5 사용자 시험 계획·지표 8개",
+    "review2": "실기기 검증표(U-33)를 사용자 시험 전 사전 점검으로 쓴다."
+  },
+  {
+    "id": "U-19",
+    "title": "기도문 큰 글씨(2배): 본문을 독립 스크롤 영역으로(스크롤 막대·위아래 흐림), '기도문 계속 읽기'(같은 기도문 안, 온전한 줄에서 끊음)와 '다음 구슬'(구슬 이동)을 이름·모양·자리로 구분. 구슬 단추는 끝까지 읽지 않아도 늘 누를 수 있음",
+    "category": "기도화면",
+    "release": "R1",
+    "priority": "P0",
+    "effort": "S",
+    "risk": "글을 누를 때의 동작이 바뀜(읽지 않은 글이 남아 있으면 구슬이 아니라 글이 내려감). 눈 감고 글을 눌러 넘기던 큰 글씨 사용자는 '다음 구슬'·볼륨 키·짧게 보기를 써야 함",
+    "depends": "A-01",
+    "value": "2배 글씨에서도 마지막 줄까지 읽고, 읽기와 구슬 넘기기를 헷갈리지 않음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "review",
+    "note": "2026-11-13 구현: prayer_text_view/prayer_actions, 위젯 시험(360×640·800, 412×915 × 1·1.5·2배 × 주야 × 3버튼/제스처). 실기기 확인 대기(U-33)."
+  },
+  {
+    "id": "U-20",
+    "title": "묵주 전체 보기 시트: 4초 자동 닫힘 제거, [닫고 계속], 큰 단추([처음]·[1단]~[5단]·[되돌리기]·[기도하던 자리로]), '현재 위치' 읽기('3단 성모송 2번째 구슬'), 닫으면 포커스가 연 단추로 복귀",
+    "category": "기도화면",
+    "release": "R1",
+    "priority": "P0",
+    "effort": "S",
+    "risk": "단추가 늘어 360×640에서 묵주 그림이 작아짐(높이 40%). 지도를 끌 때 시트 끌어내리기와 겹칠 수 있음(기존과 같음)",
+    "depends": "A-01, U-03",
+    "value": "촘촘한 구슬을 잘못 눌러도 되돌릴 수 있고, 화면 읽기 사용자가 자리 확인 중에 시트가 사라지지 않음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "review",
+    "note": "2026-11-13 구현: rosary_map_sheet, 위젯 시험(10초·1분 뒤에도 열림, 이동/되돌리기/닫기, 포커스 복귀). 실기기 TalkBack 확인 대기(U-33)."
+  },
+  {
+    "id": "U-21",
+    "title": "오늘 탭 첫 카드: 오늘의 신비 + 기도 방식 한 줄('혼자 · 음성 끔'), 진행 중이면 '이어서 기도하기' + 구슬 위치, '한 단 바치기'는 시작 버튼 아래",
+    "category": "메뉴",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "M",
+    "risk": "첫 카드가 길어지면 작은 화면에서 시작 버튼이 밀림. 이어하기 카드는 이미 있어 배치·문구 변경임",
+    "depends": "U-04, P-04",
+    "value": "앱을 열자마자 무엇을 어떤 방식으로 바치는지 보이고 바로 시작·이어서 함",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
+  },
+  {
+    "id": "U-22",
+    "title": "성당 첫 입장: 기본 아바타 + [성당 들어가기] 중심, 외형은 '모습 바꾸기'로 접기. 공개 세례명은 직접 고른 경우에만 표시하고 그 전에는 방문자로 입장 제안",
+    "category": "온보딩",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "M",
+    "risk": "소유자가 '세례명·성별·머리를 한 화면에서 직접 고르게' 하기를 명시했던 결정, 세례명 3,788개 전체 목록 작업과 충돌할 수 있음(1차 검토 §3-1에서 같은 취지 제안을 따르지 않음)",
+    "depends": "O-02",
+    "value": "처음 온 사람이 설정 없이 바로 성당에 들어감",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo",
+    "decision": "공개 세례명을 '직접 고른 경우에만 표시 + 그 전엔 방문자 입장'으로 바꿀지. 현재는 기본값이 채워진 설정 화면에서 직접 고르는 방식(소유자 결정)"
+  },
+  {
+    "id": "U-23",
+    "title": "성당 목록·카드·입장 카드에서 '실제의 N%' 축소 비율 문구 제거(필요하면 상세에서만)",
+    "category": "성당 3D",
+    "release": "R1",
+    "priority": "P1",
+    "effort": "S",
+    "risk": "상세 화면에 비율을 다시 둘지는 정하지 않음",
+    "depends": "-",
+    "value": "목록이 숫자 설명 없이 성당 이름·분위기 중심으로 읽힘",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "done",
+    "note": "완료: 목록·카드·입장 카드에서 문구 제거(커밋 b7c7dc0). 상세에는 '실제 건축을 단순화한 3D 모형' 고지만 있음."
+  },
+  {
+    "id": "U-24",
+    "title": "성당 HUD: '가기' → '장소로 이동'으로 이름을 바꾸고 하단 행동 영역에 배치, 가까운 빈 자리 제안",
+    "category": "성당 3D",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "M",
+    "risk": "가까운 빈 자리는 장면 API(sitNearestFree)가 필요(다른 작업자의 assets/church 영역). 하단에 조이스틱·앉기 단추와 자리가 겹침",
+    "depends": "C-09",
+    "value": "3D 조작 없이 한 번에 앉을 자리로 감",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "in_progress",
+    "note": "'가기' 안내 말풍선을 오른쪽 아래로 옮기고 조이스틱 링 색을 바꾼 것은 완료. 이름 변경·하단 배치·가까운 빈 자리 제안은 미착수."
+  },
+  {
+    "id": "U-25",
+    "title": "입구 카메라 거리·높이 조정 + 이름표 거리별 축소(먼 이름표는 작게·겹치면 숨김)",
+    "category": "성당 3D",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "M",
+    "risk": "카메라 기본값을 바꾸면 성당마다 다시 맞춰야 함(유리화·창 연결 작업과 겹침)",
+    "depends": "U-01, C-01",
+    "value": "입장 직후 성당 전체가 한눈에 들어오고 이름표가 화면을 덮지 않음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "in_progress",
+    "note": "이름표 화면 크기 보정(긴 세례명 두 줄 포함)은 완료. 입구 카메라 거리·높이는 미착수. 정면 보기 단추는 U-01."
+  },
+  {
+    "id": "U-26",
+    "title": "성당 좌석 기도 카드: '기도문 크게 보기'를 ⋮ 밖으로 꺼내 직접 표시, 전체 화면에는 '성당 자리로 돌아가기'(확인 없이 복귀)",
+    "category": "기도화면",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "S",
+    "risk": "lib/church 동시 작업과 충돌(의자·창 작업이 끝난 뒤 반영). 카드 머리줄이 좁음",
+    "depends": "C-03, U-19",
+    "value": "큰 글씨가 필요한 사람이 성당에서도 한 번에 큰 기도문으로 가고 겁주는 확인 없이 돌아옴",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
+  },
+  {
+    "id": "U-27",
+    "title": "공유 세션(기도 재설계 2단계): 같은 신비·구슬·차례를 전체 화면·성당 카드·미니 막대에서 이어감(ActivePrayer 하나, 기록 1건). 설계는 PRAYER_REDESIGN §6·§8",
+    "category": "기도화면",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "L",
+    "risk": "세션·기록·진동·음성의 주인이 바뀌는 구조 변경. lib/church 작업이 머지된 뒤 시작. 기록 source 의미(마친 곳) 변경",
+    "depends": "A-01, U-26",
+    "value": "오늘 탭에서 바치던 기도를 성당에서 그대로 이어 바치고 기록이 둘로 쪼개지지 않음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
+  },
+  {
+    "id": "U-28",
+    "title": "성당 기도 카드 타이머: 라벨에 '경과 시간'임을 명시하거나 카드에서 내리기",
+    "category": "기도화면",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "S",
+    "risk": "타이머를 내리면 '얼마나 앉아 있었나'를 보던 사람이 잃음. 공유 세션(U-27)에서는 세션이 시간을 잼",
+    "depends": "C-03",
+    "value": "숫자가 남은 시간·재촉으로 읽히지 않음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo",
+    "decision": "타이머를 카드에서 내릴지, '기도한 시간 mm:ss'처럼 라벨만 붙일지"
+  },
+  {
+    "id": "U-29",
+    "title": "촛불 봉헌: 용어 통일(봉헌·초·촛불), 지향에 '마음속 지향으로' 추가, 성공 화면 '촛불을 밝혔습니다', 지향 시트는 처음에 아무것도 고르지 않은 상태",
+    "category": "성당 3D",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "S",
+    "risk": "지금은 첫 지향이 미리 선택돼 있어(church_candle_sheet `_selected = 0`) 바로 [봉헌]이 됨. 미선택으로 바꾸면 탭이 한 번 늘어남. 지향 프리셋은 교리 검토(D-02) 대상",
+    "depends": "D-02",
+    "value": "고르지 않은 지향으로 봉헌되지 않고, 말하고 싶지 않은 지향도 봉헌할 수 있음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
+  },
+  {
+    "id": "U-30",
+    "title": "착석 장면 검증: 앉은 자세와 좌석 접점을 정면·측면에서 확인(신자석 의자 재설계 + '앉아서/무릎 꿇고' 기도 자세)",
+    "category": "성당 3D",
+    "release": "R1",
+    "priority": "P1",
+    "effort": "M",
+    "risk": "의자 치수·아바타 관절이 성당마다 달라 한 곳만 맞으면 다른 곳이 뜸",
+    "depends": "C-01",
+    "value": "앉은 모습이 의자에 떠 있거나 파묻히지 않음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "in_progress",
+    "note": "의자 재설계와 기도 자세는 다른 작업자가 진행 중. 끝나면 정면·측면 스크린샷으로 검증."
+  },
+  {
+    "id": "U-31",
+    "title": "기록 첫 화면: 최근 기도·달력을 먼저, 연속/최장 기록 강조는 줄임",
+    "category": "기록",
+    "release": "R2",
+    "priority": "P2",
+    "effort": "S",
+    "risk": "연속 기록을 동기로 삼던 사람에게는 후퇴로 보일 수 있음. 달력·최근 기록은 이미 있어 배치 변경임",
+    "depends": "U-13",
+    "value": "점수 대신 '언제 바쳤나'가 먼저 보임",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
+  },
+  {
+    "id": "U-32",
+    "title": "완료 화면 문구 간결화: '묵주기도를 마쳤습니다 · 기록을 저장했습니다'",
+    "category": "기도화면",
+    "release": "R2",
+    "priority": "P2",
+    "effort": "S",
+    "risk": "지금의 '기록됨 · 이번 달 n번째'(P-03)를 대신하는지 함께 두는지 정해야 함",
+    "depends": "P-03",
+    "value": "끝났고 저장됐다는 것만 한눈에 읽힘",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
+  },
+  {
+    "id": "U-33",
+    "title": "실기기 검증표(2차): ① 360×640·800dp × 글씨 100/200% × 주야 × 3버튼/제스처 ② TalkBack 묵주 시트 ③ 성당 좌석→큰 기도문→다음 구슬→성당 복귀(통화·재실행 포함, 완료 기록 중복 0) ④ 저사양 입구→좌석→봉헌대 + 네트워크 끊김 ⑤ 잠금 중 선창·후창, 비행기 모드 첫 실행, 새 기기 복원",
+    "category": "품질",
+    "release": "R1",
+    "priority": "P0",
+    "effort": "M",
+    "risk": "실기기·TalkBack·저사양 기기가 필요해 이 환경에서는 할 수 없음. ③은 공유 세션(U-27) 전에는 통과 불가",
+    "depends": "U-19, U-20, U-06, U-07, U-08",
+    "value": "위젯 시험으로 못 보는 문제(시스템 바, TalkBack 포커스, 통화 복귀)를 출시 전에 잡음",
+    "evidence": "2차 ChatGPT 화면 캡처 검토(CHATGPT_REVIEW §8)",
+    "round": 2,
+    "status": "todo"
   }
 ]

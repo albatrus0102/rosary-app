@@ -45,6 +45,10 @@ await db.exec(`
   alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
 `);
 const files = readdirSync(migDir).filter((f) => f.endsWith('.sql')).sort();
+// 2차 화면 캡처 검토(세 번째 마이그레이션)로 늘어난 U 과제 수.
+const U2 = JSON.parse(readFileSync(path.join(migDir, '../../docs/ux/UX_REVIEW_ITEMS.json'), 'utf8')).filter((x) => x.round === 2).length;
+const TOTAL = 40 + 18 + 34 + U2;
+const roadmap3Sql = readFileSync(path.join(migDir, '20261115000000_roadmap_items_3.sql'), 'utf8');
 const roadmapSql = readFileSync(path.join(migDir, '20261113000000_roadmap.sql'), 'utf8');
 const roadmap2Sql = readFileSync(path.join(migDir, '20261114000000_roadmap_items_2.sql'), 'utf8');
 for (const f of files) await db.exec(readFileSync(path.join(migDir, f), 'utf8'));
@@ -77,7 +81,7 @@ await check('admin lists the 40 original items (+18 U, +34 G) and 8 decisions wi
   board = (await asUser(ADMIN, `select public.admin_roadmap() j`)).rows[0].j;
   const base = board.items.filter((i) => /^[A-Z]+-\d+$/.test(i.id) && !/^[UG]-/.test(i.id));
   eq(base.length, 40, 'original UX_PLAN items');
-  eq(board.items.length, 40 + 18 + 34, 'all items');
+  eq(board.items.length, TOTAL, 'all items');
   eq(board.decisions.length, 8);
   eq(board.decisions.map((d) => d.id), ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8']);
   const by = (r) => base.filter((i) => i.release === r);
@@ -126,16 +130,18 @@ await check('re-running the migration (seed) does not overwrite edits and adds n
   const rows = (await sudo(`select id, status, owner_note from public.roadmap_items where id in ('P-01','P-02')  order by id`)).rows;
   eq([rows[0].status, rows[0].owner_note], ['done', '메모만']);
   eq(rows[1].status, 'blocked');
-  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), 92);
+  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL);
   eq(Number((await sudo(`select count(*)::int n from public.roadmap_decisions`)).rows[0].n), 8);
 });
 await check('seed fills rows that were deleted but keeps the others', async () => {
   await sudo(`delete from public.roadmap_items where id = 'B-01'`);
   await sudo(`delete from public.roadmap_items where id = 'U-01'`);
   await db.exec(roadmapSql);                                   // 1st migration brings back B-01 only
-  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), 91);
+  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL - 1);
+  await db.exec(roadmap3Sql);                                  // 3rd migration does not own U-01
+  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL - 1);
   await db.exec(roadmap2Sql);                                  // 2nd migration brings back U-01
-  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), 92);
+  eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL);
   eq((await sudo(`select status from public.roadmap_items where id = 'P-01'`)).rows[0].status, 'done');
 });
 await check('functions are SECURITY DEFINER with fixed search_path and not executable by public/anon', async () => {

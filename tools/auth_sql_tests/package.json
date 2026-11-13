@@ -4,6 +4,6 @@
   "private": true,
   "description": "Runs supabase/migrations against in-memory Postgres (PGlite) and asserts RLS / consent / admin RPC behaviour.",
   "type": "module",
-  "scripts": { "test": "node run.mjs && node roadmap_test.mjs && node roadmap_items2_test.mjs" },
+  "scripts": { "test": "node run.mjs && node roadmap_test.mjs && node roadmap_items2_test.mjs && node roadmap_items3_test.mjs" },
   "dependencies": { "@electric-sql/pglite": "^0.5.16" }
 }

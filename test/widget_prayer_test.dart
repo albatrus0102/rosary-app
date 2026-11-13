@@ -43,7 +43,7 @@ void main() {
     expect(find.text('성호경'), findsOneWidget);
     expect(find.text('환희의 신비 · 서두'), findsOneWidget);
 
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
 
     expect(find.text('사도신경'), findsOneWidget);
@@ -78,7 +78,7 @@ void main() {
 
     // 서두, 1단 시작(긴 묵상 문구), 성모송, 영광송까지 넘겨 본다.
     for (var i = 0; i < 12; i++) {
-      await tester.tap(find.text('다음'));
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull, reason: 'after $i taps');
     }
@@ -127,7 +127,7 @@ void main() {
     expect(tester.takeException(), isNull);
 
     for (var i = 0; i < 12; i++) {
-      await tester.tap(find.text('다음'));
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull, reason: 'after $i taps');
     }
@@ -164,7 +164,7 @@ void main() {
     expect(find.bySemanticsLabel('묵주 크기 조절'), findsNothing);
 
     for (var i = 0; i < 12; i++) {
-      await tester.tap(find.text('다음'));
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull, reason: 'after $i taps');
     }
@@ -185,7 +185,7 @@ void main() {
     await tester.pump();
     expect(find.text('환희의 신비 · 1단'), findsOneWidget);
 
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     expect(settings.savedPrayer?.stepIndex, 9);
     expect(settings.savedPrayer?.mysterySet, MysterySet.joyful);
@@ -228,7 +228,7 @@ void main() {
     expect(settings.hapticOnAdvance, isTrue);
     await tester.pumpWidget(app(settings));
     await tester.pump();
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     await tester.pump();
     // 성호경 -> 사도신경: 큰 구슬은 중간 세기.
@@ -236,7 +236,7 @@ void main() {
 
     settings.hapticOnAdvance = false;
     await tester.pump();
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     await tester.pump();
     expect(calls, hasLength(1));
@@ -350,7 +350,7 @@ void main() {
     await tester.pump();
     expect(tester.takeException(), isNull);
     for (var i = 0; i < 25; i++) {
-      await tester.tap(find.text('다음'));
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump(const Duration(milliseconds: 100));
       expect(tester.takeException(), isNull, reason: 'after $i taps');
     }
@@ -396,7 +396,7 @@ void main() {
     final byKind = <StepKind, Set<String>>{};
     for (var i = 1; i < 20; i++) {
       calls.clear();
-      await tester.tap(find.text('다음'));
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump();
       await tester.pump();
       expect(calls, hasLength(1), reason: 'step $i');
@@ -410,7 +410,7 @@ void main() {
     var guard = 0;
     calls.clear();
     while (guard++ < 200) {
-      await tester.tap(find.text('다음'));
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
       await tester.pump();
       await tester.pump();
       if (calls.contains('HapticFeedbackType.heavyImpact')) break;
@@ -462,7 +462,7 @@ void main() {
     Future<void> finish(WidgetTester tester) async {
       final total = buildRosarySequence(MysterySet.joyful).length;
       for (var i = 0; i < total; i++) {
-        await tester.tap(find.text('다음'));
+        await tester.tap(find.byKey(const ValueKey('prayer-next')));
         await tester.pump(const Duration(milliseconds: 50));
       }
       await tester.pump(const Duration(milliseconds: 400));

@@ -2,7 +2,8 @@
 // docs/ux/UX_REVIEW_ITEMS.json(U-xx) · docs/ux/GLASS_ROADMAP_ITEMS.json(G-xx)을 읽어
 //   - supabase/migrations/20261113000000_roadmap.sql         (스키마 + 멱등 시드: 원래 40개. 운영에 이미 적용돼 내용이 바뀌지 않는다)
 //   - supabase/migrations/20261114000000_roadmap_items_2.sql (release 에 G1~G3 허용 + U·G 과제 시드 + 현황 상태 보정)
-//   - admin/roadmap_seed.json                                (RPC 가 없을 때 읽기 전용 대체본: R+U+G 전부, 두 번째 마이그레이션 적용 뒤 상태)
+//   - supabase/migrations/20261115000000_roadmap_items_3.sql (2차 화면 캡처 검토: UX_REVIEW_ITEMS.json 의 round 2 과제 + 기존 U 과제 메모 보강)
+//   - admin/roadmap_seed.json                                (RPC 가 없을 때 읽기 전용 대체본: R+U+G 전부, 세 번째 마이그레이션 적용 뒤 상태)
 // 을 생성한다.  사용:  node admin/tools_seed_roadmap.mjs   (저장소 어디서든 실행 가능)
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -84,7 +85,16 @@ const decisions = t7.map(([id, question, def]) => ({
 
 // ---- 두 번째 마이그레이션의 입력: U(외부 UX 검토) · G(유리화 계획)
 const readJson = (rel) => JSON.parse(readFileSync(path.join(root, rel), 'utf8'));
-const U_ITEMS = readJson('docs/ux/UX_REVIEW_ITEMS.json');
+const U_ALL = readJson('docs/ux/UX_REVIEW_ITEMS.json');
+// round 가 없는 것 = 1차 검토(두 번째 마이그레이션, 내용 고정). round 2 = 2차 화면 캡처 검토(세 번째 마이그레이션).
+const U_ITEMS = U_ALL.filter((x) => x.round == null).map(({ review2, ...x }) => x);
+const U2_ITEMS = U_ALL.filter((x) => x.round === 2);
+// 1차 과제 가운데 2차 검토가 보강한 것: 메모만 덧붙인다(관리자가 이미 쓴 메모는 건드리지 않는다).
+const U_REVIEW2 = U_ALL.filter((x) => x.round == null && x.review2).map((x) => ({ id: x.id, note: '2차 검토: ' + x.review2 }));
+// JSON 의 status(todo/in_progress/review/done) → 보드 상태. review = 구현됨, 실기기 확인 대기.
+const STATUS2 = { todo: 'todo', in_progress: 'doing', review: 'review', done: 'done' };
+const U2_NOTE = '2차 화면 캡처 검토';
+const note2 = (x) => (x.decision ? '[결정 필요] ' + x.decision + (x.note ? ' · ' + x.note : '') : x.note ? x.note : U2_NOTE);
 const G_ITEMS = readJson('docs/ux/GLASS_ROADMAP_ITEMS.json');
 const U_NOTE = '신규(외부 UX 검토)';
 const G_NOTE = '제안: 소유자 확인 대기';
@@ -106,6 +116,17 @@ const STATUS_UPDATES = [
     }
   }
   if (U_ITEMS.length < 14 || U_ITEMS.length > 20) throw new Error('unexpected U count ' + U_ITEMS.length);
+  if (U_ALL.length !== U_ITEMS.length + U2_ITEMS.length) throw new Error('UX_REVIEW_ITEMS: round must be absent or 2');
+  for (const x of U2_ITEMS) {
+    for (const k of need) if (typeof x[k] !== 'string' || !x[k].trim()) throw new Error(`${x.id}: missing ${k}`);
+    if (!x.id.startsWith('U-') || seen.has(x.id)) throw new Error('bad or duplicate id ' + x.id);
+    seen.add(x.id);
+    if (!['R1', 'R2', 'R3'].includes(x.release) || !/^P[012]$/.test(x.priority) || !/^[SML]$/.test(x.effort)) throw new Error('bad enum ' + x.id);
+    if (!STATUS2[x.status]) throw new Error('bad status ' + x.id);
+    if (x.decision != null && (typeof x.decision !== 'string' || !x.decision.trim())) throw new Error('bad decision ' + x.id);
+    if (note2(x).length > 500) throw new Error('note too long ' + x.id);
+  }
+  for (const u of U_REVIEW2) if (u.note.length > 500) throw new Error('review2 note too long ' + u.id);
   if (G_ITEMS.length !== 34) throw new Error('expected 34 G items, got ' + G_ITEMS.length);
   for (const u of STATUS_UPDATES) if (!ids40.has(u.id)) throw new Error('status update for unknown id ' + u.id);
 }
@@ -113,12 +134,19 @@ const extra = [
   ...U_ITEMS.map((x) => ({ ...x, status: 'todo', owner_note: U_NOTE })),
   ...G_ITEMS.map((x) => ({ ...x, status: 'todo', owner_note: G_NOTE })),
 ].map((x, i) => ({ ...x, sort_order: items.length + i + 1 }));
+const extra2 = U2_ITEMS.map(({ round, decision, note, ...x }, i) => ({
+  ...x, status: STATUS2[x.status], owner_note: note2(U2_ITEMS[i]), sort_order: items.length + extra.length + i + 1,
+}));
 // 정적 사본(JSON)은 두 번째 마이그레이션까지 적용된 뒤의 모습
 const seedItems = items.map((x) => {
   const u = STATUS_UPDATES.find((y) => y.id === x.id);
   return u && (x.status === 'todo' || x.status === 'doing')
     ? { ...x, status: u.status, owner_note: x.owner_note || u.note } : x;
-}).concat(extra);
+}).concat(extra).map((x) => {
+  // 세 번째 마이그레이션: 기본 메모 그대로인 1차 U 과제에만 2차 보강 메모를 쓴다.
+  const r = U_REVIEW2.find((y) => y.id === x.id);
+  return r && (x.owner_note === '' || x.owner_note === U_NOTE) ? { ...x, owner_note: r.note } : x;
+}).concat(extra2);
 
 // ---- JSON
 writeFileSync(path.join(root, 'admin/roadmap_seed.json'),
@@ -283,5 +311,30 @@ ${noteUpdates2}
 `;
 writeFileSync(path.join(root, 'supabase/migrations/20261114000000_roadmap_items_2.sql'), sql2);
 
+// ---- SQL 3: 2차 화면 캡처 검토 과제 + 1차 과제 메모 보강
+const itemRows3 = extra2.map((x) => `  (${[x.id, x.title, x.category, x.release, x.priority, x.effort, x.risk, x.depends, x.evidence, x.value, x.status, x.owner_note].map(q).join(', ')}, ${x.sort_order})`).join(',\n');
+const noteUpdates3 = U_REVIEW2.map((u) => `update public.roadmap_items
+   set owner_note = ${q(u.note)}, updated_at = now()
+ where id = ${q(u.id)} and owner_note in ('', ${q(U_NOTE)});`).join('\n\n');
+const sql3 = `-- =====================================================================
+-- 로드맵 과제 추가(3): 2차 ChatGPT 화면 캡처 검토 ${U2_ITEMS.length}개(U-${String(U_ITEMS.length + 1).padStart(2, '0')}~) + 1차 과제 ${U_REVIEW2.length}개 메모 보강
+--   * 20261114000000_roadmap_items_2.sql 이 먼저 적용돼 있어야 한다.
+--   * 내용의 출처: docs/ux/UX_REVIEW_ITEMS.json 의 round 2 항목과 review2 필드 (docs/ux/CHATGPT_REVIEW.md 8장)
+--   * 이 파일은 admin/tools_seed_roadmap.mjs 가 생성한다. 직접 고치지 말고 JSON 을 고친 뒤 다시 생성.
+--   * 멱등: 시드는 on conflict do nothing. 메모 보강은 메모가 비었거나 기본 문구('${U_NOTE}')인 행에만 적용한다.
+--   * 상태: 이미 구현된 것은 'review'(실기기 확인 대기)·'done', 진행 중은 'doing'. 소유자 결정이 필요한 과제는 메모가 '[결정 필요]'로 시작한다.
+-- =====================================================================
+
+insert into public.roadmap_items
+  (id, title, category, release, priority, effort, risk, depends, evidence, value, status, owner_note, sort_order)
+values
+${itemRows3}
+on conflict (id) do nothing;
+
+-- 1차 검토 과제의 메모 보강(2차 검토가 같은 과제를 다시 짚은 것). 관리자가 이미 쓴 메모는 덮어쓰지 않는다.
+${noteUpdates3}
+`;
+writeFileSync(path.join(root, 'supabase/migrations/20261115000000_roadmap_items_3.sql'), sql3);
+
 const cnt = (r) => seedItems.filter((x) => x.release === r).length;
-console.log(`base=${items.length} U=${U_ITEMS.length} G=${G_ITEMS.length} total=${seedItems.length} (R1 ${cnt('R1')}, R2 ${cnt('R2')}, R3 ${cnt('R3')}, G1 ${cnt('G1')}, G2 ${cnt('G2')}, G3 ${cnt('G3')}), decisions=${decisions.length}`);
+console.log(`base=${items.length} U=${U_ITEMS.length} U2=${U2_ITEMS.length} G=${G_ITEMS.length} total=${seedItems.length} (R1 ${cnt('R1')}, R2 ${cnt('R2')}, R3 ${cnt('R3')}, G1 ${cnt('G1')}, G2 ${cnt('G2')}, G3 ${cnt('G3')}), decisions=${decisions.length}`);

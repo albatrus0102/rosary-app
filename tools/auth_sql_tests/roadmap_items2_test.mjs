@@ -14,7 +14,11 @@ const M1 = '20261113000000_roadmap.sql';
 const M2 = '20261114000000_roadmap_items_2.sql';
 const ADMIN = '33333333-3333-4333-8333-333333333333';
 const USER = '44444444-4444-4444-8444-444444444444';
-const U_ITEMS = JSON.parse(readFileSync(path.join(root, 'docs/ux/UX_REVIEW_ITEMS.json'), 'utf8'));
+// round 가 없는 것만 이 마이그레이션(1차 검토)의 몫이다. round 2 는 roadmap_items3_test.mjs 가 본다.
+const U_ALL = JSON.parse(readFileSync(path.join(root, 'docs/ux/UX_REVIEW_ITEMS.json'), 'utf8'));
+const U_ITEMS = U_ALL.filter((x) => x.round == null);
+const U2_IDS = new Set(U_ALL.filter((x) => x.round === 2).map((x) => x.id));
+const REVIEW2_IDS = new Set(U_ITEMS.filter((x) => x.review2).map((x) => x.id));
 const G_ITEMS = JSON.parse(readFileSync(path.join(root, 'docs/ux/GLASS_ROADMAP_ITEMS.json'), 'utf8'));
 const SEED = JSON.parse(readFileSync(path.join(root, 'admin/roadmap_seed.json'), 'utf8'));
 const files = readdirSync(migDir).filter((f) => f.endsWith('.sql')).sort();
@@ -159,16 +163,19 @@ await check('reality sync on an untouched server: only C-09 moves (todo -> revie
   assert(/실기기 확인 대기/.test(c09.owner_note), c09.owner_note);
 });
 
-await check('static fallback admin/roadmap_seed.json equals the DB after all migrations', async () => {
+await check('static fallback admin/roadmap_seed.json equals the DB after M2 (apart from what the 3rd migration adds)', async () => {
   const rows = (await B.sudo(`select id, release, priority, effort, status, owner_note, sort_order from public.roadmap_items order by sort_order, id`)).rows;
-  eq(SEED.items.length, rows.length);
+  const seed = SEED.items.filter((i) => !U2_IDS.has(i.id));
+  eq(seed.length, rows.length);
   for (const r of rows) {
-    const s = SEED.items.find((i) => i.id === r.id);
+    const s = seed.find((i) => i.id === r.id);
     assert(s, 'seed json lacks ' + r.id);
-    eq([s.release, s.priority, s.effort, s.status, s.owner_note, s.sort_order], [r.release, r.priority, r.effort, r.status, r.owner_note, r.sort_order], r.id);
+    // the 3rd migration rewrites the default note of the U items the second review touched
+    const note = REVIEW2_IDS.has(r.id) ? r.owner_note : s.owner_note;
+    eq([s.release, s.priority, s.effort, s.status, note, s.sort_order], [r.release, r.priority, r.effort, r.status, r.owner_note, r.sort_order], r.id);
   }
   eq(SEED.decisions.length, 8);
-  const c = (rel) => SEED.items.filter((i) => i.release === rel).length;
+  const c = (rel) => seed.filter((i) => i.release === rel).length;
   eq(['R1', 'R2', 'R3', 'G1', 'G2', 'G3'].map(c), [14 + U_ITEMS.filter((x) => x.release === 'R1').length, 19 + U_ITEMS.filter((x) => x.release === 'R2').length, 7 + U_ITEMS.filter((x) => x.release === 'R3').length, 15, 13, 6]);
 });
 

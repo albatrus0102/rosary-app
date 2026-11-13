@@ -154,7 +154,7 @@ int _nextsForOneDecade(MysterySet set) =>
 
 Future<void> _nexts(WidgetTester tester, int count) async {
   for (var i = 0; i < count; i++) {
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump(const Duration(milliseconds: 50));
   }
 }

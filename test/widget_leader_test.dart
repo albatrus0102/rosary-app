@@ -87,7 +87,7 @@ void main() {
     expect(find.text('성호경'), findsOneWidget);
     expect(find.text('선창 재생 중'), findsNothing);
 
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     expect(find.text('사도신경'), findsOneWidget);
     expect(find.text('내 차례: 뒷단'), findsOneWidget);
@@ -137,7 +137,7 @@ void main() {
     await tester.pump();
     expect(voice.spoken, ['성호경']);
 
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     expect(voice.spoken, ['성호경', '사도신경']);
 
@@ -149,7 +149,7 @@ void main() {
     await tester.pump();
     expect(find.text('선창 재생 중'), findsNothing);
 
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     expect(find.text('주님의 기도'), findsOneWidget);
     expect(voice.spoken, ['성호경', '사도신경', '주님의 기도']);
@@ -170,7 +170,7 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.byKey(const ValueKey('prayer-next')));
     await tester.pump();
     expect(voice.spoken, isEmpty);
   });
