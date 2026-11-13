@@ -371,3 +371,27 @@ peerPraying({id,on,ms,k?})  setPeers/peerJoin 의 peer.k   // k:1 = 무릎 꿇�
 - Flutter: 기도 카드(`church_prayer_card.dart`) 아랫줄 왼쪽에 M3 `SegmentedButton`(`prayer-posture`: '앉아서' | '무릎 꿇고', 아이콘 포함), 오른쪽에 일어나기 — 한 줄이라 카드 높이는 그대로다. 글자 배율이 커서 안 들어가면 자세 버튼만 줄인다(`FittedBox`). 선택은 `AppSettings.prayerPosture`(shared_preferences 키 `prayerPosture`, 기본 `sit`)에 저장하고 다음에 앉을 때 적용한다.
 - 시험: `scene_logic.test.mjs`(치수 불변식·무릎 자리·충돌), `avatar.test.mjs`(앉은 정합, 전환 0.6~0.8초·단조, 무릎이 무릎틀 위·앞판 비침투, 손이 윗단 위), `server/church` `pray k`, `test/church_posture_test.dart`(와이어·저장·360×800/412×915 겹침).
 - **한계**: 줄 간격이 1.9m(실제 0.9~1.0m의 약 2배)로 고정이라 발 둘 곳이 실제보다 넓고, 무릎 꿇을 때 몸이 1.2m 앞으로 나간다. 줄 간격을 줄이려면 좌석 좌표(레이아웃·서버·Flutter 상수)를 모두 바꿔야 한다.
+
+## 29. 새 캐릭터 런타임 (초안 — 아직 연결 전, 실제 캐릭터 에셋 도착 뒤 확정)
+코드로 그린 아바타(`avatar.js`)를 이미지→3D + Mixamo 캐릭터(glb)로 바꾸기 위한 준비. 제작·변환 절차와 CLI 는 `docs/art/CHARACTER_3D_PIPELINE.md` §8~§13.
+
+### 29.1 파일
+- `assets/church/avatar_glb.js` → `window.ChurchGlb` (`GlbAvatar` 는 `ChurchAvatar.Avatar` 와 같은 공개 API: `root`, `setConfig`, `setLod`, `setWalk`, `setSeated`, `setPray`, `setKneel(b, spot)`, `kneelOffset`, `playEmote(0..3)`, `setPose`, `snapPose`, `update`, `tag`, `seatLift`, `dispose`). 아직 `index.html`/`test.html` 에 넣지 않았고 `tools/avatar_glb/harness.html` 로만 시험한다.
+- `assets/church/three_glb.js`(연결할 때 `build_loader.mjs --install` 로 생성: GLTFLoader + meshopt 디코더, gzip 20KB).
+- `assets/church/apack_<id>.js` 캐릭터·동작 데이터 팩(`window.ChurchAvatarPack[id] = base64 glb`). file:// WebView 는 fetch/XHR 이 막혀 글라스 `gpack_*` 처럼 `<script>` 로 싣는다. 처음에는 내 캐릭터 + 동작 묶음만 넣고, 방에 다른 캐릭터가 나타나면 `<script>` 를 동적으로 붙여 적재(적재 전·실패 시 `ChurchGlb.create` 가 옛 코드 아바타를 돌려준다).
+- 카탈로그(신규, 예: `assets/church/avatar_catalog.js`): `{F:['F01','F02',…], M:['M01',…], anims:{F:'anims_F', M:'anims_M'}, thumbs:{…}}` → `ChurchGlb.setCatalog`. Flutter 편집 화면과 같은 목록을 쓴다.
+
+### 29.2 와이어·저장 형식 영향(제안)
+- 현재 `avatar` = `{skin 0..3, style 0..3, hair 0..9, outfit 0..11, name, g, nv:2}`.
+- 제안: **`ch` 필드 추가**(0..`CH_MAX` 63, 성별 안의 캐릭터 카탈로그 인덱스 = 옷을 입은 완성 캐릭터 하나). `skin`·`hair` 는 그대로 틴트 색(팔레트 인덱스). `style`(머리 모양)은 glb 캐릭터가 머리를 고정으로 가지므로 무시(코드 아바타 대체 시에만 쓴다). `outfit` 은 코드 아바타 대체용으로 남긴다.
+- `ch` 가 없으면(옛 클라이언트·옛 저장값) `outfit % 카탈로그 길이` 로 고른다(`ChurchGlb` 의 현재 동작). 카탈로그가 앱 버전마다 다를 수 있으므로 범위 밖 `ch` 는 `ch % 길이`.
+- 서버(`server/church`): `ch` 는 정수 0..63 만(아니면 `bad_msg`), 그 밖에는 그대로 중계. 서버는 카탈로그를 모른다(이름 `name` 과 같은 방식). 와이어 크기 변화는 몇 바이트.
+- Flutter `AvatarConfig`: `ch` 추가, `fromJson` 에서 없으면 성별·옷색으로 가장 가까운 캐릭터를 골라(옷색 HEX ↔ 캐릭터 대표색 거리) 저장값을 한 번 옮긴다(`AppSettings.load`, `nv` 이전과 같은 방식).
+- 편집 화면: 성별 → 캐릭터 카드(미리 렌더한 썸네일) → 피부색·머리색(틴트 슬롯/마스크가 있는 캐릭터만 머리색 활성) → 세례명. 2D 미리보기(`avatar_preview.dart`)는 썸네일 이미지로 바꾼다.
+
+### 29.3 통합 때 남은 일(코드 아바타와 맞출 것)
+- `main.js`: `new ChurchAvatar.Avatar` → `ChurchGlb.create`, 프레임마다 `ChurchGlb.tick(dt,t)`·`ChurchGlb.setView`. 이름표·카메라가 쓰는 `tagY`·`tagPx`·`kneelOffset` 은 같은 이름.
+- 의자(§28): 앉음 골반 높이 = 좌석 윗면 + 캐릭터별 `seatDrop`(glb 메타)로 자동, 골반 뒤 `PEW` 0.14. 무릎 꿇기 `setKneel(true, logic.kneelSpot(seatId))` 그대로. `avatar.test.mjs` 의 정합 시험(무릎이 무릎틀 위·앞판 비침투·손이 윗단 위)을 glb 아바타로도 돌린다.
+- 원거리 임포스터: 코드 아바타의 판 임포스터 대신 LOD2(1.5k) + 포즈 공유. 기기 측정 뒤 결정.
+- 혼자 모드 NPC, 촛불 봉헌(`playEmote(3)` + `setReach` 촛대 위치), 손 흔들기·성호·절 브리지는 그대로.
+- 용량: 캐릭터 glb 1개 ≤ 0.8MB(검증 CLI), 동작 묶음 ≤ 0.5MB. 스탠드인·시험 모델은 번들 금지(`avatar_glb.test.mjs` 가 검사).
