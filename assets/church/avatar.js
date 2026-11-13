@@ -729,8 +729,12 @@
     if (tagCache[ck]) return tagCache[ck];
     var text = nameList(g)[nameIdx] || '';
     var c = G.makeCanvas(256, 64), g = c.getContext('2d');
-    g.font = '600 27px "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
-    var w = Math.min(236, g.measureText(text).width + 34), x = (256 - w) / 2;
+    // 긴 이름('마리아 막달레나' 등)은 알약 안에 들어가도록 글자 크기를 줄인다(최소 16px). 그래도 넘치면 알약 폭이 최대(236)다.
+    var fs = 27, FAM = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+    g.font = '600 ' + fs + 'px ' + FAM;
+    var tw = g.measureText(text).width;
+    if (tw > 202) { fs = Math.max(16, Math.floor(27 * 202 / tw)); g.font = '600 ' + fs + 'px ' + FAM; tw = g.measureText(text).width; }
+    var w = Math.min(236, tw + 34), x = (256 - w) / 2;
     g.fillStyle = 'rgba(250,246,238,0.80)';
     g.beginPath();
     if (g.roundRect) g.roundRect(x, 12, w, 40, 20); else g.rect(x, 12, w, 40);
