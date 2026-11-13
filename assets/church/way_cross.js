@@ -9,7 +9,8 @@
          겹치지 않아야 하며, 판 앞 1.2~2.4m 에 충돌 없고 입구에서 닿는 '서는 자리'가 있고 그 자리에서 벽까지 직선으로 막히지 않아야 한다.
        - 순서는 실제 관례: 제대를 바라볼 때 오른쪽 벽의 제대 쪽에서 1처 → 입구 쪽으로 7처 → 왼쪽 벽 입구 쪽 8처 → 제대 쪽 14처(한 바퀴).
          한쪽에 7곳이 안 되면 다른 쪽에서 채운다(성당 전체 14곳이 안 되면 판을 걸지 않고 why 를 돌려준다).
-       - layout.crossWay = {start:'R'|'L', plaques:[{x,z,face:[nx,nz]}…14]} 로 성당별로 직접 정할 수도 있다(선택).
+       - layout.crossWay = {start:'R'|'L', front:{x,z}, plaques:[{x,z,face:[nx,nz]}…14]} 로 성당별로 정할 수 있다(선택).
+         front: 그 점보다 제대 쪽에는 걸지 않는다(피렌체: 쿠폴라 아래 낮은 성가대 울타리).
    ChurchWayCross.create(App, H) → 판 그리기·근접 이벤트. H = {post}
        - 판 = 캔버스 아틀라스 한 장(14칸: 위 작은 십자가 + 금테 액자 + 그림 + 로마 숫자 판) 사각형 14개를 한 지오메트리로(draw call 1)
          + 액자 뒤판 상자 14개(조명 받는 나무, draw call 1). 그림 재질은 사진 창과 같은 셰이더(ChurchGlassView.shaders):
@@ -59,6 +60,9 @@
     var len = (altar.x - sp.x) * f.x + (altar.z - sp.z) * f.z;
     if (!(len > 12)) return { plaques: [], why: 'short_nave' };
     var sB = 3.0, sF = len - 3.0;
+    // layout.crossWay.front = {x,z}: 판을 이 점(축 방향)보다 제대 쪽에는 걸지 않는다(낮은 성가대 울타리 등, 성당별 자료)
+    var cwF = layout.crossWay && layout.crossWay.front;
+    if (cwF) sF = Math.min(sF, (cwF.x - sp.x) * f.x + (cwF.z - sp.z) * f.z);
     var B = layout.bounds, maxT = Math.max(B.x1 - B.x0, B.z1 - B.z0);
     var tmp = { x: 0, z: 0 };
     function free(x, z) { tmp.x = x; tmp.z = z; return !logic.moveCircle(tmp, 0, 0); }
@@ -82,7 +86,7 @@
       var key = side > 0 ? 'R' : 'L';
       var walls = [];
       (o.walls || []).forEach(function (w) { var a = wallInAxis(w, sp, f, r, side); if (a && a.t > 0) walls.push(a); });
-      // 충돌 상자(AABB) 중 벽처럼 생긴 것(옆 두께 0.2m 이상, 축 방향 1.2m 이상): 빌더가 ctx.wall 대신 상자로 벽을 짓는 성당이 많다.
+      // 충돌 상자(AABB) 중 벽처럼 생긴 것(옆 두께 0.2m 이상, 축 방향 2.9m 이상): 빌더가 ctx.wall 대신 상자로 벽을 짓는 성당이 많다.
       (logic.colliders || []).forEach(function (c) {
         if (c.k !== 0 && c.x0 === undefined) return;
         if (c.r !== undefined && c.x0 === undefined) return;
@@ -91,20 +95,29 @@
           var dx = xs[a] - sp.x, dz = zs[b] - sp.z, sv = dx * f.x + dz * f.z, tv = (dx * r.x + dz * r.z) * side;
           smin = Math.min(smin, sv); smax = Math.max(smax, sv); tmin = Math.min(tmin, tv); tmax = Math.max(tmax, tv);
         }
-        if (tmax - tmin < 0.2 || smax - smin < 1.2 || tmin <= 0) return;
+        if (tmax - tmin < 0.2 || smax - smin < 2.9 || tmin <= 0) return;   // 측랑 제단·무덤(폭 2~2.8m) 같은 가구 앞면은 벽으로 보지 않는다
         walls.push({ s0: smin, s1: smax, t: (tmin + tmax) / 2, inner: tmin, y0: -1e9, y1: 1e9, collider: true });
+      });
+      // 걷기 경계(bounds) 변: 벽을 경계에 맞춰 지은 성당(마조레 등). 축과 나란한 변만, 우선순위는 가장 낮다.
+      [[B.x0, 0], [B.x1, 0], [B.z0, 1], [B.z1, 1]].forEach(function (e) {
+        var ex = e[1] === 0 ? 1 : 0;   // 변이 x=상수면 축 z 와 나란
+        var along = ex ? Math.abs(f.z) : Math.abs(f.x);
+        if (along < 0.995) return;
+        var tv = e[1] === 0 ? (e[0] - sp.x) * r.x * side : (e[0] - sp.z) * r.z * side;
+        if (tv <= 0) return;
+        walls.push({ s0: -1e9, s1: 1e9, t: tv, inner: tv, y0: -1e9, y1: 1e9, collider: true, bound: true });
       });
       for (var s = sB; s <= sF + 1e-6; s += 0.25) {
         // 걸을 수 있는 가장 바깥 칸(옆 거리 t)
+        // (입구에서 닿는 칸만: 두꺼운 벽 바깥의 빈 곳은 건너뛴다)
         var tFree = -1;
         for (var t = 0; t <= maxT; t += 0.1) {
           var p = at(s, t, side);
           if (!inB(p)) break;
-          if (free(p.x, p.z)) tFree = t;
+          if (free(p.x, p.z) && S.isReachable(p.x, p.z)) tFree = t;
         }
         if (tFree < 0) continue;
         var pf = at(s, tFree, side);
-        if (!S.isReachable(pf.x, pf.z)) continue;
         // 그 바로 바깥의 벽(안쪽 면이 tFree 와 tFree+1.2 사이). 아바타 반경(0.3)만큼은 늘 떨어져 있다.
         var best = null;
         for (var k = 0; k < walls.length; k++) {
@@ -113,7 +126,7 @@
           if (s - P.frameW / 2 - 0.1 < W.s0 || s + P.frameW / 2 + 0.1 > W.s1) continue;
           var fy = logic.floorY(pf.x, pf.z);
           if (W.y0 > fy + P.bottom - 0.1 || W.y1 < fy + P.bottom + P.frameH + P.crossH + 0.05) continue;
-          if (!best || W.inner < best.inner - 1e-6 || (Math.abs(W.inner - best.inner) < 1e-6 && !W.collider)) best = W;
+          if (!best || W.inner < best.inner - 1e-6 || (Math.abs(W.inner - best.inner) < 1e-6 && best.bound)) best = W;
         }
         if (!best) continue;
         var floorY = logic.floorY(pf.x, pf.z);
@@ -133,6 +146,13 @@
           hit = true; break;
         }
         if (hit) continue;
+        // 판 바로 앞(벽에서 0.35m)이 판 폭 전체에서 비어 있어야 한다(벽 앞 가구·기둥에 가려 걸리지 않게)
+        var blocked = false;
+        for (var e2 = -1; e2 <= 1 && !blocked; e2++) {
+          var fp = at(s + e2 * P.frameW / 2, best.inner - 0.35, side);
+          if (!free(fp.x, fp.z)) blocked = true;
+        }
+        if (blocked) continue;
         // 서는 자리: 판 앞 1.2~2.4m, 충돌 없고 닿고 판까지 직선
         var stand = null;
         for (var d = 1.3; d <= 2.41 && !stand; d += 0.1) {
@@ -150,6 +170,10 @@
         if (!stand) continue;
         var tooClose = false;
         for (var a = 0; a < avoid.length; a++) if (Math.hypot(avoid[a].x - stand.x, avoid[a].z - stand.z) < 1.8) { tooClose = true; break; }
+        if (tooClose) continue;
+        // 촛불대 가구 앞면에 걸지 않는다(판 중심이 스탠드에서 2m 안이면 버린다)
+        var cs = (layout.candles && layout.candles.stands) || [];
+        for (var ci2 = 0; ci2 < cs.length && !tooClose; ci2++) if (Math.hypot(cs[ci2].x - c.x, cs[ci2].z - c.z) < 2.0 + (cs[ci2].slots > 48 ? 1.5 : 0)) tooClose = true;
         if (tooClose) continue;
         cands[key].push({ s: s, side: key, x: c.x, y: yc, z: c.z, nx: nx, nz: nz, w: P.quadW, h: P.quadH, wall: { inner: best.inner, s0: best.s0, s1: best.s1 }, stand: stand });
       }
@@ -196,6 +220,17 @@
       });
     }
     return { plaques: all, why: 'ok', counts: { R: cands.R.length, L: cands.L.length } };
+  }
+
+  // 근접 판정(순수): 서는 자리에서 NEAR_IN 안에 들어오면 그 판, 이미 그 판이면 NEAR_OUT 까지 유지. 가장 가까운 판 하나 또는 null.
+  function nearPlaque(plaques, x, z, cur) {
+    var best = null, bd = 1e9;
+    for (var i = 0; i < plaques.length; i++) {
+      var p = plaques[i], d = Math.hypot(x - p.stand.x, z - p.stand.z);
+      var lim = cur && p.n === cur.n ? NEAR_OUT : NEAR_IN;
+      if (d <= lim && d < bd) { bd = d; best = p; }
+    }
+    return best;
   }
 
   // ---------------- 그리기(브라우저) ----------------
@@ -375,14 +410,7 @@
       nearT += dt;
       if (nearT < NEAR_EVERY || !me) return;
       nearT = 0;
-      var best = null, bd = 1e9;
-      if (me.mode === 'walk') {
-        for (var i = 0; i < plaques.length; i++) {
-          var p = plaques[i], d = Math.hypot(me.x - p.stand.x, me.z - p.stand.z);
-          var lim = p === nearCur ? NEAR_OUT : NEAR_IN;
-          if (d <= lim && d < bd) { bd = d; best = p; }
-        }
-      }
+      var best = me.mode === 'walk' ? nearPlaque(plaques, me.x, me.z, nearCur) : null;
       nearCur = best;
       var n = best ? best.n : null;
       if (n !== (lastN || null)) { lastN = n; post({ e: 'crossNear', n: n }); }
@@ -415,9 +443,9 @@
         return p ? { x: p.stand.x, z: p.stand.z, yaw: p.stand.yaw, index: p.index, reach: NEAR_IN } : null;
       },
       plaques: function () { return plaques; },
-      debug: function () { return { ready: ready, count: plaques.length, near: lastN || null, why: App.crossWhy, stats: JSON.parse(JSON.stringify(stats)) }; }
+      debug: function () { return { ready: ready, count: plaques.length, near: lastN || null, why: App.crossWhy, meshes: (mesh ? 1 : 0) + (back ? 1 : 0), stats: JSON.parse(JSON.stringify(stats)) }; }
     };
   }
 
-  return { derive: derive, create: create, P: P, NEAR_IN: NEAR_IN, NEAR_OUT: NEAR_OUT, seatAxis: seatAxis };
+  return { derive: derive, create: create, nearPlaque: nearPlaque, P: P, NEAR_IN: NEAR_IN, NEAR_OUT: NEAR_OUT, seatAxis: seatAxis };
 });

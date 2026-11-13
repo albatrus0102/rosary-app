@@ -7,6 +7,8 @@
     id: 'florence', scalePercent: 45,
     bounds: { x0: -20.2, x1: 20.2, z0: -33.5, z1: 33.5 },
     spawn: { x: 0, z: 31.3, r: 0 },
+    // 십자가의 길 판(SPEC §30)은 신랑에만: 쿠폴라 아래 팔각 성가대 울타리(낮은 대리석 벽)에 걸리지 않게 앞 끝을 정한다.
+    crossWay: { front: { x: 0, z: -4 } },
     seatGroups: [
       { g: 'NL', rows: 12, perRow: 3, origin: { x: -1.3, z: 0.0 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.4] },
       { g: 'NR', rows: 12, perRow: 3, origin: { x: 1.3, z: 0.0 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.4] },

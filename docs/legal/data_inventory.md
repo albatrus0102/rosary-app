@@ -39,6 +39,7 @@
 | `decade_complete` | usage | `set`, `decade` |
 | `prayer_finish` | usage | `set`, `completed`, `decades`, `seconds` |
 | `rosary_style_change`, `mode_change`, `leader_voice_change`, `text_scale_change`, `setting_change`, `stats_open` | usage | `style` / `mode` / `source`,`persona` / `scale` / `key` / `range` |
+| `stations_open`, `stations_next`, `stations_complete` | usage | `from`(more·today·church) / `n`(다음 처 번호) / `from` — 십자가의 길 묵상 시트 열기·다음 처·마침(묵상 내용·위치는 보내지 않음) |
 | `church_pick`, `church_enter`, `church_exit`, `church_sit`, `church_candle`, `avatar_save` | church | `church`, `online`, `seconds`, `sat_seconds` (촛불의 지향은 기록하지 않음, 아바타 이미지는 전송하지 않음) |
 | `error` | diagnostics | `where`, `message`(≤200자), `stack`(≤1000자) |
 | `perf` | diagnostics | `fps_avg`, `church` |

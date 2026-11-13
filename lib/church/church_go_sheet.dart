@@ -8,21 +8,26 @@ enum ChurchGoTarget {
   altar('altar', '제대 앞', Icons.church),
   seat('seat', '가까운 빈 자리', Icons.event_seat),
   entrance('entrance', '입구', Icons.door_front_door),
-  font('font', '성수대', Icons.water_drop);
+  font('font', '성수대', Icons.water_drop),
 
-  const ChurchGoTarget(this.kind, this.label, this.icon);
+  /// 십자가의 길: 1처 판 앞으로 걸어가 순례를 시작한다(`walkTo{kind:'cross', index:0}`).
+  cross('cross', '십자가의 길', Icons.directions_walk, '1처부터 14처까지 걸으며 묵상');
+
+  const ChurchGoTarget(this.kind, this.label, this.icon, [this.subtitle]);
 
   /// 웹 `walkTo`의 kind.
   final String kind;
   final String label;
   final IconData icon;
+  final String? subtitle;
 }
 
 /// '어디로 갈까요?' 바텀 시트. 고른 곳을 돌려준다(닫으면 null).
-/// 성수대는 그 성당에 있을 때만([hasFont]) 줄이 나온다.
+/// 성수대는 그 성당에 있을 때만([hasFont]), 십자가의 길은 14처 판이 걸린 성당에서만([hasCross]) 줄이 나온다.
 Future<ChurchGoTarget?> showChurchGoSheet(
   BuildContext context, {
   bool hasFont = false,
+  bool hasCross = false,
 }) {
   return showModalBottomSheet<ChurchGoTarget>(
     context: context,
@@ -30,22 +35,27 @@ Future<ChurchGoTarget?> showChurchGoSheet(
     showDragHandle: true,
     useSafeArea: true,
     // 시스템 내비게이션 바(3버튼·제스처 막대)에 줄이 가려지지 않게 한다.
-    builder: (context) =>
-        SafeArea(top: false, child: ChurchGoSheet(hasFont: hasFont)),
+    builder: (context) => SafeArea(
+      top: false,
+      child: ChurchGoSheet(hasFont: hasFont, hasCross: hasCross),
+    ),
   );
 }
 
 class ChurchGoSheet extends StatelessWidget {
-  const ChurchGoSheet({super.key, this.hasFont = false});
+  const ChurchGoSheet({super.key, this.hasFont = false, this.hasCross = false});
 
   final bool hasFont;
+  final bool hasCross;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final targets = [
       for (final t in ChurchGoTarget.values)
-        if (t != ChurchGoTarget.font || hasFont) t,
+        if ((t != ChurchGoTarget.font || hasFont) &&
+            (t != ChurchGoTarget.cross || hasCross))
+          t,
     ];
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -70,6 +80,7 @@ class ChurchGoSheet extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: AppShape.large),
                     leading: Icon(t.icon),
                     title: Text(t.label),
+                    subtitle: t.subtitle == null ? null : Text(t.subtitle!),
                     onTap: () => Navigator.of(context).pop(t),
                   ),
                 ),

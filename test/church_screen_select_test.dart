@@ -579,11 +579,16 @@ void main() {
       expect(built, greaterThan(0));
       expect(find.text('PROBE'), findsOneWidget);
 
-      // 다른 탭으로 가면 성당 화면은 정리된다.
+      // 다른 탭으로 가도 성당 화면은 남는다(돌아오면 있던 자리 그대로). 보이지 않을 뿐이다.
       await tester.tap(find.descendant(of: bar, matching: find.text('오늘')));
       await tester.pumpAndSettle();
-      expect(disposed, 1);
+      expect(disposed, 0);
       expect(find.text('PROBE'), findsNothing);
+      expect(find.text('PROBE', skipOffstage: false), findsOneWidget);
+      await tester.tap(find.descendant(of: bar, matching: find.text('유리화')));
+      await tester.pumpAndSettle();
+      expect(find.text('PROBE'), findsOneWidget);
+      expect(disposed, 0);
     });
 
     testWidgets('시스템 뒤로가기: 성당 보기 → 창 보기', (tester) async {

@@ -83,6 +83,7 @@ class AppSettings extends ChangeNotifier {
         .clamp(minTextScale, maxTextScale);
     _shortPrayers = _prefs.getBool(_kShortPrayers) ?? false;
     _shortPrayersAsked = _prefs.getBool(_kShortPrayersAsked) ?? false;
+    _prayerBackground = _prefs.getBool(_kPrayerBackground) ?? true;
     _savedPrayer = _readSavedPrayer();
     final storedAvatar = _prefs.getString(_kChurchAvatar);
     _churchAvatar = AvatarConfig.fromJsonString(storedAvatar);
@@ -127,6 +128,7 @@ class AppSettings extends ChangeNotifier {
   static const _kTextScale = 'prayer_text_scale';
   static const _kShortPrayers = 'short_prayers';
   static const _kShortPrayersAsked = 'short_prayers_asked';
+  static const _kPrayerBackground = 'prayer_background';
   static const _kResumeSet = 'resume_set';
   static const _kResumeIndex = 'resume_index';
   static const _kResumeAt = 'resume_at';
@@ -159,6 +161,7 @@ class AppSettings extends ChangeNotifier {
   late double _prayerTextScale;
   late bool _shortPrayers;
   late bool _shortPrayersAsked;
+  late bool _prayerBackground;
   SavedPrayer? _savedPrayer;
 
   SavedPrayer? _readSavedPrayer() {
@@ -334,6 +337,16 @@ class AppSettings extends ChangeNotifier {
     _shortPrayersAsked = true;
     _prefs.setBool(_kShortPrayers, v);
     _prefs.setBool(_kShortPrayersAsked, true);
+    notifyListeners();
+  }
+
+  /// '기도 배경 그림'(기본 켜짐): 기도 화면 뒤에 그 단의 성화를 낮은 대비로 깐다(`prayer_background.dart`).
+  bool get prayerBackground => _prayerBackground;
+
+  set prayerBackground(bool v) {
+    if (v == _prayerBackground) return;
+    _prayerBackground = v;
+    _prefs.setBool(_kPrayerBackground, v);
     notifyListeners();
   }
 

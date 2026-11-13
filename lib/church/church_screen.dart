@@ -14,14 +14,18 @@ import '../domain/rosary_session.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_info_sheet.dart';
 import '../ui/prayer_screen.dart';
+import '../ui/stations_sheet.dart';
 import 'avatar/avatar_config.dart';
 import 'avatar/avatar_editor_screen.dart';
 import 'church_candle_sheet.dart';
 import 'church_catalog.dart';
+import 'church_cross.dart';
 import 'church_go_sheet.dart';
+import 'church_host.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
 import 'church_presence_sheet.dart';
+import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
@@ -29,6 +33,18 @@ import 'net/church_net_factory.dart';
 import 'net/solo_church_net.dart';
 
 /// 사이버 성당 화면: 3D 웹 장면(WebView) 위에 Flutter HUD를 얹는다.
+///
+/// 이 화면이 사라지는 것(dispose)만이 '성당에서 나가기'다('성당 바꾸기'). 다른 탭·'창' 보기
+/// ([ChurchHost.visible] false), 이 화면 위에 연 다른 화면(아바타 편집·전체 화면 기도), 앱
+/// 백그라운드는 나가기가 아니라 '보이지 않음'이다. 보이지 않는 동안:
+///
+/// 1. 장면을 일시정지한다(`ChurchAPI.pause`: 그리기 고리·애니메이션·소리 정지). 접속과 좌석은 그대로.
+/// 2. [hiddenDisconnectAfter](3분)가 지나면 접속을 끊는다(서버는 연결이 끊겨야 자리를 비운다).
+/// 3. [hiddenReleaseAfter](10분)가 지나면 장면(WebView)도 놓아 메모리를 돌려준다.
+///
+/// 돌아오면 그 자리에서 잇는다: 장면이 살아 있으면 `resume`, 놓았으면 새로 만들어
+/// [ChurchResumeState]를 `restore`로 적용하고, 접속을 끊었으면 같은 성당에 다시 접속해 앉아 있던
+/// 자리를 다시 청한다(이미 누가 앉았으면 그 줄 통로에 선다). `church_enter`는 새로 기록하지 않는다.
 class ChurchScreen extends StatefulWidget {
   const ChurchScreen({
     super.key,
@@ -41,6 +57,9 @@ class ChurchScreen extends StatefulWidget {
     this.onChangeChurch,
     this.onPickChurch,
     this.loads,
+    this.sceneFactory,
+    this.hiddenDisconnectAfter = const Duration(minutes: 3),
+    this.hiddenReleaseAfter = const Duration(minutes: 10),
     @visibleForTesting this.random,
   });
 
@@ -71,6 +90,16 @@ class ChurchScreen extends StatefulWidget {
   /// 성당별 접속 인원(테스트용 주입). 없으면 [ChurchLoads.shared].
   final ChurchLoads? loads;
 
+  /// 장면을 놓았다가 다시 만들 때 쓰는 공장(테스트용 주입). [scene]을 넘겼는데 이것이 없으면
+  /// 장면을 놓지 않는다(다시 만들 수 없으므로).
+  final ChurchSceneController Function()? sceneFactory;
+
+  /// 보이지 않은 지 이만큼 지나면 접속을 끊는다(돌아오면 같은 자리로 다시 접속).
+  final Duration hiddenDisconnectAfter;
+
+  /// 보이지 않은 지 이만큼 지나면 장면(WebView)을 놓는다(돌아오면 새로 만들어 복원).
+  final Duration hiddenReleaseAfter;
+
   /// 첫 입장 설정 화면의 미리 골라 두는 모습을 뽑는 난수(테스트용 주입).
   final Random? random;
 
@@ -82,8 +111,8 @@ class _ChurchScreenState extends State<ChurchScreen>
     with WidgetsBindingObserver {
   late final ChurchNet _net;
   late final bool _ownsNet;
-  late final ChurchSceneController _scene;
-  late final bool _ownsScene;
+  late ChurchSceneController _scene;
+  late bool _ownsScene;
   StreamSubscription<SceneEvent>? _sceneSub;
   StreamSubscription<ChurchEvent>? _netSub;
 
@@ -91,6 +120,35 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   bool _disposed = false;
   bool _background = false;
+
+  // --- 보이지 않는 동안(다른 탭·다른 화면·앱 백그라운드) ---
+  bool _hostVisible = true; // ChurchHost.visible
+  bool _appHidden = false; // 앱이 백그라운드(paused/hidden/detached)
+  int _covered = 0; // 이 화면 위에 연 불투명 화면 수(아바타 편집·전체 화면 기도)
+  bool _coveredByPrayer = false;
+  bool _wasHidden = false;
+  DateTime? _hiddenAt;
+  Duration _hiddenTotal = Duration.zero;
+  Timer? _idleNetTimer;
+  Timer? _releaseTimer;
+  bool _netSuspended = false; // 오래 안 보여서 접속을 끊어 둠
+  bool _sceneReleased = false; // 오래 안 보여서 장면을 놓음
+  bool _autoPausedPrayer = false;
+
+  /// 마지막으로 알려진 상태(장면을 새로 만들 때 적용한다).
+  ChurchResumeState? _resume;
+  bool _resumeLoaded = false;
+
+  /// [_resume]이 저장소에서 읽은 것(앱이 종료됐다가 다시 들어옴)이고 아직 적용하지 않았다.
+  bool _coldResume = false;
+
+  /// 마지막으로 알려진 내 위치(x, z, yaw). 다시 접속하면 서버는 나를 입구에 두므로 이 값으로 맞춘다.
+  (double, double, double)? _lastPos;
+  Timer? _catchUpTimer;
+  Timer? _farRetryTimer;
+  int _farRetries = 0;
+
+  bool get _hidden => !_hostVisible || _appHidden || _covered > 0;
   bool _sceneReady = false;
   bool _avatarReady = false;
   bool _inited = false;
@@ -108,6 +166,9 @@ class _ChurchScreenState extends State<ChurchScreen>
   // 성당 안 진본 사진 창(G-29): 가까이 있는 창과 눌러서 고른 창(잠깐). 칩 하나로 보여 준다.
   static const _glassTapHold = Duration(seconds: 8);
   String? _glassNearId;
+
+  /// 십자가의 길: 지금 서 있는 판 앞의 처(1..14, 웹 `crossNear`).
+  int? _crossNear;
   String? _glassTapId;
   Timer? _glassTapTimer;
   GlassCatalog? _glassCatalog;
@@ -169,7 +230,214 @@ class _ChurchScreenState extends State<ChurchScreen>
     _net.state.addListener(_onNetState);
     _settings.addListener(_onSettings);
     unawaited(_loadHintFlag());
+    unawaited(_loadResume());
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _hostVisible = ChurchHost.visibleOf(context);
+    _syncVisibility();
+  }
+
+  /// 앱이 백그라운드에서 종료됐다가 다시 들어온 경우: 저장해 둔 상태가 같은 성당의 것이고
+  /// 오래되지 않았으면 그 자리에서 시작한다. 명시적으로 나갔으면(dispose) 저장분이 없다.
+  Future<void> _loadResume() async {
+    final saved = await ChurchResumeState.load();
+    if (_disposed) return;
+    if (_resume == null &&
+        saved != null &&
+        saved.isFreshFor(widget.churchId, DateTime.now())) {
+      _resume = saved;
+      _coldResume = true;
+    }
+    _resumeLoaded = true;
+    _maybeInit();
+  }
+
+  // --- 보임/보이지 않음 ---
+
+  void _syncVisibility() {
+    if (_disposed) return;
+    final hidden = _hidden;
+    if (hidden == _wasHidden) return;
+    _wasHidden = hidden;
+    if (hidden) {
+      _onHidden();
+    } else {
+      _onShown();
+    }
+  }
+
+  bool get _canRecreateScene =>
+      widget.scene == null || widget.sceneFactory != null;
+
+  void _onHidden() {
+    _hiddenAt = DateTime.now();
+    _markSat(false);
+    _catchUpTimer?.cancel();
+    _catchUpTimer = null;
+    unawaited(_scene.setJoystick(0, 0));
+    // 그리기 고리·애니메이션·소리를 멈춘다. 웹이 지금 상태(SceneState)를 알려 준다.
+    unawaited(_scene.pause());
+    // 전체 화면 기도는 같은 세션을 이어 가므로 건드리지 않는다. 그 밖에는 기도 시간을 세지 않는다.
+    final p = _prayer;
+    if (!_coveredByPrayer && p != null && p.running) {
+      p.pause();
+      _autoPausedPrayer = true;
+    }
+    if (_prayerActive && !_coveredByPrayer) _setWakelock(false);
+    _idleNetTimer?.cancel();
+    _idleNetTimer = Timer(widget.hiddenDisconnectAfter, _suspendNet);
+    _releaseTimer?.cancel();
+    if (_canRecreateScene) {
+      _releaseTimer = Timer(widget.hiddenReleaseAfter, _releaseScene);
+    }
+  }
+
+  void _onShown() {
+    _idleNetTimer?.cancel();
+    _idleNetTimer = null;
+    _releaseTimer?.cancel();
+    _releaseTimer = null;
+    final at = _hiddenAt;
+    _hiddenAt = null;
+    if (at != null) {
+      final gone = DateTime.now().difference(at);
+      _hiddenTotal += gone;
+      // 앱이 얼어 있어 타이머가 돌지 못했더라도 같은 정책을 적용한다.
+      if (!_netSuspended && gone >= widget.hiddenDisconnectAfter) _suspendNet();
+    }
+    if (_sceneReleased) {
+      _recreateScene();
+    } else {
+      unawaited(_scene.resume());
+    }
+    if (_netSuspended) {
+      _netSuspended = false;
+      unawaited(
+        _net.connect(churchId: widget.churchId).catchError((Object e) {
+          debugPrint('church reconnect failed: $e');
+        }),
+      );
+    }
+    if (_mySeat != null) _markSat(true);
+    final p = _prayer;
+    if (_autoPausedPrayer) {
+      _autoPausedPrayer = false;
+      if (p != null && p.paused && _prayerActive) p.resume();
+    }
+    if (_prayerActive) _setWakelock(true);
+    if (mounted) setState(() {});
+  }
+
+  /// 오래 보이지 않았다: 접속을 끊는다(서버가 내 자리를 비운다). 좌석·기도 상태는 기억해 두고
+  /// 돌아오면 다시 접속해 같은 자리를 청한다.
+  void _suspendNet() {
+    _idleNetTimer?.cancel();
+    _idleNetTimer = null;
+    if (_disposed || _netSuspended) return;
+    _netSuspended = true;
+    _farRetryTimer?.cancel();
+    unawaited(
+      _net.disconnect().catchError((Object e) {
+        debugPrint('church idle disconnect failed: $e');
+      }),
+    );
+  }
+
+  /// 더 오래 보이지 않았다: 장면(WebView)을 놓는다. 상태를 받아 둔 경우에만(복원할 수 있을 때만).
+  void _releaseScene() {
+    _releaseTimer = null;
+    if (_disposed || _sceneReleased || !_hidden) return;
+    if (!_canRecreateScene || _resume == null || !_inited) return;
+    _sceneReleased = true;
+    _sceneSub?.cancel();
+    _sceneSub = null;
+    if (_ownsScene) _scene.dispose();
+    _sceneReady = false;
+    _inited = false;
+    if (mounted) setState(() {});
+  }
+
+  void _recreateScene() {
+    _scene = widget.sceneFactory?.call() ?? WebViewChurchSceneController();
+    _ownsScene = true;
+    _sceneReleased = false;
+    _sceneReady = false;
+    _inited = false;
+    _near = const SceneNear();
+    _glassNearId = null;
+    _crossNear = null;
+    _walkKind = null;
+    _sceneSub = _scene.events.listen(_onScene);
+  }
+
+  /// 지금 상태를 기억한다(메모리 + 저장소).
+  void _rememberState(SceneState e) {
+    if (e.church != widget.churchId) return;
+    final st = ChurchResumeState(
+      churchId: e.church,
+      x: e.x,
+      z: e.z,
+      r: e.r,
+      seat: e.seat,
+      kneel: e.kneel,
+      camYaw: e.camYaw,
+      camPitch: e.camPitch,
+      camZoom: e.camZoom,
+      camLook: e.camLook,
+      walkKind: e.walkKind,
+      walkIndex: e.walkIndex,
+      walkSeat: e.walkSeat,
+      savedAtMs: DateTime.now().millisecondsSinceEpoch,
+    );
+    _resume = st;
+    _coldResume = false;
+    _lastPos = (e.x, e.z, e.r);
+    unawaited(st.save());
+  }
+
+  /// 새 장면에 복원했다.
+  void _onRestored(SceneRestored e) {
+    _lastPos = (e.x, e.z, e.r);
+    final online = _net.state.value == NetState.online;
+    if (e.seat == null) {
+      final had = _mySeat != null || _pendingSeat != null;
+      if (had) _standUp(tellScene: false);
+      if ((had || e.lost) && mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('앉아 있던 자리에 다른 분이 계셔서 통로에 섰어요')),
+          );
+      }
+      if (online) _startPosCatchUp();
+    } else if (online) {
+      _startPosCatchUp();
+      _net.requestSit(e.seat!);
+    }
+  }
+
+  /// 다시 접속하면 서버는 나를 입구에 둔다. 서버의 이동 속도 제한(평균 7m/s) 안에서 마지막 위치를
+  /// 여러 번 보내 서버 쪽 위치를 따라잡게 한다(다른 사람 화면의 내 위치, 좌석 거리 판정).
+  void _startPosCatchUp() {
+    _catchUpTimer?.cancel();
+    _catchUpTimer = null;
+    final p = _lastPos;
+    if (p == null || _hidden || _disposed) return;
+    var n = 0;
+    _net.sendPos(p.$1, p.$2, p.$3, true);
+    _catchUpTimer = Timer.periodic(const Duration(milliseconds: 500), (t) {
+      n++;
+      final done = n >= 16 || _net.state.value != NetState.online;
+      _net.sendPos(p.$1, p.$2, p.$3, !done);
+      if (done) {
+        t.cancel();
+        _catchUpTimer = null;
+      }
+    });
   }
 
   Future<void> _loadHintFlag() async {
@@ -245,14 +513,16 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   /// 첫 입장 설정 화면. 확인하면 true(설정과 '선택함' 표시는 화면이 저장한다).
   Future<bool> _runFirstEntrySetup() async {
-    final result = await Navigator.of(context).push<AvatarConfig>(
-      MaterialPageRoute(
-        settings: const RouteSettings(name: 'avatar_setup'),
-        fullscreenDialog: true,
-        builder: (context) => AvatarEditorScreen(
-          settings: _settings,
-          firstEntry: true,
-          random: widget.random,
+    final result = await _whileCovered(
+      () => Navigator.of(context).push<AvatarConfig>(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: 'avatar_setup'),
+          fullscreenDialog: true,
+          builder: (context) => AvatarEditorScreen(
+            settings: _settings,
+            firstEntry: true,
+            random: widget.random,
+          ),
         ),
       ),
     );
@@ -272,15 +542,34 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   Future<void> _openAvatarEditor() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        settings: const RouteSettings(name: 'avatar_editor'),
-        fullscreenDialog: true,
-        builder:
-            widget.avatarEditorBuilder ??
-            (context) => AvatarEditorScreen(settings: _settings),
+    await _whileCovered(
+      () => Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: 'avatar_editor'),
+          fullscreenDialog: true,
+          builder:
+              widget.avatarEditorBuilder ??
+              (context) => AvatarEditorScreen(settings: _settings),
+        ),
       ),
     );
+  }
+
+  /// 이 화면을 완전히 가리는 화면을 여는 동안 장면을 멈춘다(돌아오면 그 자리에서 잇는다).
+  Future<T> _whileCovered<T>(
+    Future<T> Function() push, {
+    bool prayer = false,
+  }) async {
+    _covered++;
+    if (prayer) _coveredByPrayer = true;
+    _syncVisibility();
+    try {
+      return await push();
+    } finally {
+      _covered--;
+      if (prayer) _coveredByPrayer = false;
+      _syncVisibility();
+    }
   }
 
   double get _hour {
@@ -290,6 +579,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _maybeInit() {
     if (_inited || !_sceneReady || !_avatarReady || _disposed) return;
+    if (!_resumeLoaded || _sceneReleased) return;
     _inited = true;
     _lastAvatar = _settings.churchAvatar.toJsonString();
     unawaited(
@@ -302,6 +592,17 @@ class _ChurchScreenState extends State<ChurchScreen>
         church: widget.churchId,
       ),
     );
+    // 새로 만든 장면이면 입구가 아니라 방금 있던 자리에서 시작한다. 좌석은 앱이 아는 상태가 우선
+    // (처음 들어온 직후라 앱이 아직 모르면 저장분의 좌석을 쓴다).
+    final rs = _resume;
+    if (rs != null && rs.churchId == widget.churchId) {
+      final cold = _coldResume;
+      _coldResume = false;
+      final st = cold ? rs : rs.withSeat(_mySeat, kneel: _kneel);
+      if (cold && st.seat != null) _pendingSeat = st.seat;
+      unawaited(_scene.restore(st.toSceneArgs()));
+    }
+    if (_hidden) unawaited(_scene.pause());
     final w = _lastWelcome;
     if (w != null && _net.state.value == NetState.online) _applyWelcome(w);
   }
@@ -345,7 +646,14 @@ class _ChurchScreenState extends State<ChurchScreen>
       case ScenePosture():
         break; // 전환 완료 알림. 상태는 설정(prayerPosture)이 원본이다.
       case ScenePos():
+        _lastPos = (e.x, e.z, e.r);
+        _catchUpTimer?.cancel();
+        _catchUpTimer = null;
         if (!_background) _net.sendPos(e.x, e.z, e.r, e.moving);
+      case SceneState():
+        _rememberState(e);
+      case SceneRestored():
+        _onRestored(e);
       case ScenePerf():
         _onPerf(e);
       case SceneGlassNear():
@@ -360,6 +668,8 @@ class _ChurchScreenState extends State<ChurchScreen>
           }
         });
         setState(() => _glassTapId = e.id);
+      case SceneCrossNear():
+        if (e.n != _crossNear) setState(() => _crossNear = e.n);
       case ViewReady() ||
           ViewEnd() ||
           ViewError() ||
@@ -443,18 +753,29 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _onSeated(String seat) {
     if (!mounted) return;
+    // 장면을 새로 만들어 같은 자리에 다시 앉힌 경우(복원)는 새로 앉은 것이 아니다:
+    // 기록하지 않고, 기도 카드의 상태(진행·쉬는 중)도 그대로 둔다.
+    final reseat = _mySeat != null && _prayer != null && _prayerActive;
     if (_mySeat == null) Track.church('church_sit', widget.churchId);
-    _markSat(true);
+    if (!_hidden) _markSat(true);
     _mySeat = seat.isEmpty ? (_pendingSeat ?? '') : seat;
     _pendingSeat = null;
     final p = _prayer ??= _createPrayer();
-    p.start();
+    if (!reseat) p.start();
     _wasFinished = p.finished;
     _prayerActive = true;
-    _sendPraying(!p.finished);
+    _sendPraying(reseat ? p.running && !p.finished : !p.finished);
     // 저장해 둔 기도 자세(앉아서 | 무릎 꿇고)를 앉은 뒤에 적용한다.
     if (_kneel) unawaited(_scene.setPrayerPosture(kneel: true));
-    _setWakelock(true);
+    if (_hidden) {
+      // 보이지 않는 동안 앉았다(복원 직후 등): 기도 시간은 돌아온 뒤부터 센다.
+      if (!_coveredByPrayer && p.running) {
+        p.pause();
+        _autoPausedPrayer = true;
+      }
+    } else {
+      _setWakelock(true);
+    }
     setState(() {});
   }
 
@@ -536,7 +857,13 @@ class _ChurchScreenState extends State<ChurchScreen>
         ];
         if (list.isNotEmpty) unawaited(_scene.peerSnap(list));
       case Seated():
-        if (e.id != _you) unawaited(_scene.peerSeat(e.id, e.seat));
+        if (e.id != _you) {
+          unawaited(_scene.peerSeat(e.id, e.seat));
+        } else {
+          _farRetries = 0;
+          _catchUpTimer?.cancel();
+          _catchUpTimer = null;
+        }
       case Stood():
         if (e.id == _you) {
           // 서버가 나를 일으켜 세운 경우(오래 입력 없음).
@@ -582,6 +909,9 @@ class _ChurchScreenState extends State<ChurchScreen>
       ], w.seats),
     );
     unawaited(_scene.setCandles([for (final c in w.candles) c.toJson()]));
+    // 서버는 새 연결을 입구에 둔다: 마지막 위치를 알려 따라잡게 한다(처음 입장이면 할 일이 없다).
+    _farRetries = 0;
+    _startPosCatchUp();
     // 재접속했는데 앉아 있었다면 서버에 다시 알린다.
     final seat = _mySeat;
     if (seat != null && seat.isNotEmpty) {
@@ -597,6 +927,21 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (!mounted) return;
     final mine = e.seat == _pendingSeat || e.seat == _mySeat;
     if (!mine) return;
+    // 'far': 다시 접속한 직후라 서버가 아는 내 위치가 아직 입구 쪽이다. 자리를 잃은 게 아니니
+    // 위치를 따라잡게 하고 잠시 뒤 다시 청한다(끝내 안 되면 아래로 내려가 일어선다).
+    if (e.reason == 'far' && _lastPos != null && _farRetries < 24 && !_hidden) {
+      _farRetries++;
+      final seat = e.seat;
+      if (_catchUpTimer == null) _startPosCatchUp();
+      _farRetryTimer?.cancel();
+      _farRetryTimer = Timer(const Duration(milliseconds: 600), () {
+        if (_disposed || _hidden) return;
+        if (seat != _pendingSeat && seat != _mySeat) return;
+        if (_net.state.value == NetState.online) _net.requestSit(seat);
+      });
+      return;
+    }
+    _farRetries = 0;
     unawaited(_scene.setSeatTaken(e.seat));
     _standUp(tellScene: true, tellNet: false);
     ScaffoldMessenger.of(context)
@@ -640,6 +985,12 @@ class _ChurchScreenState extends State<ChurchScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final bg = state != AppLifecycleState.resumed;
+    // 화면이 실제로 가려진 상태에서만 장면을 멈춘다(inactive: 알림 창·분할 화면은 계속 보인다).
+    _appHidden =
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached;
+    _syncVisibility();
     if (bg == _background) return;
     _background = bg;
     if (bg) {
@@ -659,13 +1010,48 @@ class _ChurchScreenState extends State<ChurchScreen>
     _sheetOpen = true;
     final ChurchGoTarget? target;
     try {
-      target = await showChurchGoSheet(context, hasFont: _stations.font > 0);
+      target = await showChurchGoSheet(
+        context,
+        hasFont: _stations.font > 0,
+        hasCross: _stations.cross >= StationsOfCrossWalk.count,
+      );
     } finally {
       _sheetOpen = false;
     }
     if (target == null || _disposed) return;
     unawaited(_scene.setJoystick(0, 0));
+    if (target == ChurchGoTarget.cross) {
+      // 순례 시작: 1처 판 앞으로 걷는다. 도착하면 묵상 시트가 열린다(_onWalkDone).
+      Track.event('stations_open', {'from': StationsFrom.church.name});
+      unawaited(_scene.walkTo(target.kind, index: 0));
+      return;
+    }
     unawaited(_scene.walkTo(target.kind));
+  }
+
+  /// 십자가의 길 [n]처 묵상 시트(순례 모드). '다음 처로'를 누르면 다음 판 앞까지 자동으로 걷는다.
+  Future<void> _openCross(int n, {bool logOpen = false}) async {
+    if (_sheetOpen || _disposed) return;
+    _sheetOpen = true;
+    final StationsSheetResult? r;
+    try {
+      r = await showStationsSheet(
+        context,
+        start: n,
+        mode: StationsSheetMode.pilgrimage,
+        from: StationsFrom.church,
+        logOpen: logOpen,
+      );
+    } finally {
+      _sheetOpen = false;
+    }
+    if (r == null || _disposed) return;
+    if (r.action == StationsSheetAction.next &&
+        r.n < StationsOfCrossWalk.count) {
+      unawaited(_scene.setJoystick(0, 0));
+      // walkTo 의 index 는 0부터: n처 다음 = index n.
+      unawaited(_scene.walkTo('cross', index: r.n));
+    }
   }
 
   void _cancelWalk() {
@@ -682,6 +1068,10 @@ class _ChurchScreenState extends State<ChurchScreen>
         _mySeat == null &&
         _pendingSeat == null) {
       unawaited(_onLight());
+    }
+    // 십자가의 길 판 앞에 도착하면 그 처의 묵상 시트가 열린다.
+    if (e.kind == 'cross' && _mySeat == null && _pendingSeat == null) {
+      unawaited(_openCross(e.index + 1));
     }
   }
 
@@ -739,6 +1129,9 @@ class _ChurchScreenState extends State<ChurchScreen>
     _mySeat = null;
     _pendingSeat = null;
     _prayerActive = false;
+    _autoPausedPrayer = false;
+    _farRetries = 0;
+    _farRetryTimer?.cancel();
     _markSat(false);
     _prayer?.stop(save: saveProgress);
     if (wasSeated) {
@@ -787,20 +1180,23 @@ class _ChurchScreenState extends State<ChurchScreen>
   Future<void> _openFullScreenPrayer() async {
     final p = _prayer;
     if (p == null) return;
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute(
-        settings: const RouteSettings(name: 'prayer'),
-        builder: (context) =>
-            widget.prayerScreenBuilder?.call(
-              context,
-              p.mysterySet,
-              p.session,
-            ) ??
-            PrayerScreen(
-              settings: _settings,
-              mysterySet: p.mysterySet,
-              session: p.session,
-            ),
+    await _whileCovered(
+      prayer: true,
+      () => Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: 'prayer'),
+          builder: (context) =>
+              widget.prayerScreenBuilder?.call(
+                context,
+                p.mysterySet,
+                p.session,
+              ) ??
+              PrayerScreen(
+                settings: _settings,
+                mysterySet: p.mysterySet,
+                session: p.session,
+              ),
+        ),
       ),
     );
     // 전체 화면 기도가 끝나면서 화면 켜짐 유지가 풀렸을 수 있다.
@@ -845,6 +1241,12 @@ class _ChurchScreenState extends State<ChurchScreen>
     _perfBannerTimer?.cancel();
     _hintTimer?.cancel();
     _glassTapTimer?.cancel();
+    _idleNetTimer?.cancel();
+    _releaseTimer?.cancel();
+    _catchUpTimer?.cancel();
+    _farRetryTimer?.cancel();
+    // 명시적으로 나간다: 다음에는 입구에서 새로 입장한다.
+    unawaited(ChurchResumeState.clear());
     WidgetsBinding.instance.removeObserver(this);
     _settings.removeListener(_onSettings);
     _net.state.removeListener(_onNetState);
@@ -854,8 +1256,14 @@ class _ChurchScreenState extends State<ChurchScreen>
     _markSat(false);
     final enteredAt = _enteredAt;
     if (enteredAt != null) {
+      // 머문 시간은 보이지 않던 시간을 뺀다.
+      final now = DateTime.now();
+      var hidden = _hiddenTotal;
+      final at = _hiddenAt;
+      if (at != null) hidden += now.difference(at);
+      final stayed = now.difference(enteredAt) - hidden;
       Track.church('church_exit', widget.churchId, {
-        'seconds': DateTime.now().difference(enteredAt).inSeconds,
+        'seconds': stayed.isNegative ? 0 : stayed.inSeconds,
         'sat_seconds': _satTotal.inSeconds,
       });
     }
@@ -889,7 +1297,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         }),
       );
     }
-    if (_ownsScene) _scene.dispose();
+    if (_ownsScene && !_sceneReleased) _scene.dispose();
     super.dispose();
   }
 
@@ -909,7 +1317,14 @@ class _ChurchScreenState extends State<ChurchScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned.fill(child: _scene.buildView(context)),
+          // 오래 보이지 않아 장면을 놓았으면(돌아오는 순간 새로 만든다) 빈 바탕만 둔다.
+          if (!_sceneReleased)
+            Positioned.fill(
+              child: KeyedSubtree(
+                key: ObjectKey(_scene),
+                child: _scene.buildView(context),
+              ),
+            ),
           // 왼쪽 절반: 떠다니는 이동 스틱(C-01). 오른쪽 절반은 아래 웹 장면이 받아 카메라를 돌린다.
           // HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
           if (walking)
@@ -928,7 +1343,10 @@ class _ChurchScreenState extends State<ChurchScreen>
                 onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
               ),
             ),
-          Positioned.fill(child: _LoadOverlay(scene: _scene)),
+          if (!_sceneReleased)
+            Positioned.fill(
+              child: _LoadOverlay(key: ObjectKey(_scene), scene: _scene),
+            ),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -1017,6 +1435,34 @@ class _ChurchScreenState extends State<ChurchScreen>
                             key: ValueKey('glass-chip-none'),
                           ),
                   ),
+                  // 넷째 줄(왼쪽): 십자가의 길 판 앞이면 '십자가의 길 n처 · 명칭 — 묵상하기'(창 칩 아래 줄, 자동 걷기 중에는 숨김).
+                  AnimatedSwitcher(
+                    duration: AppMotion.of(context, Durations.short4),
+                    switchInCurve: Easing.standardDecelerate,
+                    switchOutCurve: Easing.standardAccelerate,
+                    layoutBuilder: (current, previous) => Stack(
+                      alignment: Alignment.topLeft,
+                      children: [...previous, ?current],
+                    ),
+                    child: (walking && _walkKind == null && _crossNear != null)
+                        ? Padding(
+                            key: ValueKey('cross-chip-slot-$_crossNear'),
+                            padding: const EdgeInsets.only(top: AppSpace.xs),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: ChurchCrossChip(
+                                key: const ValueKey('cross-chip'),
+                                n: _crossNear!,
+                                onTap: () => unawaited(
+                                  _openCross(_crossNear!, logOpen: true),
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey('cross-chip-none'),
+                          ),
+                  ),
                   if (_perfBanner)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -1091,7 +1537,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
 /// 장면을 불러오는 동안의 안내와, 실패했을 때의 다시 시도 카드.
 class _LoadOverlay extends StatelessWidget {
-  const _LoadOverlay({required this.scene});
+  const _LoadOverlay({super.key, required this.scene});
 
   final ChurchSceneController scene;
 

@@ -267,6 +267,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
         SwitchListTile(
+          key: const ValueKey('settings-prayer-background'),
+          secondary: const Icon(Icons.image_outlined),
+          title: const Text('기도 배경 그림'),
+          subtitle: const Text(
+            '기도 화면 뒤에 그 단의 성화를 흐리게 깔아요. 고통의 신비는 십자가의 길 그림을 씁니다',
+          ),
+          value: settings.prayerBackground,
+          onChanged: (v) {
+            settings.prayerBackground = v;
+            Track.setting('prayer_background');
+          },
+        ),
+        SwitchListTile(
           secondary: const Icon(Icons.palette_outlined),
           title: const Text('기기 배경화면 색 사용(Material You)'),
           subtitle: const Text('지원하지 않는 기기에서는 앱 기본 색을 씁니다'),

@@ -43,6 +43,7 @@ class ChurchResumeState {
     'seat',
     'entrance',
     'font',
+    'cross',
   };
 
   final String churchId;
@@ -64,7 +65,7 @@ class ChurchResumeState {
   final double? camZoom;
   final double? camLook;
 
-  /// 자동 걷기 중이던 목적지(candle|altar|seat|entrance|font). 없으면 null.
+  /// 자동 걷기 중이던 목적지(candle|altar|seat|entrance|font|cross). 없으면 null.
   final String? walkKind;
   final int walkIndex;
   final String? walkSeat;

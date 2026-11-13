@@ -19,6 +19,7 @@ import 'prayer_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/pill.dart';
 import 'widgets/section_header.dart';
+import 'widgets/stations_lent_card.dart';
 
 /// 저장된 진행 상태를 '이어서 기도하기'로 보여 줄 수 있는 기간.
 const Duration resumeValidFor = Duration(days: 7);
@@ -281,6 +282,11 @@ class _HomeScreenState extends State<HomeScreen> {
             store: services.stats,
             onTap: widget.onOpenStats ?? () => unawaited(_openStats(services)),
           ),
+          const SizedBox(height: AppSpace.md),
+        ],
+        // 사순 시기(재의 수요일~성금요일)에만: 십자가의 길 제안 카드.
+        if (StationsLentCard.inSeason) ...[
+          const StationsLentCard(),
           const SizedBox(height: AppSpace.md),
         ],
         SectionHeader(

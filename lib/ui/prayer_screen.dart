@@ -15,6 +15,7 @@ import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
 import '../app/window_class.dart';
+import '../domain/mystery_art.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
@@ -22,6 +23,7 @@ import '../domain/rosary_session.dart';
 import '../stats/prayer_stats_store.dart';
 import '../stats/stats_screen.dart';
 import 'widgets/prayer_actions.dart';
+import 'widgets/prayer_background.dart';
 import 'widgets/prayer_bead_strip.dart';
 import 'widgets/prayer_text_view.dart';
 import 'widgets/rosary_map.dart';
@@ -623,20 +625,25 @@ class _PrayerScreenState extends State<PrayerScreen>
             if (!didPop) _confirmExit();
           },
           child: Scaffold(
-            body: SafeArea(
-              child: finished
-                  ? Column(
-                      children: [
-                        _clampChrome(
-                          _PrayerHeader(
-                            title: widget.mysterySet.koreanName,
-                            onBack: () => Navigator.of(context).maybePop(),
+            // 기도 배경 그림(설정 '기도 배경 그림', 기본 켬): 그 단의 성화를 낮은 대비로 맨 아래에 깐다.
+            body: PrayerBackground(
+              enabled: _settings.prayerBackground && !finished,
+              art: mysteryArtFor(widget.mysterySet, _session.current.decade),
+              child: SafeArea(
+                child: finished
+                    ? Column(
+                        children: [
+                          _clampChrome(
+                            _PrayerHeader(
+                              title: widget.mysterySet.koreanName,
+                              onBack: () => Navigator.of(context).maybePop(),
+                            ),
                           ),
-                        ),
-                        Expanded(child: _buildFinished(context)),
-                      ],
-                    )
-                  : _buildPrayer(context),
+                          Expanded(child: _buildFinished(context)),
+                        ],
+                      )
+                    : _buildPrayer(context),
+              ),
             ),
           ),
         );

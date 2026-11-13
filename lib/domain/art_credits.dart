@@ -28,8 +28,7 @@ const _cc0 = 'CC0 1.0';
 const List<ArtCredit> mysteryArtCredits = [
   ArtCredit(
     use: '환희 1단',
-    credit:
-        '프라 안젤리코, 〈수태고지〉, 1440–50년경. 피렌체 산 마르코 미술관. Wikimedia Commons',
+    credit: '프라 안젤리코, 〈수태고지〉, 1440–50년경. 피렌체 산 마르코 미술관. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
@@ -45,32 +44,27 @@ const List<ArtCredit> mysteryArtCredits = [
   ),
   ArtCredit(
     use: '환희 4단',
-    credit:
-        '프라 안젤리코, 〈성전 봉헌〉, 1440–42년경. 피렌체 산 마르코 미술관. Wikimedia Commons',
+    credit: '프라 안젤리코, 〈성전 봉헌〉, 1440–42년경. 피렌체 산 마르코 미술관. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
     use: '환희 5단',
-    credit:
-        '윌리엄 홀먼 헌트, 〈성전에서 구세주를 찾음〉, 1854–60. 버밍엄 미술관. Wikimedia Commons',
+    credit: '윌리엄 홀먼 헌트, 〈성전에서 구세주를 찾음〉, 1854–60. 버밍엄 미술관. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
     use: '빛 1단',
-    credit:
-        '안드레아 델 베로키오·레오나르도 다 빈치, 〈그리스도의 세례〉, 1470–75년경. 피렌체 우피치 미술관. Wikimedia Commons',
+    credit: '안드레아 델 베로키오·레오나르도 다 빈치, 〈그리스도의 세례〉, 1470–75년경. 피렌체 우피치 미술관. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
     use: '빛 2단',
-    credit:
-        '후안 데 플란데스, 〈카나의 혼인 잔치〉, 1500–04년경. 뉴욕 메트로폴리탄 미술관(The Metropolitan Museum of Art)',
+    credit: '후안 데 플란데스, 〈카나의 혼인 잔치〉, 1500–04년경. 뉴욕 메트로폴리탄 미술관(The Metropolitan Museum of Art)',
     license: _cc0,
   ),
   ArtCredit(
     use: '빛 3단',
-    credit:
-        '카를 블로크, 〈산상 설교〉, 1877. 덴마크 프레데릭스보르 성 국립역사박물관. Wikimedia Commons',
+    credit: '카를 블로크, 〈산상 설교〉, 1877. 덴마크 프레데릭스보르 성 국립역사박물관. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
@@ -80,14 +74,12 @@ const List<ArtCredit> mysteryArtCredits = [
   ),
   ArtCredit(
     use: '빛 5단',
-    credit:
-        '디르크 바우츠, 〈최후의 만찬〉, 1464–68. 루뱅 성 베드로 성당(M 루뱅 박물관 관리). Wikimedia Commons',
+    credit: '디르크 바우츠, 〈최후의 만찬〉, 1464–68. 루뱅 성 베드로 성당(M 루뱅 박물관 관리). Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
     use: '고통 1단',
-    credit:
-        '하인리히 호프만, 〈겟세마니의 그리스도〉, 1886(1890년 설도 있음). 뉴욕 리버사이드 교회. Wikimedia Commons',
+    credit: '하인리히 호프만, 〈겟세마니의 그리스도〉, 1886(1890년 설도 있음). 뉴욕 리버사이드 교회. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(
@@ -102,8 +94,7 @@ const List<ArtCredit> mysteryArtCredits = [
   ),
   ArtCredit(
     use: '영광 1단',
-    credit:
-        '피에로 델라 프란체스카, 〈부활〉, 1463–65년경. 산세폴크로 시립 미술관. Wikimedia Commons',
+    credit: '피에로 델라 프란체스카, 〈부활〉, 1463–65년경. 산세폴크로 시립 미술관. Wikimedia Commons',
     license: _pd,
   ),
   ArtCredit(

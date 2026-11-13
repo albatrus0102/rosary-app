@@ -397,3 +397,71 @@ peerPraying({id,on,ms,k?})  setPeers/peerJoin 의 peer.k   // k:1 = 무릎 꿇�
 - 원거리 임포스터: 코드 아바타의 판 임포스터 대신 LOD2(1.5k) + 포즈 공유. 기기 측정 뒤 결정.
 - 혼자 모드 NPC, 촛불 봉헌(`playEmote(3)` + `setReach` 촛대 위치), 손 흔들기·성호·절 브리지는 그대로.
 - 용량: 캐릭터 glb 1개 ≤ 0.8MB(검증 CLI), 동작 묶음 ≤ 0.5MB. 스탠드인·시험 모델은 번들 금지(`avatar_glb.test.mjs` 가 검사).
+
+## 30. 십자가의 길 14처 판과 순례
+사용자 요청("십자가의 길은 왜 안 들어가 있어?", 성당 안에서 14처를 걸어서 순례). 구현: `assets/church/way_cross.js`(`ChurchWayCross`: 순수 유도 `derive` + 그리기 `create`), 데이터 `cross_data.js`(생성 파일, 원본 `data/stations_of_cross.json`), 그림 아틀라스 `cross_pack.js`(WebP data URI, 108KB, 처음 성당에 들어올 때 `<script>` 로 읽는다). Flutter: `lib/church/church_cross.dart`(칩), `lib/ui/stations_sheet.dart`(묵상 시트), `church_go_sheet.dart`('십자가의 길'), `church_screen.dart`(연결).
+
+### 30.1 판을 거는 자리(빌더를 고치지 않고 유도, 모든 성당)
+- 신랑 축 = 좌석 방향 평균. 입구 스폰에서 제대 앞 스테이션까지 [3m, 길이-3m] 구간을 0.25m 간격으로 본다.
+- 좌우마다, 축에서 바깥으로 가며 **입구에서 닿는 가장 바깥 칸** 바로 바깥(1.2m 안)의 **벽 면**에 건다. 벽 면 후보 = `ctx.wall` 기록(높이 확인) + 벽 같은 충돌 상자(옆 두께 ≥ 0.2m, 축 방향 길이 ≥ 2.9m — 측랑 제단·무덤 같은 가구 앞면 제외) + 걷기 경계 변(경계에 벽을 지은 성당, 가장 낮은 우선).
+- 버리는 자리: 그 벽 면의 창·장미창·사진 창과 판(+0.15m)이 겹침, 판 바로 앞(0.35m) 판 폭 안에 충돌체, 판 앞 1.3~2.4m 에 충돌 없고 닿고 판까지 직선인 **서는 자리**가 없음, 서는 자리가 촛불대·성수대·제대 앞 자리와 1.8m 안, 판이 촛불대에서 2m 안.
+- 한쪽 7곳: 구간을 고르게 7등분한 목표에 가장 가까운 후보(판끼리 2.2m 이상). 한쪽이 모자라면 다른 쪽에서 채운다(성 바오로 오른쪽 6·왼쪽 8). 14곳이 안 되면 판을 걸지 않는다(`stations.cross=0`, Flutter 는 '십자가의 길' 줄을 숨긴다).
+- **순서(관례)**: 제대를 바라볼 때 오른쪽 벽의 제대 쪽 1처 → 입구 쪽 → 왼쪽 벽 입구 쪽 → 제대 쪽 14처(한 바퀴). `layout.crossWay={start:'L'}` 로 왼쪽부터, `crossWay.front:{x,z}` 로 그 점보다 제대 쪽에는 걸지 않게(피렌체: 쿠폴라 아래 낮은 팔각 성가대 울타리를 벽으로 오인하지 않게 z=-4 앞까지), `crossWay.plaques:[{x,z,face}×14]` 로 자리를 직접 정할 수 있다.
+- 치수: 액자 0.70×1.21m + 위 작은 십자가 0.21m, 바닥에서 1.35m, 벽에서 2cm 띄운 뒤판(깊이 5cm) 앞 4mm 에 그림 판(§21 깜빡임 규칙: 같은 평면 금지).
+- 시험 `tools/church_web/way_cross.test.mjs`: 8개 성당 모두 14곳, 번호 1..14, 판 법선이 서는 자리 쪽, 서는 자리 충돌 없음·닿음, 판 앞 충돌체 없음·판 뒤 15cm 안에 벽, 판끼리 2m, 창과 겹침 없음, 입구→1처·n→n+1처 경로, 근접 판정의 들어감 1.8m/나감 2.6m.
+
+### 30.2 그리기·성능
+- 판 = 캔버스 아틀라스 한 장(2048×1024, low 1024×512; 칸 = 십자가 장식 + 금테 액자 + 그림 + 로마 숫자 판)에 사각형 14개 한 지오메트리(draw call 1) + 나무 뒤판 상자 14개 한 지오메트리(MeshStandard, 그림자 받기만, draw call 1). **성당당 draw call +2, 질감 1장**(high 밉맵 포함 약 11MB, low 약 2.8MB). 성당을 바꾸면 해제한다.
+- 그림 재질은 사진 창과 같은 셰이더(§27): 조명·안개·SSAO 없음(`noAO`), 알파 0 표시로 최종 패스의 색보정·ACES 를 건너뛴다(걷기 프로필에서도 그림 색 = 사진 값), low 는 셰이더가 직접 유리곡선. 밝기 `uK` 0.92(낮) → 밤에는 `env.night` 에 비례해 0.35 배까지. `renderOrder 5.5`. 캔버스의 알파(십자가 둘레 투명)는 윤곽 셰이더가 1px 부드럽게 자른다.
+- `cross_pack.js` 를 못 읽으면 판·근접 이벤트·걷기 모두 없다(콘솔 경고만). `?cross=0` 으로 끈다(시험·비교용).
+
+### 30.3 브리지
+```
+{"e":"stations", …, "cross":14}            // 판 개수(0 이면 이 성당에 없음)
+{"e":"crossNear","n":3}  {"e":"crossNear","n":null}   // n처 서는 자리 1.8m 안에 들어옴 / 2.6m 밖(걷는 중에만, 0.2초마다 판정)
+walkTo({kind:'cross', index:0..13})          // n처 판 앞 서는 자리로 자동 걷기 → walkDone{kind:'cross', index}
+```
+- 판을 탭하면(`tapAt`, 표식보다 뒤·사진 창보다 앞) 그 판 앞으로 걷는다.
+- Flutter: '가기' 시트의 '십자가의 길'(`stations.cross ≥ 14` 일 때만) → `walkTo{cross,0}`. 도착(`walkDone cross`)하면 그 처의 묵상 시트(순례 모드)가 열린다. '다음 처로' → 시트를 닫고 `walkTo{cross, n}`(다음 처), 14처에서는 '마침 기도' → '순례 마치기'. 판 앞에 서 있으면 HUD 의 창 칩 아래 줄에 `ChurchCrossChip`('십자가의 길 n처 · 명칭 — 묵상하기', 높이 ≥ 48, 한 줄 말줄임, 자동 걷기 중에는 숨김). 서버 와이어는 바뀌지 않는다(로컬 UI 만).
+- 분석: `stations_open{from}`·`stations_next{n}`·`stations_complete{from}`(from = more|today|church).
+
+## 31. 보이지 않는 동안 일시정지와 복원 (성당에 '다시 입장'하지 않기)
+
+성당에 들어간 뒤 다른 탭·'창' 보기·다른 화면·앱 백그라운드로 갔다가 돌아오면 **방금 있던 그대로**여야 한다(같은 성당, 위치·방향·카메라, 좌석·자세, 기도 카드의 스텝, 걷던 목적지). 성당에서 나가는 것은 '성당 바꾸기'(= `ChurchScreen` 이 사라짐)뿐이다.
+
+### 31.1 구조(Flutter)
+
+- `GlassTab` 은 [창 | 성당] 두 보기를 모두 살려 두고 하나만 보인다(`_Kept`: Offstage + TickerMode). 성당 보기는 처음 고를 때 만든다. 감싸는 위젯의 모양은 입장 전후로 바뀌지 않는다(바뀌면 `ChurchTab` 이 새로 만들어져 입장이 풀린다).
+- `ChurchHost`(InheritedWidget, `lib/church/church_host.dart`): `visible`(유리화 탭이 선택돼 있고 '성당' 보기일 때 true)과 `onInChurchChanged` 를 아래로 알린다. 없으면(단독 화면·시험) 항상 보이는 것으로 본다.
+- `ChurchTab`: 보이지 않는 동안 선택·입장 카드 화면은 만들지 않는다(접속 인원 조회가 돌지 않게). 다시 보이면 `screen_view` 를 다시 기록한다.
+- `ChurchScreen` 의 '보이지 않음' = `ChurchHost.visible == false` 또는 앱 백그라운드(`paused`·`hidden`·`detached`; `inactive` 는 화면이 보이므로 제외) 또는 이 화면이 연 불투명 화면(아바타 편집·첫 입장 설정·전체 화면 기도)이 위에 있음. 반쯤 덮는 시트(가기·촛불·접속자·창 정보)는 해당하지 않는다.
+
+| 보이지 않은 시간 | 하는 일 | 돌아올 때 |
+|---|---|---|
+| 즉시 | `ChurchAPI.pause()`: 그리기 고리(rAF)·애니메이션·소리 정지, 조이스틱 0. 기도 시간·앉은 시간 세기를 멈춘다(전체 화면 기도 중은 제외), 화면 켜짐 유지 해제. 접속·좌석은 그대로 | `resume()`: 그 자리에서 잇는다 |
+| 3분(`hiddenDisconnectAfter`) | 접속을 끊는다(서버는 연결이 끊겨야 자리를 비운다, §6·server README). 앱은 좌석·기도 상태를 기억한다 | 같은 성당에 다시 접속 → `welcome` 뒤 마지막 위치를 보내 따라잡고(아래) 같은 자리를 다시 청한다. `seat_denied taken` 이면 그 줄 통로에 선다 |
+| 10분(`hiddenReleaseAfter`) | 장면(WebView)을 놓는다(메모리 반환). `state` 를 받아 둔 경우에만 | 장면을 새로 만들고 `init` 뒤 `restore(state)` |
+
+- **위치 따라잡기**: 서버는 새 연결을 입구(spawn)에 두고 `pos` 를 속도 예산(평균 7m/s, 버스트 3.5m)으로 자른다. 그래서 다시 접속하면 마지막 위치를 0.5초마다 최대 8초 보내고(`m:1`, 끝에 `m:0`), 좌석 요청이 `far` 로 거부되면 자리를 잃은 것으로 보지 않고 0.6초 뒤 다시 청한다(최대 24번). 서버 프로토콜은 바꾸지 않았다.
+- **`ChurchResumeState`**(`lib/church/church_resume_state.dart`): 성당 id, x·z·yaw, 좌석, 무릎 꿇음, 카메라(yaw·pitch·zoom·look), 걷던 목적지, 저장 시각. `state` 이벤트를 받을 때마다 메모리와 SharedPreferences(`church_resume_state`, JSON, 개인 정보 없음)에 둔다. 앱이 백그라운드에서 종료된 뒤 **같은 성당에 30분 안에** 다시 들어오면 그 자리에서 시작한다. `ChurchScreen` 이 사라지면(명시적 퇴장) 지운다.
+- **분석**: 복원·재접속은 `church_enter`·`church_sit` 을 새로 기록하지 않는다(앱이 종료됐다가 새로 들어온 경우는 새 입장이므로 한 번 기록). `church_exit.seconds`·`sat_seconds` 는 보이지 않던 시간을 뺀다. 새 이벤트는 없다.
+
+### 31.2 브리지
+
+```js
+pause()        // 그리기 고리(rAF)를 멈춘다: 다음 프레임을 청하지 않고 kick() 도 무시. 소리 끄고 AudioContext.suspend(). 조이스틱 0. → {e:'state'}
+resume()       // 다시 그린다(App.last 를 지금으로: 멈춰 있던 시간만큼 건너뛰지 않는다). 소리 설정이 켜져 있었으면 다시 켠다
+getState()     // → {e:'state'} (멈추지 않고 상태만)
+restore(state) // 새 장면에 상태 적용. 다른 성당의 것이면 무시. 좌석이 비어 있으면 앉힌 채로 시작({e:'seated'}), 이미 누가 있으면 그 줄 통로. 걷던 목적지가 있으면 다시 걷는다. → {e:'restored'}
+```
+```json
+{"e":"state","church":"basic","x":1.2,"z":-3.4,"r":0.5,"seat":"L03-2","posture":"kneel","cy":0.4,"cp":0.35,"cz":1.2,"cl":0,"walk":{"kind":"altar","index":0,"seat":null}}
+{"e":"restored","seat":"L03-2","lost":0,"x":-5.2,"z":-3.95,"r":0}   // lost:1 = 앉아 있던 자리에 누가 있어 통로에 세움
+```
+`seat` 은 앉아 있을 때만, `walk` 는 자동 걷기 중일 때만. `cy·cp·cz·cl` = 카메라 yaw·pitch·zoom·look. 감상실·창 감상 중에는 `state` 를 보내지 않는다.
+
+### 31.3 시험
+
+- `tools/church_web/pause_resume.test.mjs`(`node --test`): 실제 `main.js`·`bridge.js` 를 가짜 렌더러로 돌려 pause 뒤 rAF 0회·그리기 0회, resume 뒤 시간·위치 점프 없음·자동 걷기 계속, restore(좌석·자세·카메라·빼앗긴 자리·잘못된 값).
+- `tools/church_web/e2e.mjs`(헤드리스): pause 뒤 2.5초 동안 프레임 수·GL 그리기 수(`renderer.info.render.frame`)·이벤트가 그대로인지, resume·restore.
+- `test/church_resume_test.dart`: 탭·'창' 보기·화면 push/pop 뒤 같은 `ChurchScreen` 상태·장면, 3분 뒤 끊김과 재접속·좌석 재요청, 10분 뒤 장면 해제와 복원, 앱 백그라운드·종료 뒤 복원, `ChurchResumeState` 직렬화.

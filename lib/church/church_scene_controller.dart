@@ -57,6 +57,7 @@ sealed class SceneEvent {
             candle: n(j['candle']),
             altar: n(j['altar']),
             font: n(j['font']),
+            cross: n(j['cross']),
           );
         case 'walkStart':
           final kind = j['kind'];
@@ -185,6 +186,12 @@ sealed class SceneEvent {
           final slot = j['slot'];
           if (id is! String || !_glassId.hasMatch(id)) return null;
           return SceneGlassTap(id: id, slot: slot is String ? slot : null);
+        // --- 십자가의 길 14처 판(SPEC §30) ---
+        case 'crossNear':
+          final n = j['n'];
+          if (n == null) return const SceneCrossNear(null);
+          if (n is! num || n < 1 || n > 14) return null;
+          return SceneCrossNear(n.toInt());
       }
     } catch (_) {}
     return null;
@@ -215,11 +222,24 @@ class SceneNear extends SceneEvent {
 }
 
 /// 성당을 불러온 뒤 한 번: 갈 수 있는 스테이션 개수(성수대는 없는 성당이 있다).
+/// [cross]는 십자가의 길 판 개수(14 또는 0: 판을 걸 자리가 없는 성당).
 class SceneStations extends SceneEvent {
-  const SceneStations({this.candle = 0, this.altar = 0, this.font = 0});
+  const SceneStations({
+    this.candle = 0,
+    this.altar = 0,
+    this.font = 0,
+    this.cross = 0,
+  });
   final int candle;
   final int altar;
   final int font;
+  final int cross;
+}
+
+/// 십자가의 길 [n]처(1..14) 판 앞 서는 자리에 들어옴. 벗어나면 null.
+class SceneCrossNear extends SceneEvent {
+  const SceneCrossNear(this.n);
+  final int? n;
 }
 
 /// 자동 걷기 시작(걷는 중 표시).

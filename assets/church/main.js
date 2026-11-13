@@ -56,6 +56,7 @@
     if (App.markers) { App.markers.dispose(); App.markers = null; }
     App.walkSt = null; App.pendingWalk = null; App.turn = null;
     if (App.place) App.place.clear();   // 성당 안 사진 창(G-29): 월드를 버리기 전에 판·질감 해제
+    if (App.cross) App.cross.clear();   // 십자가의 길 14처 판(SPEC §30)
     if (App.world) { App.world.dispose(); App.world = null; }
     if (App.view) App.view.unpark();
     var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer, view: vopts && vopts.view });
@@ -82,7 +83,9 @@
     App.stations = root.ChurchStations.create(w.logic);
     var stn = App.stations.stations();
     if (!qs.thumb && qs.markers !== '0') App.markers = root.ChurchMarkers.create(w.group, App.stations, w.logic);
-    post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1 });
+    // 십자가의 길 14처 판: 자리는 바로 유도하고(cross 개수), 그림은 비동기로 싣는다(?cross=0 이면 끔)
+    if (App.cross && !qs.thumb && qs.cross !== '0') App.cross.load(w);
+    post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1, cross: App.cross ? App.cross.count() : 0 });
     if (console && console.log) console.log('[church] world ' + w.id + ' stats', JSON.stringify(w.stats));
   }
 
@@ -116,6 +119,7 @@
       App.crowd = root.ChurchNetView.createCrowd(App.scene);
       App.view = root.ChurchGlassView.create(App, { start: start, loadWorld: loadWorld, kick: kick, post: post, resize: resize });
       if (root.ChurchGlassPlace) App.place = root.ChurchGlassPlace.create(App, { post: post });
+      if (root.ChurchWayCross) App.cross = root.ChurchWayCross.create(App, { post: post });
       resize();
       App.rafOn = true;   // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다
       loadWorld(church);
@@ -199,6 +203,7 @@
     if (App.paused) return;
     App.paused = true;
     if (App.ctl) App.ctl.setJoystick(0, 0);
+    if (App.me && !App.walkSt) App.me.vx = App.me.vz = 0;   // 스틱으로 걷던 관성도 멈춘다(자동 걷기는 돌아와서 잇는다)
     var A = root.ChurchAudio;
     try { A.setAmbient(false); if (A.ctx && A.ctx.suspend) A.ctx.suspend(); } catch (e) { /* ignore */ }
     var s = snapshot();
@@ -298,7 +303,13 @@
     lightCandle: function (o) { if (App.world) { App.world.lightCandle(o); root.ChurchAudio.chime(); } },
     setAmbient: function (o) { App.ambient = !!o.on; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); },
     setHour: function (o) { if (App.world) App.world.setHour(+o.hour); },
-    setSolo: function (o) { App.solo = !!o.on; if (App.crowd) App.crowd.set(App.solo); },
+    setSolo: function (o) {
+      App.solo = !!o.on;
+      if (!App.crowd) return;
+      App.crowd.set(App.solo);
+      // 배경 신자가 내가 앉아 있는 자리를 뽑았으면 다시 뽑는다(접속이 끊겨 혼자 모드로 바뀔 때)
+      for (var i = 0; i < 8 && App.me && App.me.seat && App.crowd.isTaken(App.me.seat); i++) App.crowd.set(App.solo, true);
+    },
     setQuality: function (o) { App.quality = o.quality === 'low' ? 'low' : 'high'; if (App.R) { App.R.autoTier = App.quality === 'high' && qs.autotier !== '0'; App.R.setTier(App.quality, App.world); } resize(); },
     emote: function (o) { if (App.meAv) App.meAv.playEmote(o.e); },
     // 스테이션으로 걸어간다. kind: candle|altar|seat|entrance|font, index: 스탠드/성수대 번호, seat: 특정 좌석 id
@@ -340,6 +351,8 @@
       if (!tg) tg = S.nearestFreeSeat(me, isTaken);
     } else if (kind === 'candle' || kind === 'altar' || kind === 'entrance' || kind === 'font') {
       tg = S.station(kind, o.index, me);
+    } else if (kind === 'cross') {
+      tg = App.cross ? App.cross.station(o.index) : null;   // 십자가의 길 n처 판 앞(index 0..13)
     }
     if (!tg) { failWalk(kind, 'none'); return; }
     var d = Math.hypot(tg.x - me.x, tg.z - me.z);
@@ -367,6 +380,9 @@
     var w = root.innerWidth || 360, h = root.innerHeight || 640;
     var hit = App.markers ? App.markers.pick(x / w * 2 - 1, -(y / h * 2 - 1), App.camera, w, h) : null;
     if (hit) { walkTo({ kind: hit.kind, index: hit.index }); return; }
+    // 십자가의 길 판을 누르면 그 판 앞으로 걷는다(도착하면 Flutter 가 묵상 시트를 연다)
+    var ci = App.cross ? App.cross.pick(x / w * 2 - 1, -(y / h * 2 - 1), App.camera) : -1;
+    if (ci >= 0) { walkTo({ kind: 'cross', index: ci }); return; }
     // 표식이 아니면 사진 창을 눌렀는지 본다(G-29) → {e:'glassTap'}
     if (App.place) App.place.tap(x / w * 2 - 1, -(y / h * 2 - 1), App.camera);
   }
@@ -568,6 +584,7 @@
     App.crowd.update(dt, App.t);
     App.world.update(dt, App.t, App.me, App.camera);
     if (App.place) App.place.update(dt, App.me, App.camera);
+    if (App.cross) App.cross.update(dt, App.me, App.camera);
     if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     var chg = App.R.render(App.scene, App.camera, dt, App.world);

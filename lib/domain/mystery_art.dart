@@ -16,8 +16,7 @@ class MysteryArt {
   final double fy;
 
   @override
-  bool operator ==(Object other) =>
-      other is MysteryArt && other.asset == asset;
+  bool operator ==(Object other) => other is MysteryArt && other.asset == asset;
 
   @override
   int get hashCode => asset.hashCode;

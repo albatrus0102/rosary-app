@@ -132,37 +132,41 @@ class _GlassTabState extends State<GlassTab> {
     );
     // 두 보기를 모두 살려 두고 하나만 보인다. 감싸는 위젯의 모양은 바뀌지 않게 한다
     // (모양이 바뀌면 성당 화면이 새로 만들어져 다시 입장하게 된다).
-    final Widget body = IndexedStack(
-      index: _segment.index,
-      sizing: StackFit.expand,
+    final Widget body = Stack(
+      fit: StackFit.expand,
       children: [
-        // 성당 화면들은 자기 앱 바가 있어 위쪽 안전 영역을 한 번만 쓰게 한다.
-        MediaQuery.removePadding(
-          context: context,
-          removeTop: true,
-          child: gallery,
+        _Kept(
+          show: _segment == GlassSegment.window,
+          // 머리줄이 위쪽 안전 영역을 이미 썼다.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: gallery,
+          ),
         ),
         if (_churchBuilt)
-          ChurchHost(
-            visible: widget.active && _segment == GlassSegment.church,
-            onInChurchChanged: (v) {
-              if (mounted && _inChurch != v) setState(() => _inChurch = v);
-            },
-            child: MediaQuery.removePadding(
-              context: context,
-              removeTop: showHeader,
-              child: Builder(
-                builder: (context) =>
-                    widget.churchBuilder?.call(context) ??
-                    ChurchTab(
-                      key: const ValueKey('church-tab'),
-                      settings: widget.settings,
-                    ),
+          _Kept(
+            show: _segment == GlassSegment.church,
+            child: ChurchHost(
+              visible: widget.active && _segment == GlassSegment.church,
+              onInChurchChanged: (v) {
+                if (mounted && _inChurch != v) setState(() => _inChurch = v);
+              },
+              // 성당 화면들은 자기 앱 바가 있어 위쪽 안전 영역을 한 번만 쓰게 한다.
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: showHeader,
+                child: Builder(
+                  builder: (context) =>
+                      widget.churchBuilder?.call(context) ??
+                      ChurchTab(
+                        key: const ValueKey('church-tab'),
+                        settings: widget.settings,
+                      ),
+                ),
               ),
             ),
-          )
-        else
-          const SizedBox.shrink(),
+          ),
       ],
     );
 
@@ -187,6 +191,25 @@ class _GlassTabState extends State<GlassTab> {
             Expanded(child: body),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 보이지 않아도 상태를 그대로 두는 자리: 그리지 않고, 터치·포커스·애니메이션을 끈다.
+class _Kept extends StatelessWidget {
+  const _Kept({required this.show, required this.child});
+
+  final bool show;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Offstage(
+      offstage: !show,
+      child: TickerMode(
+        enabled: show,
+        child: ExcludeFocus(excluding: !show, child: child),
       ),
     );
   }

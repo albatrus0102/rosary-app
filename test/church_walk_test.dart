@@ -523,6 +523,7 @@ void main() {
         'seat',
         'entrance',
         'font',
+        'cross',
       ]);
     });
   });

@@ -12,6 +12,8 @@ import '../auth/legal_screen.dart';
 import '../auth/legal_texts.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_licenses_screen.dart';
+import 'art_credits_screen.dart';
+import 'stations_sheet.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 
@@ -81,6 +83,23 @@ class MoreScreen extends StatelessWidget {
                       ),
                     ),
                     ListTile(
+                      key: const ValueKey('more-stations'),
+                      leading: const Icon(Icons.directions_walk),
+                      title: const Text('십자가의 길'),
+                      subtitle: const Text('14처 그림과 짧은 묵상'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            settings: const RouteSettings(
+                              name: StationsOfCrossScreen.routeName,
+                            ),
+                            builder: (_) => const StationsOfCrossScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    ListTile(
                       key: const ValueKey('more-settings'),
                       leading: const Icon(Icons.settings_outlined),
                       title: const Text('설정'),
@@ -142,6 +161,23 @@ class MoreScreen extends StatelessWidget {
                             ),
                             builder: (_) =>
                                 GlassLicensesScreen(catalog: glassCatalog),
+                          ),
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      key: const ValueKey('more-art-credits'),
+                      leading: const Icon(Icons.image_outlined),
+                      title: const Text('성화 출처'),
+                      subtitle: const Text('기도 배경·십자가의 길 그림의 작가와 라이선스'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            settings: const RouteSettings(
+                              name: ArtCreditsScreen.routeName,
+                            ),
+                            builder: (_) => const ArtCreditsScreen(),
                           ),
                         ),
                       ),

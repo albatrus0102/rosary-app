@@ -181,7 +181,7 @@ diagnostics: `glass_load{win,tier(t1/t2/t3/tile),ms,ok}`, `glass_mem{tex_mb,budg
 |--------|------|-----------|
 | `church_pick` | `church`(카탈로그 `ChurchInfo.id`) | `church_tab.dart`의 `_enter`(성당 고르기 직후) 또는 `church_select_screen.dart`의 선택 콜백. |
 | `church_enter` | `church`, `online`(bool) | `ChurchScreen` 초기화에서 `ChurchNet` 연결 방식이 정해진 뒤. 솔로(`SoloChurchNet`)면 `online: false`. |
-| `church_exit` | `church`, `seconds`(머문 시간), `sat_seconds`(앉아 있던 시간) | `ChurchScreen.dispose` 또는 퇴장 처리 지점(일어서기·진행 저장과 같은 곳). |
+| `church_exit` | `church`, `seconds`(머문 시간), `sat_seconds`(앉아 있던 시간) | `ChurchScreen.dispose`(= '성당 바꾸기'로 나갈 때). 다른 탭·다른 화면·백그라운드로 가는 것은 퇴장이 아니며(돌아오면 그 자리 그대로, `church_enter` 를 새로 기록하지 않음), 보이지 않던 시간은 `seconds`·`sat_seconds` 에서 뺀다. |
 | `church_sit` | `church` | 좌석에 앉는 동작이 성공한 지점. |
 | `church_candle` | `church` | `church_candle_sheet.dart`에서 촛불을 켠 순간. **지향(intention) 값은 절대 넘기지 않는다**(넘겨도 허용 목록 밖이라 버려진다). |
 | `avatar_save` | (없음) | 아바타 편집기 저장 버튼 콜백. |

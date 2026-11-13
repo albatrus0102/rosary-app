@@ -157,6 +157,10 @@
 
 연락처는 이 문서에서 확인하지 않았다. 주교회의 누리집(cbck.or.kr)의 저작권 안내에서 확인할 것.
 
+## 4b. 앱에 넣은 것(2026-11-13)
+- 번들: `assets/images/stations/station_NN.webp`(가로 600px, 장당 ≤33KB, 14점 448KB), `assets/images/mysteries/<set>_<n>.webp`(짧은 변 540px, 장당 ≤24KB, 17점 — 고통 3·4·5단은 십자가의 길 1·2·12처를 쓰므로 뺐다), 성당 3D 아틀라스 `assets/church/cross_pack.js`(7×2칸, 칸 216×266, WebP 80KB → JS 108KB). 합계 약 0.93MB. `python3 tools/stations/build_art.py` 가 `art/images_unused/` 원본에서 다시 만든다.
+- 출처 표시: 더보기 → '성화 출처'(`lib/ui/art_credits_screen.dart`, 자료 `lib/domain/art_credits.dart`)와 오픈소스 라이선스 화면(`lib/app/licenses.dart`). 묵상 시트 아래에도 십자가의 길 출처 한 줄.
+
 ## 5. 남은 일
 - 화면에 붙이는 일(배경 표시, 덮는 막, 흐림, 초점 맞춤)과 3D 성당의 액자 14개 배치는 구현 담당이 한다.
 - 앱의 라이선스 화면에 `docs/church/licenses/art_mysteries.md`, `art_stations.md` 내용을 연결한다.

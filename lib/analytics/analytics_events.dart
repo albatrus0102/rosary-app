@@ -59,6 +59,10 @@ abstract final class AnalyticsEvents {
     'novena_start': EventSpec(ConsentKinds.usage, {'type', 'luminous'}),
     'novena_day': EventSpec(ConsentKinds.usage, {'type', 'day', 'makeup'}),
     'widget_tap': EventSpec(ConsentKinds.usage, {'action'}),
+    // 십자가의 길(14처): from = more|today|church, n = 다음 처 번호(2..14). 묵상 내용·위치는 보내지 않는다.
+    'stations_open': EventSpec(ConsentKinds.usage, {'from'}),
+    'stations_next': EventSpec(ConsentKinds.usage, {'n'}),
+    'stations_complete': EventSpec(ConsentKinds.usage, {'from'}),
     // 스테인드글라스 감상(GLASS_APP_PLAN §6 측정). 창은 `win`(카탈로그 키 규칙
     // ^[a-z0-9_]{1,40}$)으로만 가리키고 값은 열거형·숫자·bool뿐이다.
     'glass_open': EventSpec(ConsentKinds.usage, {'win', 'from', 'view'}),

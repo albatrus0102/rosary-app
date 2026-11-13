@@ -63,6 +63,7 @@ def gen_dart(d):
         '',
         "part of 'stations_of_cross.dart';",
         '',
+        '// dart format off',
         f'const String _acclamation = {dq(d["acclamation"])};',
         f'const String _opening = {dq(d["opening"])};',
         f'const String _closing = {dq(d["closing"])};',
@@ -83,7 +84,7 @@ def gen_dart(d):
             f'    petition: {dq(s["petition"])},',
             '  ),',
         ]
-    out += ['];', '']
+    out += ['];', '// dart format on', '']
     return '\n'.join(out)
 
 

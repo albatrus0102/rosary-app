@@ -4,6 +4,7 @@
 
 part of 'stations_of_cross.dart';
 
+// dart format off
 const String _acclamation = "우리는 당신을 경배하며 찬미하나이다. 거룩한 십자가로 세상을 구하셨나이다.";
 const String _opening = "주님, 사랑으로 걸으신 십자가의 길을 저희도 따라 걷습니다. 한 처 한 처에서 주님의 고통을 묵상하며 저희 마음을 새롭게 하소서.";
 const String _closing = "주님, 십자가의 길을 함께 걸었습니다. 주님께서 보여 주신 사랑을 기억하며 오늘 만나는 이웃에게 그 사랑을 나누게 하소서. 아멘.";
@@ -138,3 +139,4 @@ const List<StationOfCross> _stations = [
     petition: "주님, 저희의 슬픔과 죽음까지도 부활의 희망 안에 머물게 하소서.",
   ),
 ];
+// dart format on
