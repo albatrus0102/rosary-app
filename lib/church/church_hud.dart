@@ -2,7 +2,22 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/theme.dart';
 import 'net/church_net.dart';
+
+/// 3D 장면 위 HUD 의 M3 표면 규칙(2026-11 재감사).
+///
+/// - 반투명 `surface.withValues(alpha:…)` 대신 **불투명 표면 역할**을 쓴다(장면 밝기와 상관없이
+///   대비 WCAG AA 유지). 정보 칩은 `surfaceContainerHigh`, 아이콘 버튼은 M3 filled tonal.
+/// - 짧은 안내·진행 상태는 M3 plain tooltip/snackbar 규칙: `inverseSurface` + `onInverseSurface`.
+/// - 장면 위에 떠 있는 것은 level 2(3dp) 높이로 통일한다.
+abstract final class ChurchHudStyle {
+  /// 정보 칩 바탕(성당 이름·인원).
+  static Color surface(ColorScheme s) => s.surfaceContainerHigh;
+
+  /// 떠 있는 HUD 의 높이(M3 elevation level 2 = 3dp).
+  static const double elevation = 3;
+}
 
 /// 상단 왼쪽 칩: 성당 이름 + 접속 상태.
 ///
@@ -72,9 +87,10 @@ class ChurchStatusChip extends StatelessWidget {
       ],
     );
     return Material(
-      color: scheme.surface.withValues(alpha: 0.86),
-      shape: const StadiumBorder(),
+      color: ChurchHudStyle.surface(scheme),
+      shape: AppShape.full,
       clipBehavior: Clip.antiAlias,
+      elevation: ChurchHudStyle.elevation,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 48),
         child: IntrinsicHeight(
@@ -160,28 +176,28 @@ class ChurchTopActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // M3 filled tonal 아이콘 버튼(secondaryContainer). 48dp 터치 타깃.
     final style = IconButton.styleFrom(
-      backgroundColor: scheme.surface.withValues(alpha: 0.86),
-      foregroundColor: scheme.onSurface,
       minimumSize: const Size(48, 48),
+      elevation: ChurchHudStyle.elevation,
     );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
+        IconButton.filledTonal(
           style: style,
           tooltip: ambientOn ? '소리 끄기' : '소리 켜기',
           onPressed: onToggleAmbient,
           icon: Icon(ambientOn ? Icons.volume_up : Icons.volume_off),
         ),
-        const SizedBox(width: 6),
-        IconButton(
+        const SizedBox(width: AppSpace.xs),
+        IconButton.filledTonal(
           style: style,
           tooltip: '아바타 편집',
           onPressed: onEditAvatar,
           icon: const Icon(Icons.face),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: AppSpace.xs),
         PopupMenuButton<int>(
           tooltip: '인사',
           onSelected: onEmote,
@@ -189,15 +205,13 @@ class ChurchTopActions extends StatelessWidget {
             for (var i = 0; i < emoteLabels.length; i++)
               PopupMenuItem<int>(value: i, child: Text(emoteLabels[i])),
           ],
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: scheme.surface.withValues(alpha: 0.86),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.waving_hand, color: scheme.onSurface),
+          style: IconButton.styleFrom(
+            backgroundColor: scheme.secondaryContainer,
+            foregroundColor: scheme.onSecondaryContainer,
+            minimumSize: const Size(48, 48),
+            elevation: ChurchHudStyle.elevation,
           ),
+          icon: const Icon(Icons.waving_hand),
         ),
       ],
     );
@@ -213,16 +227,13 @@ class ChurchGoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return FilledButton.icon(
+    // M3 tonal 버튼(위 아이콘 버튼 줄과 같은 secondaryContainer). 모양은 버튼 기본(full).
+    return FilledButton.tonalIcon(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: scheme.primaryContainer,
-        foregroundColor: scheme.onPrimaryContainer,
         minimumSize: const Size(48, 48),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        shape: const StadiumBorder(),
-        elevation: 2,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpace.sm),
+        elevation: ChurchHudStyle.elevation,
       ),
       icon: const Icon(Icons.location_on),
       label: const Text('가기'),
@@ -263,7 +274,10 @@ class ChurchContextAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 180),
+      // M3 모션: short4(200ms) + 표준 곡선, '동작 줄이기'면 즉시.
+      duration: AppMotion.of(context, Durations.short4),
+      switchInCurve: Easing.standardDecelerate,
+      switchOutCurve: Easing.standardAccelerate,
       transitionBuilder: (child, anim) => FadeTransition(
         opacity: anim,
         child: ScaleTransition(scale: anim, child: child),
@@ -301,11 +315,11 @@ class ChurchContextAction extends StatelessWidget {
   Widget _button(Key key, IconData icon, String label) => FilledButton.icon(
     key: key,
     onPressed: onPressed,
+    // 장면 위 주 행동: M3 filled 버튼(primary, 기본 full 모양) + level 2 높이.
     style: FilledButton.styleFrom(
       minimumSize: const Size(112, 64),
-      padding: const EdgeInsets.symmetric(horizontal: 22),
-      shape: const StadiumBorder(),
-      elevation: 3,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.md),
+      elevation: ChurchHudStyle.elevation,
     ),
     icon: Icon(icon),
     label: Text(label),
@@ -323,10 +337,10 @@ class ChurchWalkChip extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Material(
-      color: scheme.inverseSurface.withValues(alpha: 0.92),
-      shape: const StadiumBorder(),
+      color: scheme.inverseSurface,
+      shape: AppShape.smallBorder,
       clipBehavior: Clip.antiAlias,
-      elevation: 2,
+      elevation: ChurchHudStyle.elevation,
       child: InkWell(
         onTap: onCancel,
         child: ConstrainedBox(
@@ -378,16 +392,16 @@ class ChurchGlassChip extends StatelessWidget {
       label: '이 창: $title. 자세히 보기',
       excludeSemantics: true,
       child: Material(
-        color: scheme.inverseSurface.withValues(alpha: 0.92),
-        shape: const StadiumBorder(),
+        color: scheme.inverseSurface,
+        shape: AppShape.smallBorder,
         clipBehavior: Clip.antiAlias,
-        elevation: 2,
+        elevation: ChurchHudStyle.elevation,
         child: InkWell(
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 48),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.sm),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -405,7 +419,7 @@ class ChurchGlassChip extends StatelessWidget {
                   Text(
                     '자세히 보기',
                     style: text.labelMedium?.copyWith(
-                      color: fg.withValues(alpha: 0.8),
+                      color: scheme.inversePrimary,
                     ),
                   ),
                   Icon(Icons.chevron_right, size: 18, color: fg),
@@ -441,11 +455,15 @@ class ChurchWalkHint extends StatelessWidget {
         child: DecoratedBox(
           key: const ValueKey('walk-hint'),
           decoration: BoxDecoration(
-            color: scheme.inverseSurface.withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(14),
+            // M3 plain tooltip: inverseSurface, extra small(4) 모서리.
+            color: scheme.inverseSurface,
+            borderRadius: AppShape.extraSmall,
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.xs,
+              vertical: AppSpace.xxs,
+            ),
             child: Text(
               message,
               style: text.bodySmall?.copyWith(color: scheme.onInverseSurface),
@@ -669,18 +687,19 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                     child: DecoratedBox(
                       key: const ValueKey('move-hint'),
                       decoration: BoxDecoration(
-                        color: scheme.surface.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(12),
+                        // M3 plain tooltip(가기 안내와 같은 규칙).
+                        color: scheme.inverseSurface,
+                        borderRadius: AppShape.extraSmall,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                          horizontal: AppSpace.xs,
+                          vertical: AppSpace.xxs,
                         ),
                         child: Text(
                           widget.hint!,
-                          style: text.labelMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                          style: text.bodySmall?.copyWith(
+                            color: scheme.onInverseSurface,
                           ),
                         ),
                       ),
@@ -713,8 +732,9 @@ class ChurchPerfBanner extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Material(
       color: scheme.inverseSurface,
-      elevation: 3,
-      borderRadius: BorderRadius.circular(16),
+      // M3 snackbar 규칙: inverseSurface, extra small 모서리, level 3(6dp).
+      elevation: 6,
+      borderRadius: AppShape.extraSmall,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 10, 8, 6),
         child: Column(

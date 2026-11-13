@@ -377,6 +377,10 @@
     rig.updateMatrixWorld(true);
     this.rest = list.map(function (b) { return b.quaternion.clone(); });
     this.hips0 = B.Hips.position.clone();
+    // 믹서 출력(오버레이 전) 포즈. PropertyMixer 는 값이 지난 프레임과 같으면 다시 쓰지 않으므로(r149 PropertyMixer.apply),
+    // 오버레이를 지울 때 휴식 자세가 아니라 이 포즈로 되돌려야 상수 트랙(정지한 팔 등)이 사라지지 않는다.
+    this.pose = list.map(function (b) { return b.quaternion.clone(); });
+    this.hipsPose = B.Hips.position.clone();
     // 뼈대 서명별 Skeleton(IBM 이 같은 LOD 끼리 공유)
     var self = this;
     this.skels = type.skelSigs.map(function (sg) { return new T.Skeleton(sg.bones.map(function (n) { return B[n]; }), sg.inv); });
@@ -553,11 +557,14 @@
     if (every > 1 && ((++this.cnt) % every) !== 0) return;
     var step = this.acc; this.acc = 0;
     this._state();
-    // 오버레이가 남긴 회전이 쌓이지 않게 휴식 자세로 되돌린 뒤 믹서가 덮는다
-    for (var i = 0; i < this.boneList.length; i++) this.boneList[i].quaternion.copy(this.rest[i]);
-    this.B.Hips.position.copy(this.hips0);
+    // 오버레이가 남긴 회전이 쌓이지 않게 지난 믹서 출력으로 되돌린 뒤 믹서가 (바뀐 트랙만) 덮는다
+    var i, bl = this.boneList;
+    for (i = 0; i < bl.length; i++) bl[i].quaternion.copy(this.pose[i]);
+    this.B.Hips.position.copy(this.hipsPose);
     this._mix(step);
     this.mixer.update(step);
+    for (i = 0; i < bl.length; i++) this.pose[i].copy(bl[i].quaternion);
+    this.hipsPose.copy(this.B.Hips.position);
     this.rig.updateMatrixWorld(true);
     this._overlay(t, this.headless || this.lod < 2);
     this._placeExtras();

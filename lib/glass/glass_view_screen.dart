@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app/settings.dart';
+import '../app/theme.dart';
 import '../app/track.dart';
 import '../church/avatar/avatar_config.dart';
 import '../church/church_catalog.dart';
@@ -394,9 +395,14 @@ class _GlassViewScreenState extends State<GlassViewScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_leave());
       },
-      child: Scaffold(
-        backgroundColor: kGlassStone,
-        body: _mode == _Mode.flat ? _buildFlat() : _buildRoom(context),
+      // 감상 화면 전체를 어두운 M3 테마로(덮개·로딩·오류 모두 색 역할을 쓴다).
+      child: GlassViewerTheme(
+        child: Builder(
+          builder: (context) => Scaffold(
+            backgroundColor: kGlassStone,
+            body: _mode == _Mode.flat ? _buildFlat() : _buildRoom(context),
+          ),
+        ),
       ),
     );
   }
@@ -440,12 +446,8 @@ class _GlassViewScreenState extends State<GlassViewScreen> {
         menu: PopupMenuButton<String>(
           key: const ValueKey('view-menu'),
           tooltip: '더보기',
-          iconColor: kGlassOnStone,
-          icon: const Icon(Icons.more_vert, color: kGlassOnStone),
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.black38,
-            minimumSize: const Size(48, 48),
-          ),
+          icon: const Icon(Icons.more_vert),
+          style: glassIconButtonStyle(theme.colorScheme),
           onSelected: (v) {
             switch (v) {
               case 'reset':
@@ -469,18 +471,16 @@ class _GlassViewScreenState extends State<GlassViewScreen> {
               child: Text(
                 '밤에는 바깥 빛이 없어 창이 어둡습니다.',
                 key: const ValueKey('night-note'),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: kGlassOnStone,
-                ),
+                style: theme.textTheme.bodyMedium,
               ),
             ),
           Text(
             '${_w.place} · ${glassSizeText(_w)}',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodyMedium?.copyWith(color: kGlassOnStone),
+            style: theme.textTheme.bodyMedium,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpace.xs),
           Wrap(
             spacing: 12,
             runSpacing: 8,
@@ -534,16 +534,14 @@ class _LightToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // M3 세그먼트 버튼(어두운 감상 테마의 기본 역할). 사진 위라 선택 안 된 칸도
+    // 투명 대신 불투명 표면(surfaceContainerHigh)을 깐다.
     return Theme(
       data: Theme.of(context).copyWith(
         segmentedButtonTheme: SegmentedButtonThemeData(
           style: SegmentedButton.styleFrom(
-            foregroundColor: kGlassOnStone,
-            backgroundColor: Colors.black45,
-            selectedForegroundColor: Colors.black,
-            selectedBackgroundColor: kGlassOnStone,
-            disabledForegroundColor: kGlassOnStone.withValues(alpha: 0.5),
-            side: const BorderSide(color: Colors.white38),
+            backgroundColor: scheme.surfaceContainerHigh,
           ),
         ),
       ),
@@ -647,21 +645,24 @@ class _LoadingCoverState extends State<_LoadingCover>
               ),
             ),
             Center(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              // M3: 불투명 표면 카드 + 원형 진행 표시.
+              child: Card.filled(
+                color: theme.colorScheme.surfaceContainerHigh,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                    horizontal: AppSpace.sm,
+                    vertical: 12,
                   ),
-                  child: Text(
-                    '창을 불러오는 중…',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: kGlassOnStone,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      ),
+                      const SizedBox(width: 12),
+                      Text('창을 불러오는 중…', style: theme.textTheme.bodyMedium),
+                    ],
                   ),
                 ),
               ),
@@ -696,20 +697,22 @@ class _ErrorCover extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: kGlassOnStone),
+              Icon(
+                Icons.error_outline,
+                size: 48,
+                color: theme.colorScheme.error,
+              ),
               const SizedBox(height: 12),
               Text(
                 '창을 불러오지 못했습니다',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: kGlassOnStone,
-                ),
+                style: theme.textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
                 '평면 원본으로는 언제든 볼 수 있어요.',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: kGlassOnStone.withValues(alpha: 0.8),
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -721,19 +724,11 @@ class _ErrorCover extends StatelessWidget {
                 children: [
                   OutlinedButton(
                     key: const ValueKey('view-retry'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: kGlassOnStone,
-                      side: const BorderSide(color: Colors.white54),
-                    ),
                     onPressed: onRetry,
                     child: const Text('다시 시도'),
                   ),
                   FilledButton(
                     key: const ValueKey('view-flat'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: kGlassOnStone,
-                      foregroundColor: Colors.black,
-                    ),
                     onPressed: onFlat,
                     child: const Text('평면 보기'),
                   ),

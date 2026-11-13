@@ -656,28 +656,23 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   height: 112,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    // M3: 컨테이너 위 아이콘은 짝 역할(onSecondaryContainer), 임의 투명 테두리 없음.
                     color: scheme.secondaryContainer,
-                    border: Border.all(
-                      color: scheme.secondary.withValues(alpha: 0.4),
-                      width: 1.5,
-                    ),
                   ),
                   child: Icon(
                     Icons.check_rounded,
                     size: 64,
-                    color: scheme.secondary,
+                    color: scheme.onSecondaryContainer,
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: AppSpace.md),
               Text(
                 '묵주기도를 마쳤습니다',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: theme.textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpace.xs),
               Text(
                 widget.mysterySet.koreanName,
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -689,7 +684,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 const SizedBox(height: AppSpace.sm),
                 _buildRecordedLine(context, services.stats),
               ],
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpace.lg),
               if (services != null) ...[
                 FilledButton(
                   key: const ValueKey('finished-open-stats'),
@@ -800,9 +795,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
                         Expanded(
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: scheme.surface,
-                              borderRadius: BorderRadius.circular(28),
-                              border: Border.all(color: scheme.outlineVariant),
+                              color: scheme.surfaceContainerLow,
+                              borderRadius: AppShape.extraLarge,
                             ),
                             child: Column(
                               children: [

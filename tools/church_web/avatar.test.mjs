@@ -89,3 +89,117 @@ test('normalizeCfg: nv 2 keeps the unified name index, older formats are migrate
 test('realistic adult proportions', () => {
   assert.equal(A.HEIGHT, 1.7);
 });
+
+// ---------------------------------------------------------------- 신자석 정합·무릎 꿇기(SPEC §28)
+vm.runInContext(fs.readFileSync(path.join(root, 'scene_logic.js'), 'utf8'), ctx, { filename: 'scene_logic.js' });
+// 그림자·옷감 텍스처용 가짜 캔버스(그리기 호출은 모두 무시)
+const g2d = new Proxy({}, { get: (t, k) => (k in t ? t[k] : () => g2d), set: (t, k, v) => { t[k] = v; return true; } });
+g2d.getImageData = (x, y, w, h) => ({ data: new Uint8ClampedArray(w * h * 4), width: w, height: h });
+g2d.createImageData = g2d.getImageData;
+g2d.measureText = () => ({ width: 10 });
+ctx.document = { createElement: () => ({ width: 0, height: 0, style: {}, getContext: () => g2d }) };
+const PEW = ctx.ChurchLogic.PEW, AH = ctx.ChurchLogic.pewAhead(1.9), LC = ctx.ChurchLogic.C;
+const SPOT = { fwd: AH.kneel, y: PEW.KNEEL_TOP, rail: true };
+// 좌석 중심(원점)에 앉아 -z(제대 쪽)를 보는 아바타. u = 제대 쪽 거리 = -z.
+function seatedAvatar() {
+  const av = new A.Avatar({}, { showTag: false });
+  av.setPose(0, 0, 0, 0); av.setSeated(true); av.snapPose(); av.update(1 / 60, 0);
+  return av;
+}
+function joint(av, name) {
+  av.root.updateMatrixWorld(true);
+  const i = av.skeleton.bones.findIndex((b) => b.name === name);
+  assert.ok(i >= 0, 'bone ' + name);
+  const e = av.skeleton.bones[i].matrixWorld.elements;
+  return { x: e[12], y: e[13], u: -e[14] };
+}
+function run(av, sec, each) { const n = Math.round(sec * 60); for (let i = 1; i <= n; i++) { av.update(1 / 60, i / 60); if (each) each(i / 60); } }
+// 앞줄 등받이 뒷면(뒷줄 사람 쪽)의 u — 높이 y 에서
+const backRear = (y) => 1.9 + PEW.BACK_U - PEW.BACK_T - Math.tan(PEW.BACK_TILT) * (y - PEW.SEAT_TOP);
+
+test('seated: hips on the seat board, knees and feet in the legroom, praying head clear of the row ahead', () => {
+  const av = seatedAvatar();
+  const hip = joint(av, 'ulR'), knee = joint(av, 'llR'), foot = joint(av, 'ftR');
+  // 엉덩이: 좌석판 위(앞뒤 범위 안), 좌석 윗면보다 조금 위
+  assert.ok(hip.u > PEW.SEAT_REAR && hip.u < PEW.SEAT_FRONT, 'hip u ' + hip.u);
+  assert.ok(hip.y > PEW.SEAT_TOP && hip.y < PEW.SEAT_TOP + 0.2, 'hip y ' + hip.y);
+  // 등은 등받이 앞면보다 앞
+  assert.ok(hip.u - 0.13 >= PEW.BACK_U - 0.02, 'back vs backrest');
+  // 무릎·발: 좌석 앞끝 근처에서 앞줄 무릎틀 전까지(겹치지 않는다)
+  assert.ok(knee.u + A.KNEEL.KNEE_R < 1.9 + PEW.KNEEL_U0 - 0.3, 'knee u ' + knee.u);
+  assert.ok(foot.u + 0.2 < 1.9 + PEW.KNEEL_U0, 'toe vs kneeler');
+  assert.ok(foot.y > 0.04 && foot.y < 0.14, 'ankle on the floor ' + foot.y);
+  // 기도(고개 숙임 + 손 모음): 머리·손이 앞줄 선반/등받이에 닿지 않는다
+  av.setPray(true); run(av, 2);
+  const head = joint(av, 'head'), hand = joint(av, 'haR');
+  assert.ok(head.u + 0.2 < 1.9 + PEW.SHELF_U0, 'head ' + head.u);
+  assert.ok(hand.u + 0.12 < 1.9 + PEW.SHELF_U0, 'hand ' + hand.u);
+  assert.ok(hand.y > PEW.SEAT_TOP + 0.15, 'hands above the lap ' + hand.y);
+});
+
+test('kneelPose: knees rest on the kneeler top, ankles on the floor', () => {
+  const kp = A.kneelPose(PEW.KNEEL_TOP);
+  assert.ok(Math.abs(kp.kneeY - A.KNEEL.KNEE_R - PEW.KNEEL_TOP) < 1e-9);
+  assert.ok(kp.hipY > kp.kneeY + 0.35 && kp.shinBack > 0.3 && kp.shinBack < 0.41);
+  // 바닥(무릎틀 없음)에서도 유효
+  const k0 = A.kneelPose(0);
+  assert.ok(Math.abs(k0.kneeY - A.KNEEL.KNEE_R) < 0.01 && k0.hipY < kp.hipY);
+});
+
+test('kneel transition: smooth 0.6~0.8 s both ways, only while seated', () => {
+  const av = seatedAvatar();
+  assert.ok(A.KNEEL.DUR >= 0.6 && A.KNEEL.DUR <= 0.8);
+  av.setKneel(true, SPOT);
+  let prev = 0, maxStep = 0, tDone = -1, prevHipU = joint(av, 'ulR').u, maxMove = 0;
+  run(av, 1.0, (t) => {
+    assert.ok(av.kneelAmt >= prev - 1e-9, 'monotonic');
+    maxStep = Math.max(maxStep, av.kneelAmt - prev); prev = av.kneelAmt;
+    const hu = joint(av, 'ulR').u; maxMove = Math.max(maxMove, Math.abs(hu - prevHipU)); prevHipU = hu;
+    if (tDone < 0 && av.kneelAmt === 1) tDone = t;
+  });
+  assert.ok(tDone >= 0.6 && tDone <= 0.8, 'done at ' + tDone);
+  assert.ok(maxStep < 0.06, 'no jump: ' + maxStep);
+  assert.ok(maxMove < 0.06, 'body moves < 6 cm per frame: ' + maxMove);
+  assert.ok(Math.abs(av.kneelOffset() - SPOT.fwd) < 1e-9);
+  av.setKneel(false); prev = 1; tDone = -1;
+  run(av, 1.0, (t) => { assert.ok(av.kneelAmt <= prev + 1e-9); prev = av.kneelAmt; if (tDone < 0 && av.kneelAmt === 0) tDone = t; });
+  assert.ok(tDone >= 0.6 && tDone <= 0.8, 'back at ' + tDone);
+  assert.equal(av.kneelOffset(), 0);
+  // 서 있으면 무릎 꿇기는 보이지 않는다(sitAmt 로 가린다)
+  const st = new A.Avatar({}, { showTag: false });
+  st.setPose(0, 0, 0, 0); st.setKneel(true, SPOT); run(st, 1);
+  assert.equal(st.kneelOffset(), 0);
+  assert.ok(joint(st, 'ulR').y > 0.8);
+});
+
+test('kneeling: knees on the kneeler, nothing inside the back of the row ahead, hands on its top rail', () => {
+  const av = seatedAvatar();
+  av.setPray(true); av.setKneel(true, SPOT); run(av, 2.5);
+  const hip = joint(av, 'ulR'), knee = joint(av, 'llR'), kneeL = joint(av, 'llL'), ankle = joint(av, 'ftR');
+  // 무릎: 무릎틀 위(앞뒤 범위 안, 윗면에 닿음)
+  for (const k of [knee, kneeL]) {
+    assert.ok(k.u > 1.9 + PEW.KNEEL_U0 && k.u < 1.9 + PEW.KNEEL_U1, 'knee u ' + k.u);
+    assert.ok(Math.abs(k.y - A.KNEEL.KNEE_R - PEW.KNEEL_TOP) < 0.01, 'knee y ' + k.y);
+    // 무릎 앞면이 앞줄 등받이(다리 받침) 뒷면을 넘지 않는다
+    assert.ok(k.u + A.KNEEL.KNEE_R <= 1.9 + PEW.BACK_U - PEW.BACK_T, 'knee vs board');
+  }
+  // 정강이·발은 뒤로(바닥 위), 내 좌석 앞끝보다 앞
+  assert.ok(ankle.u < knee.u - 0.3 && ankle.u > PEW.SEAT_FRONT + 0.1, 'ankle u ' + ankle.u);
+  assert.ok(ankle.y > 0.03 && ankle.y < 0.16, 'ankle y ' + ankle.y);
+  // 상체는 세운다: 고관절이 무릎 위쪽·조금 뒤
+  assert.ok(hip.y > knee.y + 0.33 && hip.u < knee.u && hip.u > knee.u - 0.15);
+  // 몸통·머리가 앞줄 등받이 뒷면/선반을 파고들지 않는다
+  const chest = joint(av, 'chest'), head = joint(av, 'head');
+  assert.ok(chest.u + A.KNEEL.TORSO_HALF <= backRear(Math.min(chest.y, PEW.BACK_TOP)) + 0.02, 'chest ' + chest.u + ' vs ' + backRear(chest.y));
+  assert.ok(hip.u + 0.11 <= 1.9 + PEW.SHELF_U0 + 0.02 || hip.y > PEW.SHELF_Y + 0.12 || hip.y < PEW.SHELF_Y - 0.12, 'belly vs shelf');
+  assert.ok(head.y > PEW.BACK_TOP + 0.25, 'head above the rail ' + head.y);
+  // 모은 손: 등받이 윗단 위(높이·앞뒤)
+  const hR = joint(av, 'haR'), hL = joint(av, 'haL');
+  const railU = 1.9 + PEW.BACK_U - PEW.BACK_T / 2 - Math.tan(PEW.BACK_TILT) * (PEW.BACK_TOP - PEW.SEAT_TOP);
+  for (const h of [hR, hL]) {
+    assert.ok(h.y >= PEW.BACK_TOP + 0.01 && h.y <= PEW.BACK_TOP + 0.14, 'hand y ' + h.y);   // 손목이 윗단 위(파고들지 않는다)
+    assert.ok(Math.abs(h.u - railU) < 0.14, 'hand u ' + h.u + ' rail ' + railU);
+  }
+  assert.ok(Math.abs(hR.x - hL.x) < 0.09, 'hands together');
+  void LC;
+});

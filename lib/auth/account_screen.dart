@@ -251,7 +251,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                         if (s.isSignedOut) ...[
                           const SizedBox(height: AppSpace.sm),
-                          Card.filled(color: scheme.surfaceContainerLow,
+                          Card.filled(
+                            color: scheme.surfaceContainerLow,
                             child: Padding(
                               padding: const EdgeInsets.all(AppSpace.sm),
                               child: Column(
@@ -288,7 +289,8 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                           const SizedBox(height: AppSpace.xs),
-                          Card.filled(color: scheme.surfaceContainerLow,
+                          Card.filled(
+                            color: scheme.surfaceContainerLow,
                             child: Column(
                               children: [
                                 for (final kind in ConsentKind.optional)
@@ -299,7 +301,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                         const SizedBox(height: AppSpace.sm),
                         _header(context, '내 정보'),
-                        Card.filled(color: scheme.surfaceContainerLow,
+                        Card.filled(
+                          color: scheme.surfaceContainerLow,
                           child: Column(
                             children: [
                               if (s.isSignedIn)
@@ -337,7 +340,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         if (s.isSignedIn) ...[
                           const SizedBox(height: AppSpace.sm),
                           _header(context, '계정 관리'),
-                          Card.filled(color: scheme.surfaceContainerLow,
+                          Card.filled(
+                            color: scheme.surfaceContainerLow,
                             child: Column(
                               children: [
                                 ListTile(

@@ -14,6 +14,15 @@ enum PrayerFont { gothic, system }
 /// 사이버 성당 3D 화면 품질.
 enum ChurchQuality { low, high }
 
+/// 성당에서 앉아 기도할 때의 자세(SPEC §28.4). 저장 키 `prayerPosture`.
+enum PrayerPosture {
+  /// 앉아서(기본).
+  sit,
+
+  /// 무릎 꿇고(앞줄 무릎틀 위).
+  kneel,
+}
+
 /// 이어서 기도하기를 위해 저장해 두는 진행 상태.
 class SavedPrayer {
   const SavedPrayer({
@@ -94,6 +103,11 @@ class AppSettings extends ChangeNotifier {
       _prefs.getString(_kChurchQuality),
       ChurchQuality.high,
     );
+    _prayerPosture = _enumByName(
+      PrayerPosture.values,
+      _prefs.getString(_kPrayerPosture),
+      PrayerPosture.sit,
+    );
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -120,6 +134,7 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchAvatarChosen = 'church_avatar_chosen';
   static const _kChurchAmbient = 'church_ambient';
   static const _kChurchQuality = 'church_quality';
+  static const _kPrayerPosture = 'prayerPosture';
   static const _kChurchId = 'church_id';
   static const _kChurchFavorites = 'church_favorites';
 
@@ -175,6 +190,7 @@ class AppSettings extends ChangeNotifier {
   late bool _churchAvatarChosen;
   late bool _churchAmbient;
   late ChurchQuality _churchQuality;
+  late PrayerPosture _prayerPosture;
   late String _churchId;
   late Set<String> _churchFavorites;
 
@@ -400,6 +416,16 @@ class AppSettings extends ChangeNotifier {
 
   /// 성당 3D 화면 품질.
   ChurchQuality get churchQuality => _churchQuality;
+
+  /// 성당에서 앉아 기도할 때의 자세(앉아서 | 무릎 꿇고).
+  PrayerPosture get prayerPosture => _prayerPosture;
+
+  set prayerPosture(PrayerPosture v) {
+    if (v == _prayerPosture) return;
+    _prayerPosture = v;
+    _prefs.setString(_kPrayerPosture, v.name);
+    notifyListeners();
+  }
 
   /// 마지막으로 고른 성당 id(카탈로그에 없으면 'basic').
   String get churchId => _churchId;

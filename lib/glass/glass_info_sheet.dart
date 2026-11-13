@@ -8,6 +8,7 @@ import '../church/church_catalog.dart';
 import 'glass_catalog.dart';
 import 'glass_policy.dart';
 import 'glass_widgets.dart';
+import '../app/theme.dart';
 
 /// 창 정보 시트(G-09). 아래에서 올라오는 M3 시트로, 감상 화면의 ⓘ와 갤러리에서 연다.
 ///
@@ -275,7 +276,7 @@ class _Tag extends StatelessWidget {
         color: emphasized
             ? scheme.tertiaryContainer
             : scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppShape.small,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -304,7 +305,7 @@ class _Note extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppShape.medium,
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -344,9 +345,9 @@ class _CreditBlock extends StatelessWidget {
       key: const ValueKey('info-credit'),
       decoration: BoxDecoration(
         color: required
-            ? scheme.primaryContainer.withValues(alpha: 0.55)
+            ? scheme.secondaryContainer
             : scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppShape.medium,
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),

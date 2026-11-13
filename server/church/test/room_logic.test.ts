@@ -523,6 +523,58 @@ test('좌석: 앉아 있는 동안 pos 무시, welcome에 좌석 반영', () => 
   assert.equal(w.peers[0].st, 's');
 });
 
+test('pray k: 무릎 꿇고 기도(k:1)는 기도 중에만 전파·저장되고, 값은 0|1 만 허용', () => {
+  const h = new Harness();
+  const a = h.join(1);
+  const b = h.join(2);
+  h.walkTo(a, -3.2, 12.9);
+  h.send(a, { t: 'sit', seat: 'L11-0' });
+  h.clear();
+  // 무릎 꿇고 기도 → 주변에 k:1, 상태에 k=1
+  h.send(a, { t: 'pray', on: true, ms: 1, k: 1 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: true, ms: 1, k: 1 }]);
+  assert.equal(h.logic.getPeer(a)!.k, 1);
+  // 나중에 들어온 사람의 welcome 에도 k:1
+  const c = h.join(3);
+  const pv = (h.msgs(c, 'welcome')[0].peers as Message[]).find((p) => p.id === h.uuid(1))!;
+  assert.equal(pv.st, 'p');
+  assert.equal(pv.k, 1);
+  // 스냅샷 복원에도 유지
+  const h2 = new Harness();
+  assert.ok(h2.logic.restorePeer('r1', pv as never));
+  assert.equal(h2.logic.getPeer('r1')!.k, 1);
+  const h3 = new Harness();
+  assert.ok(h3.logic.restorePeer('r2', { ...pv, st: 's', ms: -1 } as never));
+  assert.equal(h3.logic.getPeer('r2')!.k ?? 0, 0); // 기도 중이 아니면 0
+  // 앉아서 기도로 바꾸면(k 생략 또는 0) 필드가 사라진다
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: true, ms: 1, k: 0 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: true, ms: 1 }]);
+  assert.equal(h.logic.getPeer(a)!.k ?? 0, 0);
+  h.t += 300;
+  h.send(a, { t: 'pray', on: true, ms: 1, k: 1 });
+  // 기도를 멈추면(on:false) k 는 0 (k:1 을 같이 보내도)
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: false, ms: -1, k: 1 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: false, ms: -1 }]);
+  assert.equal(h.logic.getPeer(a)!.k ?? 0, 0);
+  // 일어나면 0
+  h.t += 300;
+  h.send(a, { t: 'pray', on: true, ms: 1, k: 1 });
+  h.send(a, { t: 'stand' });
+  assert.equal(h.logic.getPeer(a)!.k ?? 0, 0);
+  // 잘못된 k 는 bad_msg
+  h.t += 1500;
+  h.clear();
+  for (const bad of [2, -1, 0.5, '1', true, null]) {
+    h.t += 300;
+    h.send(a, { t: 'pray', on: true, ms: 1, k: bad });
+  }
+  assert.equal(h.msgs(a, 'error').length, 6);
+});
+
 test('pray: 앉았을 때만, ms 범위 검증, st 전이', () => {
   const h = new Harness();
   const a = h.join(1);

@@ -163,6 +163,7 @@ class ChurchPrayerCard extends StatelessWidget {
     required this.settings,
     required this.onTogglePause,
     required this.onStand,
+    this.onPosture,
     required this.onEnd,
     required this.onFullScreen,
   });
@@ -171,6 +172,9 @@ class ChurchPrayerCard extends StatelessWidget {
   final AppSettings settings;
   final VoidCallback onTogglePause;
   final VoidCallback onStand;
+
+  /// 기도 자세(앉아서 | 무릎 꿇고) 선택. null 이면 선택 버튼을 그리지 않는다.
+  final ValueChanged<PrayerPosture>? onPosture;
   final VoidCallback onEnd;
   final VoidCallback onFullScreen;
 
@@ -335,26 +339,52 @@ class ChurchPrayerCard extends StatelessWidget {
                             ],
                           ),
                         if (!finished) const SizedBox(height: 8),
-                        // 일어나기: 앉기 버튼이 있던 오른쪽 아래 자리.
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: finished
-                              ? FilledButton(
-                                  key: const ValueKey('prayer-stand'),
-                                  onPressed: onStand,
-                                  style: FilledButton.styleFrom(
-                                    minimumSize: const Size(112, 56),
+                        // 아랫줄: 왼쪽 기도 자세(앉아서 | 무릎 꿇고), 오른쪽 일어나기.
+                        // 한 줄에 넣어 카드 높이를 늘리지 않는다(기도문 자리를 뺏지 않는다).
+                        // 글자를 아주 크게 쓰면 자세 버튼만 줄여서 한 줄을 지킨다.
+                        Row(
+                          children: [
+                            Expanded(
+                              child: onPosture == null
+                                  ? const SizedBox.shrink()
+                                  : Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child:
+                                            MediaQuery.withClampedTextScaling(
+                                              maxScaleFactor: 1.3,
+                                              child: _postureButton(theme),
+                                            ),
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(width: 8),
+                            finished
+                                ? FilledButton(
+                                    key: const ValueKey('prayer-stand'),
+                                    onPressed: onStand,
+                                    style: FilledButton.styleFrom(
+                                      minimumSize: const Size(88, 56),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                    ),
+                                    child: const Text('일어나기'),
+                                  )
+                                : FilledButton.tonal(
+                                    key: const ValueKey('prayer-stand'),
+                                    onPressed: onStand,
+                                    style: FilledButton.styleFrom(
+                                      minimumSize: const Size(88, 48),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                    ),
+                                    child: const Text('일어나기'),
                                   ),
-                                  child: const Text('일어나기'),
-                                )
-                              : FilledButton.tonal(
-                                  key: const ValueKey('prayer-stand'),
-                                  onPressed: onStand,
-                                  style: FilledButton.styleFrom(
-                                    minimumSize: const Size(112, 48),
-                                  ),
-                                  child: const Text('일어나기'),
-                                ),
+                          ],
                         ),
                       ],
                     ),
@@ -367,6 +397,35 @@ class ChurchPrayerCard extends StatelessWidget {
       },
     );
   }
+
+  /// 기도 자세 선택(M3 SegmentedButton). 고른 값은 설정에 저장된다.
+  ///
+  /// 아이콘을 `ButtonSegment.icon` 으로 주면 안쪽 여백이 12/16 으로 고정되어 360dp 폭에서
+  /// 일어나기와 한 줄에 들어가지 않는다. 그래서 아이콘을 label 안에 넣고 여백을 줄였다.
+  Widget _postureButton(ThemeData theme) => SegmentedButton<PrayerPosture>(
+    key: const ValueKey('prayer-posture'),
+    showSelectedIcon: false,
+    style: SegmentedButton.styleFrom(
+      visualDensity: VisualDensity.standard,
+      tapTargetSize: MaterialTapTargetSize.padded,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      textStyle: theme.textTheme.labelMedium,
+    ),
+    segments: const [
+      ButtonSegment(
+        value: PrayerPosture.sit,
+        label: _PostureLabel(Icons.event_seat_outlined, '앉아서'),
+        tooltip: '앉아서 기도',
+      ),
+      ButtonSegment(
+        value: PrayerPosture.kneel,
+        label: _PostureLabel(Icons.airline_seat_legroom_reduced, '무릎 꿇고'),
+        tooltip: '무릎 꿇고 기도',
+      ),
+    ],
+    selected: {settings.prayerPosture},
+    onSelectionChanged: (s) => onPosture?.call(s.first),
+  );
 
   Widget _overflowMenu(bool paused) => PopupMenuButton<_CardMenu>(
     key: const ValueKey('prayer-menu'),
@@ -397,3 +456,21 @@ class ChurchPrayerCard extends StatelessWidget {
 }
 
 enum _CardMenu { pause, fullScreen, end }
+
+/// 자세 선택 한 칸: 아이콘 + 글자.
+class _PostureLabel extends StatelessWidget {
+  const _PostureLabel(this.icon, this.text);
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 16),
+      const SizedBox(width: 4),
+      Text(text, softWrap: false),
+    ],
+  );
+}

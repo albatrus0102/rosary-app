@@ -1,5 +1,4 @@
 // 임시: M3 감사용 전 화면 스크린샷 하니스(--dart-define=M3_SHOTS=<dir>). 비어 있으면 건너뛴다.
-import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -35,7 +34,6 @@ import 'package:rosary_app/glass/glass_flat_viewer.dart';
 import 'package:rosary_app/glass/glass_info_sheet.dart';
 import 'package:rosary_app/glass/glass_licenses_screen.dart';
 import 'package:rosary_app/glass/glass_view_screen.dart';
-import 'package:rosary_app/stats/prayer_record.dart';
 import 'package:rosary_app/stats/prayer_stats_store.dart';
 import 'package:rosary_app/ui/app_shell.dart';
 import 'package:rosary_app/ui/leader_record_screen.dart';
@@ -124,9 +122,8 @@ Widget _host(
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, c) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(scale),
-        ),
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(scale)),
         child: c!,
       ),
       home: home,
@@ -141,7 +138,9 @@ Widget _host(
 /// 그림 자산이 실제로 디코드되도록 실제 시간을 조금 흘린다.
 Future<void> _settle(WidgetTester t, [int rounds = 3]) async {
   for (var i = 0; i < rounds; i++) {
-    await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 80)));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 80)),
+    );
     await t.pump(const Duration(milliseconds: 400));
   }
 }
@@ -172,7 +171,9 @@ PrayerStatsStore _stats() {
   return PrayerStatsStore.inMemory([
     for (var i = 0; i < 24; i++)
       PrayerRecord(
-        at: now.subtract(Duration(days: i * 2 + r.nextInt(2), hours: r.nextInt(5))),
+        at: now.subtract(
+          Duration(days: i * 2 + r.nextInt(2), hours: r.nextInt(5)),
+        ),
         set: MysterySet.values[i % 4],
         decades: i % 3 == 0 ? 1 : 5,
         hailMarys: i % 3 == 0 ? 10 : 53,
@@ -190,7 +191,10 @@ Future<void> _scroll(WidgetTester t, double dy) async {
 Widget _opener(Future<void> Function(BuildContext) open) => Scaffold(
   body: Builder(
     builder: (context) => Center(
-      child: TextButton(onPressed: () => open(context), child: const Text('open')),
+      child: TextButton(
+        onPressed: () => open(context),
+        child: const Text('open'),
+      ),
     ),
   ),
 );
@@ -206,24 +210,30 @@ void main() {
 
   for (final (tag, b, scale) in variants) {
     group(tag, () {
-      Future<void> shell(WidgetTester t, AppShellTab tab, String name,
-          {List<double> scrolls = const []}) async {
+      Future<void> shell(
+        WidgetTester t,
+        AppShellTab tab,
+        String name, {
+        List<double> scrolls = const [],
+      }) async {
         _view(t);
         final settings = await _settings({'short_prayers_asked': true});
         final services = AppServices.inMemory(settings, stats: _stats());
         addTearDown(services.disposeInMemory);
-        await t.pumpWidget(_host(
-          AppShell(
-            settings: settings,
-            initialTab: tab,
-            glassCatalog: testGlassCatalogFuture(),
-            churchBuilder: (_) => const Center(child: Text('church')),
-            soundPlayer: _Silent(),
+        await t.pumpWidget(
+          _host(
+            AppShell(
+              settings: settings,
+              initialTab: tab,
+              glassCatalog: testGlassCatalogFuture(),
+              churchBuilder: (_) => const Center(child: Text('church')),
+              soundPlayer: _Silent(),
+            ),
+            b: b,
+            scale: scale,
+            services: services,
           ),
-          b: b,
-          scale: scale,
-          services: services,
-        ));
+        );
         await _settle(t);
         await _shot(t, '${name}_$tag');
         var i = 2;
@@ -249,11 +259,13 @@ void main() {
       testWidgets('05 settings', (t) async {
         _view(t);
         final settings = await _settings();
-        await t.pumpWidget(_host(
-          SettingsScreen(settings: settings, soundPlayer: _Silent()),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            SettingsScreen(settings: settings, soundPlayer: _Silent()),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '05_settings_$tag');
         for (var i = 2; i <= 4; i++) {
@@ -265,14 +277,26 @@ void main() {
       testWidgets('06 rosary style', (t) async {
         _view(t);
         final settings = await _settings();
-        await t.pumpWidget(_host(RosaryStyleScreen(settings: settings), b: b, scale: scale));
+        await t.pumpWidget(
+          _host(
+            RosaryStyleScreen(settings: settings),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '06_style_$tag');
       });
 
       testWidgets('07 leader record', (t) async {
         _view(t);
-        await t.pumpWidget(_host(LeaderRecordScreen(store: _Store()), b: b, scale: scale));
+        await t.pumpWidget(
+          _host(
+            LeaderRecordScreen(store: _Store()),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '07_leader_$tag');
       });
@@ -280,23 +304,32 @@ void main() {
       Future<void> prayer(WidgetTester t, int index) async {
         _view(t);
         final settings = await _settings({'short_prayers_asked': true});
-        await t.pumpWidget(_host(
-          PrayerScreen(
-            settings: settings,
-            mysterySet: MysterySet.sorrowful,
-            initialIndex: index,
-            soundPlayer: _Silent(),
+        await t.pumpWidget(
+          _host(
+            PrayerScreen(
+              settings: settings,
+              mysterySet: MysterySet.sorrowful,
+              initialIndex: index,
+              soundPlayer: _Silent(),
+            ),
+            b: b,
+            scale: scale,
           ),
-          b: b,
-          scale: scale,
-        ));
+        );
         await _settle(t);
       }
 
       final steps = buildRosarySequence(MysterySet.sorrowful);
       testWidgets('08 prayer', (t) async {
-        await prayer(t, steps.indexWhere((s) =>
-            s.kind == StepKind.hailMary && s.decade == 1 && s.beadIndex == 4));
+        await prayer(
+          t,
+          steps.indexWhere(
+            (s) =>
+                s.kind == StepKind.hailMary &&
+                s.decade == 1 &&
+                s.beadIndex == 4,
+          ),
+        );
         await _shot(t, '08_prayer_$tag');
         await t.tap(find.byKey(const ValueKey('prayer-strip')));
         await _settle(t);
@@ -321,33 +354,41 @@ void main() {
       testWidgets('10 glass info sheet', (t) async {
         _view(t);
         final w = testGlassCatalog().visible.first;
-        await t.pumpWidget(_host(
-          _opener((c) => showGlassInfoSheet(c, w, onPray: () {})),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            _opener((c) => showGlassInfoSheet(c, w, onPray: () {})),
+            b: b,
+            scale: scale,
+          ),
+        );
         await t.tap(find.text('open'));
         await _settle(t);
         await _shot(t, '10_glass_info_$tag');
       });
       testWidgets('11 glass licenses', (t) async {
         _view(t);
-        await t.pumpWidget(_host(
-          GlassLicensesScreen(catalog: testGlassCatalogFuture()),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            GlassLicensesScreen(catalog: testGlassCatalogFuture()),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '11_glass_licenses_$tag');
       });
       testWidgets('12 glass flat', (t) async {
         _view(t);
         final w = testGlassCatalog().visible.first;
-        await t.pumpWidget(_host(
-          Scaffold(body: GlassFlatViewer(window: w, onBack: () {}, onInfo: () {})),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            Scaffold(
+              body: GlassFlatViewer(window: w, onBack: () {}, onInfo: () {}),
+            ),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '12_glass_flat_$tag');
       });
@@ -355,11 +396,18 @@ void main() {
         _view(t);
         final w = testGlassCatalog().visible.first;
         final scene = FakeChurchSceneController();
-        await t.pumpWidget(_host(
-          GlassViewScreen(window: w, scene: scene, onPray: () {}, immersive: false),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            GlassViewScreen(
+              window: w,
+              scene: scene,
+              onPray: () {},
+              immersive: false,
+            ),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t, 1);
         await _shot(t, '13_glass_view_loading_$tag');
         scene.emit(const SceneReady());
@@ -370,11 +418,15 @@ void main() {
       testWidgets('14 church select', (t) async {
         _view(t);
         final settings = await _settings();
-        await t.pumpWidget(_host(
-          Scaffold(body: ChurchSelectScreen(settings: settings, onEnter: (_) {})),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            Scaffold(
+              body: ChurchSelectScreen(settings: settings, onEnter: (_) {}),
+            ),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '14_church_select_$tag');
         await _scroll(t, 600);
@@ -384,28 +436,36 @@ void main() {
         _view(t);
         final settings = await _settings();
         settings.churchId = 'stpeter';
-        await t.pumpWidget(_host(
-          Scaffold(
-            body: ChurchTab(
-              settings: settings,
-              net: FakeChurchNet(),
-              scene: FakeChurchSceneController(),
+        await t.pumpWidget(
+          _host(
+            Scaffold(
+              body: ChurchTab(
+                settings: settings,
+                net: FakeChurchNet(),
+                scene: FakeChurchSceneController(),
+              ),
             ),
+            b: b,
+            scale: scale,
           ),
-          b: b,
-          scale: scale,
-        ));
+        );
         await _settle(t);
         await _shot(t, '15_church_entry_$tag');
       });
       testWidgets('16 avatar first', (t) async {
         _view(t);
         final settings = await _settings();
-        await t.pumpWidget(_host(
-          AvatarEditorScreen(settings: settings, firstEntry: true, random: Random(1)),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            AvatarEditorScreen(
+              settings: settings,
+              firstEntry: true,
+              random: Random(1),
+            ),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '16_avatar_first_$tag');
         await _scroll(t, 600);
@@ -413,11 +473,13 @@ void main() {
       });
       testWidgets('17 name picker', (t) async {
         _view(t);
-        await t.pumpWidget(_host(
-          const BaptismalNameScreen(gender: 1, selected: 0),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            const BaptismalNameScreen(gender: 1, selected: 0),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '17_name_picker_$tag');
       });
@@ -426,11 +488,13 @@ void main() {
         final settings = await _settings();
         final net = FakeChurchNet();
         final scene = FakeChurchSceneController();
-        await t.pumpWidget(_host(
-          ChurchScreen(settings: settings, net: net, scene: scene),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            ChurchScreen(settings: settings, net: net, scene: scene),
+            b: b,
+            scale: scale,
+          ),
+        );
         await t.pump();
         scene.emit(const SceneReady());
         net.goOnline(12);
@@ -439,22 +503,18 @@ void main() {
       });
       testWidgets('19 church go sheet', (t) async {
         _view(t);
-        await t.pumpWidget(_host(
-          _opener((c) => showChurchGoSheet(c)),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(_opener((c) => showChurchGoSheet(c)), b: b, scale: scale),
+        );
         await t.tap(find.text('open'));
         await _settle(t);
         await _shot(t, '19_church_go_$tag');
       });
       testWidgets('20 candle sheet', (t) async {
         _view(t);
-        await t.pumpWidget(_host(
-          _opener((c) => showCandleSheet(c)),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(_opener((c) => showCandleSheet(c)), b: b, scale: scale),
+        );
         await t.tap(find.text('open'));
         await _settle(t);
         await _shot(t, '20_candle_$tag');
@@ -462,7 +522,13 @@ void main() {
 
       testWidgets('21 login', (t) async {
         _view(t);
-        await t.pumpWidget(_host(LoginScreen(authService: FakeAuthService()), b: b, scale: scale));
+        await t.pumpWidget(
+          _host(
+            LoginScreen(authService: FakeAuthService()),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '21_login_$tag');
         await t.tap(find.byKey(const Key('login-email')));
@@ -473,10 +539,19 @@ void main() {
         _view(t);
         final auth = FakeAuthService(
           initial: const AuthState.signedIn(
-            userId: 'u1', email: 'me@example.com', provider: LoginProvider.email),
+            userId: 'u1',
+            email: 'me@example.com',
+            provider: LoginProvider.email,
+          ),
         );
         final store = await makeConsentStore(auth);
-        await t.pumpWidget(_host(ConsentScreen(authService: auth, consentStore: store), b: b, scale: scale));
+        await t.pumpWidget(
+          _host(
+            ConsentScreen(authService: auth, consentStore: store),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '22_consent_$tag');
       });
@@ -484,10 +559,19 @@ void main() {
         _view(t);
         final auth = FakeAuthService(
           initial: const AuthState.signedIn(
-            userId: 'u1', email: 'me@example.com', provider: LoginProvider.email),
+            userId: 'u1',
+            email: 'me@example.com',
+            provider: LoginProvider.email,
+          ),
         );
         final store = await makeConsentStore(auth);
-        await t.pumpWidget(_host(AccountScreen(authService: auth, consentStore: store), b: b, scale: scale));
+        await t.pumpWidget(
+          _host(
+            AccountScreen(authService: auth, consentStore: store),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '23_account_$tag');
         await _scroll(t, 600);
@@ -495,11 +579,13 @@ void main() {
       });
       testWidgets('24 legal', (t) async {
         _view(t);
-        await t.pumpWidget(_host(
-          const LegalScreen(title: legalPrivacyTitle, body: legalPrivacyBody),
-          b: b,
-          scale: scale,
-        ));
+        await t.pumpWidget(
+          _host(
+            const LegalScreen(title: legalPrivacyTitle, body: legalPrivacyBody),
+            b: b,
+            scale: scale,
+          ),
+        );
         await _settle(t);
         await _shot(t, '24_legal_$tag');
       });

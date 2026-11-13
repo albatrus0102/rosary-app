@@ -17,6 +17,7 @@ class PeerInfo {
     this.st = 'w',
     this.seat,
     this.ms = -1,
+    this.kneel = false,
   });
 
   final String id;
@@ -34,6 +35,9 @@ class PeerInfo {
   /// 기도 중인 신비 종류 0..3, 기도 중이 아니면 -1.
   final int ms;
 
+  /// 무릎 꿇고 기도 중(서버 `k:1`).
+  final bool kneel;
+
   /// 웹 브리지(`setPeers`/`peerJoin`)로 넘기는 JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -44,6 +48,7 @@ class PeerInfo {
     'st': st,
     'seat': seat,
     'ms': ms,
+    if (kneel) 'k': 1,
   };
 
   @override
@@ -56,10 +61,11 @@ class PeerInfo {
       other.r == r &&
       other.st == st &&
       other.seat == seat &&
-      other.ms == ms;
+      other.ms == ms &&
+      other.kneel == kneel;
 
   @override
-  int get hashCode => Object.hash(id, avatar, x, z, r, st, seat, ms);
+  int get hashCode => Object.hash(id, avatar, x, z, r, st, seat, ms, kneel);
 
   @override
   String toString() => 'PeerInfo($id, $st, seat: $seat, ms: $ms)';
@@ -207,11 +213,14 @@ class SeatDenied extends ChurchEvent {
 }
 
 class Praying extends ChurchEvent {
-  const Praying(this.id, this.on, this.ms);
+  const Praying(this.id, this.on, this.ms, {this.kneel = false});
 
   final String id;
   final bool on;
   final int ms;
+
+  /// 무릎 꿇고 기도 중(서버 `k:1`). 기도 중(`on`)일 때만 뜻이 있다.
+  final bool kneel;
 }
 
 class Candle extends ChurchEvent {
@@ -300,7 +309,9 @@ abstract class ChurchNet {
   void sendPos(double x, double z, double r, bool moving);
   void requestSit(String seat);
   void sendStand();
-  void sendPraying(bool on, int ms);
+
+  /// [kneel]: 무릎 꿇고 기도(서버 `k:1`). 다른 사람 화면에도 무릎 꿇은 자세로 보인다.
+  void sendPraying(bool on, int ms, {bool kneel = false});
   void lightCandle(int slot, int intention);
   void emote(int e);
 

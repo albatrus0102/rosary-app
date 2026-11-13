@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../church_constants.dart';
 import 'avatar_config.dart';
 import 'avatar_preview.dart';
@@ -42,7 +43,7 @@ class AvatarSection extends StatelessWidget {
   }
 }
 
-/// 성별 선택: 크고 분명한 두 칸(여성/남성). 높이 56dp.
+/// 성별 선택: M3 세그먼트 버튼(두 칸, 하나만 선택). 처음 화면의 핵심 선택이라 높이 56dp.
 class GenderPicker extends StatelessWidget {
   const GenderPicker({super.key, required this.value, required this.onChanged});
 
@@ -51,96 +52,39 @@ class GenderPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      key: const ValueKey('gender-picker'),
-      children: [
-        Expanded(
-          child: _GenderChoice(
-            label: '여성',
-            icon: Icons.female,
-            selected: value == avatarFemale,
-            onTap: () => onChanged(avatarFemale),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _GenderChoice(
-            label: '남성',
-            icon: Icons.male,
-            selected: value == avatarMale,
-            onTap: () => onChanged(avatarMale),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GenderChoice extends StatelessWidget {
-  const _GenderChoice({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final fg = selected ? scheme.onPrimaryContainer : scheme.onSurfaceVariant;
-    return Semantics(
-      button: true,
-      selected: selected,
-      inMutuallyExclusiveGroup: true,
-      label: label,
-      excludeSemantics: true,
-      onTap: onTap,
-      child: Material(
-        color: selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: selected ? scheme.primary : scheme.outlineVariant,
-            width: selected ? 2.5 : 1,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 56),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, color: fg),
-                      const SizedBox(width: 6),
-                      Text(
-                        label,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: fg,
-                              fontWeight: selected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<int>(
+        key: const ValueKey('gender-picker'),
+        segments: [
+          for (final (v, icon, label) in const [
+            (avatarFemale, Icons.female, '여성'),
+            (avatarMale, Icons.male, '남성'),
+          ])
+            // 아이콘을 라벨 안에 둔다: ButtonSegment.icon 을 쓰면 칸 여백이 고정(8dp)되어
+            // 56dp 높이를 만들 수 없다.
+            ButtonSegment(
+              value: v,
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 18),
+                  const SizedBox(width: AppSpace.xs),
+                  Flexible(child: Text(label)),
+                ],
               ),
             ),
+        ],
+        // 선택 표시는 체크 대신 성별 아이콘을 그대로 둔다(아이콘이 뜻을 전한다).
+        showSelectedIcon: false,
+        // 세그먼트 버튼은 minimumSize 를 칸에 넘기지 않으므로 세로 여백으로 56dp 를 만든다.
+        style: const ButtonStyle(
+          padding: WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 12, vertical: 18),
           ),
         ),
+        selected: {value},
+        onSelectionChanged: (s) => onChanged(s.first),
       ),
     );
   }
@@ -224,12 +168,15 @@ class _StyleTile extends StatelessWidget {
       excludeSemantics: true,
       onTap: onTap,
       child: Material(
-        color: selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
+        // M3 선택형 카드: 선택 시 secondaryContainer + primary 2dp 윤곽, 아니면 outlineVariant.
+        color: selected
+            ? scheme.secondaryContainer
+            : scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppShape.medium,
           side: BorderSide(
             color: selected ? scheme.primary : scheme.outlineVariant,
-            width: selected ? 2.5 : 1,
+            width: selected ? 2 : 1,
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -248,9 +195,8 @@ class _StyleTile extends StatelessWidget {
                   maxLines: 2,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: selected
-                        ? scheme.onPrimaryContainer
+                        ? scheme.onSecondaryContainer
                         : scheme.onSurface,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
               ],
@@ -328,7 +274,8 @@ class _Swatch extends StatelessWidget {
           radius: 26,
           child: Center(
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
+              duration: AppMotion.of(context, Durations.short2),
+              curve: Easing.standard,
               width: 38,
               height: 38,
               decoration: BoxDecoration(
@@ -395,7 +342,7 @@ class BaptismalNameField extends StatelessWidget {
         color: scheme.surfaceContainerLow,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppShape.medium,
           side: BorderSide(color: scheme.outlineVariant),
         ),
         child: ListTile(

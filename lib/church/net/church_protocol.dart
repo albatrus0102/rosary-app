@@ -48,6 +48,7 @@ PeerInfo? parsePeer(Object? v) {
     st: st is String && st.isNotEmpty ? st : 'w',
     seat: seat is String && seat.isNotEmpty ? seat : null,
     ms: _int(v['ms']) ?? -1,
+    kneel: v['k'] == 1,
   );
 }
 
@@ -146,7 +147,7 @@ ChurchEvent? _parse(Map<String, dynamic> m) {
       final id = m['id'];
       final on = m['on'];
       if (id is! String || on is! bool) return null;
-      return Praying(id, on, _int(m['ms']) ?? -1);
+      return Praying(id, on, _int(m['ms']) ?? -1, kneel: on && m['k'] == 1);
     case 'candle':
       final c = _candle(m);
       if (c == null) return null;
@@ -218,8 +219,9 @@ String sitMessage(String seat) => jsonEncode({'t': 'sit', 'seat': seat});
 
 String standMessage() => jsonEncode({'t': 'stand'});
 
-String prayMessage(bool on, int ms) =>
-    jsonEncode({'t': 'pray', 'on': on, 'ms': ms});
+/// [kneel]: 무릎 꿇고 기도(`k:1`). 앉아서 기도면 필드를 보내지 않는다(이전 서버와 호환).
+String prayMessage(bool on, int ms, {bool kneel = false}) =>
+    jsonEncode({'t': 'pray', 'on': on, 'ms': ms, if (on && kneel) 'k': 1});
 
 String candleMessage(int slot, int intention) =>
     jsonEncode({'t': 'candle', 'slot': slot, 'intention': intention});

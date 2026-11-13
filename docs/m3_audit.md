@@ -160,3 +160,89 @@ Flutter 3.47.9 / Material 3(`useMaterial3`) 기준. 이 문서는 (1) 이번에 
 
 1. `app_shell.dart`(아이콘 쌍, SafeArea 정리, 테스트 갱신) → 2. `prayer_screen.dart`(AppBar·진행 표시줄·컨트롤 바·모션 토큰) 후 `SoftCard` 삭제 →
 3. `church/*`(알파 합성 제거, 칩·검색·시트·스낵바) → 4. `flutter analyze`, `flutter test`(특히 `theme_contrast_test`, `m3_theme_test`) 재실행.
+
+---
+
+## 10. 2026-11 재감사 (전 화면, 360×800 라이트/다크/글자 2배 스크린샷 기준)
+
+사용자 지적: "M3 를 철저히 지켜, 너무 어색하게 만들어지고 있다". 기능을 빠르게 붙이면서 화면마다
+다른 표면 색·반투명 배경·알약 모양·임의 반지름/간격이 섞였다. 기준은 m3.material.io 의 색 역할,
+타입 스케일, 모양 스케일(4/8/12/16/28/full), 상태 레이어, 터치 타깃 48dp, 4/8dp 간격, 모션 토큰,
+컴포넌트 규격. 스크린샷 하니스: `test/zz_m3_shots_test.dart`
+(`flutter test test/zz_m3_shots_test.dart --dart-define=M3_SHOTS=<dir>`, 비어 있으면 건너뜀).
+
+심각도: **H** = 한눈에 어색함/색 역할·대비 위반, **M** = 규격 이탈(모양·간격·컴포넌트 선택), **L** = 토큰화·일관성.
+상태: ✅ 이번에 수정, ⏸ 보류(다른 작업과 충돌), ➖ 의도적 예외(문서화).
+
+### 10.1 공통(테마·색)
+
+| 위치 | M3 규격 | 현재(전) | 수정 | 심각도 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| `app/theme.dart` secondary | tonalSpot 은 secondary 를 primary 와 같은 색상의 저채도 톤으로 만든다 | secondary 를 올리브 시드로 덮어씀 → 내비 표시기·세그먼트·tonal 버튼·필터 칩·선택 목록이 전부 연두색, 테라코타 primary 와 충돌 | 덮어쓰기 제거(tertiary 골드만 유지) | H | ✅ |
+| `app/theme.dart` AppBar | small/medium/large 앱 바 제목은 시작 쪽 | 기본(플랫폼 따라 가운데) | `centerTitle: false` | L | ✅ |
+| `app/theme.dart` SearchBar | 검색 바: surfaceContainerHigh, 그림자 없음, 56dp, full | 화면마다 elevation/색 지정 | `searchBarTheme` 중앙 정의 | M | ✅ |
+| `app/theme.dart` BottomSheet | 위쪽 28dp, 최대 폭 640, drag handle | 화면마다 shape 반복 | `AppShape.extraLargeTopBorder` 토큰 | L | ✅ |
+| 목록 컨테이너(설정·더보기·계정·동의·기록) | 한 화면에서 같은 컨테이너 하나(채운 카드 또는 윤곽 카드) | 윤곽 카드·채운 카드·surface 혼용 | `ListGroup`/`ListSection`(채운 카드 surfaceContainerLow, 12dp) 신설·적용 | H | ✅ |
+| 3D/사진 위 오버레이 전반 | 불투명 표면 역할 또는 scrim, 대비 AA | `surface.withValues(alpha:.7~.92)`, `Colors.black38/45/54`, `Color(0xCC000000)` | HUD=`surfaceContainerHigh`/filled tonal/inverseSurface, 감상=어두운 앱 테마 + `scrim` 그러데이션 | H | ✅ |
+| 반지름 하드코딩 | 모양 스케일 토큰만 | `BorderRadius.circular(4/8/12/14/16/20/28)` 17곳 | `AppShape.*` 로 치환, 14/20 은 4/12 로 | L | ✅ |
+| 모션 | `Durations.*` + `Easing.*`, 동작 줄이기 존중 | `Duration(milliseconds: 120/180/220/280)`, `Curves.easeOutCubic` | `AppMotion.of(context, Durations.short2/short4/medium1/medium2)`, `Easing.standard*`/`emphasizedDecelerate` | M | ✅ |
+
+### 10.2 화면별
+
+| 화면 | 위치 | M3 규격 | 현재(전) | 수정 | 심각도 | 상태 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 성당 HUD | `church_hud.dart` `ChurchStatusChip` | 칩/표면: 불투명 surfaceContainer*, full | `surface 86%` 알약 | `surfaceContainerHigh` + level 2(3dp) | H | ✅ |
+| 성당 HUD | `ChurchTopActions` | Icon button(filled tonal) 48dp | 반투명 원 + 인사 버튼만 `Container(48×48)` | 세 버튼 모두 `IconButton.filledTonal`(인사는 `PopupMenuButton.style`) | H | ✅ |
+| 성당 HUD | `ChurchGoButton` | 버튼 종류 하나(위 줄과 같은 tonal) | primaryContainer + 커스텀 Stadium + elevation 2 | `FilledButton.tonalIcon` | M | ✅ |
+| 성당 HUD | `ChurchContextAction` | filled 버튼 기본 모양, 모션 토큰 | 패딩 22, 180ms 기본 곡선 | 패딩 24, `Durations.short4`+`Easing.standard*`, 동작 줄이기 | M | ✅ |
+| 성당 HUD | 걷는 중/이 창 칩 | 칩 모양 small(8), 불투명 | `inverseSurface 92%` 알약, 보조 글자 `fg 80%` | 불투명 inverseSurface, 8dp, 보조 글자 `inversePrimary` | M | ✅ |
+| 성당 HUD | 가기 안내·이동 안내 | plain tooltip: inverseSurface, 4dp, bodySmall | 14/12dp 반경, 이동 안내만 `surface 70%` | 두 안내 모두 plain tooltip 규칙 | M | ✅ |
+| 성당 HUD | 느린 기기 띠 | snackbar: inverseSurface, 4dp, level 3 | 16dp, elevation 3 | 4dp, 6dp | L | ✅ |
+| 성당 HUD | 조이스틱 | — | 흰/검 반투명 | 3D 바닥 표식과 구분하려는 중립색(의도) | L | ➖ |
+| 첫 설정/아바타 편집 | 성별 | Segmented button(단일 선택) | 커스텀 카드 2개(primary 2.5dp 테두리, primaryContainer) | `SegmentedButton<int>`(아이콘+라벨) | H | ✅ |
+| 첫 설정/아바타 편집 | 머리 모양 타일 | 선택형 카드: secondaryContainer, 12dp, 선택 윤곽 2dp | primaryContainer, 16dp, 2.5dp, 굵기 700 | secondaryContainer, `AppShape.medium`, 2dp, 굵기 기본 | M | ✅ |
+| 첫 설정/아바타 편집 | 세례명 줄·견본 모션 | 12dp 카드, 모션 토큰 | 16dp, 120ms | `AppShape.medium`, `Durations.short2` | L | ✅ |
+| 세례명 고르기 | 개수 칩·검색·선택 줄 | 정보는 텍스트, 검색 바 | 칩으로 개수, 그림자 칩 | 텍스트 + 테마 검색 바 | M | ✅(이전 체크포인트) |
+| 성당 고르기 | 헤더·라벨 | 단색 역할, 알파 없음 | primaryContainer 그러데이션, `onPrimaryContainer 12/80%`, `inverseSurface` 알파 | 단색·Chip | H | ✅(이전 체크포인트) |
+| 성당 입장 카드 | 레이아웃 | 다른 탭처럼 위에서부터, 타입 스케일 굵기 기본, 큰 버튼 56 | 세로 가운데(위가 휑함), headline w700, 패딩 20/14, 버튼 60 + titleMedium | 위 정렬, 16/24 간격, 56dp 버튼 | M | ✅ |
+| 촛불 시트 | 지향 고르기 | 라디오 목록(RadioGroup) | ListTile + 라디오 *아이콘* 흉내 | `RadioGroup` + `RadioListTile`(키·선택 색 유지) | M | ✅ |
+| 가기/촛불/접속자 시트 | 여백·반경 | 시트 좌우 24, 16dp 토큰 | 20, `circular(16)` | 24, `AppShape.large` | L | ✅ |
+| 감상(3D)/평면 보기 | 위·아래 덮개 | 사진 위: scrim + 어두운 테마 역할 | `Color(0xCC000000)` 그러데이션, 흰 글자 하드코딩, 제목 그림자 | `GlassViewerTheme`(어두운 앱 테마) + `glassScrim(scheme.scrim)` | H | ✅ |
+| 감상(3D)/평면 보기 | 아이콘 버튼·더보기 | filled tonal 48dp | `Colors.black38` 원 | `IconButton.filledTonal` + `glassIconButtonStyle` | H | ✅ |
+| 감상(3D) | 빛 세그먼트 | 세그먼트 기본 역할 | 흰/검 하드코딩 6개 | 테마 역할 + 불투명 surfaceContainerHigh 바탕 | H | ✅ |
+| 감상(3D) | 불러오는 중 | 진행 표시 + 표면 카드 | `black54` 알약 텍스트 | `Card.filled(surfaceContainerHigh)` + `CircularProgressIndicator` | M | ✅ |
+| 감상(3D) | 오류 | 버튼 기본 역할, 오류 아이콘 error | 흰/검 강제 버튼 | 기본 Outlined/Filled, `scheme.error` 아이콘 | M | ✅ |
+| 감상 배지 | `GlassPlacementBadge` | labelSmall, 4dp, 불투명 | `fontSize: 11`, 검정 62% | `textTheme.labelSmall`, `AppShape.extraSmall`, inverse 쌍 | M | ✅ |
+| 창 정보 시트/라이선스 | 강조 카드 | 컨테이너 역할 그대로 | `primaryContainer 55%` | `secondaryContainer` | M | ✅ |
+| 유리화 탭 | 오늘의 묵주기도 띠 | 한 줄 목록 56dp, 아이콘 24 | 52dp, 아이콘 20, labelLarge | `ListTile`(56dp) | L | ✅ |
+| 유리화 갤러리 | 캡션 글자 크기 | 타입 스케일 | `fontSize: 14/12` 고정(= titleSmall/bodySmall 값, 격자 높이 계산용) | 값이 스케일과 같아 유지 | L | ➖ |
+| 기도 화면 | '기도문 계속 읽기' | outlined 버튼(보조) | 커스텀 Stadium 윤곽 + 패딩 10/5 | `OutlinedButton.icon`(터치 48 padded, 키·의미 유지) | M | ✅ |
+| 기도 화면(넓은 화면) | 구슬 패널 | 표면 역할 + 28dp 토큰 | `surface` + 윤곽 + `circular(28)` | `surfaceContainerLow`, `AppShape.extraLarge` | L | ✅ |
+| 기도 마침 | 완료 표시 | 컨테이너 위 아이콘은 on*Container | `secondary 40%` 테두리, 아이콘 secondary, 간격 28/10/32, headline w700 | 테두리 제거, `onSecondaryContainer`, 24/8/32, headline 기본 | M | ✅ |
+| 설정 | 선창 음성 세그먼트 | 세그먼트 라벨이 접히지 않게 | 아이콘+긴 라벨 3줄 접힘 | 라벨만, 선택 체크 숨김 | M | ✅(이전 체크포인트) |
+| 기록 | 섹션 카드/지표 | 같은 목록 컨테이너, 4dp 격자 | 윤곽 카드, 2dp 간격, 56 강제 | 채운 카드 surfaceContainerLow, 4dp | M | ✅(이전 체크포인트) |
+| 동의/계정 | 섹션 제목·카드 | 목록 소제목 labelLarge primary, 같은 컨테이너 | titleMedium, 윤곽 카드 | labelLarge, 채운 카드 | M | ✅(이전 체크포인트) |
+| 로그인 | 카카오 버튼 | 브랜드 가이드 색 | 노랑 고정, 비활성 60% | 브랜드 규정이라 유지 | L | ➖ |
+
+### 10.3 보류 항목(수정 금지 파일 — 다른 작업과 충돌)
+
+| 파일 | 위반 | 제안 | 심각도 |
+| --- | --- | --- | --- |
+| `church/church_prayer_card.dart` | 카드 바탕 `surface` 알파 합성 + elevation 3 + `cardRadius+4` | `Card.filled(color: surfaceContainerHigh)` + `AppShape.largeBorder`, 버튼은 HUD 와 같은 filled/tonal | H |
+| `church/church_prayer_card.dart` | (병행 작업 중 추가된) 자세 선택 `_PostureLabel` 커스텀 라벨 — 감사 도중 글자 2배에서 일시적으로 넘쳤다가 그 작업 쪽에서 해결됨 | 자세 선택은 `SegmentedButton`(앉아서/무릎 꿇고), 라벨은 `labelLarge` | M |
+| `church/church_screen.dart` | 스낵바 `behavior: floating` 중복, 로딩 `LinearProgressIndicator(borderRadius: 4)`, HUD 배치 여백(6/10dp) | 테마에 맡기고 `borderRadius` 제거, HUD 간격 8/16 | L |
+| `church/church_scene_controller.dart` | 가짜 장면 색 `Color(0xFF202020)` | 테스트용이라 유지 | L |
+
+### 10.4 공통 컴포넌트(승격)
+
+- `ui/widgets/list_group.dart`: `ListGroup`(채운 카드 목록 묶음), `ListSection`(소제목 + 묶음 + 16dp 아래 간격).
+- `church/church_hud.dart`: `ChurchHudStyle`(HUD 표면 역할·높이 한 곳에서).
+- `glass/glass_widgets.dart`: `glassViewerTheme()`/`GlassViewerTheme`(사진·3D 위는 어두운 앱 테마), `glassScrim()`(scrim 역할 그러데이션).
+- `glass/glass_chrome.dart`: `glassIconButtonStyle()`(감상 덮개 아이콘 버튼 한 모양).
+- `app/theme.dart`: `AppShape.extraLargeTopBorder`, `searchBarTheme`, `appBarTheme.centerTitle`.
+
+### 10.5 남은 결정(사용자)
+
+1. **시드 색**: 테라코타 단일 시드(+골드 tertiary) 유지 vs. 기기 색(Material You) 기본 켜기.
+2. **화면 전환**: Android 기본(PredictiveBack + FadeForwards) 유지 vs. 탭 간 `FadeThrough`(animations 패키지, APK 증가) — 현재는 의존성 추가 없이 기본 유지.
+3. **아이콘 세트**: Material Icons(기본, 채움) 유지 vs. Material Symbols Rounded(폰트 추가 → APK 증가). 현재는 기본 유지.

@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../app/settings.dart';
+import '../app/theme.dart';
 import 'glass_catalog.dart';
 
 /// 창 사진 뒤에 까는 어두운 중성 돌 바탕. 창의 투명 윤곽(알파)이 그대로 보이게 한다.
@@ -10,6 +12,58 @@ const Color kGlassStone = Color(0xFF1C1C1E);
 
 /// 감상 화면 위에 올리는 글자·아이콘 색.
 const Color kGlassOnStone = Color(0xFFF2F2F4);
+
+/// 감상 화면(사진·3D 위) 덮개 UI 의 M3 테마: 앱 밝기와 상관없이 **어두운 앱 테마**를 쓴다.
+///
+/// 사진 위 조작부는 하드코딩한 검정 반투명·흰 글자 대신 이 테마의 색 역할(onSurface,
+/// surfaceContainerHigh, secondaryContainer, scrim)을 쓴다. 기기 색(Material You)을 쓰는
+/// 중이면 그 primary 를 시드로 같은 계열의 어두운 구성을 만든다.
+ThemeData glassViewerTheme(BuildContext context) {
+  final t = Theme.of(context);
+  if (t.brightness == Brightness.dark) return t;
+  final font = t.textTheme.bodyMedium?.fontFamily == AppTheme.sansFamily
+      ? PrayerFont.gothic
+      : PrayerFont.system;
+  final seed = AppTheme.seedScheme(Brightness.light);
+  final dynamicScheme = t.colorScheme.primary == seed.primary
+      ? null
+      : ColorScheme.fromSeed(
+          seedColor: t.colorScheme.primary,
+          brightness: Brightness.dark,
+        );
+  return AppTheme.dark(dynamicScheme: dynamicScheme, font: font);
+}
+
+/// [child] 를 감상 화면용 어두운 M3 테마로 감싼다([glassViewerTheme]).
+class GlassViewerTheme extends StatelessWidget {
+  const GlassViewerTheme({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      Theme(data: glassViewerTheme(context), child: child);
+}
+
+/// 사진 위 글자 보호용 그러데이션(M3 scrim 역할). [strength] 는 가장 짙은 쪽 불투명도.
+LinearGradient glassScrim(
+  ColorScheme scheme, {
+  required AlignmentGeometry from,
+  double strength = 0.8,
+}) {
+  final begin = from;
+  final end = from == Alignment.topCenter
+      ? Alignment.bottomCenter
+      : Alignment.topCenter;
+  return LinearGradient(
+    begin: begin,
+    end: end,
+    colors: [
+      scheme.scrim.withValues(alpha: strength),
+      scheme.scrim.withValues(alpha: 0),
+    ],
+  );
+}
 
 /// 창 사진을 그릴 칸(논리 크기)에 필요한 디코드 한계(기기 픽셀). 칸 안에 맞춰(contain)
 /// 그리므로 가로·세로 둘 다 이 값을 넘는 픽셀은 화면에 쓰이지 않는다.
@@ -102,17 +156,19 @@ class GlassPlacementBadge extends StatelessWidget {
     final Color bg;
     final Color fg;
     if (onDark) {
-      bg = Colors.black.withValues(alpha: 0.62);
-      fg = kGlassOnStone;
+      // 사진 위: 불투명 표면 역할(어두운 감상 테마 기준이 아니어도 대비가 유지되는 inverse 쌍).
+      bg = scheme.brightness == Brightness.dark
+          ? scheme.surfaceContainerHigh
+          : scheme.inverseSurface;
+      fg = scheme.brightness == Brightness.dark
+          ? scheme.onSurface
+          : scheme.onInverseSurface;
     } else {
       bg = authentic ? scheme.primaryContainer : scheme.secondaryContainer;
       fg = authentic ? scheme.onPrimaryContainer : scheme.onSecondaryContainer;
     }
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: bg, borderRadius: AppShape.extraSmall),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         child: Row(
@@ -129,12 +185,9 @@ class GlassPlacementBadge extends StatelessWidget {
                 labelOf(kind),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  height: 1.2,
-                  color: fg,
-                  fontWeight: FontWeight.w600,
-                ),
+                // M3 label small(11sp) 역할.
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(color: fg, height: 1.2),
               ),
             ),
           ],

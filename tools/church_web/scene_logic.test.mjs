@@ -45,7 +45,7 @@ test('pew bands cover backrest+seat (seat -0.20 .. +0.62 in z) and span x [2.6, 
   assert.ok(f0.z1 < z0 - 1.0 && f0.z0 > z0 - 1.9, JSON.stringify(f0));
 });
 
-test('pew geometry invariants (SPEC §23): legroom, shelf, kneeler, seat under the hips', () => {
+test('pew geometry invariants (SPEC §28): legroom, shelf, kneeler, seat under the hips', () => {
   const P = Logic.PEW, C = Logic.C, a = Logic.pewAhead(1.9);
   // 좌석: 높이 0.45, 깊이 0.4~0.55, 좌석 중심이 좌석판 안쪽
   assert.equal(P.SEAT_TOP, C.SEAT_H);

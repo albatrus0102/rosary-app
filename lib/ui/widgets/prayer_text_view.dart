@@ -420,40 +420,21 @@ class _ReadMoreButton extends StatelessWidget {
       label: '$label. 같은 기도문을 아래로 내립니다. 구슬은 바뀌지 않습니다',
       excludeSemantics: true,
       onTap: onTap,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const StadiumBorder(),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-          child: Center(
-            widthFactor: 1,
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                shape: StadiumBorder(side: BorderSide(color: scheme.outline)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 5, 14, 5),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.keyboard_double_arrow_down,
-                      size: 20,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      label,
-                      maxLines: 1,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      // M3 outlined 버튼(보조 행동): 구슬을 넘기는 filled 버튼과 위계가 구분된다.
+      // 시각 높이 40dp, 터치 영역 48dp(padded).
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+        child: Center(
+          widthFactor: 1,
+          child: OutlinedButton.icon(
+            onPressed: onTap,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: scheme.onSurfaceVariant,
+              padding: const EdgeInsetsDirectional.fromSTEB(12, 0, 16, 0),
+              tapTargetSize: MaterialTapTargetSize.padded,
             ),
+            icon: const Icon(Icons.keyboard_double_arrow_down),
+            label: Text(label, maxLines: 1),
           ),
         ),
       ),

@@ -53,7 +53,7 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
   final GlassChromeController _chrome = GlassChromeController();
   late final AnimationController _anim = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 280),
+    duration: Durations.medium2,
   );
   Animation<Matrix4>? _reset;
   bool _loadedReported = false;
@@ -90,10 +90,9 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
       widget.onZoom?.call(1);
       return;
     }
-    _reset = Matrix4Tween(
-      begin: _tc.value,
-      end: Matrix4.identity(),
-    ).animate(CurvedAnimation(parent: _anim, curve: Curves.easeOutCubic));
+    _reset = Matrix4Tween(begin: _tc.value, end: Matrix4.identity()).animate(
+      CurvedAnimation(parent: _anim, curve: Easing.emphasizedDecelerate),
+    );
     _anim
       ..reset()
       ..forward();
@@ -107,10 +106,15 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
     }
   }
 
+  // 감상 화면은 어두운 M3 테마(glassViewerTheme)로 그린다.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      GlassViewerTheme(child: Builder(builder: _buildThemed));
+
+  Widget _buildThemed(BuildContext context) {
     final w = widget.window;
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final image = Image(
       image: w.flatFile.provider,
       fit: BoxFit.contain,
@@ -125,10 +129,10 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
         }
         return child;
       },
-      errorBuilder: (_, _, _) => const Center(
+      errorBuilder: (_, _, _) => Center(
         child: Icon(
           Icons.broken_image_outlined,
-          color: kGlassOnStone,
+          color: scheme.onSurfaceVariant,
           size: 48,
         ),
       ),
@@ -152,28 +156,25 @@ class _GlassFlatViewerState extends State<GlassFlatViewer>
                     '${w.place} · ${glassSizeText(w)}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: kGlassOnStone,
-                    ),
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ),
                 if (_zoomed)
                   TextButton(
                     key: const ValueKey('flat-reset'),
-                    style: TextButton.styleFrom(foregroundColor: kGlassOnStone),
                     onPressed: _resetView,
                     child: const Text('처음으로'),
                   ),
               ],
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               widget.notice == null
                   ? GlassFlatViewer.colorNote
                   : '${widget.notice}\n${GlassFlatViewer.colorNote}',
               key: const ValueKey('flat-note'),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: kGlassOnStone.withValues(alpha: 0.8),
+                color: scheme.onSurfaceVariant,
               ),
             ),
           ],

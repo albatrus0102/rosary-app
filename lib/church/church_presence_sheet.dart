@@ -7,6 +7,7 @@ import '../app/track.dart';
 import 'church_catalog.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
+import '../app/theme.dart';
 
 /// 접속자 시트의 두 보기.
 enum ChurchPresenceView {
@@ -431,9 +432,7 @@ class _PersonTile extends StatelessWidget {
       label: me ? '나, $name, $label' : '$name, $label',
       child: ExcludeSemantics(
         child: ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppShape.large),
           tileColor: me ? scheme.secondaryContainer : null,
           leading: CircleAvatar(
             backgroundColor: me
@@ -485,9 +484,7 @@ class _ChurchLoadTile extends StatelessWidget {
       hint: onTap != null ? '이 성당으로 가기' : null,
       child: ExcludeSemantics(
         child: ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppShape.large),
           tileColor: current ? scheme.secondaryContainer : null,
           onTap: onTap,
           leading: Icon(
@@ -541,7 +538,7 @@ class _Badge extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: scheme.primary,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppShape.medium,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),

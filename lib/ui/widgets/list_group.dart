@@ -22,7 +22,9 @@ class ListGroup extends StatelessWidget {
     );
     return Card.filled(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
-      child: padding == null ? column : Padding(padding: padding!, child: column),
+      child: padding == null
+          ? column
+          : Padding(padding: padding!, child: column),
     );
   }
 }

@@ -95,10 +95,7 @@ class _ConsentScreenState extends State<ConsentScreen> {
       padding: const EdgeInsets.only(top: AppSpace.md, bottom: AppSpace.xs),
       child: Semantics(
         header: true,
-        child: Text(
-          s,
-          style: text.labelLarge?.copyWith(color: scheme.primary),
-        ),
+        child: Text(s, style: text.labelLarge?.copyWith(color: scheme.primary)),
       ),
     );
 
@@ -142,7 +139,8 @@ class _ConsentScreenState extends State<ConsentScreen> {
                       ),
                     ),
                     sectionTitle('필수 동의'),
-                    Card.filled(color: scheme.surfaceContainerLow,
+                    Card.filled(
+                      color: scheme.surfaceContainerLow,
                       child: Column(
                         children: [
                           for (final kind in ConsentKind.required)
@@ -172,7 +170,8 @@ class _ConsentScreenState extends State<ConsentScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpace.xs),
-                    Card.filled(color: scheme.surfaceContainerLow,
+                    Card.filled(
+                      color: scheme.surfaceContainerLow,
                       child: Column(
                         children: [
                           for (final kind in ConsentKind.optional)

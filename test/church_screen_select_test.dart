@@ -142,10 +142,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('설명 준비 중'), findsOneWidget);
-    expect(
-      find.text('실제 건축을 단순화한 3D 모형입니다'),
-      findsOneWidget,
-    );
+    expect(find.text('실제 건축을 단순화한 3D 모형입니다'), findsOneWidget);
     expect(find.textContaining(info.kind), findsWidgets);
     expect(h.settings.churchId, 'basic');
     await tester.tap(find.widgetWithText(FilledButton, '입장'));

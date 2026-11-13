@@ -1165,7 +1165,7 @@
     };
     ctx.pilaster = function (o) { ctx.column({ x: o.x, z: o.z, y: o.y, h: o.h, r: o.r || 0.4, style: 'round', capital: o.capital || 'corinthian', color: o.color, capColor: o.capColor, collide: o.collide, ry: o.ry, surf: o.surf }); };
 
-    // ---- 좌석 (실제 성당 신자석: 기울인 등받이 + 좌석판 + 등받이 뒷면 책 선반 + 무릎틀 + 옆판. 치수는 ChurchLogic.PEW, SPEC §23) ----
+    // ---- 좌석 (실제 성당 신자석: 기울인 등받이 + 좌석판 + 등받이 뒷면 책 선반 + 무릎틀 + 옆판. 치수는 ChurchLogic.PEW, SPEC §28) ----
     // 모든 부품은 기존 묶음(batch)에 합쳐지므로 draw call 은 늘지 않는다.
     ctx.renderSeats = function (lay, style, o) {
       o = o || {};

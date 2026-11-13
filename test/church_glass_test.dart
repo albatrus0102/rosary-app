@@ -141,10 +141,7 @@ void main() {
               for (final tip in ['성당 바꾸기', '소리 끄기', '아바타 편집', '인사'])
                 tip: tester.getRect(find.byTooltip(tip)),
             };
-            if (find
-                .byKey(const ValueKey('walk-hint'))
-                .evaluate()
-                .isNotEmpty) {
+            if (find.byKey(const ValueKey('walk-hint')).evaluate().isNotEmpty) {
               others['walk-hint'] = tester.getRect(
                 find.byKey(const ValueKey('walk-hint')),
               );

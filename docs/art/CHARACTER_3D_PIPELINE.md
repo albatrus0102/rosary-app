@@ -62,19 +62,21 @@
 
 ## 4. 저에게 전달할 때
 
-압축 파일 하나로 아래 구성(이 대화에 올리거나, 용량이 크면 알려 주세요):
+압축 파일 하나로 아래 구성(이 대화에 올리거나, 용량이 크면 알려 주세요). **폴더 이름이 곧 CLI 규약**입니다(`avatar_glb.mjs all`, §8).
 
 ```
 character_pack/
-  F01_cardigan_skirt/ (fbx + 텍스처)
+  F01_cardigan_skirt/          ← 폴더 이름 앞부분(F01)이 캐릭터 id(영문·숫자 1~24자). F=여성, M=남성
+    F01_cardigan_skirt.fbx     ← Mixamo 'With Skin' T-pose FBX (텍스처 포함 또는 옆에 png/jpg)
+    service.glb                ← (선택) 이미지→3D 서비스가 준 원본 glb. FBX 에 텍스처가 빠졌을 때 여기서 가져온다
+    tint_mask.png              ← (선택) 원본 텍스처와 같은 UV 의 마스크: 빨강(R)=피부, 초록(G)=머리, 나머지 검정
   M01_blazer_trousers/
-  anim/  anim_*.fbx (동작들)
-  hair_color_map.png? (선택: 머리 부분만 흰색으로 칠한 마스크 — 머리색 틴트를 쓸 때)
+  anim/                        ← 동작 FBX(Without Skin). 남녀 동작을 따로 받았으면 anim_F/, anim_M/
+    Idle.fbx  Walking.fbx  Stand To Sit.fbx  Sitting Idle.fbx  Sit To Stand.fbx  Praying.fbx ...
 ```
 
-서비스가 머리와 몸을 한 텍스처에 구워서 주면 머리색 틴트는 마스크가 있어야 합니다(§6).
-
----
+- 동작 파일 이름은 Mixamo 가 붙여 주는 이름 그대로 두어도 됩니다(§9 표로 자동 매핑). 애매하면 `anim_<정규이름>.fbx`(예: `anim_kneel_idle.fbx`).
+- 재질(머티리얼) 이름에 `skin` / `hair` 가 들어가면 그 재질이 피부색·머리색 틴트 슬롯이 됩니다. 서비스가 한 장 텍스처로 구워 주면 `tint_mask.png` 가 있어야 머리색·피부색을 바꿀 수 있습니다(§6).
 
 ## 5. Claude가 하는 일(준비·구현)
 

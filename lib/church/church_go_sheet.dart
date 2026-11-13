@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../app/theme.dart';
+
 /// '가기' 시트에서 고를 수 있는 곳. 웹 장면의 스테이션 종류와 같다(`ChurchAPI.walkTo`의 kind).
 enum ChurchGoTarget {
   candle('candle', '촛불 봉헌대', Icons.local_fire_department),
@@ -50,7 +52,7 @@ class ChurchGoSheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
           child: Text('어디로 갈까요?', style: theme.textTheme.titleMedium),
         ),
         const SizedBox(height: 8),
@@ -65,9 +67,7 @@ class ChurchGoSheet extends StatelessWidget {
                   child: ListTile(
                     key: ValueKey('go-${t.kind}'),
                     minTileHeight: 56,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: AppShape.large),
                     leading: Icon(t.icon),
                     title: Text(t.label),
                     onTap: () => Navigator.of(context).pop(t),

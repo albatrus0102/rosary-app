@@ -947,7 +947,7 @@
   }
 
   var LAP_T = [[0.095, -0.205, -0.19], [0.0, -1, 0]];   // 무릎 위 손목 목표(가슴 로컬)
-  var KNEEL_FOOT = -1.45, KNEEL_HAND_Y = 0.05, KNEEL_HAND_Z = -0.30;   // 무릎 꿇을 때: 발목 각(발등 펴기), 등받이 윗단에 얹는 손목 목표(가슴 로컬)
+  var KNEEL_FOOT = -1.45, KNEEL_HAND_Y = 0.115, KNEEL_HAND_Z = -0.30;   // 무릎 꿇을 때: 발목 각(발등 펴기), 등받이 윗단에 얹는 손목 목표(가슴 로컬)
 
   Avatar.prototype.update = function (dt, t) {
     var k = Math.min(1, dt * 10);

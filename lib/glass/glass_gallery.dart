@@ -858,30 +858,16 @@ class _PrayerStrip extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final set = mysterySetForWeekday(DateTime.now().weekday);
+    // M3 한 줄 목록 항목(56dp): 앞 아이콘 24dp, 제목 bodyLarge, 뒤 chevron(onSurfaceVariant).
     return Material(
       color: scheme.surfaceContainer,
-      child: InkWell(
+      child: ListTile(
         key: const ValueKey('glass-prayer-strip'),
         onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 52),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Icon(Icons.self_improvement, size: 20, color: scheme.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '오늘의 묵주기도 · ${set.koreanName}',
-                    style: theme.textTheme.labelLarge,
-                  ),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
-          ),
-        ),
+        minTileHeight: 56,
+        leading: Icon(Icons.self_improvement, color: scheme.primary),
+        title: Text('오늘의 묵주기도 · ${set.koreanName}'),
+        trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
       ),
     );
   }

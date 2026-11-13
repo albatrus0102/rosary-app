@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'glass_catalog.dart';
 import 'glass_policy.dart';
+import '../app/theme.dart';
 
 /// 더보기 > 스테인드글라스 출처(G-15). 창마다 사진 출처 문구를 카탈로그에서 만든다.
 /// 작가 표시가 필수인 CC BY 사진을 먼저, 강조해서 보여 준다.
@@ -206,7 +207,7 @@ class _CreditCard extends StatelessWidget {
         key: ValueKey('credit-${window.id}'),
         margin: EdgeInsets.zero,
         color: highlighted
-            ? scheme.primaryContainer.withValues(alpha: 0.55)
+            ? scheme.secondaryContainer
             : scheme.surfaceContainerLow,
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -227,7 +228,7 @@ class _CreditCard extends StatelessWidget {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: scheme.primary,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppShape.small,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(

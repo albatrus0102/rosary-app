@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/settings.dart';
+import '../app/theme.dart';
 import 'church_catalog.dart';
 
 /// '성당' 탭의 첫 화면(C-02): 마지막으로 간 성당의 큰 카드와 [입장], 작은 '다른 성당 고르기'.
@@ -34,21 +35,23 @@ class ChurchEntryCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     return Scaffold(
       body: SafeArea(
-        child: Center(
+        // 다른 탭과 같이 위에서부터 쌓는다(가운데 정렬은 큰 화면에서 위가 휑하다).
+        child: Align(
+          alignment: Alignment.topCenter,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpace.sm,
+              AppSpace.md,
+              AppSpace.sm,
+              AppSpace.md,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    '성당',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  Text('성당', style: theme.textTheme.headlineMedium),
                   const SizedBox(height: 4),
                   Text(
                     '마지막으로 다녀온 성당',
@@ -56,7 +59,7 @@ class ChurchEntryCard extends StatelessWidget {
                       color: scheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpace.sm),
                   Card.filled(
                     key: const ValueKey('entry-card'),
                     margin: EdgeInsets.zero,
@@ -82,7 +85,7 @@ class ChurchEntryCard extends StatelessWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                          padding: const EdgeInsets.all(AppSpace.sm),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -96,7 +99,7 @@ class ChurchEntryCard extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 3),
+                                    padding: const EdgeInsets.only(top: 2),
                                     child: Icon(
                                       Icons.place_outlined,
                                       size: 16,
@@ -121,13 +124,14 @@ class ChurchEntryCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpace.md),
                   FilledButton(
                     key: const ValueKey('entry-enter'),
                     onPressed: onEnter,
                     style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(60),
-                      textStyle: theme.textTheme.titleMedium,
+                      minimumSize: const Size.fromHeight(
+                        AppTheme.largeButtonHeight,
+                      ),
                     ),
                     child: const Text('입장'),
                   ),

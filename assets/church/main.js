@@ -162,7 +162,7 @@
     setNear(null, null);
     me.vx = me.vz = 0;
   }
-  // 기도 자세(SPEC §23.4): 'sit' 앉아서 | 'kneel' 무릎 꿇고. 앉아 있을 때만 적용하고, 전환이 끝나면 posture 이벤트를 보낸다.
+  // 기도 자세(SPEC §28.4): 'sit' 앉아서 | 'kneel' 무릎 꿇고. 앉아 있을 때만 적용하고, 전환이 끝나면 posture 이벤트를 보낸다.
   function applyPosture(notify) {
     var me = App.me, kneel = App.posture === 'kneel' && (me.mode === 'seated' || me.mode === 'sitting') && !me.standWait;
     App.meAv.setKneel(kneel, kneel ? App.logic.kneelSpot(me.seat) : null);

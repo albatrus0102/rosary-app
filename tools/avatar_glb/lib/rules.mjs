@@ -14,11 +14,12 @@ export const LIMITS = {
 };
 
 /** Mixamo 접두 제거: 'mixamorig:Hips', 'mixamorig1:Hips', 'mixamorig_Hips', 'mixamorig9:LeftHand' → 'Hips'.
+ *  three FBXLoader(--via three)는 ':' 를 지워 'mixamorigHips' 로 만든다 → 이것도 'Hips'.
  *  Blender 를 거친 이름('mixamorig:LeftArm.001', 'Armature|mixamorig:Hips')도 정리한다. 그 밖의 이름은 그대로. */
 export function normalizeBoneName(name) {
   let n = String(name || '');
   const bar = n.lastIndexOf('|'); if (bar >= 0) n = n.slice(bar + 1);
-  n = n.replace(/^mixamorig\d*[:_]/i, '');
+  n = n.replace(/^mixamorig\d*[:_]?/i, '');
   n = n.replace(/\.\d{3}$/, '');
   return n;
 }

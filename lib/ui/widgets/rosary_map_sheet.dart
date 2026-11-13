@@ -5,6 +5,7 @@ import '../../app/rosary_style.dart';
 import '../../domain/rosary_sequence.dart';
 import '../../domain/rosary_session.dart';
 import 'rosary_map.dart';
+import '../../app/theme.dart';
 
 /// 화면 읽기 프로그램과 시트 머리말에 쓰는 자리 이름. 예: '3단 성모송 2번째 구슬'.
 String describeRosaryPosition(RosaryStep step) {
@@ -355,7 +356,7 @@ class _DecadeButton extends StatelessWidget {
       child: Material(
         color: selected ? scheme.secondaryContainer : Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppShape.medium,
           side: BorderSide(
             color: selected ? Colors.transparent : scheme.outlineVariant,
           ),

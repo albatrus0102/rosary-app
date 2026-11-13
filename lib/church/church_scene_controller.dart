@@ -36,6 +36,10 @@ sealed class SceneEvent {
           return SceneSeated(seat is String ? seat : '');
         case 'stood':
           return const SceneStood();
+        case 'posture':
+          final posture = j['posture'];
+          if (posture != 'sit' && posture != 'kneel') return null;
+          return ScenePosture(kneel: posture == 'kneel');
         case 'pos':
           final x = j['x'];
           final z = j['z'];
@@ -211,6 +215,12 @@ class SceneSeated extends SceneEvent {
 
 class SceneStood extends SceneEvent {
   const SceneStood();
+}
+
+/// 기도 자세 전환이 끝났다(`setPrayerPosture` 의 완료 이벤트).
+class ScenePosture extends SceneEvent {
+  const ScenePosture({required this.kneel});
+  final bool kneel;
 }
 
 class ScenePos extends SceneEvent {
@@ -429,6 +439,10 @@ abstract class ChurchSceneController {
   Future<void> stand() => _call('stand', const {});
   Future<void> setPraying({required bool on, required int ms}) =>
       _call('setPraying', {'on': on, 'ms': ms});
+
+  /// 기도 자세: 앉아서 | 무릎 꿇고. 앉아 있지 않으면 장면이 무시한다.
+  Future<void> setPrayerPosture({required bool kneel}) =>
+      _call('setPrayerPosture', {'posture': kneel ? 'kneel' : 'sit'});
   Future<void> setAvatar(Map<String, Object?> avatar) =>
       _call('setAvatar', {'avatar': avatar});
   Future<void> setPeers(
@@ -443,8 +457,17 @@ abstract class ChurchSceneController {
   Future<void> peerSeat(String id, String seat) =>
       _call('peerSeat', {'id': id, 'seat': seat});
   Future<void> peerStand(String id) => _call('peerStand', {'id': id});
-  Future<void> peerPraying(String id, {required bool on, required int ms}) =>
-      _call('peerPraying', {'id': id, 'on': on, 'ms': ms});
+  Future<void> peerPraying(
+    String id, {
+    required bool on,
+    required int ms,
+    bool kneel = false,
+  }) => _call('peerPraying', {
+    'id': id,
+    'on': on,
+    'ms': ms,
+    if (on && kneel) 'k': 1,
+  });
   Future<void> peerEmote(String id, int e) =>
       _call('peerEmote', {'id': id, 'e': e});
   Future<void> setCandles(List<Map<String, Object?>> candles) =>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/prayer_data.dart';
 import 'prayer_stats_store.dart';
+import '../app/theme.dart';
 
 DateTime Function() _clock(DateTime Function()? now) => now ?? DateTime.now;
 
@@ -55,9 +56,7 @@ class StatsSummaryCard extends StatelessWidget {
             color: scheme.primaryContainer,
             margin: EdgeInsets.zero,
             clipBehavior: Clip.antiAlias,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: AppShape.large),
             child: InkWell(
               onTap: onTap,
               child: ConstrainedBox(
@@ -558,7 +557,7 @@ class MysteryDistributionBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppShape.small,
               child: SizedBox(
                 height: 16,
                 child: total == 0

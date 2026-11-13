@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/theme.dart';
 import 'glass_widgets.dart';
 
 /// 감상 화면 덮개 UI의 보임/숨김. 마지막 조작 뒤 [idle] 동안 가만히 있으면 숨는다.
@@ -85,8 +86,8 @@ class GlassChromeLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.disableAnimationsOf(context);
-    final dur = reduce ? Duration.zero : const Duration(milliseconds: 220);
+    // M3 모션: 덮개 나타남/숨김은 medium1(250ms) + 표준 곡선, '동작 줄이기'면 즉시.
+    final dur = AppMotion.of(context, Durations.medium1);
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
@@ -116,13 +117,21 @@ class GlassChromeLayer extends StatelessWidget {
               left: 0,
               right: 0,
               top: 0,
-              child: _Fade(visible: show, duration: dur, child: top),
+              child: _Fade(
+                visible: show,
+                duration: dur,
+                child: GlassViewerTheme(child: top),
+              ),
             ),
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              child: _Fade(visible: show, duration: dur, child: bottom),
+              child: _Fade(
+                visible: show,
+                duration: dur,
+                child: GlassViewerTheme(child: bottom),
+              ),
             ),
           ],
         );
@@ -164,7 +173,7 @@ class _Fade extends StatelessWidget {
         child: AnimatedOpacity(
           opacity: visible ? 1 : 0,
           duration: duration,
-          curve: Curves.easeOutCubic,
+          curve: Easing.standard,
           child: child,
         ),
       ),
@@ -189,13 +198,10 @@ class GlassTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xCC000000), Color(0x00000000)],
-        ),
+      decoration: BoxDecoration(
+        gradient: glassScrim(scheme, from: Alignment.topCenter),
       ),
       child: SafeArea(
         bottom: false,
@@ -215,10 +221,8 @@ class GlassTopBar extends StatelessWidget {
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: kGlassOnStone,
-                    shadows: const [Shadow(blurRadius: 6)],
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(color: scheme.onSurface),
                 ),
               ),
               GlassIconButton(
@@ -236,6 +240,13 @@ class GlassTopBar extends StatelessWidget {
   }
 }
 
+/// 감상 덮개 아이콘 버튼 모양(더보기 메뉴 단추도 같은 모양을 쓴다).
+ButtonStyle glassIconButtonStyle(ColorScheme scheme) => IconButton.styleFrom(
+  backgroundColor: scheme.surfaceContainerHigh,
+  foregroundColor: scheme.onSurface,
+  minimumSize: const Size(48, 48),
+);
+
 /// 어두운 덮개 위에 올리는 둥근 아이콘 버튼(48dp 이상).
 class GlassIconButton extends StatelessWidget {
   const GlassIconButton({
@@ -251,14 +262,11 @@ class GlassIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    // M3 filled tonal 아이콘 버튼(어두운 감상 테마의 표면 역할). 48dp.
+    return IconButton.filledTonal(
       tooltip: tooltip,
       onPressed: onPressed,
-      style: IconButton.styleFrom(
-        foregroundColor: kGlassOnStone,
-        backgroundColor: Colors.black38,
-        minimumSize: const Size(48, 48),
-      ),
+      style: glassIconButtonStyle(Theme.of(context).colorScheme),
       icon: Icon(icon),
     );
   }
@@ -272,18 +280,19 @@ class GlassBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [Color(0xD9000000), Color(0x00000000)],
+      decoration: BoxDecoration(
+        gradient: glassScrim(
+          scheme,
+          from: Alignment.bottomCenter,
+          strength: 0.85,
         ),
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 28, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

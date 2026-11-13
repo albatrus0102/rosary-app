@@ -121,7 +121,7 @@
         rec.seat = null; rec.st = 'w'; rec.ms = -1; rec.k = 0;
         if (sp) { rec.x = sp.x; rec.z = sp.z; rec.r = sp.yaw; rec.n = 0; pushSample(rec, sp.x, sp.z, sp.yaw, performance.now()); rec.blend = 0.6; rec.px = sp.x; rec.pz = sp.z; }
       },
-      peerPraying: function (id, on, ms, k) { var rec = peers.get(id); if (!rec) return; rec.st = on ? 'p' : 's'; rec.ms = on ? ms : -1; rec.k = on && k ? 1 : 0; },   // k: 무릎 꿇고 기도(SPEC §23.4)
+      peerPraying: function (id, on, ms, k) { var rec = peers.get(id); if (!rec) return; rec.st = on ? 'p' : 's'; rec.ms = on ? ms : -1; rec.k = on && k ? 1 : 0; },   // k: 무릎 꿇고 기도(SPEC §28.4)
       peerEmote: function (id, e) { var rec = peers.get(id); if (rec && rec.view) rec.view.playEmote(e); },
       setFocus: function (x, z) { focus.x = x; focus.z = z; },
       select: function () {

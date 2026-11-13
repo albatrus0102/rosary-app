@@ -341,6 +341,8 @@ class _ChurchScreenState extends State<ChurchScreen>
         _onSeated(e.seat);
       case SceneStood():
         if (_mySeat != null || _pendingSeat != null) _standUp(tellScene: false);
+      case ScenePosture():
+        break; // 전환 완료 알림. 상태는 설정(prayerPosture)이 원본이다.
       case ScenePos():
         if (!_background) _net.sendPos(e.x, e.z, e.r, e.moving);
       case ScenePerf():
@@ -449,6 +451,8 @@ class _ChurchScreenState extends State<ChurchScreen>
     _wasFinished = p.finished;
     _prayerActive = true;
     _sendPraying(!p.finished);
+    // 저장해 둔 기도 자세(앉아서 | 무릎 꿇고)를 앉은 뒤에 적용한다.
+    if (_kneel) unawaited(_scene.setPrayerPosture(kneel: true));
     _setWakelock(true);
     setState(() {});
   }
@@ -481,7 +485,21 @@ class _ChurchScreenState extends State<ChurchScreen>
     final p = _prayer;
     if (p == null) return;
     unawaited(_scene.setPraying(on: on, ms: p.ms));
-    _net.sendPraying(on, p.ms);
+    _net.sendPraying(on, p.ms, kneel: on && _kneel);
+  }
+
+  bool get _kneel => _settings.prayerPosture == PrayerPosture.kneel;
+
+  /// 기도 카드에서 자세를 고른다: 저장하고, 내 아바타와(기도 중이면) 다른 사람 화면에 알린다.
+  void _setPosture(PrayerPosture v) {
+    if (v == _settings.prayerPosture) return;
+    _settings.prayerPosture = v;
+    if (_mySeat == null) return;
+    unawaited(_scene.setPrayerPosture(kneel: _kneel));
+    final p = _prayer;
+    if (p != null && p.running && !p.finished) {
+      _net.sendPraying(true, p.ms, kneel: _kneel);
+    }
   }
 
   void _setWakelock(bool on) {
@@ -529,7 +547,9 @@ class _ChurchScreenState extends State<ChurchScreen>
         _onSeatDenied(e);
       case Praying():
         if (e.id != _you) {
-          unawaited(_scene.peerPraying(e.id, on: e.on, ms: e.ms));
+          unawaited(
+            _scene.peerPraying(e.id, on: e.on, ms: e.ms, kneel: e.kneel),
+          );
         }
       case Candle():
         unawaited(
@@ -566,7 +586,9 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (seat != null && seat.isNotEmpty) {
       _net.requestSit(seat);
       final p = _prayer;
-      if (p != null && p.running && !p.finished) _net.sendPraying(true, p.ms);
+      if (p != null && p.running && !p.finished) {
+        _net.sendPraying(true, p.ms, kneel: _kneel);
+      }
     }
   }
 
@@ -1006,6 +1028,7 @@ class _ChurchScreenState extends State<ChurchScreen>
                       settings: _settings,
                       onTogglePause: _togglePause,
                       onStand: _stopFromCard,
+                      onPosture: _setPosture,
                       onEnd: _endPrayer,
                       onFullScreen: _openFullScreenPrayer,
                     )
