@@ -72,9 +72,9 @@ for (const c of churches) {
         assert.ok(Math.hypot(o.x - p.stand.x, o.z - p.stand.z) >= 1.8, `${p.n}처가 다른 스테이션과 겹침`);
       }
     });
-    // 판끼리 2m 이상
+    // 판끼리 1.6m 이상(먼저 2.2m 로 고르고 모자라면 1.6m)
     for (let i = 0; i < 14; i++) for (let j = i + 1; j < 14; j++) {
-      assert.ok(Math.hypot(P[i].x - P[j].x, P[i].z - P[j].z) >= 2.0, `${i + 1}처·${j + 1}처가 너무 가까움`);
+      assert.ok(Math.hypot(P[i].x - P[j].x, P[i].z - P[j].z) >= 1.55, `${i + 1}처·${j + 1}처가 너무 가까움`);
     }
     // 창(개구부)과 겹치지 않는다: 같은 벽면(법선 같고 1m 안)에서 수평·수직 구간이 겹치는 창 없음
     for (const p of P) {

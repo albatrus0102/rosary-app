@@ -123,7 +123,8 @@
         for (var k = 0; k < walls.length; k++) {
           var W = walls[k];
           if (W.inner < tFree - 0.05 || W.inner > tFree + 1.2) continue;
-          if (s - P.frameW / 2 - 0.1 < W.s0 || s + P.frameW / 2 + 0.1 > W.s1) continue;
+          var mg = W.collider && !W.bound ? 0.35 : 0.1;   // 상자 벽은 보이는 면이 충돌 상자보다 짧을 수 있어 여유를 더 둔다(성 베드로 기둥 면)
+          if (s - P.frameW / 2 - mg < W.s0 || s + P.frameW / 2 + mg > W.s1) continue;
           var fy = logic.floorY(pf.x, pf.z);
           if (W.y0 > fy + P.bottom - 0.1 || W.y1 < fy + P.bottom + P.frameH + P.crossH + 0.05) continue;
           if (!best || W.inner < best.inner - 1e-6 || (Math.abs(W.inner - best.inner) < 1e-6 && best.bound)) best = W;
@@ -174,13 +175,17 @@
         // 촛불대 가구 앞면에 걸지 않는다(판 중심이 스탠드에서 2m 안이면 버린다)
         var cs = (layout.candles && layout.candles.stands) || [];
         for (var ci2 = 0; ci2 < cs.length && !tooClose; ci2++) if (Math.hypot(cs[ci2].x - c.x, cs[ci2].z - c.z) < 2.0 + (cs[ci2].slots > 48 ? 1.5 : 0)) tooClose = true;
+        // 넓은 봉헌대(초 칸이 판 앞을 가림): 어느 초 칸이든 판에서 2m 안이면 버린다
+        var sl = logic.slots || [];
+        for (var si2 = 0; si2 < sl.length && !tooClose; si2++) if (Math.hypot(sl[si2].x - c.x, sl[si2].z - c.z) < 2.0) tooClose = true;
         if (tooClose) continue;
         cands[key].push({ s: s, side: key, x: c.x, y: yc, z: c.z, nx: nx, nz: nz, w: P.quadW, h: P.quadH, wall: { inner: best.inner, s0: best.s0, s1: best.s1 }, stand: stand });
       }
     });
 
     // 한쪽 7곳: 목표 s 를 고르게 나눠 가장 가까운 후보(이웃 판과 2.2m 이상)
-    function pick(list, want, lo, hi) {
+    function pick(list, want, lo, hi, gap) {
+      gap = gap || 2.2;
       var out = [];
       if (!list.length || want <= 0) return out;
       var used = {};
@@ -189,7 +194,7 @@
         for (var i = 0; i < list.length; i++) {
           if (used[i]) continue;
           var ok = true;
-          for (var j = 0; j < out.length; j++) if (Math.abs(out[j].s - list[i].s) < 2.2) { ok = false; break; }
+          for (var j = 0; j < out.length; j++) if (Math.abs(out[j].s - list[i].s) < gap) { ok = false; break; }
           if (!ok) continue;
           var dd = Math.abs(list[i].s - target);
           if (dd < bd) { bd = dd; best = i; }
@@ -199,10 +204,15 @@
       }
       return out;
     }
-    var half = Math.ceil(N / 2);
-    var R = pick(cands.R, half, sB, sF), L = pick(cands.L, N - half, sB, sF);
-    if (R.length < half && L.length >= N - half) L = pick(cands.L, N - R.length, sB, sF);
-    else if (L.length < N - half && R.length >= half) R = pick(cands.R, N - L.length, sB, sF);
+    var half = Math.ceil(N / 2), R, L;
+    // 판 사이 2.2m 를 먼저, 자리가 모자라면 1.6m 까지 좁힌다(성 베드로: 거대한 기둥 면과 봉헌대 사이)
+    for (var gi = 0; gi < 2; gi++) {
+      var gap = gi ? 1.6 : 2.2;
+      R = pick(cands.R, half, sB, sF, gap); L = pick(cands.L, N - half, sB, sF, gap);
+      if (R.length < half && L.length >= N - half) L = pick(cands.L, N - R.length, sB, sF, gap);
+      else if (L.length < N - half && R.length >= half) R = pick(cands.R, N - L.length, sB, sF, gap);
+      if (R.length + L.length >= N) break;
+    }
     if (R.length + L.length < N) return { plaques: [], why: 'room', counts: { R: cands.R.length, L: cands.L.length, pickR: R.length, pickL: L.length } };
     // 순서: 오른쪽 벽 제대 쪽(큰 s) → 입구 쪽, 왼쪽 벽 입구 쪽 → 제대 쪽. layout.crossWay.start='L' 이면 좌우를 바꾼다.
     R.sort(function (a, b) { return b.s - a.s; });
