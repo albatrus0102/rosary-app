@@ -30,6 +30,7 @@ import 'package:rosary_app/church/church_select_screen.dart';
 import 'package:rosary_app/church/church_tab.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
+import 'package:rosary_app/glass/glass_catalog.dart';
 import 'package:rosary_app/glass/glass_flat_viewer.dart';
 import 'package:rosary_app/glass/glass_info_sheet.dart';
 import 'package:rosary_app/glass/glass_licenses_screen.dart';
@@ -500,6 +501,58 @@ void main() {
         net.goOnline(12);
         await _settle(t, 2);
         await _shot(t, '18_church_hud_$tag');
+      });
+      testWidgets('18b church prayer card (sit / kneel)', (t) async {
+        _view(t);
+        final settings = await _settings();
+        final net = FakeChurchNet();
+        final scene = FakeChurchSceneController();
+        await t.pumpWidget(
+          _host(
+            ChurchScreen(settings: settings, net: net, scene: scene),
+            b: b,
+            scale: scale,
+          ),
+        );
+        await t.pump();
+        scene.emit(const SceneReady());
+        net.goOnline(12);
+        scene.emit(const SceneNear(seat: 'L03-2'));
+        await _settle(t, 2);
+        await t.tap(find.text('앉기'));
+        await t.pump();
+        scene.emit(const SceneSeated('L03-2'));
+        await _settle(t, 2);
+        await _shot(t, '18b_card_sit_$tag');
+        await t.tap(find.text('무릎 꿇고'));
+        await _settle(t, 2);
+        await _shot(t, '18b_card_kneel_$tag');
+      });
+      testWidgets('18c church glass chip hud', (t) async {
+        GlassCatalog.debugSetShared(testGlassCatalogFuture());
+        addTearDown(GlassCatalog.debugResetShared);
+        _view(t);
+        final settings = await _settings();
+        final net = FakeChurchNet();
+        final scene = FakeChurchSceneController();
+        await t.pumpWidget(
+          _host(
+            ChurchScreen(settings: settings, net: net, scene: scene),
+            b: b,
+            scale: scale,
+          ),
+        );
+        await t.pump();
+        scene.emit(const SceneReady());
+        net.goOnline(12);
+        scene.emit(const SceneNear(seat: 'L03-2'));
+        scene.emit(const SceneWalkStart('altar'));
+        scene.emit(
+          const SceneGlassNear(id: 'alabaster_stpaul_1', slot: 'aisle'),
+        );
+        await _settle(t, 2);
+        await _shot(t, '18c_glass_chip_$tag');
+        await t.pump(const Duration(seconds: 12));
       });
       testWidgets('19 church go sheet', (t) async {
         _view(t);

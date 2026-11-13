@@ -10,6 +10,7 @@ import '../domain/prayer_data.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
 import '../stats/prayer_stats_store.dart';
+import 'church_hud.dart';
 
 /// 성당에서 앉아 기도하는 동안의 상태: 세션, 기도 시간(mm:ss), 쉬는 중 여부.
 ///
@@ -155,7 +156,8 @@ class ChurchPrayerController extends ChangeNotifier {
   }
 }
 
-/// 화면 아래 반투명 기도 카드.
+/// 화면 아래 기도 카드: M3 채운 카드(`surfaceContainerHigh`, large 16dp) + HUD 높이(level 2).
+/// 장면 밝기와 상관없이 대비가 유지되도록 불투명 표면 역할만 쓴다.
 class ChurchPrayerCard extends StatelessWidget {
   const ChurchPrayerCard({
     super.key,
@@ -215,16 +217,22 @@ class ChurchPrayerCard extends StatelessWidget {
         final finished = controller.finished;
         final paused = controller.paused;
         final step = session.current;
-        return Material(
+        return Card.filled(
           key: const ValueKey('prayer-card'),
-          color: scheme.surface.withValues(alpha: 0.93),
-          elevation: 3,
-          borderRadius: BorderRadius.circular(AppTheme.cardRadius + 4),
+          color: ChurchHudStyle.surface(scheme),
+          elevation: ChurchHudStyle.elevation,
+          margin: EdgeInsets.zero,
+          shape: AppShape.largeBorder,
           clipBehavior: Clip.antiAlias,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: size.height * 0.62),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 6, 8, 12),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.sm,
+                AppSpace.xxs, // 머리줄의 ⋮ 버튼(48dp)이 이미 위 여백을 만든다.
+                AppSpace.xs,
+                AppSpace.sm,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -298,7 +306,7 @@ class ChurchPrayerCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppSpace.xs),
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: Column(
@@ -355,7 +363,7 @@ class ChurchPrayerCard extends StatelessWidget {
                                         child:
                                             MediaQuery.withClampedTextScaling(
                                               maxScaleFactor: 1.3,
-                                              child: _postureButton(theme),
+                                              child: _postureButton(),
                                             ),
                                       ),
                                     ),
@@ -402,29 +410,38 @@ class ChurchPrayerCard extends StatelessWidget {
   ///
   /// 아이콘을 `ButtonSegment.icon` 으로 주면 안쪽 여백이 12/16 으로 고정되어 360dp 폭에서
   /// 일어나기와 한 줄에 들어가지 않는다. 그래서 아이콘을 label 안에 넣고 여백을 줄였다.
-  Widget _postureButton(ThemeData theme) => SegmentedButton<PrayerPosture>(
+  Widget _postureButton() => SegmentedButton<PrayerPosture>(
     key: const ValueKey('prayer-posture'),
     showSelectedIcon: false,
     style: SegmentedButton.styleFrom(
-      visualDensity: VisualDensity.standard,
+      // 높이 40 + 터치 영역 48(M3 기본). 글자는 테마 기본(labelLarge)을 따른다.
       tapTargetSize: MaterialTapTargetSize.padded,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      textStyle: theme.textTheme.labelMedium,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.xs),
     ),
-    segments: const [
+    segments: [
       ButtonSegment(
         value: PrayerPosture.sit,
-        label: _PostureLabel(Icons.event_seat_outlined, '앉아서'),
+        label: _postureLabel(Icons.event_seat_outlined, '앉아서'),
         tooltip: '앉아서 기도',
       ),
       ButtonSegment(
         value: PrayerPosture.kneel,
-        label: _PostureLabel(Icons.airline_seat_legroom_reduced, '무릎 꿇고'),
+        label: _postureLabel(Icons.airline_seat_legroom_reduced, '무릎 꿇고'),
         tooltip: '무릎 꿇고 기도',
       ),
     ],
     selected: {settings.prayerPosture},
     onSelectionChanged: (s) => onPosture?.call(s.first),
+  );
+
+  /// 자세 선택 한 칸의 라벨: 아이콘(18) + 글자. 글자는 줄바꿈하지 않는다.
+  static Widget _postureLabel(IconData icon, String text) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 18),
+      const SizedBox(width: AppSpace.xxs),
+      Text(text, softWrap: false),
+    ],
   );
 
   Widget _overflowMenu(bool paused) => PopupMenuButton<_CardMenu>(
@@ -456,21 +473,3 @@ class ChurchPrayerCard extends StatelessWidget {
 }
 
 enum _CardMenu { pause, fullScreen, end }
-
-/// 자세 선택 한 칸: 아이콘 + 글자.
-class _PostureLabel extends StatelessWidget {
-  const _PostureLabel(this.icon, this.text);
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(icon, size: 16),
-      const SizedBox(width: 4),
-      Text(text, softWrap: false),
-    ],
-  );
-}

@@ -73,7 +73,8 @@ const P = await page.evaluate(() => {
 check('pinch on the right while the left stick is held: zoom changes, stick keeps walking', P.zoomChanged && P.stick && P.y > 0.9 && !P.dragging, P);
 await page.evaluate(() => { __church.ctl.zoom = 1; });
 // 가까운 좌석으로 이동 후 near/sit/seated/stood
-await page.evaluate(() => { const m = __church.me; m.x = -5.2; m.z = -10 + 1.9 * 3 + 1.0; });
+// 새 기하(SPEC §28): 좌석 앞 줄 안 통로 = standPos(좌석 중심에서 앞으로 0.72m). 옛 통로(좌석 뒤 +0.65m)는 이제 등받이 뒤다.
+await page.evaluate(() => { const m = __church.me, sp = __church.logic.standPos('L03-2'); m.x = sp.x; m.z = sp.z; window.__stand = sp; });
 await page.waitForFunction(() => __church.near && __church.near.seat === 'L03-2', null, { timeout: 120000 }).catch(() => {});
 const near = await page.evaluate(() => window.__ev.filter((e) => e.e === 'near').pop());
 check('near seat reported', near && near.seat === 'L03-2', near);
@@ -93,7 +94,7 @@ await page.evaluate(() => { ChurchAPI.setJoystick({ x: 0, y: 0 }); ChurchAPI.sta
 await page.waitForFunction(() => window.__ev.some((e) => e.e === 'stood'), null, { timeout: 150000 }).catch(() => {});
 const stood = await page.evaluate(() => window.__ev.filter((e) => e.e === 'stood').length);
 check('stood event after standing', stood === 1);
-check('standing returns to the row corridor', await page.evaluate(() => Math.abs(__church.me.z - (-10 + 1.9 * 3 + 1.0)) < 0.05));
+check('standing returns to the row corridor in front of the seat (standPos)', await page.evaluate(() => Math.hypot(__church.me.x - __stand.x, __church.me.z - __stand.z) < 0.05));
 // 서버가 좌석을 거부한 경우
 await page.evaluate(() => ChurchAPI.sit({}));
 await page.waitForTimeout(300);
@@ -101,7 +102,7 @@ await page.evaluate(() => ChurchAPI.setSeatTaken({ seat: 'L03-2' }));
 await page.waitForFunction(() => window.__ev.filter((e) => e.e === 'stood').length >= 2, null, { timeout: 150000 }).catch(() => {});
 const st2 = await page.evaluate(() => ({ mode: __church.me.mode, stood: window.__ev.filter((e) => e.e === 'stood').length, taken: __church.net.isTaken('L03-2') }));
 check('setSeatTaken while sitting -> stands up and posts stood', st2.mode === 'walk' && st2.stood === 2 && st2.taken, st2);
-check('taken seat is not offered again', await page.evaluate(() => __church.logic.nearestSeat(-5.2, -10 + 1.9 * 3 + 1.0, (id) => __church.net.isTaken(id)) !== 'L03-2'));
+check('taken seat is not offered again', await page.evaluate(() => __church.logic.nearestSeat(__stand.x, __stand.z, (id) => __church.net.isTaken(id)) !== 'L03-2'));
 // 스테이션으로 걸어가기(walkTo): 촛불 봉헌대·제대 앞·가까운 빈 자리, 취소, 앉은 채 요청, 표식 탭
 {
   const evs = (kind) => page.evaluate((k) => window.__ev.filter((e) => e.e === k), kind);

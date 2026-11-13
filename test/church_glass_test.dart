@@ -88,6 +88,7 @@ void main() {
         findsOneWidget,
       );
       await tester.pump(const Duration(seconds: 9));
+      await tester.pump(const Duration(milliseconds: 300)); // 사라지는 페이드(short4)
       expect(_chip, findsNothing);
     });
 

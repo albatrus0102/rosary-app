@@ -64,7 +64,7 @@ class ChurchStatusChip extends StatelessWidget {
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: AppSpace.xs),
         ],
         Flexible(
           child: Text(
@@ -112,7 +112,12 @@ class ChurchStatusChip extends StatelessWidget {
                       key: const ValueKey('presence-chip'),
                       onTap: onShowPresence,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpace.sm,
+                          AppSpace.xxs,
+                          AppSpace.xxs,
+                          AppSpace.xxs,
+                        ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -736,7 +741,12 @@ class ChurchPerfBanner extends StatelessWidget {
       elevation: 6,
       borderRadius: AppShape.extraSmall,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 8, 6),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpace.sm,
+          AppSpace.xs,
+          AppSpace.xs,
+          AppSpace.xs,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -224,14 +224,20 @@ Flutter 3.47.9 / Material 3(`useMaterial3`) 기준. 이 문서는 (1) 이번에 
 | 동의/계정 | 섹션 제목·카드 | 목록 소제목 labelLarge primary, 같은 컨테이너 | titleMedium, 윤곽 카드 | labelLarge, 채운 카드 | M | ✅(이전 체크포인트) |
 | 로그인 | 카카오 버튼 | 브랜드 가이드 색 | 노랑 고정, 비활성 60% | 브랜드 규정이라 유지 | L | ➖ |
 
-### 10.3 보류 항목(수정 금지 파일 — 다른 작업과 충돌)
+### 10.3 보류 항목 → 완료 (의자·G-29 작업 종료 후 정리)
 
-| 파일 | 위반 | 제안 | 심각도 |
-| --- | --- | --- | --- |
-| `church/church_prayer_card.dart` | 카드 바탕 `surface` 알파 합성 + elevation 3 + `cardRadius+4` | `Card.filled(color: surfaceContainerHigh)` + `AppShape.largeBorder`, 버튼은 HUD 와 같은 filled/tonal | H |
-| `church/church_prayer_card.dart` | (병행 작업 중 추가된) 자세 선택 `_PostureLabel` 커스텀 라벨 — 감사 도중 글자 2배에서 일시적으로 넘쳤다가 그 작업 쪽에서 해결됨 | 자세 선택은 `SegmentedButton`(앉아서/무릎 꿇고), 라벨은 `labelLarge` | M |
-| `church/church_screen.dart` | 스낵바 `behavior: floating` 중복, 로딩 `LinearProgressIndicator(borderRadius: 4)`, HUD 배치 여백(6/10dp) | 테마에 맡기고 `borderRadius` 제거, HUD 간격 8/16 | L |
-| `church/church_scene_controller.dart` | 가짜 장면 색 `Color(0xFF202020)` | 테스트용이라 유지 | L |
+전/후 스크린샷(360×800 라이트/다크/글자 2배)은 `test/zz_m3_shots_test.dart` 의 `18b`(앉은 기도 카드, 앉아서/무릎 꿇고), `18c`(창 칩이 보이는 HUD)로 찍는다.
+
+| 파일 | 위반 | 수정 | 심각도 | 상태 |
+| --- | --- | --- | --- | --- |
+| `church/church_prayer_card.dart` | 카드 바탕 `surface` 알파 합성 + elevation 3 + `cardRadius+4` | `Card.filled`(`ChurchHudStyle.surface` = `surfaceContainerHigh`, level 2) + `AppShape.largeBorder`(16dp), 안쪽 여백·간격 `AppSpace` 토큰(16/8/8/16, 8) | H | ✅ 완료 |
+| `church/church_prayer_card.dart` | 자세 선택 `_PostureLabel` 커스텀 위젯, `labelMedium` 강제 | 표준 `SegmentedButton`(키 `prayer-posture` 유지). 아이콘 18 + 글자를 label 안에 두고 글자 스타일은 테마(labelLarge) 기본, 좌우 8, 터치 영역 48(padded). `_PostureLabel` 클래스 제거. 360dp 한 줄 유지(글자 2배는 기존대로 줄여서 한 줄) | M | ✅ 완료 |
+| `church/church_screen.dart` | 스낵바 `behavior: floating` 중복(3곳), `LinearProgressIndicator(borderRadius: 4)`, HUD 여백 12/16 임의 값 | 스낵바는 `snackBarTheme`(floating)에 맡김, 진행 표시줄은 `progressIndicatorTheme`에 맡김, HUD 바깥 여백·불러오기 안내 간격 `AppSpace`(8/16) | L | ✅ 완료 |
+| `church/church_scene_controller.dart` | 가짜 장면 색 `Color(0xFF202020)` | 시험용 가짜 장면이 테마 `scrim` 역할을 쓰도록 변경(키·동작 그대로, 색을 보는 시험 없음) | L | ✅ 완료 |
+| `church/church_hud.dart` `ChurchGlassChip`(G-29) | 이미 불투명 inverseSurface · small 8dp · 48dp · labelLarge/labelMedium. 나타날 때 모션 없음 | 표면·모양·터치 영역은 규칙 부합이라 유지. 칩 자리를 `AnimatedSwitcher`(short4 + standard 곡선, 동작 줄이기면 즉시)로 감쌈 | L | ✅ 완료 |
+| `church/church_hud.dart` | 상태 칩 안쪽 6dp·점 간격 6dp, 느린 기기 띠 10/6dp | 4/8dp 격자(`AppSpace.xxs/xs`) | L | ✅ 완료 |
+
+남은 관찰(수정 안 함): 글자 2배에서 `ChurchWalkChip`('걷는 중… (취소)')이 '가기' 버튼 옆 좁은 칸에서 4줄로 접히고, 상태 칩 성당 이름이 '우리 …' 로 잘린다(겹침·넘침은 없음).
 
 ### 10.4 공통 컴포넌트(승격)
 

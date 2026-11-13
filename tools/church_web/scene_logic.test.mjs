@@ -175,6 +175,18 @@ test('stand position is the corridor in front of the seat and is free of collide
   }
 });
 
+test('standing spot of every seat offers that same seat again (stand -> sit round trip), and the seat behind is not chosen', () => {
+  for (const id of L.seatIds) {
+    const q = L.standPos(id);
+    assert.equal(L.nearestSeat(q.x, q.z, {}), id, id);
+    // 점유되면 그 자리는 다시 제안되지 않는다
+    assert.notEqual(L.nearestSeat(q.x, q.z, { [id]: 'someone' }), id, id);
+  }
+  // 옛 기하의 통로(좌석 뒤 +0.65m)는 이제 뒷줄 좌석의 앞 통로가 아니라 등받이 뒤: 그 줄 좌석이 제안되면 안 된다
+  const s = L.seatPos('L03-2');
+  assert.notEqual(L.nearestSeat(s.x, s.z + 0.65, {}), 'L03-2');
+});
+
 test('candle slots: 96 slots, reach 1.8 m, skip lit', () => {
   assert.equal(L.slotCount, 96);
   const sp = L.slotPos(0);           // 뒤쪽 위쪽 줄 첫 칸

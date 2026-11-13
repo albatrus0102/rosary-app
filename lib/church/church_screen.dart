@@ -7,6 +7,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/app_services.dart';
 import '../app/settings.dart';
+import '../app/theme.dart';
 import '../app/track.dart';
 import '../domain/prayer_data.dart';
 import '../domain/rosary_session.dart';
@@ -600,12 +601,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _standUp(tellScene: true, tellNet: false);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('이미 누가 앉아 있어요'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ..showSnackBar(const SnackBar(content: Text('이미 누가 앉아 있어요')));
   }
 
   void _onNetState() {
@@ -694,12 +690,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('그곳으로 가는 길을 찾지 못했어요'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ..showSnackBar(const SnackBar(content: Text('그곳으로 가는 길을 찾지 못했어요')));
   }
 
   /// 제대 앞의 '기도하기'(고개 숙임) / 성수대의 '성호 긋기'. 그 자리에 서 있을 때만 나온다.
@@ -779,12 +770,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     p?.dispose();
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('기도를 마쳤습니다'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ..showSnackBar(const SnackBar(content: Text('기도를 마쳤습니다')));
   }
 
   void _stopFromCard() {
@@ -945,7 +931,12 @@ class _ChurchScreenState extends State<ChurchScreen>
           Positioned.fill(child: _LoadOverlay(scene: _scene)),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.sm,
+                AppSpace.xs,
+                AppSpace.sm,
+                AppSpace.sm,
+              ),
               child: Column(
                 children: [
                   Row(
@@ -1000,18 +991,32 @@ class _ChurchScreenState extends State<ChurchScreen>
                       ),
                     ),
                   // 셋째 줄(왼쪽): 진본 사진 창 앞이면 '이 창: ○○ · 자세히 보기'(G-29).
-                  if (walking && glassWin != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ChurchGlassChip(
-                          key: const ValueKey('glass-chip'),
-                          title: glassWin.titleKo,
-                          onTap: () => _openGlassInfo(glassWin),
-                        ),
-                      ),
+                  // 나타나고 사라질 때는 M3 페이드(short4 + 표준 곡선, 동작 줄이기면 즉시).
+                  AnimatedSwitcher(
+                    duration: AppMotion.of(context, Durations.short4),
+                    switchInCurve: Easing.standardDecelerate,
+                    switchOutCurve: Easing.standardAccelerate,
+                    layoutBuilder: (current, previous) => Stack(
+                      alignment: Alignment.topLeft,
+                      children: [...previous, ?current],
                     ),
+                    child: (walking && glassWin != null)
+                        ? Padding(
+                            key: const ValueKey('glass-chip-slot'),
+                            padding: const EdgeInsets.only(top: AppSpace.xs),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: ChurchGlassChip(
+                                key: const ValueKey('glass-chip'),
+                                title: glassWin.titleKo,
+                                onTap: () => _openGlassInfo(glassWin),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey('glass-chip-none'),
+                          ),
+                  ),
                   if (_perfBanner)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -1112,7 +1117,7 @@ class _LoadOverlay extends StatelessWidget {
                           size: 40,
                           color: scheme.onInverseSurface,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpace.sm),
                         Text(
                           '성당을 불러오지 못했어요',
                           textAlign: TextAlign.center,
@@ -1139,11 +1144,10 @@ class _LoadOverlay extends StatelessWidget {
                   : Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
+                        // 진행 표시줄 모양은 테마(progressIndicatorTheme, M3 2024)에 맡긴다.
+                        const SizedBox(
                           width: 160,
-                          child: LinearProgressIndicator(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                          child: LinearProgressIndicator(),
                         ),
                         const SizedBox(height: 16),
                         Text(

@@ -727,6 +727,9 @@ class FakeChurchSceneController extends ChurchSceneController {
   }
 
   @override
-  Widget buildView(BuildContext context) =>
-      const ColoredBox(key: ValueKey('fake-scene'), color: Color(0xFF202020));
+  Widget buildView(BuildContext context) => ColoredBox(
+    key: const ValueKey('fake-scene'),
+    // 시험용 가짜 장면: 어두운 3D 장면 자리표시(고정 색 대신 테마의 scrim 역할).
+    color: Theme.of(context).colorScheme.scrim,
+  );
 }
