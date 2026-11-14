@@ -1,0 +1,33 @@
+# 명동대성당 풍 — ChatGPT(이미지 생성)에 이 파일 내용 전체를 붙여 넣어 보내세요
+
+You are creating a complete set of 14 devotional images of the Stations of the Cross (Via Crucis) for a 3D virtual Catholic church app. Create ALL 14 images now, one after another, in order 1 to 14, without asking me any questions and without stopping until all 14 are done. After each image, immediately continue with the next one. If you cannot finish in one reply, stop after an image and wait for me to say "continue", then resume with the next station number.
+
+ART STYLE (apply identically to all 14 images):
+Traditional Korean ink-and-light-color painting (suemuk-damchae) style: expressive brush strokes, generous empty space, soft washes of muted color, figures and bystanders in Joseon-era Korean hanbok clothing, subtle hanji paper texture, restrained reverent mood.
+
+CONSISTENCY (very important): Design the characters once and keep them identical in all 14 images: Jesus (brown hair, short beard, calm compassionate face, crown of thorns from station 1 to 10 and in station 11-12 only where natural, simple robe in the style's palette), Mary (blue mantle over a light veil), Simon, Veronica, John, soldiers and Pilate. Same clothing designs, same color palette, same level of detail and brush/texture treatment across the set. The mood is reverent, sorrowful and dignified, with a quiet note of hope.
+
+FORMAT FOR EVERY IMAGE:
+- Portrait orientation, aspect ratio 3:4 (for example 1024 x 1365 px), highest quality.
+- ONE single scene per image, one strong central focal point, clear simple silhouette and strong contrast so it reads well when shown small (about 300 px wide).
+- Keep important subjects inside the central 85% of the frame (safe margins).
+- NO text, NO letters, NO numbers, NO Roman numerals, NO frame, NO border, NO signature, NO watermark. Plain painted/printed image only.
+- Respectful for Catholic devotion: no graphic gore or cruelty, minimal blood, modest depiction. Do not imitate any specific living artist or reproduce any existing artwork; use only the era/style description above.
+
+THE 14 STATIONS (scene guidance):
+1. Jesus is condemned to death — Jesus, bound, stands before the crowd as Pilate washes his hands; a quiet moment of judgment.
+2. Jesus takes up his cross — Soldiers lay the heavy wooden cross on Jesus' shoulder; he accepts it calmly.
+3. Jesus falls the first time — Jesus stumbles under the weight of the cross, one knee on the ground, supported by the beam.
+4. Jesus meets his mother — Mary and Jesus look at each other on the road; Mary's hands reach toward him; deep silent sorrow.
+5. Simon of Cyrene helps Jesus carry the cross — A strong man, Simon of Cyrene, shoulders the cross beside the exhausted Jesus.
+6. Veronica wipes the face of Jesus — A woman, Veronica, kneels and offers a cloth to wipe Jesus' face; the cloth carries a faint face imprint.
+7. Jesus falls the second time — Jesus falls again on the stones; a soldier urges him; he rises with effort.
+8. Jesus meets the women of Jerusalem — Jesus turns toward weeping women and children by the roadside and consoles them.
+9. Jesus falls the third time — Near the top of the hill, Jesus collapses a third time, nearly at the ground, utterly exhausted.
+10. Jesus is stripped of his garments — Soldiers remove Jesus' garments; he stands in quiet dignity, covered modestly; no graphic detail.
+11. Jesus is nailed to the cross — Jesus is laid on the cross; soldiers prepare the nails; shown with restraint, no gore, focus on his surrender.
+12. Jesus dies on the cross — Jesus on the cross under a darkened sky; Mary and the beloved disciple John at the foot; solemn stillness.
+13. Jesus is taken down from the cross — Jesus' body is lowered from the cross by Joseph of Arimathea and Nicodemus; Mary receives him in her arms.
+14. Jesus is laid in the tomb — Jesus' body wrapped in linen is laid in the tomb; Mary and Mary Magdalene watch; quiet evening light.
+
+When finished, list the 14 titles in order so I can confirm the order.
