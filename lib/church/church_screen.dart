@@ -1620,22 +1620,37 @@ class _ChurchScreenState extends State<ChurchScreen>
                   if (_perfBanner)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: ChurchPerfBanner(
-                        key: const ValueKey('perf-banner'),
-                        onSwitch: _switchToSimple,
-                        onKeep: _keepQuality,
+                      // 넓은 화면에서는 띠가 화면을 가로지르지 않게 폭을 묶는다.
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: ChurchHudStyle.panelMaxWidth,
+                          ),
+                          child: ChurchPerfBanner(
+                            key: const ValueKey('perf-banner'),
+                            onSwitch: _switchToSimple,
+                            onKeep: _keepQuality,
+                          ),
+                        ),
                       ),
                     ),
                   const Spacer(),
                   if (cardOn)
-                    ChurchPrayerCard(
-                      controller: _prayer!,
-                      settings: _settings,
-                      onTogglePause: _togglePause,
-                      onStand: _stopFromCard,
-                      onPosture: _setPosture,
-                      onEnd: _endPrayer,
-                      onFullScreen: _openFullScreenPrayer,
+                    // 넓은 화면에서는 카드가 장면을 가로로 다 덮지 않게 폭을 묶는다.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: ChurchHudStyle.panelMaxWidth,
+                      ),
+                      child: ChurchPrayerCard(
+                        controller: _prayer!,
+                        settings: _settings,
+                        onTogglePause: _togglePause,
+                        onStand: _stopFromCard,
+                        onPosture: _setPosture,
+                        onEnd: _endPrayer,
+                        onFullScreen: _openFullScreenPrayer,
+                      ),
                     )
                   else if (!seatedOrPending) ...[
                     // 처음 한 번 뜨는 '가기' 안내: 위쪽(이름표·표식이 뜨는 곳)이 아니라 오른쪽 아래, 상황 버튼 바로 위에 둔다.

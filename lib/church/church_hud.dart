@@ -50,6 +50,9 @@ abstract final class ChurchHudStyle {
     side: border(s),
   );
 
+  /// 띠·기도 카드의 최대 폭(넓은 화면에서 장면을 가로로 다 덮지 않게 한다).
+  static const double panelMaxWidth = 560;
+
   /// 도구 줄 항목(아이콘 + 아래 짧은 라벨)의 최소 크기. 터치 타깃 48dp 이상.
   static const Size barItemSize = Size(56, 56);
 
