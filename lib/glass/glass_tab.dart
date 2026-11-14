@@ -32,6 +32,7 @@ class GlassTab extends StatefulWidget {
     this.sceneFactory,
     this.onOpenPrayer,
     this.onSegmentChanged,
+    this.onInChurchChanged,
     this.initialSegment = GlassSegment.church,
   });
 
@@ -54,6 +55,9 @@ class GlassTab extends StatefulWidget {
 
   /// 보기가 바뀌었다(셸이 화면 id를 맞추는 데 쓴다).
   final ValueChanged<GlassSegment>? onSegmentChanged;
+
+  /// 성당 장면 안에 들어갔다/나왔다(셸이 내비게이션을 성당 테마로 맞추는 데 쓴다).
+  final ValueChanged<bool>? onInChurchChanged;
 
   final GlassSegment initialSegment;
 
@@ -160,7 +164,9 @@ class _GlassTabState extends State<GlassTab> {
             child: ChurchHost(
               visible: widget.active && _segment == GlassSegment.church,
               onInChurchChanged: (v) {
-                if (mounted && _inChurch != v) setState(() => _inChurch = v);
+                if (!mounted || _inChurch == v) return;
+                setState(() => _inChurch = v);
+                widget.onInChurchChanged?.call(v);
               },
               // 성당 화면들은 자기 앱 바가 있어 위쪽 안전 영역을 한 번만 쓰게 한다.
               child: MediaQuery.removePadding(

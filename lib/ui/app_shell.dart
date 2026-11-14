@@ -7,9 +7,11 @@ import '../app/app_services.dart';
 import '../app/leader_audio_store.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
+import '../app/theme.dart';
 import '../app/track.dart';
 import '../app/window_class.dart';
 import '../church/church_scene_controller.dart';
+import '../church/church_theme.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_tab.dart';
 import '../stats/stats_screen.dart';
@@ -124,7 +126,24 @@ class _AppShellState extends State<AppShell> {
     if (i != _church && id != null) Track.screen(id);
   }
 
+  /// 성당 장면 안에 있는가(그동안 성당 탭의 내비게이션은 성당 테마를 쓴다).
+  bool _inChurch = false;
+
+  /// 지금 화면이 3D 성당 안인가: 성당 탭 + '성당' 보기 + 장면 안.
+  bool get _churchChrome =>
+      _index == _church && _segment == GlassSegment.church && _inChurch;
+
+  /// 내비게이션(바/레일)의 테마. 성당 안에서는 장면 위 HUD 와 같은 어두운 금색([ChurchTheme])으로
+  /// 바뀌어 밝은 내비게이션이 장면 아래에 따로 놀지 않게 하고, 다른 탭으로 가면 앱 테마로 돌아온다
+  /// (M3 short4 로 부드럽게, '동작 줄이기'면 즉시).
+  Widget _navTheme(BuildContext context, Widget child) => AnimatedTheme(
+    data: _churchChrome ? ChurchTheme.of(context) : Theme.of(context),
+    duration: AppMotion.of(context, Durations.short4),
+    child: child,
+  );
+
   void _onSegment(GlassSegment s) {
+    if (_inChurch && s != _segment) setState(() {});
     _segment = s;
     if (_index == _church) {
       AppShell.currentScreenId = _tabScreenId(_church, s);
@@ -186,6 +205,9 @@ class _AppShellState extends State<AppShell> {
           settings: widget.settings,
           active: _index == _church,
           onSegmentChanged: _onSegment,
+          onInChurchChanged: (v) {
+            if (mounted && _inChurch != v) setState(() => _inChurch = v);
+          },
           catalog: widget.glassCatalog,
           churchBuilder: widget.churchBuilder,
           sceneFactory: widget.glassSceneFactory,
@@ -231,24 +253,29 @@ class _AppShellState extends State<AppShell> {
         if (_segment != GlassSegment.church) return;
         _backToExit(context);
       },
-      child: wc.isWide ? _buildWide(context, wc, body) : _buildCompact(body),
+      child: wc.isWide
+          ? _buildWide(context, wc, body)
+          : _buildCompact(context, body),
     );
   }
 
-  Widget _buildCompact(Widget body) {
+  Widget _buildCompact(BuildContext context, Widget body) {
     return Scaffold(
       body: body,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _select,
-        destinations: [
-          for (final d in _destinations)
-            NavigationDestination(
-              icon: Icon(d.icon),
-              selectedIcon: Icon(d.selectedIcon),
-              label: d.label,
-            ),
-        ],
+      bottomNavigationBar: _navTheme(
+        context,
+        NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: _select,
+          destinations: [
+            for (final d in _destinations)
+              NavigationDestination(
+                icon: Icon(d.icon),
+                selectedIcon: Icon(d.selectedIcon),
+                label: d.label,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -258,23 +285,28 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       body: Row(
         children: [
-          SafeArea(
-            right: false,
-            child: NavigationRail(
-              extended: extended,
-              labelType: extended
-                  ? NavigationRailLabelType.none
-                  : NavigationRailLabelType.all,
-              selectedIndex: _index,
-              onDestinationSelected: _select,
-              destinations: [
-                for (final d in _destinations)
-                  NavigationRailDestination(
-                    icon: Icon(d.icon),
-                    selectedIcon: Icon(d.selectedIcon),
-                    label: Text(d.label),
-                  ),
-              ],
+          _navTheme(
+            context,
+            _RailSurface(
+              child: SafeArea(
+                right: false,
+                child: NavigationRail(
+                  extended: extended,
+                  labelType: extended
+                      ? NavigationRailLabelType.none
+                      : NavigationRailLabelType.all,
+                  selectedIndex: _index,
+                  onDestinationSelected: _select,
+                  destinations: [
+                    for (final d in _destinations)
+                      NavigationRailDestination(
+                        icon: Icon(d.icon),
+                        selectedIcon: Icon(d.selectedIcon),
+                        label: Text(d.label),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
           Expanded(child: body),
@@ -289,6 +321,17 @@ class _AppShellState extends State<AppShell> {
     _Dest('기록', Icons.insights_outlined, Icons.insights),
     _Dest('더보기', Icons.more_horiz, Icons.more_horiz),
   ];
+}
+
+/// 레일 뒤 바탕(테마의 surface). 레일 위아래의 안전 영역까지 같은 색으로 채운다.
+class _RailSurface extends StatelessWidget {
+  const _RailSurface({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) =>
+      ColoredBox(color: Theme.of(context).colorScheme.surface, child: child);
 }
 
 class _Dest {
