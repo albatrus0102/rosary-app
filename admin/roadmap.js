@@ -18,12 +18,12 @@
     ['G2', 'G2 · 유리화 +1개월', '전체 카탈로그와 빛'],
     ['G3', 'G3 · 유리화 이후', '머무는 이유'],
   ];
-  // 출처: 과제 ID 접두사로 구분한다. U- = 외부 UX 검토, G- = 유리화 계획, 나머지(M-,P-,O-,C-,...) = UX_PLAN.
-  var SOURCES = [['plan', 'UX_PLAN'], ['review', '외부 UX 검토'], ['glass', '유리화 계획']];
+  // 출처: 과제 ID 접두사로 구분한다. U- = 외부 UX 검토, G- = 유리화 계획, T- = 남은 일(백로그), 나머지(M-,P-,O-,C-,...) = UX_PLAN.
+  var SOURCES = [['plan', 'UX_PLAN'], ['review', '외부 UX 검토'], ['glass', '유리화 계획'], ['backlog', '남은 일']];
   var SOURCE_LABEL = {}; SOURCES.forEach(function (s) { SOURCE_LABEL[s[0]] = s[1]; });
   function sourceOf(id) {
     var p = String(id || '').slice(0, 2);
-    return p === 'U-' ? 'review' : p === 'G-' ? 'glass' : 'plan';
+    return p === 'U-' ? 'review' : p === 'G-' ? 'glass' : p === 'T-' ? 'backlog' : 'plan';
   }
   var PRIORITIES = ['P0', 'P1', 'P2'];
   var EFFORT_LABEL = { S: 'S · 1일 이하', M: 'M · 2~5일', L: 'L · 1주 이상' };
