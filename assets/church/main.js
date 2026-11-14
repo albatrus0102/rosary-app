@@ -608,7 +608,7 @@
     if (App.liturgy) App.liturgy.update(dt, App.t);
     if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
-    App.R.setGrade(App.world.env.grade);   // 성당 룩(looks.js): 걷기 프로필의 보정·블룸
+    if (App.R.setGrade) App.R.setGrade(App.world.env.grade);   // 성당 룩(looks.js): 걷기 프로필의 보정·블룸
     App.idleSkip = !PH && !App.maxFrames && qs.idle !== '0' && App.me.mode === 'seated' && !App.walkSt && !App.ctl.dragging && App.t - App.ctl.lastDragT > 2 && App.sitF > 0.98 && !(App.meAv && App.meAv.kneelLin !== App.meAv.kneelTarget);
     var gq = PH ? PH.gpuBegin() : null, tr = PH ? performance.now() : 0;
     var chg = App.R.render(App.scene, App.camera, dt, App.world);

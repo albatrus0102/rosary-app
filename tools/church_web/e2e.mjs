@@ -342,16 +342,16 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   check('viewWindow before init boots straight into the viewing room (no church, no stations event)', ok && info.church === 'glass_room' && info.stations === 0 && info.light === 'night', info);
   await pg.close();
 }
-// 화질 자동 하향: 고화질로 시작한 뒤 프레임 시간이 길면 tier 'low' perf 이벤트가 온다(소프트웨어 렌더에서는 보통 발생)
+// 화질 자동 하향(quality 'auto', SPEC §34): 높음으로 시작한 뒤 프레임 시간이 길면 'mid' 다음 'low' perf 이벤트가 온다(소프트웨어 렌더에서는 보통 발생)
 {
   const pg = await browser.newPage({ viewport: { width: 640, height: 360 } });
   await pg.addInitScript(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
   pg.on('pageerror', (e) => errors.push('pageerror ' + e.message));
   await pg.goto('file://' + root + '/index.html');
   await pg.waitForFunction(() => window.ChurchAPI && window.__ev.some((e) => e.e === 'ready'));
-  await pg.evaluate(() => ChurchAPI.init({ church: 'basic', hour: 12, quality: 'high', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
+  await pg.evaluate(() => ChurchAPI.init({ church: 'basic', hour: 12, quality: 'auto', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
   const t = await pg.waitForFunction(() => window.__church && window.__church.R && window.__church.R.tier, null, { timeout: 120000 }).then(() => true).catch(() => false);
-  check('high tier starts with composer-capable renderer', t && await pg.evaluate(() => ['high', 'low'].includes(__church.R.tier)));
+  check('high tier starts with composer-capable renderer', t && await pg.evaluate(() => ['high', 'mid', 'low'].includes(__church.R.tier)));
   const down = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'perf' && e.tier === 'low'), null, { timeout: 200000 }).then(() => true).catch(() => false);
   const info = await pg.evaluate(() => ({ tier: __church.R.tier, avg: __church.R.lastAvgMs }));
   console.log('INFO auto-downgrade (software GL)', JSON.stringify({ down, ...info }));
@@ -362,7 +362,7 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
 await page.waitForTimeout(5500);
 const perf = await page.evaluate(() => window.__ev.filter((e) => e.e === 'perf'));
 check('perf event posted', perf.length >= 1, perf.slice(-1));
-check('perf event carries tier, avg fps and seated flag', perf.length >= 1 && perf.every((e) => typeof e.fps === 'number' && ['low', 'high'].includes(e.tier) && (e.sat === 0 || e.sat === 1)), perf.slice(-2));
+check('perf event carries tier, avg fps and seated flag', perf.length >= 1 && perf.every((e) => typeof e.fps === 'number' && ['low', 'mid', 'high'].includes(e.tier) && (e.sat === 0 || e.sat === 1)), perf.slice(-2));
 // 시간대/성당 변경, 이모트, 소리 켜기(헤드리스에서 오류 없이)
 await page.evaluate(() => { ChurchAPI.setHour({ hour: 18.5 }); ChurchAPI.setHour({ hour: 22 }); ChurchAPI.emote({ e: 1 }); ChurchAPI.peerEmote({ id: 'p8', e: 0 }); ChurchAPI.setAvatar({ avatar: { skin: 0, style: 1, hair: 9, outfit: 11, name: 39 } }); ChurchAPI.setAmbient({ on: true }); ChurchAPI.setQuality({ quality: 'high' }); });
 await page.waitForTimeout(1000);

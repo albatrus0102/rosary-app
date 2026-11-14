@@ -333,7 +333,7 @@
       tn: function (i, j, p) {
         var y = p[1] - HC, d = (y - 0.058) / 0.020, ring = 0.85 * Math.exp(-d * d) * (0.75 + 0.25 * Math.cos(Math.atan2(p[0], -p[2]) * 5));
         if (o.part === undefined) return ring;
-        var dp = (p[0] - o.part) / 0.0065, pl = Math.exp(-dp * dp) * sm((y - 0.066) / 0.02) * sm((0.045 - p[2]) / 0.05);
+        var dp = (p[0] - o.part) / 0.010, pl = 0.55 * Math.exp(-dp * dp) * sm((y - 0.066) / 0.02) * sm((0.045 - p[2]) / 0.05);
         return ring * (1 - pl) - pl;
       }
     });
@@ -1125,7 +1125,7 @@
     setE(bs[B.skirt], -0.30 * sk, 0, 0); bs[B.skirt].scale.set(1, lerp(1, dress ? SKIRT_SIT : 0.30, sk), 1);
     var ck = 0.6 + 0.4 * sa, ckK = dress ? KNEEL_HEM * ka : 0;
     setE(bs[B.ckR], t1R * ck + ckK, 0, 0.04 * sa); setE(bs[B.ckL], t1L * ck + ckK, 0, -0.04 * sa);
-    if (dress) { var cz = lerp(1, LAP_FLAT, sk), cx = lerp(1, 0.88, sk); bs[B.ckR].scale.set(cx, 1, cz); bs[B.ckL].scale.set(cx, 1, cz); }   // 앉으면 앞자락이 허벅지 위에 내려앉는다(쟁반처럼 뜨지 않게)
+    if (dress) { var cz = lerp(1, LAP_FLAT, sk), cx = lerp(1, 0.74, sk); bs[B.ckR].scale.set(cx, 1, cz); bs[B.ckL].scale.set(cx, 1, cz); }   // 앉으면 앞자락이 허벅지 위에 내려앉는다(쟁반처럼 뜨지 않게)
     setE(bs[B.spine], spX, spineRy, -0.012 * ws * 0);
     setE(bs[B.chest], chX, chestRy, 0.012 * ws);
     bs[B.chest].scale.y = 1 + br * 0.005;

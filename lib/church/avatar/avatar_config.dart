@@ -229,17 +229,17 @@ class AvatarConfig {
   ];
 
   static const List<Color> outfitColors = [
-    Color(0xFF3B4D78),
-    Color(0xFF565A63),
-    Color(0xFF34343B),
+    Color(0xFF455A8C),
+    Color(0xFF60646E),
+    Color(0xFF3C3C44),
     Color(0xFFC29B68),
     Color(0xFF7F8A58),
-    Color(0xFF8A404E),
-    Color(0xFF44705D),
+    Color(0xFF964C5A),
+    Color(0xFF4D7C68),
     Color(0xFFEFE6D1),
     Color(0xFFA39385),
     Color(0xFF7F9DBB),
-    Color(0xFF7C5781),
+    Color(0xFF866389),
     Color(0xFFBF725C),
   ];
 

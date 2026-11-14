@@ -2,8 +2,8 @@
    ChurchAPI.setLiturgy({season, color, week?, feast?, memorial?}) → 제대 앞 보·독서대 보·감실 보의 전례 색 천과
    시기별 장식(대림환 / 성탄 트리·구유·포인세티아 / 사순 가림천·보라 천 두른 십자가 / 부활초·백합 / 위령 성월 추모 촛불)을 짓는다.
    - 모두 절차적 지오메트리. 새 텍스처·에셋 없음. 그리는 물체는 천 1 + 소품 1 + 빛 점(Points) 1 = 최대 3
-     (높음 화질의 그리기 호출: 천 2(본·반사) + 소품 3(본·반사·AO 법선) + 빛 점 2 = +7 이하, 보통·간단은 +3 이하).
-   - 자리는 성당별 표(PLACES)가 정한다: 주 제대(altar), 독서대(ambo), 감실(tab), 십자고상(cross), 장식 자리 둘(L: 시기 표지, R: 구유).
+     (높음 화질의 그리기 호출: 반사 바닥이 둘인 성당에서 천 3(본·반사 2) + 소품 4(본·반사 2·AO 법선) + 빛 점 1(본) = +8 이하, 보통·간단은 +3 이하).
+   - 자리는 성당별 표(PLACES)가 정한다: 주 제대(altar), 독서대(ambo), 감실(tab), 십자고상(cross), 걸개 천(banners), 장식 자리 둘(L: 시기 표지, R: 구유).
    - plan(id, state, low) 는 three.js 없이 도는 순수 함수(무엇을 어디에 놓는지 + 충돌체). Node 시험이 통로·좌석·스테이션과 겹치지 않는지 본다.
    window.ChurchLiturgy / Node require 둘 다 지원. */
 (function (root) {
@@ -11,19 +11,21 @@
   var PI = Math.PI;
 
   var SEASONS = ['advent', 'christmas', 'ordinary', 'lent', 'triduum', 'easter'];
-  // 전례 색(sRGB). em: 천의 약한 자체 발광(밤에도 색이 읽히게)
+  // 전례 색(sRGB). em: 천의 약한 자체 발광(어두운 성당·밤에도 색이 읽히게: 자색은 그늘에서 검게 보이기 쉬워 조금 더 준다)
   var COLORS = {
-    violet: { hex: 0x5b2a7c, em: 0.09 },
+    violet: { hex: 0x7440ad, em: 0.2 },
     white: { hex: 0xf4e8c6, em: 0.05 },
-    green: { hex: 0x2c7a3f, em: 0.08 },
-    red: { hex: 0xb3202c, em: 0.08 },
-    rose: { hex: 0xd88aa8, em: 0.07 }
+    green: { hex: 0x2f8a46, em: 0.12 },
+    red: { hex: 0xc02634, em: 0.14 },
+    rose: { hex: 0xdd8fae, em: 0.1 }
   };
+  var LIGHT_LAYER = 1;   // 빛 점 전용 레이어(rebuild 가 본 화면 카메라에 켠다)
   var GOLD = 0xd9b45a, WOOD = 0x5a3822, WOOD_L = 0x7a5536, IVORY = 0xfff6e0, PINE = 0x1f5a34, PINE_L = 0x34804a;
 
   // ---- 성당별 자리 ----
   // k: 장식 크기 배율(큰 성당일수록 크게). altar: 주 제대(앞면이 +z). ambo/tab/cross: 있으면 천을 건다.
-  // L: 시기 표지 자리(대림환·트리·십자가·부활초·추모 촛불), R: 구유 자리. pots: 제대 앞 화분 자리(없으면 제대 앞 두 모서리).
+  // L: 시기 표지 자리(대림환·트리·십자가·부활초·추모 촛불), R: 구유 자리, T: 트리 자리(없으면 L). pots: 제대 앞 화분 자리(없으면 제대 앞 두 모서리).
+  // 자리의 s 는 그 자리 장식의 추가 배율(좁은 곳).
   var PLACES = {
     basic: {
       k: 1.15, altar: { x: 0, z: -17, y: 0.5, w: 2.6, d: 1.1, h: 1.0 },
@@ -50,7 +52,8 @@
     myeongdong: {
       k: 1.1, altar: { x: 0, z: -14.2, y: 0.6, w: 2.4, d: 1.0, h: 1.0 },
       ambo: { x: 1.9, z: -12.2, y: 0.6 }, cross: { x: 3.5, y: 1.15, z: -13.0, h: 4.4 },
-      L: { x: -2.9, z: -15.3, y: 0.6 }, R: { x: 2.9, z: -15.3, y: 0.6 }, pots: [[-1.2, -13.35, 0.6], [1.2, -13.35, 0.6]]
+      // 왼쪽 설교대·오른쪽 독서대와 십자가 사이: 표지와 구유는 제대 앞 왼쪽(난간 안), 트리는 설교대 뒤
+      L: { x: -1.5, z: -12.45, y: 0.6, s: 0.72 }, R: { x: -1.62, z: -12.45, y: 0.6, s: 0.62 }, T: { x: -2.9, z: -15.3, y: 0.6 }, pots: [[-1.2, -13.4, 0.6], [1.2, -13.4, 0.6]]
     },
     stpaul: {
       k: 1.25, altar: { x: 0, z: -18.5, y: 0.82, w: 2.3, d: 1.0, h: 1.0, off: 0.04 },
@@ -59,7 +62,9 @@
     },
     stpeter: {
       k: 1.6, altar: { x: 0, z: -9.15, y: 0.5, w: 3.0, d: 1.3, h: 1.05 },
-      L: { x: -5.4, z: -8.3, y: 0 }, R: { x: 5.4, z: -8.3, y: 0 }, pots: [[-0.75, -7.0, 0.5], [0.75, -7.0, 0.5]]
+      L: { x: -5.4, z: -8.3, y: 0 }, R: { x: 5.4, z: -8.3, y: 0 }, pots: [[-0.75, -7.0, 0.5], [0.75, -7.0, 0.5]],
+      // 제대가 콘페시오 뒤에 가려 앞에서 잘 보이지 않는다: 발다키노 앞 받침 두 곳에도 전례 색 천을 건다
+      banners: [{ x: -1.6, y: 0.74, z: -6.83, w: 0.86, h: 0.7 }, { x: 1.6, y: 0.74, z: -6.83, w: 0.86, h: 0.7 }]
     }
   };
 
@@ -100,12 +105,13 @@
       items.push({ kind: 'frontal', x: A.x, y: A.y, z: A.z, w: A.w, d: A.d, h: A.h, off: A.off || 0, color: c, festive: c === 'white' });
       if (P.ambo) items.push({ kind: 'fall', x: P.ambo.x, y: P.ambo.y, z: P.ambo.z, color: c });
       if (P.tab) items.push({ kind: 'tabveil', x: P.tab.x, y: P.tab.y, z: P.tab.z, color: c });
+      (P.banners || []).forEach(function (b) { items.push({ kind: 'banner', x: b.x, y: b.y, z: b.z, w: b.w, h: b.h, color: c }); });
     }
     // 2) 시기 표지
     if (s.season === 'advent') {
       spot(P.L, 'wreath', 0.56, { lit: Math.max(1, Math.min(4, s.week || 1)) });
     } else if (s.season === 'christmas') {
-      spot(P.L, 'tree', 0.72);
+      spot(P.T || P.L, 'tree', 0.72);
       spot(P.R, 'crib', { w: 1.6, d: 1.0 });
       pots('poinsettia');
     } else if (s.season === 'lent' || s.season === 'triduum') {
@@ -173,6 +179,14 @@
         box(metal, GOLD, it.x, y0 + 0.3, zf + 0.012, 0.035, 0.24, 0.02);
         box(metal, GOLD, it.x, y0 + 0.44, zf + 0.012, 0.15, 0.035, 0.02);
       },
+      // 받침·벽 앞에 건 전례 색 천(앞면 +z): 금 띠 + 금 십자가
+      banner: function (it) {
+        box(cloth, cHex, it.x, it.y, it.z, it.w, it.h, 0.025);
+        box(metal, GOLD, it.x, it.y + it.h - 0.045, it.z + 0.012, it.w, 0.045, 0.02);
+        box(metal, GOLD, it.x, it.y, it.z + 0.012, it.w, 0.035, 0.02);
+        box(metal, GOLD, it.x, it.y + it.h * 0.22, it.z + 0.012, 0.045, it.h * 0.5, 0.02);
+        box(metal, GOLD, it.x, it.y + it.h * 0.5, it.z + 0.012, it.h * 0.3, 0.045, 0.02);
+      },
       // 감실 보(conopaeum)
       tabveil: function (it) {
         var zf = it.z + 0.25 + 0.03;
@@ -181,18 +195,16 @@
         box(metal, GOLD, it.x, it.y + 1.31, zf + 0.012, 0.03, 0.2, 0.02);
         box(metal, GOLD, it.x, it.y + 1.42, zf + 0.012, 0.13, 0.03, 0.02);
       },
-      // 십자고상 가림천: 꼭대기에서 팔까지 넓어지고 아래로 드리운다
+      // 십자고상 가림천: 십자가 모양대로 감싼다(세로 기둥 + 가로 팔 + 팔 끝에서 드리운 자락). 앞면에 세로 주름.
       veil: function (it) {
-        var h = it.h, c = col(it.color), zf = it.z + h * 0.115;
-        var yB = it.y + h * 0.14, yA = it.y + h * 0.66, yT = it.y + h * 1.03;
-        drape(c, it.x, yB, yA, zf, function (t) { return h * (0.27 + 0.05 * t); }, { rows: 3, amp: h * 0.008 });
-        drape(c, it.x, yA, yT, zf, function (t) { return h * (0.32 - 0.25 * t); }, { rows: 2, amp: h * 0.008 });
-        // 옆으로 감싼 면(옆에서 보아도 뜬 종이처럼 보이지 않게)
-        [-1, 1].forEach(function (s) {
-          var xa = it.x + s * h * 0.27, xb = it.x + s * h * 0.32, zb = it.z - h * 0.04;
-          cloth.addQuad([xa, yB, zf], [xa, yB, zb], [xb, yA, zb], [xb, yA, zf], c, [it.x + s * 50, yA, zf], { vary: 0.03 });
-          cloth.addQuad([xb, yA, zf], [xb, yA, zb], [it.x + s * h * 0.07, yT, zb], [it.x + s * h * 0.07, yT, zf], c, [it.x + s * 50, yT + 50, zf], { vary: 0.03 });
-        });
+        var h = it.h, c = col(it.color), zc = it.z + h * 0.0325, dd = h * 0.145, zf = it.z + h * 0.108;
+        var y0 = it.y + h * 0.12, y1 = it.y + h * 1.04, ya = it.y + h * 0.5, yb = it.y + h * 0.75;
+        box(cloth, c, it.x, y0, zc, h * 0.2, y1 - y0, dd);
+        box(cloth, c, it.x, ya, zc, h * 0.64, yb - ya, dd);
+        [-1, 1].forEach(function (s) { box(cloth, c, it.x + s * h * 0.285, ya - h * 0.11, zc, h * 0.07, h * 0.11, dd * 0.9); });
+        drape(c, it.x, y0, ya, zf, function () { return h * 0.1; }, { n: 4, rows: 2, amp: h * 0.006 });
+        drape(c, it.x, ya, yb, zf, function () { return h * 0.32; }, { n: 10, rows: 1, amp: h * 0.006 });
+        drape(c, it.x, yb, y1, zf, function () { return h * 0.1; }, { n: 4, rows: 1, amp: h * 0.006 });
       },
       // 보라(성금요일: 붉은) 천을 두른 나무 십자가
       lentcross: function (it) {
@@ -314,15 +326,19 @@
       // 부활초: 금 촛대 + 큰 초(붉은 십자 표) + 발치의 백합 둘
       paschal: function (it) {
         var k = it.k, x = it.x, y = it.y, z = it.z;
-        cyl(metal, GOLD, x, y, z, 0.22 * k, 0.13 * k, 0.09 * k, 12);
-        cyl(metal, GOLD, x, y + 0.09 * k, z, 0.045 * k, 0.035 * k, 0.95 * k, 10);
-        ball(metal, GOLD, x, y + 0.5 * k, z, 0.07 * k, { vary: 0 });
-        cyl(metal, GOLD, x, y + 1.04 * k, z, 0.05 * k, 0.11 * k, 0.09 * k, 10);
-        cyl(solid, IVORY, x, y + 1.13 * k, z, 0.055 * k, 0.055 * k, 0.86 * k, 10, { vary: 0 });
-        box(solid, 0xb3202c, x, y + 1.5 * k, z + 0.05 * k, 0.016 * k, 0.17 * k, 0.014 * k, { vary: 0 });
-        box(solid, 0xb3202c, x, y + 1.585 * k, z + 0.05 * k, 0.085 * k, 0.016 * k, 0.014 * k, { vary: 0 });
-        flame(x, y + 2.04 * k, z, k * 1.5, true);
-        [-1, 1].forEach(function (s) { B.lily({ x: x + s * 0.3 * k, y: y, z: z + 0.16 * k, k: k * 0.8 }); });
+        cyl(metal, GOLD, x, y, z, 0.26 * k, 0.16 * k, 0.1 * k, 12);
+        cyl(metal, 0xc79a3e, x, y + 0.1 * k, z, 0.06 * k, 0.045 * k, 0.94 * k, 10);
+        ball(metal, GOLD, x, y + 0.36 * k, z, 0.085 * k, { vary: 0 });
+        ball(metal, GOLD, x, y + 0.72 * k, z, 0.075 * k, { vary: 0 });
+        cyl(metal, GOLD, x, y + 1.04 * k, z, 0.07 * k, 0.15 * k, 0.1 * k, 12);
+        cyl(solid, 0xfff3d6, x, y + 1.14 * k, z, 0.075 * k, 0.07 * k, 0.9 * k, 12, { vary: 0 });
+        // 붉은 십자 표와 금 띠
+        box(solid, 0xb3202c, x, y + 1.5 * k, z + 0.07 * k, 0.022 * k, 0.2 * k, 0.014 * k, { vary: 0 });
+        box(solid, 0xb3202c, x, y + 1.6 * k, z + 0.07 * k, 0.11 * k, 0.022 * k, 0.014 * k, { vary: 0 });
+        cyl(metal, GOLD, x, y + 1.3 * k, z, 0.078 * k, 0.078 * k, 0.03 * k, 12, { vary: 0 });
+        cyl(metal, GOLD, x, y + 1.84 * k, z, 0.074 * k, 0.074 * k, 0.03 * k, 12, { vary: 0 });
+        flame(x, y + 2.11 * k, z, k * 1.6, true);
+        [-1, 1].forEach(function (s) { B.lily({ x: x + s * 0.36 * k, y: y, z: z + 0.2 * k, k: k * 0.85 }); });
       },
       // 위령 성월: 천을 덮은 두 단 탁자 + 작은 촛불 여럿 + 흰 국화 + 작은 십자가
       memorial: function (it) {
@@ -362,7 +378,7 @@
     var clothMat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, side: T.DoubleSide, emissive: new T.Color(em.hex), emissiveIntensity: em.em, envMapIntensity: 0.6 });
     mats.push(clothMat);
     addBatch(cloth, clothMat, 'liturgy-cloth', true);
-    addBatch(solid, ctx.mats.solid, 'liturgy-props');          // 성당 재질을 그대로 쓴다(시간대·화질 따라 함께 바뀐다)
+    addBatch(solid, (ctx.mats && ctx.mats.solid) || clothMat, 'liturgy-props');   // 성당 재질을 그대로 쓴다(시간대·화질 따라 함께 바뀐다)
     var points = null;
     if (pts.length) {
       var n = pts.length / 6, pa = new Float32Array(n * 3), ca = new Float32Array(n * 3);
@@ -374,6 +390,7 @@
       var pm = new T.PointsMaterial({ map: ctx._getGlowTex(), size: 0.2 * Math.sqrt(kk), sizeAttenuation: true, vertexColors: true, transparent: true, opacity: 0.9, blending: T.AdditiveBlending, depthWrite: false, fog: false });
       mats.push(pm);
       points = new T.Points(pg, pm); points.name = 'liturgy-lights'; points.renderOrder = 2;
+      points.layers.set(LIGHT_LAYER);   // 본 화면 카메라만 그린다(바닥 반사 카메라는 건너뛴다: 그리기 호출 절약)
       group.add(points);
     }
     var verts = cloth.vertexCount + solid.vertexCount, calls = 0;
@@ -410,6 +427,8 @@
     if (!pl.items.length) return;
     try { cur.built = build(pl, w, low); } catch (e) { if (root.console) console.error('[church] liturgy build failed', e); cur.built = null; return; }
     w.group.add(cur.built.group);
+    var cam = root.__church && root.__church.camera;
+    if (cam && cam.layers) cam.layers.enable(LIGHT_LAYER);
     // 충돌체: 걸어서 장식을 통과하지 않게(자동 걷기 경로는 이 자리들을 지나지 않는다: liturgy.test.mjs 가 확인)
     pl.colliders.forEach(function (c) {
       var nc = c.r !== undefined ? { k: 1, x: c.x, z: c.z, r: c.r } : { k: 0, x0: c.x0, x1: c.x1, z0: c.z0, z1: c.z1 };

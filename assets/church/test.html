@@ -112,6 +112,9 @@
   B('촛불', function () { var s = __church.near.candle; if (s === null || s === undefined) s = (Math.random() * 96) | 0; A.lightCandle({ slot: s, until: 0, intention: (Math.random() * 8) | 0 }); });
   B('촛불x20', function () { for (var i = 0; i < 20; i++) A.lightCandle({ slot: (Math.random() * 96) | 0, until: 0, intention: i % 8 }); });
   [11, 15, 18.5, 22].forEach(function (h) { B(h + '시', function () { A.setHour({ hour: h }); }); });
+  // 전례 시기 장식(SPEC §33)
+  [['장식 없음', { season: 'none' }], ['대림', { season: 'advent', color: 'violet', week: 2 }], ['성탄', { season: 'christmas', color: 'white' }], ['사순', { season: 'lent', color: 'violet' }],
+    ['부활', { season: 'easter', color: 'white' }], ['연중', { season: 'ordinary', color: 'green' }], ['위령', { season: 'ordinary', color: 'violet', memorial: true }]].forEach(function (l) { B(l[0], function () { A.setLiturgy(l[1]); }); });
   B('혼자 on', function () { A.setSolo({ on: true }); });
   B('혼자 off', function () { A.setSolo({ on: false }); });
   B('피어5', function () { simPeers(5); });

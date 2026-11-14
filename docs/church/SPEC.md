@@ -74,7 +74,7 @@
 ```
 ### Flutter → 웹 (`window.ChurchAPI.<method>(jsonObject)`; 인자는 모두 JSON 직렬화 가능한 객체 하나)
 ```
-init({avatar, hour, ambient, solo, quality})  // hour 0..24 실수(기기 시간), quality 'low'|'high'
+init({avatar, hour, ambient, solo, quality})  // hour 0..24 실수(기기 시간), quality 'auto'|'high'|'mid'|'low' (§34, 예전 'low'|'high' 그대로 유효)
 setJoystick({x, y})          // -1..1, y>0 이 앞으로(카메라 기준 전진)
 sit({seat?})                 // seat 생략 시 가장 가까운 빈 좌석; 서버가 거부하면 Flutter가 setSeatTaken 호출
 stand({})
@@ -85,7 +85,7 @@ peerJoin({peer}) peerLeave({id}) peerSnap({p:[[id,x,z,r,st],...]})
 peerSeat({id,seat}) peerStand({id}) peerPraying({id,on,ms}) peerEmote({id,e})
 setCandles({candles:[{slot,until,intention}]})   // 전체 교체
 lightCandle({slot,until,intention})
-setAmbient({on})  setHour({hour})  setSolo({on})  setQuality({quality})
+setAmbient({on})  setHour({hour})  setSolo({on})  setQuality({quality})  setPerfHud({on})   // §34
 emote({e})
 ```
 - 내 아바타 위치는 웹이 권위(클라이언트 측 이동). Flutter가 `pos`를 받아 서버로 보낸다(5Hz 제한).
@@ -101,6 +101,7 @@ emote({e})
 - 피부색 4, 머리색 10, 옷색 12 — 색상표는 `assets/church/palette.js`(웹)와 `lib/church/avatar/avatar_config.dart`(Flutter)가 **같은 HEX 값**을 가진다.
 - **머리 모양**(`style` 0..3, 성별별): 여성 단발, 어깨 길이, 포니테일, 낮은 쪽머리 / 남성 짧게 친 머리, 가르마, 웨이브, 넓은 이마(이마 선이 물러난 모양). 모두 매끈한 클레이 질감의 차분한 실제 머리 모양이다(`palette.js`의 `stylesF`/`stylesM`). 3D는 `avatar.js`(머리 껍질 + 작은 덩어리), 2D 미리보기는 `avatar_preview.dart`가 같은 비율로 그린다.
 - **체형**: 성별에 따라 어깨·가슴·허리·엉덩이 폭, 팔·다리 굵기, 턱선, 목 굵기, 눈썹 굵기만 조금 다르다(스케일만; 키·뼈 길이·좌석/기도 포즈는 같음). 삼각형 예산(근접 ≤6000, 중간 ≤1500, 원거리 ≤400)은 8가지 성별×머리 조합 모두에 적용된다(`ChurchAvatar.stats()`의 `g<성별>s<모양>`).
+- **외형 기준**: 큰 머리(1.55배, 약 5등신), 작은 점 눈·볼 홍조, 윤기 띠가 있는 머리카락, 단색 옷 + 가는 트림(깃·소맷부리 크림, 아랫단 금색; 여성 종 모양 원피스 / 남성 웃옷 + 바지), 채도를 낮춘 색, 약한 림 라이트. 값의 뜻·개수·와이어 형식은 그대로다. 자세한 기준·수치·남은 격차: `docs/church/AVATAR_LOOK.md`.
 - 촛불 지향 프리셋(인덱스 0..7): 가족과 이웃을 위해, 아픈 이들을 위해, 세상의 평화를 위해, 돌아가신 이들을 위해, 감사의 마음으로, 시험과 일을 위해, 통회와 용서를 위해, 나라와 교회를 위해.
 
 ## 5. Flutter 구조 (lib/church/)
@@ -512,3 +513,82 @@ welcome/join 의 PeerInfo: {"st":"p","ms":2,"ro":1}
 - `tools/church_web/rosary.test.mjs`: 지오메트리 예산·공유, 메시 1개·해제·재사용, LOD, 서기/앉아 기도/무릎 꿇기 손 위치와 비침투(다리·무릎·배·등받이·책 선반·바닥), `net_view` 의 `ro`/`r`. `pause_resume.test.mjs`: `setRosary`·`state.rosary`·`restore`.
 - `server/church/test/room_logic.test.ts` `pray r`, `test/church_rosary_test.dart`(시트 항목·기본값·기억·신비 바꾸기·접근성·360×800/412×915/360×640 × 밝게/어둡게 × 글자 2배, 선택 → 걷기 → 앉기 → 카드 → 쉬기/마침/일어나기, 취소·실패·자리 뺏김, 와이어, 분석).
 - 스크린샷: `node tools/church_web/rosary_shots.mjs <dir>`(아바타), `flutter test test/zz_church_rosary_shots_test.dart --dart-define=CHURCH_ROSARY_SHOTS=<dir>`(시트).
+
+## 33. 전례 시기 장식 (C-07 / G-41, `liturgy.js`)
+
+성당은 오늘의 전례 시기에 맞춰 제대 앞 보의 색과 시기 장식을 바꾼다. 달력 규칙·장식 목록·가정은 `LITURGICAL_DECOR.md`.
+
+### 33.1 브리지
+
+- `ChurchAPI.setLiturgy({season, color, week?, feast?, memorial?, force?})`
+  - `season`: `advent | christmas | ordinary | lent | triduum | easter`(그 밖의 값·`none`은 장식 없음).
+  - `color`: `violet | white | green | red | rose`(없거나 모르는 값이면 시기의 기본 색).
+  - `week`: 시기 안의 주차(대림환에 켜는 초 수 1~4). `feast`: 대축일 이름(`LiturgicalFeast.name`, 지금은 기록용).
+  - `memorial: true`: 위령 성월의 추모 촛불(연중 시기에만 적용).
+  - 같은 값을 다시 보내면 다시 짓지 않는다(`force: true`면 다시 짓는다). `init` 전에 와도 기억했다가 성당을 불러올 때 짓는다.
+  - 성당을 바꾸면(`setChurch`/`init`) 지금 시기대로 새 성당에 다시 짓는다. 감상실(`glass_room`)과 썸네일(`?thumb`)에는 짓지 않는다.
+- 웹 → Flutter 이벤트는 없다(장식은 보기만 하는 것).
+- Flutter: `LiturgicalDay.now().toSceneArgs()`를 `init` 직후, **KST 자정 1초 뒤**, 설정의 '전례 시기 미리 보기'가 바뀔 때 보낸다(`lib/church/church_liturgy.dart` `ChurchLiturgyBinding`). 상태 칩 부제는 `chipLabel`.
+
+### 33.2 구조
+
+- `ChurchLiturgy.plan(id, state, low)`: three.js 없이 도는 순수 함수. `{items:[{kind, x, y, z, k, …}], colliders:[…]}`. `kind`: `frontal`(제대 앞 보) · `fall`(독서대 보) · `tabveil`(감실 보) · `banner`(걸개 천) · `veil`(십자고상 가림천) · `lentcross` · `wreath` · `tree` · `crib` · `poinsettia` · `lily` · `paschal` · `memorial`.
+- `ChurchLiturgy.attach(world)` / `detach()` / `update(dt, t)` / `set(o)` / `stats()`: `main.js`가 성당을 불러올 때 붙이고, 버리기 전에 뗀다. 장식 그룹 `liturgy`는 `world.group` 아래에 하나만 있다.
+- 자리는 성당별 표 `PLACES`(`altar`, `ambo`, `tab`, `cross`, `banners`, `L`, `R`, `T`, `pots`, 크기 배율 `k`). 빌더(`ch_*.js`)는 고치지 않는다: 제대 위치·크기를 표에 옮겨 적었으므로 **빌더에서 제대를 옮기면 표도 고친다.**
+- 물체 셋: 천(`MeshStandardMaterial`, 정점색 + 전례 색 자체 발광 0.05~0.2, 양면, AO 패스 제외), 소품(성당 공용 `ctx.mats.solid`), 빛 점(`Points`, 성당의 번짐 텍스처, 가산 혼합). 그림자는 받기만 한다.
+- 충돌체는 `world.logic.colliders`에 넣었다가 뗄 때 뺀다. 경로 탐색 격자(`stations.js`)는 장식을 모르지만, 장식 자리는 어떤 걷는 길도 지나지 않게 골랐다(시험이 확인).
+
+### 33.3 예산·시험
+
+- 그리는 물체 ≤ 3, 높음 화질의 그리기 호출 +8 이하(천: 본 화면 + 바닥 반사(최대 2), 소품: 본 화면 + 바닥 반사 + AO 법선, 빛 점: 본 화면만 — 전용 레이어 1 이라 반사 카메라가 건너뛴다), 정점 ≤ 14,000(간단 화질 ≤ 5,000), 새 텍스처 0.
+- `tools/church_web/liturgy.test.mjs`: 8개 성당 × 12개 상태의 계획(좌석·스테이션·14처·걷는 길과 겹치지 않음, 스테이션 불변), 실제 빌더 재질로 짓기·교체·화질 전환·해제(지오메트리 전부 해제, 충돌체 복구, 공용 재질 보존).
+- `tools/church_web/liturgy_perf.mjs`: 헤드리스에서 장식 전/후 그리기 호출·프레임 시간·누수. `tools/church_web/liturgy_shots.mjs`: 스크린샷.
+- `test/liturgical_season_test.dart`(달력 2024~2040, KST 경계), `test/church_liturgy_test.dart`(자정 갱신, 미리 보기, 성당 화면 연결).
+
+## 34. 룩 프리셋·화질 3단계·성능 표시 (2026-11-14)
+
+### 34.1 룩 프리셋 API (`looks.js`, LOOK_DEV.md)
+
+```
+ChurchLooks.get(id) -> look            // DEFAULT 에 성당 값(LOOKS[id])을 덮은 사본. look.night = 밤 덮어쓰기. look.id = id|'default'
+ChurchLooks.blend(look, night, out)    // 숫자 키를 밤 정도(0..1)로 선형 보간해 out 에 쓴다
+world.look                             // 이 성당의 룩(감상실 포함, 감상 모드에서는 쓰지 않음)
+world.env.grade                        // applyEnv 가 매번 채운다: blend 결과(sat warm vig con bloomT bloomS bloomR midBloomS ...). 감상 모드면 null
+R.setGrade(grade|null)                 // main.js 가 매 프레임 넘긴다. 걷기 프로필에서만 최종 패스(채도·난색·비네트·대비)·블룸 값을 바꾼다
+```
+- 적용 순서(`world.applyEnv`): `sampleEnv(hour)`(시간대 KEYS) → 빌더 `envOverride` → **룩**: `di×=keyK`, `dc→keyTint(keyTintK)`, `hi×=ambK`, `hs→ambTint`, `exp×=expK`, `envK×=envK`, `lamp×=lampK`, `candle×=candleK`, `beam×=beamK`, `fog→fogTint`. 바닥 반사 세기 `×reflK`(만들 때), 먼지 수 `dust`(만들 때)·밝기 `dustK`·밤 `dustNight`.
+- 최종 패스(walk): `sc = ACES(grade(c))` 뒤 `sc = mix(sc, smoothstep 곡선, con)`. 사진 창 화소(알파 0)는 예전처럼 보정·톤매핑·대비·블룸·AO 를 모두 건너뛴다.
+- 새 성당은 `LOOKS` 에 한 줄 넣으면 된다. 넣지 않으면 예전 화면 그대로(`looks.test.mjs` 가 기본값을 고정한다).
+
+### 34.2 화질 3단계와 자동
+
+| 방식(`quality`) | 실제 단계 | 후처리 | 그림자 | 바닥 반사 | 자동 하향 |
+|---|---|---|---|---|---|
+| `auto`(기본) | high 로 시작 | — | — | — | 3초 평균 프레임 간격 > 40ms → mid, mid 에서 > 45ms → low. 해상도는 낮추지 않는다 |
+| `high` | high | SSAO(반해상도)·블룸·MSAA 4·보정 | 태양(정적 캐시) | 켬 | 없음 |
+| `mid` | mid | 블룸(1/4 해상도 사슬, 세기 ×0.8)·MSAA 2·보정 | 태양(정적 캐시) | 끔 | 없음 |
+| `low` | low | 없음(three 톤매핑만) | 없음 | 끔 | 없음 |
+
+- 픽셀 비율은 단계와 무관하게 예전 그대로(high·mid 최대 2, low 1.5, 감상 3).
+- 자동 하향은 `{e:'perf', tier, a:1}` 로 알린다(tier 가 'mid' 일 수 있다). Flutter 설정값은 바꾸지 않는다(다음 입장은 다시 high 에서 시작).
+- 앉아서 가만히 있으면(끌기 2초 없음, 무릎 전환 끝) 한 프레임 걸러 그린다(약 30fps). `?idle=0`·성능 표시 중·시험 프레임 제한(`frames`) 중에는 끈다.
+- Flutter: `ChurchQuality { auto, high, mid, low }`(저장 키 `church_quality` 에 이름, 예전 'low'·'high' 그대로 읽음, 기본 `auto`), 설정 화면 '성당' 절의 '성당 화질'(자동·높음·보통·간단, SegmentedButton) — 성당 화면이 바뀐 값을 `setQuality` 로 넘긴다.
+
+### 34.3 같은 화질에서 비용 줄이기(렌더 파이프라인)
+
+- 그림자 맵: 해가 움직일 때(applyEnv 5초마다·setHour·단계 전환)만 다시 그린다. `markCaster` 로 표시한 움직이는 물체(아바타)는 그 순간 `castShadow` 를 꺼 맵에 남지 않게 한다(아바타는 발밑 그림자 판).
+- SSAO: RenderPass 결과(MSAA·32비트 깊이)를 그대로 받아 법선 패스만 반해상도로 그린다(예전에는 장면을 한 번 더 그리고 RenderPass 결과를 버렸다). AO 합성은 깊이 가중 4점 업샘플 1패스(알파 0 창 화소 제외 유지). `?aofull=1` 이면 전해상도.
+- 바닥 반사: 반사·SSAO 법선 패스 안에서는 다른 반사를 갱신하지 않는다(예전에는 두 바닥이 서로를 다시 그렸다).
+- 하늘 구: 불투명 목록의 맨 마지막(깊이 시험으로 가려진 화소 생략).
+- composer 의 두 번째 렌더 타깃에 깊이 질감을 따로 둔다(three r149 복제가 같은 GL 질감을 공유).
+
+### 34.4 성능 표시(진단)
+
+```
+ChurchAPI.setPerfHud({on})            // 기본 꺼짐. ?perfhud=1 로도 켠다
+{"e":"perfReport","text":"[로사리움 성당 성능 10초]\n..."}   // '10초 기록' 요약. Flutter 가 클립보드에 복사(SceneEvent 로 만들지 않음)
+```
+- 화면 오른쪽 위(웹이 터치를 받는 쪽)에 fps(평균·1% low), 프레임 ms, JS ms, 그리기 호출 ms, GPU ms(`EXT_disjoint_timer_query_webgl2` 가 있으면; 없으면 '프레임 − JS' 대기 추정), 캔버스 해상도·pixel ratio, 단계(자동 여부), draw call·삼각형. 0.5초마다 갱신.
+- '10초 기록': 평균·1초 창 최저·1% low fps, 프레임 중앙·90%, 단계(바뀌었으면 → 표시), 해상도, 성당 id, 기기 요약(Android 버전·모델명·Chrome 주 버전). 개인 정보 없음, 분석 전송 없음.
+- Flutter: 설정 '성당' 절의 '성능 표시(진단)' 스위치 → `AppSettings.churchPerfHud`(키 `church_perf_hud`) → `ChurchDiagnostics.perfHud` → 열려 있는 장면 컨트롤러가 `setPerfHud` 를 보낸다(성당 화면 코드와 독립).
+

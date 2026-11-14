@@ -154,7 +154,7 @@ void _select(int i) {
 | `mode_change` | `mode`(`PrayerMode.name`) | `settings_screen.dart`에서 `settings.prayerMode = ...`을 대입하는 곳. |
 | `leader_voice_change` | `source`, `persona` | `settings_screen.dart`에서 `leaderVoiceSource`/`leaderPersona`를 바꾸는 곳(둘 다 현재 값의 `.name`). |
 | `text_scale_change` | `scale`(수) | `settings_screen.dart`의 `prayerTextScale` 변경 완료 시(슬라이더는 `onChangeEnd`에서만). |
-| `setting_change` | `key`(예: `chime_ten`, `tick_bead`, `haptic`, `dynamic_color`, `tts_rate`, `prayer_font`, `chime_volume`, `leader_audio`, `church_ambient`, `church_quality`) | `settings_screen.dart`의 나머지 설정 변경 지점. 값은 보내지 않고 **어떤 설정인지**만 기록한다. |
+| `setting_change` | `key`(예: `chime_ten`, `tick_bead`, `haptic`, `dynamic_color`, `tts_rate`, `prayer_font`, `chime_volume`, `leader_audio`, `church_ambient`, `church_quality`, `church_liturgy_preview`) | `settings_screen.dart`의 나머지 설정 변경 지점. 값은 보내지 않고 **어떤 설정인지**만 기록한다. |
 | `stats_open` | `range`(`week`/`month`/`year`/`all` 등 `StatsRange`의 name) | `stats_screen.dart`가 열릴 때와 기간 탭을 바꿀 때. |
 
 #### 스테인드글라스 감상(G-14, usage)

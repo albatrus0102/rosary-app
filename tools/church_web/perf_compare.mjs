@@ -1,6 +1,7 @@
 // 헤드리스(swiftshader) 프레임 비용 비교 — 사본 여러 개(커밋별 assets/church)를 같은 시점·같은 조건에서 잰다. `node --test` 밖.
 // 사용: node tools/church_web/perf_compare.mjs --roots a=/path/assets/church,b=/path2 [--churches stpeter,florence,milan] [--size 360x800]
-//       [--frames 30] [--quality high|low] [--json out.json]
+//       [--frames 30] [--quality high|mid|low] [--json out.json] [--passes]
+//       --passes: 첫 사본·첫 성당의 신랑 시점에서 패스를 하나씩 끄고(또는 예전처럼 매 프레임 그림자) 잰다 → 패스별 상대 비용 표.
 // 값: 프레임 시간 중앙값/90%(ms, gl.readPixels 로 GPU 완료까지), draw call, 삼각형, 상주 텍스처 수·추정 MB(장면 재질의 map 류 + 렌더 타깃 제외), 지오메트리 수.
 // 절대값은 소프트웨어 GL 이라 실기기와 다르다. 같은 기계에서 사본끼리의 비율만 본다(PERF.md).
 import { createRequire } from 'node:module';
@@ -14,7 +15,18 @@ const VIEWS = {
   altar: (L) => ({ x: 0, z: L.bounds.z0 + (L.bounds.z1 - L.bounds.z0) * 0.3, yaw: 0, pitch: 5 }),
 };
 
-export async function measure(browser, rootDir, id, { size = '360x800', frames = 30, quality = 'high' } = {}) {
+const PASSES = {
+  all: '',
+  noSSAO: 'R._dbg().ssao && (R._dbg().ssao.enabled = false)',
+  noBloom: 'R._dbg().bloom && (R._dbg().bloom.enabled = false)',
+  noReflect: 'A.world.group.children.forEach((o) => { if (o.userData.reflector) o.visible = false; })',
+  noShadowMap: 'R.renderer.shadowMap.enabled = false; A.scene.traverse((o) => { if (o.material) [].concat(o.material).forEach((m) => { m.needsUpdate = true; }); })',
+  shadowEveryFrame: 'R.shadowEveryFrame = true',
+  noPost: 'R.setTier("low", A.world)',
+};
+export { PASSES };
+
+export async function measure(browser, rootDir, id, { size = '360x800', frames = 30, quality = 'high', passes = null } = {}) {
   const [W, H] = size.split('x').map(Number);
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   const errors = [];
@@ -30,7 +42,33 @@ export async function measure(browser, rootDir, id, { size = '360x800', frames =
   await page.waitForFunction(() => !window.__church.place || window.__church.place.debug().pending === 0, null, { timeout: 120000, polling: 250 }).catch(() => {});
   const L = await page.evaluate(() => ({ bounds: __church.world.layout.bounds, spawn: __church.world.layout.spawn }));
   const out = [];
-  for (const vn of Object.keys(VIEWS)) {
+  if (passes) {
+    const v = VIEWS.nave(L);
+    for (const pn of Object.keys(PASSES)) {
+      await page.reload();
+      await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 180000, polling: 500 });
+      await page.waitForTimeout(1500);
+      await page.evaluate(({ v, code }) => {
+        const A = __church, R = A.R, D = Math.PI / 180;
+        A.world.setHour(11); A.me.x = v.x; A.me.z = v.z; A.me.y = A.logic.floorY(v.x, v.z);
+        A.ctl.yaw = 0; A.me.yaw = 0; A.ctl.pitch = v.pitch * D; A.camInit = false;
+        __step(2, 50);
+        if (code) (new Function('A', 'R', code))(A, R);
+      }, { v, code: PASSES[pn] });
+      await page.evaluate(() => __step(6, 50));
+      const r = await page.evaluate((N) => {
+        const A = __church, gl = A.renderer.getContext(), px = new Uint8Array(4), arr = [];
+        for (let f = 0; f < 3; f++) { __step(1, 16.67); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+        for (let f = 0; f < N; f++) { const t = performance.now(); __step(1, 16.67); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); arr.push(performance.now() - t); }
+        arr.sort((a, b) => a - b);
+        return { med: +arr[arr.length >> 1].toFixed(1), calls: A.renderer.info.render.calls, tris: A.renderer.info.render.triangles, st: A.R.stats ? JSON.stringify(A.R.stats) : '' };
+      }, frames);
+      out.push({ id, view: 'pass:' + pn, ...r });
+    }
+    await page.close();
+    return out;
+  }
+  for (const vn of (process.env.PERF_VIEWS ? process.env.PERF_VIEWS.split(',') : Object.keys(VIEWS))) {
     const v = VIEWS[vn](L);
     await page.evaluate(({ v }) => {
       const A = __church, D = Math.PI / 180;
@@ -64,13 +102,20 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (a[i] === '--roots') roots = a[++i].split(',').map((s) => s.split('='));
     else if (a[i] === '--churches') o.churches = a[++i].split(','); else if (a[i] === '--size') o.size = a[++i];
     else if (a[i] === '--frames') o.frames = +a[++i]; else if (a[i] === '--quality') o.quality = a[++i]; else if (a[i] === '--json') json = a[++i];
+    else if (a[i] === '--passes') o.passes = true;
   }
-  const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const launch = () => chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  let browser = await launch();
   const all = [];
   for (const id of o.churches) {
     for (const [name, dir] of roots) {
-      const rs = await measure(browser, dir, id, o);
-      for (const r of rs) { all.push({ rev: name, ...r }); console.log(`${name.padEnd(10)} ${id.padEnd(9)} ${r.view.padEnd(6)} ${o.quality} med ${r.med}ms p90 ${r.p90}ms calls ${r.calls} tris ${r.tris} texGL ${r.texGL} texMB ${r.texSceneMB} geos ${r.geos}${r.errors ? ' ERR ' + r.errors.join(' | ') : ''}`); }
+      let rs;
+      try { rs = await measure(browser, dir, id, o); } catch (e) {   // 브라우저가 죽으면(다른 작업과 경합) 한 번 다시
+        console.log('retry', name, id, e.message.split('\n')[0]);
+        try { await browser.close(); } catch (e2) { /* ignore */ }
+        browser = await launch(); rs = await measure(browser, dir, id, o);
+      }
+      for (const r of rs) { all.push({ rev: name, ...r }); console.log(`${name.padEnd(10)} ${id.padEnd(9)} ${r.view.padEnd(6)} ${o.quality} med ${r.med}ms p90 ${r.p90 === undefined ? '-' : r.p90}ms calls ${r.calls} tris ${r.tris} texGL ${r.texGL} texMB ${r.texSceneMB} geos ${r.geos}${r.errors ? ' ERR ' + r.errors.join(' | ') : ''}`); }
     }
   }
   await browser.close();

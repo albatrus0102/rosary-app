@@ -29,6 +29,9 @@
       sat: 0.98, warm: 0.07, vig: 0.36, con: 0.32, bloomT: 0.74, bloomS: 0.5, bloomR: 0.62,
       night: { expK: 0.95, ambK: 0.7, lampK: 2.2, candleK: 1.6, con: 0.22, bloomT: 0.7, bloomS: 0.6, vig: 0.38 }
     },
+  };
+  // 초안(아직 적용하지 않음): 성당마다 화면을 보고 검증한 뒤 LOOKS 로 옮긴다(LOOK_DEV_HANDOFF.md). 개발 중 ?looks=all 이면 적용해 볼 수 있다.
+  var DRAFTS = {
     // 라테라노: 흰 대리석·금 천장. 성 베드로보다 차분하게(약한 난색, 중간 대비)
     lateran: { keyK: 0.9, keyTint: 0xffdcae, keyTintK: 0.3, ambK: 0.7, expK: 0.88, lampK: 1.4, sat: 0.97, warm: 0.05, vig: 0.26, con: 0.18, bloomT: 0.84, bloomS: 0.4, night: { lampK: 1.7 } },
     // 마조레: 금 격자 천장·모자이크. 금빛을 살려 따뜻하게
@@ -46,6 +49,7 @@
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
     basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
   };
+  try { if (/[?&]looks=all/.test(root.location.search)) for (var dk in DRAFTS) LOOKS[dk] = DRAFTS[dk]; } catch (e) { /* ignore */ }
   var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS'];
 
   function get(id) {
@@ -67,6 +71,6 @@
     }
     return out;
   }
-  root.ChurchLooks = { get: get, blend: blend, DEFAULT: DEFAULT, LOOKS: LOOKS, NUM: NUM };
+  root.ChurchLooks = { get: get, blend: blend, DEFAULT: DEFAULT, LOOKS: LOOKS, DRAFTS: DRAFTS, NUM: NUM };
   if (typeof module === 'object' && module.exports) module.exports = root.ChurchLooks;
 })(typeof window !== 'undefined' ? window : this);

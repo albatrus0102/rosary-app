@@ -182,9 +182,10 @@
         c.addPass(ssao);
       }
       if (X.UnrealBloomPass) {
-        bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92); c.addPass(bloom);
-        // 보통(mid): 블룸 사슬을 한 단계 더 작게(1/4 해상도부터). 높음은 예전 그대로(1/2).
+        bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92);
+        // 보통(mid): 블룸 사슬을 한 단계 더 작게(1/4 해상도부터). 높음은 예전 그대로(1/2). addPass 가 곧바로 setSize 를 부르므로 그 전에 바꾼다.
         if (!hiT) { var bs = bloom.setSize.bind(bloom); bloom.setSize = function (w, h) { bs(Math.max(2, Math.round(w / 2)), Math.max(2, Math.round(h / 2))); }; }
+        c.addPass(bloom);
         // 블룸을 장면에 더하는 마지막 합성(G-29): 예전(AdditiveBlending = 블룸 rgb × 블룸 알파를 더함)과 같은 값을 미리 곱해서 내보내고,
         // 걷기 프로필에서는 '대상 알파'를 곱해 더한다 → 사진 창 화소(알파 0 표시)에는 주변의 밝은 금·돌 블룸이 번지지 않고(창 색 불변, 알파 표시도 유지),
         // 그 밖의 화소(알파 1)는 예전과 같은 값. 감상 프로필은 예전 식 그대로(applyProfile).

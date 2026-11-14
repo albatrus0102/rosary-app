@@ -156,6 +156,7 @@ test('build: 성당 8곳 × 시기 6종 × 화질 2단, 그리기 호출·정점
         assert.ok(s.calls <= 3, `${c.id} ${name} ${tier}: 그리는 물체 ${s.calls}`);   // 천 + 소품 + 빛 점
         assert.ok(cs.verts === s.verts && s.verts < (tier === 'low' ? 5000 : 14000), `${c.id} ${name} ${tier}: 정점 ${s.verts}`);
         assert.equal(w.logic.colliders.length, base + s.colliders, '충돌체는 지금 장식 것만');
+        g.traverse((o) => { if (o.isPoints) assert.equal(o.layers.mask, 2, '빛 점은 레이어 1(바닥 반사에 그리지 않는다)'); });
         g.traverse((o) => { if (o.isMesh) { assert.equal(o.castShadow, false); const p = o.geometry.attributes.position.array; for (let i = 0; i < p.length; i++) assert.ok(Number.isFinite(p[i]), 'NaN 정점'); } });
         if (tier === 'high') rows.push(`${c.id.padEnd(11)} ${name.padEnd(9)} calls ${s.calls} verts ${String(s.verts).padStart(5)} lights ${String(s.lights).padStart(2)} colliders ${s.colliders}`);
         // 같은 시기를 다시 보내면 다시 짓지 않는다

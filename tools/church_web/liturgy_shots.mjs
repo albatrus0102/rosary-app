@@ -18,7 +18,7 @@ export const CAMS = {
   lateran: { pos: [0, -6.3], pitch: 12, zoom: 0.75 },
   maggiore: { pos: [0, -15.3], pitch: 13, zoom: 0.8 },
   milan: { pos: [0, -15.0], pitch: 12, zoom: 0.8 },
-  myeongdong: { pos: [0, -9.6], pitch: 13, zoom: 0.8 },
+  myeongdong: { pos: [0, -9.6], pitch: 12, zoom: 0.55 },
   stpaul: { pos: [0, -14.4], pitch: 13, zoom: 0.8 },
   stpeter: { pos: [0, -3.2], pitch: 14, zoom: 0.8 }
 };
@@ -54,7 +54,7 @@ export async function shootAll(o) {
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text()); });
     const c = cams[id] || { pos: [0, 0], pitch: 13, zoom: 1 };
-    const q = new URLSearchParams({ church: id, autotier: '0', msaa: '0', hideui: '1', frames: '6', hour: String(hour), quality, x: String(c.pos[0]), z: String(c.pos[1]), yaw: String(c.yaw || 0), pitch: String(c.pitch), zoom: String(c.zoom), markers: '0' });
+    const q = new URLSearchParams({ church: id, autotier: '0', msaa: '0', hideui: '1', frames: '24', hour: String(hour), quality, x: String(c.pos[0]), z: String(c.pos[1]), yaw: String(c.yaw || 0), pitch: String(c.pitch), zoom: String(c.zoom), markers: '0' });
     await page.goto('file://' + root + '/test.html?' + q.toString());
     await page.waitForFunction(() => window.__church && window.__church.world && window.__church.done, null, { timeout: 900000 });
     await page.evaluate(() => { window.__church.meAv.root.visible = false; });
