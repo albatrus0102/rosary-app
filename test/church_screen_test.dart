@@ -52,7 +52,7 @@ void main() {
     final init = h.scene.lastArgs('init')!;
     expect(init['church'], 'basic');
     expect(init['solo'], isTrue);
-    expect(init['quality'], 'high');
+    expect(init['quality'], 'auto'); // 기본 화질 방식(SPEC §34)
     expect(init['avatar'], isA<Map>());
     expect(h.net.connectedIds, ['basic']);
   });
