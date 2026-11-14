@@ -46,6 +46,14 @@
 - 반사 갱신: 프레임당 8회(전: 두 바닥이 서로 + SSAO 재렌더) → 2회. 그림자 맵: 매 프레임 → 5초마다.
 - 피렌체 pre 9,705ms / 463 calls / 931,722 tris (head·new 는 측정 중단).
 
+## 3-1. 검증 결과(중단 시점)
+
+- `node --test "tools/church_web/*.test.mjs"` 160/160, `flutter analyze` 이상 없음, `flutter test` 전체 통과(기본 화질 기대값 'high'→'auto' 1건 갱신), 서버 `npm test` 72/72.
+- 사진 창 색(`glassplace.mjs --only color`, 성 베드로·밀라노, high·low): ΔE 중앙값 1.58 / 1.90 — 이전과 같음(≤3 통과).
+- 깜빡임(`flicker.mjs lateran stpeter`): 라테라노 신랑 1.17·측랑 0.07, 성 베드로 신랑 0.35·측면 0.18(한도 2.0 통과). 라테라노 신랑이 이전 기록(≤0.7)보다 높다 → SSAO 반해상도 탓일 수 있으니 `?aofull=1` 과 비교해 볼 것.
+- e2e(`e2e.mjs`)는 이번에 돌리지 못했다(자동 하향 검사를 'auto' 기준으로 고쳐 둠).
+- 전/후 비교 시트: `look_dev/compare_360.jpg`(입구·신랑·제대·창 × 11·18.3·22시, 각 쌍 왼쪽=전). 남은 눈에 띄는 문제: **입구 바닥의 붉은 원형 카펫이 대비 곡선 때문에 거의 검게** 보인다(밤엔 더). `con`·`expK` 를 낮추거나 어두운 부분 리프트가 필요.
+
 ## 4. 다음에 할 첫 3가지
 
 1. `node tools/church_web/perf_compare.mjs --roots head=<HEAD 사본>,new=assets/church --churches florence,milan` 과 `--passes`(성 베드로) 를 부하가 적을 때 돌려 PERF.md 표 채우기.
