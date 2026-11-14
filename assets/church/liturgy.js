@@ -1,0 +1,1 @@
+(function (root) { 'use strict'; root.ChurchLiturgy = { set: function () {}, attach: function () {}, detach: function () {}, update: function () {}, stats: function () { return null; } }; })(typeof window !== 'undefined' ? window : this);

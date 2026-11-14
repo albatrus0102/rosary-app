@@ -5,32 +5,79 @@ import 'package:flutter/material.dart';
 import '../app/theme.dart';
 import 'net/church_net.dart';
 
-/// 3D 장면 위 HUD 의 M3 표면 규칙(2026-11 재감사).
+/// 3D 장면 위 HUD 의 M3 표면 규칙(2026-11 성당 테마 재디자인).
 ///
-/// - 반투명 `surface.withValues(alpha:…)` 대신 **불투명 표면 역할**을 쓴다(장면 밝기와 상관없이
-///   대비 WCAG AA 유지). 정보 칩은 `surfaceContainerHigh`, 아이콘 버튼은 M3 filled tonal.
-/// - 짧은 안내·진행 상태는 M3 plain tooltip/snackbar 규칙: `inverseSurface` + `onInverseSurface`.
-/// - 장면 위에 떠 있는 것은 level 2(3dp) 높이로 통일한다.
+/// 성당 화면은 [ChurchTheme](어두운 먹색 + 촛불 금색)을 쓰고, 장면 위에 떠 있는 것은 모두 이 규칙을 따른다.
+/// - **표면**: `surface` 를 [surfaceOpacity] 만큼만 비치게 한 어두운 표면. 불투명도는 가장 밝은 장면
+///   (흰 대리석) 위에서도 글자·아이콘 대비가 WCAG AA(4.5:1)를 넘도록 정한 토큰이다
+///   (`test/church_theme_test.dart`가 흰 바탕과 섞은 최악의 경우를 검사한다).
+/// - **테두리**: 가는 금색 선(1dp, `outlineVariant`). 그림자 대신 이 선이 표면의 가장자리를 만든다.
+/// - **전경**: 글자는 `onSurface`/`onSurfaceVariant`, 선 아이콘과 누를 수 있는 글자는 `primary`(금색).
+/// - **모양**: 이름판은 large(16), 정보 칩은 small(8), 도구 줄은 extra large(28), 안내는 extra small(4).
+/// - 높이는 level 2(3dp)로 통일한다.
 abstract final class ChurchHudStyle {
-  /// 정보 칩 바탕(성당 이름·인원).
-  static Color surface(ColorScheme s) => s.surfaceContainerHigh;
+  /// HUD 표면의 불투명도(장면이 14%만 비친다).
+  static const double surfaceOpacity = 0.86;
+
+  /// HUD 표면색(이름판·도구 줄·칩·안내·기도 카드).
+  static Color surface(ColorScheme s) =>
+      s.surface.withValues(alpha: surfaceOpacity);
+
+  /// 가는 금색 테두리.
+  static BorderSide border(ColorScheme s) =>
+      BorderSide(color: s.outlineVariant);
 
   /// 떠 있는 HUD 의 높이(M3 elevation level 2 = 3dp).
   static const double elevation = 3;
+
+  /// 이름판·기도 카드(M3 large).
+  static ShapeBorder plaque(ColorScheme s) =>
+      RoundedRectangleBorder(borderRadius: AppShape.large, side: border(s));
+
+  /// 정보 칩·띠(M3 small).
+  static ShapeBorder chip(ColorScheme s) =>
+      RoundedRectangleBorder(borderRadius: AppShape.small, side: border(s));
+
+  /// 도구 줄(M3 extra large).
+  static ShapeBorder bar(ColorScheme s) => RoundedRectangleBorder(
+    borderRadius: AppShape.extraLarge,
+    side: border(s),
+  );
+
+  /// 짧은 안내 말풍선(M3 extra small).
+  static ShapeBorder note(ColorScheme s) => RoundedRectangleBorder(
+    borderRadius: AppShape.extraSmall,
+    side: border(s),
+  );
+
+  /// 도구 줄 항목(아이콘 + 아래 짧은 라벨)의 최소 크기. 터치 타깃 48dp 이상.
+  static const Size barItemSize = Size(56, 56);
+
+  /// 아이콘 아래 라벨은 글자 크기 설정을 이 배율까지만 따른다(M3 내비게이션 바 라벨과 같은 이유:
+  /// 줄 폭이 고정이다). 전체 문구는 툴팁·스크린리더 라벨이 전한다.
+  static const double labelMaxScale = 1.3;
+
+  /// 이동 스틱(중립색: 바닥의 금색 표식과 헷갈리지 않게 금색을 쓰지 않는다).
+  static const double stickFillOpacity = 0.12;
+  static const double stickRingOpacity = 0.75;
+  static const double stickKnobOpacity = 0.55;
+  static const double stickShadowOpacity = 0.3;
 }
 
-/// 상단 왼쪽 칩: 성당 이름 + 접속 상태.
+/// 상단 왼쪽 이름판: 성당 이름 + 접속 상태(+ 부제).
 ///
-/// 칩은 두 구역으로 나뉜다. 왼쪽(성당 이름 + 인원)을 누르면 '지금 접속 중' 시트
+/// 이름판은 두 구역으로 나뉜다. 왼쪽(성당 이름 + 인원)을 누르면 '지금 접속 중' 시트
 /// ([onShowPresence]), 오른쪽 ↔ 아이콘을 누르면 '성당 바꾸기'([onChangeChurch]).
 ///
 /// 접속자 수는 online일 때만 보인다. 혼자 모드/오프라인에서는 숫자를 보이지 않는다.
+/// [subtitle]은 둘째 줄 상태 뒤에 붙는 짧은 부제(예: 전례 시기)이고, 없으면 자리를 차지하지 않는다.
 class ChurchStatusChip extends StatelessWidget {
   const ChurchStatusChip({
     super.key,
     required this.churchName,
     required this.state,
     required this.count,
+    this.subtitle,
     this.onChangeChurch,
     this.onShowPresence,
   });
@@ -38,6 +85,9 @@ class ChurchStatusChip extends StatelessWidget {
   final String churchName;
   final NetState state;
   final int count;
+
+  /// 상태 뒤에 '· 부제'로 붙는 짧은 글(예: '대림 시기'). 스크린리더 라벨에도 들어간다.
+  final String? subtitle;
   final VoidCallback? onChangeChurch;
   final VoidCallback? onShowPresence;
 
@@ -51,6 +101,11 @@ class ChurchStatusChip extends StatelessWidget {
         : state == NetState.connecting
         ? '연결 중…'
         : '혼자 모드';
+    final sub = subtitle;
+    final hasSub = sub != null && sub.isNotEmpty;
+    final statusStyle = text.labelMedium?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
     final status = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -71,11 +126,19 @@ class ChurchStatusChip extends StatelessWidget {
             statusText,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: (online ? text.labelMedium : text.labelSmall)?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
+            style: statusStyle,
           ),
         ),
+        if (hasSub)
+          Flexible(
+            child: Text(
+              ' · $sub',
+              key: const ValueKey('status-subtitle'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: statusStyle,
+            ),
+          ),
         if (onShowPresence != null)
           // 누르면 접속자 시트가 열린다는 작은 표시.
           Icon(
@@ -86,13 +149,14 @@ class ChurchStatusChip extends StatelessWidget {
           ),
       ],
     );
+    final stateLabel = online ? '$count명 접속 중' : statusText;
     return Material(
       color: ChurchHudStyle.surface(scheme),
-      shape: AppShape.full,
+      shape: ChurchHudStyle.plaque(scheme),
       clipBehavior: Clip.antiAlias,
       elevation: ChurchHudStyle.elevation,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 48),
+        constraints: const BoxConstraints(minHeight: 56),
         child: IntrinsicHeight(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -102,9 +166,9 @@ class ChurchStatusChip extends StatelessWidget {
                 child: Semantics(
                   container: true,
                   button: onShowPresence != null,
-                  label: online
-                      ? '$churchName, $count명 접속 중'
-                      : '$churchName, $statusText',
+                  label: hasSub
+                      ? '$churchName, $stateLabel, $sub'
+                      : '$churchName, $stateLabel',
                   hint: onShowPresence != null ? '접속 중인 사람 보기' : null,
                   onTap: onShowPresence,
                   child: ExcludeSemantics(
@@ -115,7 +179,7 @@ class ChurchStatusChip extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(
                           AppSpace.sm,
                           AppSpace.xxs,
-                          AppSpace.xxs,
+                          AppSpace.xs,
                           AppSpace.xxs,
                         ),
                         child: Column(
@@ -127,7 +191,7 @@ class ChurchStatusChip extends StatelessWidget {
                               churchName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: text.titleSmall?.copyWith(
+                              style: text.titleMedium?.copyWith(
                                 color: scheme.onSurface,
                               ),
                             ),
@@ -139,16 +203,23 @@ class ChurchStatusChip extends StatelessWidget {
                   ),
                 ),
               ),
+              VerticalDivider(
+                width: 1,
+                thickness: 1,
+                indent: AppSpace.xs,
+                endIndent: AppSpace.xs,
+                color: scheme.outlineVariant,
+              ),
               Tooltip(
                 message: '성당 바꾸기',
                 child: InkWell(
                   onTap: onChangeChurch,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 16, 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Icon(
                       Icons.swap_horiz,
-                      size: 20,
-                      color: scheme.onSurfaceVariant,
+                      size: 22,
+                      color: scheme.primary,
                     ),
                   ),
                 ),
@@ -161,7 +232,78 @@ class ChurchStatusChip extends StatelessWidget {
   }
 }
 
-/// 상단 오른쪽 둥근 아이콘 버튼 줄: 소리, 아바타 편집, 인사/이모트. (그 아래 줄에 [ChurchGoButton])
+/// 도구 줄의 한 항목: 금색 선 아이콘 + 아래 짧은 라벨. M3 텍스트 버튼(상태 레이어·포커스·터치 타깃)을 쓴다.
+/// [emphasized]면 아이콘 뒤에 `primaryContainer` 표시기(M3 내비게이션 표시기 모양)를 둔다.
+class _HudBarButton extends StatelessWidget {
+  const _HudBarButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.tooltip,
+    this.emphasized = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String? tooltip;
+  final VoidCallback onPressed;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final button = TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        minimumSize: ChurchHudStyle.barItemSize,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpace.xxs,
+          vertical: AppSpace.xxs,
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+        ),
+        foregroundColor: scheme.onSurface,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DecoratedBox(
+            decoration: ShapeDecoration(
+              color: emphasized ? scheme.primaryContainer : null,
+              shape: AppShape.full,
+            ),
+            child: SizedBox(
+              width: 48,
+              height: 28,
+              child: Icon(
+                icon,
+                size: 24,
+                color: emphasized ? scheme.onPrimaryContainer : scheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          MediaQuery.withClampedTextScaling(
+            maxScaleFactor: ChurchHudStyle.labelMaxScale,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: text.labelMedium?.copyWith(color: scheme.onSurface),
+            ),
+          ),
+        ],
+      ),
+    );
+    final tip = tooltip;
+    return tip == null ? button : Tooltip(message: tip, child: button);
+  }
+}
+
+/// 위쪽 도구 줄(하나의 어두운 표면 위): 소리, 아바타 편집, 인사/이모트, 그리고 [onGo]가 있으면
+/// 구분선 뒤에 '가기'([ChurchGoButton]). 항목마다 금색 선 아이콘 아래 짧은 라벨이 있다.
 class ChurchTopActions extends StatelessWidget {
   const ChurchTopActions({
     super.key,
@@ -169,6 +311,7 @@ class ChurchTopActions extends StatelessWidget {
     required this.onToggleAmbient,
     required this.onEditAvatar,
     required this.onEmote,
+    this.onGo,
   });
 
   final bool ambientOn;
@@ -176,55 +319,82 @@ class ChurchTopActions extends StatelessWidget {
   final VoidCallback onEditAvatar;
   final ValueChanged<int> onEmote;
 
+  /// 걸어 다닐 수 있을 때만 준다(앉아 있으면 null → '가기'가 없다).
+  final VoidCallback? onGo;
+
   static const emoteLabels = ['인사', '성호경', '고개 숙임'];
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // M3 filled tonal 아이콘 버튼(secondaryContainer). 48dp 터치 타깃.
-    final style = IconButton.styleFrom(
-      minimumSize: const Size(48, 48),
+    final go = onGo;
+    return Material(
+      color: ChurchHudStyle.surface(scheme),
+      shape: ChurchHudStyle.bar(scheme),
+      clipBehavior: Clip.antiAlias,
       elevation: ChurchHudStyle.elevation,
-    );
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton.filledTonal(
-          style: style,
-          tooltip: ambientOn ? '소리 끄기' : '소리 켜기',
-          onPressed: onToggleAmbient,
-          icon: Icon(ambientOn ? Icons.volume_up : Icons.volume_off),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpace.xs,
+          vertical: AppSpace.xxs,
         ),
-        const SizedBox(width: AppSpace.xs),
-        IconButton.filledTonal(
-          style: style,
-          tooltip: '아바타 편집',
-          onPressed: onEditAvatar,
-          icon: const Icon(Icons.face),
-        ),
-        const SizedBox(width: AppSpace.xs),
-        PopupMenuButton<int>(
-          tooltip: '인사',
-          onSelected: onEmote,
-          itemBuilder: (context) => [
-            for (var i = 0; i < emoteLabels.length; i++)
-              PopupMenuItem<int>(value: i, child: Text(emoteLabels[i])),
-          ],
-          style: IconButton.styleFrom(
-            backgroundColor: scheme.secondaryContainer,
-            foregroundColor: scheme.onSecondaryContainer,
-            minimumSize: const Size(48, 48),
-            elevation: ChurchHudStyle.elevation,
+        child: IntrinsicHeight(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _HudBarButton(
+                tooltip: ambientOn ? '소리 끄기' : '소리 켜기',
+                onPressed: onToggleAmbient,
+                icon: ambientOn
+                    ? Icons.volume_up_outlined
+                    : Icons.volume_off_outlined,
+                label: '소리',
+              ),
+              _HudBarButton(
+                tooltip: '아바타 편집',
+                onPressed: onEditAvatar,
+                icon: Icons.face_outlined,
+                label: '아바타',
+              ),
+              PopupMenuButton<int>(
+                tooltip: '인사',
+                onSelected: onEmote,
+                position: PopupMenuPosition.under,
+                itemBuilder: (context) => [
+                  for (var i = 0; i < emoteLabels.length; i++)
+                    PopupMenuItem<int>(value: i, child: Text(emoteLabels[i])),
+                ],
+                // 누르는 것은 안쪽 버튼이 받아 메뉴를 연다(상태 레이어·터치 타깃을 다른 항목과 같게).
+                child: Builder(
+                  builder: (context) => _HudBarButton(
+                    onPressed: () => context
+                        .findAncestorStateOfType<PopupMenuButtonState<int>>()
+                        ?.showButtonMenu(),
+                    icon: Icons.waving_hand_outlined,
+                    label: '인사',
+                  ),
+                ),
+              ),
+              if (go != null) ...[
+                VerticalDivider(
+                  width: AppSpace.xs + 1,
+                  thickness: 1,
+                  indent: AppSpace.xs,
+                  endIndent: AppSpace.xs,
+                  color: scheme.outlineVariant,
+                ),
+                ChurchGoButton(key: const ValueKey('go-button'), onPressed: go),
+              ],
+            ],
           ),
-          icon: const Icon(Icons.waving_hand),
         ),
-      ],
+      ),
     );
   }
 }
 
-/// '가기' 버튼(지도 핀 아이콘 + 글자): 촛불 봉헌대·제대 앞·빈 자리·입구로 바로 걸어간다.
-/// 위쪽 아이콘 줄 바로 아래 오른쪽에 둔다.
+/// '가기' 항목(지도 핀 선 아이콘 + 라벨): 촛불 봉헌대·제대 앞·빈 자리·입구로 바로 걸어간다.
+/// 도구 줄의 마지막 칸이며, 가장 자주 쓰는 길이라 금색 표시기로 강조한다.
 class ChurchGoButton extends StatelessWidget {
   const ChurchGoButton({super.key, required this.onPressed});
 
@@ -232,16 +402,11 @@ class ChurchGoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // M3 tonal 버튼(위 아이콘 버튼 줄과 같은 secondaryContainer). 모양은 버튼 기본(full).
-    return FilledButton.tonalIcon(
+    return _HudBarButton(
       onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        minimumSize: const Size(48, 48),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpace.sm),
-        elevation: ChurchHudStyle.elevation,
-      ),
-      icon: const Icon(Icons.location_on),
-      label: const Text('가기'),
+      icon: Icons.place_outlined,
+      label: '가기',
+      emphasized: true,
     );
   }
 }
@@ -295,17 +460,17 @@ class ChurchContextAction extends StatelessWidget {
         ),
         ChurchAction.sit => _button(
           const ValueKey('ctx-sit'),
-          Icons.event_seat,
+          Icons.event_seat_outlined,
           '앉기',
         ),
         ChurchAction.light => _button(
           const ValueKey('ctx-light'),
-          Icons.local_fire_department,
+          Icons.local_fire_department_outlined,
           '초 켜기',
         ),
         ChurchAction.pray => _button(
           const ValueKey('ctx-pray'),
-          Icons.self_improvement,
+          Icons.self_improvement_outlined,
           '기도하기',
         ),
         ChurchAction.cross => _button(
@@ -320,7 +485,7 @@ class ChurchContextAction extends StatelessWidget {
   Widget _button(Key key, IconData icon, String label) => FilledButton.icon(
     key: key,
     onPressed: onPressed,
-    // 장면 위 주 행동: M3 filled 버튼(primary, 기본 full 모양) + level 2 높이.
+    // 장면 위 주 행동: M3 filled 버튼(성당 테마의 primary = 촛불 금색, 기본 full 모양) + level 2 높이.
     style: FilledButton.styleFrom(
       minimumSize: const Size(112, 64),
       padding: const EdgeInsets.symmetric(horizontal: AppSpace.md),
@@ -329,6 +494,35 @@ class ChurchContextAction extends StatelessWidget {
     icon: Icon(icon),
     label: Text(label),
   );
+}
+
+/// HUD 정보 칩의 공통 틀: 어두운 표면 + 금색 가는 테두리, 최소 높이 48, 누르면 [onTap].
+class ChurchHudChip extends StatelessWidget {
+  const ChurchHudChip({super.key, required this.onTap, required this.child});
+
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: ChurchHudStyle.surface(scheme),
+      shape: ChurchHudStyle.chip(scheme),
+      clipBehavior: Clip.antiAlias,
+      elevation: ChurchHudStyle.elevation,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.sm),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// 자동 걷기 중에 뜨는 작은 칩: '걷는 중… (취소)'. 누르면 멈춘다.
@@ -341,45 +535,27 @@ class ChurchWalkChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Material(
-      color: scheme.inverseSurface,
-      shape: AppShape.smallBorder,
-      clipBehavior: Clip.antiAlias,
-      elevation: ChurchHudStyle.elevation,
-      child: InkWell(
-        onTap: onCancel,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.directions_walk,
-                  size: 20,
-                  color: scheme.onInverseSurface,
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    '걷는 중… (취소)',
-                    style: text.labelLarge?.copyWith(
-                      color: scheme.onInverseSurface,
-                    ),
-                  ),
-                ),
-              ],
+    return ChurchHudChip(
+      onTap: onCancel,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.directions_walk_outlined, size: 20, color: scheme.primary),
+          const SizedBox(width: AppSpace.xs),
+          Flexible(
+            child: Text(
+              '걷는 중… (취소)',
+              style: text.labelLarge?.copyWith(color: scheme.onSurface),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
 /// 성당 안의 진본 사진 창 앞에 서거나 창을 누르면 뜨는 칩(G-29): '이 창: ○○ · 자세히 보기'.
-/// 누르면 창 정보(출처·설명)를 연다. 둘째 줄('가기') 아래 왼쪽에 놓여 다른 HUD와 겹치지 않는다.
+/// 누르면 창 정보(출처·설명)를 연다. 도구 줄 아래 왼쪽에 놓여 다른 HUD와 겹치지 않는다.
 class ChurchGlassChip extends StatelessWidget {
   const ChurchGlassChip({super.key, required this.title, required this.onTap});
 
@@ -391,47 +567,65 @@ class ChurchGlassChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final fg = scheme.onInverseSurface;
     return Semantics(
       button: true,
       label: '이 창: $title. 자세히 보기',
       excludeSemantics: true,
-      child: Material(
-        color: scheme.inverseSurface,
-        shape: AppShape.smallBorder,
-        clipBehavior: Clip.antiAlias,
-        elevation: ChurchHudStyle.elevation,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.sm),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.auto_awesome_mosaic_outlined, size: 20, color: fg),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      '이 창: $title',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.labelLarge?.copyWith(color: fg),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '자세히 보기',
-                    style: text.labelMedium?.copyWith(
-                      color: scheme.inversePrimary,
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, size: 18, color: fg),
-                ],
+      child: ChurchHudChip(
+        onTap: onTap,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.auto_awesome_mosaic_outlined,
+              size: 20,
+              color: scheme.primary,
+            ),
+            const SizedBox(width: AppSpace.xs),
+            Flexible(
+              child: Text(
+                '이 창: $title',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.labelLarge?.copyWith(color: scheme.onSurface),
               ),
             ),
-          ),
+            const SizedBox(width: AppSpace.xs),
+            Text(
+              '자세히 보기',
+              style: text.labelMedium?.copyWith(color: scheme.primary),
+            ),
+            Icon(Icons.chevron_right, size: 18, color: scheme.primary),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// HUD 안내 말풍선의 공통 틀(M3 rich tooltip 규칙: 표면색 + onSurface, extra small 모서리).
+class _HudNote extends StatelessWidget {
+  const _HudNote({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: ChurchHudStyle.surface(scheme),
+        shape: ChurchHudStyle.note(scheme),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpace.xs,
+          vertical: AppSpace.xxs,
+        ),
+        child: Text(
+          message,
+          style: text.bodySmall?.copyWith(color: scheme.onSurface),
         ),
       ),
     );
@@ -448,8 +642,6 @@ class ChurchWalkHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
     final maxW = (MediaQuery.sizeOf(context).width - 16 - 164).clamp(
       120.0,
       260.0,
@@ -457,24 +649,7 @@ class ChurchWalkHint extends StatelessWidget {
     return IgnorePointer(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxW),
-        child: DecoratedBox(
-          key: const ValueKey('walk-hint'),
-          decoration: BoxDecoration(
-            // M3 plain tooltip: inverseSurface, extra small(4) 모서리.
-            color: scheme.inverseSurface,
-            borderRadius: AppShape.extraSmall,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpace.xs,
-              vertical: AppSpace.xxs,
-            ),
-            child: Text(
-              message,
-              style: text.bodySmall?.copyWith(color: scheme.onInverseSurface),
-            ),
-          ),
-        ),
+        child: const _HudNote(key: ValueKey('walk-hint'), message: message),
       ),
     );
   }
@@ -597,7 +772,6 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
     final knobSize = widget.size * 0.42;
     final o = _origin;
     return Semantics(
@@ -648,14 +822,20 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                     // 밝은 대리석 위에서도 어두운 의자 위에서도 보이도록 바깥에 어두운 그림자를 둔다.
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.12),
+                      color: scheme.onSurface.withValues(
+                        alpha: ChurchHudStyle.stickFillOpacity,
+                      ),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.75),
+                        color: scheme.onSurface.withValues(
+                          alpha: ChurchHudStyle.stickRingOpacity,
+                        ),
                         width: 1.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: scheme.shadow.withValues(
+                            alpha: ChurchHudStyle.stickShadowOpacity,
+                          ),
                           blurRadius: 4,
                         ),
                       ],
@@ -668,10 +848,14 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                           height: knobSize,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.55),
+                            color: scheme.onSurface.withValues(
+                              alpha: ChurchHudStyle.stickKnobOpacity,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.25),
+                                color: scheme.shadow.withValues(
+                                  alpha: ChurchHudStyle.stickShadowOpacity,
+                                ),
                                 blurRadius: 4,
                               ),
                             ],
@@ -689,25 +873,9 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                 child: IgnorePointer(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 140),
-                    child: DecoratedBox(
+                    child: _HudNote(
                       key: const ValueKey('move-hint'),
-                      decoration: BoxDecoration(
-                        // M3 plain tooltip(가기 안내와 같은 규칙).
-                        color: scheme.inverseSurface,
-                        borderRadius: AppShape.extraSmall,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpace.xs,
-                          vertical: AppSpace.xxs,
-                        ),
-                        child: Text(
-                          widget.hint!,
-                          style: text.bodySmall?.copyWith(
-                            color: scheme.onInverseSurface,
-                          ),
-                        ),
-                      ),
+                      message: widget.hint!,
                     ),
                   ),
                 ),
@@ -736,10 +904,10 @@ class ChurchPerfBanner extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Material(
-      color: scheme.inverseSurface,
-      // M3 snackbar 규칙: inverseSurface, extra small 모서리, level 3(6dp).
-      elevation: 6,
-      borderRadius: AppShape.extraSmall,
+      // HUD 표면 규칙(어두운 표면 + 금색 가는 테두리). 누르는 글자는 M3 텍스트 버튼 그대로.
+      color: ChurchHudStyle.surface(scheme),
+      elevation: ChurchHudStyle.elevation,
+      shape: ChurchHudStyle.chip(scheme),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           AppSpace.sm,
@@ -753,7 +921,7 @@ class ChurchPerfBanner extends StatelessWidget {
           children: [
             Text(
               '화면이 느려요. 간단 모드로 바꿀까요?',
-              style: text.bodyMedium?.copyWith(color: scheme.onInverseSurface),
+              style: text.bodyMedium?.copyWith(color: scheme.onSurface),
             ),
             Align(
               alignment: Alignment.centerRight,
@@ -762,7 +930,7 @@ class ChurchPerfBanner extends StatelessWidget {
                   TextButton(
                     onPressed: onKeep,
                     style: TextButton.styleFrom(
-                      foregroundColor: scheme.onInverseSurface,
+                      foregroundColor: scheme.onSurfaceVariant,
                       minimumSize: const Size(64, 48),
                     ),
                     child: const Text('그대로'),
@@ -770,7 +938,6 @@ class ChurchPerfBanner extends StatelessWidget {
                   TextButton(
                     onPressed: onSwitch,
                     style: TextButton.styleFrom(
-                      foregroundColor: scheme.inversePrimary,
                       minimumSize: const Size(64, 48),
                     ),
                     child: const Text('바꾸기'),

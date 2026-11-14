@@ -112,7 +112,7 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
             selected: last == ChurchPrayerChoice.brief,
             semanticsLabel: '잠시 기도하기, 제대 앞에서 고개 숙여 기도해요',
             leading: Icon(
-              Icons.self_improvement,
+              Icons.self_improvement_outlined,
               size: 32,
               color: scheme.onSurfaceVariant,
             ),

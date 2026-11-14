@@ -69,7 +69,7 @@ class _CandleSheetState extends State<CandleSheet> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
           child: FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(_selected),
-            icon: const Icon(Icons.local_fire_department),
+            icon: const Icon(Icons.local_fire_department_outlined),
             label: const Text('초 켜기'),
           ),
         ),

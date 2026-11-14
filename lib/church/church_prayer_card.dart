@@ -222,7 +222,7 @@ class ChurchPrayerCard extends StatelessWidget {
           color: ChurchHudStyle.surface(scheme),
           elevation: ChurchHudStyle.elevation,
           margin: EdgeInsets.zero,
-          shape: AppShape.largeBorder,
+          shape: ChurchHudStyle.plaque(scheme),
           clipBehavior: Clip.antiAlias,
           child: ConstrainedBox(
             constraints: BoxConstraints(maxHeight: size.height * 0.62),

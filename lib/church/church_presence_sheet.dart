@@ -26,9 +26,9 @@ enum ChurchPresenceView {
 
 /// 방에 공유되는 상태 `st`의 글과 아이콘.
 (String, IconData) churchPresenceStatus(String st) => switch (st) {
-  'p' => ('기도 중', Icons.self_improvement),
-  's' => ('앉아 있음', Icons.event_seat),
-  _ => ('둘러보는 중', Icons.directions_walk),
+  'p' => ('기도 중', Icons.self_improvement_outlined),
+  's' => ('앉아 있음', Icons.event_seat_outlined),
+  _ => ('둘러보는 중', Icons.directions_walk_outlined),
 };
 
 /// '지금 접속 중' 바텀 시트를 연다. '전체' 보기에서 다른 성당을 고르면 그 성당 id를 돌려준다
@@ -488,7 +488,7 @@ class _ChurchLoadTile extends StatelessWidget {
           tileColor: current ? scheme.secondaryContainer : null,
           onTap: onTap,
           leading: Icon(
-            current ? Icons.place : Icons.church_outlined,
+            current ? Icons.place_outlined : Icons.church_outlined,
             color: current
                 ? scheme.onSecondaryContainer
                 : scheme.onSurfaceVariant,

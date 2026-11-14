@@ -136,6 +136,13 @@ abstract final class AppTheme {
     PrayerFont font = PrayerFont.gothic,
   }) => _build(dynamicScheme ?? seedScheme(Brightness.dark), font);
 
+  /// 주어진 색 구성으로 같은 컴포넌트 테마·모양·글꼴을 가진 테마를 만든다.
+  /// 화면 한정 테마(예: 성당 안의 어두운 금색 `ChurchTheme`)가 앱과 같은 규칙을 쓰게 한다.
+  static ThemeData fromScheme(
+    ColorScheme scheme, [
+    PrayerFont font = PrayerFont.gothic,
+  ]) => _build(scheme, font);
+
   /// [font]에 해당하는 글꼴 이름. 시스템이면 null(기기 기본 글꼴).
   static String? familyOf(PrayerFont font) =>
       font == PrayerFont.gothic ? sansFamily : null;

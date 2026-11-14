@@ -57,6 +57,7 @@
     App.walkSt = null; App.pendingWalk = null; App.turn = null;
     if (App.place) App.place.clear();   // 성당 안 사진 창(G-29): 월드를 버리기 전에 판·질감 해제
     if (App.cross) App.cross.clear();   // 십자가의 길 14처 판(SPEC §32)
+    if (App.liturgy) App.liturgy.detach();   // 전례 시기 장식(SPEC §33)
     if (App.world) { App.world.dispose(); App.world = null; }
     if (App.view) App.view.unpark();
     var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer, view: vopts && vopts.view });
@@ -86,6 +87,7 @@
     if (!qs.thumb && qs.markers !== '0') App.markers = root.ChurchMarkers.create(w.group, App.stations, w.logic);
     // 십자가의 길 14처 판: 자리는 바로 유도하고(cross 개수), 그림은 비동기로 싣는다(?cross=0 이면 끔)
     if (App.cross && !qs.thumb && qs.cross !== '0') App.cross.load(w);
+    if (App.liturgy && !qs.thumb) App.liturgy.attach(w);   // 전례 시기 장식: 지금 시기대로 짓는다
     post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1, cross: App.cross ? App.cross.count() : 0 });
     if (console && console.log) console.log('[church] world ' + w.id + ' stats', JSON.stringify(w.stats));
   }
@@ -121,6 +123,7 @@
       App.view = root.ChurchGlassView.create(App, { start: start, loadWorld: loadWorld, kick: kick, post: post, resize: resize });
       if (root.ChurchGlassPlace) App.place = root.ChurchGlassPlace.create(App, { post: post });
       if (root.ChurchWayCross) App.cross = root.ChurchWayCross.create(App, { post: post });
+      App.liturgy = root.ChurchLiturgy || null;
       resize();
       App.rafOn = true;   // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다
       loadWorld(church);
@@ -308,6 +311,8 @@
     lightCandle: function (o) { if (App.world) { App.world.lightCandle(o); root.ChurchAudio.chime(); } },
     setAmbient: function (o) { App.ambient = !!o.on; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); },
     setHour: function (o) { if (App.world) App.world.setHour(+o.hour); },
+    // 전례 시기 장식(SPEC §33): {season, color, week?, feast?, memorial?}. 장면을 시작하기 전에 와도 기억해 둔다.
+    setLiturgy: function (o) { if (root.ChurchLiturgy) { root.ChurchLiturgy.set(o); kick(); } },
     setSolo: function (o) {
       App.solo = !!o.on;
       if (!App.crowd) return;
@@ -590,6 +595,7 @@
     App.world.update(dt, App.t, App.me, App.camera);
     if (App.place) App.place.update(dt, App.me, App.camera);
     if (App.cross) App.cross.update(dt, App.me, App.camera);
+    if (App.liturgy) App.liturgy.update(dt, App.t);
     if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     var chg = App.R.render(App.scene, App.camera, dt, App.world);

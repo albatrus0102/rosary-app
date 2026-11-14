@@ -1,6 +1,7 @@
-/* avatar.js — 부드럽고 말랑한 "3D 클레이/비닐 토이" 스타일 스킨드 아바타(약 5.6등신, 키 약 1.82m).
-   - 매끈하고 둥근 형태, 하드 에지 없음. 점 눈 + 알약 눈썹 + 둥근 코 + 가는 미소 + 볼터치, 머리카락은 매끈한 덩어리.
-   - 재질은 모두 MeshStandardMaterial(거칠기 0.74~0.82, metalness 0, 정점 색 사용).
+/* avatar.js — 부드럽고 말랑한 "3D 클레이/비닐 토이" 스타일 스킨드 아바타(큰 머리 약 5등신, 키 약 1.8m). 외형 기준: docs/church/AVATAR_LOOK.md
+   - 매끈하고 둥근 형태, 하드 에지 없음. 큰 머리(HEAD_S 배) + 작은 점 눈(반짝임) + 가는 눈썹 + 아주 작은 코·미소 + 볼 홍조, 머리카락은 윤기 띠·가르마 선이 있는 매끈한 덩어리.
+   - 옷: 단색 + 가는 트림(깃·소맷부리 크림, 아랫단 금색). 여성은 무릎 길이 종 모양 원피스, 남성은 엉덩이 길이 단정한 웃옷 + 바지.
+   - 재질은 모두 MeshStandardMaterial(거칠기 0.66~0.8, metalness 0, 정점 색 사용) + 약한 림 라이트(Fresnel; 장면과 분리).
    - 근접(LOD0) <= 약 6k 삼각형, 중간(LOD1) <= 약 1.5k, 원거리(LOD2)는 비스킨 임포스터(약 300).
    - 성별(cfg.g: 0 여성, 1 남성): 머리 모양 4종×2성별(사실적인 단발/어깨 길이/포니테일/낮은 쪽머리, 짧게 친 머리/가르마/웨이브/넓은 이마),
      체형(어깨·가슴·허리·엉덩이 폭), 턱선, 목, 눈썹 굵기가 조금씩 다르다. 뼈 길이와 자세는 그대로(스케일만 다름).
@@ -23,6 +24,12 @@
   var HIP_JOINT = 0.88, HIPS_Y = 0.93;
   var HC = 1.5785;               // 머리 중심 y (현실적인 성인 비율 유지)
   var GN = 0;                    // 지금 만들고 있는 성별(0 여성, 1 남성). assemble 이 만드는 동안만 설정한다.
+  // 큰 머리: 머리·얼굴·머리카락을 원래 크기로 만든 뒤 목 위(HEAD_PIV)를 중심으로 HEAD_S 배 키운다(뼈대·자세는 그대로).
+  var HEAD_S = 1.55, HEAD_PIV = 1.468, HEAD_UP = (0.110 * 2 + 0.012) * (HEAD_S - 1);   // HEAD_UP = 정수리가 높아진 만큼(이름표 높이)
+  function scaleHead(mb, from, to) {
+    var p = mb.pos, i;
+    for (i = from * 3; i < to * 3; i += 3) { p[i] *= HEAD_S; p[i + 1] = HEAD_PIV + (p[i + 1] - HEAD_PIV) * HEAD_S; p[i + 2] *= HEAD_S; }
+  }
 
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
   function clamp01(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
@@ -62,7 +69,7 @@
   var B = BI;
 
   // 영역 id (색 표로 변환)
-  var R = { SKIN: 0, LIP: 1, EYE: 2, BROW: 5, HAIR: 6, SHOE: 7, SOLE: 8, COAT: 11, COATIN: 12, PANTS: 14, CUFF: 16, TIE: 17, POCKET: 18, PCUFF: 19 };
+  var R = { SKIN: 0, LIP: 1, EYE: 2, GLINT: 3, BROW: 5, HAIR: 6, SHOE: 7, SOLE: 8, COAT: 11, COATIN: 12, PANTS: 14, CUFF: 16, TIE: 17, POCKET: 18, PCUFF: 19 };
   var NREG = 20;
 
   // ------------------------------------------------------------------ 메시 빌더
@@ -212,8 +219,8 @@
   var HH = 0.110, WW = 0.078, DD = 0.096;       // 머리 반높이/반폭/반깊이
   function headWD(y) {
     var t = clamp(y / HH, -1, 1), p = t < 0 ? 2.3 : 2.0, s = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(t), p)), 1 / p);
-    var m = 1 + 0.025 * t - 0.12 * Math.pow(Math.max(0, -t - 0.15), 1.2);
-    m *= 1 + (GN ? 0.045 : -0.035) * sm((-y - 0.035) / 0.075);   // 턱선: 남성은 조금 각지고 여성은 갸름하게
+    var m = 1 + 0.025 * t - 0.085 * Math.pow(Math.max(0, -t - 0.15), 1.2);   // 볼이 통통한 둥근 얼굴
+    m *= 1 + (GN ? 0.035 : -0.02) * sm((-y - 0.035) / 0.075);   // 턱선: 남성은 조금 각지고 여성은 갸름하게
     return [WW * s * m, DD * s * (1 + 0.02 * t)];
   }
   var HN = 2.1;
@@ -236,7 +243,7 @@
   var HEADW = [[B.head, 1]];
   function hc(p) { return [p[0], p[1] + HC, p[2]]; }
 
-  var EYE_X = 0.032, EYE_Y = 0.002, BROW_Y = 0.039, NOSE_Y = -0.028, SMILE_Y = -0.060, CHEEK_X = 0.052, CHEEK_Y = -0.030;
+  var EYE_X = 0.0345, EYE_Y = -0.008, BROW_Y = 0.026, NOSE_Y = -0.031, SMILE_Y = -0.054, CHEEK_X = 0.052, CHEEK_Y = -0.034;   // 눈은 낮고 넓게(호감형), 입·코는 최소
 
   function buildHead(mb, q) {
     var near = q === 0, nv = near ? 22 : 8, nu = near ? 30 : 12, ys = [], k;
@@ -254,33 +261,34 @@
     // 눈: 납작한 짙은 타원 점
     for (e = -1; e <= 1; e += 2) {
       var oh = onHead(e * EYE_X, EYE_Y, -0.0012);
-      blob(mb, hc(oh.p), [0.0085, 0.0108, 0.0052], [0, oh.ry, 0], { nu: near ? 8 : 6, nv: near ? 4 : 3, w: HEADW, reg: R.EYE, ao: 1 });
+      blob(mb, hc(oh.p), [0.0066, 0.0082, 0.0046], [0, oh.ry, 0], { nu: near ? 8 : 6, nv: near ? 4 : 3, w: HEADW, reg: R.EYE, ao: 1 });
+      if (near) { var og = onHead(e * EYE_X + 0.0022, EYE_Y + 0.0030, 0.0030); blob(mb, hc(og.p), [0.0019, 0.0019, 0.0012], [0, og.ry, 0], { nu: 5, nv: 2, w: HEADW, reg: R.GLINT, ao: 1 }); }   // 눈 반짝임
     }
     // 눈썹: 알약 모양. 여성은 가늘고 부드러운 아치, 남성은 굵고 조금 곧게
-    var bT = GN ? 0.0062 : 0.0042, bArch = GN ? 0.0032 : 0.0058;
+    var bT = GN ? 0.0040 : 0.0027, bArch = GN ? 0.0022 : 0.0040;
     for (e = -1; e <= 1; e += 2) {
-      if (!near) { var ob = onHead(0.037, BROW_Y + 0.001, 0.0), br = hc(ob.p); blob(mb, [e * br[0], br[1], br[2]], [0.021, bT * 0.95, 0.004], [0, -e * ob.ry, 0], { nu: 6, nv: 3, w: HEADW, reg: R.BROW, ao: 1 }); continue; }
+      if (!near) { var ob = onHead(0.036, BROW_Y + 0.001, 0.0), br = hc(ob.p); blob(mb, [e * br[0], br[1], br[2]], [0.014, bT * 1.2, 0.004], [0, -e * ob.ry, 0], { nu: 6, nv: 3, w: HEADW, reg: R.BROW, ao: 1 }); continue; }
       var pts = [], rad = [];
       for (k = 0; k < 4; k++) {
-        var tq = k / 3, bx = 0.020 + 0.036 * tq, by = BROW_Y + bArch * Math.sin(tq * PI) - 0.003 * tq;
+        var tq = k / 3, bx = 0.024 + 0.024 * tq, by = BROW_Y + bArch * Math.sin(tq * PI) - 0.003 * tq;
         var o2 = onHead(bx, by, 0.0004); pts.push([e * o2.p[0], o2.p[1] + HC, o2.p[2]]); rad.push(bT * (k === 0 ? 0.92 : 1 - 0.12 * tq));
       }
       tube(mb, pts, rad, { caps: 'both', nu: 6, flat: 0.6, w: HEADW, reg: R.BROW, ao: 1 });
     }
     // 코: 작고 둥근 혹
     var nz = headFrontZ(0, NOSE_Y);
-    blob(mb, [0, NOSE_Y + HC, nz - 0.0030], [0.0115, 0.0105, 0.0135], [0.25, 0, 0], { nu: near ? 8 : 6, nv: near ? 5 : 4, w: HEADW, reg: R.SKIN, tn: function () { return 0.3; }, ao: 1 });
+    blob(mb, [0, NOSE_Y + HC, nz - 0.0012], [0.0068, 0.0060, 0.0080], [0.25, 0, 0], { nu: near ? 8 : 6, nv: near ? 5 : 4, w: HEADW, reg: R.SKIN, tn: function () { return 0.3; }, ao: 1 });
     if (!near) return;
     // 입: 가는 미소 선
     var mp = [], mr = [];
     for (k = 0; k < 6; k++) {
-      var u = k / 5 * 2 - 1, mx = 0.027 * u, my = SMILE_Y + 0.010 * u * u, o3 = onHead(mx, my, -0.0003);
-      mp.push([o3.p[0], o3.p[1] + HC, o3.p[2]]); mr.push(0.0014 * (1 - 0.3 * Math.abs(u)));
+      var u = k / 5 * 2 - 1, mx = 0.0135 * u, my = SMILE_Y + 0.0045 * u * u, o3 = onHead(mx, my, -0.0003);
+      mp.push([o3.p[0], o3.p[1] + HC, o3.p[2]]); mr.push(0.0012 * (1 - 0.3 * Math.abs(u)));
     }
     tube(mb, mp, mr, { caps: 'both', nu: 4, w: HEADW, reg: R.LIP, ao: 1 });
     // 볼터치(피부색에서 분홍으로 번지는 얇은 원판)
     for (e = -1; e <= 1; e += 2) {
-      var NR = 3, NS = 8, RAD = 0.024;
+      var NR = 3, NS = 8, RAD = 0.021;
       surf(mb, {
         nu: NS, nv: NR, closed: true, inside: [e * CHEEK_X, CHEEK_Y + HC, 0],
         pt: function (ii, jj) {
@@ -320,7 +328,14 @@
         return [p[0], p[1] + HC, p[2]];
       },
       w: o.w || HEADW, reg: R.HAIR,
-      ao: function (i, j, p) { var y = p[1] - HC, s = j / nv; return 0.88 + 0.14 * sm((y + 0.05) / 0.14) - 0.05 * sm((s - 0.8) / 0.2); }
+      ao: function (i, j, p) { var y = p[1] - HC, s = j / nv; return 0.88 + 0.14 * sm((y + 0.05) / 0.14) - 0.05 * sm((s - 0.8) / 0.2); },
+      // 윤기 띠(정수리 아래를 두르는 밝은 고리, tn > 0)와 가르마 선(o.part = x 위치, tn < 0). colorAttr 가 머리색을 밝게/어둡게 한다.
+      tn: function (i, j, p) {
+        var y = p[1] - HC, d = (y - 0.058) / 0.020, ring = 0.85 * Math.exp(-d * d) * (0.75 + 0.25 * Math.cos(Math.atan2(p[0], -p[2]) * 5));
+        if (o.part === undefined) return ring;
+        var dp = (p[0] - o.part) / 0.0065, pl = Math.exp(-dp * dp) * sm((y - 0.066) / 0.02) * sm((0.045 - p[2]) / 0.05);
+        return ring * (1 - pl) - pl;
+      }
     });
   }
   // 끝 가장자리를 둥글게 말아주는 두께 감쇠
@@ -359,7 +374,7 @@
         hairBlob(mb, [0.0, 0.098, -0.036], [0.054, 0.021, 0.044], [-0.5, 0.0, 0.0], near);
       } else if (style === 1) {   // 어깨 길이 생머리: 얼굴 옆으로 곧게 떨어져 어깨에 닿는다
         hairPatch(mb, {
-          nu: near ? 30 : 12, nv: near ? 12 : 6, pw: 1, shape: lowerShape(-0.03, 0.04),
+          nu: near ? 30 : 12, nv: near ? 12 : 6, pw: 1, shape: lowerShape(-0.03, 0.04), part: 0.012,
           rim: [[0, 0.066], [0.5, 0.064], [0.85, 0.044], [1.15, -0.020], [1.4, -0.120], [1.7, -0.152], [2.3, -0.158], [2.8, -0.158], [PI, -0.158]],
           thick: function (y, a, s, f) { return (0.010 + 0.007 * sm((y - 0.035) / 0.07) + 0.014 * sm((0.0 - y) / 0.10) * sm((f - 0.9) / 0.5)) * roundEnd(s, 0.75); },
           w: chestBlend
@@ -376,7 +391,7 @@
         tube(mb, tp.map(function (p) { return [p[0], p[1] + HC, p[2]]; }), [0.019, 0.025, 0.023, 0.017, 0.008], { caps: 'end', nu: near ? 8 : 6, w: HEADW, reg: R.HAIR, ao: 0.97 });
       } else {                    // 낮은 쪽머리: 가르마를 타서 매끈하게 넘기고 뒤통수 아래에 작게 묶는다
         hairPatch(mb, {
-          nu: nu, nv: nv, pw: 0.95,
+          nu: nu, nv: nv, pw: 0.95, part: -0.022,
           rim: [[0, 0.068], [0.5, 0.065], [0.85, 0.044], [1.15, 0.022], [1.6, 0.016], [2.1, -0.004], [2.7, -0.030], [PI, -0.042]],
           thick: function (y, a, s, f) { return (0.009 + 0.006 * sm((y - 0.035) / 0.07)) * roundEnd(s, 0.5); }
         });
@@ -393,7 +408,7 @@
       });
     } else if (style === 1) {     // 가르마: 옆으로 단정하게 넘긴 짧은 머리
       hairPatch(mb, {
-        nu: nu, nv: nv, pw: 0.95,
+        nu: nu, nv: nv, pw: 0.95, part: 0.030,
         rim: [[0, 0.072], [0.45, 0.070], [0.8, 0.052], [1.1, 0.030], [1.5, 0.024], [2.0, 0.008], [2.6, -0.040], [PI, -0.060]],
         thick: function (y, a, s, f) { return (0.010 + 0.009 * sm((y - 0.03) / 0.07)) * roundEnd(s, 0.5); }
       });
@@ -419,81 +434,66 @@
     }
   }
 
-  // ------------------------------------------------------------------ 몸통(짧은 후디/재킷: 엉덩이 높이까지)
-  var TORSO_ROWS = [
-    [1.444, 0.056, 0.060, 0.012], [1.432, 0.074, 0.071, 0.011], [1.416, 0.116, 0.086, 0.008], [1.395, 0.156, 0.098, 0.004], [1.372, 0.168, 0.104, 0.002],
-    [1.300, 0.160, 0.110, -0.002], [1.200, 0.152, 0.108, -0.005], [1.100, 0.150, 0.104, -0.004], [1.000, 0.158, 0.108, 0.0],
-    [0.920, 0.168, 0.114, 0.002], [0.850, 0.174, 0.118, 0.003], [0.790, 0.176, 0.120, 0.003]
+  // ------------------------------------------------------------------ 몸통(단색 웃옷 + 가는 트림)
+  // 여성: 무릎 길이 종 모양 원피스(허리가 들어가고 아랫단으로 퍼진다). 남성: 엉덩이를 덮는 단정한 웃옷.
+  // 표: [y, 반폭, 반깊이, 중심 z]. 어깨는 둥글게, 뼈 위치는 그대로(스케일만 다름).
+  var TORSO_UP = [
+    [1.444, 0.056, 0.060, 0.012], [1.432, 0.074, 0.071, 0.011], [1.416, 0.114, 0.086, 0.008], [1.395, 0.150, 0.098, 0.004], [1.372, 0.164, 0.104, 0.002]
   ];
-  // 성별 체형(폭·깊이 배율만, 뼈 위치는 그대로): [y, 여성 폭, 남성 폭, 여성 깊이, 남성 깊이]. 어깨는 남성이 넓고 엉덩이는 여성이 넓다.
-  var TORSO_K = [
-    [1.444, 1, 1, 1, 1], [1.432, 1, 1, 1, 1], [1.416, 0.97, 1.02, 1, 1], [1.395, 0.95, 1.045, 1, 1], [1.372, 0.95, 1.045, 1, 1],
-    [1.300, 0.97, 1.035, 1.02, 1], [1.200, 0.955, 1.015, 1.02, 1], [1.100, 0.94, 1.0, 1, 1], [1.000, 0.97, 0.985, 1, 1],
-    [0.920, 1.03, 0.98, 1, 1], [0.850, 1.05, 0.97, 1, 1], [0.790, 1.05, 0.97, 1, 1]
+  var TORSO_UP_K = [[1, 1], [1, 1], [0.97, 1.02], [0.95, 1.045], [0.95, 1.045]];   // [여성, 남성] 폭 배율
+  var TORSO_LOW = [
+    [[1.300, 0.153, 0.112, -0.002], [1.200, 0.143, 0.109, -0.005], [1.100, 0.134, 0.102, -0.004], [1.000, 0.148, 0.108, 0.0],
+      [0.900, 0.172, 0.117, 0.002], [0.780, 0.196, 0.125, 0.003], [0.650, 0.214, 0.131, 0.003], [0.520, 0.226, 0.135, 0.003]],
+    [[1.300, 0.166, 0.110, -0.002], [1.200, 0.156, 0.108, -0.005], [1.100, 0.151, 0.104, -0.004], [1.000, 0.156, 0.108, 0.0],
+      [0.920, 0.165, 0.114, 0.002], [0.850, 0.171, 0.118, 0.003], [0.760, 0.176, 0.120, 0.003]]
   ];
-  function torsoFor(g) {   // g: 0 여성, 1 남성, -1 중립(원거리 임포스터)
-    return profile(TORSO_ROWS.map(function (r, k) {
-      var kk = TORSO_K[k], w = g < 0 ? 1 : kk[1 + g], d = g < 0 ? 1 : kk[3 + g];
-      return [r[0], r[1] * w, r[2] * d, r[3]];
-    }));
+  var HEM = [0.52, 0.76];   // 아랫단 높이(여성 무릎 바로 위, 남성 엉덩이 아래)
+  function torsoFor(g) {
+    return profile(TORSO_UP.map(function (r, k) { return [r[0], r[1] * TORSO_UP_K[k][g], r[2], r[3]]; }).concat(TORSO_LOW[g]));
   }
-  var TORSOS = [torsoFor(0), torsoFor(1)], TORSO = torsoFor(-1);
+  var TORSOS = [torsoFor(0), torsoFor(1)], TORSO = TORSOS[0];
   var TORSO_N = 2.3;
-  function torsoPt(y, a, off) {
-    var d = TORSO(y);
-    return [(d[0] + off) * S(Math.sin(a), TORSO_N), y, d[2] - (d[1] + off) * S(Math.cos(a), TORSO_N)];
-  }
+  // 가중치: 가슴/허리/골반 + 아랫자락. 앞자락은 허벅지를 따라가고(ckL/ckR), 뒷자락은 skirt 뼈(앉으면 접힌다)에 붙는다.
+  // 원피스(여성)는 뒷자락이 허벅지를 거의 따라가지 않게 해서 앉았을 때 좌석판 아래로 빠지지 않는다.
   function torsoW(p, y) {
     var cw = sm((y - 1.10) / 0.16), sw = sm((y - 0.98) / 0.13) * (1 - cw), hw = 1 - sm((y - 0.98) / 0.13);
-    var tw = sm((0.93 - y) / 0.12) * (1 - 0.45 * sm(p[2] / 0.12));
+    var tw = sm((0.93 - y) / 0.12) * (GN ? 1 - 0.45 * sm(p[2] / 0.12) : 1 - 0.94 * sm((p[2] + 0.03) / 0.09));
     var sR = sm((p[0] + 0.07) / 0.14);
     var nk = sm((y - 1.43) / 0.03) * 0.25;
     var sk = sm((0.93 - y) / 0.15), rest = hw * (1 - tw);
     return [[B.chest, cw * (1 - nk)], [B.neck, cw * nk], [B.spine, sw], [B.hips, rest * (1 - sk)], [B.skirt, rest * sk], [B.ckR, hw * tw * sR], [B.ckL, hw * tw * (1 - sR)]];
   }
-  var HEM_Y = 0.79;   // 후디 아랫단(엉덩이 높이)
-  var COAT_YS = [1.446, 1.430, 1.410, 1.380, 1.320, 1.240, 1.150, 1.060, 0.970, 0.890, 0.830];
-  var COAT_YS_MID = [1.446, 1.400, 1.280, 1.120, 0.960, 0.830];
+  var COAT_YS = [
+    [1.446, 1.430, 1.410, 1.380, 1.320, 1.240, 1.150, 1.080, 1.010, 0.930, 0.840, 0.740, 0.640, 0.555],
+    [1.446, 1.430, 1.410, 1.380, 1.320, 1.240, 1.150, 1.060, 0.970, 0.880, 0.795]
+  ];
+  var COAT_YS_MID = [[1.446, 1.400, 1.280, 1.110, 0.940, 0.740, 0.555], [1.446, 1.400, 1.280, 1.120, 0.960, 0.795]];
   function buildCoat(mb, q) {
-    var ys = q === 0 ? COAT_YS : COAT_YS_MID, nu = q === 0 ? 18 : 10, rings = [];
+    var ys = (q === 0 ? COAT_YS : COAT_YS_MID)[GN], nu = q === 0 ? 18 : 10, rings = [], hem = HEM[GN];
     ys.forEach(function (y) { var d = TORSO(y); rings.push({ c: [0, y, d[2]], ru: d[0], rv: d[1], n: TORSO_N }); });
     loft(mb, rings, {
       nu: nu, inside: [0, 1.1, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COAT,
-      ao: function (i, j, p) { return 1.0 - 0.08 * sm((1.0 - p[1]) / 0.3); }
+      ao: function (i, j, p) { return 1.0 - 0.10 * sm((1.0 - p[1]) / 0.45) - (GN ? 0 : 0.05 * sm((1.16 - p[1]) / 0.06) * sm((p[1] - 1.04) / 0.06)); }
     });
-    // 아랫단 밴드(둥글게 말린 리브)
-    var hy = q === 0 ? [HEM_Y, HEM_Y + 0.012, HEM_Y + 0.038, HEM_Y + 0.064, HEM_Y + 0.076] : [HEM_Y, HEM_Y + 0.038, HEM_Y + 0.076], ho = q === 0 ? [0.002, 0.013, 0.016, 0.013, 0.002] : [0.004, 0.015, 0.004], hr = [];
+    // 아랫단 트림(가는 금색 띠)
+    var hy = q === 0 ? [hem, hem + 0.007, hem + 0.020, hem + 0.033, hem + 0.040] : [hem, hem + 0.020, hem + 0.040], ho = q === 0 ? [0.001, 0.007, 0.009, 0.007, 0.001] : [0.002, 0.009, 0.002], hr = [];
     hy.forEach(function (y, k) { var d = TORSO(y); hr.push({ c: [0, y, d[2]], ru: d[0] + ho[k], rv: d[1] + ho[k], n: TORSO_N }); });
-    loft(mb, hr, { nu: q === 0 ? 18 : 10, inside: [0, 0.85, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COATIN, ao: 0.98 });
-    // 목 칼라(둥글게 말린 후드 링) + 뒤 후드
-    var cy = 1.446, cnu = q === 0 ? 18 : 10, cnv = q === 0 ? 5 : 3, crx = 0.064, crz = 0.063, cr = 0.017;
+    loft(mb, hr, { nu: q === 0 ? 18 : 10, inside: [0, hem + 0.02, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COATIN, ao: 1 });
+    // 목 깃(가늘고 둥근 크림색 띠)
+    var cy = 1.449, cnu = q === 0 ? 18 : 10, cnv = q === 0 ? 5 : 3, crx = 0.060, crz = 0.060, cr = 0.0125;
     surf(mb, {
       nu: cnu, nv: cnv, closed: true, inside: [0, cy, 0.01],
       pt: function (i, j) {
         var a = dense(i / cnu, 0.15), ph = -0.55 * PI + 1.9 * PI * j / cnv, co = Math.cos(ph), si = Math.sin(ph);
         return [(crx + cr * co) * S(Math.sin(a), 2.0), cy + cr * si * 0.9, 0.010 - (crz + cr * co) * S(Math.cos(a), 2.0)];
       },
-      w: function (i, j, p) { return torsoW(p, Math.min(1.446, p[1])); }, reg: R.COATIN, ao: 1
+      w: function (i, j, p) { return torsoW(p, Math.min(1.446, p[1])); }, reg: R.CUFF, ao: 1
     });
-    blob(mb, [0, 1.418, 0.070], [0.078, 0.042, 0.040], [0.35, 0, 0], { nu: q === 0 ? 10 : 6, nv: q === 0 ? 5 : 3, w: torsoW([0, 1.41, 0.07], 1.41), reg: R.COAT, ao: 0.9 });
-    // 앞주머니(캥거루 포켓)
-    if (q === 0) {
-      var PU = 7, PV = 4, yc = 0.995, hy2 = 0.062, ha = 0.50;
-      surf(mb, {
-        nu: PU, nv: PV, closed: false, inside: [0, yc, 0.0],
-        pt: function (i, j) {
-          var u = i / PU * 2 - 1, v = j / PV * 2 - 1, edge = Math.max(Math.pow(Math.abs(u), 4), Math.pow(Math.abs(v), 4)), m = Math.sqrt(Math.max(0, 1 - edge));
-          var uu = u * (1 - 0.06 * (v + 1) * 0.5), y = yc + v * hy2, a = uu * ha * (0.96 + 0.04 * v);
-          return torsoPt(y, a, 0.002 + 0.014 * m);
-        },
-        w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.POCKET, ao: 1
-      });
-    }
   }
 
-  // 소매 + 말아올린 소맷부리 (가늘고 자연스러운 팔)
-  var SLV = [[1.405, 0.002, 0.002], [1.400, 0.026, 0.028], [1.389, 0.043, 0.046], [1.372, 0.049, 0.051], [1.33, 0.048, 0.050], [1.25, 0.046, 0.048], [1.17, 0.044, 0.046], [1.11, 0.042, 0.045],
-    [1.05, 0.041, 0.044], [0.96, 0.040, 0.043], [0.90, 0.039, 0.042], [0.870, 0.038, 0.041]];
+  // 소매 + 가는 소맷부리 트림 (둥근 어깨에서 손목으로 조금 가늘어지는 팔)
+  var SLV = [[1.398, 0.002, 0.002], [1.394, 0.022, 0.026], [1.382, 0.039, 0.044], [1.362, 0.049, 0.053], [1.33, 0.053, 0.055], [1.25, 0.051, 0.053], [1.17, 0.048, 0.050], [1.11, 0.046, 0.049],
+    [1.05, 0.045, 0.048], [0.96, 0.044, 0.047], [0.90, 0.043, 0.046], [0.870, 0.042, 0.045]];
   function armW(side, y) {
     var ua = side > 0 ? B.uaR : B.uaL, fa = side > 0 ? B.faR : B.faL;
     var wt = sm((1.17 - y) / 0.13), wc = 0.55 * sm((y - 1.37) / 0.10);
@@ -509,19 +509,19 @@
           nu: q === 0 ? 8 : 6, dense: false, inside: [side * SX, 1.15, 0], w: function (i, j, p) { return armW(side, p[1]); },
           reg: R.COAT, ao: function (i, j, p) { return 1.02 - 0.06 * sm((1.2 - p[1]) / 0.3); }
         });
-        // 소맷부리(말아올린 리브)
-        var cyv = q === 0 ? [0.842, 0.851, 0.872, 0.894, 0.903] : [0.842, 0.870, 0.903], cro = q === 0 ? [0.026, 0.040, 0.046, 0.040, 0.026] : [0.028, 0.046, 0.028], cr = cyv.map(function (y, k) { return { c: [side * SX, y, 0], ru: cro[k] * 0.98 * sk, rv: cro[k] * sk }; });
-        loft(mb, cr, { nu: q === 0 ? 8 : 6, dense: false, inside: [side * SX, 0.87, 0], w: function (i, j, p) { return armW(side, p[1]); }, reg: R.CUFF, ao: 1 });
+        // 소맷부리(가는 크림색 띠)
+        var cyv = q === 0 ? [0.858, 0.863, 0.876, 0.889, 0.894] : [0.858, 0.876, 0.894], cro = q === 0 ? [0.033, 0.046, 0.0495, 0.046, 0.033] : [0.033, 0.0495, 0.033], cr = cyv.map(function (y, k) { return { c: [side * SX, y, 0], ru: cro[k] * 0.98 * sk, rv: cro[k] * sk }; });
+        loft(mb, cr, { nu: q === 0 ? 8 : 6, dense: false, inside: [side * SX, 0.876, 0], w: function (i, j, p) { return armW(side, p[1]); }, reg: R.CUFF, ao: 1 });
       })(side);
     }
   }
 
-  // 바지(통 넓은 일자 와이드 팬츠) + 골반 + 말아올린 밑단
+  // 다리: 남성은 일자 바지 + 가는 밑단, 여성은 원피스 아래로 보이는 가는 다리(스타킹). 골반은 남성만(여성은 원피스 안).
   var PANT_ROWS = [
-    [0.935, 0.060, 0.090, 0.003, 1.04, 0.97], [0.88, 0.068, 0.095, 0.003, 1.045, 0.97], [0.80, 0.077, 0.096, 0, 1.03, 0.985], [0.70, 0.082, 0.090, -0.002, 1.0, 1.0], [0.60, 0.078, 0.084, -0.003, 0.97, 1.02],
-    [0.50, 0.074, 0.080, -0.004, 0.96, 1.025], [0.43, 0.072, 0.077, 0.0, 0.96, 1.025], [0.35, 0.071, 0.076, 0.004, 0.96, 1.025], [0.26, 0.070, 0.075, 0.004, 0.96, 1.025], [0.17, 0.070, 0.075, 0.002, 0.96, 1.025], [0.12, 0.070, 0.075, 0.0, 0.96, 1.025]
-  ];   // 마지막 두 열: 여성/남성 폭 배율(엉덩이는 여성이 넓고 다리는 남성이 조금 굵다)
-  var PANTS = [0, 1].map(function (g) { return profile(PANT_ROWS.map(function (r) { return [r[0], r[1] * r[4 + g], r[2], r[3]]; })); });
+    [0.935, 0.060, 0.090, 0.003, 0.92, 0.92], [0.88, 0.068, 0.095, 0.003, 0.92, 0.92], [0.80, 0.077, 0.096, 0, 0.90, 0.93], [0.70, 0.082, 0.090, -0.002, 0.86, 1.0], [0.60, 0.078, 0.084, -0.003, 0.82, 1.02],
+    [0.50, 0.074, 0.080, -0.004, 0.80, 1.025], [0.43, 0.072, 0.077, 0.0, 0.80, 1.025], [0.35, 0.071, 0.076, 0.004, 0.80, 1.025], [0.26, 0.070, 0.075, 0.004, 0.76, 1.025], [0.17, 0.070, 0.075, 0.002, 0.70, 1.025], [0.12, 0.070, 0.075, 0.0, 0.68, 1.025]
+  ];   // 마지막 두 열: 여성/남성 굵기 배율
+  var PANTS = [0, 1].map(function (g) { return profile(PANT_ROWS.map(function (r) { return [r[0], r[1] * r[4 + g], r[2] * (g ? 1 : r[4]), r[3]]; })); });
   var PANT = PANTS[0];
   function legW(side, y) {
     var ul = side > 0 ? B.ulR : B.ulL, ll = side > 0 ? B.llR : B.llL, ft = side > 0 ? B.ftR : B.ftL;
@@ -536,14 +536,15 @@
       (function (side) {
         var rings = ys.map(function (y) { var d = PANT(y); return { c: [side * HX, y, d[2]], ru: d[0], rv: d[1], y: y }; });
         loft(mb, rings, { nu: nl, dense: false, inside: [side * HX, 0.5, 0], w: function (i, j, p) { return legW(side, p[1]); }, reg: R.PANTS, ao: function (i, j, p) { return 0.93 + 0.07 * sm((p[1] - 0.2) / 0.5); } });
-        // 말아올린 밑단
-        var cy2 = q === 0 ? [0.108, 0.118, 0.150, 0.182, 0.194] : [0.108, 0.150, 0.194], co = q === 0 ? [0.002, 0.013, 0.017, 0.013, 0.002] : [0.004, 0.016, 0.004];
+        if (!GN) return;
+        // 밑단(가는 접단)
+        var cy2 = q === 0 ? [0.108, 0.114, 0.132, 0.150, 0.156] : [0.108, 0.132, 0.156], co = q === 0 ? [0.002, 0.008, 0.010, 0.008, 0.002] : [0.003, 0.010, 0.003];
         loft(mb, cy2.map(function (y, k) { var d = PANT(y); return { c: [side * HX, y, d[2]], ru: d[0] + co[k], rv: d[1] + co[k] }; }),
-          { nu: nl, dense: false, inside: [side * HX, 0.15, 0], w: function (i, j, p) { return legW(side, p[1]); }, reg: R.PCUFF, ao: 1 });
+          { nu: nl, dense: false, inside: [side * HX, 0.13, 0], w: function (i, j, p) { return legW(side, p[1]); }, reg: R.PCUFF, ao: 1 });
       })(side);
     }
-    var pk = GN ? 0.98 : 1.04;
-    var pr = [[1.00, 0.138, 0.098], [0.94, 0.150, 0.104], [0.86, 0.156, 0.106], [0.80, 0.11, 0.09]].map(function (r) { return { c: [0, r[0], 0], ru: r[1] * pk, rv: r[2], }; });
+    if (!GN) return;
+    var pr = [[1.00, 0.138, 0.098], [0.94, 0.150, 0.104], [0.86, 0.156, 0.106], [0.80, 0.11, 0.09]].map(function (r) { return { c: [0, r[0], 0], ru: r[1] * 0.98, rv: r[2], }; });
     loft(mb, pr, { nu: q === 0 ? 10 : 6, dense: false, w: [[B.hips, 1]], reg: R.PANTS, ao: 0.85 });
   }
 
@@ -564,18 +565,22 @@
   }
 
   // 손: 둥근 벙어리장갑 모양(엄지 혹 포함). side=+1 오른손.
+  var HAND_S = 1.14;
   var PALM = [[0.872, 0.023, 0.026, 0.0], [0.848, 0.026, 0.030, 0.0], [0.820, 0.031, 0.037, -0.002], [0.785, 0.034, 0.042, -0.002], [0.750, 0.033, 0.042, 0.0], [0.722, 0.028, 0.036, 0.0], [0.700, 0.018, 0.025, 0.0], [0.690, 0.007, 0.012, 0.0]];
   function handW(side, y) {
     var fa = side > 0 ? B.faR : B.faL, ha = side > 0 ? B.haR : B.haL, t = sm((0.866 - y) / 0.03);
     return [[fa, 1 - t], [ha, t]];
   }
   function buildHand(mb, side, q) {
-    var ha = side > 0 ? B.haR : B.haL, near = q === 0;
+    var ha = side > 0 ? B.haR : B.haL, near = q === 0, v0 = mb.vc;
     var pal = near ? PALM : [PALM[0], PALM[3], PALM[5], PALM[7]];
     var rings = pal.map(function (r) { return { c: [side * SX, r[0], r[3]], ru: r[1], rv: r[2], y: r[0] }; });
     loft(mb, rings, { nu: near ? 8 : 5, dense: false, inside: [side * SX, 0.8, 0], w: function (i, j, p) { return handW(side, p[1]); }, reg: R.SKIN, ao: 0.98, tn: function () { return 0.1; } });
     // 엄지(둥근 혹, 앞쪽-안쪽)
     blob(mb, [side * SX - side * 0.010, 0.795, -0.040], [0.017, 0.035, 0.019], [0.0, 0, 0], { nu: near ? 8 : 5, nv: near ? 5 : 3, w: [[ha, 1]], reg: R.SKIN, ao: 0.98 });
+    // 큰 머리에 맞춰 손도 조금 크게(손목 중심으로 HAND_S 배)
+    var p = mb.pos, i;
+    for (i = v0 * 3; i < mb.vc * 3; i += 3) { p[i] = side * SX + (p[i] - side * SX) * HAND_S; p[i + 1] = 0.872 + (p[i + 1] - 0.872) * HAND_S; p[i + 2] *= HAND_S; }
   }
   // 근거리/중거리 조립 -----------------------------------------------------
   function assemble(q, g, style) {
@@ -584,6 +589,7 @@
     try {
       buildHead(s, q); buildFace(s, q);
       buildHair(s, g, style, q);
+      scaleHead(s, 0, s.vc);
       buildNeck(s, q);
       buildHand(s, -1, q); buildHand(s, 1, q); buildShoes(s, q);
       buildCoat(c, q); buildSleeves(c, q); buildPants(c, q);
@@ -591,25 +597,33 @@
     return { smooth: s, cloth: c };
   }
   // ------------------------------------------------------------------ 원거리 임포스터(스킨 없음, 포즈별 3종)
-  function buildFar(variant) {   // 0 서기, 1 앉기, 2 앉아 기도
-    GN = 0;
+  function buildFar(variant, g) {   // 0 서기, 1 앉기, 2 앉아 기도. g: 성별(실루엣을 가까운 모습과 맞춘다: 여성 종 모양 원피스, 남성 웃옷 + 바지)
+    g = g ? 1 : 0;
+    GN = g;
+    var TS = TORSOS[g];
     var m = new MB(), sit = variant > 0, dy = sit ? -0.351 : 0, dz = sit ? SEAT_BACK : 0, side;
     function Wn() { return [[0, 1]]; }
-    var yy = sit ? [1.455, 1.30, 1.10, 0.90] : [1.455, 1.30, 1.10, 0.90, 0.80], rings = [];
-    yy.forEach(function (y) { var d = TORSO(y); rings.push({ c: [0, y + dy, d[2] + dz - (variant === 2 ? (y - 0.9) * 0.18 : 0)], ru: d[0], rv: d[1], n: 2.3 }); });
+    var yy = sit ? [1.455, 1.30, 1.10, 0.90] : (g ? [1.455, 1.30, 1.10, 0.90, 0.77] : [1.455, 1.30, 1.10, 0.86, 0.53]), rings = [];
+    yy.forEach(function (y) { var d = TS(y); rings.push({ c: [0, y + dy, d[2] + dz - (variant === 2 ? (y - 0.9) * 0.18 : 0)], ru: d[0], rv: d[1], n: 2.3 }); });
     loft(m, rings, { nu: 7, dense: false, w: Wn, reg: R.COAT, ao: 1, inside: [0, 1.1 + dy, dz] });
     for (side = -1; side <= 1; side += 2) {
-      var pts = sit ? [[side * HX, 0.58, dz], [side * HX, 0.53, dz - 0.15], [side * HX, 0.50, dz - 0.36], [side * HX, 0.28, dz - 0.40], [side * HX, 0.07, dz - 0.40]]
-        : [[side * HX, 0.90, 0], [side * HX, 0.60, 0], [side * HX, 0.35, 0], [side * HX, 0.07, 0]];
-      tube(m, pts, sit ? [0.092, 0.08, 0.07, 0.07, 0.062] : [0.098, 0.078, 0.072, 0.068], { nu: 5, w: Wn, reg: R.PANTS, ao: 0.95, caps: 'end' });
+      if (sit && !g) {   // 원피스: 허벅지는 옷 색(넓게), 종아리는 다리 색(가늘게)
+        tube(m, [[side * HX, 0.57, dz + 0.02], [side * HX * 1.25, 0.535, dz - 0.16], [side * HX * 1.3, 0.50, dz - 0.345]], [0.118, 0.112, 0.100], { nu: 5, w: Wn, reg: R.COAT, ao: 0.97 });
+        tube(m, [[side * HX, 0.47, dz - 0.385], [side * HX, 0.07, dz - 0.40]], [0.056, 0.047], { nu: 5, w: Wn, reg: R.PANTS, ao: 0.95, caps: 'end' });
+      } else {
+        var pts = sit ? [[side * HX, 0.58, dz], [side * HX, 0.53, dz - 0.15], [side * HX, 0.50, dz - 0.36], [side * HX, 0.28, dz - 0.40], [side * HX, 0.07, dz - 0.40]]
+          : (g ? [[side * HX, 0.90, 0], [side * HX, 0.60, 0], [side * HX, 0.35, 0], [side * HX, 0.07, 0]] : [[side * HX, 0.58, 0], [side * HX, 0.30, 0], [side * HX, 0.07, 0]]);
+        tube(m, pts, sit ? [0.092, 0.08, 0.07, 0.07, 0.062] : (g ? [0.098, 0.078, 0.072, 0.068] : [0.060, 0.056, 0.048]), { nu: 5, w: Wn, reg: R.PANTS, ao: 0.95, caps: 'end' });
+      }
       var ap = variant === 2 ? [[side * 0.175, 1.40 + dy, dz], [side * 0.16, 1.25 + dy, dz - 0.10], [side * 0.03, 1.28 + dy, dz - 0.19]] : [[side * 0.175, 1.40 + dy, dz], [side * 0.19, 1.10 + dy, dz - 0.02], [side * 0.20, 0.86 + dy, dz - 0.05]];
       if (sit && variant === 1) ap = [[side * 0.175, 1.40 + dy, dz], [side * 0.195, 1.12 + dy, dz - 0.03], [side * 0.10, 0.92 + dy, dz - 0.19]];
       tube(m, ap, [0.062, 0.052, 0.045], { nu: 5, w: Wn, reg: R.COAT, ao: 1, caps: 'end' });
     }
-    var hy = HC + dy, hz = dz + (variant === 2 ? -0.05 : 0), hyy = variant === 2 ? hy - 0.02 : hy, hr = variant === 2 ? 0.5 : 0;
-    blob(m, [0, hyy, hz], [WW, HH, DD], [hr, 0, 0], { nu: 8, nv: 5, w: Wn, reg: R.SKIN, ao: 1 });
-    blob(m, [0, hyy + 0.006, hz + 0.012], [WW + 0.008, HH + 0.004, DD + 0.008], [hr - 0.4, 0, 0], { nu: 8, nv: 4, th1: PI * 0.55, w: Wn, reg: R.HAIR, ao: 0.95 });
-    blob(m, [0, hyy - 0.12, hz + 0.0], [0.05, 0.05, 0.05], [0, 0, 0], { nu: 5, nv: 3, w: Wn, reg: R.SKIN, ao: 0.6 });
+    // 큰 머리(가까운 모습과 같은 배율) + 머리카락 덮개
+    var hs = HEAD_S, hy = HEAD_PIV + (HC - HEAD_PIV) * hs + dy, hz = dz + (variant === 2 ? -0.06 : 0), hyy = variant === 2 ? hy - 0.03 : hy, hr = variant === 2 ? 0.5 : 0;
+    blob(m, [0, hyy, hz], [WW * hs, HH * hs, DD * hs], [hr, 0, 0], { nu: 8, nv: 5, w: Wn, reg: R.SKIN, ao: 1 });
+    blob(m, [0, hyy + 0.008, hz + 0.016], [(WW + 0.010) * hs, (HH + 0.006) * hs, (DD + 0.010) * hs], [hr - 0.4, 0, 0], { nu: 8, nv: 4, th1: PI * 0.55, w: Wn, reg: R.HAIR, ao: 0.95 });
+    GN = 0;
     return m;
   }
 
@@ -626,14 +640,17 @@
     var t = [];
     t[R.SKIN] = skin;
     t[R.LIP] = mix(mul(skin, 0.42), [0.22, 0.03, 0.03], 0.35);
-    t[R.EYE] = lin('#2a2830');
+    t[R.EYE] = lin('#2a2830'); t[R.GLINT] = [0.95, 0.95, 0.95];
     t[R.BROW] = mix(hair, [0.01, 0.01, 0.01], 0.12);
     t[R.HAIR] = hair;
-    t[R.TIE] = mix(oc, [1, 1, 1], 0.12);
-    t[R.SHOE] = mix(oc, [1, 1, 1], 0.28); t[R.SOLE] = lin('#efe6d8');
-    t[R.COAT] = oc; t[R.COATIN] = mul(oc, 0.86); t[R.POCKET] = mul(oc, 0.93);
-    t[R.CUFF] = mix(oc, [1, 1, 1], 0.10);
-    t[R.PANTS] = pants; t[R.PCUFF] = mix(pants, [1, 1, 1], 0.10);
+    // 트림: 깃·소맷부리는 크림색(밝은 옷에는 옷보다 조금 짙은 모래색), 아랫단은 절제한 금색. 신발은 옷과 어울리는 짙은 중성색.
+    var lum = 0.2126 * oc[0] + 0.7152 * oc[1] + 0.0722 * oc[2], cream = lin(P.trim ? P.trim[0] : '#F0E6D0'), gold = lin(P.trim ? P.trim[1] : '#C6A562');
+    t[R.TIE] = mix(oc, cream, 0.35);
+    t[R.SHOE] = mix(lin('#4E433F'), oc, 0.18); t[R.SOLE] = lin('#E4DACB');
+    t[R.COAT] = oc; t[R.COATIN] = gold; t[R.POCKET] = mul(oc, 0.93);
+    t[R.CUFF] = lum > 0.5 ? mix(mul(oc, 0.80), gold, 0.25) : cream;
+    t[R.PANTS] = pants; t[R.PCUFF] = mul(pants, 0.90);
+    t.hairHi = mix(hair, [1, 0.94, 0.84], 0.20 + 0.16 * (1 - Math.min(1, (hair[0] + hair[1] + hair[2]) * 1.2))); t.hairLo = mul(hair, 0.62);
     t.blush = [Math.min(1, skin[0] * 1.05 + 0.05), skin[1] * 0.66, skin[2] * 0.70];
     colCache[key] = t;
     return t;
@@ -643,6 +660,7 @@
     for (i = 0; i < n; i++) {
       rg = mb.reg[i]; c = tab[rg]; ao = mb.ao[i]; tn = mb.tn[i];
       var r = c[0], g = c[1], b = c[2];
+      if (tn !== 0 && rg === R.HAIR) { var hk = tn > 0 ? Math.min(1, tn) : Math.min(1, -tn), hc2 = tn > 0 ? tab.hairHi : tab.hairLo; r += (hc2[0] - r) * hk; g += (hc2[1] - g) * hk; b += (hc2[2] - b) * hk; }
       if (tn > 0 && rg === R.SKIN) { var k = Math.min(1, tn) * 0.62; r += (bl[0] - r) * k; g += (bl[1] - g) * k; b += (bl[2] - b) * k; }
       if (rg === R.SKIN) { r *= Math.min(1.05, ao + (1 - ao) * 0.5); g *= ao; b *= ao * 0.98; }
       else { r *= ao; g *= ao; b *= ao; }
@@ -686,17 +704,28 @@
     return P0[key];
   }
   var farPacks = [];
-  function getFar(variant) { return farPacks[variant] || (farPacks[variant] = pack(buildFar(variant), false)); }
+  function getFar(variant, g) { var k = variant + (g ? 3 : 0); return farPacks[k] || (farPacks[k] = pack(buildFar(variant, g), false)); }
 
   // 재질 --------------------------------------------------------------------
+  // 림 라이트: 시선과 스치는 가장자리에 따뜻한 빛을 조금 더해(Fresnel) 어두운 성당 안에서도 윤곽이 배경과 분리되게 한다.
+  // 셰이더에 한 줄만 끼워 넣는다(텍스처·조명 추가 없음). 세 재질이 같은 조각을 쓰고 세기만 다르다.
+  var RIM = { color: [1.0, 0.93, 0.82], pow: 2.6, smooth: 0.20, cloth: 0.26, far: 0.22 };
+  function rimLight(mat, k) {
+    mat.onBeforeCompile = function (sh) {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>',
+        '#include <emissivemap_fragment>\n\tfloat avRim = pow(1.0 - saturate(dot(normalize(vViewPosition), normal)), ' + RIM.pow.toFixed(2) + ');\n\ttotalEmissiveRadiance += diffuseColor.rgb * vec3(' + RIM.color.map(function (v) { return (v * k * 2.2).toFixed(3); }).join(', ') + ') * avRim + vec3(' + RIM.color.map(function (v) { return (v * k * 0.25).toFixed(3); }).join(', ') + ') * avRim;');
+    };
+    mat.customProgramCacheKey = function () { return 'avrim' + k; };
+  }
   var mats = null;
   function getMats() {
     if (mats) return mats;
     mats = {
-      smooth: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.74, metalness: 0, emissive: 0x24100a, emissiveIntensity: 0.4, envMapIntensity: 0.8, side: T.DoubleSide }),
-      cloth: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, envMapIntensity: 0.75, side: T.DoubleSide }),
-      far: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0, envMapIntensity: 0.7 })
+      smooth: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.66, metalness: 0, emissive: 0x24100a, emissiveIntensity: 0.4, envMapIntensity: 0.85, side: T.DoubleSide }),
+      cloth: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0, envMapIntensity: 0.75, side: T.DoubleSide }),
+      far: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0, envMapIntensity: 0.7 })
     };
+    rimLight(mats.smooth, RIM.smooth); rimLight(mats.cloth, RIM.cloth); rimLight(mats.far, RIM.far);
     return mats;
   }
 
@@ -804,7 +833,7 @@
 
   // ------------------------------------------------------------------ 묵주(손에 든 것, SPEC §32)
   // 원점 = 손에 쥔 곳. 구슬 고리가 -y 로 늘어지고(XY 평면), 그 아래에 구슬 3알과 십자가가 달린다. 새 에셋 없이 지오메트리 1개로 만든다.
-  var ROSARY = { BEADS: 30, DROP: 0.15, HALF_W: 0.036, R: 0.0052, R_BIG: 0.0068, TAIL: 3, TAIL_GAP: 0.0118, CROSS_H: 0.040, CROSS_W: 0.024, CROSS_T: 0.007, PALM: 0.055, RAIL_DZ: 0.11, RAIL_DY: 0.03, FADE: 8, LEN: 0, TRIS: 0 };
+  var ROSARY = { BEADS: 30, DROP: 0.15, HALF_W: 0.036, R: 0.0052, R_BIG: 0.0068, TAIL: 3, TAIL_GAP: 0.0118, CROSS_H: 0.040, CROSS_W: 0.024, CROSS_T: 0.007, PALM: 0.062, RAIL_DZ: 0.11, RAIL_DY: 0.03, FADE: 8, LEN: 0, TRIS: 0 };
   ROSARY.LEN = ROSARY.DROP + ROSARY.R_BIG * 2 + ROSARY.TAIL * ROSARY.TAIL_GAP + 0.004 + ROSARY.CROSS_H;
   var rosaryGeo = null;
   function rosaryLoop(n) {   // 물방울 모양 고리 위에 같은 간격으로 놓은 n 개의 점 [x, y]
@@ -855,7 +884,7 @@
   var EMOTE_DUR = [2.4, 3.4, 1.7];
   // 성호 경로(오른손, 가슴 로컬): 이마 → 가슴 → 왼어깨 → 오른어깨. [손목 x,y,z, 손가락 F(x,y,z), 손바닥 N(x,y,z)]
   var CROSS = [
-    [0.02, 0.37, -0.15, 0, 0.88, 0.48, 0, -0.48, 0.88],
+    [0.02, 0.43, -0.215, 0, 0.88, 0.48, 0, -0.48, 0.88],   // 이마(큰 머리 앞면 밖)
     [0.03, 0.0, -0.17, -0.25, 0.9, -0.1, 0, 0.1, 1],
     [-0.115, 0.14, -0.16, -0.95, 0.3, 0.0, 0, 0.05, 1],
     [0.125, 0.15, -0.16, 0.95, 0.3, 0.0, 0, 0.05, 1]
@@ -874,7 +903,7 @@
     if (!shadowGeo) shadowGeo = new T.PlaneGeometry(1, 1).rotateX(-PI / 2);
     this.shadow = new T.Mesh(shadowGeo, getShadowMat()); this.shadow.scale.set(0.9, 1, 0.9); this.shadow.position.y = 0.03; this.shadow.renderOrder = 2;
     this.root.add(this.shadow);
-    this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9; this.tagPx = 0; this.tagPpm = 0;
+    this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9 + HEAD_UP; this.tagPx = 0; this.tagPpm = 0;
     this.walkTarget = 0; this.walkAmt = 0; this.phase = Math.random() * 6;
     this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
     this.kneelTarget = 0; this.kneelLin = 0; this.kneelAmt = 0; this.kneelFwd = 0; this.kneelY = 0; this.kneelRail = 0;
@@ -919,7 +948,7 @@
     this.key = c.g + '_' + c.skin + '_' + c.style + '_' + c.hair + '_' + c.outfit;
     this._applyGeom();
     if (this.showTag) {
-      if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.name)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 1.9; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
+      if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.name)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 1.9 + HEAD_UP; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
       else this.tag.material = tagMaterial(c.name);
     }
   };
@@ -947,11 +976,11 @@
   };
   Avatar.prototype._variant = function () { return this.sitAmt > 0.5 ? (this.prayAmt > 0.5 ? 2 : 1) : 0; };
   Avatar.prototype._applyFar = function (v) {
-    var c = this.cfg, key = v + '_' + c.skin + '_' + c.hair + '_' + c.outfit;
+    var c = this.cfg, key = v + '_' + c.g + '_' + c.skin + '_' + c.hair + '_' + c.outfit;
     if (!this.imp) { this.imp = new T.Mesh(new T.BufferGeometry(), getMats().far); this.imp.receiveShadow = true; this.imp.castShadow = false; this.root.add(this.imp); }
     if (this.impKey === key) return;
     this.impKey = key;
-    this.imp.geometry = geomWithColor(getFar(v), colors(c), 'f' + key);
+    this.imp.geometry = geomWithColor(getFar(v, c.g), colors(c), 'f' + key);
   };
   // 거리별 단계: 0 근접(이름표 O), 1 중간(이름표 X, 단순 형상), 2 원거리(임포스터)
   Avatar.prototype.setLod = function (l) {
@@ -1006,6 +1035,7 @@
     return { t1: KNEEL_THIGH, t2: a - KNEEL_THIGH, hipY: kneeY + LEN_T * Math.cos(KNEEL_THIGH), kneeY: kneeY, hipBack: LEN_T * Math.sin(KNEEL_THIGH), shinBack: -LEN_S * Math.sin(a) };
   }
 
+  var SKIRT_SIT = 0.17, KNEEL_HEM = 0.10, LAP_FLAT = 0.78;   // 원피스: 앉을 때 뒷자락 접힘 비율(아랫단이 좌석 윗면 위에 남는다), 무릎 꿇을 때 앞자락을 뒤로 당기는 각(rad)
   var LAP_T = [[0.095, -0.205, -0.19], [0.0, -1, 0]];   // 무릎 위 손목 목표(가슴 로컬)
   var KNEEL_FOOT = -1.45, KNEEL_HAND_Y = 0.115, KNEEL_HAND_Z = -0.30;   // 무릎 꿇을 때: 발목 각(발등 펴기), 등받이 윗단에 얹는 손목 목표(가슴 로컬)
 
@@ -1084,9 +1114,13 @@
     var chX = lerp(-0.012 + br * 0.006, -0.03, sa) + (-0.07) * pa + (-0.25) * bow;
     setE(hips, 0, hipsRy, 0.0);
     var sk = sa * (1 - ka);
-    setE(bs[B.skirt], -0.30 * sk, 0, 0); bs[B.skirt].scale.set(1, lerp(1, 0.30, sk), 1);
-    var ck = 0.45 + 0.5 * sa;
-    setE(bs[B.ckR], t1R * ck, 0, 0.04 * sa); setE(bs[B.ckL], t1L * ck, 0, -0.04 * sa);
+    // 아랫자락: 뒷자락(skirt)은 앉으면 좌석판 위로 접히고(원피스는 더 많이), 앞자락(ckL/ckR)은 허벅지를 따라간다.
+    // 무릎 꿇으면 앞자락을 조금 뒤로 당겨 앞줄 등받이에 닿지 않게 한다.
+    var dress = this.cfg && this.cfg.g === 0 ? 1 : 0;
+    setE(bs[B.skirt], -0.30 * sk, 0, 0); bs[B.skirt].scale.set(1, lerp(1, dress ? SKIRT_SIT : 0.30, sk), 1);
+    var ck = 0.6 + 0.4 * sa, ckK = dress ? KNEEL_HEM * ka : 0;
+    setE(bs[B.ckR], t1R * ck + ckK, 0, 0.04 * sa); setE(bs[B.ckL], t1L * ck + ckK, 0, -0.04 * sa);
+    if (dress) { var cz = lerp(1, LAP_FLAT, sk), cx = lerp(1, 0.88, sk); bs[B.ckR].scale.set(cx, 1, cz); bs[B.ckL].scale.set(cx, 1, cz); }   // 앉으면 앞자락이 허벅지 위에 내려앉는다(쟁반처럼 뜨지 않게)
     setE(bs[B.spine], spX, spineRy, -0.012 * ws * 0);
     setE(bs[B.chest], chX, chestRy, 0.012 * ws);
     bs[B.chest].scale.y = 1 + br * 0.005;
@@ -1130,7 +1164,7 @@
         var tx, ty, tz, fx, fy, fz, nx, ny, nz, px = 0.6, py = -1, pz = 0.3;
         if (this.emote === 0) {
           var wv = Math.sin(this.emoteT * 11) * 0.38;
-          tx = 0.20; ty = 0.30; tz = -0.12; fx = Math.sin(wv); fy = Math.cos(wv); fz = -0.22; nx = 0; ny = 0; nz = -1; px = 0.9; py = -0.8; pz = 0.3;
+          tx = 0.25; ty = 0.30; tz = -0.12; fx = Math.sin(wv); fy = Math.cos(wv); fz = -0.22; nx = 0; ny = 0; nz = -1; px = 0.9; py = -0.8; pz = 0.3;
         } else {
           var u = clamp((eU - 0.12) / 0.76, 0, 0.999) * 4, ix = Math.floor(u), f = sm(u - ix);
           var Ak = CROSS[Math.min(3, ix)], Bk = CROSS[Math.min(3, ix + 1)];
@@ -1148,7 +1182,7 @@
     }
     // 이름표 높이
     if (this.tag) {
-      var ty = 1.88 - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w + (KP ? (KP.hipY - 0.529) * ka : 0);
+      var ty = 1.88 + HEAD_UP - 0.35 * sa - 0.15 * pa - 0.35 * bow - 0.015 * w + (KP ? (KP.hipY - 0.529) * ka : 0);
       this.tagY = ty;
       this.tag.position.y = ty;
       this.tag.position.z = hipZ - SEAT_BACK * sa;
@@ -1199,7 +1233,7 @@
   root.ChurchAvatar = {
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
-    ROSARY: ROSARY, rosaryGeometry: getRosaryGeo,
+    ROSARY: ROSARY, rosaryGeometry: getRosaryGeo, HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM,
     kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
     stats: function () {
@@ -1212,7 +1246,7 @@
           out.near['style' + s] = Math.max(out.near['style' + s], nt); out.mid['style' + s] = Math.max(out.mid['style' + s], mt);
         }
       }
-      out.far = [getFar(0).tris, getFar(1).tris, getFar(2).tris];
+      out.far = [getFar(0, 0).tris, getFar(1, 0).tris, getFar(2, 0).tris, getFar(0, 1).tris, getFar(1, 1).tris, getFar(2, 1).tris];
       out.nearCloth = getPack('near', 'cloth', 0, 0).tris; out.nearSmooth0 = getPack('near', 'smooth', 0, 0).tris;
       return out;
     },

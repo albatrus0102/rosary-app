@@ -29,6 +29,7 @@ import 'church_prayer_choice_sheet.dart';
 import 'church_presence_sheet.dart';
 import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
+import 'church_theme.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
 import 'net/church_net_factory.dart';
@@ -531,10 +532,13 @@ class _ChurchScreenState extends State<ChurchScreen>
         MaterialPageRoute(
           settings: const RouteSettings(name: 'avatar_setup'),
           fullscreenDialog: true,
-          builder: (context) => AvatarEditorScreen(
-            settings: _settings,
-            firstEntry: true,
-            random: widget.random,
+          builder: (context) => ChurchTheme.wrap(
+            context,
+            AvatarEditorScreen(
+              settings: _settings,
+              firstEntry: true,
+              random: widget.random,
+            ),
           ),
         ),
       ),
@@ -560,9 +564,14 @@ class _ChurchScreenState extends State<ChurchScreen>
         MaterialPageRoute(
           settings: const RouteSettings(name: 'avatar_editor'),
           fullscreenDialog: true,
-          builder:
-              widget.avatarEditorBuilder ??
-              (context) => AvatarEditorScreen(settings: _settings),
+          builder: (context) => ChurchTheme.wrap(
+            context,
+            Builder(
+              builder:
+                  widget.avatarEditorBuilder ??
+                  (context) => AvatarEditorScreen(settings: _settings),
+            ),
+          ),
         ),
       ),
     );
@@ -720,7 +729,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   void _openGlassInfo(GlassWindow w) {
-    unawaited(showGlassInfoSheet(context, w));
+    unawaited(showGlassInfoSheet(_themed, w));
   }
 
   /// 성능 표본(C-04). 입장 직후 첫 표본이 너무 느리면 간단 모드를 '권한다'(강제하지 않는다).
@@ -1055,7 +1064,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     final ChurchGoTarget? target;
     try {
       target = await showChurchGoSheet(
-        context,
+        _themed,
         hasFont: _stations.font > 0,
         hasCross: _stations.cross >= StationsOfCrossWalk.count,
       );
@@ -1080,7 +1089,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     final StationsSheetResult? r;
     try {
       r = await showStationsSheet(
-        context,
+        _themed,
         start: n,
         mode: StationsSheetMode.pilgrimage,
         from: StationsFrom.church,
@@ -1161,7 +1170,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     try {
       final p = _prayer;
       pick = await showChurchPrayerChoiceSheet(
-        context,
+        _themed,
         settings: _settings,
         // 성당에서 바치다 일어난 묵주기도가 있으면 그 신비로 이어 한다.
         resumeSet: p != null && !p.finished && p.session.index > 0
@@ -1230,7 +1239,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _sheetOpen = true;
     final int? intention;
     try {
-      intention = await showCandleSheet(context);
+      intention = await showCandleSheet(_themed);
     } finally {
       _sheetOpen = false;
     }
@@ -1332,7 +1341,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 칩의 성당 이름·인원 부분: '지금 접속 중' 시트.
   Future<void> _openPresence() async {
     final picked = await showChurchPresenceSheet(
-      context,
+      _themed,
       net: _net,
       loads: widget.loads ?? ChurchLoads.shared,
       churchId: widget.churchId,
@@ -1429,17 +1438,50 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   // --- 화면 ---
 
+  /// 성당 테마 아래의 context(Scaffold). 성당 안에서 여는 시트·메뉴가 같은 어두운 금색 테마를 쓰도록
+  /// 시트를 열 때는 State 의 context 대신 이것을 넘긴다.
+  final GlobalKey _hudKey = GlobalKey();
+  BuildContext get _themed => _hudKey.currentContext ?? context;
+
   @override
   Widget build(BuildContext context) {
+    // 성당 안은 시스템 밝기와 상관없이 어두운 금색 M3 테마(ChurchTheme)를 쓴다.
+    return Theme(
+      data: ChurchTheme.of(context),
+      child: Builder(builder: _build),
+    );
+  }
+
+  Widget _build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final wide = MediaQuery.sizeOf(context).width >= 600;
     final info = ChurchCatalog.resolve(widget.churchId);
     final seatedOrPending = _mySeat != null || _pendingSeat != null;
     final cardOn = _prayerActive && _prayer != null;
     final walking = !seatedOrPending && !cardOn;
     final halfWidth = MediaQuery.sizeOf(context).width / 2;
     final glassWin = _glassWindow;
+    final statusChip = ListenableBuilder(
+      listenable: Listenable.merge([_net.state, _net.count]),
+      builder: (context, _) => ChurchStatusChip(
+        churchName: info.nameKo,
+        state: _net.state.value,
+        count: _net.count.value,
+        onChangeChurch: widget.onChangeChurch,
+        onShowPresence: _openPresence,
+      ),
+    );
+    // 도구 줄: 소리·아바타·인사 (+ 걸어 다닐 수 있으면 '가기').
+    final topActions = ChurchTopActions(
+      ambientOn: _settings.churchAmbient,
+      onToggleAmbient: _toggleAmbient,
+      onEditAvatar: _openAvatarEditor,
+      onEmote: _emote,
+      onGo: walking ? _onGo : null,
+    );
     return Scaffold(
-      backgroundColor: scheme.inverseSurface,
+      key: _hudKey,
+      backgroundColor: scheme.surface,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -1471,7 +1513,11 @@ class _ChurchScreenState extends State<ChurchScreen>
             ),
           if (!_sceneReleased)
             Positioned.fill(
-              child: _LoadOverlay(key: ObjectKey(_scene), scene: _scene),
+              child: _LoadOverlay(
+                key: ObjectKey(_scene),
+                scene: _scene,
+                churchName: info.nameKo,
+              ),
             ),
           SafeArea(
             child: Padding(
@@ -1483,55 +1529,37 @@ class _ChurchScreenState extends State<ChurchScreen>
               ),
               child: Column(
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: ListenableBuilder(
-                            listenable: Listenable.merge([
-                              _net.state,
-                              _net.count,
-                            ]),
-                            builder: (context, _) => ChurchStatusChip(
-                              churchName: info.nameKo,
-                              state: _net.state.value,
-                              count: _net.count.value,
-                              onChangeChurch: widget.onChangeChurch,
-                              onShowPresence: _openPresence,
-                            ),
+                  // 첫 줄: 이름판(왼쪽)과 도구 줄(오른쪽). 폰 폭에서는 이름판이 한 줄을 다 쓰고
+                  // (긴 성당 이름·부제가 잘리지 않게) 도구 줄은 그 아래 오른쪽에 놓인다.
+                  if (wide)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: statusChip,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      ChurchTopActions(
-                        ambientOn: _settings.churchAmbient,
-                        onToggleAmbient: _toggleAmbient,
-                        onEditAvatar: _openAvatarEditor,
-                        onEmote: _emote,
-                      ),
-                    ],
-                  ),
-                  // 둘째 줄: (걷는 중이면 칩) ··· '가기'. 앉아 있으면 줄이 없다.
-                  if (walking)
+                        const SizedBox(width: AppSpace.xs),
+                        topActions,
+                      ],
+                    )
+                  else ...[
+                    Align(alignment: Alignment.centerLeft, child: statusChip),
+                    const SizedBox(height: AppSpace.xs),
+                    Align(alignment: Alignment.centerRight, child: topActions),
+                  ],
+                  // 자동 걷기 중이면 왼쪽에 '걷는 중… (취소)' 칩.
+                  if (walking && _walkKind != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Row(
-                        children: [
-                          if (_walkKind != null)
-                            Flexible(
-                              child: ChurchWalkChip(
-                                key: const ValueKey('walk-chip'),
-                                onCancel: _cancelWalk,
-                              ),
-                            ),
-                          const Spacer(),
-                          ChurchGoButton(
-                            key: const ValueKey('go-button'),
-                            onPressed: _onGo,
-                          ),
-                        ],
+                      padding: const EdgeInsets.only(top: AppSpace.xs),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ChurchWalkChip(
+                          key: const ValueKey('walk-chip'),
+                          onCancel: _cancelWalk,
+                        ),
                       ),
                     ),
                   // 셋째 줄(왼쪽): 진본 사진 창 앞이면 '이 창: ○○ · 자세히 보기'(G-29).
@@ -1662,10 +1690,16 @@ class _ChurchScreenState extends State<ChurchScreen>
 }
 
 /// 장면을 불러오는 동안의 안내와, 실패했을 때의 다시 시도 카드.
+/// 성당 테마의 먹색 바탕 위에 금색 선 아이콘·성당 이름·진행 표시줄을 둔다(문을 여는 동안의 어둠).
 class _LoadOverlay extends StatelessWidget {
-  const _LoadOverlay({super.key, required this.scene});
+  const _LoadOverlay({
+    super.key,
+    required this.scene,
+    required this.churchName,
+  });
 
   final ChurchSceneController scene;
+  final String churchName;
 
   @override
   Widget build(BuildContext context) {
@@ -1675,61 +1709,54 @@ class _LoadOverlay extends StatelessWidget {
         if (load == SceneLoad.ready) return const SizedBox.shrink();
         final theme = Theme.of(context);
         final scheme = theme.colorScheme;
+        final error = load == SceneLoad.error;
         return ColoredBox(
-          color: scheme.inverseSurface,
+          color: scheme.surface,
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: load == SceneLoad.error
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.cloud_off,
-                          size: 40,
-                          color: scheme.onInverseSurface,
-                        ),
-                        const SizedBox(height: AppSpace.sm),
-                        Text(
-                          '성당을 불러오지 못했어요',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: scheme.onInverseSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '잠시 후 다시 시도해 주세요.',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: scheme.onInverseSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        FilledButton.icon(
-                          onPressed: scene.reload,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('다시 시도'),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 진행 표시줄 모양은 테마(progressIndicatorTheme, M3 2024)에 맡긴다.
-                        const SizedBox(
-                          width: 160,
-                          child: LinearProgressIndicator(),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '성당 문을 여는 중…',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: scheme.onInverseSurface,
-                          ),
-                        ),
-                      ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpace.lg,
+                vertical: AppSpace.sm,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    error ? Icons.cloud_off_outlined : Icons.church_outlined,
+                    size: 40,
+                    color: scheme.primary,
+                  ),
+                  const SizedBox(height: AppSpace.sm),
+                  Text(
+                    error ? '성당을 불러오지 못했어요' : churchName,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: scheme.onSurface,
                     ),
+                  ),
+                  const SizedBox(height: AppSpace.xxs),
+                  Text(
+                    error ? '잠시 후 다시 시도해 주세요.' : '성당 문을 여는 중…',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpace.md),
+                  if (error)
+                    FilledButton.icon(
+                      onPressed: scene.reload,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('다시 시도'),
+                    )
+                  else
+                    // 진행 표시줄 모양은 테마(progressIndicatorTheme, M3 2024)에 맡긴다.
+                    const SizedBox(
+                      width: 160,
+                      child: LinearProgressIndicator(),
+                    ),
+                ],
+              ),
             ),
           ),
         );

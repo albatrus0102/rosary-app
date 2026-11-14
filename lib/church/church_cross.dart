@@ -19,48 +19,33 @@ class ChurchCrossChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final fg = scheme.onInverseSurface;
     final st = StationsOfCross.byNumber(n);
     return Semantics(
       button: true,
       label: '십자가의 길 $n처, ${st.title}. 묵상하기',
       excludeSemantics: true,
-      child: Material(
-        color: scheme.inverseSurface,
-        shape: AppShape.smallBorder,
-        clipBehavior: Clip.antiAlias,
-        elevation: ChurchHudStyle.elevation,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.sm),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.menu_book_outlined, size: 20, color: fg),
-                  const SizedBox(width: AppSpace.xs),
-                  Flexible(
-                    child: Text(
-                      '십자가의 길 $n처 · ${st.title}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.labelLarge?.copyWith(color: fg),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpace.xs),
-                  Text(
-                    '묵상하기',
-                    style: text.labelMedium?.copyWith(
-                      color: scheme.inversePrimary,
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, size: 18, color: fg),
-                ],
+      child: ChurchHudChip(
+        onTap: onTap,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.menu_book_outlined, size: 20, color: scheme.primary),
+            const SizedBox(width: AppSpace.xs),
+            Flexible(
+              child: Text(
+                '십자가의 길 $n처 · ${st.title}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: text.labelLarge?.copyWith(color: scheme.onSurface),
               ),
             ),
-          ),
+            const SizedBox(width: AppSpace.xs),
+            Text(
+              '묵상하기',
+              style: text.labelMedium?.copyWith(color: scheme.primary),
+            ),
+            Icon(Icons.chevron_right, size: 18, color: scheme.primary),
+          ],
         ),
       ),
     );
