@@ -203,3 +203,91 @@ test('kneeling: knees on the kneeler, nothing inside the back of the row ahead, 
   assert.ok(Math.abs(hR.x - hL.x) < 0.09, 'hands together');
   void LC;
 });
+
+// ---------------------------------------------------------------- 새 실루엣(큰 머리·종 모양 원피스)의 메시 비침투(docs/church/AVATAR_LOOK.md §5)
+// 뼈 위치가 아니라 '실제 스키닝된 정점'으로 확인한다: 좌석판·등받이·앞줄 등받이·책 선반·무릎틀을 옷과 머리가 파고들지 않는다.
+function skinned(av, level = 'near') {
+  av.root.updateMatrixWorld(true);
+  const bones = av.skeleton.bones, inv = av.skeleton.boneInverses, mats = bones.map((b, i) => b.matrixWorld.clone().multiply(inv[i]));
+  const out = [];
+  for (const kind of ['smooth', 'cloth']) {
+    const g = av.meshes[level][kind].geometry, p = g.attributes.position.array, si = g.attributes.skinIndex.array, sw = g.attributes.skinWeight.array;
+    for (let v = 0; v < p.length / 3; v++) {
+      let x = 0, y = 0, z = 0;
+      for (let k = 0; k < 4; k++) {
+        const w = sw[v * 4 + k]; if (!w) continue;
+        const e = mats[si[v * 4 + k]].elements, px = p[v * 3], py = p[v * 3 + 1], pz = p[v * 3 + 2];
+        x += w * (e[0] * px + e[4] * py + e[8] * pz + e[12]); y += w * (e[1] * px + e[5] * py + e[9] * pz + e[13]); z += w * (e[2] * px + e[6] * py + e[10] * pz + e[14]);
+      }
+      out.push({ x, y, u: -z, kind, ry: p[v * 3 + 1] });   // ry = 휴식 자세 높이(부위 구분용)
+    }
+  }
+  return out;
+}
+const cfgOf = (g, style) => ({ g, skin: 0, style, hair: 0, outfit: 0, name: 0, nv: 2 });
+const TILT = Math.tan(PEW.BACK_TILT), EPS = 0.02;
+
+test('look: big head, same skeleton; name tag sits above the hair', () => {
+  assert.ok(A.HEAD.S >= 1.4 && A.HEAD.S <= 1.7);
+  for (const g of [0, 1]) for (let s = 0; s < 4; s++) {
+    const av = new A.Avatar(cfgOf(g, s), { showTag: false }); av.setPose(0, 0, 0, 0); av.snapPose(); av.update(1 / 60, 0);
+    const vs = skinned(av), top = Math.max(...vs.map((v) => v.y)), wide = Math.max(...vs.map((v) => Math.abs(v.x)));
+    assert.ok(top > 1.80 && top < 1.88 + A.HEAD.UP - 0.03, `g${g}s${s} top ${top}`);   // 이름표 기준 높이(1.88 + UP)보다 아래
+    assert.ok(wide < 0.30, `g${g}s${s} half width ${wide}`);                           // 충돌 반지름(0.3) 안
+    const feet = Math.min(...vs.map((v) => v.y)); assert.ok(feet > -0.01 && feet < 0.03, 'feet ' + feet);
+  }
+  assert.deepEqual(Array.from(A.HEM), [0.52, 0.76]);
+});
+
+test('look: seated mesh stays above the seat board, in front of the backrest and clear of the row ahead', () => {
+  for (const g of [0, 1]) for (const pray of [false, true]) {
+    const av = new A.Avatar(cfgOf(g, 1), { showTag: false });
+    av.setPose(0, 0, 0, 0); av.setSeated(true); av.setPray(pray); av.snapPose(); run(av, 1.5);
+    const tag = `g${g} pray ${pray}`;
+    for (const v of skinned(av)) {
+      // 좌석판(윗면 SEAT_TOP) 위: 판 앞끝 안쪽에서는 윗면 아래로 내려가지 않는다
+      // (웃옷·원피스 자락 = 휴식 높이 0.5 위의 옷. 종아리·신발은 판 앞끝 아래 공간에 있다)
+      if (v.u > PEW.SEAT_REAR && v.u < PEW.SEAT_FRONT - 0.03 && v.kind === 'cloth' && v.ry > 0.5) assert.ok(v.y > PEW.SEAT_TOP - 0.045,   /* 허벅지 밑면은 판에 조금 눌린다(예전과 같음). 자락은 판 위 */ `${tag} below seat ${v.kind} y ${v.y} u ${v.u}`);
+      // 등받이 앞면(뒤로 기울어짐)보다 앞
+      if (v.y > PEW.SEAT_TOP && v.y < PEW.BACK_TOP) assert.ok(v.u > PEW.BACK_U - TILT * (v.y - PEW.SEAT_TOP) - EPS, `${tag} into backrest ${v.kind} y ${v.y} u ${v.u}`);
+      // 앞줄: 등받이 뒷면·책 선반·무릎틀에 닿지 않는다
+      if (v.y < PEW.BACK_TOP) assert.ok(v.u < backRear(Math.max(v.y, PEW.SEAT_TOP)), `${tag} row ahead`);
+      if (Math.abs(v.y - PEW.SHELF_Y) < 0.05) assert.ok(v.u < 1.9 + PEW.SHELF_U0, `${tag} shelf`);
+      if (v.y < PEW.KNEEL_TOP) assert.ok(v.u < 1.9 + PEW.KNEEL_U0, `${tag} kneeler u ${v.u}`);
+      // 옆자리(좌석 간격 1.0m)의 절반을 넘지 않는다
+      assert.ok(Math.abs(v.x) < 0.34, `${tag} sideways ${v.kind} x ${v.x} y ${v.y}`);
+    }
+  }
+});
+
+test('look: kneeling mesh (dress hem, belly, big head) stays behind the back of the row ahead and its shelf', () => {
+  for (const g of [0, 1]) {
+    const av = new A.Avatar(cfgOf(g, 1), { showTag: false });
+    av.setPose(0, 0, 0, 0); av.setSeated(true); av.setPray(true); av.snapPose(); av.setKneel(true, SPOT); run(av, 2.5);
+    for (const v of skinned(av)) {
+      const hand = v.kind === 'smooth' && v.y > PEW.BACK_TOP - 0.02;   // 등받이 윗단에 얹은 손·머리는 윗단 위
+      if (!hand && v.y < PEW.BACK_TOP - 0.06 && v.y > PEW.KNEEL_TOP + 0.02)   /* 윗단 근처는 얹은 팔 */ assert.ok(v.u < backRear(Math.max(v.y, PEW.SEAT_TOP)) + 0.005, `g${g} into the back ahead: ${v.kind} y ${v.y} u ${v.u}`);
+      if (Math.abs(v.y - PEW.SHELF_Y) < PEW.SHELF_T + 0.01) assert.ok(v.u < 1.9 + PEW.SHELF_U0 + 0.005, `g${g} into the shelf: ${v.kind} u ${v.u}`);
+      if (v.u > 1.9 + PEW.KNEEL_U0 && v.u < 1.9 + PEW.KNEEL_U1) assert.ok(v.y > PEW.KNEEL_TOP - 0.03, `g${g} into the kneeler y ${v.y}`);   // 무릎은 방석에 조금 눌린다
+      assert.ok(v.y > -0.05, `g${g} under the floor ${v.y}`);   // 발끝(발등을 편 신발 코)은 예전과 같이 바닥에 살짝 묻힌다
+    }
+  }
+});
+
+test('look: LOD silhouettes match (mid mesh and far impostor keep the big head and the hem)', () => {
+  for (const g of [0, 1]) {
+    const av = new A.Avatar(cfgOf(g, 0), { showTag: false }); av.setPose(0, 0, 0, 0); av.snapPose(); av.update(1 / 60, 0);
+    const near = skinned(av); av.setLod(1); av.update(1 / 60, 0); const mid = skinned(av, 'mid');
+    av.setLod(2); av.update(1 / 60, 0);
+    const fp = av.imp.geometry.attributes.position.array, far = [];
+    for (let i = 0; i < fp.length; i += 3) far.push({ x: fp[i], y: fp[i + 1] });
+    const box = (vs) => ({ top: Math.max(...vs.map((v) => v.y)), headW: Math.max(...vs.filter((v) => v.y > 1.55).map((v) => Math.abs(v.x))), hemW: g ? 0 : Math.max(...vs.filter((v) => Math.abs(v.y - (A.HEM[g] + 0.03)) < 0.05).map((v) => Math.abs(v.x))), shW: Math.max(...vs.filter((v) => v.y > 1.05 && v.y < 1.45).map((v) => Math.abs(v.x))) });
+    const a = box(near), b = box(mid), c = box(far);
+    for (const o of [b, c]) {
+      assert.ok(Math.abs(o.top - a.top) < 0.05, `g${g} top ${o.top} vs ${a.top}`);
+      assert.ok(Math.abs(o.headW - a.headW) < 0.04, `g${g} head ${o.headW} vs ${a.headW}`);
+      assert.ok(Math.abs(o.hemW - a.hemW) < 0.05, `g${g} hem ${o.hemW} vs ${a.hemW}`);
+      assert.ok(Math.abs(o.shW - a.shW) < 0.05, `g${g} shoulders ${o.shW} vs ${a.shW}`);
+    }
+  }
+});

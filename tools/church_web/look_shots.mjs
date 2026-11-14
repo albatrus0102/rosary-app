@@ -62,7 +62,7 @@ async function run(outDir, ids, o) {
             A.me.x = v.x; A.me.z = v.z; A.me.y = A.logic.floorY(v.x, v.z);
             A.ctl.yaw = v.yaw * D; A.me.yaw = A.ctl.yaw; A.ctl.pitch = v.pitch * D; A.ctl.look = (v.look || 0) * D; A.ctl.zoom = v.zoom || 1; A.camInit = false;
           }, { v, hour });
-          for (let i = 0; i < 3; i++) await page.evaluate(() => __step(10, 50));
+          await page.evaluate(() => __step(4, 50));
           const file = path.join(outDir, `${id}_${vn}_h${String(hour).replace('.', '_')}_${size}.png`);
           const url = await page.evaluate(() => { const c = document.getElementById('c'), cv = document.createElement('canvas'); cv.width = c.width; cv.height = c.height; __step(1, 16.67); cv.getContext('2d').drawImage(c, 0, 0); return cv.toDataURL('image/png'); });
           fs.writeFileSync(file, Buffer.from(url.split(',')[1], 'base64'));

@@ -393,7 +393,7 @@
       perfBusy += dt;
       hideAvatars(true);
       if (fade) { fade.t += dt; glassMat.uniforms.uMix.value = Math.min(1, fade.t / FADE); }
-      if (glassMat) glassMat.uniforms.uSelfTone.value = App.R.tier === 'high' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
+      if (glassMat) glassMat.uniforms.uSelfTone.value = App.R.tier !== 'low' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
       // 후처리가 없으면(low) 캔버스에 바로 그린다: 알파 0 표시가 캔버스 알파로 남지 않게(일부 기기는 alpha:false 캔버스도 알파를 합성에 쓴다) 보통 알파 합성으로
       if (glassMat) glassMat.blendSrcAlpha = glassMat.uniforms.uSelfTone.value > 0.5 ? T.OneFactor : T.ZeroFactor;
       applyCamera(dt);

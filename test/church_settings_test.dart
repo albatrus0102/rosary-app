@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
 import 'package:rosary_app/church/church_constants.dart';
+import 'package:rosary_app/church/church_diagnostics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -11,7 +12,8 @@ void main() {
     expect(s.churchAvatar, AvatarConfig.defaultConfig);
     expect(s.churchAvatarChosen, isFalse);
     expect(s.churchAmbient, isTrue);
-    expect(s.churchQuality, ChurchQuality.high);
+    expect(s.churchQuality, ChurchQuality.auto);
+    expect(s.churchPerfHud, isFalse);
     expect(s.churchId, 'basic');
   });
 
@@ -62,7 +64,7 @@ void main() {
     });
     final s = await AppSettings.load();
     expect(s.churchAvatar, AvatarConfig.defaultConfig);
-    expect(s.churchQuality, ChurchQuality.high);
+    expect(s.churchQuality, ChurchQuality.auto);
     expect(s.churchId, 'basic');
     s.churchId = 'nowhere';
     expect(s.churchId, 'basic');
@@ -173,5 +175,24 @@ void main() {
     expect(s.churchAvatar.nameText, '요한');
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('church_avatar'), json);
+  });
+
+  test('old saved quality values still load; mid and perf HUD persist', () async {
+    SharedPreferences.setMockInitialValues({'church_quality': 'high'});
+    expect((await AppSettings.load()).churchQuality, ChurchQuality.high);
+    SharedPreferences.setMockInitialValues({'church_quality': 'low'});
+    final s = await AppSettings.load();
+    expect(s.churchQuality, ChurchQuality.low);
+    s.churchQuality = ChurchQuality.mid;
+    s.churchPerfHud = true;
+    expect(ChurchDiagnostics.perfHud.value, isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('church_quality'), 'mid');
+    expect(prefs.getBool('church_perf_hud'), isTrue);
+    final again = await AppSettings.load();
+    expect(again.churchQuality, ChurchQuality.mid);
+    expect(again.churchPerfHud, isTrue);
+    again.churchPerfHud = false;
+    expect(ChurchDiagnostics.perfHud.value, isFalse);
   });
 }

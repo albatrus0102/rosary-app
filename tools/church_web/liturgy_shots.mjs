@@ -9,18 +9,18 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(here, '../../assets/church');
+const assetRoot = path.resolve(here, '../../assets/church');
 
 // 제대 부근을 보는 카메라(서 있는 자리 x,z / yaw / pitch / zoom)
 export const CAMS = {
   basic: { pos: [0, -12.6], pitch: 13, zoom: 1.0 },
-  florence: { pos: [0, -12.2], pitch: 13, zoom: 1.0 },
-  lateran: { pos: [0, -4.2], pitch: 13, zoom: 1.1 },
-  maggiore: { pos: [0, -13.4], pitch: 13, zoom: 1.1 },
-  milan: { pos: [0, -13.6], pitch: 13, zoom: 1.0 },
-  myeongdong: { pos: [0, -7.8], pitch: 13, zoom: 1.0 },
-  stpaul: { pos: [0, -11.6], pitch: 13, zoom: 1.1 },
-  stpeter: { pos: [0, -1.6], pitch: 13, zoom: 1.1 }
+  florence: { pos: [0, -12.6], pitch: 14, zoom: 0.9 },
+  lateran: { pos: [0, -6.3], pitch: 12, zoom: 0.75 },
+  maggiore: { pos: [0, -15.3], pitch: 13, zoom: 0.8 },
+  milan: { pos: [0, -15.0], pitch: 12, zoom: 0.8 },
+  myeongdong: { pos: [0, -9.6], pitch: 13, zoom: 0.8 },
+  stpaul: { pos: [0, -14.4], pitch: 13, zoom: 0.8 },
+  stpeter: { pos: [0, -3.2], pitch: 14, zoom: 0.8 }
 };
 
 // 시기 이름 → setLiturgy 인자
@@ -43,7 +43,7 @@ export function seasonArgs(name) {
 }
 
 export async function shootAll(o) {
-  const { out, churches, seasons, hour = 11, quality = 'high', size = '800x600', sheet = false, cams = CAMS } = o;
+  const { out, churches, seasons, hour = 11, quality = 'high', size = '800x600', sheet = false, cams = CAMS, root = assetRoot } = o;
   const [w, h] = size.split('x').map(Number);
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
@@ -73,11 +73,15 @@ export async function shootAll(o) {
       res.push({ id, season: s, file, ...info, errors: errors.slice() });
     }
     if (sheet) {
-      const sp = await browser.newPage({ viewport: { width: w * 3 / 2, height: Math.ceil(seasons.length / 3) * (h / 2 + 22) } });
+      // 모음 이미지: 같은 폴더의 임시 HTML 로 묶어 찍는다
+      const sp = await browser.newPage({ viewport: { width: Math.round(w * 3 / 2), height: Math.ceil(seasons.length / 3) * Math.round(h / 2 + 22) } });
       const html = '<body style="margin:0;background:#111;color:#fff;font:14px sans-serif;display:grid;grid-template-columns:repeat(3,1fr)">' +
-        files.map((f, i) => `<div><div style="padding:2px 6px">${id} · ${seasons[i]}</div><img src="file://${f}" style="width:100%;display:block"></div>`).join('') + '</body>';
-      await sp.setContent(html); await sp.waitForLoadState('load');
+        files.map((f, i) => `<div><div style="padding:2px 6px;height:18px">${id} · ${seasons[i]}</div><img src="${path.basename(f)}" style="width:100%;display:block"></div>`).join('') + '</body>';
+      const tmp = path.join(out, `_sheet_${id}.html`);
+      fs.writeFileSync(tmp, html);
+      await sp.goto('file://' + tmp); await sp.waitForLoadState('load');
       await sp.screenshot({ path: path.join(out, `${id}_sheet${quality === 'low' ? '_low' : ''}.png`) });
+      fs.unlinkSync(tmp);
       await sp.close();
     }
     await page.close();
@@ -91,7 +95,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (let i = 0; i < a.length; i++) {
     const k = a[i];
     if (k === '--out') o.out = a[++i]; else if (k === '--churches') o.churches = a[++i].split(','); else if (k === '--seasons') o.seasons = a[++i].split(',');
-    else if (k === '--hour') o.hour = +a[++i]; else if (k === '--quality') o.quality = a[++i]; else if (k === '--size') o.size = a[++i]; else if (k === '--sheet') o.sheet = true;
+    else if (k === '--hour') o.hour = +a[++i]; else if (k === '--quality') o.quality = a[++i]; else if (k === '--size') o.size = a[++i]; else if (k === '--sheet') o.sheet = true; else if (k === '--root') o.root = path.resolve(a[++i]);   // 다른 자산 폴더(비교용)
   }
   if (!o.out) { console.error('--out <폴더> 가 필요합니다'); process.exit(2); }
   const res = await shootAll(o);

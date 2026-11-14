@@ -130,6 +130,35 @@ void main() {
     expect(find.text('마이크 테스트'), findsNothing);
   });
 
+  testWidgets('settings: church quality segments and perf display', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final settings = await AppSettings.load();
+    tester.view.physicalSize = const Size(800, 4200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      _app(SettingsScreen(settings: settings, leaderAudio: _FakeStore())),
+    );
+    await tester.pump();
+    expect(find.text('성당 화질'), findsOneWidget);
+    expect(settings.churchQuality, ChurchQuality.auto);
+    expect(find.textContaining('스스로 보통'), findsOneWidget);
+    await tester.tap(find.text('보통'));
+    await tester.pump();
+    expect(settings.churchQuality, ChurchQuality.mid);
+    expect(find.textContaining('구석 그늘과 바닥 반사를 끄고'), findsOneWidget);
+    await tester.tap(find.text('간단'));
+    await tester.pump();
+    expect(settings.churchQuality, ChurchQuality.low);
+    expect(settings.churchPerfHud, isFalse);
+    await tester.tap(find.text('성능 표시(진단)'));
+    await tester.pump();
+    expect(settings.churchPerfHud, isTrue);
+    settings.churchPerfHud = false;
+  });
+
   testWidgets('settings: text size slider updates settings and preview', (
     tester,
   ) async {

@@ -13,7 +13,7 @@ void main() {
     tester,
   ) async {
     final h = await pumpChurch(tester);
-    expect(h.settings.churchQuality, ChurchQuality.high);
+    expect(h.settings.churchQuality, ChurchQuality.auto);
     expect(_banner, findsNothing);
     h.scene.emit(const ScenePerf(9, tier: 'high'));
     await tester.pump();
@@ -23,7 +23,7 @@ void main() {
     expect(find.text('그대로'), findsOneWidget);
     // 안내만 할 뿐 아무것도 바꾸지 않았다.
     expect(h.scene.count('setQuality'), 0);
-    expect(h.settings.churchQuality, ChurchQuality.high);
+    expect(h.settings.churchQuality, ChurchQuality.auto);
 
     await tester.tap(find.text('바꾸기'));
     await tester.pump();
@@ -41,7 +41,7 @@ void main() {
     await tester.pump();
     expect(_banner, findsNothing);
     expect(h.scene.count('setQuality'), 0);
-    expect(h.settings.churchQuality, ChurchQuality.high);
+    expect(h.settings.churchQuality, ChurchQuality.auto);
     h.scene.emit(const ScenePerf(8, tier: 'high'));
     await tester.pump();
     expect(_banner, findsNothing);
@@ -123,5 +123,30 @@ void main() {
       quality: 'low',
     );
     expect(scene.lastArgs('init')!['quality'], 'low');
+  });
+
+  test('perf HUD setting is forwarded after init and ignores other events', () async {
+    ChurchDiagnostics.perfHud.value = false;
+    final scene = FakeChurchSceneController();
+    ChurchDiagnostics.perfHud.value = true; // init 전: 보내지 않고, init 직후 한 번
+    expect(scene.count('setPerfHud'), 0);
+    await scene.init(
+      avatar: const {},
+      hour: 12,
+      ambient: false,
+      solo: true,
+      quality: 'auto',
+    );
+    expect(scene.lastArgs('setPerfHud'), {'on': true});
+    ChurchDiagnostics.perfHud.value = false;
+    await Future<void>.delayed(Duration.zero);
+    expect(scene.lastArgs('setPerfHud'), {'on': false});
+    scene.dispose();
+    ChurchDiagnostics.perfHud.value = true;
+    await Future<void>.delayed(Duration.zero);
+    expect(scene.lastArgs('setPerfHud'), {'on': false}); // 버린 컨트롤러는 듣지 않는다
+    ChurchDiagnostics.perfHud.value = false;
+    expect(ChurchDiagnostics.handleRaw('{"e":"perf","fps":30}'), isFalse);
+    expect(SceneEvent.parse('{"e":"perfReport","text":"x"}'), isNull);
   });
 }

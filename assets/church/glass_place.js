@@ -148,7 +148,7 @@
     function update(dt, me, cam) {
       if (!groups.length) return;
       var env = App.world && App.world.env, night = env && env.night ? env.night : 0;
-      var k = 1 + (NIGHT_K - 1) * night, self = App.R.tier === 'high' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
+      var k = 1 + (NIGHT_K - 1) * night, self = App.R.tier !== 'low' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
       for (var i = 0; i < groups.length; i++) {
         var g = groups[i];
         if (!g.mat) continue;

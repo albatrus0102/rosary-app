@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../church/avatar/avatar_config.dart';
 import '../church/church_catalog.dart';
+import '../church/church_diagnostics.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import 'leader_voice.dart';
@@ -11,8 +12,12 @@ import 'rosary_style.dart';
 /// 기도문 본문 글꼴: 고딕(번들 Pretendard, 기본) 또는 기기 시스템 글꼴.
 enum PrayerFont { gothic, system }
 
-/// 사이버 성당 3D 화면 품질.
-enum ChurchQuality { low, high }
+/// 사이버 성당 3D 화면 품질(저장 키 `church_quality`, 값은 이름).
+///
+/// [auto] 자동(기본): 높음으로 시작해 느리면 보통 → 간단으로 스스로 낮춘다(해상도는 유지).
+/// [high] 높음(그림자·반사·AO·빛 번짐), [mid] 보통(AO·바닥 반사 끔, 빛 번짐 가볍게),
+/// [low] 간단(후처리 없음). 예전 저장값 'low'·'high'는 그대로 읽힌다.
+enum ChurchQuality { auto, high, mid, low }
 
 /// 성당 '기도하기'에서 마지막으로 고른 것(SPEC §32). 저장 키 `churchPrayerChoice`.
 ///
@@ -107,8 +112,10 @@ class AppSettings extends ChangeNotifier {
     _churchQuality = _enumByName(
       ChurchQuality.values,
       _prefs.getString(_kChurchQuality),
-      ChurchQuality.high,
+      ChurchQuality.auto,
     );
+    _churchPerfHud = _prefs.getBool(_kChurchPerfHud) ?? false;
+    ChurchDiagnostics.perfHud.value = _churchPerfHud;
     _prayerPosture = _enumByName(
       PrayerPosture.values,
       _prefs.getString(_kPrayerPosture),
@@ -146,6 +153,7 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchAvatarChosen = 'church_avatar_chosen';
   static const _kChurchAmbient = 'church_ambient';
   static const _kChurchQuality = 'church_quality';
+  static const _kChurchPerfHud = 'church_perf_hud';
   static const _kPrayerPosture = 'prayerPosture';
   static const _kChurchPrayerChoice = 'churchPrayerChoice';
   static const _kChurchId = 'church_id';
@@ -204,6 +212,7 @@ class AppSettings extends ChangeNotifier {
   late bool _churchAvatarChosen;
   late bool _churchAmbient;
   late ChurchQuality _churchQuality;
+  late bool _churchPerfHud;
   late PrayerPosture _prayerPosture;
   late ChurchPrayerChoice _churchPrayerChoice;
   late String _churchId;
@@ -441,6 +450,17 @@ class AppSettings extends ChangeNotifier {
 
   /// 성당 3D 화면 품질.
   ChurchQuality get churchQuality => _churchQuality;
+
+  /// 성당 성능 표시(진단: fps·프레임 ms·해상도·화질 단계). 기본 꺼짐.
+  bool get churchPerfHud => _churchPerfHud;
+
+  set churchPerfHud(bool v) {
+    if (v == _churchPerfHud) return;
+    _churchPerfHud = v;
+    ChurchDiagnostics.perfHud.value = v;
+    _prefs.setBool(_kChurchPerfHud, v);
+    notifyListeners();
+  }
 
   /// 성당에서 앉아 기도할 때의 자세(앉아서 | 무릎 꿇고).
   PrayerPosture get prayerPosture => _prayerPosture;

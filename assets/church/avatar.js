@@ -489,6 +489,11 @@
       },
       w: function (i, j, p) { return torsoW(p, Math.min(1.446, p[1])); }, reg: R.CUFF, ao: 1
     });
+    // 남성 웃옷: 앞 중심의 작은 단추 3개(트림 색)
+    if (GN && q === 0) [1.325, 1.225, 1.125].forEach(function (y) {
+      var d = TORSO(y), c = [0, y, d[2] - d[1] - 0.001];
+      blob(mb, c, [0.0095, 0.0095, 0.0045], [0, 0, 0], { nu: 6, nv: 3, w: torsoW(c, y), reg: R.CUFF, ao: 1 });
+    });
   }
 
   // 소매 + 가는 소맷부리 트림 (둥근 어깨에서 손목으로 조금 가늘어지는 팔)

@@ -103,9 +103,8 @@ Widget _host(
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, c) => MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(textScaler: TextScaler.linear(scale)),
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(scale)),
         child: c!,
       ),
       home: home,
@@ -289,6 +288,13 @@ void main() {
         await t.tap(find.byTooltip('인사'));
         await _settle(t, 2);
         await _shot(t, '09_emote_$tag');
+        await t.pump(const Duration(seconds: 12));
+      });
+      _shotTest('11 avatar editor', (t) async {
+        await church(t);
+        await t.tap(find.byTooltip('아바타 편집'));
+        await _settle(t, 4);
+        await _shot(t, '11_avatar_$tag');
         await t.pump(const Duration(seconds: 12));
       });
       _shotTest('10 shell: entry → in church', (t) async {

@@ -60,7 +60,9 @@ abstract final class ChurchHudStyle {
   /// 줄 폭이 고정이다). 전체 문구는 툴팁·스크린리더 라벨이 전한다.
   static const double labelMaxScale = 1.3;
 
-  /// 이동 스틱(중립색: 바닥의 금색 표식과 헷갈리지 않게 금색을 쓰지 않는다).
+  /// 이동 스틱(문서화한 예외: 테마 색이 아니라 중립 흰색. 바닥의 금색·갈색 표식 고리와 헷갈리지 않게
+  /// 금빛이 도는 `onSurface`도 쓰지 않는다). 그림자는 테마의 `shadow`.
+  static const Color stickColor = Color(0xFFFFFFFF);
   static const double stickFillOpacity = 0.12;
   static const double stickRingOpacity = 0.75;
   static const double stickKnobOpacity = 0.55;
@@ -825,11 +827,11 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                     // 밝은 대리석 위에서도 어두운 의자 위에서도 보이도록 바깥에 어두운 그림자를 둔다.
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: scheme.onSurface.withValues(
+                      color: ChurchHudStyle.stickColor.withValues(
                         alpha: ChurchHudStyle.stickFillOpacity,
                       ),
                       border: Border.all(
-                        color: scheme.onSurface.withValues(
+                        color: ChurchHudStyle.stickColor.withValues(
                           alpha: ChurchHudStyle.stickRingOpacity,
                         ),
                         width: 1.5,
@@ -851,7 +853,7 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                           height: knobSize,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: scheme.onSurface.withValues(
+                            color: ChurchHudStyle.stickColor.withValues(
                               alpha: ChurchHudStyle.stickKnobOpacity,
                             ),
                             boxShadow: [

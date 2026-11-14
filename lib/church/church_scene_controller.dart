@@ -7,6 +7,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
+import 'church_diagnostics.dart';
+
+export 'church_diagnostics.dart';
+
 /// 웹 장면(three.js)이 Flutter로 보내는 이벤트 (`FlutterChurch` 채널).
 sealed class SceneEvent {
   const SceneEvent();
@@ -293,7 +297,7 @@ class ScenePos extends SceneEvent {
 }
 
 /// 웹의 성능 표본. [fps]는 구간 평균(첫 표본은 입장 4초 뒤, 이후 5초마다),
-/// [tier]는 화질 단계('low'|'high'), [seated]는 앉아 있었는지.
+/// [tier]는 화질 단계('low'|'mid'|'high'), [seated]는 앉아 있었는지.
 /// [auto]가 true면 웹이 스스로 화질을 낮췄다는 알림이고 [fps]는 순간값이다.
 class ScenePerf extends SceneEvent {
   const ScenePerf(
@@ -461,6 +465,15 @@ enum SceneLoad { loading, ready, error }
 /// Flutter→웹 호출은 모두 [invoke]를 거치며(`window.ChurchAPI.<method>(<json>)`),
 /// `init`이 끝나기 전의 호출은 순서대로 쌓아 두었다가 `init` 직후 보낸다.
 abstract class ChurchSceneController {
+  ChurchSceneController() {
+    ChurchDiagnostics.perfHud.addListener(_onPerfHud);
+  }
+
+  void _onPerfHud() {
+    if (_disposed || !_initDone) return;
+    unawaited(_call('setPerfHud', {'on': ChurchDiagnostics.perfHud.value}));
+  }
+
   final StreamController<SceneEvent> _events =
       StreamController<SceneEvent>.broadcast();
   final ValueNotifier<SceneLoad> _load = ValueNotifier(SceneLoad.loading);
@@ -522,6 +535,9 @@ abstract class ChurchSceneController {
     await invoke(method, args);
     if (method == 'init') {
       _initDone = true;
+      if (ChurchDiagnostics.perfHud.value) {
+        await invoke('setPerfHud', const {'on': true});
+      }
       final pending = List.of(_queue);
       _queue.clear();
       for (final (m, a) in pending) {
@@ -604,6 +620,10 @@ abstract class ChurchSceneController {
   Future<void> setAmbient({required bool on}) =>
       _call('setAmbient', {'on': on});
   Future<void> setHour(double hour) => _call('setHour', {'hour': hour});
+
+  /// 전례 시기 장식(SPEC §33). [args]는 `LiturgicalDay.toSceneArgs()`.
+  Future<void> setLiturgy(Map<String, Object?> args) =>
+      _call('setLiturgy', args);
   Future<void> setSolo({required bool on}) => _call('setSolo', {'on': on});
   Future<void> setQuality(String quality) =>
       _call('setQuality', {'quality': quality});
@@ -672,6 +692,7 @@ abstract class ChurchSceneController {
   @mustCallSuper
   void dispose() {
     _disposed = true;
+    ChurchDiagnostics.perfHud.removeListener(_onPerfHud);
     _queue.clear();
     _events.close();
     _load.dispose();
@@ -712,6 +733,7 @@ class WebViewChurchSceneController extends ChurchSceneController {
       ..addJavaScriptChannel(
         'FlutterChurch',
         onMessageReceived: (m) {
+          if (ChurchDiagnostics.handleRaw(m.message)) return;
           final e = SceneEvent.parse(m.message);
           if (e == null) return;
           if (e is SceneReady) _readyTimer?.cancel();

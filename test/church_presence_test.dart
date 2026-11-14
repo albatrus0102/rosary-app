@@ -330,7 +330,11 @@ void main() {
         expect(tester.takeException(), isNull);
         final chip = tester.getRect(find.byType(ChurchStatusChip));
         final actions = tester.getRect(find.byType(ChurchTopActions));
-        expect(chip.right, lessThanOrEqualTo(actions.left));
+        // 폰 폭에서는 이름판이 첫 줄, 도구 줄이 그 아래 줄이다(겹치지 않고 화면 안).
+        expect(chip.overlaps(actions), isFalse);
+        expect(chip.right, lessThanOrEqualTo(size.width));
+        expect(actions.right, lessThanOrEqualTo(size.width));
+        expect(actions.left, greaterThanOrEqualTo(0));
         expect(chip.left, greaterThanOrEqualTo(0));
       });
     }

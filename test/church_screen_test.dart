@@ -99,7 +99,8 @@ void main() {
       final h = await pumpChurch(tester);
       await tester.tap(find.byTooltip('인사'));
       await tester.pumpAndSettle();
-      expect(find.text('인사'), findsOneWidget);
+      // 도구 줄의 라벨 '인사'와 메뉴 항목 '인사'.
+      expect(find.widgetWithText(PopupMenuItem<int>, '인사'), findsOneWidget);
       expect(find.text('성호경'), findsOneWidget);
       expect(find.text('고개 숙임'), findsOneWidget);
       await tester.tap(find.text('성호경'));

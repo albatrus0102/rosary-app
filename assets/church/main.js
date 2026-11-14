@@ -7,7 +7,7 @@
 
   var canvas = document.getElementById('c');
   var App = {
-    started: false, quality: 'high', renderer: null, scene: null, camera: null, world: null, logic: null,
+    started: false, quality: 'high', qMode: 'auto', renderer: null, scene: null, camera: null, world: null, logic: null,
     maxFrames: +(qs.frames || 0), frameCount: 0, done: false, me: null, meAv: null, ctl: null, net: null, crowd: null, cfg: { skin: 1, style: 0, hair: 2, outfit: 6, name: 0 },
     near: { seat: null, candle: null, station: null }, stations: null, markers: null, walkSt: null, pendingWalk: null, turn: null, frames: 0, perfT: 0, t: 0, last: 0, posT: 0, wasMoving: false, stepT: 0, fps: 60,
     camPos: new T.Vector3(), camLook: new T.Vector3(), camInit: false, sitF: 0, church: 'basic', solo: false, ambient: false
@@ -15,6 +15,9 @@
   root.__church = App;
 
   function wrap(a) { while (a > PI) a -= PI * 2; while (a < -PI) a += PI * 2; return a; }
+  // 화질 방식: App.qMode = 'auto'|'high'|'mid'|'low', App.quality = 실제 단계('high'|'mid'|'low'). 자동만 느릴 때 단계를 내린다.
+  function setQMode(q) { App.qMode = q === 'low' || q === 'mid' || q === 'high' ? q : 'auto'; App.quality = App.qMode === 'auto' ? 'high' : App.qMode; }
+  function autoOn() { return App.qMode === 'auto' && qs.autotier !== '0'; }
   function r2(v) { return Math.round(v * 100) / 100; }
 
   function viewing() { return !!(App.view && App.view.active); }
@@ -95,13 +98,13 @@
   function start(o) {
     o = o || {};
     if (o.avatar) App.cfg = o.avatar;
-    if (o.quality) App.quality = o.quality === 'low' ? 'low' : 'high';
+    if (o.quality) setQMode(o.quality);
     App.hourInit = o.hour === undefined ? (new Date().getHours() + new Date().getMinutes() / 60) : +o.hour;
     var church = o.church || qs.church || 'basic';
     if (!App.started) {
       App.started = true;
       try {
-        App.R = root.ChurchRender.create(canvas, { quality: App.quality, autoTier: qs.autotier !== '0' });
+        App.R = root.ChurchRender.create(canvas, { quality: App.quality, autoTier: autoOn() });
         App.renderer = App.R.renderer;
       } catch (e) {
         document.body.insertAdjacentHTML('beforeend', '<div style="position:fixed;left:8px;top:8px;color:#fff;font:12px sans-serif">WebGL을 사용할 수 없습니다.</div>');
@@ -320,7 +323,10 @@
       // 배경 신자가 내가 앉아 있는 자리를 뽑았으면 다시 뽑는다(접속이 끊겨 혼자 모드로 바뀔 때)
       for (var i = 0; i < 8 && App.me && App.me.seat && App.crowd.isTaken(App.me.seat); i++) App.crowd.set(App.solo, true);
     },
-    setQuality: function (o) { App.quality = o.quality === 'low' ? 'low' : 'high'; if (App.R) { App.R.autoTier = App.quality === 'high' && qs.autotier !== '0'; App.R.setTier(App.quality, App.world); } resize(); },
+    // 화질: 'auto'(기본: 높음에서 시작해 느리면 보통→간단) | 'high' | 'mid' | 'low' (PERF.md §화질 3단계)
+    setQuality: function (o) { setQMode(o && o.quality); if (App.R) { App.R.autoTier = autoOn(); App.R.setTier(App.quality, App.world); } resize(); },
+    // 성능 표시(진단): 화면 모서리에 fps·프레임 ms·해상도·단계·draw call (perf_hud.js)
+    setPerfHud: function (o) { if (root.ChurchPerfHud) root.ChurchPerfHud.set(!!(o && o.on), App); },
     emote: function (o) { if (App.meAv) App.meAv.playEmote(o.e); },
     // 스테이션으로 걸어간다. kind: candle|altar|seat|entrance|font, index: 스탠드/성수대 번호, seat: 특정 좌석 id
     walkTo: function (o) { walkTo(o || {}); },
@@ -570,6 +576,9 @@
     if (App.paused) { App.rafOn = false; return; }   // 보이지 않는 동안: 다음 프레임을 청하지 않는다(resume 이 kick 으로 다시 깨운다)
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
     App.frameCount = (App.frameCount || 0) + 1;
+    // 앉아서 가만히 기도하는 동안은 한 프레임 걸러 그린다(약 30fps; 성능 표시·시험 프레임 제한 중에는 끔).
+    // 화면은 거의 정지라 차이가 보이지 않고, 발열·배터리를 줄여 다시 걸을 때의 열 제한 버벅임을 막는다. 끌기·일어서기 즉시 60fps.
+    if (App.idleSkip && (App.frameCount & 1)) { App.frames++; requestAnimationFrame(loop); return; }
     var raw = (now - App.last) / 1000, dt = Math.min(0.05, raw);
     App.last = now; App.t += dt;
     // 창 감상: 필요할 때만 그린다(입력·활강·페이드·빛 바꾸기). 할 일이 없으면 rAF 를 멈추고 kick() 이 다시 깨운다.
@@ -581,6 +590,7 @@
     }
     requestAnimationFrame(loop);
     if (!App.world) return;
+    var PH = root.ChurchPerfHud && root.ChurchPerfHud.on ? root.ChurchPerfHud : null, tj = PH ? performance.now() : 0;
     App.ctl.setMoveZone(App.me.mode === 'walk');
     updateMe(dt, App.t);
     updateCamera(dt);
@@ -598,10 +608,14 @@
     if (App.liturgy) App.liturgy.update(dt, App.t);
     if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
+    App.R.setGrade(App.world.env.grade);   // 성당 룩(looks.js): 걷기 프로필의 보정·블룸
+    App.idleSkip = !PH && !App.maxFrames && qs.idle !== '0' && App.me.mode === 'seated' && !App.walkSt && !App.ctl.dragging && App.t - App.ctl.lastDragT > 2 && App.sitF > 0.98 && !(App.meAv && App.meAv.kneelLin !== App.meAv.kneelTarget);
+    var gq = PH ? PH.gpuBegin() : null, tr = PH ? performance.now() : 0;
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
+    if (PH) { PH.gpuEnd(gq); PH.frame(raw, performance.now() - tj, performance.now() - tr); }
     // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).
     var seatedNow = App.me.mode === 'seated' ? 1 : 0;
-    if (chg) { App.quality = 'low'; post({ e: 'perf', fps: Math.round(1 / Math.max(raw, 0.001)), tier: App.R.tier, sat: seatedNow, a: 1 }); }
+    if (chg) { App.quality = chg; post({ e: 'perf', fps: Math.round(1 / Math.max(raw, 0.001)), tier: App.R.tier, sat: seatedNow, a: 1 }); }
     // 시뮬레이션 dt 는 0.05초로 잘리므로 fps 는 실제 경과 시간(raw, 백그라운드 복귀 대비 1초 상한)으로 잰다.
     App.frames++; App.perfT += Math.min(raw, 1);
     // 첫 표본은 4초 뒤(입장 후 5초 안에 느린지 판단할 수 있게), 이후 5초마다.

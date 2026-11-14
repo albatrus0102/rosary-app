@@ -9,6 +9,7 @@ import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
+import '../church/church_liturgy.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
 import 'leader_record_screen.dart';
@@ -167,6 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSoundSection(context),
                   _buildDisplaySection(context),
                   _buildLeaderSection(context),
+                  _buildChurchSection(context),
                   _buildAboutSection(context),
                 ],
               ),
@@ -373,6 +375,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ),
+      ],
+    );
+  }
+
+  static const _qualityHelp = {
+    ChurchQuality.auto: '높음으로 시작해 기기가 버거우면 스스로 보통 → 간단으로 낮춥니다. 해상도는 그대로예요',
+    ChurchQuality.high: '그림자·바닥 반사·구석 그늘·빛 번짐을 모두 켭니다. 느려도 낮추지 않아요',
+    ChurchQuality.mid: '구석 그늘과 바닥 반사를 끄고 빛 번짐을 가볍게 합니다',
+    ChurchQuality.low: '효과 없이 가장 가볍게 그립니다. 오래된 기기에 알맞아요',
+  };
+
+  // (d) 성당: 3D 화질과 진단
+  Widget _buildChurchSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final q = settings.churchQuality;
+    return _Section(
+      title: '성당',
+      children: [
+        Padding(
+          key: const ValueKey('settings-church-quality'),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('성당 화질', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpace.xs),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<ChurchQuality>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(
+                      value: ChurchQuality.auto,
+                      label: Text('자동'),
+                      tooltip: '자동',
+                    ),
+                    ButtonSegment(
+                      value: ChurchQuality.high,
+                      label: Text('높음'),
+                      tooltip: '높음',
+                    ),
+                    ButtonSegment(
+                      value: ChurchQuality.mid,
+                      label: Text('보통'),
+                      tooltip: '보통',
+                    ),
+                    ButtonSegment(
+                      value: ChurchQuality.low,
+                      label: Text('간단'),
+                      tooltip: '간단',
+                    ),
+                  ],
+                  selected: {q},
+                  onSelectionChanged: (v) {
+                    settings.churchQuality = v.first;
+                    Track.setting('church_quality');
+                  },
+                ),
+              ),
+              const SizedBox(height: AppSpace.xs),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  _qualityHelp[q]!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SwitchListTile(
+          key: const ValueKey('settings-church-perf-hud'),
+          secondary: const Icon(Icons.speed),
+          title: const Text('성능 표시(진단)'),
+          subtitle: const Text(
+            '성당 화면 모서리에 초당 프레임·해상도·화질을 보여 줍니다. '
+            "'10초 기록'을 누르면 요약을 복사해 문의에 붙일 수 있어요(전송하지 않음)",
+          ),
+          value: settings.churchPerfHud,
+          onChanged: (v) {
+            settings.churchPerfHud = v;
+            Track.setting('church_perf_hud');
+          },
+        ),
+        // 전례 시기 미리 보기(SPEC §33): 성당 장식을 다른 시기로 바꿔 본다.
+        const ChurchLiturgyPreviewTile(),
       ],
     );
   }

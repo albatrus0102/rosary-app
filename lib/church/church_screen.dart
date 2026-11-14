@@ -24,6 +24,7 @@ import 'church_cross.dart';
 import 'church_go_sheet.dart';
 import 'church_host.dart';
 import 'church_hud.dart';
+import 'church_liturgy.dart';
 import 'church_prayer_card.dart';
 import 'church_prayer_choice_sheet.dart';
 import 'church_presence_sheet.dart';
@@ -242,6 +243,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _netSub = _net.events.listen(_onNet);
     _net.state.addListener(_onNetState);
     _settings.addListener(_onSettings);
+    _liturgy = ChurchLiturgyBinding(onChanged: _onLiturgy);
     unawaited(_loadHintFlag());
     unawaited(_loadResume());
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
@@ -594,9 +596,18 @@ class _ChurchScreenState extends State<ChurchScreen>
     }
   }
 
+  late final ChurchLiturgyBinding _liturgy;
+
   double get _hour {
     final n = DateTime.now();
     return n.hour + n.minute / 60;
+  }
+
+  /// 전례 시기가 바뀌었다(KST 자정이 지났거나 설정의 미리 보기를 바꿨다).
+  void _onLiturgy() {
+    if (_disposed) return;
+    if (_inited) unawaited(_scene.setLiturgy(_liturgy.sceneArgs));
+    if (mounted) setState(() {});
   }
 
   void _maybeInit() {
@@ -614,6 +625,8 @@ class _ChurchScreenState extends State<ChurchScreen>
         church: widget.churchId,
       ),
     );
+    // 전례 시기 장식(SPEC §33): 오늘(KST) 시기대로. 자정·미리 보기 변경은 _onLiturgy 가 다시 보낸다.
+    unawaited(_scene.setLiturgy(_liturgy.sceneArgs));
     // 새로 만든 장면이면 입구가 아니라 방금 있던 자리에서 시작한다. 좌석은 앱이 아는 상태가 우선
     // (처음 들어온 직후라 앱이 아직 모르면 저장분의 좌석을 쓴다).
     final rs = _resume;
@@ -1373,6 +1386,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   @override
   void dispose() {
     _disposed = true;
+    _liturgy.dispose();
     _perfBannerTimer?.cancel();
     _hintTimer?.cancel();
     _glassTapTimer?.cancel();
@@ -1467,6 +1481,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         churchName: info.nameKo,
         state: _net.state.value,
         count: _net.count.value,
+        subtitle: _liturgy.chipLabel,
         onChangeChurch: widget.onChangeChurch,
         onShowPresence: _openPresence,
       ),

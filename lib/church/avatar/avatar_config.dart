@@ -163,10 +163,10 @@ class AvatarConfig {
 
   // assets/church/palette.js(window.ChurchPalette)와 같은 HEX 값.
   static const List<Color> skinColors = [
-    Color(0xFFF7D9C4),
-    Color(0xFFEDBE9A),
-    Color(0xFFC98E64),
-    Color(0xFF8A5738),
+    Color(0xFFF6DCCB),
+    Color(0xFFEAC4A4),
+    Color(0xFFC89C7C),
+    Color(0xFF8F654C),
   ];
 
   static const List<String> skinNames = ['밝은 피부', '보통 피부', '구릿빛 피부', '짙은 피부'];
@@ -216,47 +216,47 @@ class AvatarConfig {
   ];
 
   static const List<Color> hairColors = [
-    Color(0xFF2B2320),
-    Color(0xFF4A2C1E),
-    Color(0xFF6B3A22),
-    Color(0xFF8C4B26),
-    Color(0xFFB5532A),
-    Color(0xFFC99A4B),
-    Color(0xFFEBC76A),
-    Color(0xFF9A9A9E),
-    Color(0xFFE3E1DA),
-    Color(0xFF8A2E28),
+    Color(0xFF2E2826),
+    Color(0xFF4B352B),
+    Color(0xFF6A4734),
+    Color(0xFF85573B),
+    Color(0xFF9C5D40),
+    Color(0xFFB8945E),
+    Color(0xFFD9BF86),
+    Color(0xFF9C9A9B),
+    Color(0xFFDEDBD3),
+    Color(0xFF7E3D37),
   ];
 
   static const List<Color> outfitColors = [
-    Color(0xFF2F4A8A),
-    Color(0xFF4A4E57),
-    Color(0xFF2A2A30),
-    Color(0xFFD09A55),
-    Color(0xFF8A9A3F),
-    Color(0xFF9A2F45),
-    Color(0xFF2F7A5A),
-    Color(0xFFF1E6CB),
-    Color(0xFFA58E7E),
-    Color(0xFF6FA0C8),
-    Color(0xFF8A4F8C),
-    Color(0xFFD9694B),
+    Color(0xFF3B4D78),
+    Color(0xFF565A63),
+    Color(0xFF34343B),
+    Color(0xFFC29B68),
+    Color(0xFF7F8A58),
+    Color(0xFF8A404E),
+    Color(0xFF44705D),
+    Color(0xFFEFE6D1),
+    Color(0xFFA39385),
+    Color(0xFF7F9DBB),
+    Color(0xFF7C5781),
+    Color(0xFFBF725C),
   ];
 
   /// 바지색(옷색과 같은 인덱스). palette.js의 `pants`와 같다.
   static const List<Color> pantsColors = [
-    Color(0xFFBCA982),
-    Color(0xFF5C7FA8),
-    Color(0xFF7A7F8C),
-    Color(0xFF3E4F7A),
-    Color(0xFFE2D8C0),
-    Color(0xFF4A5470),
-    Color(0xFFBCA982),
-    Color(0xFF6B86AE),
-    Color(0xFF3E4F7A),
-    Color(0xFFE2D8C0),
-    Color(0xFF8A8E98),
-    Color(0xFF3E4F7A),
+    Color(0xFFB9AB8F),
+    Color(0xFF6F86A3),
+    Color(0xFF80848F),
+    Color(0xFF4A587A),
+    Color(0xFFDDD5C3),
+    Color(0xFF555D74),
+    Color(0xFFB9AB8F),
+    Color(0xFF7388A6),
+    Color(0xFF4A587A),
+    Color(0xFFDDD5C3),
+    Color(0xFF8E9099),
+    Color(0xFF4A587A),
   ];
 
   /// 0 여성, 1 남성.

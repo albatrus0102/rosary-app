@@ -479,7 +479,7 @@
     function update(dt, me, cam) {
       if (!ready) return;
       var env = App.world && App.world.env, night = env && env.night ? env.night : 0;
-      var self = App.R.tier === 'high' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
+      var self = App.R.tier !== 'low' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
       mat.uniforms.uK.value = 0.92 * (1 - 0.62 * night); mat.uniforms.uSelfTone.value = self;
       mat.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
       nearT += dt;

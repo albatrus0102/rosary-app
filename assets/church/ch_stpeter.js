@@ -74,14 +74,20 @@
 
 
 
-      // 솔로몬식 꼬인 기둥(실제 꼬임 메쉬)
+      // 솔로몬식 꼬인 기둥(LOOK_DEV.md §3): 축 자체가 나선으로 감기고(3회전, 베르니니 발다키노처럼) 단면에 깊은 두 골이 같이 돈다.
+      // 아래 1/3 은 잔 홈(세로 홈이 함께 꼬임), 위 2/3 는 굵은 꼬임 + 골을 따라 금 잎사귀 알(넝쿨 장식 대용). 청동은 금속 배치(광택·환경 반사).
       function twistCol(x, z, y0, h, r, color) {
-        var rings = 26, seg = 16, lobes = 6, turns = 2.4, pos = [], idx = [], i, j;
+        var rings = 72, seg = 28, turns = 3, pos = [], idx = [], i, j, e = r * 0.2;
         for (i = 0; i <= rings; i++) {
-          var t = i / rings, y = y0 + h * t, taper = 1 - 0.1 * t;
+          var t = i / rings, y = y0 + h * t, taper = 1 - 0.12 * t, th = turns * PI * 2 * t;
+          var cx = x + Math.cos(th) * e * Math.min(1, t * 6) * Math.min(1, (1 - t) * 6), cz = z + Math.sin(th) * e * Math.min(1, t * 6) * Math.min(1, (1 - t) * 6);
+          var lower = t < 0.3 ? 1 - t / 0.3 : 0, up = 1 - lower;
           for (j = 0; j < seg; j++) {
-            var a = j / seg * PI * 2, rr = r * taper * (1 + 0.17 * Math.cos(lobes * (a - turns * PI * 2 * t)));
-            pos.push(x + Math.cos(a) * rr, y, z + Math.sin(a) * rr);
+            var a = j / seg * PI * 2;
+            var groove = Math.cos(2 * (a - th));                 // 두 골이 축과 같이 돈다
+            var flute = Math.cos(14 * (a - th * 0.5));          // 아래쪽 잔 홈
+            var rr = r * taper * (1 + up * 0.13 * groove + lower * (0.05 * groove + 0.035 * flute));
+            pos.push(cx + Math.cos(a) * rr, y, cz + Math.sin(a) * rr);
           }
         }
         for (i = 0; i < rings; i++) for (j = 0; j < seg; j++) {
@@ -91,7 +97,17 @@
         var g = new T.BufferGeometry();
         g.setAttribute('position', new T.BufferAttribute(new Float32Array(pos), 3));
         g.setIndex(idx); g.computeVertexNormals();
-        ctx.metalB.add(g, color, { flat: false, vary: 0.02, c2: ctx.shade(color, 1.6) });
+        ctx.metalB.add(g, color, { flat: false, vary: 0.02, c2: ctx.shade(color, 1.45) });
+        // 골을 따라 오르는 금 잎사귀 알(위 2/3, 회전마다 7개 × 두 골)
+        var leaf = Geo.ico ? Geo.ico(0) : null;
+        if (leaf) for (i = 0; i < turns * 7; i++) {
+          var tt = 0.32 + 0.64 * (i + 0.5) / (turns * 7), thh = turns * PI * 2 * tt;
+          for (var k = 0; k < 2; k++) {
+            var aa = thh + PI / 2 + k * PI, rl = r * (1 - 0.12 * tt) * 0.93;
+            var ccx = x + Math.cos(thh) * e, ccz = z + Math.sin(thh) * e;
+            ctx.metalB.add(leaf, k ? GOLD_D : GOLD, { x: ccx + Math.cos(aa) * rl, y: y0 + h * tt, z: ccz + Math.sin(aa) * rl, sx: 0.05, sy: 0.075, sz: 0.05, flat: true, vary: 0.05 });
+          }
+        }
       }
 
       // 가벼운 조각상(원뿔 옷 + 망토 + 머리). 정면 = ry 방향(atan2(nx,nz))

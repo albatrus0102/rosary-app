@@ -136,11 +136,28 @@ class _AppShellState extends State<AppShell> {
   /// 내비게이션(바/레일)의 테마. 성당 안에서는 장면 위 HUD 와 같은 어두운 금색([ChurchTheme])으로
   /// 바뀌어 밝은 내비게이션이 장면 아래에 따로 놀지 않게 하고, 다른 탭으로 가면 앱 테마로 돌아온다
   /// (M3 short4 로 부드럽게, '동작 줄이기'면 즉시).
-  Widget _navTheme(BuildContext context, Widget child) => AnimatedTheme(
-    data: _churchChrome ? ChurchTheme.of(context) : Theme.of(context),
-    duration: AppMotion.of(context, Durations.short4),
-    child: child,
-  );
+  Widget _navTheme(BuildContext context, Widget child) {
+    var data = Theme.of(context);
+    if (_churchChrome) {
+      // Theme.of 와 같은 방식으로 글꼴 기하를 입혀 두 테마 사이를 매끄럽게 보간할 수 있게 한다.
+      final church = ChurchTheme.of(context);
+      final script =
+          Localizations.of<MaterialLocalizations>(
+            context,
+            MaterialLocalizations,
+          )?.scriptCategory ??
+          ScriptCategory.englishLike;
+      data = ThemeData.localize(
+        church,
+        church.typography.geometryThemeFor(script),
+      );
+    }
+    return AnimatedTheme(
+      data: data,
+      duration: AppMotion.of(context, Durations.short4),
+      child: child,
+    );
+  }
 
   void _onSegment(GlassSegment s) {
     if (_inChurch && s != _segment) setState(() {});

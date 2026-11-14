@@ -64,8 +64,10 @@
     var builder = root.ChurchBuilders[id] || root.ChurchBuilders.basic;
     if (!root.ChurchBuilders[id]) id = 'basic';
     var layout = builder.layout || root.ChurchLayouts.get(id);
-    var tier = opts.quality === 'low' ? 'low' : 'high';
+    var tier = opts.quality === 'low' ? 'low' : (opts.quality === 'mid' ? 'mid' : 'high');
     var low = tier === 'low';
+    // 성당별 룩 프리셋(looks.js, LOOK_DEV.md): 조명 배율·톤·블룸·먼지
+    var look = root.ChurchLooks ? root.ChurchLooks.get(id) : null, lookV = {};
 
     var ctx = root.ChurchKit.createContext({ layout: layout, quality: low ? 'low' : 'high' });
     ctx.view = opts.view || null;   // 감상실(ch_glass) 매개변수: 창 크기·빛 상태(GlassView 가 소유)
@@ -128,7 +130,8 @@
     var skyCol = new Float32Array(skyGeo.attributes.position.count * 3);
     skyGeo.setAttribute('color', new T.BufferAttribute(skyCol, 3));
     var sky = new T.Mesh(skyGeo, new T.MeshBasicMaterial({ vertexColors: true, side: T.BackSide, fog: false, depthWrite: false }));
-    sky.renderOrder = -10; sky.frustumCulled = false;
+    // 하늘은 불투명 목록의 맨 마지막에 그린다(깊이 시험으로 가려진 화소는 건너뛴다: 실내에서는 거의 전부). 예전 -10(맨 먼저)은 매 패스 전 화면을 한 번 더 칠했다.
+    sky.renderOrder = 1000; sky.frustumCulled = false;
     scene.add(sky);
     var glowTex = ctx._getGlowTex();
     var sun = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xfff1c8, blending: T.AdditiveBlending, transparent: true, depthWrite: false, fog: false }));
@@ -243,7 +246,7 @@
     }
 
     // ---- 먼지 ----
-    var dustN = low ? 0 : 90, dustPos = new Float32Array(dustN * 3), dustSeed = [], drnd = G.rng(91);
+    var dustN = low ? 0 : (look ? look.dust : 90), dustPos = new Float32Array(dustN * 3), dustSeed = [], drnd = G.rng(91);
     for (i = 0; i < dustN; i++) {
       dustSeed.push([drnd() * 6.28, drnd() * 6.28, 0.2 + drnd() * 0.4]);
       dustPos[i * 3] = bnd.x0 * 0.7 + drnd() * (bnd.x1 - bnd.x0) * 0.7; dustPos[i * 3 + 1] = 1.2 + drnd() * 5; dustPos[i * 3 + 2] = bnd.z0 * 0.8 + drnd() * (bnd.z1 - bnd.z0) * 0.8;
@@ -322,7 +325,7 @@
       S.floors.forEach(function (f) {
         var r = new root.ThreeX.Reflector(new T.PlaneGeometry(f.x1 - f.x0, f.z1 - f.z0), { textureWidth: W, textureHeight: H, clipBias: 0.003, color: 0xffffff, shader: REFLECTOR_SHADER, multisample: 0 });
         r.material.transparent = true; r.material.depthWrite = false; r.material.polygonOffset = true; r.material.polygonOffsetFactor = -2; r.material.polygonOffsetUnits = -2;
-        r.material.uniforms.strength.value = f.strength;
+        r.material.uniforms.strength.value = f.strength * (look ? look.reflK : 1);
         r.rotation.x = -PI / 2; r.position.set((f.x0 + f.x1) / 2, f.y + 0.006, (f.z0 + f.z1) / 2); r.renderOrder = 2;
         r.userData.reflector = true;
         world.add(r); reflectors.push(r);
@@ -355,13 +358,27 @@
       cam.updateProjectionMatrix();
       dirLight.updateMatrixWorld(); target.updateMatrixWorld();
       dirLight.shadow.needsUpdate = true;
+      api.shadowDirty = true;   // render.js: 그림자 맵은 이때만 다시 그린다(해가 움직일 때, 5초마다·시간 바꿀 때)
     }
     var envTex = null;
+    var lkC = new T.Color();
+    // 룩 적용: 시간대 값에 곱하고 섞는다. 감상 모드(사진 창)에서는 적용하지 않는다(그때 env.grade 는 null).
+    function applyLook() {
+      env.grade = null; env.dustK = 1; env.dustNight = 0;
+      if (!look || api.viewMode) return;
+      var L = root.ChurchLooks.blend(look, env.night, lookV);
+      env.di *= L.keyK; if (L.keyTintK) env.dc.lerp(lkC.setHex(look.keyTint), L.keyTintK);
+      env.hi *= L.ambK; if (L.ambTintK) { env.hs.lerp(lkC.setHex(look.ambTint), L.ambTintK); env.hg.lerp(lkC, L.ambTintK * 0.5); }
+      env.exp *= L.expK; env.envK *= L.envK; env.lamp *= L.lampK; env.candle *= L.candleK; env.beam *= L.beamK;
+      if (L.fogTintK) env.fog.lerp(lkC.setHex(look.fogTint), L.fogTintK);
+      env.grade = L; env.dustK = L.dustK; env.dustNight = L.dustNight;
+    }
 
     function applyEnv() {
       sampleEnv(curHour, env);
       if (S.envOverride) { try { S.envOverride(env, curHour); } catch (e) { if (root.console) console.warn('[church] envOverride', e); } }
-      var hiT = tier === 'high';
+      applyLook();
+      var hiT = tier !== 'low';   // 후처리(톤·블룸)가 있는 단계
       hemi.color.copy(env.hs); hemi.groundColor.copy(env.hg); hemi.intensity = env.hi * (hiT ? 1 : 1.3);
       dirLight.color.copy(env.dc); dirLight.intensity = env.di * (hiT ? 1 : 0.35);
       fitShadow();
@@ -403,25 +420,26 @@
     var cb = S.cameraBounds || { x0: bnd.x0, x1: bnd.x1, z0: bnd.z0, z1: bnd.z1, yMax: 9 };
 
     var api = {
-      id: id, layout: layout, logic: logic, group: world, env: env, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
+      id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9 },
       reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
       setHour: function (h) { curHour = ((h % 24) + 24) % 24; applyEnv(); },
       // PMREM 환경 텍스처 연결
       setEnvironment: function (tex) { envTex = tex; scene.environment = tex; },
-      // 'high' | 'low' 전환: 그림자·반사·코팅 on/off
+      // 'high' | 'mid' | 'low' 전환: 그림자(high·mid)·바닥 반사(high)·코팅(high·mid)·먼지(high·mid) on/off
       setTier: function (t, renderer) {
-        tier = t === 'low' ? 'low' : 'high'; api.tier = tier;
-        var hi = tier === 'high';
+        tier = t === 'low' ? 'low' : (t === 'mid' ? 'mid' : 'high'); api.tier = tier;
+        var hi = tier !== 'low';
         dirLight.castShadow = hi && !api.viewMode;
-        if (hi && !api.viewMode) buildReflectors(renderer); else disposeReflectors();
+        if (tier === 'high' && !api.viewMode) buildReflectors(renderer); else disposeReflectors();
         for (var pm = 0; pm < S.physMats.length; pm++) {
           var p = S.physMats[pm];
           if (p.m.clearcoat !== undefined) { var want = hi ? p.cc : 0; if (p.m.clearcoat !== want) { p.m.clearcoat = want; p.m.needsUpdate = true; } }
           p.m.needsUpdate = true;
         }
         beamMat.needsUpdate = true;
+        api.shadowDirty = true;
         if (dust) dust.visible = hi && !api.viewMode;
         if (env && env.sunDir) applyEnv();
       },
@@ -429,10 +447,11 @@
       viewMode: false,
       setViewMode: function (on, renderer) {
         on = !!on; api.viewMode = on;
-        dirLight.castShadow = !on && tier === 'high';
+        dirLight.castShadow = !on && tier !== 'low';
         scene.fog = on ? null : sceneFog;
         if (on) disposeReflectors(); else if (tier === 'high') buildReflectors(renderer);
-        if (dust) dust.visible = !on && tier === 'high';
+        if (dust) dust.visible = !on && tier !== 'low';
+        api.shadowDirty = true;
         if (beamMesh) beamMesh.visible = !on;
         if (patchMesh) patchMesh.visible = !on;
         if (env && env.sunDir) applyEnv();
@@ -513,10 +532,10 @@
         candleLight.intensity = litCount ? cl : 0;
         if (bLight) bLight.intensity = (S.lights[0].intensity || 1) * 22 * (bLight.userData.k === undefined ? 1 : bLight.userData.k);
         var bk = 0.85 + 0.15 * Math.sin(clock * 0.6);
-        if (beamMesh) { beamMat.opacity = bk * (tier === 'high' ? 0.8 : 1); beamMesh.visible = !api.viewMode; }
-        if (patchMesh) patchMat.opacity = (tier === 'high' ? 0.7 : 1) * bk;
-        dust.material.opacity = api.viewMode ? 0 : env.beam * 0.7;
-        if (dustN && env.beam > 0.02) {
+        if (beamMesh) { beamMat.opacity = bk * (tier !== 'low' ? 0.8 : 1); beamMesh.visible = !api.viewMode; }
+        if (patchMesh) patchMat.opacity = (tier !== 'low' ? 0.7 : 1) * bk;
+        dust.material.opacity = api.viewMode ? 0 : Math.min(1, env.beam * 0.7 * (env.dustK || 1) + (env.dustNight || 0) * env.night);
+        if (dustN && dust.material.opacity > 0.02) {
           var arr = dustGeo.attributes.position.array;
           for (var d = 0; d < dustN; d++) {
             var sd2 = dustSeed[d];
