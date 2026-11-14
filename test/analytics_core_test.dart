@@ -481,6 +481,7 @@ void main() {
         'avatar_save',
         'church_gesture',
         'church_mode',
+        'church_prayer_choice',
         'church_report',
         'presence_sheet_open',
         'presence_toggle',

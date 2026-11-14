@@ -20,7 +20,7 @@
     return a || {};
   }
 
-  var METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setPrayerPosture', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap',
+  var METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setPrayerPosture', 'setRosary', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap',
     'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality',
     'emote', 'setSeatTaken', 'setChurch', 'walkTo', 'cancelWalk', 'tapAt',
     'viewWindow', 'endView', 'setViewLight', 'setViewTier', 'resetView',   // G1 창 감상(SPEC §22)

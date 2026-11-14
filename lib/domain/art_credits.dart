@@ -1,7 +1,10 @@
 // 번들된 성화(기도 배경·십자가의 길)의 출처 표시. 원자료: docs/ux/ART_REFERENCES.md.
-// 모두 Public domain(PD-Art) 또는 CC0 이라 표시 의무는 없지만 권장 문구를 앱 안에 둔다.
+// 기도 배경은 모두 Public domain(PD-Art) 또는 CC0 이라 표시 의무는 없지만 권장 문구를 앱 안에 둔다.
+// 십자가의 길은 성당마다 다른 연작(대체 성화)을 쓰고, CC BY 연작은 촬영자·라이선스 링크·변경 여부 표기가 의무다
+// (`stations_series.dart`, 원자료 data/stations_series.json).
 
 import 'stations_of_cross.dart';
+import 'stations_series.dart';
 
 /// 그림 한 점의 출처 표시.
 class ArtCredit {
@@ -119,9 +122,12 @@ const List<ArtCredit> mysteryArtCredits = [
   ),
 ];
 
-/// 십자가의 길 14처(한 화가의 한 연작): 묵상 시트·성당 안 14처 판·고통의 신비 3·4·5단 배경.
+/// 십자가의 길 그림 연작 전부(성당별 대체 성화). 출처 화면이 연작마다 작가·촬영자·라이선스·변경 여부를 적는다.
+const List<StationsSeries> stationsSeriesCredits = StationsSeriesCatalog.all;
+
+/// 기본 연작(푸겔): 성당 밖 묵상 시트·고통의 신비 3·4·5단 배경.
 const ArtCredit stationsArtCredit = ArtCredit(
-  use: '십자가의 길 14처',
+  use: '십자가의 길 14처(기본 연작)',
   credit: StationsOfCross.artCredit,
   license: 'Public domain',
 );

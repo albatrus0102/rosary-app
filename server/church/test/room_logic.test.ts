@@ -575,6 +575,75 @@ test('pray k: 무릎 꿇고 기도(k:1)는 기도 중에만 전파·저장되고
   assert.equal(h.msgs(a, 'error').length, 6);
 });
 
+test('pray r: 묵주를 들고 기도(r:1)는 기도 중에만 전파·저장되고(PeerView 는 ro), 값은 0|1 만 허용', () => {
+  const h = new Harness();
+  const a = h.join(1);
+  const b = h.join(2);
+  h.walkTo(a, -3.2, 12.9);
+  h.send(a, { t: 'sit', seat: 'L11-0' });
+  h.clear();
+  // 묵주기도 → 주변에 r:1, 상태에 ro=1
+  h.send(a, { t: 'pray', on: true, ms: 1, r: 1 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: true, ms: 1, r: 1 }]);
+  assert.equal(h.logic.getPeer(a)!.ro, 1);
+  // 나중에 들어온 사람의 welcome: ro:1 이고, r 은 여전히 방향(숫자)
+  const c = h.join(3);
+  const pv = (h.msgs(c, 'welcome')[0].peers as Message[]).find((p) => p.id === h.uuid(1))!;
+  assert.equal(pv.st, 'p');
+  assert.equal(pv.ro, 1);
+  assert.equal(typeof pv.r, 'number');
+  assert.equal(pv.k, undefined);
+  // 스냅샷 복원에도 유지(기도 중일 때만)
+  const h2 = new Harness();
+  assert.ok(h2.logic.restorePeer('r1', pv as never));
+  assert.equal(h2.logic.getPeer('r1')!.ro, 1);
+  const h3 = new Harness();
+  assert.ok(h3.logic.restorePeer('r2', { ...pv, st: 's', ms: -1 } as never));
+  assert.equal(h3.logic.getPeer('r2')!.ro ?? 0, 0);
+  // 무릎 꿇기(k)와 함께 쓸 수 있다
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: true, ms: 1, k: 1, r: 1 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: true, ms: 1, k: 1, r: 1 }]);
+  // r 생략 또는 0 이면 필드가 사라진다(묵주 없음)
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: true, ms: 1, r: 0 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: true, ms: 1 }]);
+  assert.equal(h.logic.getPeer(a)!.ro ?? 0, 0);
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: true, ms: 1 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: true, ms: 1 }]);
+  // 기도를 멈추면(on:false) r:1 을 같이 보내도 0
+  h.t += 300;
+  h.send(a, { t: 'pray', on: true, ms: 1, r: 1 });
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: false, ms: -1, r: 1 });
+  assert.deepEqual(h.msgs(b), [{ t: 'praying', id: h.uuid(1), on: false, ms: -1 }]);
+  assert.equal(h.logic.getPeer(a)!.ro ?? 0, 0);
+  // 일어나면 0
+  h.t += 300;
+  h.send(a, { t: 'pray', on: true, ms: 1, r: 1 });
+  assert.equal(h.logic.getPeer(a)!.ro, 1);
+  h.send(a, { t: 'stand' });
+  assert.equal(h.logic.getPeer(a)!.ro ?? 0, 0);
+  // 서 있을 때의 pray 는 무시된다(묵주도 전파되지 않는다)
+  h.t += 300;
+  h.clear();
+  h.send(a, { t: 'pray', on: true, ms: 1, r: 1 });
+  assert.equal(h.msgs(b).length, 0);
+  // 잘못된 r 은 bad_msg
+  h.t += 1500;
+  h.clear();
+  for (const bad of [2, -1, 0.5, '1', true, null]) {
+    h.t += 300;
+    h.send(a, { t: 'pray', on: true, ms: 1, r: bad });
+  }
+  assert.equal(h.msgs(a, 'error').length, 6);
+});
+
 test('pray: 앉았을 때만, ms 범위 검증, st 전이', () => {
   const h = new Harness();
   const a = h.join(1);

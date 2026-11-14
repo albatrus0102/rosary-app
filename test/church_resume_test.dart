@@ -723,6 +723,7 @@ void main() {
       final args = fresh.lastArgs('restore')!;
       expect(args['seat'], 'L03-2');
       expect(args['posture'], 'kneel');
+      expect(args['rosary'], 1, reason: '묵주기도 중이었으니 묵주를 든 채로 복원');
       expect(args['x'], -5.2);
       expect(args['cy'], 0.4);
       expect(args['cp'], 0.35);

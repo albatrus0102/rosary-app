@@ -16,6 +16,8 @@ import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/glass/glass_catalog.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
+import 'package:rosary_app/domain/stations_series.dart';
+import 'package:rosary_app/ui/art_credits_screen.dart';
 import 'package:rosary_app/ui/home_screen.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
 import 'package:rosary_app/ui/stations_sheet.dart';
@@ -222,6 +224,68 @@ void main() {
       await t.tap(find.byKey(const ValueKey('stations-next')));
       await _settle(t);
       await _shot(t, 'sheet_closing_$tag');
+    });
+  }
+
+  // 그림 연작(대체 성화): 연작마다 묵상 시트(밝게/어둡게/글자 2배) + 목록 + 출처 화면
+  for (final series in StationsSeriesCatalog.all) {
+    for (final (tag, b, scale) in variants) {
+      testWidgets('series sheet ${series.id} $tag', (t) async {
+        _view(t, size);
+        await t.pumpWidget(
+          _host(
+            _opener(
+              (c) => showStationsSheet(
+                c,
+                start: 4,
+                series: series,
+                mode: StationsSheetMode.pilgrimage,
+              ),
+            ),
+            b: b,
+            scale: scale,
+          ),
+        );
+        await t.tap(find.text('open'));
+        await _settle(t);
+        await _shot(t, 'series_${series.id}_sheet4_$tag');
+        await t.drag(
+          find.byKey(const ValueKey('stations-scroll')),
+          const Offset(0, -900),
+        );
+        await _settle(t, 2);
+        await _shot(t, 'series_${series.id}_sheet4_credit_$tag');
+      });
+    }
+  }
+
+  testWidgets('series list (last church = milan)', (t) async {
+    _view(t, size);
+    await t.pumpWidget(
+      _host(
+        StationsOfCrossScreen(series: StationsSeriesCatalog.forChurch('milan')),
+        b: Brightness.light,
+      ),
+    );
+    await _settle(t);
+    await _shot(t, 'series_list_milan_light');
+    await t.drag(find.byType(CustomScrollView), const Offset(0, -1400));
+    await _settle(t, 2);
+    await _shot(t, 'series_list_milan_bottom_light');
+  });
+
+  for (final (tag, b, scale) in variants) {
+    testWidgets('art credits $tag', (t) async {
+      _view(t, size);
+      await t.pumpWidget(_host(const ArtCreditsScreen(), b: b, scale: scale));
+      await _settle(t, 2);
+      await _shot(t, 'credits_top_$tag');
+      await t.drag(find.byType(CustomScrollView), const Offset(0, -520));
+      await _settle(t, 2);
+      await _shot(t, 'credits_series_$tag');
+      await t.drag(find.byType(CustomScrollView), const Offset(0, -620));
+      await _settle(t, 2);
+      await _shot(t, 'credits_series2_$tag');
     });
   }
 

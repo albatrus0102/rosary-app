@@ -40,5 +40,52 @@
 3. 전승의 처(3·4·6·7·9) 서술 방식, 12처의 '잠시 침묵' 안내, 13처 '전승은 … 전합니다' 표현.
 4. 묵상 분량(지금 2문장 + 청원 1줄)이 적당한가, 더 짧게 또는 길게.
 
-## 그림
+## 그림 — 성당마다 다른 연작(대체 성화, 2026-11-14)
+
+**원칙(사용자 결정 "다른 데 걸 넣고 밝혀 놓자")**: 각 성당에 실제로 걸린 14처는 쓸 수 없다(대부분 작품을 확인하지 못했고 현대 저작물이다). 그래서 저작권이 끝난 여러 시대의 14처 연작을 성당마다 나눠 걸고, **그 성당에 실제로 걸린 작품이 아니라는 것을 앱 안에서 밝힌다.**
+
+- 밝히는 곳: (1) 묵상 시트 맨 아래 출처 줄(작가·연도·소장처·촬영자·라이선스·변경) + 안내 한 줄 「이 그림은 이 성당에 실제로 걸린 작품이 아니라 로사리움이 고른 대체 성화입니다.」(푸겔을 쓰는 성당도 같다), (2) 더보기 → 십자가의 길 목록 아래 같은 두 줄(성당 밖에서는 마지막으로 들른 성당의 연작, 처음이면 푸겔), (3) 더보기 → 성화 출처: 연작마다 카드(작가·사망 연도·소장처·촬영자·라이선스와 주소·출처 주소·변경·쓰는 성당, CC BY 연작은 파일별 원본 주소 14개).
+- 묵상 문구(위 표)는 연작과 무관하게 공통이다.
+- 원자료 `data/stations_series.json`(연작·파일 URL·라이선스·성당 id → 연작 배정) 한 파일. 고친 뒤:
+  1. `python3 tools/stations/fetch_series.py` — 원본을 `art/stations_series/<연작>/raw/` 로 받는다(번들 밖, `.gitignore`). Commons 파일은 설명 원문의 라이선스 틀을 확인하고 다르면 멈춘다.
+  2. `python3 tools/stations/build_series.py` — 장면을 잘라(`prepared/`, `contact.jpg` 로 눈으로 확인) `assets/images/stations/<연작>/station_NN.webp`(가로 600px 이하, 장당 ≤26KB)와 `assets/church/cross_pack_<연작>.js`(7×2칸 아틀라스, 비율 유지)를 만든다.
+  3. `python3 tools/stations/build_stations.py` — `lib/domain/stations_series_data.dart` 와 `assets/church/cross_data.js`(성당별 연작)를 만든다. 라이선스가 허용 목록(PD/CC0/CC-BY)이 아니면 거부한다.
+- 시험: `flutter test test/stations_series_test.dart`(배정·14장·라이선스 허용 목록·CC BY 표기·시트 안내·글자 2배·출처 화면), `node --test tools/church_web/way_cross.test.mjs`(성당별 아틀라스 로드·폴백·해제).
+
+### 성당별 배정
+| 성당 | 연작 | 라이선스 | 사진·스캔 | 권리 확인 |
+|---|---|---|---|---|
+| 우리 본당(가상) (`basic`) | 게프하르트 푸겔 〈십자가의 길〉, 1921 | Public domain | Andreas Praefcke | 확인 |
+| 성 베드로 대성전 (`stpeter`) | 가에타노 프레비아티 〈십자가의 길〉, 1901–02 | CC BY 3.0 | Sailko | 출시 전 확인 |
+| 라테라노 성 요한 대성전 (`lateran`) | 《가톨릭 진리의 아름다운 진주》 십자가의 길 삽화, 1897 | Public domain | University of California Libraries 스캔(Internet Archive) | 확인 |
+| 성 마리아 마조레 대성전 (`maggiore`) | 장바티스트 카미유 코로 〈로즈니 성당 십자가의 길〉, 1853–59 | Public domain (PD-Art) | 미확인(도판 복제, Commons 출처 amolenuvolette.it) | 확인 |
+| 성 밖의 성 바오로 대성전 (`stpaul`) | 게프하르트 푸겔 〈십자가의 길〉, 1921 | Public domain | Andreas Praefcke | 확인 |
+| 밀라노 대성당 (`milan`) | 헤르만 폴 〈Via Crucis〉, 1929 | CC0 1.0 | Uto | 확인 |
+| 피렌체 대성당 (`florence`) | D. 모슬러 《The Stations of the Cross》 삽화, 1859 | Public domain | Google Books 스캔(Internet Archive 사본) | 확인 |
+| 명동대성당 (`myeongdong`) | 게프하르트 푸겔 〈십자가의 길〉, 1921 | Public domain | Andreas Praefcke | 확인 |
+
+### 연작
+| id | 연작 | 작가 | 연도 | 사진·스캔 | 라이선스 | 변경 | 용량(그림 14장 + 아틀라스) | 권리 확인 |
+|---|---|---|---|---|---|---|---|---|
+| `fugel` | 게프하르트 푸겔 〈십자가의 길〉 | 게프하르트 푸겔(†1939) | 1921 | Andreas Praefcke | Public domain | 가장자리를 자르고 크기를 줄임 | 443KB + 105KB | 확인 |
+| `previati` | 가에타노 프레비아티 〈십자가의 길〉 | 가에타노 프레비아티(†1920) | 1901–02 | Sailko | CC BY 3.0 | 액자를 잘라 내고 크기를 줄임 | 349KB + 82KB | 출시 전 확인 |
+| `oreilly` | 《가톨릭 진리의 아름다운 진주》 십자가의 길 삽화 | 작가 미상(American Lithographic Co. 인쇄)(생몰년 미확인) | 1897 | University of California Libraries 스캔(Internet Archive) | Public domain | 책장의 제목·여백을 잘라 내고 크기를 줄임 | 351KB + 81KB | 확인 |
+| `corot` | 장바티스트 카미유 코로 〈로즈니 성당 십자가의 길〉 | 장바티스트 카미유 코로(†1875) | 1853–59 | 미확인(도판 복제, Commons 출처 amolenuvolette.it) | Public domain (PD-Art) | 크기를 줄임 | 339KB + 84KB | 확인 |
+| `hermann_paul` | 헤르만 폴 〈Via Crucis〉 | 르네 조르주 헤르만 폴(†1940) | 1929 | Uto | CC0 1.0 | 책장 여백을 잘라 내고 크기를 줄임 | 350KB + 87KB | 확인 |
+| `mosler` | D. 모슬러 《The Stations of the Cross》 삽화 | D. 모슬러(생몰년 미확인) | 1859 | Google Books 스캔(Internet Archive 사본) | Public domain | 책장에서 삽화만 잘라 내고 크기를 줄임 | 355KB + 115KB | 확인 |
+
+새 연작 5개의 번들 증가분은 **2.25MB**(그림 70장 + 아틀라스 5장). 파일별 원본 주소는 `docs/church/licenses/art_stations_series.md`.
+
+- 처 매핑은 그림을 눈으로 보고 정했다. 프레비아티: Commons 파일명 번호 11~24 가 1~14처이고, 번호가 겹치는 `22 gesù inchiodato` = 11처(못 박히심), `22 crocifissione` = 12처(돌아가심). 1처는 '가시관을 쓰신 예수(Ecce Homo)' 장면이다. 헤르만 폴: Commons 파일 `Via_Crucis_03`~`16` 이 1~14처(01·02 는 표지, 17·18 은 간기). 코로: 첫 장에서 잘라 낸 6점이 1~6처, 둘째 장 8점이 7~14처. 1897년 석판화: Internet Archive 책장 n18·19·22·23·26·27·30·31·34·35·38·39·42·43. 모슬러: PDF 7·9·…·33쪽.
+- 가로로 긴 연작(코로 1.36:1, 모슬러·헤르만 폴 약 1:1)은 성당 판의 세로 액자 안에 비율을 지켜 넣고 위아래를 짙은 나무색으로 둔다. 묵상 시트에서는 비율대로 다 보인다.
+
+### 위험·출시 전 확인
+1. **프레비아티 — 바티칸 박물관 이용 규정 미확인.** 원작은 퍼블릭 도메인(1920 사망)이고 사진은 Sailko 의 CC BY 3.0 이지만, 바티칸 박물관 소장품 촬영물의 상업적 이용에 박물관 자체 규정이 있는지 확인하지 못했다. 출시 전 확인(`docs/BACKLOG.md`). 안 되면 `assignments.stpeter` 를 `oreilly` 나 `fugel` 로 바꾸고 생성기를 다시 돌리면 된다(그림 파일은 `assets/images/stations/previati/`, `cross_pack_previati.js`, pubspec 한 줄을 지운다).
+2. **CC BY 표기 필수(프레비아티).** 촬영자(Sailko)·라이선스 이름과 주소·원본 주소·변경 여부(액자를 잘라 내고 크기를 줄임)를 묵상 시트 출처 줄과 성화 출처 화면에 적었다. 이 표기를 지우면 라이선스 위반이다(시험이 확인).
+3. **코로 도판의 촬영자 미확인.** Commons 는 평면 작품의 충실한 복제(PD-Art)로 표시한다. 원본이 770px 인데 위키미디어가 원본 내려받기를 막아(429) 500px 섬네일로 받았다 — 다음에 원본으로 다시 받을 수 있다(`fetch_width`).
+4. **1897년 석판화·모슬러 삽화의 작가 정보 미확인**(삽화가 이름 없음 / D. Mosler 생몰년 미확인). 발행 연도(1897 미국, 1859 영국)로 퍼블릭 도메인으로 본다.
+5. **쓰지 못한 후보**: 너새니얼 커리어 석판화(1847) — 소장기관(omeka) 개별 이미지 라이선스를 확인하지 못해 쓰지 않음 → 라테라노는 1897년 다색 석판화로 대체; 푸겔 뮌헨 연작(1904–08) — Commons 에서 14점이 모인 파일을 찾지 못함 → 성 바오로는 푸겔 1921 연작 유지; 제임스 베일리 석판화(1845, LoC 99401399) — 내려받아 확인함(No known restrictions). 한 장에 작은 장면 14개라 해상도·비율이 낮아 예비로만 둠.
+6. 성당 3D 가 연작 아틀라스를 못 읽으면 푸겔 판으로 물러나는데, 그때도 묵상 시트는 배정된 연작 그림을 보여 준다(번들 파일이라 실제로는 일어나지 않는다).
+
+### 기본 연작(푸겔)
 게프하르트 푸겔, 〈십자가의 길〉, 1921, 바트 자울가우 성 안토니오 성당. 사진 Andreas Praefcke. Public domain(Wikimedia Commons). 번들 파일 `assets/images/stations/station_NN.webp`(가로 600px), 성당 3D 아틀라스 `assets/church/cross_pack.js`. 원본 `art/images_unused/station_NN.jpg`, 다시 만들기 `python3 tools/stations/build_art.py`.

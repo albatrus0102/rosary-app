@@ -10,6 +10,7 @@ import '../app/theme.dart';
 import '../auth/account_screen.dart';
 import '../auth/legal_screen.dart';
 import '../auth/legal_texts.dart';
+import '../domain/stations_series.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_licenses_screen.dart';
 import 'art_credits_screen.dart';
@@ -94,7 +95,12 @@ class MoreScreen extends StatelessWidget {
                             settings: const RouteSettings(
                               name: StationsOfCrossScreen.routeName,
                             ),
-                            builder: (_) => const StationsOfCrossScreen(),
+                            // 성당 밖: 마지막으로 들른 성당의 그림 연작(대체 성화)
+                            builder: (_) => StationsOfCrossScreen(
+                              series: StationsSeriesCatalog.forChurch(
+                                settings.churchId,
+                              ),
+                            ),
                           ),
                         ),
                       ),

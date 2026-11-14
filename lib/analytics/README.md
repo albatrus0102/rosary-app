@@ -183,6 +183,7 @@ diagnostics: `glass_load{win,tier(t1/t2/t3/tile),ms,ok}`, `glass_mem{tex_mb,budg
 | `church_enter` | `church`, `online`(bool) | `ChurchScreen` 초기화에서 `ChurchNet` 연결 방식이 정해진 뒤. 솔로(`SoloChurchNet`)면 `online: false`. |
 | `church_exit` | `church`, `seconds`(머문 시간), `sat_seconds`(앉아 있던 시간) | `ChurchScreen.dispose`(= '성당 바꾸기'로 나갈 때). 다른 탭·다른 화면·백그라운드로 가는 것은 퇴장이 아니며(돌아오면 그 자리 그대로, `church_enter` 를 새로 기록하지 않음), 보이지 않던 시간은 `seconds`·`sat_seconds` 에서 뺀다. |
 | `church_sit` | `church` | 좌석에 앉는 동작이 성공한 지점. |
+| `church_prayer_choice` | `church`, `kind`(`brief`\|`rosary`) | `church_screen.dart`의 `_onPrayChoice`(제대 앞 '기도하기' 시트에서 항목을 고른 순간). **고른 신비·기도 내용은 넘기지 않는다.** |
 | `church_candle` | `church` | `church_candle_sheet.dart`에서 촛불을 켠 순간. **지향(intention) 값은 절대 넘기지 않는다**(넘겨도 허용 목록 밖이라 버려진다). |
 | `avatar_save` | (없음) | 아바타 편집기 저장 버튼 콜백. |
 | `presence_sheet_open` | `church`, `online`(bool) | `church_presence_sheet.dart`의 `showChurchPresenceSheet`(칩의 성당 이름·인원을 눌러 '지금 접속 중' 시트를 연 순간). |

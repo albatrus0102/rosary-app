@@ -1,5 +1,6 @@
 /* cross_data.js — 생성 파일(직접 고치지 말 것). 원본 data/stations_of_cross.json,
-   python3 tools/stations/build_stations.py. 성당 3D 14처 판(way_cross.js)이 번호·로마 숫자를 쓴다. */
+   data/stations_series.json, python3 tools/stations/build_stations.py.
+   성당 3D 14처 판(way_cross.js)이 번호·로마 숫자와 성당별 그림 연작(series)을 쓴다. */
 (function (root) {
   'use strict';
   var D = {
@@ -89,7 +90,46 @@
    "short": "무덤에 묻히심",
    "title": "예수님께서 무덤에 묻히심"
   }
- ]
+ ],
+ "series": {
+  "default": "fugel",
+  "churches": {
+   "basic": "fugel",
+   "stpeter": "previati",
+   "lateran": "oreilly",
+   "maggiore": "corot",
+   "stpaul": "fugel",
+   "milan": "hermann_paul",
+   "florence": "mosler",
+   "myeongdong": "fugel"
+  },
+  "packs": {
+   "fugel": {
+    "file": "cross_pack.js",
+    "title": "게프하르트 푸겔 〈십자가의 길〉"
+   },
+   "previati": {
+    "file": "cross_pack_previati.js",
+    "title": "가에타노 프레비아티 〈십자가의 길〉"
+   },
+   "oreilly": {
+    "file": "cross_pack_oreilly.js",
+    "title": "《가톨릭 진리의 아름다운 진주》 십자가의 길 삽화"
+   },
+   "corot": {
+    "file": "cross_pack_corot.js",
+    "title": "장바티스트 카미유 코로 〈로즈니 성당 십자가의 길〉"
+   },
+   "hermann_paul": {
+    "file": "cross_pack_hermann_paul.js",
+    "title": "헤르만 폴 〈Via Crucis〉"
+   },
+   "mosler": {
+    "file": "cross_pack_mosler.js",
+    "title": "D. 모슬러 《The Stations of the Cross》 삽화"
+   }
+  }
+ }
 };
   if (typeof module === 'object' && module.exports) module.exports = D;
   else root.ChurchCrossData = D;

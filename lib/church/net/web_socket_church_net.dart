@@ -345,8 +345,12 @@ class WebSocketChurchNet implements ChurchNet {
   void sendStand() => _raw(standMessage());
 
   @override
-  void sendPraying(bool on, int ms, {bool kneel = false}) =>
-      _raw(prayMessage(on, ms, kneel: kneel));
+  void sendPraying(
+    bool on,
+    int ms, {
+    bool kneel = false,
+    bool rosary = false,
+  }) => _raw(prayMessage(on, ms, kneel: kneel, rosary: rosary));
 
   @override
   void lightCandle(int slot, int intention) =>

@@ -7,6 +7,7 @@
      세례명(cfg.name)은 통합 목록 인덱스(cfg.nv = 2). nv 없는 옛 설정은 setConfig 의 normalizeCfg 가 옮긴다(g 도 없으면 성별을 유추).
    - 공개 API(변경 없음): new Avatar(cfg, {showTag, self}), root, setConfig, setLod(0|1|2), lod, setWalk, setSeated, setPray, playEmote(0 인사|1 성호|2 절),
      setPose(x,y,z,yaw), snapPose(), update(dt,t), nod/nodPh, seatLift, ChurchAvatar.tagMaterial/HEIGHT.
+     setRosary(bool): 손에 묵주를 든다(SPEC §32). 지오메트리 1개를 모든 아바타가 함께 쓰고(재질은 far 재사용), 든 아바타마다 draw call +1. 원거리(LOD2)에서는 그리지 않는다.
    좌표: 앞 = -z, 위 = +y, +x = 아바타의 오른쪽. 휴식 자세(팔이 아래로 늘어진 자세)로 모델링하고 뼈 회전으로 포즈를 만든다. */
 (function (root) {
   'use strict';
@@ -801,6 +802,55 @@
     out.setFromRotationMatrix(_m);
   }
 
+  // ------------------------------------------------------------------ 묵주(손에 든 것, SPEC §32)
+  // 원점 = 손에 쥔 곳. 구슬 고리가 -y 로 늘어지고(XY 평면), 그 아래에 구슬 3알과 십자가가 달린다. 새 에셋 없이 지오메트리 1개로 만든다.
+  var ROSARY = { BEADS: 30, DROP: 0.15, HALF_W: 0.036, R: 0.0052, R_BIG: 0.0068, TAIL: 3, TAIL_GAP: 0.0118, CROSS_H: 0.040, CROSS_W: 0.024, CROSS_T: 0.007, PALM: 0.055, RAIL_DZ: 0.11, RAIL_DY: 0.03, FADE: 8, LEN: 0, TRIS: 0 };
+  ROSARY.LEN = ROSARY.DROP + ROSARY.R_BIG * 2 + ROSARY.TAIL * ROSARY.TAIL_GAP + 0.004 + ROSARY.CROSS_H;
+  var rosaryGeo = null;
+  function rosaryLoop(n) {   // 물방울 모양 고리 위에 같은 간격으로 놓은 n 개의 점 [x, y]
+    var M = 240, pts = [], len = [0], i, a, k;
+    for (i = 0; i <= M; i++) { a = TAU * i / M; k = (1 - Math.cos(a)) / 2; pts.push([ROSARY.HALF_W * Math.sin(a) * (0.5 + 0.5 * k), -ROSARY.DROP * k]); }
+    for (i = 1; i <= M; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    var out = [], j = 1;
+    for (i = 0; i < n; i++) {
+      var d = len[M] * (i + 0.5) / n;
+      while (j < M && len[j] < d) j++;
+      var f = (d - len[j - 1]) / ((len[j] - len[j - 1]) || 1);
+      out.push([lerp(pts[j - 1][0], pts[j][0], f), lerp(pts[j - 1][1], pts[j][1], f)]);
+    }
+    return out;
+  }
+  function getRosaryGeo() {
+    if (rosaryGeo) return rosaryGeo;
+    var pos = [], nor = [], col = [], wood = lin(0x6b4226), gold = lin(0xc9a04a), i;
+    function add(g, x, y, z, c) {
+      if (g.index) g = g.toNonIndexed();
+      var p = g.attributes.position.array, nn = g.attributes.normal.array;
+      for (var q = 0; q < p.length; q += 3) { pos.push(p[q] + x, p[q + 1] + y, p[q + 2] + z); nor.push(nn[q], nn[q + 1], nn[q + 2]); col.push(c[0], c[1], c[2]); }
+    }
+    var small = new T.OctahedronGeometry(ROSARY.R, 1), big = new T.OctahedronGeometry(ROSARY.R_BIG, 1);
+    var loop = rosaryLoop(ROSARY.BEADS), mid = ROSARY.BEADS / 2;
+    for (i = 0; i < loop.length; i++) {   // 고리 맨 아래(가운데 메달 자리)와 여섯째 알마다 큰 알
+      var isBig = (i % 6) === 5 && i !== mid - 1;
+      add(isBig ? big : small, loop[i][0], loop[i][1], 0, isBig ? gold : wood);
+    }
+    var y = -ROSARY.DROP - ROSARY.R_BIG;
+    add(big, 0, y, 0, gold);
+    y -= ROSARY.R_BIG;
+    for (i = 0; i < ROSARY.TAIL; i++) { y -= ROSARY.TAIL_GAP; add(small, 0, y + ROSARY.TAIL_GAP / 2, 0, wood); }
+    y -= 0.004;
+    add(new T.BoxGeometry(ROSARY.CROSS_T, ROSARY.CROSS_H, 0.005), 0, y - ROSARY.CROSS_H / 2, 0, gold);
+    add(new T.BoxGeometry(ROSARY.CROSS_W, ROSARY.CROSS_T, 0.005), 0, y - ROSARY.CROSS_H * 0.32, 0, gold);
+    var g = new T.BufferGeometry();
+    g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new T.Float32BufferAttribute(nor, 3));
+    g.setAttribute('color', new T.Float32BufferAttribute(col, 3));
+    g.computeBoundingSphere();
+    ROSARY.TRIS = pos.length / 9;
+    rosaryGeo = g;
+    return g;
+  }
+
   // ------------------------------------------------------------------ 아바타
   var EMOTE_DUR = [2.4, 3.4, 1.7];
   // 성호 경로(오른손, 가슴 로컬): 이마 → 가슴 → 왼어깨 → 오른어깨. [손목 x,y,z, 손가락 F(x,y,z), 손바닥 N(x,y,z)]
@@ -829,6 +879,7 @@
     this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
     this.kneelTarget = 0; this.kneelLin = 0; this.kneelAmt = 0; this.kneelFwd = 0; this.kneelY = 0; this.kneelRail = 0;
     this.emote = -1; this.emoteT = 0; this.nod = false; this.nodPh = Math.random() * 6;
+    this.rosary = null; this.rosaryTarget = 0; this.rosaryAmt = 0;
     this.off = Math.random() * 6.28;
     this.cfg = null; this.key = '';
     this.lod = -1;
@@ -934,9 +985,18 @@
   };
   // 지금 몸(골반)이 좌석 중심에서 앞으로 나가 있는 거리(m). 카메라·이름표가 따라간다.
   Avatar.prototype.kneelOffset = function () { return this.kneelAmt * this.sitAmt * this.kneelFwd; };
+  // 묵주를 든다/내려놓는다(SPEC §32). 처음 들 때 메시를 만든다(지오메트리·재질 공유). 손 위치는 update 가 매 프레임 맞춘다.
+  Avatar.prototype.setRosary = function (b) {
+    this.rosaryTarget = b ? 1 : 0;
+    if (b && !this.rosary) {
+      var m = new T.Mesh(getRosaryGeo(), getMats().far);
+      m.castShadow = false; m.receiveShadow = false; m.frustumCulled = false; m.visible = false; m.userData.rosary = true;
+      this.body.add(m); this.rosary = m;
+    }
+  };
   Avatar.prototype.playEmote = function (e) { this.emote = e | 0; this.emoteT = 0; };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
-  Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; };
+  Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; };
   var KNEEL_DUR = 0.7, KNEEL_THIGH = 0.12, KNEEL_KNEE_R = 0.075, KNEEL_DEFAULT = { fwd: 1.22, y: 0.145, rail: true };
   // 무릎 꿇은 자세의 다리 각도와 관절 위치(순수 계산, 시험용으로도 공개). y = 무릎 받침 윗면 높이.
   // 반환: t1 허벅지, t2 종아리(허벅지 기준), hipY 고관절 높이, kneeY 무릎 관절 높이, hipBack 무릎에서 고관절까지 뒤로(m), shinBack 무릎에서 발목까지 뒤로(m)
@@ -954,6 +1014,7 @@
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
     this.sitAmt += (this.sitTarget - this.sitAmt) * Math.min(1, dt * 7);
     this.prayAmt += (this.prayTarget - this.prayAmt) * Math.min(1, dt * 5);
+    this.rosaryAmt += (this.rosaryTarget - this.rosaryAmt) * Math.min(1, dt * ROSARY.FADE);
     var kl = this.kneelLin, kt = this.kneelTarget;
     if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / KNEEL_DUR; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
     var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa, ka = this.kneelAmt * sa;
@@ -1108,11 +1169,37 @@
     }
     this.shadow.position.y = 0.03;
     this.shadow.position.z = hipZ - SEAT_BACK * sa;
+    // ---- 묵주: 쥔 손(오른손; 손을 모으면 두 손바닥 사이)에서 아래로 늘어진다 ----
+    var ro = this.rosary;
+    if (ro) {
+      var ra = this.rosaryAmt;
+      if (ra < 0.02 || this.lod !== 0) ro.visible = false;   // 가까운 아바타(LOD0)만 그린다
+      else {
+        var hR = bs[B.haR];
+        hR.updateWorldMatrix(true, false);
+        _v.set(0, -ROSARY.PALM, 0).applyMatrix4(hR.matrixWorld);
+        if (pa > 0.001) {
+          var hL = bs[B.haL];
+          hL.updateWorldMatrix(true, false);
+          _x.set(0, -ROSARY.PALM, 0).applyMatrix4(hL.matrixWorld);
+          _v.lerp(_x, 0.5 * pa);
+        }
+        this.body.worldToLocal(_v);
+        // 무릎 꿇고 앞 등받이 윗단에 손을 얹었으면, 묵주는 등받이 뒷면(내 쪽)과 몸 사이로 늘어진다(등받이를 뚫지 않게).
+        var rr = pa * ka * this.kneelRail;
+        ro.position.set(_v.x, _v.y - ROSARY.RAIL_DY * rr, _v.z + ROSARY.RAIL_DZ * rr);
+        // 서 있을 때는 고리가 몸 옆면과 나란하게(다리에 파묻히지 않게), 앉아 손을 모으면 정면을 보게 돌린다. 걸을 때는 조금 흔들린다.
+        ro.rotation.set(0.22 * w * Math.sin(ph), (1 - sa) * PI / 2, 0.03 * Math.sin(t * 1.3 + this.off));
+        ro.scale.setScalar(ra > 0.98 ? 1 : ra);
+        ro.visible = true;
+      }
+    }
   };
 
   root.ChurchAvatar = {
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
+    ROSARY: ROSARY, rosaryGeometry: getRosaryGeo,
     kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
     stats: function () {

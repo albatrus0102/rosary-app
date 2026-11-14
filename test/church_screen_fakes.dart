@@ -46,10 +46,14 @@ class FakeChurchNet implements ChurchNet {
   @override
   void sendStand() => stands++;
   @override
-  void sendPraying(bool on, int ms, {bool kneel = false}) {
+  void sendPraying(bool on, int ms, {bool kneel = false, bool rosary = false}) {
     prayings.add((on, ms));
     kneels.add(kneel);
+    rosaries.add(rosary);
   }
+
+  /// `sendPraying` 의 rosary 인자(호출 순서대로).
+  final List<bool> rosaries = [];
 
   /// `sendPraying` 의 kneel 인자(호출 순서대로).
   final List<bool> kneels = [];

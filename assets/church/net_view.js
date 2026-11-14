@@ -33,7 +33,7 @@
     }
     function mkRec(p) {
       return {
-        id: p.id, cfg: p.avatar || {}, x: +p.x || 0, z: +p.z || 0, r: +p.r || 0, st: p.st || 'w', seat: p.seat || null, ms: p.ms === undefined ? -1 : p.ms, k: p.k ? 1 : 0,
+        id: p.id, cfg: p.avatar || {}, x: +p.x || 0, z: +p.z || 0, r: +p.r || 0, st: p.st || 'w', seat: p.seat || null, ms: p.ms === undefined ? -1 : p.ms, k: p.k ? 1 : 0, ro: p.ro ? 1 : 0,   // ro: 묵주를 들고 기도(SPEC §32; PeerView 의 r 은 방향이라 ro)
         hidden: false, view: null, s: new Float64Array(12), n: 0, blend: 0, anim: 0, ax: 0, az: 0, speed: 0, px: 0, pz: 0, fresh: true
       };
     }
@@ -118,10 +118,10 @@
         var rec = peers.get(id); if (!rec) return;
         var sp = rec.seat && logic ? logic.standPos(rec.seat) : null;
         if (rec.seat && occ[rec.seat] === id) delete occ[rec.seat];
-        rec.seat = null; rec.st = 'w'; rec.ms = -1; rec.k = 0;
+        rec.seat = null; rec.st = 'w'; rec.ms = -1; rec.k = 0; rec.ro = 0;
         if (sp) { rec.x = sp.x; rec.z = sp.z; rec.r = sp.yaw; rec.n = 0; pushSample(rec, sp.x, sp.z, sp.yaw, performance.now()); rec.blend = 0.6; rec.px = sp.x; rec.pz = sp.z; }
       },
-      peerPraying: function (id, on, ms, k) { var rec = peers.get(id); if (!rec) return; rec.st = on ? 'p' : 's'; rec.ms = on ? ms : -1; rec.k = on && k ? 1 : 0; },   // k: 무릎 꿇고 기도(SPEC §28.4)
+      peerPraying: function (id, on, ms, k, r) { var rec = peers.get(id); if (!rec) return; rec.st = on ? 'p' : 's'; rec.ms = on ? ms : -1; rec.k = on && k ? 1 : 0; rec.ro = on && r ? 1 : 0; },   // k: 무릎 꿇고 기도(SPEC §28.4), r: 묵주를 들고 기도(§32)
       peerEmote: function (id, e) { var rec = peers.get(id); if (rec && rec.view) rec.view.playEmote(e); },
       setFocus: function (x, z) { focus.x = x; focus.z = z; },
       select: function () {
@@ -161,6 +161,7 @@
             } else { x = sp.x; z = sp.z; r = sp.yaw; }
             v.setSeated(true); v.setPray(rec.st === 'p');
             var kn = rec.st === 'p' && rec.k === 1; if (kn !== (v.kneelTarget === 1)) v.setKneel(kn, kn ? logic.kneelSpot(rec.seat) : null);
+            v.setRosary(rec.st === 'p' && rec.ro === 1);
             if (rec.fresh) { v.setPose(x, fl, z, r); v.snapPose(); }
           } else {
             var s = rec.s, n = rec.n;
@@ -181,7 +182,7 @@
             rec.speed += (sp2 - rec.speed) * Math.min(1, dt * 8);
             walk = rec.speed > 0.35 ? Math.min(1, rec.speed / 3.2 + 0.2) : 0;
             fl = logic ? logic.floorY(x, z) : 0;
-            v.setSeated(false); v.setPray(false); if (v.kneelTarget) v.setKneel(false);
+            v.setSeated(false); v.setPray(false); if (v.kneelTarget) v.setKneel(false); if (v.rosaryTarget) v.setRosary(false);
             if (walk > 0) r = v.root.rotation.y + angDiff(v.root.rotation.y, r) * Math.min(1, dt * 12);
           }
           v.setWalk(walk);

@@ -149,6 +149,7 @@ sealed class SceneEvent {
             r: d(j['r']) ?? 0,
             seat: seat is String ? seat : null,
             kneel: j['posture'] == 'kneel',
+            rosary: j['rosary'] == 1 || j['rosary'] == true,
             camYaw: d(j['cy']),
             camPitch: d(j['cp']),
             camZoom: d(j['cz']),
@@ -186,7 +187,7 @@ sealed class SceneEvent {
           final slot = j['slot'];
           if (id is! String || !_glassId.hasMatch(id)) return null;
           return SceneGlassTap(id: id, slot: slot is String ? slot : null);
-        // --- 십자가의 길 14처 판(SPEC §30) ---
+        // --- 십자가의 길 14처 판(SPEC §32) ---
         case 'crossNear':
           final n = j['n'];
           if (n == null) return const SceneCrossNear(null);
@@ -407,6 +408,7 @@ class SceneState extends SceneEvent {
     this.r = 0,
     this.seat,
     this.kneel = false,
+    this.rosary = false,
     this.camYaw,
     this.camPitch,
     this.camZoom,
@@ -421,6 +423,9 @@ class SceneState extends SceneEvent {
   final double r;
   final String? seat;
   final bool kneel;
+
+  /// 묵주를 들고 있었는지(`rosary:1`).
+  final bool rosary;
   final double? camYaw;
   final double? camPitch;
   final double? camZoom;
@@ -550,6 +555,9 @@ abstract class ChurchSceneController {
   Future<void> setPraying({required bool on, required int ms}) =>
       _call('setPraying', {'on': on, 'ms': ms});
 
+  /// 내 아바타가 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 든다.
+  Future<void> setRosary({required bool on}) => _call('setRosary', {'on': on});
+
   /// 기도 자세: 앉아서 | 무릎 꿇고. 앉아 있지 않으면 장면이 무시한다.
   Future<void> setPrayerPosture({required bool kneel}) =>
       _call('setPrayerPosture', {'posture': kneel ? 'kneel' : 'sit'});
@@ -572,11 +580,13 @@ abstract class ChurchSceneController {
     required bool on,
     required int ms,
     bool kneel = false,
+    bool rosary = false,
   }) => _call('peerPraying', {
     'id': id,
     'on': on,
     'ms': ms,
     if (on && kneel) 'k': 1,
+    if (on && rosary) 'r': 1,
   });
   Future<void> peerEmote(String id, int e) =>
       _call('peerEmote', {'id': id, 'e': e});

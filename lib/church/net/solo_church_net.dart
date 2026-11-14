@@ -40,7 +40,12 @@ class SoloChurchNet implements ChurchNet {
   void sendStand() {}
 
   @override
-  void sendPraying(bool on, int ms, {bool kneel = false}) {}
+  void sendPraying(
+    bool on,
+    int ms, {
+    bool kneel = false,
+    bool rosary = false,
+  }) {}
 
   @override
   void lightCandle(int slot, int intention) {}

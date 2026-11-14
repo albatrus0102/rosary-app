@@ -52,6 +52,11 @@ flutter:
     # 십자가의 길 14처(묵상 시트·고통의 신비 배경)와 신비 배경 17점. 원본은 번들 밖 art/images_unused/
     # (tools/stations/build_art.py 가 WebP 로 줄인다; 출처 docs/ux/ART_REFERENCES.md).
     - assets/images/stations/
+    - assets/images/stations/previati/
+    - assets/images/stations/oreilly/
+    - assets/images/stations/corot/
+    - assets/images/stations/hermann_paul/
+    - assets/images/stations/mosler/
     - assets/images/mysteries/
     # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 성당 안에 걸 8점만 썸네일(_th)과
     # 1k 사진 팩(gpack_*_1k.js; 3D·평면 보기 공용). 나머지 38점·2k·1k WebP 원본은 번들 밖

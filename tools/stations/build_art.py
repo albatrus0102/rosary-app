@@ -5,7 +5,8 @@
   assets/images/stations/station_NN.webp   가로 600px, 장당 33KB 이하(묵상 시트·고통의 신비 배경 3·4·5단)
   assets/images/mysteries/<set>_<n>.webp   짧은 변 540px(긴 변 900px 이하), 장당 24KB 이하(기도 화면 배경)
                                            고통의 신비 3·4·5단은 십자가의 길 그림(1·2·12처)을 쓰므로 만들지 않는다.
-  assets/church/cross_pack.js              성당 3D 14처 판용 그림 아틀라스(7×2칸, 칸 216×266) WebP data URI
+  assets/church/cross_pack.js              성당 3D 14처 판용 그림 아틀라스(7×2칸, 칸 216×266) WebP data URI — 기본 연작(푸겔).
+                                           성당별 다른 연작(대체 성화)은 tools/stations/build_series.py 가 만든다.
                                            (file:// WebView 에서는 WebGL 이 같은 폴더 그림도 막으므로 <script> 로 싣는다)
 출처·라이선스: docs/ux/ART_REFERENCES.md (모두 Public domain 또는 CC0).
 

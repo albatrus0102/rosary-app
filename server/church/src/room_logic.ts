@@ -132,6 +132,8 @@ export interface PeerView {
   ms: number;
   /** 무릎 꿇고 기도 중이면 1 (st === 'p' 일 때만). 앉아서 기도면 필드 없음. */
   k?: 1;
+  /** 묵주를 들고 기도 중이면 1 (st === 'p' 일 때만). 없으면 필드 없음. `r` 은 방향이라 여기서는 `ro`. */
+  ro?: 1;
 }
 
 export interface Candle {
@@ -180,6 +182,8 @@ interface Peer {
   ms: number;
   /** 기도 자세: 0 앉아서, 1 무릎 꿇고 (st === 'p' 일 때만 1) */
   k: 0 | 1;
+  /** 묵주를 들고 기도: 0 | 1 (st === 'p' 일 때만 1) */
+  ro: 0 | 1;
   lastPosAt: number;
   moveBudget: number;
   dirty: boolean;
@@ -437,6 +441,7 @@ export class RoomLogic {
       seat,
       ms: seat && snap.st === 'p' && isInt(snap.ms, 0, 3) ? snap.ms : -1,
       k: seat && snap.st === 'p' && snap.k === 1 ? 1 : 0,
+      ro: seat && snap.st === 'p' && snap.ro === 1 ? 1 : 0,
       lastPosAt: now,
       moveBudget: MOVE_BUDGET_MAX,
       dirty: false,
@@ -614,6 +619,7 @@ export class RoomLogic {
       seat: null,
       ms: -1,
       k: 0,
+      ro: 0,
       lastPosAt: now,
       moveBudget: MOVE_BUDGET_MAX,
       dirty: false,
@@ -749,6 +755,7 @@ export class RoomLogic {
     peer.st = 'w';
     peer.ms = -1;
     peer.k = 0;
+    peer.ro = 0;
     peer.lastPosAt = now;
     peer.moveBudget = MOVE_BUDGET_MAX;
     peer.dirty = true;
@@ -757,11 +764,13 @@ export class RoomLogic {
 
   private onPray(peer: Peer, m: Message): void {
     // k(선택): 기도 자세. 0 앉아서(기본), 1 무릎 꿇고. 있으면 0|1 이어야 한다.
+    // r(선택): 묵주를 들고 기도(묵주기도). 0 없음(기본), 1 묵주. 있으면 0|1 이어야 한다.
     if (
       typeof m.on !== 'boolean' ||
       !isInt(m.ms, -1, 3) ||
       (m.on && m.ms < 0) ||
-      (m.k !== undefined && !isInt(m.k, 0, 1))
+      (m.k !== undefined && !isInt(m.k, 0, 1)) ||
+      (m.r !== undefined && !isInt(m.r, 0, 1))
     ) {
       this.send(peer.connId, { t: 'error', code: 'bad_msg' });
       return;
@@ -770,9 +779,11 @@ export class RoomLogic {
     peer.st = m.on ? 'p' : 's';
     peer.ms = m.on ? m.ms : -1;
     peer.k = m.on && m.k === 1 ? 1 : 0;
+    peer.ro = m.on && m.r === 1 ? 1 : 0;
     peer.dirty = true;
     const out: Message = { t: 'praying', id: peer.id, on: m.on, ms: m.ms };
     if (peer.k) out.k = 1;
+    if (peer.ro) out.r = 1;
     this.broadcastNear(peer, out);
   }
 
@@ -985,6 +996,7 @@ export class RoomLogic {
       ms: p.ms,
     };
     if (p.k) v.k = 1;
+    if (p.ro) v.ro = 1;
     return v;
   }
 

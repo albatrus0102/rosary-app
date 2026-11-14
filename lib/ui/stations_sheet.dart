@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
 import '../domain/stations_of_cross.dart';
+import '../domain/stations_series.dart';
 import 'widgets/single_art_image.dart';
 
 /// 묵상 시트를 어디서 열었는지(분석 `from` 값, 열거형 영문 키).
@@ -38,9 +39,12 @@ class StationsSheetResult {
 }
 
 /// 십자가의 길 묵상 시트(M3 모달 바텀시트)를 연다. [start]처부터.
+///
+/// [series]는 보여 줄 그림 연작(성당 안에서는 그 성당의 연작). 없으면 기본 연작(푸겔).
 Future<StationsSheetResult?> showStationsSheet(
   BuildContext context, {
   int start = 1,
+  StationsSeries? series,
   StationsSheetMode mode = StationsSheetMode.browse,
   StationsFrom from = StationsFrom.more,
   bool logOpen = true,
@@ -53,7 +57,12 @@ Future<StationsSheetResult?> showStationsSheet(
     useSafeArea: true,
     builder: (context) => SafeArea(
       top: false,
-      child: StationsSheet(start: start, mode: mode, from: from),
+      child: StationsSheet(
+        start: start,
+        mode: mode,
+        from: from,
+        series: series,
+      ),
     ),
   );
 }
@@ -65,11 +74,15 @@ class StationsSheet extends StatefulWidget {
     this.start = 1,
     this.mode = StationsSheetMode.browse,
     this.from = StationsFrom.more,
+    this.series,
   });
 
   final int start;
   final StationsSheetMode mode;
   final StationsFrom from;
+
+  /// 그림 연작(대체 성화). null 이면 기본 연작.
+  final StationsSeries? series;
 
   @override
   State<StationsSheet> createState() => _StationsSheetState();
@@ -190,8 +203,18 @@ class _StationsSheetState extends State<StationsSheet> {
     final size = MediaQuery.sizeOf(context);
     // 그림은 화면 높이의 34%(글자 1.4배 넘으면 26%)를 넘지 않게 해 본문이 보이게, 폭은 그 비율대로.
     final big = MediaQuery.textScalerOf(context).scale(10) > 14;
-    final imgH = math.min(340.0, size.height * (big ? 0.26 : 0.34));
-    final imgW = imgH * 600 / 742;
+    final series = widget.series ?? StationsSeriesCatalog.fallback;
+    var imgH = math.min(340.0, size.height * (big ? 0.26 : 0.34));
+    var imgW = imgH * 600 / 742;
+    if (!series.cover) {
+      // 비율을 지켜 다 보이게: 가로로 긴 연작은 시트 폭에 맞추고 높이를 줄인다.
+      final maxW = math.max(120.0, size.width - AppSpace.md * 2);
+      imgW = imgH * series.aspect;
+      if (imgW > maxW) {
+        imgW = maxW;
+        imgH = imgW / series.aspect;
+      }
+    }
     final (fx, fy) = st.focus;
     return Column(
       key: ValueKey('station-$_n'),
@@ -206,13 +229,16 @@ class _StationsSheetState extends State<StationsSheet> {
               child: ColoredBox(
                 color: scheme.surfaceContainerHighest,
                 child: SingleArtImage(
-                  asset: st.imageAsset,
+                  asset: series.imageAsset(st.n),
                   decodeWidth: SingleArtImage.decodeWidthFor(
                     context,
                     imgW,
                     600,
                   ),
-                  alignment: Alignment(fx * 2 - 1, fy * 2 - 1),
+                  fit: series.cover ? BoxFit.cover : BoxFit.contain,
+                  alignment: series.cover
+                      ? Alignment(fx * 2 - 1, fy * 2 - 1)
+                      : Alignment.center,
                   semanticLabel: '${st.label} 그림',
                 ),
               ),
@@ -261,12 +287,7 @@ class _StationsSheetState extends State<StationsSheet> {
           ),
         ),
         const SizedBox(height: AppSpace.sm),
-        Text(
-          '그림: ${StationsOfCross.artCredit}',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
+        StationsArtNote(series: series),
       ],
     );
   }
@@ -384,14 +405,25 @@ class _StationsSheetState extends State<StationsSheet> {
 
 /// 성당 밖에서 14처를 목록으로 보는 화면(더보기 → 십자가의 길). 처를 누르면 같은 묵상 시트를 연다.
 class StationsOfCrossScreen extends StatelessWidget {
-  const StationsOfCrossScreen({super.key, this.from = StationsFrom.more});
+  const StationsOfCrossScreen({
+    super.key,
+    this.from = StationsFrom.more,
+    this.series,
+  });
 
   static const routeName = 'stations_of_cross';
 
   final StationsFrom from;
 
+  /// 그림 연작(마지막으로 들른 성당의 연작). null 이면 기본 연작.
+  final StationsSeries? series;
+
+  StationsSeries get _series => series ?? StationsSeriesCatalog.fallback;
+
   void _open(BuildContext context, int n) {
-    unawaited(showStationsSheet(context, start: n, from: from));
+    unawaited(
+      showStationsSheet(context, start: n, from: from, series: _series),
+    );
   }
 
   @override
@@ -439,13 +471,25 @@ class StationsOfCrossScreen extends StatelessWidget {
                       for (final st in StationsOfCross.all)
                         ListTile(
                           key: ValueKey('stations-item-${st.n}'),
-                          leading: CircleAvatar(
-                            backgroundColor: scheme.secondaryContainer,
-                            foregroundColor: scheme.onSecondaryContainer,
-                            child: Text(
-                              '${st.n}',
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: scheme.onSecondaryContainer,
+                          leading: ClipRRect(
+                            borderRadius: AppShape.small,
+                            child: ColoredBox(
+                              color: scheme.surfaceContainerHighest,
+                              child: Image.asset(
+                                _series.imageAsset(st.n),
+                                width: 48,
+                                height: 48,
+                                cacheWidth: 144,
+                                fit: BoxFit.cover,
+                                alignment: _series.cover
+                                    ? Alignment(
+                                        st.focus.$1 * 2 - 1,
+                                        st.focus.$2 * 2 - 1,
+                                      )
+                                    : Alignment.center,
+                                excludeFromSemantics: true,
+                                errorBuilder: (context, error, stack) =>
+                                    const SizedBox(width: 48, height: 48),
                               ),
                             ),
                           ),
@@ -457,6 +501,8 @@ class StationsOfCrossScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: AppSpace.sm),
+                StationsArtNote(series: _series),
                 const SizedBox(height: AppSpace.sm),
                 Text(
                   '묵상 문구는 성경과 전승을 바탕으로 새로 쓴 짧은 글입니다. '
@@ -470,6 +516,47 @@ class StationsOfCrossScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 그림 출처 한 줄(작가·연도·촬영자·라이선스)과 '대체 성화' 안내. 그림을 보여 주는 곳마다 함께 둔다.
+class StationsArtNote extends StatelessWidget {
+  const StationsArtNote({super.key, required this.series});
+
+  final StationsSeries series;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final style = theme.textTheme.bodySmall?.copyWith(
+      color: scheme.onSurfaceVariant,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '그림: ${series.creditLine}',
+          key: const ValueKey('stations-art-credit'),
+          style: style,
+        ),
+        const SizedBox(height: AppSpace.xxs),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline, size: 16, color: scheme.onSurfaceVariant),
+            const SizedBox(width: AppSpace.xxs),
+            Expanded(
+              child: Text(
+                StationsSeriesCatalog.disclosure,
+                key: const ValueKey('stations-art-disclosure'),
+                style: style,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

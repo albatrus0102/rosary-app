@@ -241,7 +241,7 @@ void main() {
       }
     });
 
-    testWidgets('altar: 기도하기 bows once, then sitting is offered', (
+    testWidgets('altar: 기도하기 → 잠시 기도하기 bows once, then sitting is offered', (
       tester,
     ) async {
       final h = await pumpChurch(tester, size: const Size(360, 640));
@@ -252,6 +252,9 @@ void main() {
       expect(find.byKey(const ValueKey('ctx-pray')), findsOneWidget);
       expect(find.text('기도하기'), findsOneWidget);
       await tester.tap(find.text('기도하기'));
+      await _settle(tester);
+      // 시트(SPEC §32)에서 '잠시 기도하기'를 고르면 예전의 '기도하기'(고개 숙임)다.
+      await tester.tap(find.byKey(const ValueKey('pray-brief')));
       await _settle(tester);
       expect(h.scene.lastArgs('emote'), {'e': 2}, reason: '고개 숙임(bow)');
       expect(h.net.emotes, [2]);

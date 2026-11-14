@@ -98,6 +98,8 @@ abstract final class AnalyticsEvents {
     'avatar_save': EventSpec(ConsentKinds.church),
     'church_gesture': EventSpec(ConsentKinds.church, {'church', 'e'}),
     'church_mode': EventSpec(ConsentKinds.church, {'church', 'mode', 'on'}),
+    // '기도하기' 시트에서 고른 것: brief | rosary. 신비·지향은 보내지 않는다.
+    'church_prayer_choice': EventSpec(ConsentKinds.church, {'church', 'kind'}),
     'church_report': EventSpec(ConsentKinds.church, {'church', 'reason'}),
     // 접속자 시트: 연 것과 보기 전환(here|all)만. 이름·인원은 보내지 않는다.
     'presence_sheet_open': EventSpec(ConsentKinds.church, {'church', 'online'}),

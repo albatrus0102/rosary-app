@@ -52,3 +52,6 @@ android/.gradle/
 
 # 스테인드글라스 고해상도 원본(저장소에는 올리지 않는다; 앱에 넣는 최종 파일만 커밋)
 assets/church/glass_src/*_orig.*
+
+# 십자가의 길 연작 원본(내려받은 파일; tools/stations/fetch_series.py 로 다시 받는다)
+art/stations_series/

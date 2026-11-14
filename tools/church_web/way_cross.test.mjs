@@ -117,3 +117,106 @@ test('near: enter 1.8m, keep until 2.6m (hysteresis), nearest wins', () => {
 });
 
 test.after(() => { if (rows.length) console.table(rows); });
+
+// ---------------- 그림 연작(대체 성화): 성당별 아틀라스 로드·폴백·해제 ----------------
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const churchDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../assets/church');
+
+// 가짜 문서: <script src> 를 붙이면 실제 파일을 읽어 window(root) 에서 실행한다. fail 에 든 파일은 onerror.
+function fakeDoc(rootObj, fail = new Set()) {
+  const tags = [];
+  return {
+    tags,
+    createElement: () => ({ parentNode: null }),
+    head: {
+      appendChild(s) {
+        s.parentNode = this; tags.push(s);
+        queueMicrotask(() => {
+          const f = path.join(churchDir, s.src);
+          if (fail.has(s.src) || !fs.existsSync(f)) { s.onerror(); return; }
+          new Function('window', fs.readFileSync(f, 'utf8'))(rootObj);
+          s.onload();
+        });
+      },
+      removeChild(s) { const i = tags.indexOf(s); if (i >= 0) tags.splice(i, 1); s.parentNode = null; }
+    }
+  };
+}
+
+test('series: every church maps to a bundled atlas pack; default is fugel', () => {
+  const S = CrossData.series;
+  assert.equal(S.default, 'fugel');
+  assert.equal(S.packs.fugel.file, 'cross_pack.js');
+  for (const c of churches) {
+    const sid = S.churches[c.id];
+    assert.ok(sid && S.packs[sid], `${c.id} 연작 배정`);
+  }
+  for (const [id, p] of Object.entries(S.packs)) {
+    const f = path.join(churchDir, p.file);
+    assert.ok(fs.existsSync(f), p.file);
+    assert.ok(fs.statSync(f).size < 150 * 1024, `${p.file} 150KB 미만`);
+    const src = fs.readFileSync(f, 'utf8');
+    assert.ok(src.includes('data:image/webp;base64,'), id);
+    if (id !== 'fugel') assert.ok(src.includes(`ChurchCrossPacks || {})["${id}"]`), `${id} 등록 이름`);
+  }
+  // 성당마다 다른 그림: 연작이 4개 이상 쓰인다
+  assert.ok(new Set(Object.values(S.churches)).size >= 4);
+});
+
+test('series loader: loads the church series only, releases the previous one', async () => {
+  const rootObj = { ChurchCrossData: CrossData, console: { warn() {} } };
+  const doc = fakeDoc(rootObj);
+  const PL = WayCross.packLoader(rootObj, doc);
+  assert.deepEqual(PL.resident(), []);
+  const a = PL.seriesFor('milan');
+  assert.equal(a.id, CrossData.series.churches.milan);
+  PL.release(a.id);
+  const pa = await PL.load(a.id);
+  assert.equal(pa.id, a.id); assert.equal(pa.cols, 7); assert.equal(pa.rows, 2);
+  assert.deepEqual(PL.resident(), [a.id]);
+  assert.equal(doc.tags.length, 1);
+  // 다른 성당으로: 앞 연작의 <script>·문자열이 내려가고 새 연작 하나만 남는다
+  const b = PL.seriesFor('stpeter');
+  assert.notEqual(b.id, a.id);
+  PL.release(b.id);
+  assert.deepEqual(PL.resident(), []);
+  assert.equal(doc.tags.length, 0);
+  await PL.load(b.id);
+  assert.deepEqual(PL.resident(), [b.id]);
+  // 기본 연작 성당: cross_pack.js(window.ChurchCrossPack)
+  const d = PL.seriesFor('myeongdong');
+  assert.equal(d.id, 'fugel'); assert.ok(d.isDefault);
+  PL.release(d.id);
+  const pd = await PL.load(d.id);
+  assert.equal(pd, rootObj.ChurchCrossPack);
+  assert.deepEqual(PL.resident(), ['fugel']);
+  assert.equal(doc.tags.length, 1);
+  // 같은 연작을 다시 청하면 다시 읽지 않는다
+  const loads = PL.stats.loads;
+  await PL.load(d.id);
+  assert.equal(PL.stats.loads, loads);
+  // 모르는 성당은 기본 연작
+  assert.equal(PL.seriesFor('nowhere').id, 'fugel');
+  PL.release(null);
+  assert.deepEqual(PL.resident(), []);
+  assert.equal(rootObj.ChurchCrossPack, null);
+});
+
+test('series loader: falls back to the default series when a pack fails; rejects when the default fails too', async () => {
+  const rootObj = { ChurchCrossData: CrossData, console: { warn() {} } };
+  const bad = CrossData.series.packs[CrossData.series.churches.florence].file;
+  const PL = WayCross.packLoader(rootObj, fakeDoc(rootObj, new Set([bad])));
+  const p = await PL.load(CrossData.series.churches.florence);
+  assert.equal(p.id, 'fugel');
+  assert.equal(PL.stats.fallbacks, 1);
+  assert.deepEqual(PL.resident(), ['fugel']);
+  const root2 = { ChurchCrossData: CrossData, console: { warn() {} } };
+  const PL2 = WayCross.packLoader(root2, fakeDoc(root2, new Set([bad, 'cross_pack.js'])));
+  await assert.rejects(PL2.load(CrossData.series.churches.florence));
+  assert.deepEqual(PL2.resident(), []);
+  // cross_data.js 에 series 가 없던 옛 데이터: 푸겔만
+  const root3 = { ChurchCrossData: { stations: [] } };
+  assert.equal(WayCross.packLoader(root3, fakeDoc(root3)).seriesFor('milan').id, 'fugel');
+});

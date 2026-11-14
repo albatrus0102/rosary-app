@@ -56,7 +56,7 @@
     if (App.markers) { App.markers.dispose(); App.markers = null; }
     App.walkSt = null; App.pendingWalk = null; App.turn = null;
     if (App.place) App.place.clear();   // 성당 안 사진 창(G-29): 월드를 버리기 전에 판·질감 해제
-    if (App.cross) App.cross.clear();   // 십자가의 길 14처 판(SPEC §30)
+    if (App.cross) App.cross.clear();   // 십자가의 길 14처 판(SPEC §32)
     if (App.world) { App.world.dispose(); App.world = null; }
     if (App.view) App.view.unpark();
     var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer, view: vopts && vopts.view });
@@ -78,6 +78,7 @@
     App.net.setMySeat(null);
     App.ctl.yaw = me.yaw; App.camInit = false;
     App.meAv.setSeated(false); App.meAv.setPray(false);
+    App.rosary = false; App.meAv.setRosary(false);
     App.near.seat = App.near.candle = undefined; App.near.station = null;
     // 스테이션(촛불 봉헌대·제대 앞·성수대): 걸어서 가는 자리와 표식
     App.stations = root.ChurchStations.create(w.logic);
@@ -195,6 +196,7 @@
     else if (me.mode === 'sitting' && me.pendingStand) { x = me.fx; z = me.fz; r = me.fyaw; }
     var s = { e: 'state', church: App.church, x: r2(x), z: r2(z), r: r2(r), seat: sit ? me.seat : null, posture: sit && App.posture === 'kneel' ? 'kneel' : 'sit',
       cy: r2(ctl.yaw), cp: r2(ctl.pitch), cz: r2(ctl.zoom), cl: r2(ctl.look) };
+    if (App.rosary) s.rosary = 1;
     var w = App.walkSt || App.pendingWalk;
     if (w && w.kind) s.walk = { kind: w.kind, index: w.index === undefined ? 0 : w.index, seat: w.seat || null };
     return s;
@@ -243,6 +245,7 @@
       App.meAv.setSeated(false); App.meAv.setPray(false);
       App.near.seat = App.near.candle = undefined; App.near.station = null;
     }
+    App.rosary = !!o.rosary; App.meAv.setRosary(App.rosary);
     me.y = logic.floorY(me.x, me.z);
     App.meAv.setPose(me.x, me.y, me.z, me.yaw);
     App.camInit = false; App.wasMoving = false;
@@ -284,6 +287,8 @@
       else if (me.mode === 'sitting') me.pendingStand = true;
     },
     setPraying: function (o) { if (App.meAv && App.me.mode !== 'walk') App.meAv.setPray(!!o.on); },
+    // 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 손에 든다. 다른 사람의 묵주는 peerPraying 의 r.
+    setRosary: function (o) { App.rosary = !!(o && o.on); if (App.meAv) App.meAv.setRosary(App.rosary); },
     // 기도 자세 고르기. 앉아 있지 않으면 무시한다(다음에 앉아도 적용하지 않는다: 앉은 뒤 Flutter 가 다시 보낸다).
     setPrayerPosture: function (o) {
       var me = App.me, p = o && o.posture === 'kneel' ? 'kneel' : 'sit';
@@ -297,7 +302,7 @@
     peerSnap: function (o) { if (App.net && o.p) App.net.peerSnap(o.p); },
     peerSeat: function (o) { if (App.net) App.net.peerSeat(o.id, o.seat); },
     peerStand: function (o) { if (App.net) App.net.peerStand(o.id); },
-    peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms, o.k ? 1 : 0); },
+    peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms, o.k ? 1 : 0, o.r ? 1 : 0); },
     peerEmote: function (o) { if (App.net) App.net.peerEmote(o.id, o.e); },
     setCandles: function (o) { if (App.world) App.world.setCandles(o.candles || []); },
     lightCandle: function (o) { if (App.world) { App.world.lightCandle(o); root.ChurchAudio.chime(); } },

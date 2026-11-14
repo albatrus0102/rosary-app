@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 할 때(오래 숨겨져 장면을 해제했거나, 백그라운드에서 앱이 종료된 뒤 다시 들어올 때)
 /// `ChurchAPI.restore`로 새 장면에 적용한다.
 ///
-/// 개인 정보는 없다: 성당 id, 좌표, 좌석 id, 자세, 카메라 값뿐이다.
+/// 개인 정보는 없다: 성당 id, 좌표, 좌석 id, 자세, 묵주 여부, 카메라 값뿐이다.
 @immutable
 class ChurchResumeState {
   const ChurchResumeState({
@@ -20,6 +20,7 @@ class ChurchResumeState {
     this.r = 0,
     this.seat,
     this.kneel = false,
+    this.rosary = false,
     this.camYaw,
     this.camPitch,
     this.camZoom,
@@ -59,6 +60,9 @@ class ChurchResumeState {
   /// 무릎 꿇고 있었는지(앉아 있을 때만 뜻이 있다).
   final bool kneel;
 
+  /// 묵주를 들고 있었는지(묵주기도 중이거나, 묵주기도 하러 자리로 걷는 중).
+  final bool rosary;
+
   /// 카메라: 수평 각·수직 각·줌·올려다보기. null이면 장면 기본값.
   final double? camYaw;
   final double? camPitch;
@@ -81,22 +85,25 @@ class ChurchResumeState {
   }
 
   /// 좌석만 바꾼 사본(앱이 알고 있는 좌석 상태가 장면의 것보다 우선이다).
-  ChurchResumeState withSeat(String? seat, {bool? kneel}) => ChurchResumeState(
-    churchId: churchId,
-    x: x,
-    z: z,
-    r: r,
-    seat: seat,
-    kneel: seat == null ? false : (kneel ?? this.kneel),
-    camYaw: camYaw,
-    camPitch: camPitch,
-    camZoom: camZoom,
-    camLook: camLook,
-    walkKind: seat == null ? walkKind : null,
-    walkIndex: walkIndex,
-    walkSeat: walkSeat,
-    savedAtMs: savedAtMs,
-  );
+  /// [rosary]를 주면 묵주 여부도 앱이 아는 값으로 바꾼다.
+  ChurchResumeState withSeat(String? seat, {bool? kneel, bool? rosary}) =>
+      ChurchResumeState(
+        churchId: churchId,
+        x: x,
+        z: z,
+        r: r,
+        seat: seat,
+        kneel: seat == null ? false : (kneel ?? this.kneel),
+        rosary: rosary ?? this.rosary,
+        camYaw: camYaw,
+        camPitch: camPitch,
+        camZoom: camZoom,
+        camLook: camLook,
+        walkKind: seat == null ? walkKind : null,
+        walkIndex: walkIndex,
+        walkSeat: walkSeat,
+        savedAtMs: savedAtMs,
+      );
 
   /// 웹 브리지 `ChurchAPI.restore`의 인자.
   Map<String, Object?> toSceneArgs() => {
@@ -106,6 +113,7 @@ class ChurchResumeState {
     'r': r,
     'seat': seat,
     'posture': seat != null && kneel ? 'kneel' : 'sit',
+    if (rosary) 'rosary': 1,
     'cy': ?camYaw,
     'cp': ?camPitch,
     'cz': ?camZoom,
@@ -122,6 +130,7 @@ class ChurchResumeState {
     'r': r,
     'seat': ?seat,
     if (kneel) 'kneel': true,
+    if (rosary) 'rosary': true,
     'cy': ?camYaw,
     'cp': ?camPitch,
     'cz': ?camZoom,
@@ -165,6 +174,7 @@ class ChurchResumeState {
       r: _num(j['r'], limit: 100) ?? 0,
       seat: okSeat ? seat : null,
       kneel: okSeat && j['kneel'] == true,
+      rosary: j['rosary'] == true,
       camYaw: _num(j['cy'], limit: 1e6),
       camPitch: _num(j['cp'], limit: 10),
       camZoom: _num(j['cz'], limit: 10),
@@ -225,6 +235,7 @@ class ChurchResumeState {
       other.r == r &&
       other.seat == seat &&
       other.kneel == kneel &&
+      other.rosary == rosary &&
       other.camYaw == camYaw &&
       other.camPitch == camPitch &&
       other.camZoom == camZoom &&
@@ -242,6 +253,7 @@ class ChurchResumeState {
     r,
     seat,
     kneel,
+    rosary,
     camYaw,
     camPitch,
     camZoom,

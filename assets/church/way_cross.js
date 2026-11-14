@@ -15,7 +15,9 @@
        - 판 = 캔버스 아틀라스 한 장(14칸: 위 작은 십자가 + 금테 액자 + 그림 + 로마 숫자 판) 사각형 14개를 한 지오메트리로(draw call 1)
          + 액자 뒤판 상자 14개(조명 받는 나무, draw call 1). 그림 재질은 사진 창과 같은 셰이더(ChurchGlassView.shaders):
          조명·안개·SSAO 없음, 알파 0 표시로 최종 패스의 색보정·톤매핑을 건너뛴다(걷기 프로필에서도 그림 색 그대로), 밤에는 어둡게.
-       - 그림은 cross_pack.js(WebP data URI)를 성당에 들어올 때 비동기로 읽는다. 못 읽으면 판을 걸지 않는다(이벤트·걷기도 없음).
+       - 그림은 성당마다 다른 연작(대체 성화)이다: cross_data.js 의 series 가 성당 id → 연작을 정하고, 그 연작의 아틀라스
+         (cross_pack.js 또는 cross_pack_<id>.js, WebP data URI)를 성당에 들어올 때 비동기로 읽는다(packLoader). 연작 파일을 못 읽으면
+         기본 연작(푸겔)으로, 그것도 못 읽으면 판을 걸지 않는다(이벤트·걷기도 없음). 성당을 옮기면 앞 연작은 내린다.
        - 이벤트: {e:'crossNear', n:1..14|null}(서는 자리 1.8m 안에 들어오면, 2.6m 밖으로 나가면 null; 걷는 중에만).
        - walkTo({kind:'cross', index:0..13}) 는 main.js 가 station(index) 로 서는 자리를 얻어 걷는다. */
 (function (root, factory) {
@@ -243,6 +245,77 @@
     return best;
   }
 
+  // ---------------- 그림 연작(대체 성화) 싣기 ----------------
+  // 성당마다 다른 14처 연작을 건다(data/stations_series.json → cross_data.js 의 series). 실제 그 성당의 14처가 아니라
+  // 저작권이 끝난 대체 성화다(앱이 묵상 시트·출처 화면에서 밝힌다).
+  //   packLoader(root, doc) → { seriesFor(churchId), load(id), release(keepId), resident(), stats }
+  //   - 기본 연작(series.default)은 cross_pack.js → window.ChurchCrossPack, 나머지는 cross_pack_<id>.js → window.ChurchCrossPacks[id].
+  //   - load(id): <script> 로 읽는다. 못 읽으면 기본 연작으로 물러난다(stats.fallbacks). 기본 연작도 못 읽으면 거부.
+  //   - release(keepId): keepId 가 아닌 연작의 <script>·data URI 문자열을 내린다(텍스처는 create().clear 가 dispose).
+  //   doc 은 시험에서 가짜로 넣는다(createElement('script') + head.appendChild 만 쓴다).
+  function packLoader(root, doc) {
+    var loading = {}, tags = {}, stats = { loads: 0, fallbacks: 0, released: 0 };
+    function conf() {
+      var S = root.ChurchCrossData && root.ChurchCrossData.series;
+      return S && S.packs && S.packs[S.default] ? S : { default: 'fugel', churches: {}, packs: { fugel: { file: 'cross_pack.js' } } };
+    }
+    function seriesFor(churchId) {
+      var S = conf(), id = S.churches && S.churches[churchId];
+      if (!id || !S.packs[id]) id = S.default;
+      return { id: id, file: S.packs[id].file, isDefault: id === S.default };
+    }
+    function get(id) {
+      var S = conf(), p = null;
+      if (root.ChurchCrossPacks && root.ChurchCrossPacks[id]) p = root.ChurchCrossPacks[id];
+      else if (id === S.default && root.ChurchCrossPack) p = root.ChurchCrossPack;
+      if (p && !p.id) p.id = id;
+      return p;
+    }
+    function loadOne(id) {
+      var have = get(id);
+      if (have) return Promise.resolve(have);
+      if (loading[id]) return loading[id];
+      var S = conf();
+      if (!S.packs[id] || !doc) return Promise.reject(new Error('pack ' + id));
+      loading[id] = new Promise(function (res, rej) {
+        var s = doc.createElement('script');
+        s.src = S.packs[id].file;
+        s.onload = function () { delete loading[id]; var p = get(id); if (p) { stats.loads++; res(p); } else rej(new Error('pack ' + id)); };
+        s.onerror = function () { delete loading[id]; if (tags[id] === s) delete tags[id]; if (s.parentNode) s.parentNode.removeChild(s); rej(new Error('pack ' + id)); };
+        tags[id] = s;
+        doc.head.appendChild(s);
+      });
+      return loading[id];
+    }
+    function load(id) {
+      var S = conf();
+      return loadOne(id).catch(function (e) {
+        if (id === S.default) throw e;
+        stats.fallbacks++;
+        if (root.console) root.console.warn('[church] way of cross: series ' + id + ' → ' + S.default);
+        return loadOne(S.default);
+      });
+    }
+    function release(keepId) {
+      var S = conf(), ids = Object.keys(S.packs);
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        if (id === keepId || loading[id]) continue;
+        var had = false;
+        if (root.ChurchCrossPacks && root.ChurchCrossPacks[id]) { delete root.ChurchCrossPacks[id]; had = true; }
+        if (id === S.default && root.ChurchCrossPack) { root.ChurchCrossPack = null; had = true; }
+        if (tags[id]) { if (tags[id].parentNode) tags[id].parentNode.removeChild(tags[id]); delete tags[id]; }
+        if (had) stats.released++;
+      }
+    }
+    function resident() {
+      var S = conf(), out = [];
+      Object.keys(S.packs).forEach(function (id) { if (get(id)) out.push(id); });
+      return out;
+    }
+    return { seriesFor: seriesFor, load: load, release: release, resident: resident, stats: stats };
+  }
+
   // ---------------- 그리기(브라우저) ----------------
   // 캔버스 칸 하나에 판(십자가 장식 + 금테 액자 + 그림 + 로마 숫자 판)을 그린다. 칸 = 256×512(high) 또는 128×256(low), 가장자리 4px 여백.
   function drawPlaque(g, img, pack, idx, ox, oy, k, roman) {
@@ -281,22 +354,10 @@
     var root = typeof window !== 'undefined' ? window : this;
     var T = root.THREE, post = H.post;
     var plaques = [], token = 0, mesh = null, mat = null, back = null, backMat = null, tex = null, ready = false;
-    var nearCur = null, nearT = 0, lastN, stats = { loads: 0, errors: 0, resident: 0 };
+    var nearCur = null, nearT = 0, lastN, series = null, stats = { loads: 0, errors: 0, resident: 0 };
     var ray = T ? new T.Raycaster() : null, vN = T ? new T.Vector2() : null;
-    var packP = null;
+    var packs = packLoader(root, typeof document !== 'undefined' ? document : null);
 
-    function loadPack() {
-      if (root.ChurchCrossPack) return Promise.resolve(root.ChurchCrossPack);
-      if (packP) return packP;
-      packP = new Promise(function (res, rej) {
-        var s = document.createElement('script');
-        s.src = 'cross_pack.js';
-        s.onload = function () { if (root.ChurchCrossPack) res(root.ChurchCrossPack); else rej(new Error('pack')); };
-        s.onerror = function () { packP = null; rej(new Error('pack')); };
-        document.head.appendChild(s);
-      });
-      return packP;
-    }
     function loadImg(src) {
       return new Promise(function (res, rej) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { rej(new Error('img')); }; im.src = src; });
     }
@@ -399,8 +460,12 @@
       plaques = res.plaques; App.crossWhy = res.why;
       if (!plaques.length) return;
       var tok = token; stats.loads++;
-      loadPack().then(function (pack) { return loadImg(pack.src).then(function (img) { return { img: img, pack: pack }; }); }).then(function (o) {
-        if (tok !== token) return;
+      // 이 성당의 그림 연작(대체 성화) 하나만 싣는다. 다른 연작의 아틀라스 문자열·<script> 는 내린다(성당을 옮겨도 한 연작만 남는다).
+      var ser = packs.seriesFor(world.id);
+      series = ser.id; packs.release(ser.id);
+      packs.load(ser.id).then(function (pack) { return loadImg(pack.src).then(function (img) { return { img: img, pack: pack }; }); }).then(function (o) {
+        if (tok !== token) { packs.release(series); return; }   // 그 사이 성당이 바뀌었다: 늦게 온 연작은 내린다
+        series = o.pack.id || ser.id;   // 연작 파일을 못 읽어 기본 연작으로 물러났으면 그 id
         tex = buildAtlas(o.img, o.pack);
         buildMeshes();
         ready = true; stats.resident = 1;
@@ -453,9 +518,10 @@
         return p ? { x: p.stand.x, z: p.stand.z, yaw: p.stand.yaw, index: p.index, reach: NEAR_IN } : null;
       },
       plaques: function () { return plaques; },
-      debug: function () { return { ready: ready, count: plaques.length, near: lastN || null, why: App.crossWhy, meshes: (mesh ? 1 : 0) + (back ? 1 : 0), stats: JSON.parse(JSON.stringify(stats)) }; }
+      series: function () { return series; },
+      debug: function () { return { ready: ready, count: plaques.length, series: series, packs: packs.resident(), fallbacks: packs.stats.fallbacks, near: lastN || null, why: App.crossWhy, meshes: (mesh ? 1 : 0) + (back ? 1 : 0), stats: JSON.parse(JSON.stringify(stats)) }; }
     };
   }
 
-  return { derive: derive, create: create, nearPlaque: nearPlaque, P: P, NEAR_IN: NEAR_IN, NEAR_OUT: NEAR_OUT, seatAxis: seatAxis };
+  return { derive: derive, create: create, packLoader: packLoader, nearPlaque: nearPlaque, P: P, NEAR_IN: NEAR_IN, NEAR_OUT: NEAR_OUT, seatAxis: seatAxis };
 });

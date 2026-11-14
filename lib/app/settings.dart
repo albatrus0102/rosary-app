@@ -14,6 +14,11 @@ enum PrayerFont { gothic, system }
 /// 사이버 성당 3D 화면 품질.
 enum ChurchQuality { low, high }
 
+/// 성당 '기도하기'에서 마지막으로 고른 것(SPEC §32). 저장 키 `churchPrayerChoice`.
+///
+/// [brief] 잠시 기도하기(제대 앞 고개 숙임), [rosary] 묵주기도 하기(자리에 앉아 묵주기도 카드).
+enum ChurchPrayerChoice { brief, rosary }
+
 /// 성당에서 앉아 기도할 때의 자세(SPEC §28.4). 저장 키 `prayerPosture`.
 enum PrayerPosture {
   /// 앉아서(기본).
@@ -109,6 +114,11 @@ class AppSettings extends ChangeNotifier {
       _prefs.getString(_kPrayerPosture),
       PrayerPosture.sit,
     );
+    _churchPrayerChoice = _enumByName(
+      ChurchPrayerChoice.values,
+      _prefs.getString(_kChurchPrayerChoice),
+      ChurchPrayerChoice.brief,
+    );
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
   }
 
@@ -137,6 +147,7 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchAmbient = 'church_ambient';
   static const _kChurchQuality = 'church_quality';
   static const _kPrayerPosture = 'prayerPosture';
+  static const _kChurchPrayerChoice = 'churchPrayerChoice';
   static const _kChurchId = 'church_id';
   static const _kChurchFavorites = 'church_favorites';
 
@@ -194,6 +205,7 @@ class AppSettings extends ChangeNotifier {
   late bool _churchAmbient;
   late ChurchQuality _churchQuality;
   late PrayerPosture _prayerPosture;
+  late ChurchPrayerChoice _churchPrayerChoice;
   late String _churchId;
   late Set<String> _churchFavorites;
 
@@ -437,6 +449,16 @@ class AppSettings extends ChangeNotifier {
     if (v == _prayerPosture) return;
     _prayerPosture = v;
     _prefs.setString(_kPrayerPosture, v.name);
+    notifyListeners();
+  }
+
+  /// 성당 '기도하기' 시트에서 마지막으로 고른 것(다음에 그 항목을 강조한다). 기본은 잠시 기도하기.
+  ChurchPrayerChoice get churchPrayerChoice => _churchPrayerChoice;
+
+  set churchPrayerChoice(ChurchPrayerChoice v) {
+    if (v == _churchPrayerChoice) return;
+    _churchPrayerChoice = v;
+    _prefs.setString(_kChurchPrayerChoice, v.name);
     notifyListeners();
   }
 

@@ -82,6 +82,18 @@
 | station_13.jpg | https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_13.jpg | Gebhard Fugel (1921) · 사진 Andreas Praefcke | Public domain (PD-old-70 / PD-Art) | 제13처 · 1000px JPEG |
 | station_14.jpg | https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_14.jpg | Gebhard Fugel (1921) · 사진 Andreas Praefcke | Public domain (PD-old-70 / PD-Art) | 제14처 · 1000px JPEG |
 
+
+## 십자가의 길 그림 연작 — 성당별 대체 성화 (assets/images/stations/<연작>/, assets/church/cross_pack_<연작>.js, 2026-11-14 추가)
+각 성당에 실제로 걸린 14처가 아니라 저작권이 끝난 연작을 성당마다 나눠 건 것이다(앱 안에서 밝힌다). 파일별 표는 `docs/church/licenses/art_stations_series.md`, 원자료 `data/stations_series.json`, 배정·위험은 `docs/ux/STATIONS_OF_CROSS.md`.
+
+| 번들 | 원본 | 작가 | 라이선스 | 비고 |
+|---|---|---|---|---|
+| assets/images/stations/previati/station_01~14.webp, cross_pack_previati.js | https://commons.wikimedia.org/wiki/Category:Via_Crucis_by_Gaetano_Previati | 가에타노 프레비아티 (1901–02) · 사진·스캔 Sailko | CC BY 3.0 — **표기 의무**(촬영자·라이선스 링크·변경 여부) | 성 베드로 대성전 · 액자를 잘라 내고 크기를 줄임 · 권리 확인: 출시 전 확인 |
+| assets/images/stations/oreilly/station_01~14.webp, cross_pack_oreilly.js | https://archive.org/details/beautifulpearlso00oreirich | 작가 미상(American Lithographic Co. 인쇄) (1897) · 사진·스캔 University of California Libraries 스캔(Internet Archive) | Public domain | 라테라노 성 요한 대성전 · 책장의 제목·여백을 잘라 내고 크기를 줄임 · 권리 확인: 확인 |
+| assets/images/stations/corot/station_01~14.webp, cross_pack_corot.js | https://commons.wikimedia.org/wiki/Category:Chemin_de_croix_de_l%27%C3%A9glise_de_Rosny_(Seine-et-Oise)_(R1083-1096)_by_Jean-Baptiste-Camille_Corot | 장바티스트 카미유 코로 (1853–59) · 사진·스캔 미확인(도판 복제, Commons 출처 amolenuvolette.it) | Public domain (PD-Art) | 성 마리아 마조레 대성전 · 크기를 줄임 · 권리 확인: 확인 |
+| assets/images/stations/hermann_paul/station_01~14.webp, cross_pack_hermann_paul.js | https://commons.wikimedia.org/wiki/Category:Via_Crucis_-_Hermann-Paul | 르네 조르주 헤르만 폴 (1929) · 사진·스캔 Uto | CC0 1.0 | 밀라노 대성당 · 책장 여백을 잘라 내고 크기를 줄임 · 권리 확인: 확인 |
+| assets/images/stations/mosler/station_01~14.webp, cross_pack_mosler.js | https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859 | D. 모슬러 (1859) · 사진·스캔 Google Books 스캔(Internet Archive 사본) | Public domain | 피렌체 대성당 · 책장에서 삽화만 잘라 내고 크기를 줄임 · 권리 확인: 확인 |
+
 ## 스테인드글라스 참고 사진 (assets/church/glass_*.jpg, 긴 변 768–1024px, 2026-11-12 추가)
 실제 유명 창의 사진을 창 하나 단위로 잘라 만든 투과광 질감 20점(합계 약 2.8MB). 보관용 원본은 `assets/church/glass_src/`(번들 제외). 상세 표·표시 문구·디자인 메모는 `docs/church/GLASS_REFERENCES.md`, 파일별 근거는 `docs/church/licenses/<id>.md`.
 CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredame_south, glass_lancet_cologne)은 앱 라이선스 화면에 표시 문구가 필요하다.

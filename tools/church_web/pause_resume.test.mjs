@@ -41,6 +41,7 @@ function boot(opts = {}) {
     setConfig() {} setWalk() {} playEmote() {} update() {} snapPose() {}
     setSeated(v) { this.seated = !!v; }
     setPray(v) { this.pray = !!v; }
+    setRosary(v) { this.rosary = !!v; }
     setKneel(v) { this.kneel = !!v; this.kneelTarget = v ? 1 : 0; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; }
     setPose(x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; }
     kneelOffset() { return 0; }
@@ -223,4 +224,33 @@ test('restore: 걷던 위치·방향·시점과 목적지를 잇고, 잘못된 �
   // 벽 밖 좌표는 걸을 수 있는 범위로 들어온다
   g.API.restore({ church: 'basic', x: 999, z: -999, r: 0 });
   assert.ok(Math.abs(g.App.me.x) < 20 && Math.abs(g.App.me.z) < 30);
+});
+
+test('묵주(setRosary): 서 있을 때도 들고, state 에 rosary:1 로 담겨 restore 로 되살아난다(SPEC §32)', () => {
+  const a = boot();
+  a.frames(3);
+  assert.equal(typeof a.API.setRosary, 'function');
+  a.API.pause();
+  assert.equal(last(a.ev, 'state').rosary, undefined);   // 안 들었으면 필드가 없다
+  a.API.resume();
+  a.API.setRosary({ on: true });                          // 걷는 중(자리로 가는 동안)에도 든다
+  assert.equal(a.App.me.mode, 'walk'); assert.equal(a.App.meAv.rosary, true);
+  const seat = 'L03-2', sp = a.App.logic.standPos(seat);
+  a.App.me.x = sp.x; a.App.me.z = sp.z;
+  a.API.sit({ seat }); a.frames(80);
+  a.API.setPraying({ on: true, ms: 1 });
+  assert.equal(a.App.meAv.rosary, true); assert.equal(a.App.meAv.pray, true);
+  a.API.pause();
+  const st = last(a.ev, 'state');
+  assert.equal(st.rosary, 1); assert.equal(st.seat, seat);
+
+  const b = boot(); b.frames(3);
+  assert.equal(!!b.App.meAv.rosary, false);
+  b.API.restore(JSON.parse(JSON.stringify(st)));
+  assert.equal(b.App.meAv.rosary, true); assert.equal(b.App.me.mode, 'seated');
+  // 묵주 없는 상태를 복원하면 내려놓는다. 내려놓기는 자세와 무관하다.
+  b.API.restore(Object.assign({}, st, { rosary: undefined }));
+  assert.equal(b.App.meAv.rosary, false);
+  a.API.resume(); a.API.setRosary({ on: false });
+  assert.equal(a.App.meAv.rosary, false); assert.equal(a.App.meAv.pray, true);
 });

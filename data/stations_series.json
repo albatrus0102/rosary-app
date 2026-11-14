@@ -1,0 +1,636 @@
+{
+ "version": 1,
+ "note": "십자가의 길 그림 연작과 성당별 배정. 이 그림들은 각 성당에 실제로 걸린 14처가 아니라 로사리움이 고른 대체 성화다. 고친 뒤: python3 tools/stations/fetch_series.py && python3 tools/stations/build_series.py && python3 tools/stations/build_stations.py",
+ "allowed_licenses": [
+  "PD",
+  "CC0",
+  "CC-BY"
+ ],
+ "disclosure": "이 그림은 이 성당에 실제로 걸린 작품이 아니라 로사리움이 고른 대체 성화입니다.",
+ "default": "fugel",
+ "assignments": {
+  "basic": "fugel",
+  "stpeter": "previati",
+  "lateran": "oreilly",
+  "maggiore": "corot",
+  "stpaul": "fugel",
+  "milan": "hermann_paul",
+  "florence": "mosler",
+  "myeongdong": "fugel"
+ },
+ "series": [
+  {
+   "id": "fugel",
+   "title": "게프하르트 푸겔 〈십자가의 길〉",
+   "short": "푸겔 연작",
+   "artist": "게프하르트 푸겔",
+   "artist_latin": "Gebhard Fugel",
+   "year": "1921",
+   "artist_death": 1939,
+   "place": "바트 자울가우 성 안토니오 성당(독일)",
+   "medium": "유화",
+   "photographer": "Andreas Praefcke",
+   "license": "PD",
+   "license_label": "Public domain",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "source": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_01.jpg",
+   "changes": "가장자리를 자르고 크기를 줄임",
+   "rights": "확인",
+   "rights_note": "작가 사후 70년 경과(1939 사망). Commons 표시 Public domain. 2026-11-12 확인.",
+   "aspect": 0.809,
+   "fit": "cover",
+   "asset_dir": "assets/images/stations",
+   "pack": "cross_pack.js",
+   "prepare": "existing",
+   "commons_license": "PD",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_01.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_01.jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_02.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_02.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_03.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_03.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_04.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_04.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_05.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_05.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_06.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_06.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_07.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_07.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_08.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_08.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_09.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_09.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_10.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_10.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_11.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_11.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_12.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_12.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_13.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_13.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_14.jpg",
+     "commons": "Saulgau_Antoniuskirche_Kreuzweg_Fugel_Station_14.jpg"
+    }
+   ]
+  },
+  {
+   "id": "previati",
+   "title": "가에타노 프레비아티 〈십자가의 길〉",
+   "short": "프레비아티 연작",
+   "artist": "가에타노 프레비아티",
+   "artist_latin": "Gaetano Previati",
+   "year": "1901–02",
+   "artist_death": 1920,
+   "place": "바티칸 박물관 현대 종교 미술 컬렉션",
+   "medium": "유화",
+   "photographer": "Sailko",
+   "license": "CC-BY",
+   "license_label": "CC BY 3.0",
+   "license_url": "https://creativecommons.org/licenses/by/3.0/",
+   "source": "https://commons.wikimedia.org/wiki/Category:Via_Crucis_by_Gaetano_Previati",
+   "changes": "액자를 잘라 내고 크기를 줄임",
+   "rights": "출시 전 확인",
+   "rights_note": "원작은 작가 사후 70년 경과(1920 사망)로 퍼블릭 도메인. 사진은 Sailko 의 CC BY 3.0(2026-11-14 파일 14개의 위키텍스트 {{self|cc-by-3.0}} 확인). 바티칸 박물관 소장품 촬영물의 상업적 이용 규정은 확인하지 못했다 → 출시 전 확인.",
+   "aspect": 0.87,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/previati",
+   "pack": "cross_pack_previati.js",
+   "prepare": "previati",
+   "fetch_width": 1280,
+   "commons_license": "cc-by-3.0",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_11_gesù_coronato_di_spine_(ecce_homo).jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_11_gesù_coronato_di_spine_(ecce_homo).jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_12_gesù_caricato_della_croce.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_12_gesù_caricato_della_croce.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_13_gesù_cade_la_prima_volta.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_13_gesù_cade_la_prima_volta.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_14_incontro_di_maria_vergine.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_14_incontro_di_maria_vergine.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_15_il_cireneo.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_15_il_cireneo.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_16_la_veronica.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_16_la_veronica.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_17_gesù_cade_la_seconda_volta.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_17_gesù_cade_la_seconda_volta.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_18_incontro_con_le_pie_donne.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_18_incontro_con_le_pie_donne.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_19_gesù_cade_per_la_terza_volta.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_19_gesù_cade_per_la_terza_volta.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_20_gesù_spogliato.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_20_gesù_spogliato.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_22_gesù_inchiodato.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_22_gesù_inchiodato.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_22_crocifissione.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_22_crocifissione.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_23_deposizione.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_23_deposizione.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_24_sepoltura.jpg",
+     "commons": "Gaetano_previati,_via_crucis,_1901-02_(musei_vaticani)_24_sepoltura.jpg"
+    }
+   ],
+   "box": [
+    0.085,
+    0.105,
+    0.915,
+    0.83
+   ]
+  },
+  {
+   "id": "oreilly",
+   "title": "《가톨릭 진리의 아름다운 진주》 십자가의 길 삽화",
+   "short": "1897년 다색 석판화",
+   "artist": "작가 미상(American Lithographic Co. 인쇄)",
+   "artist_latin": "Unknown (American Lithographic Co., N.Y.); in B. O'Reilly, Beautiful Pearls of Catholic Truth",
+   "year": "1897",
+   "artist_death": null,
+   "place": "버나드 오라일리 엮음 《Beautiful Pearls of Catholic Truth》(1897) 삽화",
+   "medium": "다색 석판화",
+   "photographer": "University of California Libraries 스캔(Internet Archive)",
+   "license": "PD",
+   "license_label": "Public domain",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "source": "https://archive.org/details/beautifulpearlso00oreirich",
+   "changes": "책장의 제목·여백을 잘라 내고 크기를 줄임",
+   "rights": "확인",
+   "rights_note": "1897년 미국 간행물(1931년 이전 발행 → 미국 퍼블릭 도메인). Internet Archive 표시 NOT_IN_COPYRIGHT, Commons 사본은 {{PD-old-70-expired}}. 삽화가 이름은 책에 없다(미확인). 2026-11-14 확인.",
+   "aspect": 0.775,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/oreilly",
+   "pack": "cross_pack_oreilly.js",
+   "prepare": "oreilly",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n18",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n18_w1000.jpg",
+     "box": [
+      0.0708,
+      0.0968,
+      0.8438,
+      0.8775
+     ]
+    },
+    {
+     "n": 2,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n19",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n19_w1000.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n22",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n22_w1000.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n23",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n23_w1000.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n26",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n26_w1000.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n27",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n27_w1000.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n30",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n30_w1000.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n31",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n31_w1000.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n34",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n34_w1000.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n35",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n35_w1000.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n38",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n38_w1000.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n39",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n39_w1000.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n42",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n42_w1000.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://archive.org/details/beautifulpearlso00oreirich/page/n43",
+     "fetch": "https://archive.org/download/beautifulpearlso00oreirich/page/n43_w1000.jpg"
+    }
+   ],
+   "bundle_width": 520
+  },
+  {
+   "id": "corot",
+   "title": "장바티스트 카미유 코로 〈로즈니 성당 십자가의 길〉",
+   "short": "코로 연작",
+   "artist": "장바티스트 카미유 코로",
+   "artist_latin": "Jean-Baptiste-Camille Corot",
+   "year": "1853–59",
+   "artist_death": 1875,
+   "place": "로즈니쉬르센 성당(프랑스)",
+   "medium": "유화",
+   "photographer": "미확인(도판 복제, Commons 출처 amolenuvolette.it)",
+   "license": "PD",
+   "license_label": "Public domain (PD-Art)",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "source": "https://commons.wikimedia.org/wiki/Category:Chemin_de_croix_de_l%27%C3%A9glise_de_Rosny_(Seine-et-Oise)_(R1083-1096)_by_Jean-Baptiste-Camille_Corot",
+   "changes": "크기를 줄임",
+   "rights": "확인",
+   "rights_note": "작가 사후 70년 경과(1875 사망). Commons 파일 14개 {{PD-art-two-auto|1875}} 확인(2026-11-14). 도판을 찍은 사람·책은 Commons 에 적혀 있지 않다(미확인) — 평면 작품의 충실한 복제(PD-Art)로 본다.",
+   "aspect": 1.36,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/corot",
+   "pack": "cross_pack_corot.js",
+   "prepare": "plain",
+   "fetch_width": 500,
+   "commons_license": "PD-art-two-auto|1875",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped1).jpg",
+     "commons": "Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped1).jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped2).jpg",
+     "commons": "Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped2).jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped3).jpg",
+     "commons": "Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped3).jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped4).jpg",
+     "commons": "Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped4).jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped5).jpg",
+     "commons": "Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped5).jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped6).jpg",
+     "commons": "Camille_Corot_1853-1859_Le_Chemin_de_Croix_(cropped6).jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped1).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped1).jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped2).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped2).jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped3).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped3).jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped4).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped4).jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped5).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped5).jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped6).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped6).jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped7).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped7).jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped8).jpg",
+     "commons": "Abrupt_Clio_Team_-_Camille_Corot_1853-1859_Le_Chemin_de_Croix_(2)_(cropped8).jpg"
+    }
+   ]
+  },
+  {
+   "id": "hermann_paul",
+   "title": "헤르만 폴 〈Via Crucis〉",
+   "short": "헤르만 폴 목판화",
+   "artist": "르네 조르주 헤르만 폴",
+   "artist_latin": "René Georges Hermann-Paul",
+   "year": "1929",
+   "artist_death": 1940,
+   "place": "아우구스토 달마르·헤르만 폴 《Via Crucis》(파리 Henry Babou, 1929) 목판화",
+   "medium": "목판화",
+   "photographer": "Uto",
+   "license": "CC0",
+   "license_label": "CC0 1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "source": "https://commons.wikimedia.org/wiki/Category:Via_Crucis_-_Hermann-Paul",
+   "changes": "책장 여백을 잘라 내고 크기를 줄임",
+   "rights": "확인",
+   "rights_note": "작가 사후 70년 경과(1940 사망), 1929년 발행(미국 2025-01-01 만료). 사진은 Uto 의 CC0(파일 14개 {{self|cc-zero}} 확인, 2026-11-14). 판화는 Commons 파일 03~16번(01·02는 표지, 17·18은 간기).",
+   "aspect": 1.0,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/hermann_paul",
+   "pack": "cross_pack_hermann_paul.js",
+   "prepare": "hermann_paul",
+   "fetch_width": 960,
+   "commons_license": "cc-zero",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_03.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_03.jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_04.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_04.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_05.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_05.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_06.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_06.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_07.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_07.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_08.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_08.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_09.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_09.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_10.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_10.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_11.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_11.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_12.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_12.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_13.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_13.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_14.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_14.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_15.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_15.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Hermann-Paul_Via_Crucis_16.jpg",
+     "commons": "Hermann-Paul_Via_Crucis_16.jpg"
+    }
+   ],
+   "bundle_width": 480
+  },
+  {
+   "id": "mosler",
+   "title": "D. 모슬러 《The Stations of the Cross》 삽화",
+   "short": "모슬러 목판 삽화",
+   "artist": "D. 모슬러",
+   "artist_latin": "D. Mosler",
+   "year": "1859",
+   "artist_death": null,
+   "place": "《The Stations of the Cross. With fourteen illustrations by D. Mosler》(런던 Burns & Lambert, 1859)",
+   "medium": "목판 삽화",
+   "photographer": "Google Books 스캔(Internet Archive 사본)",
+   "license": "PD",
+   "license_label": "Public domain",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "source": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+   "changes": "책장에서 삽화만 잘라 내고 크기를 줄임",
+   "rights": "확인",
+   "rights_note": "1859년 런던 간행(발행 167년). Internet Archive 항목 표시 Public Domain Mark 1.0(2026-11-14 확인). 삽화가 D. Mosler 의 생몰년은 확인하지 못했다(미확인) — 발행 연도로 보아 퍼블릭 도메인으로 본다.",
+   "aspect": 1.07,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/mosler",
+   "pack": "cross_pack_mosler.js",
+   "prepare": "mosler",
+   "pdf": "https://archive.org/download/the_stations_of_the_cross_with_fourteen_illustrations_1859/the_stations_of_the_cross_with_fourteen_illustrations_1859.pdf",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 7
+    },
+    {
+     "n": 2,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 9
+    },
+    {
+     "n": 3,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 11
+    },
+    {
+     "n": 4,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 13
+    },
+    {
+     "n": 5,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 15
+    },
+    {
+     "n": 6,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 17
+    },
+    {
+     "n": 7,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 19
+    },
+    {
+     "n": 8,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 21
+    },
+    {
+     "n": 9,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 23
+    },
+    {
+     "n": 10,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 25
+    },
+    {
+     "n": 11,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 27
+    },
+    {
+     "n": 12,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 29
+    },
+    {
+     "n": 13,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 31
+    },
+    {
+     "n": 14,
+     "url": "https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859",
+     "pdf_page": 33
+    }
+   ],
+   "bundle_width": 440
+  }
+ ],
+ "not_used": [
+  {
+   "name": "너새니얼 커리어 석판화(1847)",
+   "why": "소장기관(omeka) 개별 이미지 라이선스를 확인하지 못해 쓰지 않음 → 라테라노는 1897년 다색 석판화로 대체"
+  },
+  {
+   "name": "푸겔 뮌헨 연작(1904–08)",
+   "why": "Commons 에서 14점이 모인 파일을 찾지 못함 → 성 바오로는 푸겔 1921 연작 유지"
+  },
+  {
+   "name": "제임스 베일리 석판화(1845, LoC 99401399)",
+   "why": "내려받아 확인함(No known restrictions). 한 장에 작은 장면 14개라 해상도·비율이 낮아 예비로만 둠"
+  }
+ ]
+}

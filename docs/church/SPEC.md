@@ -413,7 +413,8 @@ peerPraying({id,on,ms,k?})  setPeers/peerJoin 의 peer.k   // k:1 = 무릎 꿇�
 ### 30.2 그리기·성능
 - 판 = 캔버스 아틀라스 한 장(2048×1024, low 1024×512; 칸 = 십자가 장식 + 금테 액자 + 그림 + 로마 숫자 판)에 사각형 14개 한 지오메트리(draw call 1) + 나무 뒤판 상자 14개 한 지오메트리(MeshStandard, 그림자 받기만, draw call 1). **성당당 draw call +2, 질감 1장**(high 밉맵 포함 약 11MB, low 약 2.8MB). 성당을 바꾸면 해제한다.
 - 그림 재질은 사진 창과 같은 셰이더(§27): 조명·안개·SSAO 없음(`noAO`), 알파 0 표시로 최종 패스의 색보정·ACES 를 건너뛴다(걷기 프로필에서도 그림 색 = 사진 값), low 는 셰이더가 직접 유리곡선. 밝기 `uK` 0.92(낮) → 밤에는 `env.night` 에 비례해 0.35 배까지. `renderOrder 5.5`. 캔버스의 알파(십자가 둘레 투명)는 윤곽 셰이더가 1px 부드럽게 자른다.
-- `cross_pack.js` 를 못 읽으면 판·근접 이벤트·걷기 모두 없다(콘솔 경고만). `?cross=0` 으로 끈다(시험·비교용).
+- **성당마다 다른 그림 연작(대체 성화, 2026-11-14)**: `cross_data.js` 의 `series = {default, churches:{성당 id → 연작}, packs:{연작 → 파일}}`(원본 `data/stations_series.json`)에 따라 `ChurchWayCross.packLoader` 가 입장한 성당의 연작 아틀라스 **하나만** `<script>` 로 읽는다(기본 연작 푸겔 = `cross_pack.js` → `window.ChurchCrossPack`, 나머지 `cross_pack_<id>.js` → `window.ChurchCrossPacks[id]`, 각 84~116KB). 성당을 옮기면 `release(keep)` 가 앞 연작의 `<script>` 와 data URI 문자열을 내리고 텍스처는 `clear()` 가 dispose 한다(draw call +2·질감 1장 그대로). 아틀라스 칸(216×266)에는 그림을 비율 그대로 넣고 남는 곳은 짙은 나무색이다(가로로 긴 코로·모슬러·헤르만 폴). 각 성당의 실제 14처가 아니라는 안내는 Flutter 묵상 시트·성화 출처 화면이 한다(`docs/ux/STATIONS_OF_CROSS.md`).
+- 연작 파일을 못 읽으면 기본 연작(푸겔)으로 물러나고(`debug().fallbacks`), 그것도 못 읽으면 판·근접 이벤트·걷기 모두 없다(콘솔 경고만). `?cross=0` 으로 끈다(시험·비교용). `debug().series` = 지금 걸린 연작 id.
 
 ### 30.3 브리지
 ```
@@ -443,7 +444,7 @@ walkTo({kind:'cross', index:0..13})          // n처 판 앞 서는 자리로 �
 | 10분(`hiddenReleaseAfter`) | 장면(WebView)을 놓는다(메모리 반환). `state` 를 받아 둔 경우에만 | 장면을 새로 만들고 `init` 뒤 `restore(state)` |
 
 - **위치 따라잡기**: 서버는 새 연결을 입구(spawn)에 두고 `pos` 를 속도 예산(평균 7m/s, 버스트 3.5m)으로 자른다. 그래서 다시 접속하면 마지막 위치를 0.5초마다 최대 8초 보내고(`m:1`, 끝에 `m:0`), 좌석 요청이 `far` 로 거부되면 자리를 잃은 것으로 보지 않고 0.6초 뒤 다시 청한다(최대 24번). 서버 프로토콜은 바꾸지 않았다.
-- **`ChurchResumeState`**(`lib/church/church_resume_state.dart`): 성당 id, x·z·yaw, 좌석, 무릎 꿇음, 카메라(yaw·pitch·zoom·look), 걷던 목적지, 저장 시각. `state` 이벤트를 받을 때마다 메모리와 SharedPreferences(`church_resume_state`, JSON, 개인 정보 없음)에 둔다. 앱이 백그라운드에서 종료된 뒤 **같은 성당에 30분 안에** 다시 들어오면 그 자리에서 시작한다. `ChurchScreen` 이 사라지면(명시적 퇴장) 지운다.
+- **`ChurchResumeState`**(`lib/church/church_resume_state.dart`): 성당 id, x·z·yaw, 좌석, 무릎 꿇음, 묵주 여부(§32.3), 카메라(yaw·pitch·zoom·look), 걷던 목적지, 저장 시각. `state` 이벤트를 받을 때마다 메모리와 SharedPreferences(`church_resume_state`, JSON, 개인 정보 없음)에 둔다. 앱이 백그라운드에서 종료된 뒤 **같은 성당에 30분 안에** 다시 들어오면 그 자리에서 시작한다. `ChurchScreen` 이 사라지면(명시적 퇴장) 지운다.
 - **분석**: 복원·재접속은 `church_enter`·`church_sit` 을 새로 기록하지 않는다(앱이 종료됐다가 새로 들어온 경우는 새 입장이므로 한 번 기록). `church_exit.seconds`·`sat_seconds` 는 보이지 않던 시간을 뺀다. 새 이벤트는 없다.
 
 ### 31.2 브리지
@@ -465,3 +466,49 @@ restore(state) // 새 장면에 상태 적용. 다른 성당의 것이면 무시
 - `tools/church_web/pause_resume.test.mjs`(`node --test`): 실제 `main.js`·`bridge.js` 를 가짜 렌더러로 돌려 pause 뒤 rAF 0회·그리기 0회, resume 뒤 시간·위치 점프 없음·자동 걷기 계속, restore(좌석·자세·카메라·빼앗긴 자리·잘못된 값).
 - `tools/church_web/e2e.mjs`(헤드리스): pause 뒤 2.5초 동안 프레임 수·GL 그리기 수(`renderer.info.render.frame`)·이벤트가 그대로인지, resume·restore.
 - `test/church_resume_test.dart`: 탭·'창' 보기·화면 push/pop 뒤 같은 `ChurchScreen` 상태·장면, 3분 뒤 끊김과 재접속·좌석 재요청, 10분 뒤 장면 해제와 복원, 앱 백그라운드·종료 뒤 복원, `ChurchResumeState` 직렬화.
+
+## 32. 성당 안 묵주기도 ('기도하기' 시트, 손에 든 묵주, 와이어 `r`)
+
+제대 앞 '기도하기'에 **'묵주기도 하기'** 가 생겼다. 고르면 아바타가 묵주를 들고 가까운 자리에 앉아 묵주기도 카드가 열린다. 다른 사람에게도 묵주를 든 모습으로 보인다.
+
+### 32.1 어디서 무엇을 고르는가 (탭 수 최소)
+
+| 내 상태 | 단추 | 일어나는 일 |
+|---|---|---|
+| 제대 앞에 서 있음 | '기도하기' → 시트 | **잠시 기도하기**: 그 자리에서 고개 숙임(이전의 '기도하기', 이모트 2). **묵주기도 하기**: 묵주를 들고 가까운 빈 자리로 걸어가 **저절로 앉고** 묵주기도 카드가 열린다(옆에 자리가 있으면 걷지 않고 바로 앉는다). |
+| 좌석 옆에 서 있음 | '앉기' (시트 없음) | 이전과 같다: 1탭으로 앉고 묵주기도 카드(오늘의 신비)가 열린다. 이제 묵주도 든다. |
+| 앉아 있음(카드) | 다음/이전, ⋮(잠깐 쉬기·전체 화면으로 기도·끝내기), 앉아서\|무릎 꿇고, 일어나기 | 이전과 같다. 기도 중에만 묵주를 들고, 잠깐 쉬기·마침·일어나기 때 내려놓는다. |
+| 성수대 앞 | '성호 긋기' | 이전과 같다(시트 없음). |
+
+- 시트(`lib/church/church_prayer_choice_sheet.dart`, M3 모달 바텀시트): 항목 2개(최소 높이 72dp, large 16dp, 묵주 그림은 설정의 묵주 모양 `RosaryStyle.fullImage` 를 48dp 로 재사용 — 새 에셋 없음). 항목을 누르면 바로 닫히고 실행된다(시트 안 1탭). 지난번에 고른 항목을 `secondaryContainer` + ✓ 로 강조한다: `AppSettings.churchPrayerChoice`(shared_preferences 키 `churchPrayerChoice`, `brief`|`rosary`, 기본 `brief`). 강조만 하고 시트를 건너뛰지는 않는다(잘못 눌러 자리로 걸어가 버리는 일을 막는다).
+- 신비: 성당에서 바치다 일어난 세션 → 저장된 진행분(`savedPrayer`) → 홈에서 고른 신비(`settings.mysterySet`, 기본 오늘의 신비) 순으로 미리 고른다. 부제는 '오늘의 신비: ○○' / '이어서 하기: ○○' / 이름만. '신비 바꾸기'를 누르면 네 신비 칩이 펼쳐진다.
+- 접근성: 항목 라벨은 '묵주기도 하기, 오늘의 신비: ○○', '잠시 기도하기, 제대 앞에서 고개 숙여 기도해요'(버튼, 선택 상태 포함).
+- **왜 서서 카드를 열지 않고 자리에 앉히는가**: ① 서버는 앉아 있을 때만 `pray` 를 받는다(서 있으면 무시 → 다른 사람에게 보이지 않는다). ② 기도 카드(자세 선택·일어나기·이어 하기·복원)가 좌석을 전제로 한다. ③ 제대 앞 자리는 스테이션이라 오래 서 있으면 다른 사람을 막는다. 걷기를 끊거나(왼쪽 화면 터치·'걷는 중' 취소) 길·자리가 없으면 묵주를 내려놓고 그만둔다(저절로 앉지 않는다).
+- 기록: 성당 기도 세션(`ChurchPrayerController` → `PrayerTracking`, `source: church`) 그대로다. 묵주기도 하기로 열어도 세션은 하나이고, 전체 화면 기도(`PrayerScreen`)는 같은 세션을 받아 따로 기록하지 않는다(중복 없음). 일어났다가 같은 신비로 다시 고르면 같은 세션을 잇는다. 다른 신비를 고르면 앞 세션을 닫고(진행이 있으면 기록 1건) 새로 연다.
+- 분석: `church_prayer_choice{church, kind: brief|rosary}`(동의 `church`). 시트를 연 것·고른 신비는 보내지 않는다.
+
+### 32.2 손에 든 묵주 (`avatar.js`)
+
+- `Avatar.setRosary(bool)`: 처음 들 때 `Mesh` 1개를 만든다. 지오메트리는 **모든 아바타가 함께 쓰는 한 덩어리**(`ChurchAvatar.rosaryGeometry()`: 물방울 모양 구슬 고리 30알 + 가운데 큰 알 + 3알 + 십자가, 정점 색, 약 1,100 삼각형, 길이 0.24m), 재질은 기존 `far`(정점 색 `MeshStandardMaterial`) 재사용. 텍스처·새 에셋 없음. **draw call 은 묵주를 든 가까운 아바타(LOD0, 18m 안)마다 +1**, LOD1·LOD2(임포스터)에서는 그리지 않는다. 그림자는 드리우지 않는다.
+- 위치: 뼈에 고정하지 않고 매 프레임 손 위치만 따른다(늘 아래로 늘어진다). 서 있을 때 = 오른손바닥, 고리는 몸 옆면과 나란히(다리에 파묻히지 않게). 앉아 손을 모으면 = 두 손바닥 사이, 고리는 정면. 무릎 꿇고 앞 등받이에 손을 얹으면 등받이 뒷면과 몸 사이로 0.11m 당겨(책 선반 위) 등받이를 뚫지 않는다. 걸을 때는 조금 흔들린다. 들고 내릴 때 0.3초쯤 크기로 나타났다 사라진다.
+- 다른 사람: `net_view.js` 가 `rec.st === 'p' && rec.ro === 1` 일 때 `setRosary(true)`.
+
+### 32.3 브리지·와이어·복원
+
+```
+ChurchAPI.setRosary({on})                 // 내 아바타. 서 있을 때(자리로 걷는 동안)도 든다. 성당을 바꾸면 내려놓는다
+peerPraying({id,on,ms,k?,r?})             // r:1 = 묵주를 들고 기도
+setPeers/peerJoin 의 peer.ro              // 1 = 묵주. (peer.r 은 방향이라 이름이 다르다)
+{"e":"state",...,"rosary":1}              // 들고 있을 때만. restore(state) 가 되살린다
+{"t":"pray","on":true,"ms":2,"r":1}  →  {"t":"praying","id":"..","on":true,"ms":2,"r":1}
+welcome/join 의 PeerInfo: {"st":"p","ms":2,"ro":1}
+```
+- 서버(`room_logic.ts`): `pray.r` 은 선택, **0|1 만**(그 밖의 값은 `bad_msg`). `on:true` 이고 앉아 있을 때만 저장한다(`on:false`·`stand`·연결 끊김이면 0). 0이면 필드를 생략한다(= 묵주 없음, 이전 클라이언트와 호환). `PeerView`·스냅샷(하이버네이션 복원)에서는 `r` 이 방향(yaw)이라 **`ro`** 로 싣는다. `k`(무릎 꿇기)와 함께 쓸 수 있다.
+- 지금 앱은 성당의 기도 카드가 곧 묵주기도이므로 기도 중(`on:true`)이면 항상 `r:1` 을 보낸다. 묵주 없는 앉은 기도(묵상 등)를 나중에 만들면 `r` 을 빼면 된다.
+- `ChurchResumeState.rosary`(JSON `rosary:true`): 장면을 새로 만들 때 묵주를 든 채로 복원한다. 앱이 종료됐다가 들어온 경우에는 앉아 있던 때만 되살린다(서서 자리로 가던 중이었다면 내려놓고 그 자리에서 시작).
+
+### 32.4 시험·스크린샷
+
+- `tools/church_web/rosary.test.mjs`: 지오메트리 예산·공유, 메시 1개·해제·재사용, LOD, 서기/앉아 기도/무릎 꿇기 손 위치와 비침투(다리·무릎·배·등받이·책 선반·바닥), `net_view` 의 `ro`/`r`. `pause_resume.test.mjs`: `setRosary`·`state.rosary`·`restore`.
+- `server/church/test/room_logic.test.ts` `pray r`, `test/church_rosary_test.dart`(시트 항목·기본값·기억·신비 바꾸기·접근성·360×800/412×915/360×640 × 밝게/어둡게 × 글자 2배, 선택 → 걷기 → 앉기 → 카드 → 쉬기/마침/일어나기, 취소·실패·자리 뺏김, 와이어, 분석).
+- 스크린샷: `node tools/church_web/rosary_shots.mjs <dir>`(아바타), `flutter test test/zz_church_rosary_shots_test.dart --dart-define=CHURCH_ROSARY_SHOTS=<dir>`(시트).

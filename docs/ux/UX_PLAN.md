@@ -341,6 +341,7 @@ P0 14개, P1 19개, P2 7개, 모두 40개다.
 | `widget_tap` | usage | `action`(start/resume) | 위젯 효과 |
 | `church_gesture` | church | `church`, `e`(0..n) | 동작 사용 |
 | `church_mode` | church | `church`, `mode`(silence/simple/tap_move), `on`(bool) | 고요·간단 모드 수요 |
+| `church_prayer_choice` | church | `church`, `kind`(brief/rosary) | 제대 앞 '기도하기' 시트에서 고른 것(신비·내용은 보내지 않음) |
 | `church_report` | church | `church`, `reason`(enum) | 신고 빈도(대상 식별자 없음) |
 
 ---
