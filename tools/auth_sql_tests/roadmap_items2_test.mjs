@@ -17,6 +17,8 @@ const USER = '44444444-4444-4444-8444-444444444444';
 // round 가 없는 것만 이 마이그레이션(1차 검토)의 몫이다. round 2 는 roadmap_items3_test.mjs 가 본다.
 const U_ALL = JSON.parse(readFileSync(path.join(root, 'docs/ux/UX_REVIEW_ITEMS.json'), 'utf8'));
 const U_ITEMS = U_ALL.filter((x) => x.round == null);
+// 네 번째 마이그레이션(T-xx 추가 + C-12·G-01·G-29·U-33 보정)은 roadmap_items4_test.mjs 가 본다. 이 시험은 그 이전 상태와 비교한다.
+const M4_IDS = new Set(['C-12', 'G-01', 'G-29', 'U-33']);
 const U2_IDS = new Set(U_ALL.filter((x) => x.round === 2).map((x) => x.id));
 const REVIEW2_IDS = new Set(U_ITEMS.filter((x) => x.review2).map((x) => x.id));
 const G_ITEMS = JSON.parse(readFileSync(path.join(root, 'docs/ux/GLASS_ROADMAP_ITEMS.json'), 'utf8'));
@@ -163,13 +165,14 @@ await check('reality sync on an untouched server: only C-09 moves (todo -> revie
   assert(/실기기 확인 대기/.test(c09.owner_note), c09.owner_note);
 });
 
-await check('static fallback admin/roadmap_seed.json equals the DB after M2 (apart from what the 3rd migration adds)', async () => {
+await check('static fallback admin/roadmap_seed.json equals the DB after M2 (apart from what the 3rd and 4th migrations add)', async () => {
   const rows = (await B.sudo(`select id, release, priority, effort, status, owner_note, sort_order from public.roadmap_items order by sort_order, id`)).rows;
-  const seed = SEED.items.filter((i) => !U2_IDS.has(i.id));
+  const seed = SEED.items.filter((i) => !U2_IDS.has(i.id) && !/^T-/.test(i.id));
   eq(seed.length, rows.length);
   for (const r of rows) {
     const s = seed.find((i) => i.id === r.id);
     assert(s, 'seed json lacks ' + r.id);
+    if (M4_IDS.has(r.id)) continue;
     // the 3rd migration rewrites the default note of the U items the second review touched
     const note = REVIEW2_IDS.has(r.id) ? r.owner_note : s.owner_note;
     eq([s.release, s.priority, s.effort, s.status, note, s.sort_order], [r.release, r.priority, r.effort, r.status, r.owner_note, r.sort_order], r.id);

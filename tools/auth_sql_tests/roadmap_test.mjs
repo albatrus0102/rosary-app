@@ -47,7 +47,8 @@ await db.exec(`
 const files = readdirSync(migDir).filter((f) => f.endsWith('.sql')).sort();
 // 2차 화면 캡처 검토(세 번째 마이그레이션)로 늘어난 U 과제 수.
 const U2 = JSON.parse(readFileSync(path.join(migDir, '../../docs/ux/UX_REVIEW_ITEMS.json'), 'utf8')).filter((x) => x.round === 2).length;
-const TOTAL = 40 + 18 + 34 + U2;
+const T_COUNT = JSON.parse(readFileSync(path.join(migDir, '../../docs/ux/BACKLOG_ROADMAP_ITEMS.json'), 'utf8')).length;
+const TOTAL = 40 + 18 + 34 + U2 + T_COUNT;
 const roadmap3Sql = readFileSync(path.join(migDir, '20261115000000_roadmap_items_3.sql'), 'utf8');
 const roadmapSql = readFileSync(path.join(migDir, '20261113000000_roadmap.sql'), 'utf8');
 const roadmap2Sql = readFileSync(path.join(migDir, '20261114000000_roadmap_items_2.sql'), 'utf8');
@@ -77,9 +78,9 @@ await check('nobody can read or write roadmap tables directly (no table privileg
 });
 
 let board;
-await check('admin lists the 40 original items (+18 U, +34 G) and 8 decisions with expected seed content', async () => {
+await check('admin lists the 40 original items (+18 U, +34 G, +U2, +T) and 8 decisions with expected seed content', async () => {
   board = (await asUser(ADMIN, `select public.admin_roadmap() j`)).rows[0].j;
-  const base = board.items.filter((i) => /^[A-Z]+-\d+$/.test(i.id) && !/^[UG]-/.test(i.id));
+  const base = board.items.filter((i) => /^[A-Z]+-\d+$/.test(i.id) && !/^[UGT]-/.test(i.id));
   eq(base.length, 40, 'original UX_PLAN items');
   eq(board.items.length, TOTAL, 'all items');
   eq(board.decisions.length, 8);
@@ -87,8 +88,8 @@ await check('admin lists the 40 original items (+18 U, +34 G) and 8 decisions wi
   const by = (r) => base.filter((i) => i.release === r);
   eq([by('R1').length, by('R2').length, by('R3').length], [14, 19, 7]);
   eq(by('R1').map((i) => i.status).filter((s) => s !== 'review').length, 0, 'all R1 review');
-  // 2번째 마이그레이션이 C-09(구현됨, 실기기 확인 대기)를 review 로 올린다. 나머지 R2/R3 는 todo.
-  eq(base.filter((i) => i.release !== 'R1' && i.status !== 'todo').map((i) => i.id), ['C-09'], 'only C-09 moved to review');
+  // 2번째 마이그레이션이 C-09, 4번째가 C-12(구현됨, 실기기·검수 확인 대기)를 review 로 올린다. 나머지 R2/R3 는 todo.
+  eq(base.filter((i) => i.release !== 'R1' && i.status !== 'todo').map((i) => i.id), ['C-09', 'C-12'], 'only C-09, C-12 moved to review');
   eq(base.find((i) => i.id === 'C-09').status, 'review');
   eq(base.filter((i) => i.priority === 'P0').length, 14);
   eq(base.filter((i) => i.priority === 'P1').length, 19);
@@ -139,6 +140,7 @@ await check('seed fills rows that were deleted but keeps the others', async () =
   await db.exec(roadmapSql);                                   // 1st migration brings back B-01 only
   eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL - 1);
   await db.exec(roadmap3Sql);                                  // 3rd migration does not own U-01
+  await db.exec(readFileSync(path.join(migDir, '20261116000000_roadmap_items_4.sql'), 'utf8'));   // nor does the 4th
   eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL - 1);
   await db.exec(roadmap2Sql);                                  // 2nd migration brings back U-01
   eq(Number((await sudo(`select count(*)::int n from public.roadmap_items`)).rows[0].n), TOTAL);
