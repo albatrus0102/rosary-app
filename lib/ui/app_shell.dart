@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app/app_services.dart';
 import '../app/leader_audio_store.dart';
@@ -93,6 +94,12 @@ class _AppShellState extends State<AppShell> {
   /// 성당 탭의 보기(기본 '성당'). 화면 id가 보기에 따라 달라 셸도 안다.
   GlassSegment _segment = GlassSegment.church;
 
+  /// 마지막으로 뒤로가기를 눌러 종료 안내를 띄운 시각('한 번 더 누르면 종료').
+  DateTime? _lastExitBack;
+
+  /// 종료 확인 창구: 안내 후 이 시간 안에 한 번 더 누르면 앱을 닫는다.
+  static const Duration exitConfirmWindow = Duration(seconds: 2);
+
   @override
   void initState() {
     super.initState();
@@ -147,6 +154,24 @@ class _AppShellState extends State<AppShell> {
     ),
   );
 
+  void _backToExit(BuildContext context) {
+    final now = DateTime.now();
+    final last = _lastExitBack;
+    if (last != null && now.difference(last) <= exitConfirmWindow) {
+      unawaited(SystemNavigator.pop());
+      return;
+    }
+    _lastExitBack = now;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.hideCurrentSnackBar();
+    messenger?.showSnackBar(
+      const SnackBar(
+        content: Text('한 번 더 누르면 종료돼요'),
+        duration: exitConfirmWindow,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final wc = windowClassOf(context);
@@ -193,10 +218,18 @@ class _AppShellState extends State<AppShell> {
     );
 
     // 다른 탭에서 뒤로가기를 누르면 앱을 닫지 않고 첫 탭(성당)으로 돌아간다.
+    // 첫 탭의 성당 보기에서는 '한 번 더 누르면 종료'(실수로 나가는 것을 막는다).
+    // '창' 보기의 뒤로가기는 GlassTab 이 성당 보기로 돌려 보낸다(여기서는 아무것도 하지 않는다).
     return PopScope(
-      canPop: _index == _church,
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _select(_church);
+        if (didPop) return;
+        if (_index != _church) {
+          _select(_church);
+          return;
+        }
+        if (_segment != GlassSegment.church) return;
+        _backToExit(context);
       },
       child: wc.isWide ? _buildWide(context, wc, body) : _buildCompact(body),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/app_services.dart';
 import 'package:rosary_app/app/leader_voice.dart';
@@ -279,11 +280,46 @@ void main() {
     expect(find.byType(GlassGallery), findsNothing);
     expect(find.text('가상 성당'), findsOneWidget);
     expect(tester.widget<IndexedStack>(find.byType(IndexedStack)).index, 0);
-    // 성당 보기(메인)에서는 뒤로가기를 막지 않는다(= 앱 기본 동작: 종료).
-    final popScopes = tester
-        .widgetList<PopScope>(find.byType(PopScope))
-        .where((p) => !p.canPop);
-    expect(popScopes, isEmpty);
+  });
+
+  testWidgets('성당 보기(메인)에서 뒤로가기: 한 번은 안내, 한 번 더 누르면 종료', (tester) async {
+    final popCalls = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemNavigator.pop') popCalls.add(call.method);
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await _pumpShell(
+      tester,
+      const Size(360, 800),
+      initialTab: AppShellTab.church,
+    );
+    expect(find.text('한 번 더 누르면 종료돼요'), findsNothing);
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(find.text('한 번 더 누르면 종료돼요'), findsOneWidget);
+    expect(popCalls, isEmpty);
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(popCalls, hasLength(1));
+  });
+
+  testWidgets('다른 탭에서 뒤로가기는 종료 안내 없이 성당 탭으로 간다', (tester) async {
+    await _pumpShell(tester, const Size(360, 800));
+    await tester.tap(_nav('기록'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(tester.widget<IndexedStack>(find.byType(IndexedStack)).index, 0);
+    expect(find.text('한 번 더 누르면 종료돼요'), findsNothing);
   });
 
   testWidgets('더보기: 묵주 스타일·설정은 새 화면으로 열리고 뒤로 오면 더보기다', (tester) async {
