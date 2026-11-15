@@ -2476,6 +2476,21 @@
       "status": "todo",
       "owner_note": "원작은 PD, 스캔본 CC0/CC BY 만. 수만 면으로 줄이고 원거리 LOD. 유료 AI 3D 도구는 쓰지 않음.",
       "sort_order": 165
+    },
+    {
+      "id": "T-81",
+      "title": "실물 묵주 중심 3D 기도 화면(C안 기본 + A안 전체 보기 + 묵주 갤러리, 1차 3종: 올리브 원목·진주·청색 수정)",
+      "category": "신규 요청",
+      "release": "R2",
+      "priority": "P0",
+      "effort": "L",
+      "risk": "WebView 3D 성능·발열(30~60분), 성당 WebView 와 메모리 중복, 진동 모터 편차, 음성 자동 진행과 수동 진행 중복",
+      "depends": "–",
+      "value": "'묵주를 꺼내 보고 기도하고 싶어서 실행하는 앱' — 로사리움의 방향성 핵심",
+      "evidence": "docs/rosary/ROSARY_3D_REQUEST.md · 사용자+ChatGPT 요구서(2026-11-15)",
+      "status": "todo",
+      "owner_note": "다음 세션 1순위. 사용자 요청으로 착수 직후 중단(2026-11-15). 재질 14종·볼륨키·폴더블·실기기 발열은 후속.",
+      "sort_order": 166
     }
   ],
   "decisions": [
