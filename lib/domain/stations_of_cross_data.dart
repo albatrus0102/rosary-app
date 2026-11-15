@@ -5,16 +5,14 @@
 part of 'stations_of_cross.dart';
 
 // dart format off
-const String _acclamation = "우리는 당신을 경배하며 찬미하나이다. 거룩한 십자가로 세상을 구하셨나이다.";
-const String _opening = "주님, 사랑으로 걸으신 십자가의 길을 저희도 따라 걷습니다. 한 처 한 처에서 주님의 고통을 묵상하며 저희 마음을 새롭게 하소서.";
 const String _closing = "주님, 십자가의 길을 함께 걸었습니다. 주님께서 보여 주신 사랑을 기억하며 오늘 만나는 이웃에게 그 사랑을 나누게 하소서. 아멘.";
 const String _artCredit = "게프하르트 푸겔, 〈십자가의 길〉, 1921, 바트 자울가우 성 안토니오 성당. 사진 Andreas Praefcke. Public domain, Wikimedia Commons";
-const int _dataVersion = 1;
+const int _dataVersion = 2;
 
 const List<StationOfCross> _stations = [
   StationOfCross(
     n: 1,
-    title: "예수님께서 사형 선고를 받으심",
+    title: "예수님께서 사형 선고 받으심",
     short: "사형 선고",
     refs: "마태 27,22-26; 마르 15,6-15; 루카 23,13-25; 요한 19,1-16",
     tradition: false,
@@ -23,7 +21,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 2,
-    title: "예수님께서 십자가를 지심",
+    title: "예수님께서 십자가 지심",
     short: "십자가를 지심",
     refs: "요한 19,17; 마태 27,31; 마르 15,20",
     tradition: false,
@@ -32,7 +30,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 3,
-    title: "예수님께서 처음 넘어지심",
+    title: "예수님께서 기력이 떨어져 넘어지심",
     short: "처음 넘어지심",
     refs: "전승(성경에 직접 나오지 않음)",
     tradition: true,
@@ -50,7 +48,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 5,
-    title: "키레네 사람 시몬이 예수님을 도와 십자가를 짐",
+    title: "시몬이 예수님을 도와 십자가 짐",
     short: "시몬이 십자가를 짐",
     refs: "마태 27,32; 마르 15,21; 루카 23,26",
     tradition: false,
@@ -59,7 +57,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 6,
-    title: "베로니카가 수건으로 예수님의 얼굴을 닦아 드림",
+    title: "베로니카, 수건으로 예수님의 얼굴을 닦아 드림",
     short: "베로니카",
     refs: "전승(성경에 직접 나오지 않음)",
     tradition: true,
@@ -68,7 +66,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 7,
-    title: "예수님께서 두 번째 넘어지심",
+    title: "기력이 다하신 예수님께서 두 번째 넘어지심",
     short: "두 번째 넘어지심",
     refs: "전승(성경에 직접 나오지 않음)",
     tradition: true,
@@ -95,7 +93,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 10,
-    title: "예수님께서 옷 벗김을 당하심",
+    title: "예수님께서 옷 벗김 당하심",
     short: "옷 벗김을 당하심",
     refs: "마태 27,33-35; 마르 15,24; 루카 23,34; 요한 19,23-24",
     tradition: false,
@@ -122,7 +120,7 @@ const List<StationOfCross> _stations = [
   ),
   StationOfCross(
     n: 13,
-    title: "예수님의 시신을 십자가에서 내림",
+    title: "제자들이 예수님 시신을 십자가에서 내림",
     short: "십자가에서 내림",
     refs: "마태 27,57-59; 마르 15,42-46; 루카 23,50-53; 요한 19,38",
     tradition: false,

@@ -8,6 +8,7 @@ import '../app/track.dart';
 import '../domain/stations_of_cross.dart';
 import '../domain/stations_series.dart';
 import 'widgets/single_art_image.dart';
+import 'widgets/stations_prayer_view.dart';
 
 /// 묵상 시트를 어디서 열었는지(분석 `from` 값, 열거형 영문 키).
 enum StationsFrom { more, today, church }
@@ -26,7 +27,7 @@ enum StationsSheetAction {
   /// 순례: [StationsSheetResult.n] 다음 처로 걸어가기.
   next,
 
-  /// 마침 기도까지 마쳤다.
+  /// 14처 뒤 마침 화면까지 마쳤다.
   complete,
 }
 
@@ -67,7 +68,8 @@ Future<StationsSheetResult?> showStationsSheet(
   );
 }
 
-/// 그림, 처 번호·명칭, 성경 근거, 묵상, 청원, 이전/다음(또는 '다음 처로'), 14처 뒤 마침 기도.
+/// 그림, 처 번호·명칭, 성경 근거, 공식 기도문(1처는 시작 기도 포함), 접힌 '묵상', 이전/다음(또는
+/// '다음 처로'), 14처 뒤 마침 화면.
 class StationsSheet extends StatefulWidget {
   const StationsSheet({
     super.key,
@@ -264,28 +266,15 @@ class _StationsSheetState extends State<StationsSheet> {
           ),
         ),
         const SizedBox(height: AppSpace.sm),
-        Text(
-          StationsOfCross.acclamation,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
+        // 공식 기도문(『가톨릭 기도서』). 1처에서는 시작 기도를 먼저 바친다.
+        if (st.n == 1) ...[
+          const StationsOpeningPrayer(),
+          const SizedBox(height: AppSpace.sm),
+        ],
+        StationsPrayerSection(n: st.n),
         const SizedBox(height: AppSpace.sm),
-        Text(st.meditation, style: theme.textTheme.bodyLarge),
-        const SizedBox(height: AppSpace.sm),
-        Card.filled(
-          margin: EdgeInsets.zero,
-          color: scheme.secondaryContainer,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpace.sm),
-            child: Text(
-              st.petition,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: scheme.onSecondaryContainer,
-              ),
-            ),
-          ),
-        ),
+        // 앱에서 쓴 보조 묵상은 접어 둔다.
+        StationsMeditationTile(station: st),
         const SizedBox(height: AppSpace.sm),
         StationsArtNote(series: series),
       ],
@@ -317,7 +306,7 @@ class _StationsSheetState extends State<StationsSheet> {
         ),
         const SizedBox(height: AppSpace.sm),
         Text(
-          '마침 기도',
+          '십자가의 길을 마치며',
           style: theme.textTheme.titleLarge,
           textAlign: TextAlign.center,
         ),
@@ -325,6 +314,17 @@ class _StationsSheetState extends State<StationsSheet> {
         Text(
           StationsOfCross.closing,
           style: theme.textTheme.bodyLarge,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpace.sm),
+        // 공식 기도서에는 마침 기도가 따로 없다: 위 글이 앱의 글임을 밝힌다.
+        Text(
+          '『가톨릭 기도서』의 십자가의 길은 제14처 기도로 끝납니다. '
+          '위 글은 로사리움이 덧붙인 마침 묵상이며 공식 기도문이 아닙니다.',
+          key: const ValueKey('stations-closing-note'),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -360,7 +360,7 @@ class _StationsSheetState extends State<StationsSheet> {
         key: const ValueKey('stations-next'),
         style: FilledButton.styleFrom(minimumSize: const Size(64, 48)),
         icon: Icon(_n >= _last ? Icons.wb_twilight : Icons.directions_walk),
-        label: Text(_n >= _last ? '마침 기도' : '다음 처로'),
+        label: Text(_n >= _last ? '마치며' : '다음 처로'),
         onPressed: _next,
       );
     } else {
@@ -375,7 +375,7 @@ class _StationsSheetState extends State<StationsSheet> {
         key: const ValueKey('stations-next'),
         style: FilledButton.styleFrom(minimumSize: const Size(64, 48)),
         icon: Icon(_n >= _last ? Icons.wb_twilight : Icons.chevron_right),
-        label: Text(_n >= _last ? '마침 기도' : '다음'),
+        label: Text(_n >= _last ? '마치며' : '다음'),
         onPressed: _next,
       );
     }
@@ -443,10 +443,10 @@ class StationsOfCrossScreen extends StatelessWidget {
             ),
             sliver: SliverList.list(
               children: [
-                Text(
-                  StationsOfCross.opening,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                const Card.outlined(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpace.sm),
+                    child: StationsOpeningPrayer(),
                   ),
                 ),
                 const SizedBox(height: AppSpace.sm),
@@ -504,8 +504,11 @@ class StationsOfCrossScreen extends StatelessWidget {
                 const SizedBox(height: AppSpace.sm),
                 StationsArtNote(series: _series),
                 const SizedBox(height: AppSpace.sm),
+                const StationsPrayerLegend(),
+                const SizedBox(height: AppSpace.sm),
                 Text(
-                  '묵상 문구는 성경과 전승을 바탕으로 새로 쓴 짧은 글입니다. '
+                  '각 처의 ‘묵상’에 접혀 있는 글은 성경과 전승을 바탕으로 로사리움이 새로 쓴 '
+                  '짧은 글이며 공식 기도문이 아닙니다. '
                   '성당 탭에서 성당 안 14처 판 앞을 걸으며 순례할 수도 있어요.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,

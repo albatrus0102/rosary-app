@@ -1,8 +1,10 @@
 // 십자가의 길(14처) 데이터와 전례 시기 계산(부활절·사순 시기).
 //
 // 문구의 원본은 `data/stations_of_cross.json`이고 `stations_of_cross_data.dart`는 생성 파일이다
-// (`python3 tools/stations/build_stations.py`). 모든 문구는 사제·교구 검수 전 초안이다
-// (`docs/ux/STATIONS_OF_CROSS.md`). 성경은 장·절 표시만 적고 본문은 옮기지 않는다.
+// (`python3 tools/stations/build_stations.py`). 처 명칭은 한국천주교주교회의 『가톨릭 기도서』
+// ‘십자가의 길’의 표기 그대로다. 묵상·청원·마침 글은 앱에서 새로 쓴 보조 글(사제·교구 검수 전
+// 초안, `docs/ux/STATIONS_OF_CROSS.md`)이고, 공식 기도문은 `stations_prayers.dart`에 있다.
+// 성경은 장·절 표시만 적고 본문은 옮기지 않는다.
 
 part 'stations_of_cross_data.dart';
 
@@ -21,7 +23,7 @@ class StationOfCross {
   /// 1..14
   final int n;
 
-  /// 전통 명칭. 예: '예수님께서 사형 선고를 받으심'.
+  /// 『가톨릭 기도서』의 처 명칭. 예: '예수님께서 사형 선고 받으심'.
   final String title;
 
   /// 짧은 이름(칩·목록 보조). 예: '사형 선고'.
@@ -33,10 +35,10 @@ class StationOfCross {
   /// 성경에 직접 나오지 않는 전승의 처(3·4·6·7·9처).
   final bool tradition;
 
-  /// 짧은 묵상(복음 사건 서술, 2문장 안팎).
+  /// 앱에서 쓴 짧은 보조 묵상(복음 사건 서술, 2문장 안팎). 공식 기도문이 아니다.
   final String meditation;
 
-  /// 한 줄 청원.
+  /// 앱에서 쓴 한 줄 청원. 공식 기도문이 아니다.
   final String petition;
 
   /// '제3처'.
@@ -60,13 +62,8 @@ abstract final class StationsOfCross {
   /// 데이터 판(원본 JSON의 version).
   static const int dataVersion = _dataVersion;
 
-  /// 각 처 앞의 짧은 전통 환호(검수 필요).
-  static const String acclamation = _acclamation;
-
-  /// 시작 기도(새로 쓴 짧은 문구, 검수 필요).
-  static const String opening = _opening;
-
-  /// 마침 기도(새로 쓴 짧은 문구, 검수 필요).
+  /// 14처 뒤 마침 글(앱에서 쓴 짧은 문구, 검수 필요). 『가톨릭 기도서』의 십자가의 길에는
+  /// 마침 기도가 따로 없다.
   static const String closing = _closing;
 
   /// 14점 공통 그림 출처 표시.

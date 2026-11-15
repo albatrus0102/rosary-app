@@ -2,13 +2,15 @@
 """십자가의 길(14처) 데이터 생성기 (단일 원본 → Dart + JS).
 
 입력
-  data/stations_of_cross.json    처 번호·명칭·성경 근거(장·절만)·묵상·청원·공통 문구(사제·교구 검수 전 초안)
+  data/stations_of_cross.json    처 번호·명칭(공식 표기)·성경 근거(장·절만)·보조 묵상·청원(사제·교구 검수 전 초안)
+  data/stations_prayers.json     공식 기도문(한국천주교주교회의 『가톨릭 기도서』 ‘십자가의 길’; 줄·기호·지시문·출처)
   data/stations_series.json      그림 연작(작가·연도·촬영자·라이선스·파일 URL)과 성당 id → 연작 배정
 
 출력(직접 고치지 말 것)
   lib/domain/stations_of_cross_data.dart   앱(묵상 시트·기도 배경·더보기)용 const 목록
   assets/church/cross_data.js              성당 3D 14처 판용 번호·로마 숫자·짧은 이름 + 성당별 그림 연작(window.ChurchCrossData)
   lib/domain/stations_series_data.dart     그림 연작(대체 성화)·성당별 배정·출처(data/stations_series.json 에서)
+  lib/domain/stations_prayers_data.dart    공식 기도문(시작 기도·처별 기도·기호)(data/stations_prayers.json 에서)
 
 사용: python3 tools/stations/build_stations.py          생성
       python3 tools/stations/build_stations.py --check  생성물이 최신인지 확인(다르면 종료 코드 1)
@@ -23,6 +25,11 @@ OUT_DART = os.path.join(ROOT, 'lib', 'domain', 'stations_of_cross_data.dart')
 OUT_JS = os.path.join(ROOT, 'assets', 'church', 'cross_data.js')
 SRC_SERIES = os.path.join(ROOT, 'data', 'stations_series.json')
 OUT_SERIES_DART = os.path.join(ROOT, 'lib', 'domain', 'stations_series_data.dart')
+SRC_PRAYERS = os.path.join(ROOT, 'data', 'stations_prayers.json')
+OUT_PRAYERS_DART = os.path.join(ROOT, 'lib', 'domain', 'stations_prayers_data.dart')
+# 공식 기도서 기호(일러두기 4): 역할 키 → 기호. Dart enum StationsPrayerRole 과 같은 순서·이름.
+PRAYER_ROLES = {'leader': '┼', 'cantor': '○', 'response': '●', 'all': '◎'}
+ANNOUNCE_TAIL = '을 묵상합시다.'
 LICENSE_ENUM = {'PD': 'pd', 'CC0': 'cc0', 'CC-BY': 'ccBy'}
 
 ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV']
@@ -51,7 +58,7 @@ def load():
             check_text(s[k], f'{s["n"]}처 {k}')
         if not isinstance(s['tradition'], bool):
             raise SystemExit(f'{s["n"]}처 tradition 은 true/false')
-    for k in ('acclamation', 'opening', 'closing', 'art_credit', 'review'):
+    for k in ('closing', 'art_credit', 'review'):
         check_text(d[k], k)
     return d
 
@@ -69,8 +76,6 @@ def gen_dart(d):
         "part of 'stations_of_cross.dart';",
         '',
         '// dart format off',
-        f'const String _acclamation = {dq(d["acclamation"])};',
-        f'const String _opening = {dq(d["opening"])};',
         f'const String _closing = {dq(d["closing"])};',
         f'const String _artCredit = {dq(d["art_credit"])};',
         f'const int _dataVersion = {int(d["version"])};',
@@ -89,6 +94,124 @@ def gen_dart(d):
             f'    petition: {dq(s["petition"])},',
             '  ),',
         ]
+    out += ['];', '// dart format on', '']
+    return '\n'.join(out)
+
+
+def load_prayers(d):
+    """공식 기도문을 읽고 형식을 확인한다. [d]는 load() 결과(처 명칭 대조용)."""
+    with open(SRC_PRAYERS, encoding='utf-8') as f:
+        p = json.load(f)
+
+    def check_lines(lines, where):
+        if not isinstance(lines, list) or not lines:
+            raise SystemExit(f'{where}: 줄이 없다')
+        for i, ln in enumerate(lines):
+            if isinstance(ln, dict):
+                if list(ln.keys()) != ['rubric']:
+                    raise SystemExit(f'{where} {i + 1}줄: 지시문은 {{"rubric": …}} 형식')
+                check_text(ln['rubric'], f'{where} {i + 1}줄 지시문')
+            else:
+                check_text(ln, f'{where} {i + 1}줄')
+        if all(isinstance(ln, dict) for ln in lines):
+            raise SystemExit(f'{where}: 기도문 줄이 없다(지시문뿐)')
+
+    def check_part(part, where):
+        if part.get('role') not in PRAYER_ROLES:
+            raise SystemExit(f'{where}: 알 수 없는 역할 {part.get("role")!r}')
+        check_lines(part['lines'], where)
+
+    for k in ('title', 'publisher', 'edition', 'section', 'url', 'text_modified', 'retrieved', 'copyright', 'credit'):
+        check_text(p['source'][k], f'기도문 source.{k}')
+    if list(p['markers'].keys()) != list(PRAYER_ROLES.keys()):
+        raise SystemExit('markers 는 leader, cantor, response, all 순서여야 한다')
+    for role, m in p['markers'].items():
+        if m['glyph'] != PRAYER_ROLES[role]:
+            raise SystemExit(f'markers.{role}: 기호는 {PRAYER_ROLES[role]} 이어야 한다')
+        check_text(m['official'], f'markers.{role}.official')
+        check_text(m['label'], f'markers.{role}.label')
+    for i, r in enumerate(p['intro_rubrics']):
+        check_text(r, f'intro_rubrics {i + 1}')
+    check_part(p['opening'], '시작 기도')
+    check_part(p['to_station'], '처로 가며')
+    if '{n}' not in p['to_station']['rubric']:
+        raise SystemExit('to_station.rubric 에 {n} 이 있어야 한다')
+    check_text(p['to_station']['rubric'], 'to_station.rubric')
+    if not p['verse']:
+        raise SystemExit('verse 가 비었다')
+    for i, part in enumerate(p['verse']):
+        check_part(part, f'계응 {i + 1}')
+    for i, r in enumerate(p['after']):
+        check_text(r, f'after {i + 1}')
+    st = p['stations']
+    if [s['n'] for s in st] != list(range(1, 15)):
+        raise SystemExit('기도문 stations 는 1~14처 순서여야 한다')
+    for s, base in zip(st, d['stations']):
+        w = f'기도문 {s["n"]}처'
+        check_text(s['announce'], f'{w} announce')
+        # 처 명칭은 공식 본문의 '…을 묵상합시다.' 앞부분과 글자까지 같아야 한다.
+        if s['announce'] != base['title'] + ANNOUNCE_TAIL:
+            raise SystemExit(f'{w}: 명칭이 공식 본문과 다르다: {base["title"]!r} / {s["announce"]!r}')
+        check_lines(s['prayer'], f'{w} prayer')
+        if any(isinstance(ln, dict) for ln in s['prayer']):
+            raise SystemExit(f'{w}: 처별 기도에는 지시문을 넣지 않는다(after 에 둔다)')
+    return p
+
+
+def gen_prayers_dart(p):
+    def line(ln):
+        if isinstance(ln, dict):
+            return f'StationsPrayerLine.rubric({dq(ln["rubric"])})'
+        return f'StationsPrayerLine({dq(ln)})'
+
+    def part(pt, indent):
+        o = [f'{indent}StationsPrayerPart(', f'{indent}  role: StationsPrayerRole.{pt["role"]},', f'{indent}  lines: [']
+        o += [f'{indent}    {line(ln)},' for ln in pt['lines']]
+        o += [f'{indent}  ],', f'{indent}),']
+        return o
+
+    src = p['source']
+    out = [
+        '// 생성 파일 — 직접 고치지 말 것.',
+        '// 원본: data/stations_prayers.json → python3 tools/stations/build_stations.py',
+        f'// {src["publisher"]} {src["title"]} {src["section"]} ({src["url"]}, 본문 수정일 {src["text_modified"]}, 대조 {src["retrieved"]}).',
+        f'// {src["copyright"]}',
+        '',
+        "part of 'stations_prayers.dart';",
+        '',
+        '// dart format off',
+        f'const int _prayersVersion = {int(p["version"])};',
+        f'const String _sourceTitle = {dq(src["title"])};',
+        f'const String _sourcePublisher = {dq(src["publisher"])};',
+        f'const String _sourceEdition = {dq(src["edition"])};',
+        f'const String _sourceUrl = {dq(src["url"])};',
+        f'const String _sourceCopyright = {dq(src["copyright"])};',
+        f'const String _sourceCredit = {dq(src["credit"])};',
+        '',
+        '// 기호별 (공식 일러두기의 뜻, 화면·낭독용 짧은 이름). StationsPrayerRole.values 순서.',
+        'const List<(String, String, String)> _markers = [',
+    ]
+    out += [f'  ({dq(m["glyph"])}, {dq(m["official"])}, {dq(m["label"])}),' for m in p['markers'].values()]
+    out += ['];', '', 'const List<String> _introRubrics = [']
+    out += [f'  {dq(r)},' for r in p['intro_rubrics']]
+    out += ['];', '', 'const StationsPrayerPart _openingPart =']
+    o = part(p['opening'], '    ')
+    o[0] = o[0].lstrip()
+    out[-1] += ' ' + o[0]
+    out += o[1:-1] + ['    );', '']
+    out += [f'const String _toStationRubric = {dq(p["to_station"]["rubric"])};', 'const StationsPrayerPart _toStationPart =']
+    o = part(p['to_station'], '    ')
+    out[-1] += ' ' + o[0].lstrip()
+    out += o[1:-1] + ['    );', '', 'const List<StationsPrayerPart> _versePart = [']
+    for pt in p['verse']:
+        out += part(pt, '  ')
+    out += ['];', '', 'const List<String> _afterRubrics = [']
+    out += [f'  {dq(r)},' for r in p['after']]
+    out += ['];', '', '// 처별 (알림 문장, 기도 줄).', 'const List<(String, List<String>)> _stationPrayers = [']
+    for s in p['stations']:
+        out += ['  (', f'    {dq(s["announce"])},', '    [']
+        out += [f'      {dq(ln)},' for ln in s['prayer']]
+        out += ['    ],', '  ),']
     out += ['];', '// dart format on', '']
     return '\n'.join(out)
 
@@ -183,7 +306,9 @@ def gen_js(d, sd):
 def main():
     d = load()
     sd = load_series()
-    files = {OUT_DART: gen_dart(d), OUT_JS: gen_js(d, sd), OUT_SERIES_DART: gen_series_dart(sd)}
+    pd = load_prayers(d)
+    files = {OUT_DART: gen_dart(d), OUT_JS: gen_js(d, sd), OUT_SERIES_DART: gen_series_dart(sd),
+             OUT_PRAYERS_DART: gen_prayers_dart(pd)}
     if '--check' in sys.argv:
         stale = []
         for p, s in files.items():
