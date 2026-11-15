@@ -296,7 +296,7 @@
           if (idx >= 0) { var ii = idx % g.nx, jj = (idx - ii) / g.nx; best = { x: cx(g, ii), z: cz(g, jj) }; }
         }
         if (!best) continue;
-        out.push({ index: si, x: best.x, z: best.z, yaw: yawToward(best.x, best.z, S.x, S.z), reach: rr, stand: { x: S.x, z: S.z } });
+        out.push({ index: si, x: best.x, z: best.z, yaw: yawToward(best.x, best.z, S.x, S.z), reach: rr, stand: { x: S.x, z: S.z }, shrine: !!S.shrine, label: S.label });
       }
       return out;
     }

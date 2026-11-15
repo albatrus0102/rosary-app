@@ -414,6 +414,7 @@
     var st = S.stations(), best = null, bd = 1e9, cur = App.near.station;
     var list = [['altar', st.altar]];
     st.font.forEach(function (f) { list.push(['font', f]); });
+    st.candle.forEach(function (c) { if (c.shrine) list.push(['altar', c]); });   // 성모상 앞(shrine.js): 제대 앞과 같은 '기도하기' 칩
     for (var i = 0; i < list.length; i++) {
       var k = list[i][0], s = list[i][1], d = Math.hypot(me.x - s.x, me.z - s.z);
       var lim = cur === k ? 2.0 : 1.3;

@@ -80,7 +80,7 @@ export function measureRaw(id, opts = {}) {
   const sb = makeSandbox();
   if (opts.search) sb.location.search = opts.search;
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_' + id + '.js'].forEach(run);
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_' + id + '.js'].forEach(run);
   const b = sb.ChurchBuilders[id];
   if (!b) throw new Error('빌더 없음: ' + id);
   const ctx = sb.ChurchKit.createContext({ layout: b.layout, quality: opts.quality || 'low' });

@@ -51,7 +51,7 @@ const ZONE_PREFIX = [['aisle', 'aisle'], ['trWest', 'transept_west_wall'], ['trE
   ['cfLower', 'counterfacade_lower'], ['cfUpper', 'counterfacade_upper'], ['clere', 'clerestory'], ['tiburio', 'tiburio'], ['amb', 'ambulatory'], ['chap', 'transept_chapel']];
 const zoneOfKey = (key) => { const z = ZONE_PREFIX.find((p) => key.startsWith(p[0])); return z ? z[1] : null; };
 
-export const CORE = ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'];
+export const CORE = ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'];
 /** 샌드박스에 assets/church 의 파일을 차례로 싣는다(시험 공용) */
 export function runFiles(sb, files) { for (const f of files) vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f }); return sb; }
 

@@ -13,7 +13,7 @@ let now = 1000;
 const ctx = vm.createContext({ console, Math, Date, Float32Array, Float64Array, Uint16Array, Uint8Array, Map, Set, performance: { now: () => now },
   document: { createElement: () => ({ width: 0, height: 0, getContext: () => fake2d }) } });
 ctx.window = ctx;
-for (const f of ['three.min.js', 'palette.js', 'baptismal_names.js', 'geo.js', 'label_fit.js', 'layouts.js', 'scene_logic.js', 'avatar.js', 'net_view.js']) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
+for (const f of ['three.min.js', 'palette.js', 'baptismal_names.js', 'geo.js', 'label_fit.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'avatar.js', 'net_view.js']) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const A = ctx.ChurchAvatar, T = ctx.THREE, RO = A.ROSARY;
 const CFG = { g: 0, skin: 1, style: 0, hair: 2, outfit: 6, name: 0, nv: 2 };
 const RAIL = { fwd: 1.22, y: 0.145, rail: true };   // 줄 간격 1.9m 의 무릎틀(scene_logic.kneelSpot)

@@ -79,6 +79,7 @@
       if (ret.floorZones) ret.floorZones.forEach(function (z) { S.zones.push(z); });
       if (ret.group) ctx.root.add(ret.group);
     }
+    if (root.ChurchShrine && !builder.viewing) { try { root.ChurchShrine.build(ctx, layout); } catch (e) { /* 성모 기도 자리(shrine.js) */ } }
     var logic = root.ChurchLogic.create(layout, { colliders: S.colliders, zones: S.zones });
 
     var world = new T.Group();

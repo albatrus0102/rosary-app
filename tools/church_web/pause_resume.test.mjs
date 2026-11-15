@@ -28,7 +28,7 @@ function boot(opts = {}) {
   sb.FlutterChurch = { postMessage: (s) => ev.push(JSON.parse(s)) };
   vm.createContext(sb);
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'controls.js', 'bridge.js'].forEach(run);
+  ['three.min.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'controls.js', 'bridge.js'].forEach(run);
   const T = sb.THREE;
   // --- 가짜들 ---
   const audio = { calls: [], suspended: 0, ctx: { state: 'running', suspend() { audio.suspended++; this.state = 'suspended'; } }, setAmbient(on) { audio.calls.push(!!on); if (on) this.ctx.state = 'running'; }, footstep: noop, chime: noop };

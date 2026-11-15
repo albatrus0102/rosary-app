@@ -14,6 +14,7 @@ export function loadLayouts() {
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sandbox, { filename: f });
   run('scene_logic.js');
   run('layouts.js');
+  run('shrine_places.js'); run('shrine.js');   // 성모 기도 자리의 봉헌초 받침(맨 끝 스탠드)
   const builders = fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort();
   for (const f of builders) run(f); // 최상위에서 THREE 를 쓰면 여기서 에러가 난다(빌더 규칙 위반)
   const L = sandbox.ChurchLayouts, Logic = sandbox.ChurchLogic;

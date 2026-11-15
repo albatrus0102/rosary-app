@@ -111,7 +111,7 @@ check('taken seat is not offered again', await page.evaluate(() => __church.logi
   const tp = (x, z) => page.evaluate(([x, z]) => { const m = __church.me; m.x = x; m.z = z; m.vx = m.vz = 0; }, [x, z]);
   check('basic: 2 station markers (candle + altar), no font', await page.evaluate(() => __church.markers && __church.markers.items.map((i) => i.kind).sort().join(',') === 'altar,candle'));
   const stEv = await page.evaluate(() => window.__ev.filter((e) => e.e === 'stations').pop());
-  check('stations event announces candle/altar/font counts', stEv && stEv.candle === 1 && stEv.altar === 1 && stEv.font === 0, stEv);
+  check('stations event announces candle/altar/font counts', stEv && stEv.candle === 2 && stEv.altar === 1 && stEv.font === 0, stEv);
   // 1) 촛불 봉헌대
   await tp(5, 3); await clearEv();
   await page.evaluate(() => ChurchAPI.walkTo({ kind: 'candle' }));

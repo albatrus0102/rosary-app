@@ -70,7 +70,8 @@
       ring.rotation.x = -Math.PI / 2; ring.position.set(s.x, floor + 0.05, s.z); ring.renderOrder = 7;
       var hit = new T.Mesh(hitGeo, hitMat);
       hit.rotation.x = -Math.PI / 2; hit.position.set(s.x, floor + 0.06, s.z);
-      var lt = labelTexs[kind] || (labelTexs[kind] = labelTexture(LABELS[kind] || kind));
+      var lk = s.label || kind;   // 성모 기도 자리처럼 스테이션이 제 이름표를 가질 수 있다
+      var lt = labelTexs[lk] || (labelTexs[lk] = labelTexture(s.label || LABELS[kind] || kind));
       var spMat = new T.SpriteMaterial({ map: lt.tex, transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0, toneMapped: false });
       var sp = new T.Sprite(spMat);
       // 이름표는 서는 자리가 아니라 대상(스탠드/제대) 쪽 위에 떠 있다

@@ -37,7 +37,7 @@ export function loadChurches(opts = {}) {
   const sb = makeSandbox();
   if (opts.search) sb.location.search = opts.search;   // 예: '?photoglass=0' (G-29 대응표 끄기)
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
   fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort().forEach(run);
   const out = [];
   for (const id of Object.keys(sb.ChurchBuilders)) {
@@ -45,6 +45,7 @@ export function loadChurches(opts = {}) {
     if (b.viewing) continue;   // 감상실(ch_glass, 'glass_room')은 성당이 아니다: 좌석·스테이션·서버 없음
     const ctx = sb.ChurchKit.createContext({ layout: b.layout, quality: 'low' });
     const ret = b.build(ctx);
+    if (sb.ChurchShrine) sb.ChurchShrine.build(ctx, b.layout);   // world.js 와 같은 자리에서 성모 기도 자리 충돌체
     const S = ctx._;
     const colliders = S.colliders.slice(), zones = S.zones.slice();
     if (ret && ret.colliders) ret.colliders.forEach((c) => colliders.push(c));
