@@ -19,7 +19,7 @@
   "entrance": "+z (서)",
   "plusX": "남",
   "minusX": "북",
-  "summary": "입구 +z(서, 테베레 강 쪽) → 후진 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: 실제 대성전은 후진이 동쪽(interiors/stpaul.md), 모델 축은 입구 +z 공통 규약.",
+  "summary": "입구 +z(서, 테베레 강 쪽) → 후진 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: interiors/stpaul.md 184행.",
   "bounds": {
    "x0": -18.8,
    "x1": 18.8,
