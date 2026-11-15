@@ -1,0 +1,1055 @@
+{
+  "project": "Rosarium / Milan Cathedral",
+  "status": "DEVELOPMENT_ONLY",
+  "asset_count": 55,
+  "verified_restoration_count": 0,
+  "release_approved_count": 0,
+  "warning": "These are AI design prototypes, NOT reproductions of 55 actual historical windows. DEV identifiers are unrelated to official V identifiers. Do not present as actual works. The image-generator infographics contain unverified counts, placement and text; do not use them as factual sources.",
+  "assets": [
+    {
+      "id": "DEV-001",
+      "texture_file": "textures/DEV-001.png",
+      "width": 669,
+      "height": 1522,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "individual_concept",
+      "origin": "a_highly_detailed_vertical_isolated_stained_glas.png",
+      "source_bbox": [
+        176,
+        5,
+        848,
+        1529
+      ],
+      "notes": "성 요한 복음사가 주제 시안; 실제 V01 구성 미검증"
+    },
+    {
+      "id": "DEV-002",
+      "texture_file": "textures/DEV-002.png",
+      "width": 331,
+      "height": 1071,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "previous_milan_concept",
+      "origin": "마리아와_그리스도의_고딕_스테인드글라스_창문.png",
+      "source_bbox": [
+        353,
+        4,
+        687,
+        1079
+      ],
+      "notes": "기존 밀라노 양식 창작 시안"
+    },
+    {
+      "id": "DEV-003",
+      "texture_file": "textures/DEV-003.png",
+      "width": 330,
+      "height": 1071,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "previous_milan_concept",
+      "origin": "마리아와_그리스도의_고딕_스테인드글라스_창문.png",
+      "source_bbox": [
+        760,
+        4,
+        1093,
+        1079
+      ],
+      "notes": "기존 밀라노 양식 창작 시안"
+    },
+    {
+      "id": "DEV-004",
+      "texture_file": "textures/DEV-004.png",
+      "width": 63,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        28,
+        27,
+        93,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-005",
+      "texture_file": "textures/DEV-005.png",
+      "width": 66,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        126,
+        27,
+        195,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-006",
+      "texture_file": "textures/DEV-006.png",
+      "width": 66,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        224,
+        26,
+        292,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-007",
+      "texture_file": "textures/DEV-007.png",
+      "width": 65,
+      "height": 314,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        322,
+        27,
+        389,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-008",
+      "texture_file": "textures/DEV-008.png",
+      "width": 62,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        424,
+        26,
+        489,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-009",
+      "texture_file": "textures/DEV-009.png",
+      "width": 67,
+      "height": 316,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        526,
+        26,
+        596,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-010",
+      "texture_file": "textures/DEV-010.png",
+      "width": 65,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        627,
+        26,
+        695,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-011",
+      "texture_file": "textures/DEV-011.png",
+      "width": 63,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        732,
+        26,
+        798,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-012",
+      "texture_file": "textures/DEV-012.png",
+      "width": 68,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        831,
+        26,
+        902,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-013",
+      "texture_file": "textures/DEV-013.png",
+      "width": 66,
+      "height": 315,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        932,
+        26,
+        1000,
+        344
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-014",
+      "texture_file": "textures/DEV-014.png",
+      "width": 63,
+      "height": 342,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        28,
+        361,
+        93,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-015",
+      "texture_file": "textures/DEV-015.png",
+      "width": 65,
+      "height": 347,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        126,
+        356,
+        195,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-016",
+      "texture_file": "textures/DEV-016.png",
+      "width": 67,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        224,
+        359,
+        293,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-017",
+      "texture_file": "textures/DEV-017.png",
+      "width": 65,
+      "height": 343,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        322,
+        361,
+        390,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-018",
+      "texture_file": "textures/DEV-018.png",
+      "width": 64,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        422,
+        360,
+        489,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-019",
+      "texture_file": "textures/DEV-019.png",
+      "width": 68,
+      "height": 345,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        526,
+        358,
+        596,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-020",
+      "texture_file": "textures/DEV-020.png",
+      "width": 66,
+      "height": 343,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        628,
+        360,
+        696,
+        706
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-021",
+      "texture_file": "textures/DEV-021.png",
+      "width": 65,
+      "height": 345,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        730,
+        358,
+        798,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-022",
+      "texture_file": "textures/DEV-022.png",
+      "width": 68,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        830,
+        359,
+        902,
+        706
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-023",
+      "texture_file": "textures/DEV-023.png",
+      "width": 66,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        932,
+        359,
+        1000,
+        707
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-024",
+      "texture_file": "textures/DEV-024.png",
+      "width": 65,
+      "height": 341,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        28,
+        721,
+        96,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-025",
+      "texture_file": "textures/DEV-025.png",
+      "width": 65,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        128,
+        718,
+        195,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-026",
+      "texture_file": "textures/DEV-026.png",
+      "width": 65,
+      "height": 343,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        225,
+        720,
+        294,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-027",
+      "texture_file": "textures/DEV-027.png",
+      "width": 66,
+      "height": 341,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        324,
+        722,
+        392,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-028",
+      "texture_file": "textures/DEV-028.png",
+      "width": 63,
+      "height": 343,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        424,
+        720,
+        490,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-029",
+      "texture_file": "textures/DEV-029.png",
+      "width": 68,
+      "height": 343,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        526,
+        719,
+        596,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-030",
+      "texture_file": "textures/DEV-030.png",
+      "width": 66,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        628,
+        719,
+        696,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-031",
+      "texture_file": "textures/DEV-031.png",
+      "width": 67,
+      "height": 345,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        728,
+        717,
+        797,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-032",
+      "texture_file": "textures/DEV-032.png",
+      "width": 69,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        830,
+        718,
+        901,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-033",
+      "texture_file": "textures/DEV-033.png",
+      "width": 67,
+      "height": 344,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        930,
+        718,
+        1000,
+        1066
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-034",
+      "texture_file": "textures/DEV-034.png",
+      "width": 66,
+      "height": 360,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        28,
+        1082,
+        96,
+        1446
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-035",
+      "texture_file": "textures/DEV-035.png",
+      "width": 65,
+      "height": 361,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        128,
+        1082,
+        195,
+        1446
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-036",
+      "texture_file": "textures/DEV-036.png",
+      "width": 67,
+      "height": 362,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        226,
+        1080,
+        295,
+        1445
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-037",
+      "texture_file": "textures/DEV-037.png",
+      "width": 65,
+      "height": 360,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        324,
+        1081,
+        393,
+        1445
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-038",
+      "texture_file": "textures/DEV-038.png",
+      "width": 67,
+      "height": 361,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        424,
+        1082,
+        493,
+        1445
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-039",
+      "texture_file": "textures/DEV-039.png",
+      "width": 67,
+      "height": 360,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        526,
+        1082,
+        597,
+        1445
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-040",
+      "texture_file": "textures/DEV-040.png",
+      "width": 68,
+      "height": 363,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        628,
+        1079,
+        698,
+        1445
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-041",
+      "texture_file": "textures/DEV-041.png",
+      "width": 65,
+      "height": 362,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        729,
+        1079,
+        798,
+        1444
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-042",
+      "texture_file": "textures/DEV-042.png",
+      "width": 69,
+      "height": 363,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        830,
+        1079,
+        901,
+        1445
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-043",
+      "texture_file": "textures/DEV-043.png",
+      "width": 66,
+      "height": 361,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "low_resolution_atlas_crop",
+      "origin": "a_series_of_55_stained_glass_windows_from_the_mila.png",
+      "source_bbox": [
+        932,
+        1081,
+        1001,
+        1446
+      ],
+      "notes": "시트에서 추출한 익명 창문; 실제 성당의 작품·위치와 대응하지 않음"
+    },
+    {
+      "id": "DEV-044",
+      "texture_file": "textures/DEV-044.png",
+      "width": 58,
+      "height": 112,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        122,
+        491,
+        180,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-045",
+      "texture_file": "textures/DEV-045.png",
+      "width": 58,
+      "height": 112,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        202,
+        491,
+        260,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-046",
+      "texture_file": "textures/DEV-046.png",
+      "width": 58,
+      "height": 111,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        283,
+        491,
+        341,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-047",
+      "texture_file": "textures/DEV-047.png",
+      "width": 58,
+      "height": 114,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        364,
+        491,
+        422,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-048",
+      "texture_file": "textures/DEV-048.png",
+      "width": 58,
+      "height": 113,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        443,
+        491,
+        501,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-049",
+      "texture_file": "textures/DEV-049.png",
+      "width": 58,
+      "height": 112,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        523,
+        491,
+        581,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-050",
+      "texture_file": "textures/DEV-050.png",
+      "width": 58,
+      "height": 113,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        603,
+        491,
+        661,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-051",
+      "texture_file": "textures/DEV-051.png",
+      "width": 58,
+      "height": 113,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        681,
+        491,
+        739,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-052",
+      "texture_file": "textures/DEV-052.png",
+      "width": 58,
+      "height": 114,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        759,
+        491,
+        817,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-053",
+      "texture_file": "textures/DEV-053.png",
+      "width": 58,
+      "height": 113,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        835,
+        491,
+        893,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-054",
+      "texture_file": "textures/DEV-054.png",
+      "width": 58,
+      "height": 112,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        912,
+        491,
+        970,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    },
+    {
+      "id": "DEV-055",
+      "texture_file": "textures/DEV-055.png",
+      "width": 58,
+      "height": 113,
+      "kind": "AI_generated_prototype",
+      "historical_window_id": null,
+      "restoration_verified": false,
+      "release_approved": false,
+      "quality": "very_low_resolution_atlas_crop",
+      "origin": "AI sample sheet (picture crops only)",
+      "source_bbox": [
+        988,
+        491,
+        1046,
+        605
+      ],
+      "notes": "시각/UV 테스트 전용; 세부 도상과 창 번호 확인 불가"
+    }
+  ]
+}

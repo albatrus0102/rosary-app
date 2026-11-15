@@ -1,0 +1,1430 @@
+{
+  "version": "0.4-dev-placement",
+  "purpose": "55 development placeholder textures, not historical reproductions",
+  "coordinate_convention": {
+    "entrance": "west (local model convention)",
+    "altar": "east (local model convention)",
+    "right_when_facing_altar": "south",
+    "left_when_facing_altar": "north",
+    "suggested_threejs_axes": "+Z toward altar, +X north, -X south, +Y up; adapt to existing model, do not rotate entire scene",
+    "note": "Use landmarks rather than absolute geographic azimuth. When camera faces +Z with +Y up, camera-right is -X."
+  },
+  "plan_source": "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+  "academic_numbering_source": "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm",
+  "warning": "DEV and MIL/V ids are NOT equivalent historical works; numeric pairing is solely an arbitrary development assignment. Plan P ids differ from archival V ids and CVMA. Do not use generated infographics as evidence. 49-55 have no assigned historical location. Lower facade directions conflict between sources; confirm anchors before placement. World positions require model inspection.",
+  "rows": [
+    {
+      "dev_id": "DEV-001",
+      "texture_file": "textures/DEV-001.png",
+      "source_image_dimensions_px": [
+        669,
+        1522
+      ],
+      "tracking_target": "MIL-001",
+      "plan_id": "P01",
+      "archive_id": "V01",
+      "target_subject_ko": "성 요한 사도의 생애",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 1번째 번호 창",
+      "anchor_key": "plan_P01",
+      "placement_evidence": "plan_and_archive_supported",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.17,
+      "glass_height_m": 15.49,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/stories-of-saint-john-the-apostle-cristoforo-de-mottis-and-frati-gesuati/cgEGZF3F6tBF7g"
+      ]
+    },
+    {
+      "dev_id": "DEV-002",
+      "texture_file": "textures/DEV-002.png",
+      "source_image_dimensions_px": [
+        331,
+        1071
+      ],
+      "tracking_target": "MIL-002",
+      "plan_id": "P02",
+      "archive_id": "V02",
+      "target_subject_ko": "구약과 그리스도 수난",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 2번째 번호 창",
+      "anchor_key": "plan_P02",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/fAWxmamTg90OIg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-003",
+      "texture_file": "textures/DEV-003.png",
+      "source_image_dimensions_px": [
+        330,
+        1071
+      ],
+      "tracking_target": "MIL-003",
+      "plan_id": "P03",
+      "archive_id": "V03",
+      "target_subject_ko": "구약",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 3번째 번호 창",
+      "anchor_key": "plan_P03",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/fAWxmamTg90OIg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-004",
+      "texture_file": "textures/DEV-004.png",
+      "source_image_dimensions_px": [
+        63,
+        315
+      ],
+      "tracking_target": "MIL-004",
+      "plan_id": "P04",
+      "archive_id": "V04",
+      "target_subject_ko": "구약",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 4번째 번호 창",
+      "anchor_key": "plan_P04",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/fAWxmamTg90OIg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-005",
+      "texture_file": "textures/DEV-005.png",
+      "source_image_dimensions_px": [
+        66,
+        315
+      ],
+      "tracking_target": "MIL-005",
+      "plan_id": "P05",
+      "archive_id": "V05",
+      "target_subject_ko": "신약성경 이야기",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 5번째 번호 창",
+      "anchor_key": "plan_P05",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/stories-from-the-new-testament-veneranda-fabbrica-del-duomo-di-milano/uAVxjUYrWfJFLg?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-006",
+      "texture_file": "textures/DEV-006.png",
+      "source_image_dimensions_px": [
+        66,
+        315
+      ],
+      "tracking_target": "MIL-006",
+      "plan_id": "P06",
+      "archive_id": "V06",
+      "target_subject_ko": "성 엘리지오",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 6번째 번호 창",
+      "anchor_key": "plan_P06",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/dwVhhSbG8HncIg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-007",
+      "texture_file": "textures/DEV-007.png",
+      "source_image_dimensions_px": [
+        65,
+        314
+      ],
+      "tracking_target": "MIL-007",
+      "plan_id": "P07",
+      "archive_id": "V07",
+      "target_subject_ko": "복자 페라리·슈스터 추기경",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 7번째 번호 창",
+      "anchor_key": "plan_P07",
+      "placement_evidence": "plan_and_archive_supported",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/ewWBBphjT3_NIA?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-008",
+      "texture_file": "textures/DEV-008.png",
+      "source_image_dimensions_px": [
+        62,
+        315
+      ],
+      "tracking_target": "MIL-008",
+      "plan_id": "P08",
+      "archive_id": "V08",
+      "target_subject_ko": "성녀 아녜스·테클라·성 마리아 마조레",
+      "zone": "south_aisle",
+      "location_ko": "남측 외벽(제대 바라볼 때 오른쪽), 입구에서 제대 방향 8번째 번호 창",
+      "anchor_key": "plan_P08",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/stories-of-saint-agnes-saint-thecla-and-saint-mary-major-veneranda-fabbrica-del-duomo-di-milano/SAVx1B6S-RqgLw?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-009",
+      "texture_file": "textures/DEV-009.png",
+      "source_image_dimensions_px": [
+        67,
+        316
+      ],
+      "tracking_target": "MIL-009",
+      "plan_id": "P09",
+      "archive_id": "V09",
+      "target_subject_ko": "성 제르바시오·프로타시오",
+      "zone": "south_transept",
+      "location_ko": "남익랑 서쪽으로 접근하는 벽의 P09 (P08 다음, P11 앞)",
+      "anchor_key": "plan_P09",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 3.0,
+      "glass_height_m": 21.6,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/OAUxAaJs_RZIIg",
+        "https://artsandculture.google.com/asset/stories-of-saints-gervasius-and-protasius-0095/egH4CzinSShs1A",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-010",
+      "texture_file": "textures/DEV-010.png",
+      "source_image_dimensions_px": [
+        65,
+        315
+      ],
+      "tracking_target": "MIL-010",
+      "plan_id": "P10",
+      "archive_id": "V10",
+      "target_subject_ko": "성 야고보(대)",
+      "zone": "south_transept",
+      "location_ko": "남익랑 서쪽으로 접근하는 벽의 P10 (P08 다음, P11 앞)",
+      "anchor_key": "plan_P10",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/stories-of-saint-james-the-great-veneranda-fabbrica-del-duomo-di-milano/xgUxgWytw3dMLw?hl=en",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-011",
+      "texture_file": "textures/DEV-011.png",
+      "source_image_dimensions_px": [
+        63,
+        315
+      ],
+      "tracking_target": "MIL-011",
+      "plan_id": "P11",
+      "archive_id": "V11",
+      "target_subject_ko": "성 요한 보노: 교구 치유·아리우스파 추방·로마 여행·장례",
+      "zone": "south_transept_chapel",
+      "location_ko": "남익랑 끝 성 요한 보노 경당, 도면 P11 (측면)",
+      "anchor_key": "plan_P11",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/saint-john-the-good-veneranda-fabbrica-del-duomo-di-milano/EwXBzeODVz63IQ"
+      ]
+    },
+    {
+      "dev_id": "DEV-012",
+      "texture_file": "textures/DEV-012.png",
+      "source_image_dimensions_px": [
+        68,
+        315
+      ],
+      "tracking_target": "MIL-012",
+      "plan_id": "P12",
+      "archive_id": "V12",
+      "target_subject_ko": "성 요한 보노의 영광",
+      "zone": "south_transept_chapel",
+      "location_ko": "남익랑 끝 성 요한 보노 경당, 도면 P12 (끝 중앙)",
+      "anchor_key": "plan_P12",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/saint-john-the-good-veneranda-fabbrica-del-duomo-di-milano/EwXBzeODVz63IQ"
+      ]
+    },
+    {
+      "dev_id": "DEV-013",
+      "texture_file": "textures/DEV-013.png",
+      "source_image_dimensions_px": [
+        66,
+        315
+      ],
+      "tracking_target": "MIL-013",
+      "plan_id": "P13",
+      "archive_id": "V13",
+      "target_subject_ko": "성 요한 보노: 주교 서품·밀라노 귀환·데시오 성당·로마 공의회",
+      "zone": "south_transept_chapel",
+      "location_ko": "남익랑 끝 성 요한 보노 경당, 도면 P13 (측면)",
+      "anchor_key": "plan_P13",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/saint-john-the-good-veneranda-fabbrica-del-duomo-di-milano/EwXBzeODVz63IQ"
+      ]
+    },
+    {
+      "dev_id": "DEV-014",
+      "texture_file": "textures/DEV-014.png",
+      "source_image_dimensions_px": [
+        63,
+        342
+      ],
+      "tracking_target": "MIL-014",
+      "plan_id": "P14",
+      "archive_id": "V14",
+      "target_subject_ko": "알렉산드리아의 성녀 카타리나",
+      "zone": "south_transept",
+      "location_ko": "남익랑 동쪽/제대 쪽 복귀 구간 도면 P14",
+      "anchor_key": "plan_P14",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/hwVRGPnE_2KEIA"
+      ]
+    },
+    {
+      "dev_id": "DEV-015",
+      "texture_file": "textures/DEV-015.png",
+      "source_image_dimensions_px": [
+        65,
+        347
+      ],
+      "tracking_target": "MIL-015",
+      "plan_id": "P15",
+      "archive_id": "V15",
+      "target_subject_ko": "성 마르티노·성모 봉헌",
+      "zone": "south_transept",
+      "location_ko": "남익랑 동쪽/제대 쪽 복귀 구간 도면 P15",
+      "anchor_key": "plan_P15",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/2gUBeGZECtP9LA"
+      ]
+    },
+    {
+      "dev_id": "DEV-016",
+      "texture_file": "textures/DEV-016.png",
+      "source_image_dimensions_px": [
+        67,
+        344
+      ],
+      "tracking_target": "MIL-016",
+      "plan_id": "P16",
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "south_ambulatory",
+      "location_ko": "제대 남측 동쪽 회랑·제의실 인근 도면 P16",
+      "anchor_key": "plan_P16",
+      "placement_evidence": "plan_position_subject_unknown",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+      ]
+    },
+    {
+      "dev_id": "DEV-017",
+      "texture_file": "textures/DEV-017.png",
+      "source_image_dimensions_px": [
+        65,
+        343
+      ],
+      "tracking_target": "MIL-017",
+      "plan_id": "P17",
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "south_ambulatory",
+      "location_ko": "제대 남측 동쪽 회랑·제의실 인근 도면 P17",
+      "anchor_key": "plan_P17",
+      "placement_evidence": "plan_position_subject_unknown",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+      ]
+    },
+    {
+      "dev_id": "DEV-018",
+      "texture_file": "textures/DEV-018.png",
+      "source_image_dimensions_px": [
+        64,
+        344
+      ],
+      "tracking_target": "MIL-018",
+      "plan_id": "P18",
+      "archive_id": "V18",
+      "target_subject_ko": "네 성인",
+      "zone": "south_ambulatory",
+      "location_ko": "제대 남측 동쪽 회랑·제의실 인근 도면 P18",
+      "anchor_key": "plan_P18",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.34,
+      "glass_height_m": 15.28,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/stained-glass-window-representing-four-saints/3AHPPFX1GhAFug"
+      ]
+    },
+    {
+      "dev_id": "DEV-019",
+      "texture_file": "textures/DEV-019.png",
+      "source_image_dimensions_px": [
+        68,
+        345
+      ],
+      "tracking_target": "MIL-019",
+      "plan_id": "P19",
+      "archive_id": "V19",
+      "target_subject_ko": "신약성경",
+      "zone": "apse",
+      "location_ko": "제대 뒤 대형 후진창 오른쪽(남측, 입구에서 제대 방향)",
+      "anchor_key": "plan_P19",
+      "placement_evidence": "plan_and_archive_supported",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 9.6,
+      "glass_height_m": 22.77,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/stories-from-the-new-testament-lower-register-bertini-workshop/lAHmghxgmvqPkw",
+        "https://artsandculture.google.com/asset/stories-from-the-new-testament-view-of-milan-duomo-s-stained-glass-window-19-bertini-workshop/wgGuVVwXKksvoQ?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-020",
+      "texture_file": "textures/DEV-020.png",
+      "source_image_dimensions_px": [
+        66,
+        343
+      ],
+      "tracking_target": "MIL-020",
+      "plan_id": "P20",
+      "archive_id": "V20",
+      "target_subject_ko": "요한 묵시록",
+      "zone": "apse",
+      "location_ko": "제대 뒤 대형 후진창 정중앙",
+      "anchor_key": "plan_P20",
+      "placement_evidence": "plan_and_archive_supported",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 9.6,
+      "glass_height_m": 22.77,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/stained-glass-window-of-the-apocalypse-stefano-da-pandino-maffiolo-da-cremona-franceschino-zavattari-giovanni-recalcado-cristoforo-de%E2%80%99-mottis-michelino-da-besozzo-niccol%C3%B2-da-varallo-stefano-da-marliano-battista-da-legnano-stefano-bergognone-dal-furno-giorgio-d%E2%80%99anversa-giovanni-battista-bertini/mwE8-HCqjeaUmQ?hl=en",
+        "https://artsandculture.google.com/asset/the-apocalypse-stefano-da-pandino-maffiolo-da-cremona-franceschino-zavattari-giovanni-recalcado-cristoforo-de%E2%80%99-mottis-michelino-da-besozzo-niccol%C3%B2-da-varallo-stefano-da-marliano-battista-da-legnano-stefano-bergognone-dal-furno-giorgio-d%E2%80%99anversa-giovanni-battista-bertini/OwEBVOr90hv3dw"
+      ]
+    },
+    {
+      "dev_id": "DEV-021",
+      "texture_file": "textures/DEV-021.png",
+      "source_image_dimensions_px": [
+        65,
+        345
+      ],
+      "tracking_target": "MIL-021",
+      "plan_id": "P21",
+      "archive_id": "V21",
+      "target_subject_ko": "구약성경",
+      "zone": "apse",
+      "location_ko": "제대 뒤 대형 후진창 왼쪽(북측, 입구에서 제대 방향)",
+      "anchor_key": "plan_P21",
+      "placement_evidence": "plan_and_archive_supported",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 9.6,
+      "glass_height_m": 22.77,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/dAXhNmLtsG32Lg",
+        "https://artsandculture.google.com/asset/stories-from-the-old-testament-lower-register-bertini-workshop/ZgGJwV7iBNsFtA",
+        "https://artsandculture.google.com/asset/stained-glass-window-of-the-old-testament-central-rose-window-bertini-workshop/HwHKm-QHiCh0Lg?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-022",
+      "texture_file": "textures/DEV-022.png",
+      "source_image_dimensions_px": [
+        68,
+        344
+      ],
+      "tracking_target": "MIL-022",
+      "plan_id": "P22",
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "north_ambulatory",
+      "location_ko": "제대 북측 회랑·제의실 인근 도면 P22",
+      "anchor_key": "plan_P22",
+      "placement_evidence": "plan_position_subject_unknown",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+      ]
+    },
+    {
+      "dev_id": "DEV-023",
+      "texture_file": "textures/DEV-023.png",
+      "source_image_dimensions_px": [
+        66,
+        344
+      ],
+      "tracking_target": "MIL-023",
+      "plan_id": "P23",
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "north_ambulatory",
+      "location_ko": "제대 북측 회랑·제의실 인근 도면 P23",
+      "anchor_key": "plan_P23",
+      "placement_evidence": "plan_position_subject_unknown",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+      ]
+    },
+    {
+      "dev_id": "DEV-024",
+      "texture_file": "textures/DEV-024.png",
+      "source_image_dimensions_px": [
+        65,
+        341
+      ],
+      "tracking_target": "MIL-024",
+      "plan_id": "P24",
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "north_ambulatory",
+      "location_ko": "제대 북측 회랑·제의실 인근 도면 P24",
+      "anchor_key": "plan_P24",
+      "placement_evidence": "plan_position_subject_unknown",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+      ]
+    },
+    {
+      "dev_id": "DEV-025",
+      "texture_file": "textures/DEV-025.png",
+      "source_image_dimensions_px": [
+        65,
+        344
+      ],
+      "tracking_target": "MIL-025",
+      "plan_id": "P25",
+      "archive_id": "V25",
+      "target_subject_ko": "다마스쿠스의 성 요한",
+      "zone": "north_transept",
+      "location_ko": "북익랑 동쪽/제대 쪽 접근 구간 도면 P25",
+      "anchor_key": "plan_P25",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/life-of-saint-john-of-damascus-veneranda-fabbrica-del-duomo-di-milano/ewWBglm9X_GhKA?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-026",
+      "texture_file": "textures/DEV-026.png",
+      "source_image_dimensions_px": [
+        65,
+        343
+      ],
+      "tracking_target": "MIL-026",
+      "plan_id": "P26",
+      "archive_id": "V26",
+      "target_subject_ko": "성 카를로 보로메오의 생애",
+      "zone": "north_transept",
+      "location_ko": "북익랑 동쪽/제대 쪽 접근 구간 도면 P26",
+      "anchor_key": "plan_P26",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 3.53,
+      "glass_height_m": 22.49,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/stories-from-the-life-of-saint-charles-borromeo-0009/pQGG9Yg7-1wZUw"
+      ]
+    },
+    {
+      "dev_id": "DEV-027",
+      "texture_file": "textures/DEV-027.png",
+      "source_image_dimensions_px": [
+        66,
+        341
+      ],
+      "tracking_target": "MIL-027",
+      "plan_id": "P27",
+      "archive_id": null,
+      "target_subject_ko": "성모 생애 연작 1",
+      "zone": "north_transept_chapel",
+      "location_ko": "북익랑 끝 Madonna dell’Albero 경당 도면 P27 (측면)",
+      "anchor_key": "plan_P27",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-028",
+      "texture_file": "textures/DEV-028.png",
+      "source_image_dimensions_px": [
+        63,
+        343
+      ],
+      "tracking_target": "MIL-028",
+      "plan_id": "P28",
+      "archive_id": null,
+      "target_subject_ko": "성모 생애 연작 2",
+      "zone": "north_transept_chapel",
+      "location_ko": "북익랑 끝 Madonna dell’Albero 경당 도면 P28 (끝 중앙)",
+      "anchor_key": "plan_P28",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-029",
+      "texture_file": "textures/DEV-029.png",
+      "source_image_dimensions_px": [
+        68,
+        343
+      ],
+      "tracking_target": "MIL-029",
+      "plan_id": "P29",
+      "archive_id": null,
+      "target_subject_ko": "성모 생애 연작 3",
+      "zone": "north_transept_chapel",
+      "location_ko": "북익랑 끝 Madonna dell’Albero 경당 도면 P29 (측면)",
+      "anchor_key": "plan_P29",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-030",
+      "texture_file": "textures/DEV-030.png",
+      "source_image_dimensions_px": [
+        66,
+        344
+      ],
+      "tracking_target": "MIL-030",
+      "plan_id": "P30",
+      "archive_id": null,
+      "target_subject_ko": "시에나의 성녀 카타리나·성모 생애",
+      "zone": "north_transept",
+      "location_ko": "북익랑 서쪽/입구 쪽 복귀 구간 도면 P30",
+      "anchor_key": "plan_P30",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-031",
+      "texture_file": "textures/DEV-031.png",
+      "source_image_dimensions_px": [
+        67,
+        345
+      ],
+      "tracking_target": "MIL-031",
+      "plan_id": "P31",
+      "archive_id": null,
+      "target_subject_ko": "사도들",
+      "zone": "north_transept",
+      "location_ko": "북익랑 서쪽/입구 쪽 복귀 구간 도면 P31",
+      "anchor_key": "plan_P31",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-032",
+      "texture_file": "textures/DEV-032.png",
+      "source_image_dimensions_px": [
+        69,
+        344
+      ],
+      "tracking_target": "MIL-032",
+      "plan_id": "P32",
+      "archive_id": "V32",
+      "target_subject_ko": "성 암브로시오의 생애",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 8번째 번호 창",
+      "anchor_key": "plan_P32",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.17,
+      "glass_height_m": 15.49,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/life-of-st-ambrose-pompeo-bertini/MwE_6JI80Is2NQ?hl=it"
+      ]
+    },
+    {
+      "dev_id": "DEV-033",
+      "texture_file": "textures/DEV-033.png",
+      "source_image_dimensions_px": [
+        67,
+        344
+      ],
+      "tracking_target": "MIL-033",
+      "plan_id": "P33",
+      "archive_id": "V33",
+      "target_subject_ko": "성 요셉의 생애",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 7번째 번호 창",
+      "anchor_key": "plan_P33",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/life-of-st-joseph-veneranda-fabbrica-del-duomo-di-milano/cQWxzy7_ztIHJg?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-034",
+      "texture_file": "textures/DEV-034.png",
+      "source_image_dimensions_px": [
+        66,
+        360
+      ],
+      "tracking_target": "MIL-034",
+      "plan_id": "P34",
+      "archive_id": null,
+      "target_subject_ko": "성녀 헬레나",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 6번째 번호 창",
+      "anchor_key": "plan_P34",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-035",
+      "texture_file": "textures/DEV-035.png",
+      "source_image_dimensions_px": [
+        65,
+        361
+      ],
+      "tracking_target": "MIL-035",
+      "plan_id": "P35",
+      "archive_id": "V35",
+      "target_subject_ko": "성모의 영광",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 5번째 번호 창",
+      "anchor_key": "plan_P35",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/story/BwWx9-EscppjLA",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-036",
+      "texture_file": "textures/DEV-036.png",
+      "source_image_dimensions_px": [
+        67,
+        362
+      ],
+      "tracking_target": "MIL-036",
+      "plan_id": "P36",
+      "archive_id": null,
+      "target_subject_ko": "네 관을 쓴 순교 성인",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 4번째 번호 창",
+      "anchor_key": "plan_P36",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-037",
+      "texture_file": "textures/DEV-037.png",
+      "source_image_dimensions_px": [
+        65,
+        360
+      ],
+      "tracking_target": "MIL-037",
+      "plan_id": "P37",
+      "archive_id": "V37",
+      "target_subject_ko": "성 미카엘과 악마들의 전투",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 3번째 번호 창",
+      "anchor_key": "plan_P37",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.17,
+      "glass_height_m": 15.49,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/the-battle-between-saint-michael-and-the-demons-giovanni-buffa/QAGNcKtTyPeVRQ",
+        "https://artsandculture.google.com/story/the-fight-between-st-michael-and-the-demons-veneranda-fabbrica-del-duomo-di-milano/9wVxkPSrPjbvIw?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-038",
+      "texture_file": "textures/DEV-038.png",
+      "source_image_dimensions_px": [
+        67,
+        361
+      ],
+      "tracking_target": "MIL-038",
+      "plan_id": "P38",
+      "archive_id": null,
+      "target_subject_ko": "신약·그리스도 수난",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 2번째 번호 창",
+      "anchor_key": "plan_P38",
+      "placement_evidence": "plan_position_candidate",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-039",
+      "texture_file": "textures/DEV-039.png",
+      "source_image_dimensions_px": [
+        67,
+        360
+      ],
+      "tracking_target": "MIL-039",
+      "plan_id": "P39",
+      "archive_id": "V39",
+      "target_subject_ko": "다윗의 생애",
+      "zone": "north_aisle",
+      "location_ko": "북측 외벽(제대 바라볼 때 왼쪽), 입구에서 제대 방향 1번째 번호 창",
+      "anchor_key": "plan_P39",
+      "placement_evidence": "plan_and_archive_supported",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.17,
+      "glass_height_m": 15.49,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/stories-of-david-aldo-carpi/OQGWwPONqg6STA"
+      ]
+    },
+    {
+      "dev_id": "DEV-040",
+      "texture_file": "textures/DEV-040.png",
+      "source_image_dimensions_px": [
+        68,
+        363
+      ],
+      "tracking_target": "MIL-040",
+      "plan_id": null,
+      "archive_id": "V12bis",
+      "target_subject_ko": "구세주 그리스도와 복음사가·교부·성인",
+      "zone": "south_transept_chapel_upper",
+      "location_ko": "남익랑 성 요한 보노 경당 상부 V12bis 후보",
+      "anchor_key": "south_chapel_upper_candidate",
+      "placement_evidence": "provisional",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://artsandculture.google.com/asset/il-redentore-giovanni-battista-bertini/IQE83Pfv-NcuXQ"
+      ]
+    },
+    {
+      "dev_id": "DEV-041",
+      "texture_file": "textures/DEV-041.png",
+      "source_image_dimensions_px": [
+        65,
+        362
+      ],
+      "tracking_target": "MIL-041",
+      "plan_id": null,
+      "archive_id": "V40",
+      "target_subject_ko": "성녀 테클라의 순교",
+      "zone": "counterfacade_lower",
+      "location_ko": "정문 안쪽 하단, 성당 안에서 정문을 바라볼 때 맨 왼쪽 (공식 V40 설명 기준; P40 도면과 방향 대조 필요)",
+      "anchor_key": "facade_lower_inside_leftmost_candidate",
+      "placement_evidence": "orientation_conflict",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.46,
+      "glass_height_m": 6.2,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/the-martyrdom-of-saint-thecla/HAF9_VEhgkZGWQ"
+      ]
+    },
+    {
+      "dev_id": "DEV-042",
+      "texture_file": "textures/DEV-042.png",
+      "source_image_dimensions_px": [
+        69,
+        363
+      ],
+      "tracking_target": "MIL-042",
+      "plan_id": "P42",
+      "archive_id": "V42",
+      "target_subject_ko": "성 카를로 보로메오의 오리아 영지 매각",
+      "zone": "counterfacade_lower",
+      "location_ko": "정문 안쪽 하단, 도면 P42 후보(공식 V42와 같은 물리 창인지 확인 후 적용)",
+      "anchor_key": "facade_lower_p42_candidate",
+      "placement_evidence": "orientation_conflict",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 2.46,
+      "glass_height_m": 6.2,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/saint-charles-borromeo-sells-the-principality-of-oria-giuseppe-bertini/FAEVw4D4gEY20Q"
+      ]
+    },
+    {
+      "dev_id": "DEV-043",
+      "texture_file": "textures/DEV-043.png",
+      "source_image_dimensions_px": [
+        66,
+        361
+      ],
+      "tracking_target": "MIL-043",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": "성 암브로시오",
+      "zone": "counterfacade_lower",
+      "location_ko": "정문 안쪽 하단의 나머지 측면 창 A; 성 암브로시오 대상 후보, 좌우 미확정",
+      "anchor_key": "facade_lower_remaining_a",
+      "placement_evidence": "hold_until_anchor_match",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-044",
+      "texture_file": "textures/DEV-044.png",
+      "source_image_dimensions_px": [
+        58,
+        112
+      ],
+      "tracking_target": "MIL-044",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": "성 미카엘",
+      "zone": "counterfacade_lower",
+      "location_ko": "정문 안쪽 하단의 나머지 측면 창 B; 성 미카엘 대상 후보, 좌우 미확정",
+      "anchor_key": "facade_lower_remaining_b",
+      "placement_evidence": "hold_until_anchor_match",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+      ]
+    },
+    {
+      "dev_id": "DEV-045",
+      "texture_file": "textures/DEV-045.png",
+      "source_image_dimensions_px": [
+        58,
+        112
+      ],
+      "tracking_target": "MIL-045",
+      "plan_id": "P45",
+      "archive_id": "V45",
+      "target_subject_ko": "성모 승천",
+      "zone": "counterfacade_lower",
+      "location_ko": "정문 안쪽 하단 중앙 성모 승천 V45",
+      "anchor_key": "facade_lower_center",
+      "placement_evidence": "provisional",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": 3.43,
+      "glass_height_m": 7.69,
+      "sources": [
+        "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+        "https://artsandculture.google.com/asset/mary-s-assumption-to-heaven-giovanni-battista-bertini/OwHPf5gpb4Zw5g"
+      ]
+    },
+    {
+      "dev_id": "DEV-046",
+      "texture_file": "textures/DEV-046.png",
+      "source_image_dimensions_px": [
+        58,
+        111
+      ],
+      "tracking_target": "MIL-046",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": "교회(Ecclesia)",
+      "zone": "counterfacade_upper",
+      "location_ko": "정문 안쪽 상단 측면 A, 교회 주제; 정확한 좌우 미확정",
+      "anchor_key": "facade_upper_side_a",
+      "placement_evidence": "hold_until_anchor_match",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://artsandculture.google.com/story/giovanni-hajnal-veneranda-fabbrica-del-duomo-di-milano/DwWRO34lHZa5LA?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-047",
+      "texture_file": "textures/DEV-047.png",
+      "source_image_dimensions_px": [
+        58,
+        114
+      ],
+      "tracking_target": "MIL-047",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": "삼위일체",
+      "zone": "counterfacade_upper",
+      "location_ko": "정문 안쪽 상단 중앙, 삼위일체",
+      "anchor_key": "facade_upper_center",
+      "placement_evidence": "provisional",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://artsandculture.google.com/story/giovanni-hajnal-veneranda-fabbrica-del-duomo-di-milano/DwWRO34lHZa5LA?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-048",
+      "texture_file": "textures/DEV-048.png",
+      "source_image_dimensions_px": [
+        58,
+        113
+      ],
+      "tracking_target": "MIL-048",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": "시나고가(Synagoga)",
+      "zone": "counterfacade_upper",
+      "location_ko": "정문 안쪽 상단 측면 B, 시나고가 주제; 정확한 좌우 미확정",
+      "anchor_key": "facade_upper_side_b",
+      "placement_evidence": "hold_until_anchor_match",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": [
+        "https://artsandculture.google.com/story/giovanni-hajnal-veneranda-fabbrica-del-duomo-di-milano/DwWRO34lHZa5LA?hl=en"
+      ]
+    },
+    {
+      "dev_id": "DEV-049",
+      "texture_file": "textures/DEV-049.png",
+      "source_image_dimensions_px": [
+        58,
+        112
+      ],
+      "tracking_target": "MIL-049",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_049",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    },
+    {
+      "dev_id": "DEV-050",
+      "texture_file": "textures/DEV-050.png",
+      "source_image_dimensions_px": [
+        58,
+        113
+      ],
+      "tracking_target": "MIL-050",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_050",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    },
+    {
+      "dev_id": "DEV-051",
+      "texture_file": "textures/DEV-051.png",
+      "source_image_dimensions_px": [
+        58,
+        113
+      ],
+      "tracking_target": "MIL-051",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_051",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    },
+    {
+      "dev_id": "DEV-052",
+      "texture_file": "textures/DEV-052.png",
+      "source_image_dimensions_px": [
+        58,
+        114
+      ],
+      "tracking_target": "MIL-052",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_052",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    },
+    {
+      "dev_id": "DEV-053",
+      "texture_file": "textures/DEV-053.png",
+      "source_image_dimensions_px": [
+        58,
+        113
+      ],
+      "tracking_target": "MIL-053",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_053",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    },
+    {
+      "dev_id": "DEV-054",
+      "texture_file": "textures/DEV-054.png",
+      "source_image_dimensions_px": [
+        58,
+        112
+      ],
+      "tracking_target": "MIL-054",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_054",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    },
+    {
+      "dev_id": "DEV-055",
+      "texture_file": "textures/DEV-055.png",
+      "source_image_dimensions_px": [
+        58,
+        113
+      ],
+      "tracking_target": "MIL-055",
+      "plan_id": null,
+      "archive_id": null,
+      "target_subject_ko": null,
+      "zone": "unassigned",
+      "location_ko": "실제 위치 미확인. 별도 테스트 씬 QA Gallery에만 배치; 교차부 상부 등의 후보 조사 후 이관",
+      "anchor_key": "qa_gallery_055",
+      "placement_evidence": "test_only_unplaced",
+      "texture_matches_historical_work": false,
+      "development_only": true,
+      "release_approved": false,
+      "world_transform": null,
+      "glass_width_m": null,
+      "glass_height_m": null,
+      "sources": []
+    }
+  ]
+}
