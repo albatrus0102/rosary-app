@@ -67,10 +67,10 @@ FLO-DEV-005  six standing saints including two female saints
 ```
 Batch florence-C1 (5 images). Canvas 1024x1536. Tall two-light pointed window, ratio
 width/height = 0.286 (about 440 px wide at 1536 px height). Two lights with pointed
-heads and a small oculus between them at the top. Two registers: lower register one
-larger standing saint spanning feeling across both lights is NOT wanted - instead put
-one standing figure in each light per register (so four figures), each under a
-gold-yellow canopy, blue/red alternating grounds, ornamental border.
+heads and a small oculus between them at the top. Two registers; put one standing
+figure in each light per register (so four figures per window; never one figure
+spanning both lights), each under a gold-yellow canopy, blue/red alternating grounds,
+ornamental border.
 FLO-DEV-006  an apostle with a carpenter's square (Thomas) and three other saints
 FLO-DEV-007  an evangelist with a book and an angel symbol (Matthew), a crowned king
              saint, a crowned queen saint holding roses, one more saint
