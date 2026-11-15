@@ -169,8 +169,9 @@
     (P.extra || []).forEach(function (r) { out.extra.push({ x0: Math.min(r.x0, r.x1), x1: Math.max(r.x0, r.x1), z0: Math.min(r.z0, r.z1), z1: Math.max(r.z0, r.z1) }); });
     out.axis = ax; out.front = front; out.halfW = halfW; out.station = st; out.how = how;
     // 제대 앞 자리(stations.js 가 쓴다): 구역 앞 가장자리 바로 앞, 축 위(지정 자리가 있으면 그 옆 위치). 무릎 꿇기·기도는 여기서.
-    // 축 위가 막혀 있으면(라테라노 콘페시오 난간) 축에서 가장 가까운 빈 곳.
+    // 축 위가 막혀 있으면(라테라노 콘페시오 난간) 축을 따라 신자석 쪽으로 3m 까지 물러나고, 그래도 막히면 축에서 가장 가까운 빈 곳.
     var stand = null;
+    for (var du = 0; du <= 3 && !stand; du += 0.25) { var c1 = at(front - K.R - 0.15 - du, 0); if (freeAt(cols, c1.x, c1.z, K.R + 0.05)) stand = c1; }
     for (var dv = 0; dv <= halfW && !stand; dv += 0.25) {
       for (var sg = 1; sg >= -1 && !stand; sg -= 2) { var c2 = at(front - K.R - 0.15, sg * dv); if (freeAt(cols, c2.x, c2.z, K.R + 0.05)) stand = c2; }
     }

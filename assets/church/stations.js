@@ -238,7 +238,8 @@
     function deriveAltar(g, reach) {
       // 불경 방지(reverence.js): 제단 출입 금지 구역이 정한 '첫 계단 앞' 자리가 레이아웃 지정값보다 앞선다
       var rz = logic.reverence && logic.reverence.zone;
-      var ov = (rz && layout.stations && layout.stations.altar) ? rz.stand : (layout.stations && layout.stations.altar);
+      var ov = layout.stations && layout.stations.altar;
+      if (ov && rz && logic.reverence.inZone(ov.x, ov.z, C.RADIUS + 0.1)) ov = rz.stand;
       var ax = navAxis(), sp = layout.spawn;
       if (ov) return { x: ov.x, z: ov.z, yaw: ov.yaw === undefined ? ax.yaw : ov.yaw, reach: ov.reach || 1.6, how: 'layout' };
       // 1) 축을 따라 걷기

@@ -33,6 +33,10 @@ for (const c of churches) {
     const rv = L.reverence, st = S.stations();
     assert.ok(!rv.inZone(st.altar.x, st.altar.z, 0.2), `제대 앞 자리 ${st.altar.x},${st.altar.z} 가 구역 안`);
     assert.ok(S.isReachable(st.altar.x, st.altar.z), '제대 앞 자리에 닿는다');
+    // 제대 앞 자리는 제단 첫 계단 앞(신자석 쪽): 제대가 놓인 단보다 낮다(단이 성당 폭 전체여도 같은 규칙)
+    const zf = rv.zone, inner = { x: zf.station.x, z: zf.station.z };
+    const fy = L.floorY(st.altar.x, st.altar.z), fyIn = L.floorY(inner.x, inner.z);
+    assert.ok(fyIn <= 0.02 ? fy <= 0.02 : fy < fyIn - 0.05, `제대 앞 자리 바닥 ${fy} 이 제단 ${fyIn} 보다 낮지 않다`);
     assert.ok(!inside(rv, c.layout.spawn.x, c.layout.spawn.z), '입구');
     for (const s of L.seats) {
       assert.ok(!inside(rv, s.x, s.z), `좌석 ${s.id} 가 구역 안`);
