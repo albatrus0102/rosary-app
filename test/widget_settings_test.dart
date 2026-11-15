@@ -8,7 +8,8 @@ import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
-import 'package:rosary_app/ui/rosary_style_screen.dart';
+import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
+import 'package:rosary_app/rosary3d/rosary_model.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -521,35 +522,30 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('style screen: tapping a cell changes rosaryStyle', (
-    tester,
-  ) async {
+  testWidgets('묵주 고르기는 하나(3D 갤러리): 옛 12종도 모두 그 안의 묵주로 고른다', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
-    tester.view.physicalSize = const Size(400, 1400);
+    tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(_app(RosaryStyleScreen(settings: settings)));
+    await tester.pumpWidget(_app(RosaryGalleryScreen(settings: settings)));
     await tester.pump();
-
-    expect(find.text('묵주 고르기'), findsWidgets);
-    expect(find.text(RosaryStyle.bead.description), findsOneWidget);
+    final ids = {for (final r in rosaryCatalog) r.id};
     for (final style in RosaryStyle.values) {
-      expect(find.widgetWithText(InkWell, style.label), findsOneWidget);
+      expect(ids, contains(legacyStyleTo3d[style]), reason: style.name);
     }
-
-    await tester.tap(find.widgetWithText(InkWell, RosaryStyle.fatima.label));
-    await tester.pumpAndSettle();
-    expect(settings.rosaryStyle, RosaryStyle.fatima);
-    expect(find.text(RosaryStyle.fatima.description), findsOneWidget);
-    expect(find.text(RosaryStyle.bead.description), findsNothing);
-    // 선택된 칸에만 체크 배지.
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('gallery-item-ebony')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('gallery-use')));
+    await tester.pump();
+    expect(settings.rosaryId, 'ebony');
+    // 옛 화면(묵주 지도·오늘 탭 그림)은 같은 묵주의 대표 스타일을 쓴다
+    expect(settings.rosaryStyle, RosaryStyle.penal);
   });
 
-  for (final width in [360.0, 700.0, 1000.0]) {
-    testWidgets('style screen: no overflow at ${width.round()}dp, 1.5x text', (
+  for (final width in [360.0, 700.0]) {
+    testWidgets('gallery: no overflow at ${width.round()}dp, 1.5x text', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -559,13 +555,9 @@ void main() {
       addTearDown(tester.view.reset);
 
       await tester.pumpWidget(
-        _app(RosaryStyleScreen(settings: settings), textScale: 1.5),
+        _app(RosaryGalleryScreen(settings: settings), textScale: 1.5),
       );
       await tester.pump();
-      for (var i = 0; i < 6; i++) {
-        await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
-        await tester.pump();
-      }
       expect(tester.takeException(), isNull);
     });
   }

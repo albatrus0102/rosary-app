@@ -18,7 +18,7 @@ import '../glass/glass_tab.dart';
 import '../stats/stats_screen.dart';
 import 'home_screen.dart';
 import 'more_screen.dart';
-import 'rosary_style_screen.dart';
+import '../rosary3d/rosary_gallery_screen.dart';
 import 'settings_screen.dart';
 
 /// 탭 번호. 앱을 열면 [church](성당)가 먼저 나온다. 알림·위젯·'이어서 기도하기'처럼
@@ -173,12 +173,12 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-  /// 묵주 스타일 화면은 탭이 아니라 더보기·오늘에서 여는 화면이다.
+  /// 묵주 고르기(하나로 통합된 3D 묵주 갤러리)는 탭이 아니라 더보기·오늘에서 여는 화면이다.
   void _openStyles() => unawaited(
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: const RouteSettings(name: 'rosary_styles'),
-        builder: (_) => RosaryStyleScreen(settings: widget.settings),
+        builder: (_) => RosaryGalleryScreen(settings: widget.settings),
       ),
     ),
   );

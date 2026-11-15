@@ -39,7 +39,7 @@ import 'package:rosary_app/stats/prayer_stats_store.dart';
 import 'package:rosary_app/ui/app_shell.dart';
 import 'package:rosary_app/ui/leader_record_screen.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
-import 'package:rosary_app/ui/rosary_style_screen.dart';
+import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -281,7 +281,7 @@ void main() {
         final settings = await _settings();
         await t.pumpWidget(
           _host(
-            RosaryStyleScreen(settings: settings),
+            RosaryGalleryScreen(settings: settings),
             b: b,
             scale: scale,
           ),

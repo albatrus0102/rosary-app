@@ -55,8 +55,8 @@ test('C안 배치: 현재 위치가 가장 앞, 위쪽이 다음 알', () => {
 
 const mats = fs.readFileSync(new URL('../../assets/rosary3d/materials.js', import.meta.url), 'utf8');
 const models = fs.readFileSync(new URL('../../assets/rosary3d/models.js', import.meta.url), 'utf8');
-test('묵주 정의 14종: 형식, Flutter 목록과 같은 id, 쓰는 재질·형태가 모두 구현돼 있다', () => {
-  assert.equal(D.ORDER.length, 14);
+test('묵주 정의 16종(3D 14 + 옛 스타일에서 온 매듭·파스텔): 형식, Flutter 목록과 같은 id, 쓰는 재질·형태가 모두 구현돼 있다', () => {
+  assert.equal(D.ORDER.length, 16);
   assert.deepEqual(Object.keys(D.DEFS).sort(), [...D.ORDER].sort());
   for (const id of D.ORDER) {
     const d = D.get(id);
@@ -74,9 +74,15 @@ test('묵주 정의 14종: 형식, Flutter 목록과 같은 id, 쓰는 재질·�
 
 test('색만 바꾼 변형 금지: 묵주마다 (알 모양·연결·십자가·메달·재질) 조합이 다르고 형태도 다양하다', () => {
   const sig = D.ORDER.map((i) => { const d = D.get(i); return [d.bead.shape, d.bead.aspect, d.link.type + d.link.material, d.cross.type + d.cross.material, d.medal.type, d.bead.material].join('|'); });
-  assert.equal(new Set(sig).size, 14);
+  assert.equal(new Set(sig).size, D.ORDER.length);
   const shapes = new Set(D.ORDER.map((i) => D.get(i).bead.shape)), crosses = new Set(D.ORDER.map((i) => D.get(i).cross.type)), mm = new Set(D.ORDER.map((i) => D.get(i).bead.material));
-  assert.ok(shapes.size >= 8, 'shapes ' + shapes.size); assert.ok(crosses.size >= 6, 'crosses ' + crosses.size); assert.equal(mm.size, 14);
+  assert.ok(shapes.size >= 8, 'shapes ' + shapes.size); assert.ok(crosses.size >= 6, 'crosses ' + crosses.size); assert.equal(mm.size, D.ORDER.length);
+});
+
+test('옛 묵주 스타일 12종 → 3D id 매핑(rosary_model.dart)이 모두 실제 정의를 가리킨다', () => {
+  const m = [...dart.matchAll(/RosaryStyle\.(\w+): '(\w+)',/g)];
+  assert.equal(new Set(m.map((x) => x[1])).size, 12);
+  for (const [, , id] of m) assert.ok(D.DEFS[id], id);
 });
 
 test('효과음: 코드 합성 WAV 5개, 각 30KB 이하', () => {

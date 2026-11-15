@@ -102,8 +102,24 @@
       cross: { type: 'plain', material: 'ceramic', trim: 'silver', corpus: 'silver', height: 5.2, width: 3.3, depth: 0.42 },
       medal: { type: 'round', material: 'silver', height: 1.8 }
     }
+,
+    knot: {
+      id: 'knot', name: '매듭 묵주', category: 'cord',
+      bead: { shape: 'knot', small: 0.9, big: 1.15, aspect: 1.0, irregular: 0.0, material: 'twine' },
+      link: { type: 'cord', material: 'cordTwine', gap: 0.3, width: 0.13, knot: false },
+      cross: { type: 'plain', material: 'bronze', corpus: 'bronze', height: 4.6, width: 3.0, depth: 0.2 },
+      medal: { type: 'round', material: 'bronze', height: 1.6 }
+    },
+    pastel: {
+      id: 'pastel', name: '파스텔 묵주', category: 'acrylic',
+      bead: { shape: 'sphere', small: 0.96, big: 1.24, aspect: 1.0, irregular: 0.0, material: 'pastelAcrylic', caps: 'silver',
+        palette: ['#f6b6c8', '#b9dcf4', '#fbeaa0', '#bfe9cc', '#d8c6f2'] },
+      link: { type: 'eyepin', material: 'silver', gap: 0.46, width: 0.06 },
+      cross: { type: 'budded', material: 'silver', corpus: 'silver', height: 4.8, width: 3.1, depth: 0.2 },
+      medal: { type: 'heart', material: 'silver', height: 1.6 }
+    }
   };
-  var ORDER = ['olive', 'ebony', 'rosewood', 'pearl', 'crystal', 'glass', 'amethyst', 'rosequartz', 'amber', 'lapis', 'jade', 'silver', 'gold', 'ceramic'];
+  var ORDER = ['olive', 'ebony', 'rosewood', 'pearl', 'crystal', 'glass', 'amethyst', 'rosequartz', 'amber', 'lapis', 'jade', 'silver', 'gold', 'ceramic', 'knot', 'pastel'];
   var API = { DEFS: DEFS, ORDER: ORDER, get: function (id) { return DEFS[id] || DEFS.olive; } };
   root.RosaryDefs = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

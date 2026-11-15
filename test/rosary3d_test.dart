@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
@@ -320,6 +321,47 @@ void main() {
       expect(s.rosaryId, 'pearl');
       expect(s.rosaryFavorites, {'pearl'});
       expect(find.byKey(const ValueKey('gallery-in-use')), findsOneWidget);
+    });
+  });
+
+  group('묵주 목록 통합(옛 스타일 12종 → 3D 묵주)', () {
+    final ids = {for (final r in rosaryCatalog) r.id};
+
+    test('옛 12종 모두 유효한 3D id 로 매핑, 3D 16종 모두 대표 스타일이 있다', () {
+      expect(rosaryCatalog.length, 16);
+      expect(legacyStyleTo3d.keys.toSet(), RosaryStyle.values.toSet());
+      for (final id in legacyStyleTo3d.values) {
+        expect(ids, contains(id));
+      }
+      expect(rosaryRepresentativeStyle.keys.toSet(), ids);
+    });
+
+    for (final style in RosaryStyle.values) {
+      test(
+        '저장값 이전: ${style.name} → ${legacyStyleTo3d[style]}, 옛 화면·성당 색은 그대로',
+        () async {
+          SharedPreferences.setMockInitialValues({'rosary_style': style.name});
+          final s = await AppSettings.load();
+          expect(s.rosaryId, legacyStyleTo3d[style]);
+          expect(s.rosaryStyle, style); // 기도문 중심 화면의 묵주 지도·성당 기도 카드 그림
+          // 다시 열어도 같은 값(이전은 한 번만)
+          final again = await AppSettings.load();
+          expect(again.rosaryId, legacyStyleTo3d[style]);
+          expect(again.rosaryStyle, style);
+        },
+      );
+    }
+
+    test('새 설치: 올리브 원목 + 옛 화면은 그 대표 스타일, 갤러리에서 바꾸면 옛 화면도 따라간다', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = await AppSettings.load();
+      expect(s.rosaryId, 'olive');
+      expect(s.rosaryStyle, representativeStyleFor('olive'));
+      s.rosaryId = 'lapis';
+      expect(s.rosaryStyle, RosaryStyle.bead);
+      final again = await AppSettings.load();
+      expect(again.rosaryId, 'lapis');
+      expect(again.rosaryStyle, RosaryStyle.bead);
     });
   });
 }

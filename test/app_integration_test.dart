@@ -12,7 +12,6 @@ import 'package:rosary_app/app/track.dart';
 import 'package:rosary_app/app/app_wiring.dart';
 import 'package:rosary_app/app/leader_audio_store.dart';
 import 'package:rosary_app/app/leader_voice.dart';
-import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/auth/account_screen.dart';
@@ -37,7 +36,7 @@ import 'package:rosary_app/stats/stats_widgets.dart';
 import 'package:rosary_app/ui/home_screen.dart';
 import 'package:rosary_app/ui/more_screen.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
-import 'package:rosary_app/ui/rosary_style_screen.dart';
+import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -757,13 +756,15 @@ void main() {
       ]);
 
       await tester.pumpWidget(
-        MaterialApp(home: RosaryStyleScreen(settings: settings)),
+        MaterialApp(home: RosaryGalleryScreen(settings: settings)),
       );
       await tester.pump();
-      await tester.tap(find.widgetWithText(InkWell, RosaryStyle.fatima.label));
+      await tester.tap(find.byKey(const ValueKey('gallery-item-pearl')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('gallery-use')));
       await tester.pump();
       expect(_events('rosary_style_change').map(_props).toList(), [
-        {'style': 'fatima'},
+        {'style': 'pearl'},
       ]);
       Analytics.debugReset();
     });

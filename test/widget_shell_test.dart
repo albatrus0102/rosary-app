@@ -10,7 +10,7 @@ import 'package:rosary_app/glass/glass_tab.dart';
 import 'package:rosary_app/ui/app_shell.dart';
 import 'package:rosary_app/ui/home_screen.dart';
 import 'package:rosary_app/ui/more_screen.dart';
-import 'package:rosary_app/ui/rosary_style_screen.dart';
+import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -329,10 +329,10 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('more-styles')));
     await tester.pumpAndSettle();
-    expect(find.byType(RosaryStyleScreen), findsOneWidget);
+    expect(find.byType(RosaryGalleryScreen), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(find.byType(RosaryStyleScreen), findsNothing);
+    expect(find.byType(RosaryGalleryScreen), findsNothing);
     expect(find.byType(MoreScreen), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('more-settings')));
@@ -358,7 +358,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('묵주 바꾸기'));
     await tester.pumpAndSettle();
-    expect(find.byType(RosaryStyleScreen), findsOneWidget);
+    expect(find.byType(RosaryGalleryScreen), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
 

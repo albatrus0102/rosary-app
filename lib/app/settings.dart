@@ -6,6 +6,7 @@ import '../church/church_catalog.dart';
 import '../church/church_diagnostics.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
+import '../rosary3d/rosary_model.dart';
 import 'leader_voice.dart';
 import 'rosary_style.dart';
 
@@ -144,7 +145,19 @@ class AppSettings extends ChangeNotifier {
       _prefs.getString(_kPrayerView),
       defaultPrayerView,
     );
-    _rosaryId = _prefs.getString(_kRosaryId) ?? 'olive';
+    // 묵주 목록 통합(2026-11-15): 3D id 가 없고 옛 스타일만 저장돼 있으면 가장 가까운 3D 묵주로 이전한다.
+    // 옛 스타일 값(_rosaryStyle)은 그대로 두어 옛 화면·성당 카드의 색이 바뀌지 않는다.
+    final storedId = _prefs.getString(_kRosaryId);
+    final storedStyle = _prefs.getString(_kStyle);
+    if (storedId != null) {
+      _rosaryId = storedId;
+    } else if (storedStyle != null) {
+      _rosaryId = legacyStyleTo3d[_rosaryStyle] ?? 'olive';
+      _prefs.setString(_kRosaryId, _rosaryId);
+    } else {
+      _rosaryId = 'olive';
+    }
+    if (storedStyle == null) _rosaryStyle = representativeStyleFor(_rosaryId);
     _rosaryFavorites = {...?_prefs.getStringList(_kRosaryFavorites)};
     _rosaryTextExpanded = _prefs.getBool(_kRosaryTextExpanded) ?? false;
     _rosaryHand = _enumByName(
@@ -207,6 +220,9 @@ class AppSettings extends ChangeNotifier {
     if (v == _rosaryId) return;
     _rosaryId = v;
     _prefs.setString(_kRosaryId, v);
+    // 그림·색을 쓰는 옛 화면도 같은 묵주의 대표 스타일을 따른다.
+    _rosaryStyle = representativeStyleFor(v);
+    _prefs.setString(_kStyle, _rosaryStyle.name);
     notifyListeners();
   }
 
@@ -430,10 +446,13 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 옛 스타일로 고르면(이전 호환) 매핑된 3D 묵주도 함께 바뀐다.
   set rosaryStyle(RosaryStyle v) {
     if (v == _rosaryStyle) return;
     _rosaryStyle = v;
     _prefs.setString(_kStyle, v.name);
+    _rosaryId = legacyStyleTo3d[v] ?? _rosaryId;
+    _prefs.setString(_kRosaryId, _rosaryId);
     notifyListeners();
   }
 

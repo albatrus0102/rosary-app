@@ -1,7 +1,6 @@
 import '../analytics/analytics.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
-import 'rosary_style.dart';
 import 'settings.dart';
 
 /// 분석 호출 도우미. 화면 코드에서는 한 줄로 부른다.
@@ -33,8 +32,8 @@ abstract final class Track {
   static void mode(PrayerMode mode) =>
       event('mode_change', {'mode': mode.name});
 
-  static void rosaryStyle(RosaryStyle style) =>
-      event('rosary_style_change', {'style': style.name});
+  /// 묵주 고르기(3D 갤러리)에서 고른 묵주 id(assets/rosary3d/defs.js).
+  static void rosary(String id) => event('rosary_style_change', {'style': id});
 
   /// `leader_voice_change{source,persona}`: 설정에 지금 들어 있는 값.
   static void leaderVoice(AppSettings s) => event('leader_voice_change', {

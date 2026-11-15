@@ -150,7 +150,7 @@ void _select(int i) {
 | `prayer_start` | `set`(`MysterySet.name`), `mode`(`PrayerMode.name`), `resumed`(bool), `source`(`app`) | `prayer_screen.dart`의 `initState`/세션 시작 지점. `resumed`는 `initialIndex > 0` 여부. |
 | `decade_complete` | `set`, `decade`(1..5) | `prayer_screen.dart`에서 한 단이 끝나는(구원송/영광송 직후) 지점. 세션 리스너에서 단 번호가 바뀔 때 한 번. |
 | `prayer_finish` | `set`, `completed`, `decades`, `seconds` | `PrayerSessionTracker`가 기록을 쓰는 지점과 같은 곳. 가장 간단한 연결: `prayer_screen.dart`의 `dispose` 전 `tracker.finish()` 직후, 방금 쓴 `PrayerRecord` 값으로 호출. `completed`, `decades`, `seconds`는 그 기록의 값. |
-| `rosary_style_change` | `style`(`RosaryStyle.name`) | `rosary_style_screen.dart` 34행 근처 `onSelect: (style) { settings.rosaryStyle = style; track(...) }`. |
+| `rosary_style_change` | `style`(3D 묵주 id, `assets/rosary3d/defs.js`) | `lib/rosary3d/rosary_gallery_screen.dart` '이 묵주로 기도하기' (`Track.rosary`). 묵주 스타일 12종은 3D 묵주로 통합(2026-11-15). |
 | `mode_change` | `mode`(`PrayerMode.name`) | `settings_screen.dart`에서 `settings.prayerMode = ...`을 대입하는 곳. |
 | `leader_voice_change` | `source`, `persona` | `settings_screen.dart`에서 `leaderVoiceSource`/`leaderPersona`를 바꾸는 곳(둘 다 현재 값의 `.name`). |
 | `text_scale_change` | `scale`(수) | `settings_screen.dart`의 `prayerTextScale` 변경 완료 시(슬라이더는 `onChangeEnd`에서만). |

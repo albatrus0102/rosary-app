@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../app/rosary_style.dart';
 import '../domain/rosary_sequence.dart';
 
 /// 3D 묵주(T-81)의 순수 규칙: 스텝 → 묵주 경로 위치, 묵주 목록, 촉각·소리 신호, 당기기 판정.
@@ -137,7 +138,59 @@ const List<RosaryInfo> rosaryCatalog = [
     '도자',
     '흰 유약 위에 쪽빛 꽃을 손으로 그린 도자 알, 파란 끈, 도자 십자가와 은 메달.',
   ),
+  RosaryInfo(
+    'knot',
+    '매듭 묵주',
+    '끈·아크릴',
+    '굵은 끈을 감아 묶은 매듭이 알이 되는 소박한 묵주. 청동 십자가와 메달.',
+  ),
+  RosaryInfo(
+    'pastel',
+    '파스텔 묵주',
+    '끈·아크릴',
+    '단마다 색이 다른 파스텔 아크릴 알, 은 고리, 꽃봉오리형 은 십자가와 하트 메달.',
+  ),
 ];
+
+/// 옛 그림 방식 '묵주 스타일'(12종) → 3D 묵주 id. 같은 색·재질이 이미 있으면 그쪽으로 매핑하고,
+/// 없던 매듭·파스텔은 3D 정의를 새로 만들었다(docs/rosary/ROSARY_3D.md 매핑표). 저장값 이전에 쓴다.
+const Map<RosaryStyle, String> legacyStyleTo3d = {
+  RosaryStyle.bead: 'lapis',
+  RosaryStyle.knot: 'knot',
+  RosaryStyle.rosewood: 'rosewood',
+  RosaryStyle.crystal: 'crystal',
+  RosaryStyle.pearl: 'pearl',
+  RosaryStyle.jade: 'jade',
+  RosaryStyle.pastel: 'pastel',
+  RosaryStyle.lourdes: 'pearl',
+  RosaryStyle.fatima: 'ceramic',
+  RosaryStyle.penal: 'ebony',
+  RosaryStyle.stuart: 'gold',
+  RosaryStyle.jp2: 'crystal',
+};
+
+/// 3D 묵주 → 그림·색을 쓰는 옛 화면(기도문 중심 화면의 묵주 지도, 오늘 탭 그림, 성당 기도 카드)의 대표 스타일.
+const Map<String, RosaryStyle> rosaryRepresentativeStyle = {
+  'olive': RosaryStyle.rosewood,
+  'ebony': RosaryStyle.penal,
+  'rosewood': RosaryStyle.rosewood,
+  'pearl': RosaryStyle.pearl,
+  'crystal': RosaryStyle.crystal,
+  'glass': RosaryStyle.jade,
+  'amethyst': RosaryStyle.pastel,
+  'rosequartz': RosaryStyle.pastel,
+  'amber': RosaryStyle.stuart,
+  'lapis': RosaryStyle.bead,
+  'jade': RosaryStyle.jade,
+  'silver': RosaryStyle.fatima,
+  'gold': RosaryStyle.stuart,
+  'ceramic': RosaryStyle.fatima,
+  'knot': RosaryStyle.knot,
+  'pastel': RosaryStyle.pastel,
+};
+
+RosaryStyle representativeStyleFor(String id) =>
+    rosaryRepresentativeStyle[id] ?? RosaryStyle.bead;
 
 /// 갤러리 재질 분류(카탈로그 순서).
 List<String> get rosaryCategories =>

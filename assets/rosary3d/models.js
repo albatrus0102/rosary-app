@@ -67,6 +67,12 @@
       g.computeVertexNormals();
       return g;
     }
+    if (b.shape === 'knot') {
+      // 끈 매듭 알: 굵은 끈을 감아 묶은 모양(2·3 토러스 매듭). 끈이 지나는 축 = +Y.
+      g = new T.TorusKnotGeometry(0.27, 0.13, 96, 12, 2, 3);
+      g.rotateX(Math.PI / 2); g.scale(1, 0.85 * b.aspect, 1);
+      return g;
+    }
     if (b.shape === 'cube') {
       // 둥근 정육면체(초타원체): 청금석 큐브 알
       g = new T.SphereGeometry(0.5, 40, 30);

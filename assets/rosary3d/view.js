@@ -90,7 +90,7 @@
     function rand() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
     for (var i = 0; i < L.nodeCount; i++) rnd.push({ roll: rand() * Math.PI * 2, tilt: (rand() - 0.5) * 0.7, k: 1 + (rand() - 0.5) * 2 * (def.bead.irregular || 0) * 1.4 });
     R = { def: def, dims: dims, s: s, group: group, small: small, big: big, caps: caps, links: links, cords: cords, knots: knots, cross: cross, medal: medal, rnd: rnd,
-      a: L.aLayout(s, dims) };
+      a: L.aLayout(s, dims), palette: def.bead.palette ? def.bead.palette.map(function (h) { return new T.Color(h); }) : null };
     S.built = { id: def.id, ms: Math.round(performance.now() - t0) };
     post({ e: 'built', id: def.id, ms: S.built.ms });
     kick();
@@ -175,7 +175,9 @@
       mesh.setMatrixAt(idx, _m2);
       // 지난 알은 조금 어둡고 차분하게(조명·채도로만 구별), A안에서 더 분명히
       var done = i < dimP, f = done ? 1 - (0.15 + 0.43 * e) : 1;
-      _c.setRGB(f, f * (done ? 0.96 : 1), f * (done ? 0.97 : 1)); mesh.setColorAt(idx, _c);
+      _c.setRGB(f, f * (done ? 0.96 : 1), f * (done ? 0.97 : 1));
+      if (R.palette) { var pc = R.palette[((L.nodes[i].decade || 1) - 1) % R.palette.length]; _c.multiply(pc); } // 단마다 색이 다른 묵주
+      mesh.setColorAt(idx, _c);
       if (R.caps) {
         var hy = 0.5 * (R.def.bead.aspect || 1) * 0.94;
         _m.makeTranslation(0, hy, 0); R.caps.setMatrixAt(ci++, _m.premultiply(_m2));
@@ -223,6 +225,7 @@
         _q.setFromUnitVectors(_y.set(0, 1, 0), _d);
         _s.set(wdt * 0.5 * sc, cl, wdt * 0.5 * sc); _m.compose(_v, _q, _s); R.cords.setMatrixAt(co++, _m);
         if (L.nodes[ii].kind !== 'cross' && L.nodes[jj].kind !== 'cross' && L.nodes[ii].kind !== 'medal' && L.nodes[jj].kind !== 'medal') {
+          if (R.def.link.knot === false) continue;
           _v.addVectors(_a, _b).multiplyScalar(0.5); _s.set(wdt * 1.05 * sc, wdt * 1.15 * sc, wdt * 1.05 * sc); _m.compose(_v, _q, _s); R.knots.setMatrixAt(kn++, _m);
         } else if (li < 12) { // 십자가·메달 고리
           var at = L.nodes[ii].kind === 'cross' || L.nodes[ii].kind === 'medal' ? _a : _b;

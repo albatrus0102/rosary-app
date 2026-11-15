@@ -276,6 +276,23 @@
         return new T.MeshPhysicalMaterial({ map: tex(c.color, true), bumpMap: tex(c.bump), bumpScale: 0.006, roughnessMap: tex(c.rough), roughness: 1,
           clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.1 });
       },
+      twine: function () {
+        // 삼베·면 꼰 끈: 사선 꼬임 범프 + 섬유 얼룩
+        var c = paint(low ? 128 : 256, function (x, y, z, u, v) {
+          var tw = Math.pow(Math.abs(Math.sin((u * 24 + v * 30) * Math.PI)), 0.5), f = fbm3(x * 9, y * 9, z * 14, 2);
+          var col = lerp3([196, 164, 118], [132, 100, 64], clamp01((1 - tw) * 0.7 + f * 0.4));
+          return [col[0], col[1], col[2], tw * 0.8 + f * 0.2, 0.75 + f * 0.2];
+        });
+        var t1 = tex(c.color, true), t2 = tex(c.bump); t1.wrapT = t2.wrapT = T.RepeatWrapping; t1.repeat.set(2, 2); t2.repeat.set(2, 2);
+        return new T.MeshPhysicalMaterial({ map: t1, bumpMap: t2, bumpScale: 0.02, roughness: 0.9, sheen: 0.7, sheenRoughness: 0.6, sheenColor: new T.Color(0xe8d2b0), envMapIntensity: 0.6 });
+      },
+      pastelAcrylic: function () {
+        // 파스텔 아크릴: 불투명 무광에 가까운 사틴 + 얇은 겉광, 알마다 색(묵주 정의 palette, 단마다 다른 색)
+        var n = noiseCanvas(128, 8, 3, 110, 150, 7.7);
+        return new T.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.42, bumpMap: tex(n), bumpScale: 0.002, clearcoat: 0.6, clearcoatRoughness: 0.25,
+          sheen: 0.3, sheenColor: new T.Color(0xffffff), envMapIntensity: 1.0 });
+      },
+      cordTwine: function () { return new T.MeshPhysicalMaterial({ color: 0xc9ad84, roughness: 0.85, sheen: 0.7, sheenColor: new T.Color(0xf0dcc0), envMapIntensity: 0.8 }); },
       cordBlack: function () { return new T.MeshPhysicalMaterial({ color: 0x1a1716, roughness: 0.8, sheen: 0.6, sheenColor: new T.Color(0x5a5550), envMapIntensity: 0.6 }); },
       cordRed: function () { return new T.MeshPhysicalMaterial({ color: 0x8e1c22, roughness: 0.7, sheen: 0.8, sheenColor: new T.Color(0xff8a8a), envMapIntensity: 0.7 }); },
       cordBlue: function () { return new T.MeshPhysicalMaterial({ color: 0x24407e, roughness: 0.75, sheen: 0.7, sheenColor: new T.Color(0x9ab4ff), envMapIntensity: 0.7 }); },

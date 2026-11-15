@@ -7,7 +7,7 @@ import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/glass/glass_catalog.dart';
 import 'package:rosary_app/ui/home_screen.dart';
-import 'package:rosary_app/ui/rosary_style_screen.dart';
+import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
 import 'package:rosary_app/ui/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -205,7 +205,7 @@ void main() {
       _size(tester, const Size(400, 1000));
       final handle = tester.ensureSemantics();
       final settings = await _settings();
-      await tester.pumpWidget(_screen(RosaryStyleScreen(settings: settings)));
+      await tester.pumpWidget(_screen(RosaryGalleryScreen(settings: settings)));
       await tester.pump();
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
       await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));

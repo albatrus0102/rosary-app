@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/settings.dart';
+import '../app/track.dart';
 import 'rosary_model.dart';
 import 'rosary_prayer_view.dart';
 import 'rosary_scene.dart';
@@ -187,7 +188,10 @@ class _RosaryGalleryScreenState extends State<RosaryGalleryScreen> {
                             key: const ValueKey('gallery-use'),
                             onPressed: inUse
                                 ? null
-                                : () => s.rosaryId = _viewing,
+                                : () {
+                                    s.rosaryId = _viewing;
+                                    Track.rosary(_viewing);
+                                  },
                             child: Text(inUse ? '이 묵주로 기도하는 중' : '이 묵주로 기도하기'),
                           ),
                         ),
