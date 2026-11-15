@@ -331,18 +331,34 @@
     }
     function restoreDynamicCasters() { for (var i = 0; i < dynStash.length; i++) dynStash[i].castShadow = true; dynStash.length = 0; }
     // ---- 바닥 반사끼리 서로를 다시 그리지 않게(반사 속 반사는 세기 0.35 × 0.35 로 보이지 않는데 장면을 통째로 한 번 더 그렸다) ----
+    // 반사에 비치지 않아도 되는 것(PERF_SCALE.md §2): 화면 UI(이름표·표식·강조 고리 = renderOrder 7~99)와 점(먼지·별).
+    // 반사 렌더 동안만 숨긴다(목록은 1초마다 다시 모은다, 프레임마다 할당 없음). 촛불 불꽃(6)·사진 창(5.5)·하늘(1000)은 그대로 비친다.
+    var noRefl = [], noReflAt = -1e9, noReflScene = null;
+    var noReflVis = [];
+    function noReflVisit(o) { if (o.isPoints || (o.renderOrder >= 7 && o.renderOrder < 100)) noRefl.push(o); }
     function guardReflectors(world) {
       if (!world || !world.group) return;
-      world.group.children.forEach(function (o) {
-        if (!o.userData.reflector || o.userData.guarded) return;
-        var ob = o.onBeforeRender;
-        o.onBeforeRender = function (r, sc, cam) {
-          if (R._inAux) return;   // 다른 반사·SSAO 법선 패스 안에서는 갱신하지 않는다(지난 프레임 반사 질감을 그대로 쓴다)
-          R._inAux = true; R.stats.reflectRenders++;
-          try { ob.call(this, r, sc, cam); } finally { R._inAux = false; }
-        };
-        o.userData.guarded = true;
-      });
+      var ch = world.group.children;
+      if (ch.length === R._guardN && world.group === R._guardG) return;   // 월드·자식 수가 바뀔 때만 다시 살핀다
+      R._guardN = ch.length; R._guardG = world.group;
+      for (var i = 0; i < ch.length; i++) {
+        var o = ch[i];
+        if (!o.userData.reflector || o.userData.guarded) continue;
+        guardOne(o);
+      }
+    }
+    function guardOne(o) {
+      var ob = o.onBeforeRender;
+      o.onBeforeRender = function (r, sc, cam) {
+        if (R._inAux) return;   // 다른 반사·SSAO 법선 패스 안에서는 갱신하지 않는다(지난 프레임 반사 질감을 그대로 쓴다)
+        R._inAux = true; R.stats.reflectRenders++;
+        var now = performance.now();
+        if (sc !== noReflScene || now - noReflAt > 1000) { noRefl.length = 0; sc.traverse(noReflVisit); noReflAt = now; noReflScene = sc; }
+        var hid = R._reflHide !== false ? noRefl.length : 0, k;
+        for (k = 0; k < hid; k++) { noReflVis[k] = noRefl[k].visible; noRefl[k].visible = false; }
+        try { ob.call(this, r, sc, cam); } finally { R._inAux = false; for (k = 0; k < hid; k++) noRefl[k].visible = noReflVis[k]; }
+      };
+      o.userData.guarded = true;
     }
 
     // 매 프레임: 렌더 + 프레임 시간 평균(3초)으로 자동 하향. 반환: 단계가 바뀌었으면 새 단계 문자열

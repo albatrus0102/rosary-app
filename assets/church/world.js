@@ -55,8 +55,8 @@
 
   var REFLECTOR_SHADER = {
     uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, strength: { value: 0.4 } },
-    vertexShader: 'uniform mat4 textureMatrix; varying vec4 vUv; varying vec3 vWorld;\n#include <common>\n#include <logdepthbuf_pars_vertex>\nvoid main(){ vUv = textureMatrix * vec4(position, 1.0); vWorld = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n#include <logdepthbuf_vertex>\n}',
-    fragmentShader: 'uniform vec3 color; uniform sampler2D tDiffuse; uniform float strength; varying vec4 vUv; varying vec3 vWorld;\n#include <logdepthbuf_pars_fragment>\nvoid main(){\n#include <logdepthbuf_fragment>\n vec4 base = texture2DProj(tDiffuse, vUv);\n float f = pow(1.0 - clamp(normalize(cameraPosition - vWorld).y, 0.0, 1.0), 3.0);\n float a = clamp(strength * (0.16 + 0.84 * f), 0.0, 1.0);\n gl_FragColor = vec4(base.rgb * color, a);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'
+    vertexShader: 'uniform mat4 textureMatrix; attribute float aK; varying float vK; varying vec4 vUv; varying vec3 vWorld;\n#include <common>\n#include <logdepthbuf_pars_vertex>\nvoid main(){ vK = aK; vUv = textureMatrix * vec4(position, 1.0); vWorld = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n#include <logdepthbuf_vertex>\n}',
+    fragmentShader: 'uniform vec3 color; uniform sampler2D tDiffuse; uniform float strength; varying float vK; varying vec4 vUv; varying vec3 vWorld;\n#include <logdepthbuf_pars_fragment>\nvoid main(){\n#include <logdepthbuf_fragment>\n vec4 base = texture2DProj(tDiffuse, vUv);\n float f = pow(1.0 - clamp(normalize(cameraPosition - vWorld).y, 0.0, 1.0), 3.0);\n float a = clamp(strength * vK * (0.16 + 0.84 * f), 0.0, 1.0);\n gl_FragColor = vec4(base.rgb * color, a);\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n}'
   };
 
   function create(scene, opts) {
@@ -322,12 +322,33 @@
       if (!root.ThreeX || !root.ThreeX.Reflector || reflectors.length || !S.floors.length) return;
       var dpr = renderer ? renderer.getPixelRatio() : 1;
       var W = Math.max(256, Math.round((root.innerWidth || 800) * dpr * 0.5)), H = Math.max(256, Math.round((root.innerHeight || 450) * dpr * 0.5));
+      // 높이가 3cm 안으로 같은 바닥들은 거울 평면 하나(반사 렌더 1번)로 묶는다(PERF_SCALE.md §2): 예전에는 바닥마다 장면 전체를 한 번씩 더 그렸다.
+      // 1.2cm 높은 제단 구역 바닥이 반사에서 2.4cm 어긋나는 것은 보이지 않는다. 바닥마다 세기가 다르면 정점 값(aK)으로 넘긴다.
+      var groups = [];
       S.floors.forEach(function (f) {
-        var r = new root.ThreeX.Reflector(new T.PlaneGeometry(f.x1 - f.x0, f.z1 - f.z0), { textureWidth: W, textureHeight: H, clipBias: 0.003, color: 0xffffff, shader: REFLECTOR_SHADER, multisample: 0 });
+        var g = null;
+        for (var i = 0; i < groups.length; i++) if (Math.abs(groups[i].y - f.y) <= 0.03) { g = groups[i]; break; }
+        if (!g) groups.push(g = { y: f.y, fl: [] });
+        g.fl.push(f);
+      });
+      groups.forEach(function (g) {
+        var x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+        g.fl.forEach(function (f) { x0 = Math.min(x0, f.x0); x1 = Math.max(x1, f.x1); z0 = Math.min(z0, f.z0); z1 = Math.max(z1, f.z1); });
+        var cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, n = g.fl.length;
+        var pos = new Float32Array(n * 12), kk = new Float32Array(n * 4), idx = [];
+        g.fl.forEach(function (f, i) {
+          // 반사판 지역 좌표(XY 평면, +Z 가 위): x = 월드 x, y = -월드 z, z = 높이 차
+          var c = [[f.x0, f.z1], [f.x1, f.z1], [f.x1, f.z0], [f.x0, f.z0]];
+          for (var k = 0; k < 4; k++) { pos[i * 12 + k * 3] = c[k][0] - cx; pos[i * 12 + k * 3 + 1] = -(c[k][1] - cz); pos[i * 12 + k * 3 + 2] = f.y - g.y; kk[i * 4 + k] = f.strength; }
+          idx.push(i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3);
+        });
+        var geo = new T.BufferGeometry();
+        geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('aK', new T.BufferAttribute(kk, 1)); geo.setIndex(idx);
+        var r = new root.ThreeX.Reflector(geo, { textureWidth: W, textureHeight: H, clipBias: 0.003, color: 0xffffff, shader: REFLECTOR_SHADER, multisample: 0 });
         r.material.transparent = true; r.material.depthWrite = false; r.material.polygonOffset = true; r.material.polygonOffsetFactor = -2; r.material.polygonOffsetUnits = -2;
-        r.material.uniforms.strength.value = f.strength * (look ? look.reflK : 1);
-        r.rotation.x = -PI / 2; r.position.set((f.x0 + f.x1) / 2, f.y + 0.006, (f.z0 + f.z1) / 2); r.renderOrder = 2;
-        r.userData.reflector = true;
+        r.material.uniforms.strength.value = look ? look.reflK : 1;
+        r.rotation.x = -PI / 2; r.position.set(cx, g.y + 0.006, cz); r.renderOrder = 2;
+        r.userData.reflector = true; r.userData.floors = n;
         world.add(r); reflectors.push(r);
       });
     }
