@@ -124,7 +124,7 @@
     var api = { clip: clip, clipWide: clipWide, out: out, triangles: nt, thinTriangles: nThin, cells: NX * NZ, see: null };
     api.isThin = function (t) { return thin[t] === 1; };
     // 가는 면이 있는 메시에 seeThru(Uint8, 정규화) 꼭짓점 값을 단다. 그 재질을 쓰는 다른 메시에도 0 값을 달아 둔다(빈 속성 슬롯이 1로 읽히지 않게).
-    if (o.see !== false && nThin) api.see = attachSee(obj, meshes, triMesh, triI, thin, nt, o.THREE || root.THREE);
+    if (o.see !== false && nt) api.see = attachSee(obj, meshes, triMesh, triI, thin, nt, o.THREE || root.THREE);
     return api;
   }
 
@@ -201,12 +201,12 @@
   // 균일값은 모든 재질이 같은 객체를 나눠 쓴다(매 프레임 a·b·k 숫자만 바꾼다 — 할당 0). 재질은 복제하지 않고 onBeforeCompile 을 잇는다
   // (기존 onBeforeCompile·프로그램 캐시 키는 그대로 두고 '|see' 를 덧붙여 다른 재질과 프로그램이 섞이지 않게).
   var SEE_V = 'attribute float seeThru;\nvarying float vSee;\nvarying vec3 vSeeW;\n';
-  var SEE_F = 'uniform vec3 uSeeA;\nuniform vec3 uSeeB;\nuniform float uSeeK;\nuniform float uSeeR;\nvarying float vSee;\nvarying vec3 vSeeW;\n';
-  var SEE_MAIN = 'void main() {\n\tif (vSee > 0.5 && uSeeK > 0.004) {\n\t\tvec3 sAB = uSeeB - uSeeA; float sH = dot(vSeeW - uSeeA, sAB) / max(dot(sAB, sAB), 1e-4);\n' +
+  var SEE_F = 'uniform vec3 uSeeA;\nuniform vec3 uSeeB;\nuniform float uSeeK;\nuniform float uSeeW;\nuniform float uSeeR;\nvarying float vSee;\nvarying vec3 vSeeW;\n';
+  var SEE_MAIN = 'void main() {\n\tfloat sSel = vSee > 0.75 ? uSeeK : (vSee > 0.25 ? uSeeW : 0.0);\n\tif (sSel > 0.004) {\n\t\tvec3 sAB = uSeeB - uSeeA; float sH = dot(vSeeW - uSeeA, sAB) / max(dot(sAB, sAB), 1e-4);\n' +
     '\t\tfloat sD = length(vSeeW - uSeeA - sAB * clamp(sH, 0.0, 1.0)), sR = uSeeR * (0.55 + 0.45 * clamp(sH, 0.0, 1.0));\n' +
     '\t\tfloat sF = (1.0 - smoothstep(sR * 0.6, sR, sD)) * smoothstep(-0.3, -0.05, sH) * (1.0 - smoothstep(0.9, 1.0, sH));\n' +
     '\t\tfloat sN = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));\n' +
-    '\t\tif (sN < sF * uSeeK * 0.86) discard;\n\t}\n';
+    '\t\tif (sN < sF * sSel * 0.86) discard;\n\t}\n';
   function patchSee(mat, U) {
     if (!mat || mat.userData.seePatched) return;
     mat.userData.seePatched = true;
@@ -215,7 +215,7 @@
     mat.onBeforeCompile = function (sh, r) {
       if (prev) prev.call(this, sh, r);
       if (sh.vertexShader.indexOf('#include <project_vertex>') < 0 || sh.fragmentShader.indexOf('void main() {') < 0) return;
-      sh.uniforms.uSeeA = U.a; sh.uniforms.uSeeB = U.b; sh.uniforms.uSeeK = U.k; sh.uniforms.uSeeR = U.r;
+      sh.uniforms.uSeeA = U.a; sh.uniforms.uSeeB = U.b; sh.uniforms.uSeeK = U.k; sh.uniforms.uSeeW = U.w; sh.uniforms.uSeeR = U.r;
       sh.vertexShader = SEE_V + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n\tvSee = seeThru;\n\tvSeeW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
       sh.fragmentShader = SEE_F + sh.fragmentShader.replace('void main() {', SEE_MAIN);
     };
@@ -225,13 +225,13 @@
   function attachSee(obj, meshes, triMesh, triI, thin, nt, THREE) {
     var BA = THREE && THREE.BufferAttribute;
     if (!BA) return null;
-    var U = { a: { value: new Float32Array(3) }, b: { value: new Float32Array(3) }, k: { value: 0 }, r: { value: 1.0 } };
+    var U = { a: { value: new Float32Array(3) }, b: { value: new Float32Array(3) }, k: { value: 0 }, w: { value: 0 }, r: { value: 1.0 } };
     var arrs = new Array(meshes.length), mats = [], t, k;
+    // 가는 면 255(uSeeK 로 지움), 넓은 면 128(uSeeW: '자동 줌' 을 끄면 카메라와 아바타 사이의 벽도 디더로 비친다)
     for (t = 0; t < nt; t++) {
-      if (!thin[t]) continue;
       var mi = triMesh[t], m = meshes[mi], g = m.geometry, ix = g.index ? g.index.array : null;
-      var A = arrs[mi] || (arrs[mi] = new Uint8Array(g.attributes.position.count));
-      for (k = 0; k < 3; k++) A[ix ? ix[triI[t] + k] : triI[t] + k] = 255;
+      var A = arrs[mi] || (arrs[mi] = new Uint8Array(g.attributes.position.count)), vv = thin[t] ? 255 : 128;
+      for (k = 0; k < 3; k++) { var vi = ix ? ix[triI[t] + k] : triI[t] + k; if (A[vi] < vv) A[vi] = vv; }
     }
         for (var i = 0; i < meshes.length; i++) {
       if (!arrs[i]) continue;
@@ -246,14 +246,15 @@
     });
     mats.forEach(function (x) { patchSee(x, U); });
     // 카메라 위치(cx..)·아바타 가슴(bx..)·세기(0..1)를 한 번에(할당 0)
-    U.set = function (ax, ay, az, bx, by, bz, kk) { var a = U.a.value, b = U.b.value; a[0] = ax; a[1] = ay; a[2] = az; b[0] = bx; b[1] = by; b[2] = bz; U.k.value = kk; };
+    U.set = function (ax, ay, az, bx, by, bz, kk, kw) { var a = U.a.value, b = U.b.value; a[0] = ax; a[1] = ay; a[2] = az; b[0] = bx; b[1] = by; b[2] = bz; U.k.value = kk; U.w.value = kw || 0; };
     U.materials = mats.length;
     return U;
   }
 
-  // 카메라–머리 거리 → 아바타 불투명도(1.7m 이상 1, 0.7m 이하 거의 0). 1.3m 에서 시작하면 벽에 붙은 카메라(머리에서 1.3~1.5m)가
-  // 등 뒤에 붙어 아바타가 화면을 다 가렸다(밀라노 측랑 창가 제보): 1.7m 부터 흐리기 시작한다.
-  function avatarAlpha(d) { var u = (d - 0.7) / 1.0; u = u < 0 ? 0 : u > 1 ? 1 : u; return 0.06 + 0.94 * u * u * (3 - 2 * u); }
+  // 카메라–머리 거리 → 아바타 불투명도(1.7m 이상 1, 0.7m 이하 MIN_ALPHA). 내 캐릭터는 절대 사라지지 않는다(최소 0.35):
+  // 가까워지는 대신 리그가 카메라를 어깨 위로 올린다(createRig 의 lift).
+  var MIN_ALPHA = 0.35;
+  function avatarAlpha(d) { var u = (d - 0.7) / 1.0; u = u < 0 ? 0 : u > 1 ? 1 : u; return MIN_ALPHA + (1 - MIN_ALPHA) * u * u * (3 - 2 * u); }
 
   // 기도 자리 시점(성모 기도 자리·제대 앞·14처 판·봉헌초 도착, 앉기·무릎 꿇기): 카메라는 자리 방향(yaw) 뒤에서 side 만큼 비켜
   // 낮게(pitch)·가깝게(zoom) 서고, 보는 점은 아바타 앞 fwd·위 up 으로 옮긴다 → 아바타는 화면 아래 한편, 목표물은 가운데~위.
@@ -266,7 +267,90 @@
     return out;
   }
 
-  var api = { build: build, classifyThin: classifyThin, patchSee: patchSee, avatarAlpha: avatarAlpha, SPOT: SPOT, spotBlend: spotBlend };
+  // ---- 3인칭 카메라 리그(게임 엔진식, docs/church/CAMERA.md) ----
+  // Cinemachine Deoccluder·Unreal SpringArm 의 관례를 따른다:
+  //  - 목표 거리 = 사용자가 정한 거리(핀치·설정). 가림으로 바뀌는 건 넓은 벽·천장(실내 밖으로 나가는 경우)뿐(가는 면은 디더).
+  //  - 막히면 즉시 앞으로(벽 밖이 비치지 않게), 풀리면 holdT 동안 그대로 있다가(Smoothing Time) tauOut 으로 천천히 돌아간다(Damping).
+  //    hyst 보다 작은 차이는 무시(히스테리시스) → 기둥·문틀을 지날 때 줌이 들락날락하지 않는다.
+  //  - 뒤가 벽으로 막혀 가까워지면(liftD0 → liftD1) 카메라를 어깨 위로 올리고(liftPitch) 앞을 내려다본다(liftFwd): 벽에 붙어도 앞이 보인다.
+  //  - auto=false('자동 줌' 끔): 거리를 전혀 바꾸지 않고, 사이의 벽은 디더로 비친다(main.js uSeeW).
+  var RIG = { holdT: 0.5, tauIn: 0.25, tauOut: 0.8, outMax: 1.2, probe: 0.8, slack: 0.6, ahead: 0.6, yawAhead: 1.0, hyst: 0.3, liftD0: 2.8, liftD1: 1.3, liftPitch: 1.2, liftFwd: 1.6, tauLift: 0.45 };
+  function createRig() {
+    var s = { d: -1, hold: 0, lift: 0, lastD: -1, py: 0, px: 0, pz: 0, pOk: false, yo: 0, yoT: 0 };
+    // 피벗(mx,fy,mz)에서 yaw·pitch 방향으로 D 만큼: 상자 경계·천장·벽 가드가 허락하는 거리(m)
+    function allowed(g, cb, mx, fy, mz, dx, dz, p, D) {
+      var ch = Math.cos(p) * D, cv = Math.sin(p) * D, r = 1;
+      if (cb) {
+        if (dx > 1e-4) r = Math.min(r, (cb.x1 - mx) / (dx * ch)); else if (dx < -1e-4) r = Math.min(r, (cb.x0 - mx) / (dx * ch));
+        if (dz > 1e-4) r = Math.min(r, (cb.z1 - mz) / (dz * ch)); else if (dz < -1e-4) r = Math.min(r, (cb.z0 - mz) / (dz * ch));
+        if (cv > 1e-4 && fy + cv > cb.yMax) r = Math.min(r, (cb.yMax - fy) / cv);
+        r = Math.max(0.05, Math.min(1, r));
+      }
+      var t = g ? g.clipWide(mx, fy, mz, mx + dx * ch * r, fy + cv * r, mz + dz * ch * r, RIG.probe, 0.3) : 1;   // 벽에서 probe(0.8m) 앞에 선다(SpringArm Probe Size)
+      return D * r * t;
+    }
+    // I: {mx,fy,mz, yaw,pitch, D(목표 거리), cb, guard, auto}. O 에 {x,y,z, pitch, dist, lift, fwd} 를 쓴다(할당 0).
+    var YO = [0.45, -0.45, 0.9, -0.9, 1.35, -1.35, 1.8, -1.8];   // 벽에 등을 대면 ±100° 까지(벽을 따라 옆에서 본다)
+    s.solve = function (I, dt, O) {
+      var D = I.D, auto = I.auto !== false, g = auto ? I.guard : null, yaw0 = I.yaw;
+      // 구석에 끼었다(원래 방향으로 liftD1 도 안 됨): 좌우로 돌려 가장 멀리 서는 방향을 찾는다(Cinemachine Preserve Camera Distance).
+      // 원래 방향이 다시 liftD0 이상 열리면 천천히 0 으로 돌아온다(그 사이는 그대로 → 왔다 갔다 하지 않는다).
+      if (auto) {
+        var aY = allowed(g, I.cb, I.mx, I.fy, I.mz, Math.sin(yaw0 + s.yoT), Math.cos(yaw0 + s.yoT), I.pitch, D);
+        if (aY < RIG.liftD1) {
+          var best = aY, bo = s.yoT;
+          for (var q = 0; q < YO.length; q++) {
+            var aq = allowed(g, I.cb, I.mx, I.fy, I.mz, Math.sin(yaw0 + YO[q]), Math.cos(yaw0 + YO[q]), I.pitch, D);
+            if (aq > best + 0.5) { best = aq; bo = YO[q]; }
+          }
+          s.yoT = bo;
+        } else if (s.yoT !== 0 && allowed(g, I.cb, I.mx, I.fy, I.mz, Math.sin(yaw0), Math.cos(yaw0), I.pitch, D) >= RIG.liftD0) s.yoT = 0;
+      } else s.yoT = 0;
+      s.yo += (s.yoT - s.yo) * (1 - Math.exp(-dt / (s.yoT === 0 ? 1.5 : 0.5)));
+      var yaw = yaw0 + s.yo, dx = Math.sin(yaw), dz = Math.cos(yaw);
+      var lt = 0;
+      if (auto) {
+        var a0 = allowed(g, I.cb, I.mx, I.fy, I.mz, dx, dz, I.pitch, D);
+        lt = Math.max(0, Math.min(1, (RIG.liftD0 - a0) / (RIG.liftD0 - RIG.liftD1)));
+        // 올려도 더 멀어지지 않으면(머리 위·옆이 막힘: 아치·피어 옆) 올리지 않는다
+        if (lt > 0 && I.pitch < RIG.liftPitch && allowed(g, I.cb, I.mx, I.fy, I.mz, dx, dz, RIG.liftPitch, D) < a0 + 0.4) lt = 0;
+      }
+      s.lift += (lt - s.lift) * (1 - Math.exp(-dt / RIG.tauLift));
+      if (s.lift < 1e-3) s.lift = 0;
+      var pe = I.pitch < RIG.liftPitch ? I.pitch + (RIG.liftPitch - I.pitch) * s.lift : I.pitch;
+      var A = allowed(g, auto ? I.cb : null, I.mx, I.fy, I.mz, dx, dz, pe, D);
+      // 미리 보기(ahead 초 뒤의 피벗·방향): 돌거나 걸어 들어가며 곧 막힐 곳을 먼저 알아 천천히 줄인다(급히 당기지 않게)
+      var Ap = A;
+      if (auto && s.pOk && dt > 1e-4) {
+        var wy = yaw - s.py; while (wy > Math.PI) wy -= 2 * Math.PI; while (wy < -Math.PI) wy += 2 * Math.PI;
+        var k = RIG.ahead / dt, yP = yaw + Math.max(-RIG.yawAhead, Math.min(RIG.yawAhead, wy * k));
+        var vx = Math.max(-1, Math.min(1, (I.mx - s.px) * k)), vz = Math.max(-1, Math.min(1, (I.mz - s.pz) * k));
+        Ap = allowed(g, I.cb, I.mx + vx, I.fy, I.mz + vz, Math.sin(yP), Math.cos(yP), pe, D);
+      }
+      s.py = yaw; s.px = I.mx; s.pz = I.mz; s.pOk = true;
+      var tg = Math.min(D, A, Ap);
+      if (s.d < 0 || Math.abs(D - s.lastD) > 1e-3) {
+        // 처음이거나 목표 거리가 바뀌었다(핀치·앉기·자리 시점): 그대로 따른다(사용자가 바꾼 것은 바로 보인다)
+        if (s.d < 0 || tg < s.d || s.lastD < 0) s.d = tg; else s.d = Math.min(tg, s.d + (D - s.lastD));
+        s.hold = RIG.holdT;
+      } else if (tg < s.d) {                                                          // 막힘: tauIn 으로 들어오되 벽 여유(slack) 안에서만 늦는다
+        s.d += (tg - s.d) * (1 - Math.exp(-dt / RIG.tauIn));
+        if (s.d > A + RIG.slack) s.d = A + RIG.slack;                                  // probe(0.8m) 보다 덜 늦어 벽 밖은 비치지 않는다
+        s.hold = RIG.holdT;
+      } else if (tg > s.d + RIG.hyst) {                                               // 풀림: 잠시 버틴 뒤 천천히(초당 outMax 까지)
+        if (s.hold > 0) s.hold -= dt; else s.d += Math.min((tg - s.d) * (1 - Math.exp(-dt / RIG.tauOut)), RIG.outMax * dt);
+      } else if (tg > s.d && D - s.d < RIG.hyst) s.d = tg;                             // 거의 다 돌아왔다: 붙인다
+      s.lastD = D;
+      var ch = Math.cos(pe) * s.d, cv = Math.sin(pe) * s.d;
+      O.x = I.mx + dx * ch; O.y = I.fy + cv; O.z = I.mz + dz * ch;
+      O.pitch = pe; O.dist = s.d; O.lift = s.lift; O.fwd = RIG.liftFwd * s.lift; O.yaw = yaw;
+      return O;
+    };
+    s.reset = function () { s.d = -1; s.hold = 0; s.lift = 0; s.lastD = -1; s.pOk = false; s.yo = s.yoT = 0; };
+    return s;
+  }
+
+  var api = { build: build, classifyThin: classifyThin, patchSee: patchSee, avatarAlpha: avatarAlpha, MIN_ALPHA: MIN_ALPHA, SPOT: SPOT, spotBlend: spotBlend, RIG: RIG, createRig: createRig };
   root.ChurchCamGuard = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : this);

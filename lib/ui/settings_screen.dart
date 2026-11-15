@@ -583,6 +583,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
+        // 카메라(docs/church/CAMERA.md): 게임식 3인칭 카메라의 자동 동작을 켜고 끈다
+        Padding(
+          key: const ValueKey('settings-church-camera'),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('카메라 거리', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpace.xs),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<ChurchCamDist>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(
+                      value: ChurchCamDist.near,
+                      label: Text('가까이'),
+                    ),
+                    ButtonSegment(
+                      value: ChurchCamDist.normal,
+                      label: Text('보통'),
+                    ),
+                    ButtonSegment(value: ChurchCamDist.far, label: Text('멀리')),
+                  ],
+                  selected: {settings.churchCamDist},
+                  onSelectionChanged: (v) {
+                    settings.churchCamDist = v.first;
+                    Track.setting('church_cam_dist');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        SwitchListTile(
+          key: const ValueKey('settings-church-cam-auto-zoom'),
+          secondary: const Icon(Icons.center_focus_weak),
+          title: const Text('자동 줌(벽 피하기)'),
+          subtitle: const Text(
+            '벽·천장 앞에서만 카메라를 부드럽게 당기고, 뒤가 막히면 어깨 위로 올려 앞을 보여 줘요. '
+            '기둥은 당기지 않고 비쳐 보여요. 끄면 거리가 바뀌지 않고 사이의 벽이 비쳐 보여요',
+          ),
+          value: settings.churchCamAutoZoom,
+          onChanged: (v) {
+            settings.churchCamAutoZoom = v;
+            Track.setting('church_cam_auto_zoom');
+          },
+        ),
+        SwitchListTile(
+          key: const ValueKey('settings-church-cam-follow'),
+          secondary: const Icon(Icons.threesixty),
+          title: const Text('걸을 때 뒤로 따라가기'),
+          subtitle: const Text(
+            '앞으로 걸으면 카메라가 천천히 내 뒤로 돌아와요. 끄면 내가 돌린 방향을 그대로 둬요',
+          ),
+          value: settings.churchCamFollow,
+          onChanged: (v) {
+            settings.churchCamFollow = v;
+            Track.setting('church_cam_follow');
+          },
+        ),
         SwitchListTile(
           key: const ValueKey('settings-church-perf-hud'),
           secondary: const Icon(Icons.speed),

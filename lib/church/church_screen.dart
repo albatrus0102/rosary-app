@@ -228,6 +228,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   late bool _lastAmbient;
   late ChurchQuality _lastQuality;
+  String _lastCamera = ''; // 마지막으로 웹에 보낸 카메라 설정(settings.churchCameraArgs)
   String _lastAvatar = '';
 
   // 성능(C-04): 입장 후 첫 표본이 이 값보다 느리면 간단 모드를 권한다.
@@ -666,6 +667,8 @@ class _ChurchScreenState extends State<ChurchScreen>
     );
     // 이동 손잡이는 앱이 그린다: 웹은 화면 전체를 시점 회전·확대에 쓴다.
     unawaited(_scene.setAppStick());
+    _lastCamera = _settings.churchCameraArgs.toString();
+    unawaited(_scene.setCamera(_settings.churchCameraArgs));
     // 전례 시기 장식(SPEC §33): 오늘(KST) 시기대로. 자정·미리 보기 변경은 _onLiturgy 가 다시 보낸다.
     unawaited(_scene.setLiturgy(_liturgy.sceneArgs));
     // 새로 만든 장면이면 입구가 아니라 방금 있던 자리에서 시작한다. 좌석은 앱이 아는 상태가 우선
@@ -1103,6 +1106,11 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (ambient != _lastAmbient) {
       _lastAmbient = ambient;
       if (!_background) unawaited(_scene.setAmbient(on: ambient));
+    }
+    final camera = _settings.churchCameraArgs;
+    if (_inited && camera.toString() != _lastCamera) {
+      _lastCamera = camera.toString();
+      unawaited(_scene.setCamera(camera));
     }
     final quality = _settings.churchQuality;
     if (quality != _lastQuality) {

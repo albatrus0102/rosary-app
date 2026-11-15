@@ -146,13 +146,29 @@ void main() {
     expect(find.text('성당 화질'), findsOneWidget);
     expect(settings.churchQuality, ChurchQuality.auto);
     expect(find.textContaining('스스로 보통'), findsOneWidget);
-    await tester.tap(find.text('보통'));
+    // '보통'은 화질과 카메라 거리 두 곳에 있다: 화질 줄 안에서 누른다
+    final qualityRow = find.byKey(const ValueKey('settings-church-quality'));
+    await tester.tap(
+      find.descendant(of: qualityRow, matching: find.text('보통')),
+    );
     await tester.pump();
     expect(settings.churchQuality, ChurchQuality.mid);
     expect(find.textContaining('구석 그늘과 바닥 반사를 끄고'), findsOneWidget);
     await tester.tap(find.text('간단'));
     await tester.pump();
     expect(settings.churchQuality, ChurchQuality.low);
+    // 카메라: 거리·자동 줌·뒤로 따라가기
+    final camRow = find.byKey(const ValueKey('settings-church-camera'));
+    expect(settings.churchCamDist, ChurchCamDist.normal);
+    await tester.tap(find.descendant(of: camRow, matching: find.text('멀리')));
+    await tester.pump();
+    expect(settings.churchCamDist, ChurchCamDist.far);
+    await tester.tap(find.text('자동 줌(벽 피하기)'));
+    await tester.pump();
+    expect(settings.churchCamAutoZoom, isFalse);
+    await tester.tap(find.text('걸을 때 뒤로 따라가기'));
+    await tester.pump();
+    expect(settings.churchCamFollow, isFalse);
     expect(settings.churchPerfHud, isFalse);
     await tester.tap(find.text('성능 표시(진단)'));
     await tester.pump();

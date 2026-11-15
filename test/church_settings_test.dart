@@ -17,6 +17,31 @@ void main() {
     expect(s.churchId, 'basic');
   });
 
+  test('church camera settings: defaults, persist, web args', () async {
+    SharedPreferences.setMockInitialValues({});
+    final s = await AppSettings.load();
+    expect(s.churchCamAutoZoom, isTrue);
+    expect(s.churchCamDist, ChurchCamDist.normal);
+    expect(s.churchCamFollow, isTrue);
+    expect(s.churchCameraArgs, {
+      'autoZoom': true,
+      'dist': 'normal',
+      'follow': true,
+    });
+    var notified = 0;
+    s.addListener(() => notified++);
+    s.churchCamAutoZoom = false;
+    s.churchCamDist = ChurchCamDist.far;
+    s.churchCamFollow = false;
+    s.churchCamFollow = false;
+    expect(notified, 3);
+    final again = await AppSettings.load();
+    expect(again.churchCamAutoZoom, isFalse);
+    expect(again.churchCamDist, ChurchCamDist.far);
+    expect(again.churchCamFollow, isFalse);
+    expect(again.churchCameraArgs['dist'], 'far');
+  });
+
   test('church fields persist and notify', () async {
     SharedPreferences.setMockInitialValues({});
     final s = await AppSettings.load();

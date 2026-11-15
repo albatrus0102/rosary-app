@@ -21,6 +21,9 @@ enum PrayerFont { gothic, system }
 /// [low] 간단(후처리 없음). 예전 저장값 'low'·'high'는 그대로 읽힌다.
 enum ChurchQuality { auto, high, mid, low }
 
+/// 성당 3인칭 카메라 거리(저장 키 `church_cam_dist`). 핀치 확대·축소는 이 거리 위에서 곱해진다.
+enum ChurchCamDist { near, normal, far }
+
 /// 성당 '기도하기'에서 마지막으로 고른 것(SPEC §32). 저장 키 `churchPrayerChoice`.
 ///
 /// [brief] 잠시 기도하기(제대 앞 고개 숙임), [rosary] 묵주기도 하기(자리에 앉아 묵주기도 카드).
@@ -129,6 +132,13 @@ class AppSettings extends ChangeNotifier {
       ChurchQuality.auto,
     );
     _churchPerfHud = _prefs.getBool(_kChurchPerfHud) ?? false;
+    _churchCamAutoZoom = _prefs.getBool(_kChurchCamAutoZoom) ?? true;
+    _churchCamDist = _enumByName(
+      ChurchCamDist.values,
+      _prefs.getString(_kChurchCamDist),
+      ChurchCamDist.normal,
+    );
+    _churchCamFollow = _prefs.getBool(_kChurchCamFollow) ?? true;
     _churchHudCollapsed = _prefs.getBool(_kChurchHudCollapsed) ?? false;
     _churchStickRight = _prefs.getBool(_kChurchStickRight) ?? false;
     ChurchDiagnostics.perfHud.value = _churchPerfHud;
@@ -329,6 +339,9 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchAmbient = 'church_ambient';
   static const _kChurchQuality = 'church_quality';
   static const _kChurchPerfHud = 'church_perf_hud';
+  static const _kChurchCamAutoZoom = 'church_cam_auto_zoom';
+  static const _kChurchCamDist = 'church_cam_dist';
+  static const _kChurchCamFollow = 'church_cam_follow';
   static const _kChurchHudCollapsed = 'church_hud_collapsed';
   static const _kChurchStickRight = 'church_stick_right';
   static const _kPrayerPosture = 'prayerPosture';
@@ -390,6 +403,9 @@ class AppSettings extends ChangeNotifier {
   late bool _churchAmbient;
   late ChurchQuality _churchQuality;
   late bool _churchPerfHud;
+  late bool _churchCamAutoZoom;
+  late ChurchCamDist _churchCamDist;
+  late bool _churchCamFollow;
   late bool _churchHudCollapsed;
   late bool _churchStickRight;
   late PrayerPosture _prayerPosture;
@@ -633,6 +649,22 @@ class AppSettings extends ChangeNotifier {
   /// 성당 3D 화면 품질.
   ChurchQuality get churchQuality => _churchQuality;
 
+  /// 카메라 '자동 줌(벽 피하기)': 켜면 벽·천장 앞에서만 부드럽게 당긴다(기둥은 비침). 끄면 거리를 바꾸지 않고 사이 벽을 비춘다.
+  bool get churchCamAutoZoom => _churchCamAutoZoom;
+
+  /// 카메라 거리(가까이/보통/멀리).
+  ChurchCamDist get churchCamDist => _churchCamDist;
+
+  /// 걸을 때 카메라가 천천히 뒤로 정렬되는지. 끄면 사용자가 돌린 방향을 유지한다.
+  bool get churchCamFollow => _churchCamFollow;
+
+  /// 웹(three.js) 카메라 설정 인자(`setCamera`, init 의 `camera`).
+  Map<String, Object> get churchCameraArgs => {
+    'autoZoom': _churchCamAutoZoom,
+    'dist': _churchCamDist.name,
+    'follow': _churchCamFollow,
+  };
+
   /// 성당 성능 표시(진단: fps·프레임 ms·해상도·화질 단계). 기본 꺼짐.
   bool get churchPerfHud => _churchPerfHud;
 
@@ -731,6 +763,27 @@ class AppSettings extends ChangeNotifier {
     if (v == _churchAmbient) return;
     _churchAmbient = v;
     _prefs.setBool(_kChurchAmbient, v);
+    notifyListeners();
+  }
+
+  set churchCamAutoZoom(bool v) {
+    if (v == _churchCamAutoZoom) return;
+    _churchCamAutoZoom = v;
+    _prefs.setBool(_kChurchCamAutoZoom, v);
+    notifyListeners();
+  }
+
+  set churchCamDist(ChurchCamDist v) {
+    if (v == _churchCamDist) return;
+    _churchCamDist = v;
+    _prefs.setString(_kChurchCamDist, v.name);
+    notifyListeners();
+  }
+
+  set churchCamFollow(bool v) {
+    if (v == _churchCamFollow) return;
+    _churchCamFollow = v;
+    _prefs.setBool(_kChurchCamFollow, v);
     notifyListeners();
   }
 

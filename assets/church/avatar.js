@@ -1052,6 +1052,36 @@
       } else tg.material = base;
     }
   };
+  // X-ray 실루엣(내 아바타, 걷는 동안): 벽·기둥·의자 뒤에 가려진 몸을 금색 점무늬(50% 디더)로 보여 준다 — 내 위치를 잃지 않게.
+  // 같은 뼈대·형상을 쓰는 SkinnedMesh 를 깊이 '더 먼 곳(GreaterDepth)'에서만 그린다. 불투명 목록에서 장면(renderOrder 0) 다음,
+  // 내 몸(renderOrder 51) 바로 앞(50)에 그려야 내 몸끼리 가린 곳(팔 뒤 몸통)이 금색이 되지 않는다. 섞기 없이 디더라 정렬 문제도 없다.
+  var xrayM = null;
+  function xrayMat() {
+    if (xrayM) return xrayM;
+    xrayM = new T.MeshBasicMaterial({ color: 0xe6c36a, depthWrite: false, depthFunc: T.GreaterDepth, fog: false, toneMapped: false });
+    xrayM.onBeforeCompile = function (sh) { sh.fragmentShader = sh.fragmentShader.replace('void main() {', 'void main() {\n\tif (mod(floor(gl_FragCoord.x) + floor(gl_FragCoord.y), 2.0) < 0.5) discard;'); };
+    xrayM.customProgramCacheKey = function () { return 'avxray'; };
+    return xrayM;
+  }
+  Avatar.prototype.setXray = function (on) {
+    var src = this.meshes.near, i, k;
+    if (on && !this._xr) {
+      this._xr = {};
+      for (i = 0; i < 2; i++) {
+        k = FADE_K[i];
+        var x = new T.SkinnedMesh(new T.BufferGeometry(), xrayMat());
+        x.bind(this.skeleton, IDENT); x.renderOrder = 50; x.frustumCulled = false; x.castShadow = false; x.receiveShadow = false;
+        this.body.add(x); this._xr[k] = x;
+      }
+    }
+    if (!this._xr) return;
+    for (i = 0; i < 2; i++) {
+      k = FADE_K[i];
+      var xm = this._xr[k], sm = src[k];
+      if (sm) { if (xm.geometry !== sm.geometry) xm.geometry = sm.geometry; sm.renderOrder = on ? 51 : 0; }
+      xm.visible = !!(on && sm && sm.visible && this.lod === 0);
+    }
+  };
   Avatar.prototype.kneelOffset = function () { return this.kneelAmt * this.sitAmt * this.kneelFwd; };
   // 묵주를 든다/내려놓는다(SPEC §32). 처음 들 때 메시를 만든다(지오메트리·재질 공유). 손 위치는 update 가 매 프레임 맞춘다.
   Avatar.prototype.setRosary = function (b) {

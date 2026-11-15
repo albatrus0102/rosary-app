@@ -73,11 +73,11 @@ test('여러 성당에서 홀로 선 기둥은 가늘고, 기존 벽 가드 시�
   }
 });
 
-test('근접 흐리기: 카메라–머리 1.7m 이상 불투명, 0.7m 이하 거의 투명, 1.3m 에서는 이미 반쯤, 단조', () => {
+test('근접 흐리기: 카메라–머리 1.7m 이상 불투명, 가까울수록 흐리되 최소 불투명도(0.35)는 지킨다(캐릭터가 사라지지 않음), 단조', () => {
   assert.equal(Guard.avatarAlpha(1.7), 1);
-  assert.ok(Guard.avatarAlpha(1.3) < 0.75);
   assert.equal(Guard.avatarAlpha(3), 1);
-  assert.ok(Guard.avatarAlpha(0.7) < 0.1 && Guard.avatarAlpha(0.3) < 0.1);
+  assert.ok(Guard.avatarAlpha(1.3) < 0.8);
+  assert.ok(Math.abs(Guard.avatarAlpha(0.7) - Guard.MIN_ALPHA) < 1e-9 && Guard.avatarAlpha(0.1) >= Guard.MIN_ALPHA);
   let p = 0;
   for (let d = 0.4; d <= 1.8; d += 0.05) { const a = Guard.avatarAlpha(d); assert.ok(a >= p - 1e-9); p = a; }
 });
