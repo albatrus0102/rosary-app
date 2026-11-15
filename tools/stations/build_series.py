@@ -129,7 +129,24 @@ def prep_mosler(s, f):
     return im.crop((int(cols[0]), y0, int(cols[-1]) + 1, y1)).filter(ImageFilter.GaussianBlur(1.6)).convert('RGB')
 
 
-PREP = {'plain': prep_plain, 'hermann_paul': prep_hermann_paul, 'oreilly': prep_oreilly, 'previati': prep_previati, 'mosler': prep_mosler}
+def prep_tiepolo(s, f):
+    # 박물관 스캔(판화 한 장): 종이 여백과 그림 아래 'STAZIONE n.' 글귀를 빼고 그림만.
+    # 칸: 잉크가 줄의 30% 를 넘는 범위. 줄: 위는 잉크가 처음 나오는 줄(하늘이 흰 장면이 있어 낮게), 아래는 잉크가 35% 를 넘는 마지막 줄(글귀 줄은 성기다).
+    im = raw_image(s, f['n'])
+    if f.get('box'):
+        return frac_crop(im, f['box'])
+    g = np.asarray(im.convert('L')).astype(int)
+    paper = np.percentile(g, 97)
+    ink = g < paper - 38
+    cols = np.nonzero(ink.mean(axis=0) > 0.30)[0]
+    x0, x1 = int(cols[0]), int(cols[-1]) + 1
+    dens = ink[:, x0:x1].mean(axis=1)
+    y1 = int(np.nonzero(dens > 0.35)[0][-1]) + 1
+    y0 = int(np.nonzero(dens > 0.04)[0][0])
+    return im.crop((x0 + 2, y0 + 2, x1 - 2, y1 - 2))
+
+
+PREP = {'tiepolo': prep_tiepolo, 'plain': prep_plain, 'hermann_paul': prep_hermann_paul, 'oreilly': prep_oreilly, 'previati': prep_previati, 'mosler': prep_mosler}
 
 
 def build(s):
@@ -148,7 +165,7 @@ def build(s):
         w, h = im.size
         bw = min(s.get('bundle_width', 600), w)   # 원본이 더 작으면 키우지 않는다(판화·사진 질감은 bundle_width 로 줄여 용량을 맞춘다)
         big = im.resize((bw, round(h * bw / w)), Image.LANCZOS) if bw != w else im
-        data, q = webp_under(big, LIMIT)
+        data, q = webp_under(big, s.get('limit_kb', 26) * 1024)   # limit_kb: 연작당 0.45MB 를 지키려는 장당 상한
         with open(os.path.join(out_dir, f'station_{n:02d}.webp'), 'wb') as fh:
             fh.write(data)
         total += len(data)

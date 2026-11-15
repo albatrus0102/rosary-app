@@ -640,7 +640,7 @@
    "fit": "contain",
    "asset_dir": "assets/images/stations/tiepolo",
    "pack": "cross_pack_tiepolo.js",
-   "prepare": "plain",
+   "prepare": "tiepolo",
    "fetch_width": 960,
    "commons_license": "CC-zero",
    "files": [
@@ -714,7 +714,9 @@
      "url": "https://commons.wikimedia.org/wiki/File:Graflegging_van_Christus_Stazione_ultima_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-513.jpg",
      "commons": "Graflegging_van_Christus_Stazione_ultima_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-513.jpg"
     }
-   ]
+   ],
+   "bundle_width": 480,
+   "limit_kb": 24
   },
   {
    "id": "fugel_munich",
@@ -739,7 +741,7 @@
    "asset_dir": "assets/images/stations/fugel_munich",
    "pack": "cross_pack_fugel_munich.js",
    "prepare": "plain",
-   "fetch_width": 960,
+   "fetch_width": 500,
    "commons_license": "PD-old-auto-1923",
    "files": [
     {
@@ -812,7 +814,8 @@
      "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_14.jpg",
      "commons": "Fugel_Kreuzweg_14.jpg"
     }
-   ]
+   ],
+   "bundle_width": 500
   },
   {
    "id": "fahnroth",
@@ -837,18 +840,20 @@
    "asset_dir": "assets/images/stations/fahnroth",
    "pack": "cross_pack_fahnroth.js",
    "prepare": "plain",
-   "fetch_width": 960,
+   "fetch_width": 330,
    "commons_license": "PD-old-100",
    "files": [
     {
      "n": 1,
      "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_-_Kreuzweg_Neuruppin_01.jpg",
-     "commons": "Joseph_Fahnroth_-_Kreuzweg_Neuruppin_01.jpg"
+     "commons": "Joseph_Fahnroth_-_Kreuzweg_Neuruppin_01.jpg",
+     "fetch_width": 500
     },
     {
      "n": 2,
      "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_02.jpg",
-     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_02.jpg"
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_02.jpg",
+     "fetch_width": 500
     },
     {
      "n": 3,

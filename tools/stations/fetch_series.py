@@ -68,7 +68,7 @@ def fetch(s, out_root):
                 text = fh.read()
             if s['commons_license'].lower() not in text.lower():
                 raise SystemExit(f'{s["id"]} {f["n"]}처: 설명 원문에 {s["commons_license"]} 틀이 없다 → {f["url"]}')
-            url = f'https://commons.wikimedia.org/wiki/Special:FilePath/{name}?width={s["fetch_width"]}'
+            url = f'https://commons.wikimedia.org/wiki/Special:FilePath/{name}?width={f.get("fetch_width", s["fetch_width"])}'
         else:
             url = f['fetch']
         ext = os.path.splitext(urllib.parse.urlparse(url).path)[1].lower() or '.jpg'
