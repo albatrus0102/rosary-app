@@ -289,8 +289,10 @@ ADAPTERS.myeongdong = {
     summary: '입구 +z(북북서) → 제대 -z(남남동). 제대를 볼 때 오른쪽 R = +x = 서남서, 왼쪽 L = -x = 동북동. 근거: interiors/myeongdong.md §2(서울신문: 입구 북북서) · 210행 "+x(서남서)".' },
   consts: { naveBayZ: [21.5, 16.5, 11.5, 6.5, 1.5, -3.5], chancelBayZ: [-17.5, -22.5], transeptZ: [-5.3, -15.7] },
   rules: [
-    { zone: 'facade', test: (e) => e.z > 31 && e.shape === 'circle', key: () => 'facade_rose' },
-    { zone: 'facade', test: (e) => e.z > 31 && e.shape !== 'circle', side: Lr, prefix: 'facadeSide' },
+    // 정면(I-1 구조 수정 뒤): 종탑 2층의 2연 첨두 큰 창 + 가운데 문 위 반월창(팀파눔). 장미창·측랑 앞 작은 창은 실제에 없어 지웠다.
+    { zone: 'facade', test: (e) => e.z > 31 && e.sill > 8, key: () => 'facade_tower' },
+    { zone: 'facade', test: (e) => e.z > 31 && e.sill < 5, key: () => 'facade_tympanum' },
+    { zone: 'aisle_end', test: (e) => e.shape === 'circle' && near(e.z, -25.3, 0.4) && near(Math.abs(e.x), 6.75, 0.5), key: (e) => 'aisleEnd' + Lr(e) + '_rose' },
     { zone: 'apse', test: (e) => e.z < -27 && e.sill > 5, key: (e) => 'apse_' + (Math.abs(e.x) < 0.5 ? 'C' : (e.x < 0 ? 'L' : 'R') + (Math.abs(e.x) < 3.8 ? '1' : '2')) },
     { zone: 'transept_end', test: (e) => Math.abs(e.x) > 13.5, side: Lr, prefix: 'trEnd' },
     { zone: 'transept_upper', test: (e) => near(Math.abs(e.x), 11.25, 0.5) && e.sill > 9, key: (e) => 'trUp' + Lr(e) + (e.z > -10 ? '_front' : '_back') },

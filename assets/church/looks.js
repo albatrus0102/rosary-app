@@ -41,9 +41,9 @@
       sat: 1.04, warm: 0.0, vig: 0.36, con: 0.28, bloomT: 0.75, bloomS: 0.5, bloomR: 0.6, night: { lampK: 2.0, bloomT: 0.68 } },
     // 피렌체: 흰·초록 대리석, 밝은 르네상스 공간. 약한 난색과 중간 대비
     florence: { keyK: 0.95, keyTint: 0xffe0b8, keyTintK: 0.25, ambK: 0.75, expK: 0.9, sat: 0.97, warm: 0.04, vig: 0.24, con: 0.16, bloomT: 0.86, bloomS: 0.36 },
-    // 명동: 붉은 벽돌 고딕. 따뜻한 벽돌빛·낮은 앰비언트·촛불
-    myeongdong: { keyK: 0.9, keyTint: 0xffc890, keyTintK: 0.35, ambK: 0.62, ambTint: 0xffcfa0, ambTintK: 0.35, expK: 0.88, lampK: 1.6, candleK: 1.4, fogTint: 0x5a3020, fogTintK: 0.25, dust: 110,
-      sat: 1.0, warm: 0.07, vig: 0.3, con: 0.22, bloomT: 0.8, bloomS: 0.45, night: { lampK: 1.9 } },
+    // 명동: 흰 회반죽 + 회색 벽돌 고딕(실내에 붉은 벽돌은 없다 — STRUCTURE_AUDIT_OTHERS §2 M1). 약한 난색, 흰 벽·흰 바닥이 타지 않게 노출·창 빛줄기를 누른다
+    myeongdong: { keyK: 0.9, keyTint: 0xffdcb4, keyTintK: 0.25, ambK: 0.6, ambTint: 0xfff0dc, ambTintK: 0.2, expK: 0.8, beamK: 0.6, lampK: 1.6, candleK: 1.4, fogTint: 0x4a4038, fogTintK: 0.2, dust: 110,
+      sat: 0.98, warm: 0.04, vig: 0.3, con: 0.22, bloomT: 0.84, bloomS: 0.4, night: { lampK: 1.9 } },
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
     basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
   };

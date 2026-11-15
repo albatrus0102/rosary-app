@@ -3,7 +3,7 @@
  "church": "myeongdong",
  "name_ko": "명동대성당",
  "generated": "2026-11-15",
- "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "status": "PLAN + 구조 수정 반영(2026-11-15, I-1): 개구부는 고친 빌더를 다시 잰 값이다. 그림(시안·사진)은 아직 걸지 않았다 — 창은 전부 절차적 유리. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
  "release_approved": false,
  "classes": {
   "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
@@ -35,11 +35,12 @@
  },
  "model": {
   "tool": "node tools/church_web/church_openings.mjs myeongdong --json",
-  "opening_count": 52,
-  "window_count": 52,
+  "opening_count": 53,
+  "window_count": 53,
   "photo_slot_count": 0,
   "by_zone": {
-   "facade": 3,
+   "facade": 2,
+   "aisle_end": 2,
    "apse": 5,
    "transept_end": 2,
    "transept_upper": 8,
@@ -50,63 +51,83 @@
   },
   "openings": [
    {
-    "key": "facade_rose",
+    "key": "facade_tower",
     "zone": "facade",
+    "kind": "window",
+    "shape": "round",
+    "x": 0,
+    "y": 12.191,
+    "z": 32.195,
+    "yawDeg": 180,
+    "w": 2.53,
+    "h": 6.383,
+    "sill": 9,
+    "aspect": 0.396,
+    "real_m": [
+     2.53,
+     6.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "facade_tympanum",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "round",
+    "x": 0,
+    "y": 4.05,
+    "z": 31.915,
+    "yawDeg": 180,
+    "w": 2.4,
+    "h": 1.3,
+    "sill": 3.4,
+    "aspect": 1.846,
+    "real_m": [
+     2.4,
+     1.3
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "aisleEndL_rose",
+    "zone": "aisle_end",
     "kind": "window",
     "shape": "circle",
-    "x": 0,
-    "y": 13.2,
-    "z": 31.8,
-    "yawDeg": 180,
-    "w": 2.88,
-    "h": 2.88,
-    "sill": 11.76,
+    "x": -6.75,
+    "y": 6.6,
+    "z": -25.32,
+    "yawDeg": 0,
+    "w": 1.32,
+    "h": 1.32,
+    "sill": 5.94,
     "aspect": 1,
     "real_m": [
-     2.88,
-     2.88
+     1.32,
+     1.32
     ],
-    "glass_now": "절차적 색유리 · rose12",
+    "glass_now": "절차적 색유리 · rose6",
     "photo": null
    },
    {
-    "key": "facadeSideL",
-    "zone": "facade",
+    "key": "aisleEndR_rose",
+    "zone": "aisle_end",
     "kind": "window",
-    "shape": "pointed",
-    "x": -6.75,
-    "y": 6.44,
-    "z": 31.695,
-    "yawDeg": 180,
-    "w": 1.16,
-    "h": 2.08,
-    "sill": 5.4,
-    "aspect": 0.558,
-    "real_m": [
-     1.16,
-     2.08
-    ],
-    "glass_now": "절차적 색유리",
-    "photo": null
-   },
-   {
-    "key": "facadeSideR",
-    "zone": "facade",
-    "kind": "window",
-    "shape": "pointed",
+    "shape": "circle",
     "x": 6.75,
-    "y": 6.44,
-    "z": 31.695,
-    "yawDeg": 180,
-    "w": 1.16,
-    "h": 2.08,
-    "sill": 5.4,
-    "aspect": 0.558,
+    "y": 6.6,
+    "z": -25.32,
+    "yawDeg": 0,
+    "w": 1.32,
+    "h": 1.32,
+    "sill": 5.94,
+    "aspect": 1,
     "real_m": [
-     1.16,
-     2.08
+     1.32,
+     1.32
     ],
-    "glass_now": "절차적 색유리",
+    "glass_now": "절차적 색유리 · rose6",
     "photo": null
    },
    {
@@ -115,16 +136,16 @@
     "kind": "window",
     "shape": "pointed",
     "x": 0,
-    "y": 10.64,
+    "y": 11.69,
     "z": -31.97,
     "yawDeg": 0,
     "w": 1.46,
-    "h": 7.68,
-    "sill": 6.8,
-    "aspect": 0.19,
+    "h": 8.18,
+    "sill": 7.6,
+    "aspect": 0.178,
     "real_m": [
      1.46,
-     7.68
+     8.18
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -135,16 +156,16 @@
     "kind": "window",
     "shape": "pointed",
     "x": -2.92,
-    "y": 10.19,
+    "y": 11.49,
     "z": -31.024,
     "yawDeg": 35.92,
     "w": 1.26,
-    "h": 6.78,
-    "sill": 6.8,
-    "aspect": 0.186,
+    "h": 7.78,
+    "sill": 7.6,
+    "aspect": 0.162,
     "real_m": [
      1.26,
-     6.78
+     7.78
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -155,16 +176,16 @@
     "kind": "window",
     "shape": "pointed",
     "x": -4.727,
-    "y": 10.19,
+    "y": 11.49,
     "z": -28.538,
     "yawDeg": 72.02,
     "w": 1.26,
-    "h": 6.78,
-    "sill": 6.8,
-    "aspect": 0.186,
+    "h": 7.78,
+    "sill": 7.6,
+    "aspect": 0.162,
     "real_m": [
      1.26,
-     6.78
+     7.78
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -175,16 +196,16 @@
     "kind": "window",
     "shape": "pointed",
     "x": 2.92,
-    "y": 10.19,
+    "y": 11.49,
     "z": -31.024,
     "yawDeg": -35.92,
     "w": 1.26,
-    "h": 6.78,
-    "sill": 6.8,
-    "aspect": 0.186,
+    "h": 7.78,
+    "sill": 7.6,
+    "aspect": 0.162,
     "real_m": [
      1.26,
-     6.78
+     7.78
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -195,16 +216,16 @@
     "kind": "window",
     "shape": "pointed",
     "x": 4.727,
-    "y": 10.19,
+    "y": 11.49,
     "z": -28.538,
     "yawDeg": -72.02,
     "w": 1.26,
-    "h": 6.78,
-    "sill": 6.8,
-    "aspect": 0.186,
+    "h": 7.78,
+    "sill": 7.6,
+    "aspect": 0.162,
     "real_m": [
      1.26,
-     6.78
+     7.78
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -413,18 +434,18 @@
     "key": "aisleL_n1",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 21.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -433,18 +454,18 @@
     "key": "aisleL_n2",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 16.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -453,18 +474,18 @@
     "key": "aisleL_n3",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 11.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -473,18 +494,18 @@
     "key": "aisleL_n4",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 6.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -493,18 +514,18 @@
     "key": "aisleL_n5",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 1.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -513,18 +534,18 @@
     "key": "aisleL_n6",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": -3.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -533,18 +554,18 @@
     "key": "aisleR_n1",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 21.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -553,18 +574,18 @@
     "key": "aisleR_n2",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 16.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -573,18 +594,18 @@
     "key": "aisleR_n3",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 11.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -593,18 +614,18 @@
     "key": "aisleR_n4",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 6.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -613,18 +634,18 @@
     "key": "aisleR_n5",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": 1.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -633,18 +654,18 @@
     "key": "aisleR_n6",
     "zone": "aisle",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": -3.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -653,18 +674,18 @@
     "key": "aisleL_s1",
     "zone": "aisle_chancel",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": -17.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -673,18 +694,18 @@
     "key": "aisleL_s2",
     "zone": "aisle_chancel",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": -9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": -22.5,
     "yawDeg": 90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -693,18 +714,18 @@
     "key": "aisleR_s1",
     "zone": "aisle_chancel",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": -17.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -713,18 +734,18 @@
     "key": "aisleR_s2",
     "zone": "aisle_chancel",
     "kind": "window",
-    "shape": "pointed",
+    "shape": "round",
     "x": 9.695,
-    "y": 4.69,
+    "y": 5.039,
     "z": -22.5,
     "yawDeg": -90,
-    "w": 1.36,
-    "h": 3.38,
+    "w": 2.13,
+    "h": 4.078,
     "sill": 3,
-    "aspect": 0.402,
+    "aspect": 0.522,
     "real_m": [
-     1.36,
-     3.38
+     2.13,
+     4.08
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -733,18 +754,18 @@
     "key": "clereL_n0",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 27.75,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -753,18 +774,18 @@
     "key": "clereL_n1",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 21.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -773,18 +794,18 @@
     "key": "clereL_n2",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 16.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -793,18 +814,18 @@
     "key": "clereL_n3",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 11.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -813,18 +834,18 @@
     "key": "clereL_n4",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 6.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -833,18 +854,18 @@
     "key": "clereL_n5",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 1.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -853,18 +874,18 @@
     "key": "clereL_n6",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": -3.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -873,18 +894,18 @@
     "key": "clereR_n0",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 27.75,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -893,18 +914,18 @@
     "key": "clereR_n1",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 21.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -913,18 +934,18 @@
     "key": "clereR_n2",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 16.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -933,18 +954,18 @@
     "key": "clereR_n3",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 11.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -953,18 +974,18 @@
     "key": "clereR_n4",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 6.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -973,18 +994,18 @@
     "key": "clereR_n5",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": 1.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -993,18 +1014,18 @@
     "key": "clereR_n6",
     "zone": "clerestory",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": -3.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -1013,18 +1034,18 @@
     "key": "clereL_s1",
     "zone": "clerestory_chancel",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": -17.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -1033,18 +1054,18 @@
     "key": "clereL_s2",
     "zone": "clerestory_chancel",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": -4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": -22.5,
     "yawDeg": 90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -1053,18 +1074,18 @@
     "key": "clereR_s1",
     "zone": "clerestory_chancel",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": -17.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -1073,18 +1094,18 @@
     "key": "clereR_s2",
     "zone": "clerestory_chancel",
     "kind": "window",
-    "shape": "round",
+    "shape": "pointed",
     "x": 4.745,
-    "y": 14.136,
+    "y": 14.24,
     "z": -22.5,
     "yawDeg": -90,
-    "w": 1.53,
-    "h": 4.271,
+    "w": 1.06,
+    "h": 4.48,
     "sill": 12,
-    "aspect": 0.358,
+    "aspect": 0.237,
     "real_m": [
-     1.53,
-     4.27
+     1.06,
+     4.48
     ],
     "glass_now": "절차적 색유리",
     "photo": null
@@ -1114,7 +1135,7 @@
     "apse_L2"
    ],
    "scene_order_unconfirmed": true,
-   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "match_note": "모델도 후진 5창(양옆 1.26×7.78m, 가운데 1.46×8.18m, 창턱 7.6 — I-1 에서 사도화 띠 위~벽 리브 아래로 키움)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
    "free_photos": [],
    "reference_photos": [
     "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
@@ -1145,7 +1166,7 @@
     "apse_L1"
    ],
    "scene_order_unconfirmed": true,
-   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "match_note": "모델도 후진 5창(양옆 1.26×7.78m, 가운데 1.46×8.18m, 창턱 7.6 — I-1 에서 사도화 띠 위~벽 리브 아래로 키움)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
    "free_photos": [],
    "reference_photos": [
     "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
@@ -1176,7 +1197,7 @@
     "apse_C"
    ],
    "scene_order_unconfirmed": true,
-   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "match_note": "모델도 후진 5창(양옆 1.26×7.78m, 가운데 1.46×8.18m, 창턱 7.6 — I-1 에서 사도화 띠 위~벽 리브 아래로 키움)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
    "free_photos": [],
    "reference_photos": [
     "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
@@ -1207,7 +1228,7 @@
     "apse_R1"
    ],
    "scene_order_unconfirmed": true,
-   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "match_note": "모델도 후진 5창(양옆 1.26×7.78m, 가운데 1.46×8.18m, 창턱 7.6 — I-1 에서 사도화 띠 위~벽 리브 아래로 키움)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
    "free_photos": [],
    "reference_photos": [
     "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
@@ -1238,7 +1259,7 @@
     "apse_R2"
    ],
    "scene_order_unconfirmed": true,
-   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "match_note": "모델도 후진 5창(양옆 1.26×7.78m, 가운데 1.46×8.18m, 창턱 7.6 — I-1 에서 사도화 띠 위~벽 리브 아래로 키움)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
    "free_photos": [],
    "reference_photos": [
     "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
@@ -1310,12 +1331,14 @@
     "https://commons.wikimedia.org/wiki/File:Korea_Myeongdong_Cathedral_06.jpg (CC BY-SA 2.0, 썸네일로 확인)",
     "https://www.munhwa.com/article/11334240 (이남규 1931–1993)"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 가운데 문 위에는 유리가 없다(정면에는 장미창 1 + 측랑 끝 작은 첨두창 2). 문 위 팀파눔을 유리로 바꿔야 함",
+   "cls": "a",
+   "opening_keys": [
+    "facade_tympanum"
+   ],
+   "match_note": "I-1 에서 가운데 문 위 첨두 팀파눔을 유리로 뚫었다(facade_tympanum, 2.4×1.3m, 창턱 3.4). 지금 유리는 색조만 있는 중립 방사 무늬(절차적) — 이남규 작품의 그림·화풍은 흉내 내지 않는다. 그림 시안은 권리 때문에 계속 보류",
    "rights_block": "저작권 존속(한국 사후 70년 → 2063년 말). 시안은 원작을 흉내 내지 않는 중립 무늬로만",
    "free_photos": [],
-   "placeholder": "procedural_tint(권리 때문에 그림 시안 보류)",
+   "placeholder": "procedural_tint(권리 때문에 그림 시안 보류) — 구현됨",
    "release_approved": false
   },
   {
@@ -1350,7 +1373,7 @@
     "aisleR_n5",
     "aisleR_n6"
    ],
-   "match_note": "모델 측랑 창 6칸×2(1.36×3.38m, 절차적 twin 양식). 실제 개수는 모델 칸 수로만 셌다",
+   "match_note": "모델 측랑 창 6칸×2(2.13×4.078m, 창턱 3.0, 2연 첨두 + 위 원창 — I-1 에서 사진대로 고침). 실제 개수는 모델 칸 수로만 셌다",
    "free_photos": [],
    "placeholder": "ai_sheet:myeongdong-C (무늬 2~3종 반복)",
    "release_approved": false
@@ -1386,7 +1409,7 @@
     "clereR_n5",
     "clereR_n6"
    ],
-   "match_note": "모델 고측창(1.53×4.27m). 높이 12m 위라 멀리서만 보인다",
+   "match_note": "모델 고측창(1.06×4.48m, 좁은 단일 첨두 — I-1 에서 사진대로 고침). 높이 12m 위라 멀리서만 보인다",
    "free_photos": [],
    "placeholder": "ai_sheet:myeongdong-C 또는 procedural_tint",
    "release_approved": false
@@ -1404,9 +1427,12 @@
    "sources": [
     "https://commons.wikimedia.org/wiki/File:Western_Aisle_of_Myeongdong_Cathedral.jpg"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 측랑 끝 벽(z ≈ -25)에는 창이 없다",
+   "cls": "a",
+   "opening_keys": [
+    "aisleEndL_rose",
+    "aisleEndR_rose"
+   ],
+   "match_note": "I-1 에서 측랑 끝 벽(z -25)에 작은 6엽 장미창을 뚫었다(1.32×1.32m, 중심 높이 6.6, 첨두 벽감 틀 안). 서쪽(R)은 사진 확인, 동쪽(L)은 대칭 추정. 지금은 절차적 장미 유리",
    "free_photos": [],
    "placeholder": "ai_sheet:myeongdong-C",
    "release_approved": false
@@ -1414,28 +1440,28 @@
   {
    "id": "MD-R1",
    "zone": "facade",
-   "position_ko": "\"성가대석 아래·중앙문 위 장미창\"(개인 글) — 종탑이 정면 중앙이라 실제 위치·존재를 확인 못 함. MD-E1(문 위 반월창)을 가리킨 말일 수 있다",
+   "position_ko": "\"성가대석 아래·중앙문 위 장미창\"(개인 글) — 정면 사진(Myeongdong Cathedral front.jpg)으로 확인: 정면에는 장미창이 없다. 가운데 종탑 2층에 2연 첨두 + 원창의 큰 창이 있고, 글이 가리킨 것은 MD-E1(문 위 반월창)으로 보인다",
    "subject_ko": "장미 무늬",
-   "shape": "원형?",
+   "shape": "(장미창 없음) 2연 첨두 + 원창",
    "picture": true,
-   "confidence": "low",
+   "confidence": "medium(정면 사진 판독: 장미창 없음)",
    "sources": [
     "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
     "docs/church/interiors/myeongdong.md 266행"
    ],
    "cls": "d",
    "opening_keys": [],
-   "match_note": "모델의 정면 장미창(facade_rose, 지름 2.88m, 높이 13.2m)은 \"제안값\"이다 — 실제 대응 미확정",
+   "match_note": "I-1 에서 모델의 정면 장미창(facade_rose)을 지우고 종탑 창(facade_tower, 2.53×6.383m, 창턱 9.0)으로 바꿨다. 이 창의 유리 도상은 확인 못 함(실내에서는 오르간 뒤) → 그림을 걸지 않고 절차적 유리 유지",
    "free_photos": [],
-   "placeholder": "QA 갤러리",
+   "placeholder": "없음(절차적 유리 유지)",
    "release_approved": false
   }
  ],
  "real_counts": {
   "picture_windows": "도상 창 8(후진 5 + 익랑 2 + 이남규 1) + 무늬 색유리(측랑·고측창·측랑 끝 장미, 개수 미확인)",
   "by_class": {
-   "a": 33,
-   "b": 3,
+   "a": 36,
+   "b": 0,
    "c": 0,
    "d": 1,
    "e": 0
@@ -1444,18 +1470,10 @@
  "model_openings_without_real_picture_window": [
   {
    "keys": [
-    "facade_rose"
+    "facade_tower"
    ],
    "cls": "d",
-   "note": "정면 장미창: 실제 대응 미확정(MD-R1)"
-  },
-  {
-   "keys": [
-    "facadeSideL",
-    "facadeSideR"
-   ],
-   "cls": "d",
-   "note": "정면 측랑 끝 작은 첨두창 2: 실제 확인 못 함"
+   "note": "정면 종탑 2층 창: 개구부는 사진으로 확인(2연 첨두 + 원창), 유리 도상은 미확인(MD-R1)"
   },
   {
    "keys": [
@@ -1499,22 +1517,22 @@
    "risk": "신비 배열 미확정, 좌우는 단일 출처"
   },
   {
-   "what": "측랑 12·고측창 14 에 무늬 시안(2~3종 반복) 또는 절차적 무늬 유지",
+   "what": "측랑 12·고측창 14·측랑 끝 장미 2 에 무늬 시안(2~3종 반복) 또는 절차적 무늬 유지",
    "effort": "작음",
    "risk": "반복 표시 필요"
   },
   {
    "what": "가운데 문 위 팀파눔을 유리로(이남규 창 자리)",
-   "effort": "작음~중간(정면 벽 수정)",
-   "risk": "저작권(그림 시안 금지), 정면 구성 미확인"
+   "effort": "완료(I-1, 중립 절차적 무늬)",
+   "risk": "저작권(그림 시안 금지)"
   },
   {
    "what": "측랑 끝 벽에 작은 장미창 2",
-   "effort": "작음",
+   "effort": "완료(I-1)",
    "risk": "동쪽은 추정"
   },
   {
-   "what": "정면 장미창·측면 작은 창·익랑 윗창·성단 칸 창(18개)은 실제 확인 전까지 절차적 유리 유지",
+   "what": "정면 종탑 창·익랑 윗창·성단 칸 창(17개)은 실제 도상 확인 전까지 절차적 유리 유지",
    "effort": "없음",
    "risk": "—"
   }
@@ -1529,10 +1547,10 @@
   "15단의 창별 배열",
   "익랑 두 창의 좌우(개인 글 1곳)",
   "측랑·고측창의 실제 개수·분할·무늬",
-  "정면 장미창의 존재·위치",
   "나무위키 \"명동성당/시설물\"(403)",
   "KCI 논문 본문(초록만 확인)",
-  "공식 사이트 mdsd.or.kr 의 유리화 안내(찾지 못함)"
+  "공식 사이트 mdsd.or.kr 의 유리화 안내(찾지 못함)",
+  "정면 종탑 2층 창의 유리 도상(실내에서는 오르간 뒤)"
  ],
  "sources": [
   "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
@@ -1540,5 +1558,17 @@
   "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
   "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)",
   "Commons Category:Interior of Myeongdong Cathedral (15건 라이선스 확인, 5건 썸네일 확인)"
- ]
+ ],
+ "structure_fix": {
+  "date": "2026-11-15",
+  "ref": "docs/church/STRUCTURE_AUDIT_OTHERS.md §2 (M2~M6, M13)",
+  "changes": [
+   "측랑 창 16: 단일 첨두 1.36×3.38 → 2연 첨두 + 원창(사진 대조), 창턱 3.0 그대로",
+   "고측창 18: 쌍둥이 + 원창 → 좁은 단일 첨두",
+   "정면: 장미창(facade_rose)·측랑 앞 작은 첨두창 2(facadeSideL/R) 삭제 → 종탑 2층의 2연 첨두 큰 창(facade_tower)",
+   "가운데 문 위 반월창(facade_tympanum) 신설 — 중립 방사 무늬(이남규 1989년 창은 흉내 내지 않는다)",
+   "후진 5창: 창턱 6.8 → 7.6, 꼭대기 13.6/14.5 → 15.4/15.8",
+   "측랑 끝 벽 작은 6엽 장미창 2(aisleEndL_rose, aisleEndR_rose) 신설"
+  ]
+ }
 }
