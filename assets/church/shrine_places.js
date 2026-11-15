@@ -11,8 +11,8 @@
     stpaul: { x: -16.9, z: -11.5, yaw: 90, kind: 'mary', label_ko: '성모상 앞', note: '왼쪽 익랑 쪽 벽' },
     milan: { x: -19.4, z: -16.7, yaw: 90, kind: 'mary', label_ko: '성모상 앞', note: '왼쪽(북) 익랑 벽 — 실제 마돈나 델 알베로 제대 쪽' },
     danggogae: { x: -4.6, z: 15.2, yaw: 180, kind: 'plain', label_ko: '성모상 앞', note: '입구 홀 뒷벽(봉헌초 맞은편). 실내 성모상 위치 미확인 — 문양 없는 단순 형태' },
-    florence: { pending: true, note: '구조 확정(병합) 후 배치' },
-    maggiore: { pending: true, note: '구조 확정(병합) 후 배치 — 파올리나 경당(로마 백성의 구원) 제대 앞' },
+    florence: { x: -7.5, z: -4.7, yaw: 90, kind: 'mary', label_ko: '성모상 앞', note: '왼쪽 측랑 맨 앞 벽면(팔각 통로 바로 앞)' },
+    maggiore: { x: -27.2, z: -9.965, yaw: 90, kind: 'existing', label_ko: '로마 백성의 구원 앞', note: "파올리나 경당 제단의 '로마 백성의 구원' 성화 앞(제단 계단 아래, 기도 좌석 앞). 성상은 세우지 않음" },
     stpeter: { pending: true, note: '구조 확정(병합) 후 배치' }
   };
   root.ChurchShrinePlaces = P;

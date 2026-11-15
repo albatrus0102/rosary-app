@@ -6,5 +6,8 @@
   else root.ChurchReverencePlaces = factory();
 })(typeof window !== 'undefined' ? window : this, function () {
   'use strict';
-  return {};
+  return {
+    // 성 베드로: 교황 제대 단(±2.8m, 바닥 구역 없음) 둘레로 앱스 좌석(주교좌 제대 앞)에 가는 길이 있어야 한다
+    stpeter: { halfW: 3.3 }
+  };
 });

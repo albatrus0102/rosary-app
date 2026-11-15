@@ -117,13 +117,22 @@
         if (zw >= width * K.FULL_WIDTH) full = true;
       });
       if (!full) {
-        var foot = uSt;
-        for (var b = 0; b < K.MAX_STEP_RUN; b += 0.05) { var q = at(uSt - b, 0); if (logic.floorY(q.x, q.z) <= 0.02) { foot = uSt - b; break; } }
+        // 제대가 놓인 단의 계단 발치 = 뒤로 걸으며 바닥이 내려간 뒤 1m 이상 평평한 곳(층계참·신랑 바닥)이 시작되는 곳.
+        // (피렌체처럼 낮은 단(좌석이 있는 성가대석) 안에 높은 제단이 있으면 높은 제단 계단에서 멈춘다)
+        var foot = uSt, base = 0, prev = fy, runStart = -1;
+        for (var b = 0.05; b < K.MAX_STEP_RUN; b += 0.05) {
+          var q = at(uSt - b, 0), y = logic.floorY(q.x, q.z);
+          if (y < fy - 0.05 && Math.abs(y - prev) < 0.01) {
+            if (runStart < 0) runStart = b;
+            if (b - runStart >= 1.0 || y <= 0.02) { foot = uSt - runStart; base = y; break; }
+          } else runStart = -1;
+          prev = y;
+        }
         if (foot < uSt) {
           front = foot;
-          // 단 폭: 축(v=0) 위 [foot, uSt+3] 을 지나는 높은 구역들의 옆 폭
+          // 단 폭: 축(v=0) 위 [foot, uSt+3] 을 지나는, 층계참보다 높은 구역들의 옆 폭
           zs.forEach(function (z) {
-            if (z.y <= 0.02) return;
+            if (z.y <= base + 0.02) return;
             var a0 = U(z.x0, z.z0), a1 = U(z.x1, z.z1), v0 = V(z.x0, z.z0), v1 = V(z.x1, z.z1);
             if (Math.max(a0, a1) < foot - 0.01 || Math.min(a0, a1) > uSt + 3) return;
             if (Math.min(v0, v1) > 0 || Math.max(v0, v1) < 0) return;

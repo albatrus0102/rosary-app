@@ -1,5 +1,5 @@
-// 성모 기도 자리(shrine.js · shrine_places.js): 구조가 확정된 6개 성당에 자리 1곳, 걷기 경계 안, 기존 충돌체·좌석·14처 판·봉헌초와
-// 겹치지 않음, 봉헌초 슬롯(맨 끝 14개), 스테이션(서는 자리) 존재·도달 가능. 구조 수정 중인 3곳(pending)은 자리 없음.
+// 성모 기도 자리(shrine.js · shrine_places.js): 구조가 확정된 8개 성당에 자리 1곳, 걷기 경계 안, 기존 충돌체·좌석·14처 판·봉헌초와
+// 겹치지 않음, 봉헌초 슬롯(맨 끝 14개), 스테이션(서는 자리) 존재·도달 가능. 구조 수정 중인 성 베드로(pending)은 자리 없음.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadChurches } from './church_harness.mjs';
@@ -8,12 +8,12 @@ const require = createRequire(import.meta.url);
 const Places = require('../../assets/church/shrine_places.js');
 const Shrine = require('../../assets/church/shrine.js');
 const { churches, Logic, Stations, WayCross } = loadChurches();
-const READY = ['basic', 'myeongdong', 'lateran', 'stpaul', 'milan', 'danggogae'], PENDING = ['florence', 'maggiore', 'stpeter'];
+const READY = ['basic', 'myeongdong', 'lateran', 'stpaul', 'milan', 'danggogae', 'maggiore', 'florence'], PENDING = ['stpeter'];
 const by = Object.fromEntries(churches.map((c) => [c.id, c]));
 const rect = (q) => q.r !== undefined && q.x0 === undefined ? { x0: q.x - q.r, x1: q.x + q.r, z0: q.z - q.r, z1: q.z + q.r } : { x0: Math.min(q.x0, q.x1), x1: Math.max(q.x0, q.x1), z0: Math.min(q.z0, q.z1), z1: Math.max(q.z0, q.z1) };
 const overlap = (a, b, e = 0.02) => a.x0 < b.x1 - e && a.x1 > b.x0 + e && a.z0 < b.z1 - e && a.z1 > b.z0 + e;
 
-test('table covers every church: 6 placed, 3 pending', () => {
+test('table covers every church: 8 placed, 1 pending', () => {
   assert.deepEqual(Object.keys(Places).sort(), READY.concat(PENDING).sort());
   for (const id of PENDING) { assert.equal(Places[id].pending, true); assert.ok(Places[id].note); assert.equal(Shrine.placeOf(id), null); }
   for (const id of READY) { const p = Places[id]; assert.ok(['mary', 'plain', 'existing'].includes(p.kind)); assert.ok(p.label_ko); assert.equal(p.yaw % 90, 0); }

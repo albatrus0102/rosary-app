@@ -203,7 +203,7 @@ check('200 snapshot batches x200 peers cheap (<500ms)', ft < 500, Math.round(ft)
   await pg.evaluate(() => ChurchAPI.init({ church: 'florence', hour: 12, quality: 'low', solo: false, ambient: false, avatar: { skin: 1, style: 0, hair: 2, outfit: 6, name: 3 } }));
   await pg.waitForFunction(() => window.__church && window.__church.world && window.__church.world.id === 'florence', null, { timeout: 180000 });
   const sev = await pg.evaluate(() => window.__ev.find((e) => e.e === 'stations'));
-  check('florence: stations event (2 candle stands, altar)', sev && sev.church === 'florence' && sev.candle === 2 && sev.altar === 1, sev);
+  check('florence: stations event (2 candle stands, altar)', sev && sev.church === 'florence' && sev.candle === 3 && sev.altar === 1, sev);
   await pg.evaluate(() => ChurchAPI.walkTo({ kind: 'candle', index: 0 }));
   const ok = await pg.waitForFunction(() => window.__ev.some((e) => e.e === 'walkDone'), null, { timeout: 240000 }).then(() => true).catch(() => false);
   const fl = await pg.evaluate(() => ({ near: __church.near, m: { x: __church.me.x, z: __church.me.z }, fail: window.__ev.filter((e) => e.e === 'walkFail').length }));
