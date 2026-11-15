@@ -64,6 +64,22 @@
       function P3(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
       function onWall(cx, cz, n, u, d) { return [cx + n[1] * u + n[0] * d, cz - n[0] * u + n[1] * d]; }
       // 벽 위 상자: (cx,cz)=벽 위 기준점, n=실내쪽 법선, u=벽 따라 이동, d=벽에서 실내쪽 중심 거리
+      // 위키미디어 공용 사진 판(art_stpeter.js, C-15): 이 성당에 들어올 때만 읽고, 읽히면 cb(질감)을 부른다(art_florence.js 와 같은 방식)
+      var artWait = [], artAsked = false;
+      function artPhoto(key, cb) {
+        if (typeof document === 'undefined' || !document.head || !document.head.appendChild) return;
+        function one(it) {
+          var a = window.ChurchArt && window.ChurchArt.stpeter && window.ChurchArt.stpeter[it[0]]; if (!a) return;
+          var im = new Image();
+          im.onload = function () { var tx = new T.Texture(im); tx.encoding = T.sRGBEncoding; tx.anisotropy = 8; tx.needsUpdate = true; it[1](tx); };
+          im.src = a.src;
+        }
+        if (window.ChurchArt && window.ChurchArt.stpeter) { one([key, cb]); return; }
+        artWait.push([key, cb]);
+        if (artAsked) return;
+        artAsked = true;
+        var sc = document.createElement('script'); sc.src = 'art_stpeter.js'; sc.async = true; sc.onload = function () { artWait.forEach(one); artWait = []; }; document.head.appendChild(sc);
+      }
       function wbox(cx, cz, n, u, d, y, w, h, dep, color, X) {
         var p = onWall(cx, cz, n, u, d), o = { x: p[0], y: y, z: p[1], w: w, h: h, d: dep, ry: Math.atan2(n[0], n[1]), color: color };
         if (X) for (var k in X) o[k] = X[k];
@@ -696,11 +712,18 @@
           ctx.box({ x: s * (AISLE_OUT + 2.3), y: 0, z: zc, w: 0.9, h: 1.0, d: 2.2, color: WHITE });
           ctx.box({ x: s * (AISLE_OUT + 2.3), y: 1.0, z: zc, w: 1.0, h: 0.08, d: 2.3, color: GOLD_D });
           }
-          if (bapt) { /* 세례반만 */ } else if (pieta) { // 피에타 경당: 흰 조각군
-            ctx.box({ x: s * (AISLE_OUT + 2.6), y: 0, z: zc, w: 1.0, h: 1.3, d: 1.2, color: 0xe6e0d4 });
-            ctx.cone({ x: s * (AISLE_OUT + 2.6), y: 1.3, z: zc, r: 0.5, h: 1.3, seg: 8, color: WHITE });
-            ctx.sphere({ x: s * (AISLE_OUT + 2.6), y: 2.7, z: zc, r: 0.18, color: WHITE, w: 8, h: 6 });
-            ctx.box({ x: s * (AISLE_OUT + 2.45), y: 1.35, z: zc, w: 0.5, h: 0.22, d: 1.25, color: WHITE, rx: 0 });
+          if (bapt) { /* 세례반만 */ } else if (pieta) {
+            // 피에타 경당(C-15): 미켈란젤로 〈피에타〉 사진 판(위키미디어 공용, 사진 Gary Todd, Public Domain Mark — art_stpeter.js, docs/church/licenses/stpeter.md)을
+            // 제대 뒤 벽감에 세우고, 실제처럼 경당 어귀를 방탄유리(옅은 반사)로 막는다. 예전의 상자·원뿔·공으로 만든 조각군은 없앴다(REVERENCE.md).
+            var pw = 3.4, phh = pw * 883 / 1024, pyb = 1.26, pxx = AISLE_OUT + 2.86;   // 뒷벽(3.8m) 거의 전체 — 사진 가장자리는 어둡게 눌러 어두운 벽에 녹아든다
+            ctx.box({ x: AISLE_OUT + 2.72, y: 1.08, z: zc, w: 0.34, h: 0.18, d: 3.7, color: 0xe6e0d4, mat: 'gloss' });                      // 받침(제대 뒤 단)
+            var pietaMat = ctx.mats.lambert({ color: 0x2a2623 });
+            ctx.plane({ x: pxx, y: pyb + phh / 2, z: zc, ry: -PI / 2, w: pw, h: phh, mat: pietaMat });
+            artPhoto('pieta', function (tx) { pietaMat.map = tx; pietaMat.color.setHex(0xffffff); pietaMat.emissive = new T.Color(0xffffff); pietaMat.emissiveMap = tx; pietaMat.emissiveIntensity = 0.42; pietaMat.needsUpdate = true; });
+            if (ctx._.batches.glassRefl) {   // 방탄유리: 경당 어귀 벽 바로 안쪽(벽이 아치 밖을 가린다)
+              var gx = AISLE_OUT + 0.66, gz0 = zc - hz, gz1 = zc + hz;
+              ctx._.batches.glassRefl.addTris([gx, 0, gz0, gx, 0, gz1, gx, hh, gz1, gx, 0, gz0, gx, hh, gz1, gx, hh, gz0], 0xffffff, [AISLE_OUT - 3, 2, zc], { vary: 0 });
+            }
           } else figure({ x: s * (AISLE_OUT + 2.6), y: 1.1, z: zc, h: 2.2, kind: ci === 1 ? 'saint' : 'mary', ry: 0 });
           // 난간(걸을 수 없음을 보이는 낮은 대리석 난간)
           ctx.box({ x: s * (AISLE_OUT + 0.15), y: 0, z: zc, w: 0.25, h: 0.28, d: 3.3, color: WHITE });
@@ -708,7 +731,7 @@
           ctx.box({ x: s * (AISLE_OUT + 0.15), y: 0.9, z: zc, w: 0.22, h: 0.1, d: 3.4, color: WHITE });
           ctx.addCollider({ x0: Math.min(s * AISLE_OUT, s * (AISLE_OUT + 3)), x1: Math.max(s * AISLE_OUT, s * (AISLE_OUT + 3)), z0: zc - 2.0, z1: zc + 2.0 });
           // 경당 벽 안 은은한 빛(창 대신)
-          glass.addQuad([xb - s * 0.02, 2.0, zc - 0.5], [xb - s * 0.02, 2.0, zc + 0.5], [xb - s * 0.02, 4.4, zc + 0.5], [xb - s * 0.02, 4.4, zc - 0.5], 0xffe8b0, inC);
+          if (!pieta) glass.addQuad([xb - s * 0.02, 2.0, zc - 0.5], [xb - s * 0.02, 2.0, zc + 0.5], [xb - s * 0.02, 4.4, zc + 0.5], [xb - s * 0.02, 4.4, zc - 0.5], 0xffe8b0, inC);
         });
         // 측랑 외벽 하단 걸레받이 + 코니스
         ctx.cornice({ x0: s * AISLE_OUT, z0: ZE, x1: s * AISLE_OUT, z1: 6.45, y: 7.2, h: 0.4, depth: 0.3, facing: [-s, 0], color: CREAM_D });
@@ -1278,15 +1301,18 @@
       // ---------------------------------------------------------------- 성 베드로 청동 좌상(신랑 오른쪽 끝)
       (function () {
         var x = 3.55, z = -0.4;
-        ctx.box({ x: x, y: 0, z: z, w: 1.5, h: 0.5, d: 1.3, color: 0xd8d0be });
-        ctx.box({ x: x, y: 0.5, z: z, w: 1.25, h: 0.9, d: 1.05, color: 0xe9e2d2 });
-        ctx.box({ x: x, y: 1.4, z: z, w: 0.9, h: 0.6, d: 0.7, color: 0xddd5c3 }); // 대리석 의자
-        ctx.box({ x: x + 0.28, y: 1.4, z: z, w: 0.3, h: 1.5, d: 0.7, color: 0xddd5c3 });
-        ctx.box({ x: x, y: 2.0, z: z, w: 0.62, h: 0.9, d: 0.42, color: 0x3e2f1f, mat: 'metal' }); // 몸(청동)
-        ctx.sphere({ x: x, y: 3.0, z: z, r: 0.17, color: 0x3e2f1f, w: 8, h: 6 });
-        ctx.box({ x: x - 0.1, y: 2.5, z: z - 0.3, w: 0.18, h: 0.12, d: 0.4, color: 0x3e2f1f, mat: 'metal' });
-        ctx.box({ x: x + 0.55, y: 2.0, z: z, w: 0.1, h: 3.2, d: 1.1, color: 0x8a2f2f });
-        ctx.addCollider({ x0: x - 0.8, x1: 4.3, z0: z - 0.75, z1: z + 0.75 });
+        // (C-15) 실제 자리: 신랑 오른쪽 마지막 피어(성 론지노 피어) 앞, 줄무늬 설화석고 받침 위 대리석 의자에 앉은 청동 좌상 — 뒤는 붉은 금란 무늬 모자이크 벽.
+        // 그 정면 사진 판(위키미디어 공용, 사진 Gary Todd, Public Domain Mark — art_stpeter.js)을 피어 면에 세운다. 예전의 상자·공으로 만든 인물은 없앴다.
+        var bw = 1.7, bh = bw * 1043 / 704, by = 1.4, bxx = 3.88;   // 판은 피어 벽기둥(돌출 0.3)과 붉은 띠 앞에 선다 — 실제로도 벽기둥 앞에 금란 무늬 벽판을 세워 두었다
+        ctx.box({ x: 3.4, y: 0, z: z, w: 1.1, h: 0.5, d: 2.0, color: 0xd8d0be, mat: 'gloss' });
+        ctx.box({ x: 3.45, y: 0.5, z: z, w: 0.9, h: 0.9, d: 1.82, color: 0xe9dfc6, mat: 'gloss' });                                            // 설화석고 받침(사진 아래 끝의 받침 윗면과 이어진다)
+        ctx.box({ x: 4.07, y: by, z: z, w: 0.36, h: bh, d: bw + 0.04, color: 0x7a2a2a });                                                     // 벽판 몸(옆에서 보이는 두께)
+        ctx.box({ x: 4.05, y: by + bh, z: z, w: 0.44, h: 0.14, d: bw + 0.3, color: GOLD_D });                                                 // 금 테
+        [-1, 1].forEach(function (k) { ctx.box({ x: 4.05, y: by, z: z + k * (bw / 2 + 0.08), w: 0.44, h: bh, d: 0.12, color: GOLD_D }); });
+        var peterMat = ctx.mats.lambert({ color: 0x5a2424 });
+        ctx.plane({ x: bxx, y: by + bh / 2, z: z, ry: -PI / 2, w: bw, h: bh, mat: peterMat });
+        artPhoto('peter', function (tx) { peterMat.map = tx; peterMat.color.setHex(0xffffff); peterMat.emissive = new T.Color(0xffffff); peterMat.emissiveMap = tx; peterMat.emissiveIntensity = 0.22; peterMat.needsUpdate = true; });
+        ctx.addCollider({ x0: 2.75, x1: 4.3, z0: z - 1.05, z1: z + 1.05 });
       })();
 
       VC('peter');

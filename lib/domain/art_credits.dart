@@ -144,23 +144,59 @@ const List<ArtCredit> churchArtCredits = [
   ArtCredit(
     use: '피렌체 대성당 · 북 측랑 벽 그림',
     credit: '안드레아 델 카스타뇨 〈니콜로 다 톨렌티노 기마 기념상〉(1456). '
-        '사진: Wikimedia Commons "Andrea del castagno, momumento a niccolò da tolentino.jpg" (Web Gallery of Art). '
-        '틀에 맞게 잘라 크기를 줄임.',
-    license: 'Public domain',
+        '사진: Sailko, Wikimedia Commons "Andrea del castagno, Monumento equestre di Niccolò da Tolentino, 1456, 01.JPG" '
+        '(https://commons.wikimedia.org/wiki/File:Andrea_del_castagno,_Monumento_equestre_di_Niccol%C3%B2_da_Tolentino,_1456,_01.JPG). '
+        '변경: 원근 보정, 틀에 맞게 자르기, 밝기 보정, 크기 줄임.',
+    license: 'Public domain(원작) · CC BY 3.0(사진, https://creativecommons.org/licenses/by/3.0/)',
   ),
   ArtCredit(
     use: '피렌체 대성당 · 북 측랑 벽 그림',
     credit: '파올로 우첼로 〈존 호크우드 기마 기념상〉(1436). '
-        '사진: Sailko, Wikimedia Commons "Paolo uccello, Monumento equestre di John Hawkwood, 1436, 01-edit.jpg". '
-        '틀에 맞게 잘라 크기를 줄임.',
-    license: 'Public domain(원작) · CC BY 3.0(사진)',
+        '사진: Sailko(편집본 올린이 MenkinAlRire), Wikimedia Commons "Paolo uccello, Monumento equestre di John Hawkwood, 1436, 01-edit.jpg" '
+        '(https://commons.wikimedia.org/wiki/File:Paolo_uccello,_Monumento_equestre_di_John_Hawkwood,_1436,_01-edit.jpg). '
+        '변경: 틀에 맞게 자르기, 크기 줄임.',
+    license: 'Public domain(원작) · CC BY 3.0(사진, https://creativecommons.org/licenses/by/3.0/)',
   ),
   ArtCredit(
     use: '피렌체 대성당 · 북 측랑 벽 그림',
     credit: '도메니코 디 미켈리노 〈단테와 신곡〉(1465). '
-        '사진: Jastrow, Wikimedia Commons "Dante Domenico di Michelino Duomo Florence.jpg". '
-        '틀에 맞게 잘라 크기를 줄임.',
-    license: 'Public domain',
+        '사진: 촬영자 미상, Wikimedia Commons "Dante Domenico di Michelino.jpg" '
+        '(https://commons.wikimedia.org/wiki/File:Dante_Domenico_di_Michelino.jpg). '
+        '변경: 틀 안쪽만 자르기, 크기 줄임.',
+    license: 'Public domain (PD-Art)',
+  ),
+  ArtCredit(
+    use: '성 밖 성 바오로 대성전 · 후진 반돔 모자이크',
+    credit: '후진 모자이크 〈옥좌의 그리스도와 사도들〉(13세기, 19세기 복원). '
+        '사진: Alberto Fernandez Fernandez(색 보정본 올린이 Amandajm), Wikimedia Commons '
+        '"Apse mosaic Basilica of St Paul Outside the Walls.jpg" '
+        '(https://commons.wikimedia.org/wiki/File:Apse_mosaic_Basilica_of_St_Paul_Outside_the_Walls.jpg). '
+        '변경: 반돔 곡면에 맞게 원근을 다시 폄, 사진에 없는 가장자리는 금 바탕으로 채우고 아래 귀퉁이는 좌우 대칭으로 이음, 크기 줄임.',
+    license: 'Public domain(원작) · CC BY 2.5(사진, https://creativecommons.org/licenses/by/2.5/)',
+  ),
+  ArtCredit(
+    use: '성 밖 성 바오로 대성전 · 콘페시오(사도 바오로의 무덤)',
+    credit: '사도 바오로의 무덤 창살과 석관 자리. '
+        '사진: StPaul.jpg(Commons 사용자), Wikimedia Commons "St. Paul\'s Tomb.jpg" '
+        '(https://commons.wikimedia.org/wiki/File:St._Paul%27s_Tomb.jpg). '
+        '변경: 창살 벽과 유리 바닥으로 나누어 자르기, 바닥은 원근 보정, 크기 줄임.',
+    license: 'CC BY 4.0(https://creativecommons.org/licenses/by/4.0/)',
+  ),
+  ArtCredit(
+    use: '성 베드로 대성전 · 피에타 경당',
+    credit: '미켈란젤로 〈피에타〉(1498–99). '
+        '사진: Gary Todd, Wikimedia Commons "Michelangelo\'s Pieta, St. Peter\'s Basilica, Vatican City (48466681337).jpg" '
+        '(https://commons.wikimedia.org/wiki/File:Michelangelo%27s_Pieta,_St._Peter%27s_Basilica,_Vatican_City_(48466681337).jpg). '
+        '변경: 자르기, 가장자리를 어둡게, 크기 줄임.',
+    license: 'Public domain(원작) · Public Domain Mark 1.0(사진)',
+  ),
+  ArtCredit(
+    use: '성 베드로 대성전 · 성 베드로 청동 좌상',
+    credit: '성 베드로 청동 좌상(13세기, 아르놀포 디 캄비오 작으로 전함). '
+        '사진: Gary Todd, Wikimedia Commons "St. Peter\'s Basilica, Bronze Statue of St. Peter (48466478846).jpg" '
+        '(https://commons.wikimedia.org/wiki/File:St._Peter%27s_Basilica,_Bronze_Statue_of_St._Peter_(48466478846).jpg). '
+        '변경: 자르기, 크기 줄임.',
+    license: 'Public domain(원작) · Public Domain Mark 1.0(사진)',
   ),
   ArtCredit(
     use: '성당 안 성모상(우리 본당·명동·당고개·라테라노·성 바오로·밀라노·피렌체의 성모 기도 자리)',

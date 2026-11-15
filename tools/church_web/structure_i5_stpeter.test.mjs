@@ -51,7 +51,8 @@ test('stpeter I-5: 성능 구조 — 스프라이트(불꽃·빛 번짐)·충돌
   assert.ok(st.glows.length <= 4, '빛 번짐 스프라이트 ≤ 4(성체등 1개만 추가)');
   assert.ok(c.colliders.length < 300, '충돌체 < 300: ' + c.colliders.length);
   // 낱개 메시(판 합치기 전): 새 바닥 12장(합쳐져 draw call +0) 말고는 늘지 않는다
-  assert.ok(c.ctx.stats.meshes <= 52, '낱개 메시 ' + c.ctx.stats.meshes);
+  // (C-15) 피에타·성 베드로 청동상 사진 판 2장(저마다 질감이 달라 합칠 수 없다)만 더한다: 52 → 54
+  assert.ok(c.ctx.stats.meshes <= 54, '낱개 메시 ' + c.ctx.stats.meshes);
   const sb = st.surfBatches;
   for (const k of Object.keys(sb)) if (!/limestone/.test(k)) assert.ok(sb[k].batch.vertexCount < 30000, k + ' 배치가 공간 분할 문턱(3만 정점)을 넘지 않는다: ' + sb[k].batch.vertexCount);
 });

@@ -765,54 +765,101 @@
         B(-0.9, 0.9, y0 + 0.15, y0 + 0.85, cz + 0.5, cz + 0.52, 0xb98a2e); B(-0.8, 0.8, y0 + 0.2, y0 + 0.8, cz + 0.52, cz + 0.54, 0x7a2222);
         ctx.box({ x: 0, y: y0 + 1.06, z: cz, w: 0.06, h: 0.7, d: 0.06, color: GOLD }); ctx.box({ x: 0, y: y0 + 1.5, z: cz, w: 0.36, h: 0.06, d: 0.06, color: GOLD });
         [-0.7, 0.7].forEach(function (x) { ctx.cyl({ x: x, y: y0 + 1.06, z: cz, r: 0.06, rTop: 0.04, h: 0.45, seg: 6, color: GOLD }); ctx.cyl({ x: x, y: y0 + 1.5, z: cz, r: 0.04, h: 0.3, seg: 6, color: 0xfff6e0 }); ctx.addFlame({ x: x, y: y0 + 1.95, z: cz, scale: 1.0 }); });
-        // 화강암 기둥 4 (분홍 화강암, 금 주두, 받침)
-        var CH = 3.5;
+        // ---- 고딕 치보리오(1367–70, 조반니 디 스테파노). (C-15) 위키미디어 공용 사진 2장(Szilas, Public domain · Sonse, CC BY 2.0 — 형태 참고만, 사진은 싣지 않는다)을 보고
+        // 실제 층 구성으로 다시 지었다: 회색 화강암 기둥 4(금 코린트 주두) → 면마다 작은 삼엽 아치 3칸의 띠 → 프레스코 판 3칸 띠(모서리는 흰 감실 기둥)
+        // → 금 꼬임 창살로 두른 성유물 방(안쪽은 별 박힌 남색) → 삼엽 아치 팀파눔을 품은 박공 4면(흰 대리석·남색·금, 크로켓) + 모서리의 가는 첨탑 4.
+        var CH = 3.3, WHT = 0xf2ead8, BLU = 0x24409a, BLU_D = 0x18286e, GRAN = 0x908c86;
+        function Bc(h, ya, yb, c, o) { B(cx - h, cx + h, ya, yb, cz - h, cz + h, c, o); }
+        var FACES = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        function Pf(f, wall, u, y) { return f[0] === 0 ? [cx + u, y, cz + f[1] * wall] : [cx + f[0] * wall, y, cz + u]; }
+        function fbox(f, wall, u, ya, yb, wu, dep, c, o) {   // 면 f 의 벽면(wall)에서 바깥으로 dep 만큼 나온 판: 가로 중심 u, 폭 wu
+          if (f[0] === 0) B(cx + u - wu / 2, cx + u + wu / 2, ya, yb, cz + f[1] * wall - (f[1] < 0 ? dep : 0), cz + f[1] * wall + (f[1] > 0 ? dep : 0), c, o);
+          else B(cx + f[0] * wall - (f[0] < 0 ? dep : 0), cx + f[0] * wall + (f[0] > 0 ? dep : 0), ya, yb, cz + u - wu / 2, cz + u + wu / 2, c, o);
+        }
         [[-hw, -hw], [hw, -hw], [-hw, hw], [hw, hw]].forEach(function (p) {
-          ctx.column({ x: cx + p[0], z: cz + p[1], y: y0, h: CH, r: 0.2, style: 'round', capital: 'corinthian', color: PINK, capColor: GOLD2, base: true, collide: true });
+          ctx.column({ x: cx + p[0], z: cz + p[1], y: y0, h: CH, r: 0.2, style: 'round', capital: 'corinthian', color: GRAN, capColor: GOLD2, base: true, collide: true });
         });
         var ys = y0 + CH;
-        // 뾰족 아치 4면
-        [[0, -hw, 'x'], [0, hw, 'x'], [-hw, 0, 'z'], [hw, 0, 'z']].forEach(function (a) {
-          ctx.arch({ x: cx + a[0], y: ys, z: cz + a[1], span: hw * 2 - 0.4, rise: 1.5, t: 0.3, depth: 0.42, axis: a[2], type: 'pointed', color: 0xf4ecda, seg: 12 });
-          ctx.arch({ x: cx + a[0], y: ys, z: cz + a[1], span: hw * 2 - 0.4 - 0.55, rise: 1.2, t: 0.08, depth: 0.46, axis: a[2], type: 'pointed', color: GOLD, seg: 12 });
+        // (1) 작은 삼엽 아치 띠: 면마다 3칸(흰 테 + 금 속테), 그 위 남색 띠, 이음마다 금 드림 장식
+        var sp = (hw * 2 - 0.4) / 3;
+        FACES.forEach(function (f) {
+          for (var k = -1; k <= 1; k++) {
+            var ap = Pf(f, hw, k * sp, ys - 0.66), ax = f[0] === 0 ? 'x' : 'z';
+            ctx.arch({ x: ap[0], y: ap[1], z: ap[2], span: sp - 0.06, rise: 0.52, t: 0.1, depth: 0.34, axis: ax, type: 'pointed', color: WHT, seg: 8 });
+            ctx.arch({ x: ap[0], y: ap[1], z: ap[2], span: sp - 0.3, rise: 0.38, t: 0.04, depth: 0.38, axis: ax, type: 'pointed', color: GOLD, seg: 8 });
+          }
+          [-0.5, 0.5].forEach(function (k2) { var dp = Pf(f, hw, k2 * sp, ys - 0.78); ctx.cyl({ x: dp[0], y: dp[1], z: dp[2], r: 0.03, rTop: 0.07, h: 0.14, seg: 6, color: GOLD2 }); });
+          fbox(f, hw - 0.17, 0, ys - 0.16, ys, hw * 2 - 0.4, 0.34, BLU, { vary: 0 });
         });
-        // 박공(뾰족 삼각형 + 금 테) 4면: 프레스코 띠(붉은색)와 남색 판
-        B(cx - hw - 0.3, cx + hw + 0.3, ys, ys + 0.25, cz - hw - 0.3, cz + hw + 0.3, 0xf2ead8);
-        B(cx - hw - 0.15, cx + hw + 0.15, ys + 0.25, ys + 0.45, cz - hw - 0.15, cz + hw + 0.15, GOLD);
-        [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (f) {
-          var along = f[0] === 0, e = hw + 0.3, apex = ys + 2.3, wall = hw + 0.05, pts;
-          function Pp(u, y) { return along ? [cx + u, y, cz + f[1] * wall] : [cx + f[0] * wall, y, cz + u]; }
-          var a0 = Pp(-e, ys + 0.45), a1 = Pp(e, ys + 0.45), a2 = Pp(0, apex), hint = along ? [cx, ys + 1, cz + f[1] * 5] : [cx + f[0] * 5, ys + 1, cz];
-          solid.addTris([].concat(a0, a1, a2), 0xf0e7d3, hint);
-          wall += 0.015;   // 붉은·남색 판은 박공 면 앞으로 1.5cm 씩(같은 평면이면 z-fighting)
-          var b0 = Pp(-e + 0.35, ys + 0.6), b1 = Pp(e - 0.35, ys + 0.6), b2 = Pp(0, apex - 0.55), hint2 = along ? [cx, ys + 1, cz + f[1] * 6] : [cx + f[0] * 6, ys + 1, cz];
-          solid.addTris([].concat(b0, b1, b2), 0x7c2a30, hint2);
-          wall += 0.015;
-          var c0 = Pp(-e + 0.7, ys + 0.75), c1 = Pp(e - 0.7, ys + 0.75), c2 = Pp(0, apex - 1.05);
-          solid.addTris([].concat(c0, c1, c2), 0x274a85, hint2);
-          solid.addBeam([a0[0], a0[1], a0[2]], [a2[0], a2[1], a2[2]], 0.12, 0.14, GOLD); solid.addBeam([a1[0], a1[1], a1[2]], [a2[0], a2[1], a2[2]], 0.12, 0.14, GOLD);
-          for (var cr = 1; cr <= 4; cr++) { var tt = cr / 5; [a0, a1].forEach(function (aa) { ctx.ico({ x: aa[0] + (a2[0] - aa[0]) * tt, y: aa[1] + (a2[1] - aa[1]) * tt + 0.06, z: aa[2] + (a2[2] - aa[2]) * tt, r: 0.07, color: GOLD2, detail: 0 }); }); }
-          ctx.cone({ x: a2[0], y: a2[1], z: a2[2], r: 0.09, h: 0.4, seg: 4, color: GOLD2 });
-          // 박공 장식: 금 장미창 + 세로 창살 + 삼엽 아치
-          var rp = Pp(0, ys + 1.25), off = 0.04;
-          ctx.solid.add(Geo.cyl(10, 1), GOLD2, { x: rp[0] + f[0] * off, y: rp[1], z: rp[2] + f[1] * off, rx: along ? PI / 2 : 0, rz: along ? 0 : PI / 2, sx: 0.3, sy: 0.05, sz: 0.3, flat: true, vary: 0 });
-          ctx.solid.add(Geo.cyl(10, 1), 0x7c2a30, { x: rp[0] + f[0] * off * 2, y: rp[1], z: rp[2] + f[1] * off * 2, rx: along ? PI / 2 : 0, rz: along ? 0 : PI / 2, sx: 0.16, sy: 0.05, sz: 0.16, flat: true, vary: 0 });
-          [-0.9, -0.45, 0.45, 0.9].forEach(function (uu) { var mp = Pp(uu, ys + 0.62); ctx.box({ x: mp[0] + f[0] * 0.03, y: mp[1], z: mp[2] + f[1] * 0.03, w: along ? 0.05 : 0.04, h: 0.5, d: along ? 0.04 : 0.05, color: GOLD2 }); });
+        Bc(hw + 0.26, ys, ys + 0.16, WHT); Bc(hw + 0.33, ys + 0.16, ys + 0.24, GOLD);
+        // (2) 프레스코 띠: 면마다 3칸(실제는 성인들의 프레스코 — 색 면으로만 나타낸다), 칸 사이 남색·금 살, 모서리는 흰 감실 기둥
+        var yf0 = ys + 0.24, yf1 = ys + 1.46, FW = hw + 0.12;
+        Bc(FW, yf0, yf1, 0xe6dcc6);
+        FACES.forEach(function (f, fi) {
+          [-0.94, 0, 0.94].forEach(function (u, k) {
+            fbox(f, FW, u, yf0 + 0.1, yf1 - 0.1, 0.84, 0.02, [0x4f8791, 0x6d8fae, 0x4f8791][k], { vary: 0.04 });
+            fbox(f, FW, u, yf0 + 0.1, yf0 + 0.34, 0.84, 0.026, [0x8f6f60, 0x9c8a66, 0x86665e][(k + fi) % 3], { vary: 0.04 });   // 아래쪽의 붉은·누런 색 띠(옷자락 빛)
+            fbox(f, FW, u, yf1 - 0.14, yf1 - 0.1, 0.84, 0.03, GOLD, { vary: 0 }); fbox(f, FW, u, yf0 + 0.06, yf0 + 0.1, 0.84, 0.03, GOLD, { vary: 0 });
+          });
+          [-0.47, 0.47].forEach(function (u) { fbox(f, FW, u, yf0 + 0.06, yf1 - 0.06, 0.07, 0.035, BLU, { vary: 0 }); });
         });
-        // 모서리 첨탑 4 + 작은 첨탑
         [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (p) {
-          ctx.box({ x: cx + p[0] * (hw + 0.3), y: ys + 0.45, z: cz + p[1] * (hw + 0.3), w: 0.3, h: 0.4, d: 0.3, color: 0xf2ead8 });
-          ctx.cone({ x: cx + p[0] * (hw + 0.3), y: ys + 0.85, z: cz + p[1] * (hw + 0.3), r: 0.2, h: 1.7, seg: 4, color: 0xf2ead8 });
-          ctx.ico({ x: cx + p[0] * (hw + 0.3), y: ys + 2.62, z: cz + p[1] * (hw + 0.3), r: 0.08, color: GOLD2, detail: 0 });
+          var px = cx + p[0] * (FW + 0.02), pz = cz + p[1] * (FW + 0.02);
+          B(px - 0.2, px + 0.2, yf0, yf1, pz - 0.2, pz + 0.2, WHT);
+          B(px - 0.23, px + 0.23, yf0 + 0.3, yf0 + 0.36, pz - 0.23, pz + 0.23, WHT); B(px - 0.23, px + 0.23, yf1 - 0.2, yf1 - 0.14, pz - 0.23, pz + 0.23, GOLD);
         });
-        // 위층: 금빛 격자 성유물 상자 + 사각뿔 첨탑 + 십자가
-        B(cx - 0.9, cx + 0.9, ys + 0.45, ys + 1.65, cz - 0.9, cz + 0.9, GOLD2);
-        [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (f) {
-          var along = f[0] === 0; for (var gi = -2; gi <= 2; gi++) { if (along) B(cx + gi * 0.3 - 0.04, cx + gi * 0.3 + 0.04, ys + 0.55, ys + 1.55, cz + f[1] * 0.92 - 0.02, cz + f[1] * 0.92 + 0.02, 0x5a3a22); else B(cx + f[0] * 0.92 - 0.02, cx + f[0] * 0.92 + 0.02, ys + 0.55, ys + 1.55, cz + gi * 0.3 - 0.04, cz + gi * 0.3 + 0.04, 0x5a3a22); }
+        Bc(hw + 0.4, yf1, yf1 + 0.1, GOLD); Bc(hw + 0.34, yf1 + 0.1, yf1 + 0.2, WHT);
+        // (3) 성유물 방: 별 박힌 남색 속방 + 금 창살(면마다 세로 살 13) + 모서리 흰 기둥(남색 상감 줄)
+        var yg0 = yf1 + 0.2, yg1 = yg0 + 1.62, GW = hw + 0.06;
+        Bc(hw - 0.3, yg0, yg1, BLU_D, { vary: 0 });
+        FACES.forEach(function (f) {
+          for (var gi = -6; gi <= 6; gi++) { var gp = Pf(f, GW, gi * 0.215, yg0); ctx.cyl({ x: gp[0], y: gp[1], z: gp[2], r: 0.024, h: yg1 - yg0, seg: 5, color: GOLD2 }); }
+          fbox(f, GW - 0.03, 0, yg0, yg0 + 0.07, GW * 2, 0.06, GOLD, { vary: 0 }); fbox(f, GW - 0.03, 0, yg0 + 0.5, yg0 + 0.54, GW * 2, 0.06, GOLD, { vary: 0 });
+          fbox(f, GW - 0.03, 0, yg1 - 0.1, yg1, GW * 2, 0.06, GOLD, { vary: 0 });
+          for (var st = 0; st < 9; st++) { var sp2 = Pf(f, hw - 0.3 + 0.012, -1.0 + ((st * 37) % 21) / 10, yg0 + 0.25 + ((st * 53) % 12) / 10); ctx.ico({ x: sp2[0], y: sp2[1], z: sp2[2], r: 0.022, color: GOLD2, detail: 0 }); }
         });
-        ctx.cyl({ x: cx, y: ys + 1.65, z: cz, r: 1.15, rTop: 0.1, h: 2.4, seg: 4, color: 0xf2ead8, ry: PI / 4 });
-        ctx.cyl({ x: cx, y: ys + 4.05, z: cz, r: 0.05, h: 0.45, seg: 5, color: GOLD2 }); ctx.box({ x: cx, y: ys + 4.25, z: cz, w: 0.28, h: 0.05, d: 0.05, color: GOLD2 });
-        ctx.addGlow({ x: cx, y: ys + 1.1, z: cz, size: 1.8, color: 0xffd98a, kind: 'lamp' });
+        [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (p) {
+          var px = cx + p[0] * (GW + 0.02), pz = cz + p[1] * (GW + 0.02);
+          B(px - 0.14, px + 0.14, yg0, yg1, pz - 0.14, pz + 0.14, WHT);
+          B(px - 0.05 + p[0] * 0.11, px + 0.05 + p[0] * 0.11, yg0 + 0.12, yg1 - 0.12, pz - 0.08, pz + 0.08, BLU, { vary: 0 });
+          B(px - 0.08, px + 0.08, yg0 + 0.12, yg1 - 0.12, pz - 0.05 + p[1] * 0.11, pz + 0.05 + p[1] * 0.11, BLU, { vary: 0 });
+          B(px - 0.18, px + 0.18, yg1 - 0.16, yg1, pz - 0.18, pz + 0.18, GOLD);
+        });
+        Bc(hw + 0.3, yg1, yg1 + 0.1, WHT); Bc(hw + 0.36, yg1 + 0.1, yg1 + 0.17, GOLD);
+        // (4) 박공 4면: 흰 삼각 면 + 남색 팀파눔(금 삼엽 아치 테) + 꼭대기 흰 원형 부조 자리 + 금 테·크로켓·꼭대기 장식
+        var yb = yg1 + 0.17;
+        FACES.forEach(function (f) {
+          var along = f[0] === 0, e = hw + 0.22, apex = yb + 2.25, wall = hw + 0.05;
+          function Pp(u, y) { return Pf(f, wall, u, y); }
+          var a0 = Pp(-e, yb), a1 = Pp(e, yb), a2 = Pp(0, apex), hint = along ? [cx, yb + 1, cz + f[1] * 5] : [cx + f[0] * 5, yb + 1, cz];
+          solid.addTris([].concat(a0, a1, a2), WHT, hint);
+          wall += 0.015;   // 남색 판은 박공 면 앞으로 1.5cm(같은 평면이면 z-fighting)
+          var hint2 = along ? [cx, yb + 1, cz + f[1] * 6] : [cx + f[0] * 6, yb + 1, cz];
+          var b0 = Pp(-e + 0.42, yb + 0.1), b1 = Pp(e - 0.42, yb + 0.1), b2 = Pp(0, apex - 0.62);
+          solid.addTris([].concat(b0, b1, b2), BLU, hint2);
+          var ap = Pf(f, hw + 0.05, 0, yb + 0.02);
+          ctx.arch({ x: ap[0], y: ap[1], z: ap[2], span: 2.5, rise: 1.02, t: 0.09, depth: 0.16, axis: along ? 'x' : 'z', type: 'pointed', color: GOLD2, seg: 12 });
+          ctx.arch({ x: ap[0], y: ap[1], z: ap[2], span: 1.5, rise: 0.62, t: 0.05, depth: 0.14, axis: along ? 'x' : 'z', type: 'pointed', color: GOLD, seg: 10 });
+          solid.addBeam([a0[0], a0[1], a0[2]], [a2[0], a2[1], a2[2]], 0.1, 0.14, GOLD); solid.addBeam([a1[0], a1[1], a1[2]], [a2[0], a2[1], a2[2]], 0.1, 0.14, GOLD);
+          for (var cr = 1; cr <= 5; cr++) { var tt = cr / 6; [a0, a1].forEach(function (aa) { ctx.ico({ x: aa[0] + (a2[0] - aa[0]) * tt, y: aa[1] + (a2[1] - aa[1]) * tt + 0.07, z: aa[2] + (a2[2] - aa[2]) * tt, r: 0.06, color: GOLD2, detail: 0 }); }); }
+          ctx.cone({ x: a2[0], y: a2[1], z: a2[2], r: 0.08, h: 0.42, seg: 4, color: GOLD2 });
+          var rp = Pp(0, yb + 1.42), off = 0.03;
+          ctx.solid.add(Geo.cyl(12, 1), GOLD2, { x: rp[0] + f[0] * off, y: rp[1], z: rp[2] + f[1] * off, rx: along ? PI / 2 : 0, rz: along ? 0 : PI / 2, sx: 0.27, sy: 0.05, sz: 0.27, flat: true, vary: 0 });
+          ctx.solid.add(Geo.cyl(12, 1), 0xf6f0e2, { x: rp[0] + f[0] * off * 2, y: rp[1], z: rp[2] + f[1] * off * 2, rx: along ? PI / 2 : 0, rz: along ? 0 : PI / 2, sx: 0.2, sy: 0.05, sz: 0.2, flat: true, vary: 0 });
+        });
+        // 모서리의 가는 첨탑 4(흰 대리석 + 남색 줄) + 가운데 낮은 사각뿔 지붕 + 십자가
+        [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (p) {
+          var px = cx + p[0] * (hw + 0.22), pz = cz + p[1] * (hw + 0.22);
+          B(px - 0.13, px + 0.13, yb, yb + 1.0, pz - 0.13, pz + 0.13, WHT);
+          B(px - 0.05 + p[0] * 0.1, px + 0.05 + p[0] * 0.1, yb + 0.1, yb + 0.9, pz - 0.07, pz + 0.07, BLU, { vary: 0 });
+          B(px - 0.07, px + 0.07, yb + 0.1, yb + 0.9, pz - 0.05 + p[1] * 0.1, pz + 0.05 + p[1] * 0.1, BLU, { vary: 0 });
+          B(px - 0.16, px + 0.16, yb + 1.0, yb + 1.07, pz - 0.16, pz + 0.16, GOLD);
+          ctx.cone({ x: px, y: yb + 1.07, z: pz, r: 0.15, h: 1.55, seg: 4, color: WHT });
+          ctx.ico({ x: px, y: yb + 2.68, z: pz, r: 0.07, color: GOLD2, detail: 0 });
+        });
+        ctx.cyl({ x: cx, y: yb, z: cz, r: (hw - 0.05) * 1.414, rTop: 0.1, h: 1.9, seg: 4, color: 0xd9d1bf, ry: PI / 4 });
+        ctx.cyl({ x: cx, y: yb + 1.9, z: cz, r: 0.05, h: 0.5, seg: 5, color: GOLD2 }); ctx.box({ x: cx, y: yb + 2.12, z: cz, w: 0.28, h: 0.05, d: 0.05, color: GOLD2 });
+        ctx.addGlow({ x: cx, y: (yg0 + yg1) / 2, z: cz, size: 1.8, color: 0xffd98a, kind: 'lamp' });
         // 콘페시오(H-1 B5): 예전에는 익랑 단 위의 검은 판 + U자 난간이었다. 교황 제대 앞에서 신랑 쪽으로 내려앉은 반지하(바닥 -0.9)로 짓는다.
         // 양옆 계단 두 줄(보기만 — 충돌체로 막는다), 바닥에 마르티노 5세의 청동 묘판, 제대 쪽 벽에 금 창살 감실.
         var X = CFX, XO = CFX + CFW, Z0 = ZT1 + 0.03, Z1 = CFZ, ZO = CFZ + CFW, YF = -0.9, RL = 0.92, ZS = ZT1 + 0.8, DB = 0x4a3a28;
