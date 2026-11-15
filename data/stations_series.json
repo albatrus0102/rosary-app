@@ -13,10 +13,10 @@
   "stpeter": "previati",
   "lateran": "oreilly",
   "maggiore": "corot",
-  "stpaul": "fugel",
+  "stpaul": "fahnroth",
   "milan": "hermann_paul",
   "florence": "mosler",
-  "myeongdong": "fugel"
+  "myeongdong": "fugel_munich"
  },
  "series": [
   {
@@ -633,10 +633,10 @@
    "license_label": "CC0 1.0",
    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
    "source": "https://commons.wikimedia.org/wiki/File:Ecce_Homo_Stazione_I_Gesu_condannato_a_morte_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-500.jpg",
-   "changes": "아래 글귀와 여백을 잘라 내고 크기를 줄임",
+   "changes": "아래 글귀와 여백을 잘라 내고 크기를 줄임(용량을 위해 살짝 흐림)",
    "rights": "확인",
-   "rights_note": "TODO",
-   "aspect": 0.8,
+   "rights_note": "작가 사후 70년 경과(1804 사망), 1749년 베네치아 간행. Rijksmuseum 소장품(RP-P-1950-500~513) 공개 이미지로 Commons 파일 14개 {{CC-zero}} 확인(2026-11-15). 연작은 표지·헌정문 포함 16장이며 500~513번이 1~14처(판화에 STAZIONE I~XIII·ULTIMA 라고 새겨져 있다).",
+   "aspect": 0.92,
    "fit": "contain",
    "asset_dir": "assets/images/stations/tiepolo",
    "pack": "cross_pack_tiepolo.js",
@@ -715,8 +715,9 @@
      "commons": "Graflegging_van_Christus_Stazione_ultima_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-513.jpg"
     }
    ],
-   "bundle_width": 480,
-   "limit_kb": 24
+   "bundle_width": 440,
+   "limit_kb": 23,
+   "blur": 0.7
   },
   {
    "id": "fugel_munich",
@@ -735,8 +736,8 @@
    "source": "https://commons.wikimedia.org/wiki/Category:The_14_Stations_of_the_Holy_Cross_(postcard_booklet)",
    "changes": "엽서 여백을 잘라 내고 크기를 줄임",
    "rights": "확인",
-   "rights_note": "TODO",
-   "aspect": 1.7,
+   "rights_note": "작가 사후 70년 경과(1939 사망), 1908년경 독일에서 그림엽서로 발행(미국 1929년 이전 발행). Commons 파일 14개 {{PD-old-auto-1923|deathyear=1939}} 확인(2026-11-15). 푸겔 1921 연작(바트 자울가우)과는 다른 연작이다.",
+   "aspect": 1.74,
    "fit": "contain",
    "asset_dir": "assets/images/stations/fugel_munich",
    "pack": "cross_pack_fugel_munich.js",
@@ -815,7 +816,8 @@
      "commons": "Fugel_Kreuzweg_14.jpg"
     }
    ],
-   "bundle_width": 500
+   "bundle_width": 500,
+   "limit_kb": 20
   },
   {
    "id": "fahnroth",
@@ -834,8 +836,8 @@
    "source": "https://commons.wikimedia.org/wiki/Category:Joseph_Fahnroth",
    "changes": "크기를 줄임",
    "rights": "확인",
-   "rights_note": "TODO",
-   "aspect": 0.75,
+   "rights_note": "작가 사후 100년 경과(1895 사망), 1886년 작. Commons 파일 14개 {{PD-old-100}} 확인(2026-11-15). 사진은 본당 누리집(herz-jesu-neuruppin.de)에서 온 것으로 촬영자는 적혀 있지 않다(미확인) — 평면 작품의 충실한 복제(PD-Art)로 본다. 원본이 폭 440px 안팎이라 330px 섬네일로 받았다.",
+   "aspect": 0.66,
    "fit": "contain",
    "asset_dir": "assets/images/stations/fahnroth",
    "pack": "cross_pack_fahnroth.js",
@@ -915,7 +917,8 @@
      "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_14.jpg",
      "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_14.jpg"
     }
-   ]
+   ],
+   "limit_kb": 23
   }
  ],
  "not_used": [
@@ -924,12 +927,36 @@
    "why": "소장기관(omeka) 개별 이미지 라이선스를 확인하지 못해 쓰지 않음 → 라테라노는 1897년 다색 석판화로 대체"
   },
   {
-   "name": "푸겔 뮌헨 연작(1904–08)",
-   "why": "Commons 에서 14점이 모인 파일을 찾지 못함 → 성 바오로는 푸겔 1921 연작 유지"
-  },
-  {
    "name": "제임스 베일리 석판화(1845, LoC 99401399)",
    "why": "내려받아 확인함(No known restrictions). 한 장에 작은 장면 14개라 해상도·비율이 낮아 예비로만 둠"
+  },
+  {
+   "name": "조반니 도메니코 티에폴로 유화 연작(1747–49, 베네치아 산 폴로 성당)",
+   "why": "Commons 14점 모두 있으나 사진이 CC BY-SA 4.0(Archaeodontosaurus) — 허용 목록 밖. 같은 구도의 작가 동판화(Rijksmuseum CC0)를 대신 씀. https://commons.wikimedia.org/wiki/Category:Via_Crucis_by_Giovanni_Domenico_Tiepolo"
+  },
+  {
+   "name": "요제프 폰 퓌리히(나사렛파) 빈 성 요한 네포무크 성당 연작(1844–46)",
+   "why": "Commons 에 5점뿐이고 사진이 CC BY-SA 4.0(Anton-kurt). 판화본 14점은 찾지 못함. https://commons.wikimedia.org/wiki/Category:Führich_Kreuzweg_Johann-Nepomuk-Kirche_Leopoldstadt"
+  },
+  {
+   "name": "프리드리히 오버베크 〈Via Crucis〉",
+   "why": "Commons 에 7처 한 점뿐(Public domain). https://commons.wikimedia.org/wiki/Category:Via_Crucis_by_Friedrich_Overbeck"
+  },
+  {
+   "name": "게프하르트 푸겔 로이트키르히 성 마르티노 성당 연작(1936)",
+   "why": "사진 Andreas Praefcke PD-self, 작가 1939 사망. 1936년 작이라 미국에서는 URAA 로 저작권이 되살아났을 수 있어(2032년 만료 추정) 쓰지 않음. Commons 'Leutkirch Stadtpfarrkirche Kreuzweg NN.jpg'"
+  },
+  {
+   "name": "요세프 보사체크 보드냐니 성당 연작(1896)",
+   "why": "Commons 에 1·2·13처 세 점뿐(PD-old). 'Bosacek 1896 Stations of the Cross'"
+  },
+  {
+   "name": "장 샤를로 〈Chemin de Croix〉 목판화(1918–20, 메트로폴리탄 미술관)",
+   "why": "14점 있으나 공개 이용(Open Access) 아님 — 작가 1979 사망, 저작권 있음"
+  },
+  {
+   "name": "19세기 기도서 삽화(Internet Archive: WayOfTheCrossOr 1870, devotions_for_the_stations_or_the_way_of_the_cross_1865, DevotionsForTheFourteenStations 1869, viacrucishistori00urra 1852 등)",
+   "why": "Public Domain Mark 표시 항목이 여럿 있으나 삽화 14장이 갖춰졌는지 책장을 열어 확인하지 못함(다음 후보)"
   }
  ]
 }

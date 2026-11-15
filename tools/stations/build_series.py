@@ -165,6 +165,8 @@ def build(s):
         w, h = im.size
         bw = min(s.get('bundle_width', 600), w)   # 원본이 더 작으면 키우지 않는다(판화·사진 질감은 bundle_width 로 줄여 용량을 맞춘다)
         big = im.resize((bw, round(h * bw / w)), Image.LANCZOS) if bw != w else im
+        if s.get('blur'):                        # 촘촘한 동판화 선: 살짝 흐려야 WebP 가 작아진다(연작당 0.45MB 한도)
+            big = big.convert('L').filter(ImageFilter.GaussianBlur(s['blur'])).convert('RGB')
         data, q = webp_under(big, s.get('limit_kb', 26) * 1024)   # limit_kb: 연작당 0.45MB 를 지키려는 장당 상한
         with open(os.path.join(out_dir, f'station_{n:02d}.webp'), 'wb') as fh:
             fh.write(data)
@@ -172,6 +174,8 @@ def build(s):
         print(f'{sid} station_{n:02d}.webp {big.size} 비율 {w / h:.2f} q{q} {len(data)}B')
         k = min(CELL_W / w, CELL_H / h)        # contain: 비율 유지
         cell = im.resize((max(1, round(w * k)), max(1, round(h * k))), Image.LANCZOS)
+        if s.get('blur'):
+            cell = cell.convert('L').filter(ImageFilter.GaussianBlur(s['blur'] * 0.7)).convert('RGB')
         i = n - 1
         atlas.paste(cell, ((i % COLS) * CELL_W + (CELL_W - cell.width) // 2, (i // COLS) * CELL_H + (CELL_H - cell.height) // 2))
         t = im.copy()
