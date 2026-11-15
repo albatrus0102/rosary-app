@@ -405,20 +405,62 @@ void main() {
       );
       await tester.pumpAndSettle();
       final next = find.byKey(const ValueKey('entry-carousel-next'));
-      final prev = find.byKey(const ValueKey('entry-carousel-prev'));
+      final rewind = find.byKey(const ValueKey('entry-carousel-rewind'));
+      final carousel = find.byKey(const ValueKey('entry-carousel'));
       expect(next, findsOneWidget);
-      expect(prev, findsNothing);
-      final first = _thumb(ChurchCatalog.all.first.id);
+      expect(rewind, findsNothing);
+      // 화살표는 카드 영역 바깥(오른쪽 전용 자리)에 있다: 카드가 버튼 아래로 지나가지 않는다.
+      final view = tester.getRect(carousel);
+      final button = tester.getRect(next);
+      expect(button.left, greaterThanOrEqualTo(view.right));
+      // 버튼은 썸네일 높이 안에 있고, 다섯 장이 잘리지 않고 보인다.
+      final ids = [for (final c in ChurchCatalog.all.take(9)) c.id];
+      for (final id in ids.take(5)) {
+        final r = tester.getRect(_thumb(id));
+        expect(r.left, greaterThanOrEqualTo(view.left - 0.5), reason: id);
+        expect(r.right, lessThanOrEqualTo(view.right + 0.5), reason: id);
+        expect(r.right, lessThanOrEqualTo(button.left), reason: id);
+      }
+      expect(button.top, greaterThanOrEqualTo(view.top));
+      expect(button.bottom, lessThan(view.bottom));
+
+      final first = _thumb(ids.first);
       final x0 = tester.getTopLeft(first).dx;
       await tester.ensureVisible(next);
       await tester.tap(next);
       await tester.pumpAndSettle();
       expect(tester.getTopLeft(first).dx, lessThan(x0));
-      expect(prev, findsOneWidget);
-      await tester.tap(prev);
+      // 끝까지 가면 같은 자리의 버튼이 '처음으로'가 된다(왼쪽에 겹치는 버튼은 없다).
+      expect(next, findsNothing);
+      expect(rewind, findsOneWidget);
+      // (세로 스크롤 위치는 달라졌을 수 있으니 캐러셀 기준 위치로 견준다.)
+      expect(
+        tester.getRect(rewind).shift(-tester.getTopLeft(carousel)),
+        button.shift(-view.topLeft),
+      );
+      expect(find.byTooltip('처음으로'), findsOneWidget);
+      await tester.tap(rewind);
       await tester.pumpAndSettle();
       expect(tester.getTopLeft(first).dx, x0);
+      expect(next, findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('화살표 자리는 넘길 것이 있는 넓은 화면에만 둔다', (tester) async {
+      // 넓은 화면이라도 카드가 한 줄에 다 들어가면 화살표가 없다.
+      await _pumpShell(tester, size: const Size(768, 853));
+      expect(find.byKey(const ValueKey('entry-carousel-next')), findsNothing);
+      expect(
+        tester.getRect(_thumb('myeongdong')).right,
+        lessThanOrEqualTo(
+          tester.getRect(find.byKey(const ValueKey('entry-carousel'))).right +
+              0.5,
+        ),
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      // 폰은 쓸어 넘긴다.
+      await _pumpShell(tester);
+      expect(find.byKey(const ValueKey('entry-carousel-next')), findsNothing);
     });
   });
 

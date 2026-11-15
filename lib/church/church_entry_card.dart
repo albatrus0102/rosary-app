@@ -402,7 +402,9 @@ class _NameBlock extends StatelessWidget {
 }
 
 /// '다른 성당 고르기' 가로 캐러셀: 썸네일 카드 + 이름 + 도시, 고른 카드는 금색 테두리.
-/// 넓은 화면에서는 양옆 화살표 버튼으로도 넘기고, 아래 점이 지금 쪽을 알려 준다.
+/// 아래 점이 지금 쪽을 알려 준다. 넓은 화면에서 카드가 한 줄에 다 들어가지 않으면 오른쪽에
+/// **화살표 전용 자리**를 두어(카드는 그 아래로 지나가지 않는다) 버튼으로도 넘긴다: 끝까지 가면
+/// 같은 자리의 버튼이 '처음으로'가 된다.
 class _Carousel extends StatefulWidget {
   const _Carousel({
     required this.churches,
@@ -430,6 +432,12 @@ class _CarouselState extends State<_Carousel> {
   bool _canForward = false;
 
   static const double _gap = AppSpace.sm;
+
+  /// 화살표 버튼 자리(48dp 버튼 + 카드와의 간격 8dp).
+  static const double _arrowSlot = 48 + AppSpace.xs;
+
+  /// 카드 하나 + 간격(화살표가 카드 단위로 넘기도록 build 에서 맞춘다).
+  double _itemExtent = 0;
 
   @override
   void dispose() {
@@ -465,13 +473,18 @@ class _CarouselState extends State<_Carousel> {
     return false;
   }
 
-  void _step(int dir) {
+  /// 다음 쪽으로(카드가 잘리지 않게 카드 단위로). [toStart]면 처음으로 돌아간다.
+  void _step({bool toStart = false}) {
     if (!_scroll.hasClients) return;
     final p = _scroll.position;
-    final target = (p.pixels + dir * p.viewportDimension * 0.8).clamp(
-      0.0,
-      p.maxScrollExtent,
-    );
+    final extent = _itemExtent <= 0 ? p.viewportDimension : _itemExtent;
+    final cards = ((p.viewportDimension + _gap) / extent).floor();
+    final target = toStart
+        ? 0.0
+        : (p.pixels + (cards < 1 ? 1 : cards) * extent).clamp(
+            0.0,
+            p.maxScrollExtent,
+          );
     unawaited(
       p.animateTo(
         target,
@@ -487,7 +500,7 @@ class _CarouselState extends State<_Carousel> {
     final count = widget.wide ? 5 : 2.4;
     final base = (viewport - _gap * (count.ceil() - 1)) / count;
     final grown = base * textScale.clamp(1.0, 1.4);
-    return grown.clamp(112.0, 200.0);
+    return grown.clamp(widget.wide ? 96.0 : 112.0, 200.0);
   }
 
   @override
@@ -499,10 +512,15 @@ class _CarouselState extends State<_Carousel> {
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
-            final w = _itemWidth(constraints.maxWidth, textScale);
-            return Stack(
-              alignment: Alignment.center,
-              children: [
+            final full = constraints.maxWidth;
+            final n = widget.churches.length;
+            // 넓은 화면에서 카드가 한 줄에 다 들어가지 않으면 오른쪽에 화살표 자리를 따로 둔다.
+            final fullW = _itemWidth(full, textScale);
+            final arrow =
+                widget.wide && n * fullW + (n - 1) * _gap > full + 0.5;
+            final w = arrow ? _itemWidth(full - _arrowSlot, textScale) : fullW;
+            _itemExtent = w + _gap;
+            final Widget cards =
                 NotificationListener<ScrollMetricsNotification>(
                   onNotification: (n) => _onMetrics(n.metrics),
                   child: NotificationListener<ScrollUpdateNotification>(
@@ -511,7 +529,7 @@ class _CarouselState extends State<_Carousel> {
                       key: const ValueKey('entry-carousel'),
                       controller: _scroll,
                       scrollDirection: Axis.horizontal,
-                      // 고른 카드의 테두리·그림자가 잘리지 않게 위아래 여백을 둔다.
+                      // 고른 카드의 테두리가 잘리지 않게 위아래 여백을 둔다.
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpace.xxs,
                       ),
@@ -535,28 +553,38 @@ class _CarouselState extends State<_Carousel> {
                       ),
                     ),
                   ),
+                );
+            // 폰은 쓸어 넘긴다(다음 카드가 살짝 보인다).
+            if (!arrow) return cards;
+            // 끝까지 갔으면 같은 자리의 버튼이 '처음으로'가 된다.
+            final atEnd = !_canForward && _canBack;
+            // 버튼은 썸네일(4:3) 높이의 가운데에 둔다.
+            final thumbHeight = w * 3 / 4;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: cards),
+                const SizedBox(width: AppSpace.xs),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top:
+                        AppSpace.xxs +
+                        (thumbHeight > 48 ? (thumbHeight - 48) / 2 : 0),
+                  ),
+                  child: atEnd
+                      ? IconButton.outlined(
+                          key: const ValueKey('entry-carousel-rewind'),
+                          tooltip: '처음으로',
+                          onPressed: () => _step(toStart: true),
+                          icon: const Icon(Icons.first_page),
+                        )
+                      : IconButton.outlined(
+                          key: const ValueKey('entry-carousel-next'),
+                          tooltip: '다음 성당들',
+                          onPressed: _canForward ? _step : null,
+                          icon: const Icon(Icons.chevron_right),
+                        ),
                 ),
-                // 넓은 화면(마우스·키보드)에서는 화살표로도 넘긴다. 폰은 쓸어 넘긴다.
-                if (widget.wide && _canBack)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton.filledTonal(
-                      key: const ValueKey('entry-carousel-prev'),
-                      tooltip: '이전 성당들',
-                      onPressed: () => _step(-1),
-                      icon: const Icon(Icons.chevron_left),
-                    ),
-                  ),
-                if (widget.wide && _canForward)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton.filledTonal(
-                      key: const ValueKey('entry-carousel-next'),
-                      tooltip: '다음 성당들',
-                      onPressed: () => _step(1),
-                      icon: const Icon(Icons.chevron_right),
-                    ),
-                  ),
               ],
             );
           },

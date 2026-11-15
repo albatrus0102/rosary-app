@@ -564,8 +564,26 @@ abstract class ChurchSceneController {
     'quality': quality,
   });
 
-  Future<void> setJoystick(double x, double y) =>
-      _call('setJoystick', {'x': x, 'y': y});
+  /// 조이스틱 값은 웹뷰 호출(runJavaScript)이 끝나기 전에 새 값이 오면 마지막 값만 보낸다.
+  /// 손가락 이동 이벤트마다(초당 100번 이상) 플랫폼 채널 호출이 쌓여 웹뷰 메인 스레드·
+  /// 입력 지연을 늘리던 것을 줄인다(PERF_SCALE.md §2). 놓을 때의 (0, 0)도 마지막 값이라 반드시 간다.
+  Future<void> setJoystick(double x, double y) async {
+    _joyNext = (x, y);
+    if (_joyBusy) return;
+    _joyBusy = true;
+    try {
+      while (_joyNext != null && !_disposed) {
+        final (jx, jy) = _joyNext!;
+        _joyNext = null;
+        await _call('setJoystick', {'x': jx, 'y': jy});
+      }
+    } finally {
+      _joyBusy = false;
+    }
+  }
+
+  (double, double)? _joyNext;
+  bool _joyBusy = false;
   Future<void> sit({String? seat}) => _call('sit', {'seat': ?seat});
   Future<void> stand() => _call('stand', const {});
   Future<void> setPraying({required bool on, required int ms}) =>

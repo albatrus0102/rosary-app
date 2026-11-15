@@ -286,7 +286,7 @@ Flutter 3.47.9 / Material 3(`useMaterial3`) 기준. 이 문서는 (1) 이번에 
 | --- | --- |
 | 머리말 | `headlineLarge`(넓게)/`headlineMedium`(폰) 제목 + `bodyMedium` 부제 + `SegmentedButton`. 금색 십자 장식선은 `OrnamentLine`(CustomPainter, 낭독 제외). 배경 그림은 머리말 높이 안에서만, 왼쪽·아래로 페이드 |
 | 큰 카드 | `Card.outlined`(extraLarge 28, `surfaceContainerLow`). 대표 그림 + `IconButton.filledTonal`(책갈피 = 기존 즐겨찾기), `headlineSmall` 이름, `OutlinedButton`(상세 보기 = 기존 성당 안내 시트), `FilledButton`(입장하기, 56dp) |
-| 캐러셀 | 가로 스크롤 + 쪽 점. 카드 = 4:3 그림(medium 12) + `titleSmall` 이름 + `bodySmall` 도시. 고른 카드는 금색 2dp 테두리 + `Semantics(selected)`. 넓은 화면은 `IconButton.filledTonal` 화살표 |
+| 캐러셀 | 가로 스크롤 + 쪽 점. 카드 = 4:3 그림(medium 12) + `titleSmall` 이름 + `bodySmall` 도시. 고른 카드는 금색 2dp 테두리 + `Semantics(selected)`. 넓은 화면에서 카드가 한 줄에 다 안 들어가면 오른쪽 **전용 자리**에 `IconButton.outlined` 화살표(카드를 가리지 않는다. 끝에서는 같은 자리의 '처음으로') |
 | 레일 | `NavigationRail`(600dp 이상), 아래에 장식 그림(목적지를 가리지 않는 높이만, 낭독 제외). 폰은 `NavigationBar` |
 | 반응형 | 여백 16/24(`WindowClass.margin`), 본문 최대 960dp, 대표 그림은 화면 높이의 40% 이하(가로 모드), 큰 글자에서는 장식선·부제·아이콘을 접는다 |
 | 접근성 | 버튼 라벨·툴팁, 그림 `semanticLabel`('○○ 내부 모습'), 캐러셀 항목 '선택됨', 48dp 터치 영역(`church_entry_test.dart` 가 가이드라인 검사) |

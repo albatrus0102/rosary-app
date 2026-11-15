@@ -92,6 +92,7 @@ void main() {
     String church = 'milan',
     double top = 24,
     bool window = false,
+    bool scrollToEnd = false,
   }) async {
     t.view.devicePixelRatio = dpr;
     t.view.physicalSize = size * dpr;
@@ -150,6 +151,11 @@ void main() {
       );
       await _settle(t);
     }
+    if (scrollToEnd) {
+      // 아래 끝(캐러셀 이름·도시·쪽 점, '모든 성당 보기')까지 내린다.
+      await t.ensureVisible(find.byKey(const ValueKey('entry-pick')));
+      await _settle(t, 2);
+    }
     await _shot(t, name, dpr);
   }
 
@@ -164,6 +170,16 @@ void main() {
       dpr: 1.55,
       b: Brightness.light,
       name: 'entry_wide',
+    );
+  });
+  testWidgets('wide light scrolled to the carousel', (t) async {
+    await shell(
+      t,
+      size: wide,
+      dpr: 1.55,
+      b: Brightness.light,
+      name: 'entry_wide_scrolled',
+      scrollToEnd: true,
     );
   });
   testWidgets('phone light', (t) async {
