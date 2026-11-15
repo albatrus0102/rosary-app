@@ -84,7 +84,7 @@
 
 
 ## 십자가의 길 그림 연작 — 성당별 대체 성화 (assets/images/stations/<연작>/, assets/church/cross_pack_<연작>.js, 2026-11-14 추가)
-각 성당에 실제로 걸린 14처가 아니라 저작권이 끝난 연작을 성당마다 나눠 건 것이다(앱 안에서 밝힌다). 파일별 표는 `docs/church/licenses/art_stations_series.md`, 원자료 `data/stations_series.json`, 배정·위험은 `docs/ux/STATIONS_OF_CROSS.md`.
+각 성당에 실제로 걸린 14처가 아니라 저작권이 끝난 연작을 성당마다 나눠 건 것이다(앱 안에서 밝힌다). 파일별 표는 `docs/church/licenses/art_stations_series.md`, 원자료 `data/stations_series.json`, 배정·위험은 `docs/ux/STATIONS_OF_CROSS.md`. 2026-11-15: 연작 3개(티에폴로 동판화·푸겔 뮌헨·판로트)를 더해 성당 8곳이 모두 다른 연작을 쓴다(푸겔 1921 은 우리 본당만). 모든 연작은 더보기 → 십자가의 길의 '그림 연작' 칩으로도 고를 수 있다.
 
 | 번들 | 원본 | 작가 | 라이선스 | 비고 |
 |---|---|---|---|---|
@@ -93,6 +93,9 @@
 | assets/images/stations/corot/station_01~14.webp, cross_pack_corot.js | https://commons.wikimedia.org/wiki/Category:Chemin_de_croix_de_l%27%C3%A9glise_de_Rosny_(Seine-et-Oise)_(R1083-1096)_by_Jean-Baptiste-Camille_Corot | 장바티스트 카미유 코로 (1853–59) · 사진·스캔 미확인(도판 복제, Commons 출처 amolenuvolette.it) | Public domain (PD-Art) | 성 마리아 마조레 대성전 · 크기를 줄임 · 권리 확인: 확인 |
 | assets/images/stations/hermann_paul/station_01~14.webp, cross_pack_hermann_paul.js | https://commons.wikimedia.org/wiki/Category:Via_Crucis_-_Hermann-Paul | 르네 조르주 헤르만 폴 (1929) · 사진·스캔 Uto | CC0 1.0 | 밀라노 대성당 · 책장 여백을 잘라 내고 크기를 줄임 · 권리 확인: 확인 |
 | assets/images/stations/mosler/station_01~14.webp, cross_pack_mosler.js | https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859 | D. 모슬러 (1859) · 사진·스캔 Google Books 스캔(Internet Archive 사본) | Public domain | 피렌체 대성당 · 책장에서 삽화만 잘라 내고 크기를 줄임 · 권리 확인: 확인 |
+| assets/images/stations/tiepolo/station_01~14.webp, cross_pack_tiepolo.js | https://commons.wikimedia.org/wiki/File:Ecce_Homo_Stazione_I_Gesu_condannato_a_morte_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-500.jpg | 조반니 도메니코 티에폴로 (1749) · 사진·스캔 Rijksmuseum | CC0 1.0 | 연작 선택 전용(성당 배정 없음) · 아래 글귀와 여백을 잘라 내고 크기를 줄임(용량을 위해 살짝 흐림) · 권리 확인: 확인 · 2026-11-15 추가 |
+| assets/images/stations/fugel_munich/station_01~14.webp, cross_pack_fugel_munich.js | https://commons.wikimedia.org/wiki/Category:The_14_Stations_of_the_Holy_Cross_(postcard_booklet) | 게프하르트 푸겔 (1904–08) · 사진·스캔 1908년경 그림엽서 스캔(Commons 올린 이의 스캔) | Public domain | 명동대성당 · 엽서 여백을 잘라 내고 크기를 줄임 · 권리 확인: 확인 · 2026-11-15 추가 |
+| assets/images/stations/fahnroth/station_01~14.webp, cross_pack_fahnroth.js | https://commons.wikimedia.org/wiki/Category:Joseph_Fahnroth | 요제프 판로트 (1886) · 사진·스캔 미확인(Commons 출처 herz-jesu-neuruppin.de) | Public domain (PD-Art) | 성 밖의 성 바오로 대성전 · 크기를 줄임 · 권리 확인: 확인 · 2026-11-15 추가 |
 
 ## 스테인드글라스 참고 사진 (assets/church/glass_*.jpg, 긴 변 768–1024px, 2026-11-12 추가)
 실제 유명 창의 사진을 창 하나 단위로 잘라 만든 투과광 질감 20점(합계 약 2.8MB). 보관용 원본은 `assets/church/glass_src/`(번들 제외). 상세 표·표시 문구·디자인 메모는 `docs/church/GLASS_REFERENCES.md`, 파일별 근거는 `docs/church/licenses/<id>.md`.

@@ -164,3 +164,84 @@ Commons 파일은 설명 원문(`index.php?action=raw`)의 라이선스 틀을 �
 | 12 | https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859 (PDF 29쪽) |
 | 13 | https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859 (PDF 31쪽) |
 | 14 | https://archive.org/details/the_stations_of_the_cross_with_fourteen_illustrations_1859 (PDF 33쪽) |
+
+## 조반니 도메니코 티에폴로 〈Via Crucis〉 동판화 (`tiepolo`)
+
+- 작가: 조반니 도메니코 티에폴로 (Giovanni Domenico Tiepolo), 1804년 사망
+- 제작·발행: 1749 · 암스테르담 국립미술관(Rijksmuseum) 소장 동판화(베네치아 산 폴로 성당 유화 연작을 작가가 직접 새김)
+- 사진·스캔: Rijksmuseum
+- 라이선스: CC0 1.0 — https://creativecommons.org/publicdomain/zero/1.0/
+- 변경: 아래 글귀와 여백을 잘라 내고 크기를 줄임(용량을 위해 살짝 흐림)
+- 권리 확인 상태: **확인** — 작가 사후 70년 경과(1804 사망), 1749년 베네치아 간행. Rijksmuseum 소장품(RP-P-1950-500~513) 공개 이미지로 Commons 파일 14개 {{CC-zero}} 확인(2026-11-15). 연작은 표지·헌정문 포함 16장이며 500~513번이 1~14처(판화에 STAZIONE I~XIII·ULTIMA 라고 새겨져 있다).
+- 번들: `assets/images/stations/tiepolo/station_NN.webp`, 아틀라스 `assets/church/cross_pack_tiepolo.js` (2026-11-15 추가)
+
+| 처 | 원본 |
+|---|---|
+| 1 | https://commons.wikimedia.org/wiki/File:Ecce_Homo_Stazione_I_Gesu_condannato_a_morte_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-500.jpg |
+| 2 | https://commons.wikimedia.org/wiki/File:Kruisdraging_van_Christus_Stazione_II_Riceve_la_croce_sù_le_spalle_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-501.jpg |
+| 3 | https://commons.wikimedia.org/wiki/File:Christus_bezwijkt_onder_kruis_bij_kruisdraging_Stazione_III_Cade_sotto_la_croce_la_prima_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_crucis_(serietitel),_RP-P-1950-502.jpg |
+| 4 | https://commons.wikimedia.org/wiki/File:Christus_ontmoet_zijn_moeder_tijdens_kruisdraging_Stazione_IV_Incontra_la_sua_SS.ma_Madre_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-503.jpg |
+| 5 | https://commons.wikimedia.org/wiki/File:Simon_van_Cyrene_helpt_Christus_met_dragen_kruis_Stazione_V_Viene_aiutato_dal_Cireneo_a_portar_la_Croce_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-504.jpg |
+| 6 | https://commons.wikimedia.org/wiki/File:Christus_ontmoet_Veronica_met_zweetdoek_tijdens_kruisdraging_Stazione_VI_Gesù_asciugato_da_Sta._Veronica_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-505.jpg |
+| 7 | https://commons.wikimedia.org/wiki/File:Christus_bezwijkt_voor_tweede_keer_bij_kruisdraging_Stazione_VII_Cade_sotto_la_croce_la_seconda_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-506.jpg |
+| 8 | https://commons.wikimedia.org/wiki/File:Christus_troost_huilende_vrouwen_tijdens_kruisdraging_Stazione_VIII_Consola_le_donne_piangenti_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-507.jpg |
+| 9 | https://commons.wikimedia.org/wiki/File:Christus_bezwijkt_voor_derde_keer_bij_kruisdraging_Stazione_IX_Cade_sotto_la_Croce_la_terza_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-508.jpg |
+| 10 | https://commons.wikimedia.org/wiki/File:Christus_wordt_ontkleed_op_Calvarieberg_Stazione_X_Gesù_spogliato_ed_abbeverato_con_fele_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-509.jpg |
+| 11 | https://commons.wikimedia.org/wiki/File:Christus_wordt_aan_het_kruis_genageld_Stazione_XI_Gesù_inchiodato_in_Croce_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-510.jpg |
+| 12 | https://commons.wikimedia.org/wiki/File:Christus_aan_het_kruis_en_Maria_ondersteund_door_Johannes_tussen_omstanders_op_Calvarieberg_Stazione_XII_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-511.jpg |
+| 13 | https://commons.wikimedia.org/wiki/File:Bewening_van_Christus_dode_lichaam_na_kruisafneming_Stazione_XIII_Morto_Gesù_vien_deposto_dalla_Croce_in_seno_alla_sua_SSa._Madre_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-512.jpg |
+| 14 | https://commons.wikimedia.org/wiki/File:Graflegging_van_Christus_Stazione_ultima_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-513.jpg |
+
+## 게프하르트 푸겔 〈뮌헨 성 요셉 성당 십자가의 길〉 (`fugel_munich`)
+
+- 작가: 게프하르트 푸겔 (Gebhard Fugel), 1939년 사망
+- 제작·발행: 1904–08 · 뮌헨 성 요셉 성당(독일; 원작은 1944년 소실) — 1908년경 그림엽서
+- 사진·스캔: 1908년경 그림엽서 스캔(Commons 올린 이의 스캔)
+- 라이선스: Public domain — https://creativecommons.org/publicdomain/mark/1.0/
+- 변경: 엽서 여백을 잘라 내고 크기를 줄임
+- 권리 확인 상태: **확인** — 작가 사후 70년 경과(1939 사망), 1908년경 독일에서 그림엽서로 발행(미국 1929년 이전 발행). Commons 파일 14개 {{PD-old-auto-1923|deathyear=1939}} 확인(2026-11-15). 푸겔 1921 연작(바트 자울가우)과는 다른 연작이다.
+- 번들: `assets/images/stations/fugel_munich/station_NN.webp`, 아틀라스 `assets/church/cross_pack_fugel_munich.js` (2026-11-15 추가)
+
+| 처 | 원본 |
+|---|---|
+| 1 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_01.jpg |
+| 2 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_02.jpg |
+| 3 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_03.jpg |
+| 4 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_04.jpg |
+| 5 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_05.jpg |
+| 6 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_06.jpg |
+| 7 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_07.jpg |
+| 8 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_08.jpg |
+| 9 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_09.jpg |
+| 10 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_10.jpg |
+| 11 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_11.jpg |
+| 12 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_12.jpg |
+| 13 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_13.jpg |
+| 14 | https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_14.jpg |
+
+## 요제프 판로트 〈노이루핀 예수 성심 성당 십자가의 길〉 (`fahnroth`)
+
+- 작가: 요제프 판로트 (Joseph Fahnroth), 1895년 사망
+- 제작·발행: 1886 · 노이루핀 예수 성심 성당(독일)
+- 사진·스캔: 미확인(Commons 출처 herz-jesu-neuruppin.de)
+- 라이선스: Public domain (PD-Art) — https://creativecommons.org/publicdomain/mark/1.0/
+- 변경: 크기를 줄임
+- 권리 확인 상태: **확인** — 작가 사후 100년 경과(1895 사망), 1886년 작. Commons 파일 14개 {{PD-old-100}} 확인(2026-11-15). 사진은 본당 누리집(herz-jesu-neuruppin.de)에서 온 것으로 촬영자는 적혀 있지 않다(미확인) — 평면 작품의 충실한 복제(PD-Art)로 본다. 원본이 폭 440px 안팎이라 330px 섬네일로 받았다.
+- 번들: `assets/images/stations/fahnroth/station_NN.webp`, 아틀라스 `assets/church/cross_pack_fahnroth.js` (2026-11-15 추가)
+
+| 처 | 원본 |
+|---|---|
+| 1 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_-_Kreuzweg_Neuruppin_01.jpg |
+| 2 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_02.jpg |
+| 3 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_03.jpg |
+| 4 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_04.jpg |
+| 5 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_05.jpg |
+| 6 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_06.jpg |
+| 7 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_07.jpg |
+| 8 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_08.jpg |
+| 9 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_09.jpg |
+| 10 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_10.jpg |
+| 11 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_11.jpg |
+| 12 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_12.jpg |
+| 13 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_13.jpg |
+| 14 | https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_14.jpg |
