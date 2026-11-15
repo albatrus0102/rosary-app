@@ -3,9 +3,6 @@
 // 상자 경계(cameraBounds)만으로는 후진·경당처럼 굽은 벽 밖(상자 모서리)에 카메라가 나가 하늘·외벽이 보였다.
 // 빼는 것: 가산 혼합(빛줄기), 점·선·스프라이트·인스턴스(촛불), 숨긴 메시, 아주 작은 면(<0.005㎡), 낮은 물체(maxY < yLow: 의자·바닥).
 // 매 프레임 할당 없음(형식 배열 + 도장 배열).
-// 가는 장애물(2026-11-15): 같은 꼭짓점을 나눠 쓰는 삼각형 덩어리(기둥 몸통·주두·성상·난간 조각)의 바닥 면적이 작으면 '가늘다'.
-// 가는 면은 카메라를 당기지 않고(아바타 등에 카메라가 붙어 화면이 몸으로 가득 찼다) 그 메시에 seeThru 꼭짓점 값을 달아
-// 셰이더(patchSee)가 카메라–아바타 사이 원뿔 안의 조각을 디더로 지운다. 벽·천장처럼 넓은 면만 예전처럼 카메라를 당긴다.
 (function (root) {
   'use strict';
 
@@ -14,7 +11,7 @@
     var cell = o.cell || 1.5, minArea = o.minArea === undefined ? 0.005 : o.minArea;
     var yLow = o.yLow === undefined ? -1e9 : o.yLow, b = o.bounds || null, pad = 3;
     var bx0 = b ? b.x0 - pad : -1e9, bx1 = b ? b.x1 + pad : 1e9, bz0 = b ? b.z0 - pad : -1e9, bz1 = b ? b.z1 + pad : 1e9;
-    var tris = [], triMesh = [], triI = [], meshes = [];
+    var tris = [];
     obj.updateMatrixWorld(true);
     obj.traverseVisible(function (m) {
       if (!m.isMesh || m.isInstancedMesh || m.isSkinnedMesh || (m.userData && m.userData.noCam)) return;
@@ -22,8 +19,7 @@
       if (!mat || mat.blending === 2 /* Additive: 빛줄기·먼지 */) return;   // 투명 유리 판은 막는다(창 밖으로 못 나가게)
       var g = m.geometry, pa = g && g.attributes && g.attributes.position;
       if (!pa) return;
-      var e = m.matrixWorld.elements, ix = g.index ? g.index.array : null, n = ix ? ix.length : pa.count, mi = meshes.length;
-      meshes.push(m);
+      var e = m.matrixWorld.elements, ix = g.index ? g.index.array : null, n = ix ? ix.length : pa.count;
       var v = [0, 0, 0, 0, 0, 0, 0, 0, 0];
       for (var i = 0; i + 2 < n; i += 3) {
         for (var k = 0; k < 3; k++) {
@@ -38,7 +34,7 @@
         var ax = v[3] - v[0], ay = v[4] - v[1], az = v[5] - v[2], cx = v[6] - v[0], cy = v[7] - v[1], cz = v[8] - v[2];
         var nx = ay * cz - az * cy, ny = az * cx - ax * cz, nz = ax * cy - ay * cx;
         if (Math.sqrt(nx * nx + ny * ny + nz * nz) * 0.5 < minArea) continue;
-        tris.push(v[0], v[1], v[2], ax, ay, az, cx, cy, cz); triMesh.push(mi); triI.push(i);
+        tris.push(v[0], v[1], v[2], ax, ay, az, cx, cy, cz);
       }
     });
     var nt = tris.length / 9, T9 = new Float32Array(tris);
@@ -64,15 +60,11 @@
     var list = new Int32Array(cnt[NX * NZ]), fill = cnt.slice(0, NX * NZ);
     for (t = 0; t < nt; t++) span(t, function (c, tt) { list[fill[c]++] = tt; });
     var stamp = new Uint32Array(nt), gen = 0;
-    var thin = classifyThin(T9, nt, o.thinMax === undefined ? 2.6 : o.thinMax);
-    var nThin = 0; for (t = 0; t < nt; t++) nThin += thin[t];
-    var out = { thin: 1 };   // 마지막 clip/clipWide 에서 처음 닿은 '가는' 면의 비율(0..1, 없으면 1)
 
     // 선분 A→B 가 처음 닿는 비율(0..1, 안 닿으면 1)에서 margin(m)만큼 앞. 머리 바로 앞(<0.15m)은 무시(아바타가 기댄 벽은 머리 뒤).
     function clip(ax, ay, az, bx, by, bz, margin) {
       var dx = bx - ax, dy = by - ay, dz = bz - az, len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      if (len < 1e-4 || !nt) { out.thin = 1; return 1; }
-      var bestThin = 1, pass = o.thinPass !== false;
+      if (len < 1e-4 || !nt) return 1;
       gen = (gen + 1) >>> 0; if (gen === 0) { stamp.fill(0); gen = 1; }
       var best = 1, tMin = 0.15 / len;
       // xz 격자 DDA
@@ -99,7 +91,7 @@
             var w = (dx * qx + dy * qy + dz * qz) * inv;
             if (w < 0 || u + w > 1) continue;
             var th = (e2x * qx + e2y * qy + e2z * qz) * inv;
-            if (th > tMin && th < best) { if (pass && thin[tr]) { if (th < bestThin) bestThin = th; } else best = th; }
+            if (th > tMin && th < best) best = th;
           }
         }
         if (ci === ei && ck === ek) break;
@@ -107,110 +99,21 @@
         if (tn > 1 || tn > best) break;   // 선분 끝 또는 이미 찾은 충돌보다 먼 칸
         if (tmx < tmz) { tmx += tdx; ci += sx; } else { tmz += tdz; ck += sz; }
       }
-      out.thin = bestThin < best ? bestThin : 1;
       if (best >= 1) return 1;
       return Math.max(0, best - (margin === undefined ? 0.3 : margin) / len);
     }
     // 벽 조각 사이 틈(기둥·벽 모서리가 덜 맞물린 곳)으로 빠져나가지 않게 카메라 끝을 좌우 ±w 로 벌린 선 2개를 더 쏜다
     function clipWide(ax, ay, az, bx, by, bz, margin, w) {
-      var t = clip(ax, ay, az, bx, by, bz, margin), dx = bx - ax, dz = bz - az, h = Math.sqrt(dx * dx + dz * dz), th0 = out.thin;
+      var t = clip(ax, ay, az, bx, by, bz, margin), dx = bx - ax, dz = bz - az, h = Math.sqrt(dx * dx + dz * dz);
       if (h < 1e-3) return t;
       var ox = -dz / h * (w || 0.3), oz = dx / h * (w || 0.3);
       t = Math.min(t, clip(ax, ay, az, bx + ox, by, bz + oz, margin), clip(ax, ay, az, bx - ox, by, bz - oz, margin));
-      out.thin = th0;   // 가림 판정은 가운데 선(머리→카메라)만
       return t;
     }
-    var api = { clip: clip, clipWide: clipWide, out: out, triangles: nt, thinTriangles: nThin, cells: NX * NZ, see: null };
-    // 가는 면이 있는 메시에 seeThru(Uint8, 정규화) 꼭짓점 값을 단다. 그 재질을 쓰는 다른 메시에도 0 값을 달아 둔다(빈 속성 슬롯이 1로 읽히지 않게).
-    if (o.see !== false && nThin) api.see = attachSee(obj, meshes, triMesh, triI, thin, nt, o.THREE || root.THREE);
-    return api;
+    return { clip: clip, clipWide: clipWide, triangles: nt, cells: NX * NZ };
   }
 
-  // 삼각형을 꼭짓점 위치(1cm 격자)로 이어 덩어리를 만들고, 덩어리의 xz 상자 긴 변이 thinMax 이하이면 가늘다(1).
-  function classifyThin(T9, nt, thinMax) {
-    var thin = new Uint8Array(nt);
-    if (!nt || !(thinMax > 0)) return thin;
-    var key = new Map(), par = new Int32Array(nt), q, t, k;
-    for (t = 0; t < nt; t++) par[t] = t;
-    function find(a) { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; }
-    for (t = 0; t < nt; t++) {
-      q = t * 9;
-      for (k = 0; k < 3; k++) {
-        var x = T9[q] + (k === 1 ? T9[q + 3] : k === 2 ? T9[q + 6] : 0), y = T9[q + 1] + (k === 1 ? T9[q + 4] : k === 2 ? T9[q + 7] : 0), z = T9[q + 2] + (k === 1 ? T9[q + 5] : k === 2 ? T9[q + 8] : 0);
-        var kk = Math.round(x * 100) + ',' + Math.round(y * 100) + ',' + Math.round(z * 100), o2 = key.get(kk);
-        if (o2 === undefined) key.set(kk, t);
-        else { var ra = find(o2), rb = find(t); if (ra !== rb) par[ra] = rb; }
-      }
-    }
-    var bx0 = new Float32Array(nt).fill(1e9), bx1 = new Float32Array(nt).fill(-1e9), bz0 = new Float32Array(nt).fill(1e9), bz1 = new Float32Array(nt).fill(-1e9);
-    for (t = 0; t < nt; t++) {
-      var r = find(t); q = t * 9;
-      var a = T9[q], c = T9[q + 2];
-      bx0[r] = Math.min(bx0[r], a, a + T9[q + 3], a + T9[q + 6]); bx1[r] = Math.max(bx1[r], a, a + T9[q + 3], a + T9[q + 6]);
-      bz0[r] = Math.min(bz0[r], c, c + T9[q + 5], c + T9[q + 8]); bz1[r] = Math.max(bz1[r], c, c + T9[q + 5], c + T9[q + 8]);
-    }
-    for (t = 0; t < nt; t++) { var rr = find(t); if (bx1[rr] - bx0[rr] <= thinMax && bz1[rr] - bz0[rr] <= thinMax) thin[t] = 1; }
-    return thin;
-  }
-
-  // 가림 디더 셰이더: 카메라(a)→아바타 가슴(b) 원뿔(반지름 r: 카메라 쪽 0.55r → 아바타 쪽 r) 안의 seeThru 조각을 k 만큼 지운다.
-  // 균일값은 모든 재질이 같은 객체를 나눠 쓴다(매 프레임 a·b·k 숫자만 바꾼다 — 할당 0). 재질은 복제하지 않고 onBeforeCompile 을 잇는다
-  // (기존 onBeforeCompile·프로그램 캐시 키는 그대로 두고 '|see' 를 덧붙여 다른 재질과 프로그램이 섞이지 않게).
-  var SEE_V = 'attribute float seeThru;\nvarying float vSee;\nvarying vec3 vSeeW;\n';
-  var SEE_F = 'uniform vec3 uSeeA;\nuniform vec3 uSeeB;\nuniform float uSeeK;\nuniform float uSeeR;\nvarying float vSee;\nvarying vec3 vSeeW;\n';
-  var SEE_MAIN = 'void main() {\n\tif (vSee > 0.5 && uSeeK > 0.004) {\n\t\tvec3 sAB = uSeeB - uSeeA; float sH = dot(vSeeW - uSeeA, sAB) / max(dot(sAB, sAB), 1e-4);\n' +
-    '\t\tfloat sD = length(vSeeW - uSeeA - sAB * clamp(sH, 0.0, 1.0)), sR = uSeeR * (0.55 + 0.45 * clamp(sH, 0.0, 1.0));\n' +
-    '\t\tfloat sF = (1.0 - smoothstep(sR * 0.6, sR, sD)) * smoothstep(-0.02, 0.04, sH) * (1.0 - smoothstep(0.9, 1.0, sH));\n' +
-    '\t\tfloat sN = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));\n' +
-    '\t\tif (sN < sF * uSeeK * 0.86) discard;\n\t}\n';
-  function patchSee(mat, U) {
-    if (!mat || mat.userData.seePatched) return;
-    mat.userData.seePatched = true;
-    var prev = mat.onBeforeCompile, prevKey = '';
-    try { prevKey = String(mat.customProgramCacheKey()); } catch (e) { prevKey = ''; }
-    mat.onBeforeCompile = function (sh, r) {
-      if (prev) prev.call(this, sh, r);
-      if (sh.vertexShader.indexOf('#include <project_vertex>') < 0 || sh.fragmentShader.indexOf('void main() {') < 0) return;
-      sh.uniforms.uSeeA = U.a; sh.uniforms.uSeeB = U.b; sh.uniforms.uSeeK = U.k; sh.uniforms.uSeeR = U.r;
-      sh.vertexShader = SEE_V + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n\tvSee = seeThru;\n\tvSeeW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-      sh.fragmentShader = SEE_F + sh.fragmentShader.replace('void main() {', SEE_MAIN);
-    };
-    mat.customProgramCacheKey = function () { return prevKey + '|see'; };
-    mat.needsUpdate = true;
-  }
-  function attachSee(obj, meshes, triMesh, triI, thin, nt, THREE) {
-    var BA = THREE && THREE.BufferAttribute;
-    if (!BA) return null;
-    var U = { a: { value: new Float32Array(3) }, b: { value: new Float32Array(3) }, k: { value: 0 }, r: { value: 1.0 } };
-    var arrs = new Array(meshes.length), mats = [], t, k;
-    for (t = 0; t < nt; t++) {
-      if (!thin[t]) continue;
-      var mi = triMesh[t], m = meshes[mi], g = m.geometry, ix = g.index ? g.index.array : null;
-      var A = arrs[mi] || (arrs[mi] = new Uint8Array(g.attributes.position.count));
-      for (k = 0; k < 3; k++) A[ix ? ix[triI[t] + k] : triI[t] + k] = 255;
-    }
-        for (var i = 0; i < meshes.length; i++) {
-      if (!arrs[i]) continue;
-      var mm = meshes[i], ml = Array.isArray(mm.material) ? mm.material : [mm.material];
-      mm.geometry.setAttribute('seeThru', new BA(arrs[i], 1, true));
-      ml.forEach(function (x) { if (mats.indexOf(x) < 0) mats.push(x); });
-    }
-    obj.traverse(function (m) {   // 고친 재질을 쓰는데 seeThru 가 없는 메시(숨긴 것·가는 면이 없는 것)에 0 값
-      if (!m.isMesh || !m.geometry || !m.geometry.attributes || !m.geometry.attributes.position || m.geometry.attributes.seeThru) return;
-      var ml = Array.isArray(m.material) ? m.material : [m.material];
-      for (var j = 0; j < ml.length; j++) if (mats.indexOf(ml[j]) >= 0) { m.geometry.setAttribute('seeThru', new BA(new Uint8Array(m.geometry.attributes.position.count), 1, true)); break; }
-    });
-    mats.forEach(function (x) { patchSee(x, U); });
-    // 카메라 위치(cx..)·아바타 가슴(bx..)·세기(0..1)를 한 번에(할당 0)
-    U.set = function (ax, ay, az, bx, by, bz, kk) { var a = U.a.value, b = U.b.value; a[0] = ax; a[1] = ay; a[2] = az; b[0] = bx; b[1] = by; b[2] = bz; U.k.value = kk; };
-    U.materials = mats.length;
-    return U;
-  }
-
-  // 카메라–머리 거리 → 아바타 불투명도(1.3m 이상 1, 0.6m 이하 거의 0)
-  function avatarAlpha(d) { var u = (d - 0.6) / 0.7; u = u < 0 ? 0 : u > 1 ? 1 : u; return 0.06 + 0.94 * u * u * (3 - 2 * u); }
-
-  var api = { build: build, classifyThin: classifyThin, patchSee: patchSee, avatarAlpha: avatarAlpha };
+  var api = { build: build };
   root.ChurchCamGuard = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : this);
