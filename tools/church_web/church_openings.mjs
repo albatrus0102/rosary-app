@@ -363,7 +363,7 @@ ADAPTERS.lateran = {
 // ---- 성 밖 성 바오로 (ch_stpaul.js): 입구 = 서(+z), 후진 = 동(-z). +x = 남(제대를 볼 때 오른쪽), -x = 북. 53%.
 ADAPTERS.stpaul = {
   axes: { altar: '-z (동)', entrance: '+z (서)', plusX: '남', minusX: '북',
-    summary: '입구 +z(서, 테베레 강 쪽) → 후진 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: 실제 대성전은 후진이 동쪽(interiors/stpaul.md), 모델 축은 입구 +z 공통 규약.' },
+    summary: '입구 +z(서, 테베레 강 쪽) → 후진 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: interiors/stpaul.md 184행.' },
   rules: [
     { zone: 'facade', test: (e) => e.z > 33, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : NS('S')(e)) },
     { zone: 'aisle', test: (e) => near(Math.abs(e.x), 17.5, 0.4) && e.z > -15, side: NS('S'), prefix: 'aisle', always: true },
