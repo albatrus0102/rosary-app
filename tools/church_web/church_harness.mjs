@@ -53,5 +53,5 @@ export function loadChurches(opts = {}) {
     // walls: 벽 기록(십자가의 길 판을 거는 자리 유도, way_cross.js derive). _prepare 전이라 창 host 는 아직 없다.
     out.push({ id, layout: b.layout, colliders, zones, windows: S.windows, roses: S.roses, glassSlots: S.glassSlots, walls: S.walls, prepare: () => ctx._prepare(), ctx, builder: b });
   }
-  return { churches: out, Logic: sb.ChurchLogic, Stations: sb.ChurchStations, Layouts: sb.ChurchLayouts, WayCross: sb.ChurchWayCross, CrossData: sb.ChurchCrossData, Liturgy: sb.ChurchLiturgy, THREE: sb.THREE };
+  return { churches: out, Kit: sb.ChurchKit, Logic: sb.ChurchLogic, Stations: sb.ChurchStations, Layouts: sb.ChurchLayouts, WayCross: sb.ChurchWayCross, CrossData: sb.ChurchCrossData, Liturgy: sb.ChurchLiturgy, THREE: sb.THREE };
 }
