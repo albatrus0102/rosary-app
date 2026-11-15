@@ -252,3 +252,50 @@ Flutter 3.47.9 / Material 3(`useMaterial3`) 기준. 이 문서는 (1) 이번에 
 1. **시드 색**: 테라코타 단일 시드(+골드 tertiary) 유지 vs. 기기 색(Material You) 기본 켜기.
 2. **화면 전환**: Android 기본(PredictiveBack + FadeForwards) 유지 vs. 탭 간 `FadeThrough`(animations 패키지, APK 증가) — 현재는 의존성 추가 없이 기본 유지.
 3. **아이콘 세트**: Material Icons(기본, 채움) 유지 vs. Material Symbols Rounded(폰트 추가 → APK 증가). 현재는 기본 유지.
+
+---
+
+## 11. 2026-11-15 시안 반영 — 색 구성 교체와 성당 입구 재디자인
+
+사용자 시안(따뜻한 상아색 종이 + 짙은 갈색 + 금색)에 맞춰 **색 구성만** 바꿨다. 컴포넌트·모양·간격·모션·타입 크기는
+그대로 M3 이고, 화면들은 색 역할만 쓰므로 `app/theme.dart` 한 곳의 변경이 전 화면에 퍼진다.
+
+### 11.1 색 (2장·10.5의 '시드 색' 결정을 대체)
+
+- `AppTheme.seedScheme`: `fromSeed`(테라코타) → **손으로 정한 `ColorScheme` 두 벌**(역할표는 `AppTheme` 문서 주석).
+  시드 생성 표면은 분홍빛이 돌아 시안의 상아색과 달랐다. 밝게: surface #FBF2E8, primary #5F3419(짙은 갈색),
+  tertiary #765300(금색, 글자용 4.5:1). 어둡게: surface #1E130D, primary #E7C46C(성당 안 `ChurchTheme` 의 촛불 금색과 같은 값).
+- `AppDecor`(ThemeExtension): M3 역할에 없는 두 가지만 둔다 — `gold`(장식선·선택 테두리, 표면 위 3:1 이상),
+  `chrome`(내비게이션의 어두운 색 구성). 위젯은 `AppDecor.of(context)` 로만 읽는다(색 하드코딩 없음).
+- 기기 색(Material You)을 켜면 여전히 기기 구성을 쓴다(내비게이션은 기기의 어두운 구성, 금색은 그 구성의 tertiary/primary).
+- 대비: `test/theme_contrast_test.dart` 에 내비게이션 구성 3쌍과 장식 금색(3:1) 검사를 더했다.
+
+### 11.2 컴포넌트 테마
+
+| 컴포넌트 | 변경 |
+| --- | --- |
+| 타입 | display·headline 은 w700(자간 −0.25~−1), titleLarge 는 w600. **크기·행간은 M3 그대로**. 새 글꼴 파일 없음 |
+| NavigationBar / Rail | `AppTheme.chromeOf(context)`(어두운 갈색 구성)로 감싼다. 표시기는 가는 금색 테두리의 알약, 레일 바탕은 하단 바와 같은 `surfaceContainer`. 시스템 내비게이션 바 아이콘은 그 영역에서 밝게(`AnnotatedRegion`) |
+| SegmentedButton | 선택 = `primary` 채움 + `onPrimary`, 윤곽 = 장식 금색. 성당 안(`ChurchTheme`)은 M3 기본 유지 |
+| 주 행동 버튼 | `AppTheme.heroButtonStyle`: 56dp + 가는 금색 테두리(입구 '입장하기') |
+| Card / Chip / AppBar / BottomSheet / Dialog | M3 기본 역할 그대로(색 구성이 바뀌어 상아색·갈색으로 보인다) |
+
+### 11.3 성당 입구 화면 (`church/church_entry_card.dart`, `glass/glass_tab.dart`, `ui/app_shell.dart`)
+
+| 요소 | M3 구현 |
+| --- | --- |
+| 머리말 | `headlineLarge`(넓게)/`headlineMedium`(폰) 제목 + `bodyMedium` 부제 + `SegmentedButton`. 금색 십자 장식선은 `OrnamentLine`(CustomPainter, 낭독 제외). 배경 그림은 머리말 높이 안에서만, 왼쪽·아래로 페이드 |
+| 큰 카드 | `Card.outlined`(extraLarge 28, `surfaceContainerLow`). 대표 그림 + `IconButton.filledTonal`(책갈피 = 기존 즐겨찾기), `headlineSmall` 이름, `OutlinedButton`(상세 보기 = 기존 성당 안내 시트), `FilledButton`(입장하기, 56dp) |
+| 캐러셀 | 가로 스크롤 + 쪽 점. 카드 = 4:3 그림(medium 12) + `titleSmall` 이름 + `bodySmall` 도시. 고른 카드는 금색 2dp 테두리 + `Semantics(selected)`. 넓은 화면은 `IconButton.filledTonal` 화살표 |
+| 레일 | `NavigationRail`(600dp 이상), 아래에 장식 그림(목적지를 가리지 않는 높이만, 낭독 제외). 폰은 `NavigationBar` |
+| 반응형 | 여백 16/24(`WindowClass.margin`), 본문 최대 960dp, 대표 그림은 화면 높이의 40% 이하(가로 모드), 큰 글자에서는 장식선·부제·아이콘을 접는다 |
+| 접근성 | 버튼 라벨·툴팁, 그림 `semanticLabel`('○○ 내부 모습'), 캐러셀 항목 '선택됨', 48dp 터치 영역(`church_entry_test.dart` 가 가이드라인 검사) |
+
+스크린샷 하니스: `flutter test test/zz_entry_shots_test.dart --dart-define=ENTRY_SHOTS=<dir>`(넓게·폰·어둡게·글자 2배·가로·오늘/기록/더보기).
+그림 자산 슬롯과 교체 방법: `docs/church/ENTRY_ART.md`.
+
+### 11.4 남은 결정(사용자)
+
+1. 하단 바(폰)도 어두운 갈색으로 둘지(지금: 레일과 같은 어두운 갈색) — 밝게 되돌리려면 `_navTheme` 한 곳.
+2. 제목용 세리프 글꼴 추가 여부(용량 1~2MB).
+3. 넓은 화면에서 레일을 상태 바까지 올릴지(지금은 상태 바 아래에서 시작).

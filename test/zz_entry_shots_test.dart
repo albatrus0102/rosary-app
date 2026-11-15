@@ -91,6 +91,7 @@ void main() {
     double scale = 1,
     String church = 'milan',
     double top = 24,
+    bool window = false,
   }) async {
     t.view.devicePixelRatio = dpr;
     t.view.physicalSize = size * dpr;
@@ -140,6 +141,15 @@ void main() {
       ),
     );
     await _settle(t);
+    if (window) {
+      await t.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('glass-segment')),
+          matching: find.text('창'),
+        ),
+      );
+      await _settle(t);
+    }
     await _shot(t, name, dpr);
   }
 
@@ -210,6 +220,16 @@ void main() {
       b: Brightness.light,
       name: 'entry_expanded',
       church: 'stpeter',
+    );
+  });
+  testWidgets('window phone', (t) async {
+    await shell(
+      t,
+      size: phone,
+      dpr: 3,
+      b: Brightness.light,
+      name: 'window_phone',
+      window: true,
     );
   });
   testWidgets('today phone', (t) async {
