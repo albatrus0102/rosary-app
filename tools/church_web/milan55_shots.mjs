@@ -4,6 +4,8 @@
 //   --off    devglass 를 끄고 찍는다(기존 절차적 유리; 회귀 비교용, 파일 이름에 _off)
 //   --perf   시점마다 draw call·삼각형 수를 잰다(renderer.info) → JSON 한 줄
 //   --leak N 밀라노 ↔ QA Gallery ↔ 기본 성당을 N 번 오가며 dev 질감·재질 해제를 확인한다(created == disposed, 상주 0)
+//   --compare <예전 assets/church 사본> [--json art/glass_milan55/shots/e4_perf.json]
+//            건축 변경 전(사본) / 후(devglass 끔) / 후(devglass 켬)의 draw call·삼각형을 같은 시점에서 재어 JSON 으로 쓴다(보고서 §2.1)
 // 시점: 아바타 자세(x, z, yaw, pitch, look, zoom) — 카메라는 아바타 뒤. yaw 0 = 제대(-z), -90 = 남(+x), 90 = 북(-x), 180 = 입구(+z).
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -22,10 +24,12 @@ export const VIEWS = {
   chapelS: { church: 'milan', cam: [17.4, 1.8, -10.22], at: [23.7, 6.2, -10.22], fov: 74, note: '성 요한 보노 경당 안: 서쪽 사선 DEV-011 · 끝 DEV-012 · 동쪽 사선 DEV-013' },
   apse: { church: 'milan', cam: [0, 1.9, -30.5], at: [0, 6.4, -35.4], fov: 88, note: '후진 세 창(DEV-021·020·019; 가운데 아래는 진본 사진 그대로)' },
   counterfacade: { church: 'milan', cam: [0, 2.0, 24.0], at: [0, 7.6, 34.9], fov: 74, note: '정문 안쪽 벽: 문 5 · 하단 반원 머리 창 5(DEV-044·042·045·043·041) · 상단 첨두창 3(DEV-048·047·046)' },
+  nave: { church: 'milan', extra: true, cam: [0, 2.2, 31.0], at: [0, 8.5, -20], fov: 62, note: '(측정용) 입구에서 제대 쪽 전경' },
+  crossing: { church: 'milan', extra: true, cam: [0, 2.2, 2.0], at: [14, 7.5, -12], fov: 70, note: '(측정용) 교차부에서 남익랑 쪽' },
   qa: { church: 'qa_milan55', x: 1.6, z: null, dz: -6.5, yaw: -64, pitch: 5, look: 10, zoom: 0.8, note: 'QA Gallery(55장 전부, 이름표·상태 색)' }
 };
 
-export async function openPage(browser, { church, devglass = true, size = '960x540', quality = 'mid', hour = 11, extra = {} }) {
+export async function openPage(browser, { church, devglass = true, size = '960x540', quality = 'mid', hour = 11, extra = {}, assetsRoot = root }) {
   const [W, H] = size.split('x').map(Number);
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   const errors = [];
@@ -37,7 +41,7 @@ export async function openPage(browser, { church, devglass = true, size = '960x5
     window.__step = (n, dtMs) => { for (let i = 0; i < n; i++) { const cbs = q.splice(0); tNow = (tNow || performance.now()) + dtMs; cbs.forEach((cb) => cb(tNow)); } };
   });
   const q = new URLSearchParams({ church, autotier: '0', msaa: '0', quality, solo: '0', hideui: '1', hour: String(hour), markers: '0', ...(devglass ? { devglass: '1' } : {}), ...extra });
-  await page.goto('file://' + root + '/test.html?' + q.toString());
+  await page.goto('file://' + assetsRoot + '/test.html?' + q.toString());
   await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 180000, polling: 250 });
   await page.waitForTimeout(800);
   await settle(page, devglass);
@@ -105,12 +109,29 @@ async function leak(browser, n, o) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const a = process.argv.slice(2), opt = (k, d) => (a.includes(k) ? a[a.indexOf(k) + 1] : d);
   const out = path.resolve(opt('--out', path.resolve(here, '../../art/glass_milan55/shots')));
-  const names = opt('--views', Object.keys(VIEWS).join(',')).split(',').filter((v) => VIEWS[v]);
+  const names = opt('--views', Object.keys(VIEWS).filter((v) => !VIEWS[v].extra).join(',')).split(',').filter((v) => VIEWS[v]);
   const off = a.includes('--off'), size = opt('--size', '960x540'), quality = opt('--quality', 'mid'), hour = +opt('--hour', 11), prefix = opt('--prefix', 'e4_');
   const { chromium } = require('playwright');
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
   let bad = 0;
-  if (a.includes('--leak')) {
+  if (a.includes('--compare')) {
+    const baseRoot = path.resolve(opt('--compare', '')), views = ['nave', 'crossing', 'aisleS', 'transeptS', 'counterfacade', 'apse'];
+    const run = async (o) => {
+      const { page, errors } = await openPage(browser, { church: 'milan', size, quality, hour, ...o });
+      const res = {};
+      for (const n of views) { await pose(page, VIEWS[n]); res[n] = await perfOf(page); }
+      await page.close();
+      if (errors.length) { bad++; console.log('ERRORS:\n' + errors.join('\n')); }
+      return res;
+    };
+    const base = await run({ devglass: false, assetsRoot: baseRoot }), off = await run({ devglass: false }), on = await run({ devglass: true });
+    const pick = (r) => ({ calls: r.calls, tris: r.tris });
+    const outJ = { measured: new Date().toISOString().slice(0, 10), size, quality, hour, base: { vertices: base.nave.stats.vertices, meshes: base.nave.stats.meshes }, after: { vertices: off.nave.stats.vertices, meshes: off.nave.stats.meshes },
+      views: views.map((v) => ({ view: v, base: pick(base[v]), off: pick(off[v]), on: pick(on[v]) })) };
+    const jf = path.resolve(opt('--json', path.join(out, 'e4_perf.json')));
+    fs.writeFileSync(jf, JSON.stringify(outJ, null, 1) + '\n');
+    console.log(JSON.stringify(outJ));
+  } else if (a.includes('--leak')) {
     const r = await leak(browser, +opt('--leak', 3), { size: '480x270', quality, hour });
     const ok = r.end.stats.created === r.end.stats.disposed && r.end.stats.meshes === 0 && r.end.state === 'off' && !r.errors.length;
     console.log(JSON.stringify({ leak: ok ? 'ok' : 'LEAK', end: r.end, base: r.base, last: r.seq.slice(-3), errors: r.errors }));

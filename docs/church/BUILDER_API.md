@@ -313,6 +313,12 @@ ctx.floor({ x0:…, tex: marble, tile: 4 });
 - 일반 성당의 `ctx.window`/`ctx.rose` 자리는 `world.windowSlots()`로 'church' 감상 모드에 쓰인다(창 안쪽 면 + 1.2cm 에 사진 창을 비율 그대로 끼움). 실제 창 배치표는 §7.8(G-29).
 - 사진 창 재질은 빌더가 만들지 않는다(`glass_view.js`). 빌더의 절차적 창(`ctx.mats.glass`)은 예전 그대로다.
 
+### 7.7.1 창 개구부 anchor (E-4, SPEC §35, `GLASS_DEV_PIPELINE.md`)
+- 손으로 창을 짓는 빌더(밀라노처럼 유리가 한 배치로 합쳐지는 경우)는 개구부마다 `ctx._.glassAnchors` 에 한 줄을 넣는다:
+  `{key, kind:'glass'|'door', x, y(개구부 중심), z, nx, nz(실내 쪽 법선), yaw, w, h, sill, spring, apex, lights, photoH(아래쪽 진본 사진 높이)}`. x·z 는 유리 평면 가운데.
+- key 는 그 성당 안에서 유일해야 한다(시험이 고정). 개발용 임시 유리 대응표(`dev/devglass_<성당>.js`)와 조회 도구(`milan_openings.mjs`)가 이 key 로 창을 가리킨다.
+- 빌더는 `devglass` 플래그를 읽지 않는다. anchor 는 늘 내보내고, 그림 판을 거는 것은 `dev/devglass.js` 다.
+
 ### 7.8 성당 안 진본 사진 창 (G-29, SPEC §27, `GLASS_PLACEMENTS.md`)
 - `ctx.glassPhoto(slot, index?)` → `{win, aspect, slot, index, shape}` 또는 `null`(대응표에 없음·`?photoglass=0`). 대응표는 `glass_placements.js`.
 - `ctx.window({... photo})`, `ctx.rose({... photo})` — 그 창 자리에 사진 판이 걸린다. **개구부(w, h, r)는 빌더가 `photo.aspect` 에 맞춰 정한다**(`ChurchGlassPlacements.contain(aspect, bw, bh)`).

@@ -55,3 +55,6 @@ assets/church/glass_src/*_orig.*
 
 # 십자가의 길 연작 원본(내려받은 파일; tools/stations/fetch_series.py 로 다시 받는다)
 art/stations_series/
+
+# 개발용 임시 유리의 부하 시험용 리샘플 팩(tools/glass_bundle/devglass_pack.py --resample; 원본 팩 gpack_dev_*.js 는 커밋한다)
+assets/church/dev/gpack_devrs_*.js

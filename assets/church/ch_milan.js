@@ -23,8 +23,9 @@
   // 제대를 볼 때 오른쪽(남) 익랑 끝 벽의 경당 입구 양옆 벽기둥 2 → 남측랑 벽기둥 5(제대 쪽 → 입구 쪽) → 북쪽은 거울(입구 쪽 → 제대 쪽).
   function crossPlaques() {
     var out = [], g = 0.074;                        // 벽기둥 앞면에서 판까지(way_cross.js: wallGap + depth + quadGap)
-    function end(sg, k) { return { x: sg * (XT - 0.5 - g), z: zk(k), face: [-sg, 0], side: sg > 0 ? 'R' : 'L' }; }
-    function aisle(sg, k) { return { x: sg * (XW - 0.5 - g), z: zk(k), face: [-sg, 0], side: sg > 0 ? 'R' : 'L' }; }
+    function r3(v) { return Math.round(v * 1000) / 1000; }
+    function end(sg, k) { return { x: r3(sg * (XT - 0.5 - g)), z: r3(zk(k)), face: [-sg, 0], side: sg > 0 ? 'R' : 'L' }; }
+    function aisle(sg, k) { return { x: r3(sg * (XW - 0.5 - g)), z: r3(zk(k)), face: [-sg, 0], side: sg > 0 ? 'R' : 'L' }; }
     out.push(end(1, 11), end(1, 9));
     [7, 4, 3, 2, 1].forEach(function (k) { out.push(aisle(1, k)); });
     [1, 2, 3, 4, 7].forEach(function (k) { out.push(aisle(-1, k)); });
@@ -780,9 +781,10 @@
       miniStatue(ax + sg * 0.16, 1.03, ZCH, 1.15, 0xf0e8dc);
       [-1, 1].forEach(function (cc) {
         MT.add(Geo.cyl(6, 0.5), GOLD, { x: ax - sg * 0.1, y: 1.03, z: ZCH + cc * 0.8, sx: 0.07, sy: 0.42, sz: 0.07, flat: true, vary: 0 });
-        ctx.addFlame({ x: ax - sg * 0.1, y: 1.58, z: ZCH + cc * 0.8, scale: 0.9 });
+        // 불꽃은 빛나는 배치(glow)에 넣는다: 불꽃 스프라이트·빛 번짐을 따로 두면 그리기 호출이 경당마다 3개씩 는다
+        S.add(Geo.cyl(6, 1), 0xfff0cf, { x: ax - sg * 0.1, y: 1.45, z: ZCH + cc * 0.8, sx: 0.035, sy: 0.3, sz: 0.035, flat: true, vary: 0 });
+        GW.add(Geo.cyl(4, 0), 0xffd070, { x: ax - sg * 0.1, y: 1.75, z: ZCH + cc * 0.8, sx: 0.05, sy: 0.13, sz: 0.05, vary: 0 });
       });
-      ctx.addGlow({ x: ax - sg * 0.5, y: 1.7, z: ZCH, size: 2.4, color: 0xffcf80, kind: 'always' });
       // 충돌: 사선 벽(원 사슬), 끝 벽, 제단
       [[E[0], E[1]], [E[2], E[3]]].forEach(function (sgm) {
         var n = Math.ceil(dist(sgm[0], sgm[1]) / 0.6);

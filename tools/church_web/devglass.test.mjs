@@ -450,7 +450,7 @@ test('way of the cross: 14 plaques on pilaster faces, none on a window, door or 
   for (const p of P) {
     const onAisle = Math.abs(Math.abs(p.x) - (XW - 0.574)) < 0.01, onEnd = Math.abs(Math.abs(p.x) - (XT - 0.574)) < 0.01;
     assert.ok(onAisle || onEnd);
-    assert.ok([1, 2, 3, 4, 7, 9, 11].some((k) => near(p.z, zk(k), 1e-6)), 'on a pilaster line');
+    assert.ok([1, 2, 3, 4, 7, 9, 11].some((k) => near(p.z, zk(k), 1e-3)), 'on a pilaster line');
     // 같은 벽면의 개구부와 수평으로 겹치지 않는다(판 폭 0.7)
     for (const a of anchors) {
       if (a.nx * p.face[0] + a.nz * p.face[1] < 0.7) continue;
@@ -460,4 +460,17 @@ test('way of the cross: 14 plaques on pilaster faces, none on a window, door or 
     }
     if (onEnd) assert.ok(Math.abs(p.z - ZCH) > CH.mouth + 0.3 + 0.35, 'clear of the chapel arch');
   }
+});
+
+// ---------- 보고서 ----------
+test('report: docs/church/MILAN_55_RESULT.md is up to date with the table and the builder', async () => {
+  const { results } = await import('./milan55_report.mjs');
+  const { rows, summary } = results();
+  assert.equal(rows.length, 55);
+  assert.equal(rows.filter((r) => r.status === 'placed').length, summary.placed);
+  assert.ok(rows.filter((r) => r.status === 'placed').every((r) => r.transform && r.opening && r.anchor));
+  assert.ok(rows.filter((r) => r.status !== 'placed').every((r) => r.why && !r.transform));
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync(process.execPath, [path.join(here, 'milan55_report.mjs'), '--check'], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr || r.stdout);
 });

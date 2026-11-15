@@ -1,5 +1,7 @@
 # 밀라노 55개 스테인드글라스 배치 — 분석·계획 (E-1)
 
+> **(갱신) 구현됨(E-4): 결과는 `MILAN_55_RESULT.md`, 체계는 `GLASS_DEV_PIPELINE.md`.** 이 문서의 개구부 표·분류(a/b/c/d)·좌우 추정은 구현 전 상태다.
+> 그 뒤 조사(E-2, `MILAN_GLASS_RESEARCH.md`)로 바뀐 것: P n = V n, 익랑 순서 확인, 정문 안쪽 좌우 확정(개연), 회랑 창은 실제로 성구실 창(회랑에 뚫지 않음), 익랑 끝은 '아래 경당 + 위 큰 창'.
 > 2026-11-15. **분석·계획 단계 문서다. 씬 코드(`assets/church/*.js`)는 고치지 않았다.**
 > 자료: `art/glass_milan55/`(README_KO.md, `milan_55_claude_placement.md`·`.json` v0.4-dev-placement, manifest.json, historical_research_v03.*, textures/DEV-001~055.png).
 > 55개 텍스처는 **개발용 임시 AI 시안**이다(`texture_matches_historical_work=false`, `release_approved=false`, 55행 모두). 실제 작품이라고 표시하지 않는다. 개발 플래그·릴리스 차단을 유지한다(§4.4).
