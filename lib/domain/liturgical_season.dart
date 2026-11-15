@@ -95,6 +95,37 @@ Duration untilNextKstMidnight(DateTime instant) {
   return next.difference(k);
 }
 
+/// 성삼일 침묵이 시작되는 KST 시각(성목요일 주님 만찬 미사 뒤로 본다).
+const kTriduumSilenceStartHour = 20;
+
+/// 성삼일 침묵이 끝나는 KST 시각(성토요일, 부활 성야 전).
+const kTriduumSilenceEndHour = 19;
+
+/// 성삼일 침묵(docs/church/REVERENCE.md): 성목요일 주님 만찬 미사 뒤 ~ 부활 성야 전에는
+/// 성당의 오르간·음악을 울리지 않고, 감실을 비우고 성체등을 끈다.
+/// [day]의 축일과 [instant]의 KST 시각으로 정한다(본당마다 미사 시각이 달라 보수적으로 잡았다: 교구 검수 항목).
+bool isTriduumSilence(LiturgicalDay day, DateTime instant) {
+  final h = instant.toUtc().add(const Duration(hours: 9)).hour;
+  return switch (day.feast) {
+    LiturgicalFeast.holyThursday => h >= kTriduumSilenceStartHour,
+    LiturgicalFeast.goodFriday => true,
+    LiturgicalFeast.holySaturday => h < kTriduumSilenceEndHour,
+    _ => false,
+  };
+}
+
+/// [instant] 부터 다음 '다시 계산할' KST 시각(자정, 성삼일 침묵 시작·끝 시각 중 가장 가까운 것)까지.
+Duration untilNextLiturgyCheck(DateTime instant) {
+  final k = instant.toUtc().add(const Duration(hours: 9));
+  Duration? best;
+  for (final h in [kTriduumSilenceEndHour, kTriduumSilenceStartHour, 24]) {
+    final t = DateTime.utc(k.year, k.month, k.day, h);
+    final d = t.difference(k);
+    if (d > Duration.zero && (best == null || d < best)) best = d;
+  }
+  return best ?? untilNextKstMidnight(instant);
+}
+
 DateTime _d(int y, int m, int d) => DateTime.utc(y, m, d);
 DateTime _plus(DateTime d, int days) => _d(d.year, d.month, d.day + days);
 

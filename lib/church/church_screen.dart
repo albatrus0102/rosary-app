@@ -238,7 +238,7 @@ class _ChurchScreenState extends State<ChurchScreen>
             : createChurchNet(_settings));
     _ownsScene = widget.scene == null;
     _scene = widget.scene ?? WebViewChurchSceneController();
-    _lastAmbient = _settings.churchAmbient;
+    _lastAmbient = _ambientOn;
     _lastQuality = _settings.churchQuality;
     _lastAvatar = _settings.churchAvatar.toJsonString();
     _sceneSub = _scene.events.listen(_onScene);
@@ -609,7 +609,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   void _onLiturgy() {
     if (_disposed) return;
     if (_inited) unawaited(_scene.setLiturgy(_liturgy.sceneArgs));
-    if (mounted) setState(() {});
+    _onSettings(); // 성삼일 침묵이 시작·끝나면 소리도 따라간다
   }
 
   void _maybeInit() {
@@ -621,7 +621,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       _scene.init(
         avatar: _settings.churchAvatar.toJson(),
         hour: _hour,
-        ambient: _settings.churchAmbient && !_background,
+        ambient: _ambientOn && !_background,
         solo: _net.state.value != NetState.online,
         quality: _settings.churchQuality.name,
         church: widget.churchId,
@@ -1030,9 +1030,12 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (mounted) setState(() {});
   }
 
+  /// 실제로 울리는지: 설정이 켜져 있어도 성삼일 침묵 중에는 끈다(REVERENCE.md).
+  bool get _ambientOn => _settings.churchAmbient && !_liturgy.silent;
+
   void _onSettings() {
     if (_disposed) return;
-    final ambient = _settings.churchAmbient;
+    final ambient = _ambientOn;
     if (ambient != _lastAmbient) {
       _lastAmbient = ambient;
       if (!_background) unawaited(_scene.setAmbient(on: ambient));
@@ -1064,7 +1067,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (bg) {
       unawaited(_scene.setJoystick(0, 0));
       unawaited(_scene.setAmbient(on: false));
-    } else if (_settings.churchAmbient) {
+    } else if (_ambientOn) {
       unawaited(_scene.setAmbient(on: true));
     }
   }
@@ -1398,6 +1401,12 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   void _toggleAmbient() {
+    if (_liturgy.silent) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text(kTriduumSilenceNote)));
+      return;
+    }
     _settings.churchAmbient = !_settings.churchAmbient;
     Track.setting('church_ambient');
   }
@@ -1514,7 +1523,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     );
     // 도구 줄: 소리·아바타·인사 (+ 걸어 다닐 수 있으면 '가기').
     final topActions = ChurchTopActions(
-      ambientOn: _settings.churchAmbient,
+      ambientOn: _ambientOn,
       onToggleAmbient: _toggleAmbient,
       onEditAvatar: _openAvatarEditor,
       onEmote: _emote,

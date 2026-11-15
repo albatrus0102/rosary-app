@@ -1121,6 +1121,8 @@
         ctx.cyl({ x: lx, y: y, z: z, r: 0.16, rTop: 0.08, h: 0.12, seg: 10, color: 0xd9b45a });
         glow.add(Geo.cyl(10, 1), new T.Color(0xff5a4a).multiplyScalar(2.2), { x: lx, y: y + 2.1, z: z, sx: 0.1, sy: 0.28, sz: 0.1, flat: true, vary: 0 });
         ctx.addGlow({ x: lx, y: y + 2.25, z: z, size: 0.9, color: 0xff4030, pulse: 0.15, kind: 'always' });
+        S_.glows[S_.glows.length - 1].tabLamp = true;   // 성체등: 성삼일 빈 감실 때 liturgy.js 가 끈다
+        (S_.tabLamps || (S_.tabLamps = [])).push({ x: lx, y: y + 2.1, z: z });   // 등 유리 밑면
         ctx.addCollider({ x: lx, z: z, r: 0.2 });
       }
     };

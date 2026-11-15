@@ -82,9 +82,10 @@
     var season = SEASONS.indexOf(o.season) >= 0 ? o.season : 'none';
     var color = COLORS[o.color] ? o.color : ({ advent: 'violet', lent: 'violet', triduum: 'violet', christmas: 'white', easter: 'white', ordinary: 'green' })[season] || 'green';
     var week = Math.max(0, Math.min(7, Math.round(+o.week || 0)));
-    return { season: season, color: color, week: week, feast: typeof o.feast === 'string' ? o.feast : '', memorial: !!o.memorial && season === 'ordinary' };
+    // emptyTab: 성목요일 주님 만찬 미사 뒤 ~ 부활 성야 전(앱이 시각으로 정해 보낸다). 감실이 비고(문 열림) 성체등이 꺼진다.
+    return { season: season, color: color, week: week, feast: typeof o.feast === 'string' ? o.feast : '', memorial: !!o.memorial && season === 'ordinary', emptyTab: !!o.emptyTab && season === 'triduum' };
   }
-  function keyOf(s) { return [s.season, s.color, s.week, s.feast, s.memorial ? 1 : 0].join('|'); }
+  function keyOf(s) { return [s.season, s.color, s.week, s.feast, s.memorial ? 1 : 0, s.emptyTab ? 1 : 0].join('|'); }
 
   // ---- 계획(순수 함수): 무엇을 어디에 ----
   // 돌려주는 값: {items:[{kind, x,y,z, k, ...}], colliders:[{x,z,r} | {x0,x1,z0,z1}]}
@@ -115,6 +116,8 @@
       if (P.tab) items.push({ kind: 'tabveil', x: P.tab.x, y: P.tab.y, z: P.tab.z, color: c });
       (P.banners || []).forEach(function (b) { items.push({ kind: 'banner', x: b.x, y: b.y, z: b.z, w: b.w, h: b.h, color: c }); });
     }
+    // 빈 감실: 감실 보 없이 문을 열어 둔다(성체는 수난 감실로 옮겨졌다). 성체등은 rebuild 가 끈다.
+    if (s.emptyTab && P.tab) items.push({ kind: 'tabopen', x: P.tab.x, y: P.tab.y, z: P.tab.z });
     // 2) 시기 표지
     if (s.season === 'advent') {
       spot(P.L, 'wreath', 0.56, { lit: Math.max(1, Math.min(4, s.week || 1)) });
@@ -196,6 +199,14 @@
         box(metal, GOLD, it.x, it.y + it.h * 0.5, it.z + 0.012, it.h * 0.3, 0.045, 0.02);
       },
       // 감실 보(conopaeum)
+      // 빈 감실: 앞면 안쪽 어두운 빈 칸 + 옆으로 활짝 연 문
+      tabopen: function (it) {
+        var zf = it.z + 0.25 + 0.012;
+        box(solid, 0x1a1512, it.x, it.y + 1.16, zf, 0.4, 0.4, 0.02, { vary: 0 });
+        box(metal, GOLD, it.x + 0.2 + 0.01, it.y + 1.16, zf + 0.2, 0.02, 0.4, 0.4);
+      },
+      // 꺼진 성체등: 붉은 등 유리를 빛나지 않는 덮개로 가린다
+      lampout: function (it) { cyl(solid, 0x4a1a16, it.x, it.y - 0.01, it.z, 0.11, 0.11, 0.31, 10, { vary: 0 }); },
       tabveil: function (it) {
         var zf = it.z + 0.25 + 0.03;
         box(cloth, cHex, it.x, it.y + 1.11, zf, 0.56, 0.5, 0.02);
@@ -418,6 +429,7 @@
       b.group.traverse(function (o) { if (o.geometry && o.geometry.dispose) o.geometry.dispose(); });
       b.mats.forEach(function (m) { m.dispose(); });   // 지도(glowTex)와 성당 공용 재질은 성당 것이라 건드리지 않는다
     }
+    if (cur.lampsOff) { cur.lampsOff.forEach(function (g) { g.kind = g.kindWas; g.sp.visible = true; }); cur.lampsOff = null; }
     if (w && cur.cols.length) {
       var list = w.logic.colliders;
       cur.cols.forEach(function (c) { var i = list.indexOf(c); if (i >= 0) list.splice(i, 1); });
@@ -432,6 +444,13 @@
     cur.tier = w.tier;
     var pl = plan(w.id, cur.state, low);
     cur.key = keyOf(pl.state);
+    if (pl.state.emptyTab && w.ctx && w.ctx._) {
+      // 성체등 끄기: kit 감실 등(tabLamps)의 빛무리를 끄고 등 유리를 덮는다
+      var S_ = w.ctx._;
+      cur.lampsOff = (S_.glows || []).filter(function (g) { return g.tabLamp && g.kind !== 'none'; });
+      cur.lampsOff.forEach(function (g) { g.kindWas = g.kind; g.kind = 'none'; g.sp.visible = false; });
+      (S_.tabLamps || []).forEach(function (l) { pl.items.push({ kind: 'lampout', x: l.x, y: l.y, z: l.z }); });
+    }
     if (!pl.items.length) return;
     try { cur.built = build(pl, w, low); } catch (e) { if (root.console) console.error('[church] liturgy build failed', e); cur.built = null; return; }
     w.group.add(cur.built.group);

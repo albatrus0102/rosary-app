@@ -23,7 +23,13 @@ abstract final class ChurchLiturgy {
 
   /// 지금 성당에 보여 줄 전례 정보(미리 보기 반영).
   static LiturgicalDay current() => preview.value.resolve(clock());
+
+  /// 지금 성삼일 침묵 중인지(미리 보기 반영): 오르간 끔·빈 감실·성체등 끔.
+  static bool silentNow() => isTriduumSilence(current(), clock());
 }
+
+/// 성삼일 침묵 중 소리를 켜려 할 때 보이는 안내.
+const kTriduumSilenceNote = '성삼일(성목요일 저녁~부활 성야 전)에는 오르간을 울리지 않아요';
 
 /// 전례 색의 화면 표시 색(칩의 색 점·미리 보기 목록).
 Color liturgicalColor(LiturgicalColor c) => switch (c) {
@@ -68,29 +74,37 @@ class LiturgicalColorDot extends StatelessWidget {
 class ChurchLiturgyBinding {
   ChurchLiturgyBinding({required this.onChanged}) {
     _day = ChurchLiturgy.current();
+    _silent = ChurchLiturgy.silentNow();
     ChurchLiturgy.preview.addListener(_refresh);
     _arm();
   }
 
   final VoidCallback onChanged;
   late LiturgicalDay _day;
+  late bool _silent;
   Timer? _timer;
   bool _disposed = false;
 
   /// 지금 성당에 보여 주는 전례 정보.
   LiturgicalDay get day => _day;
 
+  /// 성삼일 침묵 중(오르간·음악 끔, 빈 감실, 성체등 끔).
+  bool get silent => _silent;
+
   /// 상태 칩 부제.
   String get chipLabel => _day.chipLabel;
 
   /// 장면 `setLiturgy` 인자.
-  Map<String, Object?> get sceneArgs => _day.toSceneArgs();
+  Map<String, Object?> get sceneArgs => {
+    ..._day.toSceneArgs(),
+    if (_silent) 'emptyTab': true,
+  };
 
   void _arm() {
     _timer?.cancel();
-    // 자정 직후(1초 여유)에 다시 계산한다.
+    // 자정·성삼일 침묵 시작/끝 시각 직후(1초 여유)에 다시 계산한다.
     final wait =
-        untilNextKstMidnight(ChurchLiturgy.clock()) +
+        untilNextLiturgyCheck(ChurchLiturgy.clock()) +
         const Duration(seconds: 1);
     _timer = Timer(wait, () {
       _refresh();
@@ -104,10 +118,14 @@ class ChurchLiturgyBinding {
   void _refresh() {
     if (_disposed) return;
     final d = ChurchLiturgy.current();
-    if (d.toString() == _day.toString() && d.chipLabel == _day.chipLabel) {
+    final silent = ChurchLiturgy.silentNow();
+    if (d.toString() == _day.toString() &&
+        d.chipLabel == _day.chipLabel &&
+        silent == _silent) {
       return;
     }
     _day = d;
+    _silent = silent;
     onChanged();
   }
 
