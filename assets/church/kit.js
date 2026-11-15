@@ -1053,7 +1053,13 @@
       for (var i = 0; i < nc; i++) {
         var lx = nc === 1 ? 0 : -w / 2 + 0.25 + (w - 0.5) * i / (nc - 1);
         var p = pt(lx, -d * 0.2);
-        ctx.cyl({ x: p[0], y: y + h + 0.03, z: p[1], r: 0.07, rTop: 0.04, h: 0.35, seg: 10, color: 0xd9b45a, flat: false });
+        // 금 촛대: 둥근 받침 → 나팔 줄기 → 마디(구) → 가는 줄기 → 초받이 컵(높이 합 0.35 는 예전과 같아 불꽃 위치 불변, 금속 묶음에 합쳐져 draw call +0)
+        var gy = y + h;
+        ctx.cyl({ x: p[0], y: gy + 0.03, z: p[1], r: 0.105, rTop: 0.09, h: 0.03, seg: 12, color: 0xd9b45a, flat: false });
+        ctx.cyl({ x: p[0], y: gy + 0.06, z: p[1], r: 0.085, rTop: 0.03, h: 0.1, seg: 12, color: 0xc9a24b, flat: false });
+        ctx.sphere({ x: p[0], y: gy + 0.185, z: p[1], r: 0.052, w: 10, h: 6, color: 0xe3be62, flat: false });
+        ctx.cyl({ x: p[0], y: gy + 0.2, z: p[1], r: 0.026, rTop: 0.03, h: 0.09, seg: 10, color: 0xc9a24b, flat: false });
+        ctx.cyl({ x: p[0], y: gy + 0.285, z: p[1], r: 0.032, rTop: 0.068, h: 0.095, seg: 12, color: 0xd9b45a, flat: false });
         ctx.cyl({ x: p[0], y: y + h + 0.38, z: p[1], r: 0.05, h: 0.3, seg: 10, color: 0xfff6e0, mat: 'solid', flat: false });
         ctx.addFlame({ x: p[0], y: y + h + 0.78, z: p[1], scale: 1.0 });
       }
