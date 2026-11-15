@@ -98,10 +98,10 @@
    "stpeter": "previati",
    "lateran": "oreilly",
    "maggiore": "corot",
-   "stpaul": "fugel",
+   "stpaul": "fahnroth",
    "milan": "hermann_paul",
    "florence": "mosler",
-   "myeongdong": "fugel"
+   "myeongdong": "fugel_munich"
   },
   "packs": {
    "fugel": {
@@ -127,6 +127,18 @@
    "mosler": {
     "file": "cross_pack_mosler.js",
     "title": "D. 모슬러 《The Stations of the Cross》 삽화"
+   },
+   "tiepolo": {
+    "file": "cross_pack_tiepolo.js",
+    "title": "조반니 도메니코 티에폴로 〈Via Crucis〉 동판화"
+   },
+   "fugel_munich": {
+    "file": "cross_pack_fugel_munich.js",
+    "title": "게프하르트 푸겔 〈뮌헨 성 요셉 성당 십자가의 길〉"
+   },
+   "fahnroth": {
+    "file": "cross_pack_fahnroth.js",
+    "title": "요제프 판로트 〈노이루핀 예수 성심 성당 십자가의 길〉"
    }
   }
  }

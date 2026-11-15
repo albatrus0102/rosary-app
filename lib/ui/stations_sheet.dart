@@ -8,6 +8,7 @@ import '../app/track.dart';
 import '../domain/stations_of_cross.dart';
 import '../domain/stations_series.dart';
 import 'widgets/single_art_image.dart';
+import 'widgets/stations_series_picker.dart';
 import 'widgets/stations_prayer_view.dart';
 
 /// 묵상 시트를 어디서 열었는지(분석 `from` 값, 열거형 영문 키).
@@ -51,6 +52,7 @@ Future<StationsSheetResult?> showStationsSheet(
   bool logOpen = true,
 }) {
   if (logOpen) Track.event('stations_open', {'from': from.name});
+  unawaited(StationsSeriesChoice.load());
   return showModalBottomSheet<StationsSheetResult>(
     context: context,
     isScrollControlled: true,
@@ -99,8 +101,18 @@ class _StationsSheetState extends State<StationsSheet> {
 
   bool get _pilgrim => widget.mode == StationsSheetMode.pilgrimage;
 
+  // 고른 그림 연작이 바뀌면 다시 그린다(성당 밖에서만 고를 수 있다).
+  void _onSeries() => setState(() {});
+
+  @override
+  void initState() {
+    super.initState();
+    StationsSeriesChoice.selected.addListener(_onSeries);
+  }
+
   @override
   void dispose() {
+    StationsSeriesChoice.selected.removeListener(_onSeries);
     _scroll.dispose();
     super.dispose();
   }
@@ -205,7 +217,10 @@ class _StationsSheetState extends State<StationsSheet> {
     final size = MediaQuery.sizeOf(context);
     // 그림은 화면 높이의 34%(글자 1.4배 넘으면 26%)를 넘지 않게 해 본문이 보이게, 폭은 그 비율대로.
     final big = MediaQuery.textScalerOf(context).scale(10) > 14;
-    final series = widget.series ?? StationsSeriesCatalog.fallback;
+    // 성당 안 순례는 그 성당에 배정된 연작, 성당 밖은 사용자가 고른 연작(없으면 자동).
+    final series = _pilgrim
+        ? (widget.series ?? StationsSeriesCatalog.fallback)
+        : StationsSeriesChoice.resolve(widget.series);
     var imgH = math.min(340.0, size.height * (big ? 0.26 : 0.34));
     var imgW = imgH * 600 / 742;
     if (!series.cover) {
@@ -277,6 +292,10 @@ class _StationsSheetState extends State<StationsSheet> {
         StationsMeditationTile(station: st),
         const SizedBox(height: AppSpace.sm),
         StationsArtNote(series: series),
+        if (!_pilgrim) ...[
+          const SizedBox(height: AppSpace.xs),
+          StationsSeriesButton(auto: widget.series),
+        ],
       ],
     );
   }
@@ -418,16 +437,24 @@ class StationsOfCrossScreen extends StatelessWidget {
   /// 그림 연작(마지막으로 들른 성당의 연작). null 이면 기본 연작.
   final StationsSeries? series;
 
-  StationsSeries get _series => series ?? StationsSeriesCatalog.fallback;
+  StationsSeries get _series => StationsSeriesChoice.resolve(series);
 
   void _open(BuildContext context, int n) {
     unawaited(
-      showStationsSheet(context, start: n, from: from, series: _series),
+      showStationsSheet(context, start: n, from: from, series: series),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    unawaited(StationsSeriesChoice.load());
+    return ValueListenableBuilder<String?>(
+      valueListenable: StationsSeriesChoice.selected,
+      builder: (context, _, _) => _build(context),
+    );
+  }
+
+  Widget _build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Scaffold(
@@ -462,6 +489,8 @@ class StationsOfCrossScreen extends StatelessWidget {
                     onPressed: () => _open(context, 1),
                   ),
                 ),
+                const SizedBox(height: AppSpace.sm),
+                StationsSeriesChips(auto: series),
                 const SizedBox(height: AppSpace.sm),
                 Card.filled(
                   margin: EdgeInsets.zero,

@@ -57,6 +57,9 @@ flutter:
     - assets/images/stations/corot/
     - assets/images/stations/hermann_paul/
     - assets/images/stations/mosler/
+    - assets/images/stations/tiepolo/
+    - assets/images/stations/fugel_munich/
+    - assets/images/stations/fahnroth/
     - assets/images/mysteries/
     # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 성당 안에 걸 8점만 썸네일(_th)과
     # 1k 사진 팩(gpack_*_1k.js; 3D·평면 보기 공용). 나머지 38점·2k·1k WebP 원본은 번들 밖
