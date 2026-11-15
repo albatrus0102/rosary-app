@@ -18,6 +18,8 @@ import 'art_credits_screen.dart';
 import 'stations_sheet.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
+import '../rosary3d/rosary_gallery_screen.dart';
+import '../rosary3d/rosary_model.dart';
 
 /// '더보기' 탭: 묵주 스타일, 설정, 계정, 정보(출처·고지·약관·라이선스).
 ///
@@ -82,6 +84,27 @@ class MoreScreen extends StatelessWidget {
                         subtitle: Text(settings.rosaryStyle.label),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: onOpenStyles,
+                      ),
+                    ),
+                    ListenableBuilder(
+                      listenable: settings,
+                      builder: (context, _) => ListTile(
+                        key: const ValueKey('more-rosary-gallery'),
+                        leading: const Icon(Icons.auto_awesome_outlined),
+                        title: const Text('3D 묵주 갤러리'),
+                        subtitle: Text(rosaryInfo(settings.rosaryId).name),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => unawaited(
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              settings: const RouteSettings(
+                                name: 'rosary_gallery',
+                              ),
+                              builder: (_) =>
+                                  RosaryGalleryScreen(settings: settings),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     ListTile(

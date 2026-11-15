@@ -8,6 +8,8 @@ import '../app/leader_voice.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
+import '../rosary3d/rosary_gallery_screen.dart';
+import '../rosary3d/rosary_model.dart';
 import '../app/track.dart';
 import '../church/church_liturgy.dart';
 import '../domain/leader_cues.dart';
@@ -245,6 +247,107 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return _Section(
       title: '기도 화면',
       children: [
+        // T-81 손안의 묵주(새 기본) | 기도문 중심(기존). 다음에 여는 기도부터 적용.
+        ListTile(
+          leading: const Icon(Icons.view_carousel_outlined),
+          title: const Text('기도 화면 모양'),
+          subtitle: const Text('다음에 기도를 시작할 때부터 적용됩니다'),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: SegmentedButton<PrayerView>(
+            key: const ValueKey('settings-prayer-view'),
+            segments: const [
+              ButtonSegment(value: PrayerView.rosary, label: Text('묵주(새)')),
+              ButtonSegment(value: PrayerView.classic, label: Text('기도문 중심')),
+            ],
+            selected: {settings.prayerView},
+            onSelectionChanged: (v) {
+              settings.prayerView = v.first;
+              Track.setting('prayer_view');
+            },
+          ),
+        ),
+        if (settings.prayerView == PrayerView.rosary) ...[
+          ListTile(
+            key: const ValueKey('settings-rosary-gallery'),
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: const Text('묵주 고르기'),
+            subtitle: Text(rosaryInfo(settings.rosaryId).name),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => unawaited(
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  settings: const RouteSettings(name: 'rosary_gallery'),
+                  builder: (_) => RosaryGalleryScreen(settings: settings),
+                ),
+              ),
+            ),
+          ),
+          _ChoiceTile<RosaryBackdrop>(
+            icon: Icons.dark_mode_outlined,
+            title: '묵주 화면 바탕',
+            value: settings.rosaryBackdrop,
+            labels: const {
+              RosaryBackdrop.navy: '네이비',
+              RosaryBackdrop.black: '검정(어두운 집중)',
+              RosaryBackdrop.ivory: '아이보리',
+            },
+            onChanged: (v) => settings.rosaryBackdrop = v,
+          ),
+          _ChoiceTile<RosaryHand>(
+            icon: Icons.back_hand_outlined,
+            title: '묵주 위치(엄지 쪽)',
+            value: settings.rosaryHand,
+            labels: const {
+              RosaryHand.center: '가운데',
+              RosaryHand.left: '왼손',
+              RosaryHand.right: '오른손',
+            },
+            onChanged: (v) => settings.rosaryHand = v,
+          ),
+          _ChoiceTile<RosaryFeedback>(
+            icon: Icons.vibration,
+            title: '묵주 알림',
+            value: settings.rosaryFeedback,
+            labels: const {
+              RosaryFeedback.both: '진동과 소리',
+              RosaryFeedback.vibrate: '진동만',
+              RosaryFeedback.sound: '소리만',
+              RosaryFeedback.off: '모두 끔',
+            },
+            onChanged: (v) => settings.rosaryFeedback = v,
+          ),
+          _SliderTile(
+            icon: Icons.vibration,
+            title: '진동 세기',
+            valueText: '${(settings.rosaryVibeStrength * 100).round()}%',
+            slider: Slider(
+              min: 0.2,
+              max: 1,
+              divisions: 8,
+              value: settings.rosaryVibeStrength,
+              semanticFormatterCallback: (v) => '${(v * 100).round()}%',
+              onChanged: (v) => settings.rosaryVibeStrength = v,
+            ),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_active_outlined),
+            title: const Text('성모송 완료 알림만'),
+            subtitle: const Text('10번째 성모송·다음 신비·5단 완료에만 진동·소리'),
+            value: settings.rosaryDecadeOnly,
+            onChanged: (v) => settings.rosaryDecadeOnly = v,
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.record_voice_over_outlined),
+            title: const Text('음성 제목 안내'),
+            subtitle: const Text(
+              '"성모송 열 번째입니다"처럼 기기 음성으로 알려 줍니다(앞단·뒷단 음성을 쓸 때는 쉼)',
+            ),
+            value: settings.rosaryVoiceTitle,
+            onChanged: (v) => settings.rosaryVoiceTitle = v,
+          ),
+        ],
         SwitchListTile(
           secondary: const Icon(Icons.volume_down_outlined),
           title: const Text('볼륨 키로 넘기기'),
@@ -847,6 +950,42 @@ class _SliderTile extends StatelessWidget {
           ),
           slider,
         ],
+      ),
+    );
+  }
+}
+
+/// 몇 가지 중 하나를 고르는 줄(누르면 다음 값으로).
+class _ChoiceTile<T> extends StatelessWidget {
+  const _ChoiceTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.labels,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String title;
+  final T value;
+  final Map<T, String> labels;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      trailing: DropdownButton<T>(
+        value: value,
+        underline: const SizedBox.shrink(),
+        items: [
+          for (final e in labels.entries)
+            DropdownMenuItem(value: e.key, child: Text(e.value)),
+        ],
+        onChanged: (v) {
+          if (v != null) onChanged(v);
+        },
       ),
     );
   }
