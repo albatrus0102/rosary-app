@@ -176,7 +176,11 @@ class _PrayerScreenState extends State<PrayerScreen>
         ..['rosary'] = _settings.rosaryId
         ..['step'] = _session.index
         ..['theme'] = _settings.rosaryBackdrop.name
-        ..['hand'] = _settings.rosaryHand.name;
+        ..['hand'] = _settings.rosaryHand.name
+        // 저사양: 성당 화질을 '간단'으로 둔 기기는 묵주도 가볍게(픽셀 비율·그림자·텍스처 낮춤).
+        ..['quality'] = _settings.churchQuality == ChurchQuality.low
+            ? 'low'
+            : 'high';
       scene.setStep(_session.index, animate: false);
       _fb = widget.rosaryFeedback ?? DeviceRosaryFeedback();
       _fbLast = _session.index;

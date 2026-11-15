@@ -5,6 +5,7 @@ import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
 import 'package:rosary_app/rosary3d/rosary_feedback.dart';
+import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
 import 'package:rosary_app/rosary3d/rosary_model.dart';
 import 'package:rosary_app/rosary3d/rosary_scene.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
@@ -295,6 +296,30 @@ void main() {
       await tester.pump();
       expect(find.text('사도신경'), findsWidgets);
       expect(fb.played, isEmpty);
+    });
+
+    testWidgets('갤러리: 다른 묵주를 보고 즐겨찾기·사용, 3D 도 같은 묵주로', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final s = await AppSettings.load();
+      final scene = FakeRosaryScene();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RosaryGalleryScreen(settings: s, scene: scene),
+        ),
+      );
+      await tester.pump();
+      expect(find.byKey(const ValueKey('gallery-in-use')), findsOneWidget);
+      expect(scene.fullView, isTrue);
+      await tester.tap(find.byKey(const ValueKey('gallery-item-pearl')));
+      await tester.pump();
+      expect(scene.calls.last.$2['id'], 'pearl');
+      expect(find.byKey(const ValueKey('gallery-in-use')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('gallery-fav')));
+      await tester.tap(find.byKey(const ValueKey('gallery-use')));
+      await tester.pump();
+      expect(s.rosaryId, 'pearl');
+      expect(s.rosaryFavorites, {'pearl'});
+      expect(find.byKey(const ValueKey('gallery-in-use')), findsOneWidget);
     });
   });
 }
