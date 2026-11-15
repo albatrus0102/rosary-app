@@ -101,7 +101,8 @@
    "stpaul": "fahnroth",
    "milan": "hermann_paul",
    "florence": "mosler",
-   "myeongdong": "fugel_munich"
+   "myeongdong": "fugel_munich",
+   "danggogae": "tiepolo"
   },
   "packs": {
    "fugel": {

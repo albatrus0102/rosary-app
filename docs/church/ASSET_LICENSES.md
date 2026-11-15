@@ -176,3 +176,14 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 | glass_burnejones_stgermans.webp (+_2k, _1k) | https://commons.wikimedia.org/wiki/File:St_Germans_Priory_east_window_by_Edward_Burne_Jones.jpg | Ojwelch | CC0 1.0 | 세인트 저먼스 동쪽 창 (번존스·모리스 상회) · 1548×2592 · 원본 1920×2880 (thumb1280) |
 | glass_lancet_chartres_incarnation.webp (+_2k, _1k) | https://commons.wikimedia.org/wiki/File:Chartres_50_-rectifi%C3%A9.JPG | Micheletb (Michelet-密是力) | Public domain | 그리스도의 생애 (강생) 창 · 1421×4096 · 원본 4434×12787 (thumb3840) |
 | glass_rose_notredame_north.webp (+_2k, _1k) | https://commons.wikimedia.org/wiki/File:North_rose_window_of_Notre-Dame_de_Paris,_Dec._2024_(1).jpg | Ibex73 | CC BY 4.0 | 파리 노트르담 북쪽 장미창 (2024년 재개관 뒤) · 3510×3510 · 원본 5368×3579 (thumb3840) |
+
+## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
+
+- **번들에 더한 사진·그림·질감 파일: 없음.** 성당의 모든 표면(황토 미장·쪼갠 돌·마루 2종·불 켜진 한지·옹기 조각 벽·분홍 화강암·신자석 나무)은
+  `assets/church/ch_danggogae.js` 가 실행할 때 캔버스로 **절차 생성**한다(자체 코드, 외부 원본 없음). 생성한 그림은 `window.ChurchTexPack` 에
+  `tex_dg_*.jpg` 이름으로 넣어 사진 질감과 같은 경로로 쓴다.
+- 성지에 있는 성화·한지 유리화·14처·조각(생존 작가 작품)은 사진·모사·화풍 흉내 어느 것도 싣지 않았다(`docs/church/interiors/danggogae.md` §4).
+- 14처 판은 이미 번들된 티에폴로 동판화 연작(CC0, 위 '십자가의 길 그림 연작')을 배정했다 — 새 파일 없음.
+- 썸네일 `assets/church_thumbs/danggogae.webp`, 입구 그림 `assets/images/church_entry/render_danggogae.webp` 는 우리 3D 장면을 찍은 것이다.
+- 나중에 사용자가 ChatGPT 로 만든 전용 질감(D-01~D-07)을 올리면 `assets/church/tex_dg_*.jpg` + `tex_pack_danggogae.js` 로 넣고,
+  그때 `docs/church/licenses/danggogae.md` 에 '사용자가 ChatGPT 로 생성, 날짜, 프롬프트 번호'를 적는다.

@@ -151,7 +151,7 @@ abstract class ChurchNet {
 이 절이 위 내용과 충돌하면 **v2가 우선**한다. 위 1~7절의 성당은 카탈로그의 `basic`('우리 본당')이 된다.
 
 ## 8. 카탈로그
-1차(wave 2a): `stpeter` 성 베드로 대성전(바티칸), `lateran` 라테라노 성 요한 대성전(로마), `maggiore` 성 마리아 마조레 대성전(로마), `stpaul` 성 밖의 성 바오로 대성전(로마), `milan` 밀라노 대성당(두오모), `florence` 피렌체 대성당(산타 마리아 델 피오레), `myeongdong` 명동대성당(서울).
+1차(wave 2a): `stpeter` 성 베드로 대성전(바티칸), `lateran` 라테라노 성 요한 대성전(로마), `maggiore` 성 마리아 마조레 대성전(로마), `stpaul` 성 밖의 성 바오로 대성전(로마), `milan` 밀라노 대성당(두오모), `florence` 피렌체 대성당(산타 마리아 델 피오레), `myeongdong` 명동대성당(서울), `danggogae` 당고개 순교성지(서울 용산, 지하 성당 + 입구 홀. 2026-11-15 추가 — 종류 '성지', 설계·구현 결과 `docs/church/interiors/danggogae.md`. 배포판 포함은 성지·교구 동의 뒤).
 2차(wave 2b, 1차 이후): `stmark` 베네치아 산 마르코 대성당, `jeondong` 전주 전동성당, `yakhyeon` 약현성당(서울), `gyesan` 계산성당(대구), `fatima` 파티마 성모 성지 대성당, `lourdes` 루르드 로사리오 대성전, `sagrada` 사그라다 파밀리아, `notredame` 파리 노트르담 대성당.
 기본: `basic` 우리 본당(1~7절 그대로). 카탈로그 id는 소문자 영문뿐.
 
@@ -216,13 +216,13 @@ abstract class ChurchNet {
 
 ---
 # v4: 가서 행동하기 (InPeace 식 스테이션)
-사용자 요청: 촛불 봉헌 같은 동작은 성당 안 **그 자리에 직접 가서** 한다. 구현은 `assets/church/stations.js`(순수 로직, `tools/church_web/stations.test.mjs`가 8개 성당 전부 시험), `markers.js`(표식), `main.js`(걷기), Flutter `church_go_sheet.dart`.
+사용자 요청: 촛불 봉헌 같은 동작은 성당 안 **그 자리에 직접 가서** 한다. 구현은 `assets/church/stations.js`(순수 로직, `tools/church_web/stations.test.mjs`가 9개 성당 전부 시험), `markers.js`(표식), `main.js`(걷기), Flutter `church_go_sheet.dart`.
 
 ## 18. 스테이션 (빌더를 고치지 않고 레이아웃·충돌체에서 일반적으로 유도)
 - `candle[i]` = `layout.candles.stands[i]`. 서는 자리는 스탠드 `face` 쪽(걸을 수 있는 쪽) 0.6~1.6m, 충돌 없음·입구에서 닿음·`reach` 안에 슬롯이 있는 자리 중 스탠드 정면에 가장 가까운 곳.
 - `altar` = 신랑 축(좌석 `yaw` 방향 평균, 입구 스폰에서 출발)을 따라 걸을 수 있는 한 가장 멀리 간 지점(제대·난간·발다키노 바로 앞). 축이 전체의 30%도 못 가서 막히면 축 좌우 1.2m 띠에서 가장 먼 닿는 칸. 바라보는 방향은 좌석 방향. 이 규칙으로 8개 성당 모두 제대(또는 성소 단) 앞에 선다. `layout.stations.altar:{x,z}`로 직접 지정할 수도 있다.
 - `entrance` = `layout.spawn`. `seat` = 비어 있는 좌석 중 걷는 거리가 가장 짧은 곳의 `standPos`(좌석 뒤 통로).
-- `font[i]` = `layout.fonts:[{x,z,face?,reach?}]`가 있을 때만(성수대). 현재 8개 성당 레이아웃에는 없다.
+- `font[i]` = `layout.fonts:[{x,z,face?,reach?}]`가 있을 때만(성수대). 현재 9개 성당 레이아웃에는 없다.
 - 경로: 충돌체(`moveCircle`과 같은 것)로 만든 걷기 격자(칸 0.5m, 막히면 0.25m로 재시도) 위 A* + 직선 시야 단순화. 걷기는 평소 속도·걷기 동작이며 1초에 0.15m도 못 가면 두 번까지 길을 다시 찾고, 그래도 안 되면 `walkFail`.
 
 ## 19. 브리지 추가
@@ -409,7 +409,7 @@ peerPraying({id,on,ms,k?})  setPeers/peerJoin 의 peer.k   // k:1 = 무릎 꿇�
 - 한쪽 7곳: 구간을 고르게 7등분한 목표에 가장 가까운 후보(판끼리 2.2m 이상, 자리가 모자라면 1.6m — 성 베드로), 초 칸에서 2m 안의 자리는 버린다. 한쪽이 모자라면 다른 쪽에서 채운다(성 바오로 오른쪽 6·왼쪽 8). 14곳이 안 되면 판을 걸지 않는다(`stations.cross=0`, Flutter 는 '십자가의 길' 줄을 숨긴다).
 - **순서(관례)**: 제대를 바라볼 때 오른쪽 벽의 제대 쪽 1처 → 입구 쪽 → 왼쪽 벽 입구 쪽 → 제대 쪽 14처(한 바퀴). `layout.crossWay={start:'L'}` 로 왼쪽부터, `crossWay.front:{x,z}` 로 그 점보다 제대 쪽에는 걸지 않게(피렌체: 쿠폴라 아래 낮은 팔각 성가대 울타리를 벽으로 오인하지 않게 z=-4 앞까지), `crossWay.plaques:[{x,z,face}×14]` 로 자리를 직접 정할 수 있다.
 - 치수: 액자 0.70×1.21m + 위 작은 십자가 0.21m, 바닥에서 1.35m, 벽에서 2cm 띄운 뒤판(깊이 5cm) 앞 4mm 에 그림 판(§21 깜빡임 규칙: 같은 평면 금지).
-- 시험 `tools/church_web/way_cross.test.mjs`: 8개 성당 모두 14곳, 번호 1..14, 판 법선이 서는 자리 쪽, 서는 자리 충돌 없음·닿음, 판 앞 충돌체 없음·판 뒤 15cm 안에 벽, 판끼리 1.6m, 창과 겹침 없음, 입구→1처·n→n+1처 경로, 근접 판정의 들어감 1.8m/나감 2.6m.
+- 시험 `tools/church_web/way_cross.test.mjs`: 9개 성당 모두 14곳, 번호 1..14, 판 법선이 서는 자리 쪽, 서는 자리 충돌 없음·닿음, 판 앞 충돌체 없음·판 뒤 15cm 안에 벽, 판끼리 1.6m, 창과 겹침 없음, 입구→1처·n→n+1처 경로, 근접 판정의 들어감 1.8m/나감 2.6m.
 
 ### 30.2 그리기·성능
 - 판 = 캔버스 아틀라스 한 장(2048×1024, low 1024×512; 칸 = 십자가 장식 + 금테 액자 + 그림 + 로마 숫자 판)에 사각형 14개 한 지오메트리(draw call 1) + 나무 뒤판 상자 14개 한 지오메트리(MeshStandard, 그림자 받기만, draw call 1). **성당당 draw call +2, 질감 1장**(high 밉맵 포함 약 11MB, low 약 2.8MB). 성당을 바꾸면 해제한다.
@@ -541,7 +541,7 @@ welcome/join 의 PeerInfo: {"st":"p","ms":2,"ro":1}
 ### 33.3 예산·시험
 
 - 그리는 물체 ≤ 3, 높음 화질의 그리기 호출 +8 이하(천: 본 화면 + 바닥 반사(최대 2), 소품: 본 화면 + 바닥 반사 + AO 법선, 빛 점: 본 화면만 — 전용 레이어 1 이라 반사 카메라가 건너뛴다), 정점 ≤ 14,000(간단 화질 ≤ 5,000), 새 텍스처 0.
-- `tools/church_web/liturgy.test.mjs`: 8개 성당 × 12개 상태의 계획(좌석·스테이션·14처·걷는 길과 겹치지 않음, 스테이션 불변), 실제 빌더 재질로 짓기·교체·화질 전환·해제(지오메트리 전부 해제, 충돌체 복구, 공용 재질 보존).
+- `tools/church_web/liturgy.test.mjs`: 9개 성당 × 12개 상태의 계획(좌석·스테이션·14처·걷는 길과 겹치지 않음, 스테이션 불변), 실제 빌더 재질로 짓기·교체·화질 전환·해제(지오메트리 전부 해제, 충돌체 복구, 공용 재질 보존).
 - `tools/church_web/liturgy_perf.mjs`: 헤드리스에서 장식 전/후 그리기 호출·프레임 시간·누수. `tools/church_web/liturgy_shots.mjs`: 스크린샷.
 - `test/liturgical_season_test.dart`(달력 2024~2040, KST 경계), `test/church_liturgy_test.dart`(자정 갱신, 미리 보기, 성당 화면 연결).
 

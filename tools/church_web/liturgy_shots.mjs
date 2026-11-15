@@ -14,6 +14,7 @@ const assetRoot = path.resolve(here, '../../assets/church');
 // 제대 부근을 보는 카메라(서 있는 자리 x,z / yaw / pitch / zoom)
 export const CAMS = {
   basic: { pos: [0, -12.6], pitch: 13, zoom: 1.0 },
+  danggogae: { pos: [0, -4.6], pitch: 9, zoom: 0.8 },
   florence: { pos: [0, -12.6], pitch: 14, zoom: 0.9 },
   lateran: { pos: [0, -6.3], pitch: 12, zoom: 0.75 },
   maggiore: { pos: [0, -15.3], pitch: 13, zoom: 0.8 },

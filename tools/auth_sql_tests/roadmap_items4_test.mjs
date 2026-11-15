@@ -81,10 +81,10 @@ await check('earlier migration files are untouched (their seeds do not know T-xx
   assert(sqlOf(M2).includes(OLD_G01), 'M2 still has the original G-01 title');
 });
 
-await check('source JSON: T items are well formed and grouped (3 예약, 1 신규, 3 보류, 10 결정, 8 출시 전, 8 기술부채)', async () => {
+await check('source JSON: T items are well formed and grouped (3 예약, 2 신규, 3 보류, 10 결정, 9 출시 전, 8 기술부채)', async () => {
   assert(T.length >= 30 && T.length <= 50, 'count ' + T.length);
   const cat = (c) => T.filter((x) => x.category === c);
-  eq(['예약(월 01시)', '신규 요청', '보류', '결정 대기', '출시 전', '기술부채'].map((c) => cat(c).length), [3, 1, 3, 10, 8, 8]);
+  eq(['예약(월 01시)', '신규 요청', '보류', '결정 대기', '출시 전', '기술부채'].map((c) => cat(c).length), [3, 2, 3, 10, 9, 8]);   // 2026-11-15: 당고개 순교성지 T-08(신규 요청)·T-39(출시 전) 추가
   eq(new Set(T.map((x) => x.id)).size, T.length, 'unique ids');
   for (const x of T) {
     assert(/^T-\d\d$/.test(x.id), x.id);

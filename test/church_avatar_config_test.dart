@@ -331,6 +331,7 @@ void main() {
         'milan',
         'florence',
         'myeongdong',
+        'danggogae',
         'stmark',
         'jeondong',
         'yakhyeon',
@@ -348,7 +349,11 @@ void main() {
         expect(RegExp(r'^[a-z]+$').hasMatch(c.id), isTrue, reason: c.id);
         expect(c.wave, anyOf(1, 2));
         expect(ChurchCatalog.groups, contains(c.group), reason: c.id);
-        expect(['대성전', '대성당', '성당', '우리 본당'], contains(c.kind), reason: c.id);
+        expect(
+          ['대성전', '대성당', '성당', '성지', '우리 본당'],
+          contains(c.kind),
+          reason: c.id,
+        );
         expect(c.nameKo, isNotEmpty);
         expect(c.place, isNotEmpty);
       }
@@ -361,16 +366,66 @@ void main() {
         'milan',
         'florence',
         'myeongdong',
+        'danggogae',
       ]);
       expect(ChurchCatalog.all.where((c) => c.wave == 2), hasLength(8));
       expect(ChurchCatalog.resolve('zzz').id, 'basic');
       expect(ChurchCatalog.resolve(null).id, 'basic');
       expect(ChurchCatalog.inGroup('한국').map((c) => c.id), [
         'myeongdong',
+        'danggogae',
         'jeondong',
         'yakhyeon',
         'gyesan',
       ]);
+    });
+
+    test('당고개 순교성지: 종류 성지, 순교자 10위(주교회의 표기·차례)와 근거·고지', () {
+      final d = ChurchCatalog.byId['danggogae']!;
+      expect(d.nameKo, '당고개 순교성지');
+      expect(d.kind, '성지');
+      expect(d.group, '한국');
+      expect(d.builtYear, 2011);
+      expect(d.scalePercent, 100);
+      expect(d.wave, 1);
+      expect(d.people.map((p) => p.name), [
+        '성 박종원 아우구스티노',
+        '성 홍병주 베드로',
+        '성녀 손소벽 막달레나',
+        '성녀 이경이 아가타',
+        '성녀 이인덕 마리아',
+        '성녀 권진이 아가타',
+        '성 홍영주 바오로',
+        '성 이문우 요한',
+        '성녀 최영이 바르바라',
+        '복자 이성례 마리아',
+      ]);
+      // 1월 31일 7위, 2월 1일 3위(양력)
+      expect(
+        d.people.where((p) => p.detail == '1840년 1월 31일 순교'),
+        hasLength(7),
+      );
+      expect(d.people.where((p) => p.detail == '1840년 2월 1일 순교'), hasLength(3));
+      expect(d.people.where((p) => p.name.startsWith('복자')), hasLength(1));
+      expect(d.peopleNote, contains('한국천주교주교회의'));
+      expect(d.peopleNote, contains('가톨릭굿뉴스'));
+      expect(d.facts, hasLength(4));
+      // 추정으로 지은 부분과 싣지 않은 작품을 밝힌다. 미확인 정보(작가 세례명)는 쓰지 않는다.
+      expect(d.modelNote, contains('실제 치수는 확인 전이며'));
+      expect(d.modelNote, contains('분위기를 재현한 것'));
+      expect(d.modelNote, contains('싣지 않았습니다'));
+      expect(d.source, contains('danggogae.org'));
+      final all = [
+        d.blurb,
+        d.peopleNote,
+        ...d.facts,
+        d.modelNote,
+        d.source,
+      ].join(' ');
+      expect(all, isNot(contains('카타리나')));
+      expect(all, isNot(contains('심순화')));
+      // 다른 성당은 그대로(목록 없음)
+      expect(ChurchCatalog.byId['myeongdong']!.people, isEmpty);
     });
   });
 

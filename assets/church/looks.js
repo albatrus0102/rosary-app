@@ -44,6 +44,10 @@
     // 명동: 붉은 벽돌 고딕. 따뜻한 벽돌빛·낮은 앰비언트·촛불
     myeongdong: { keyK: 0.9, keyTint: 0xffc890, keyTintK: 0.35, ambK: 0.62, ambTint: 0xffcfa0, ambTintK: 0.35, expK: 0.88, lampK: 1.6, candleK: 1.4, fogTint: 0x5a3020, fogTintK: 0.25, dust: 110,
       sat: 1.0, warm: 0.07, vig: 0.3, con: 0.22, bloomT: 0.8, bloomS: 0.45, night: { lampK: 1.9 } },
+    // 당고개: 지하 성당. 햇빛이 없다(keyK 0, 빛줄기 0) — 한지 빛 창과 간접등의 따뜻한 호박색. 낮밤 차이가 거의 없게
+    // 밤 값이 낮 값과 같은 밝기가 되도록 맞춘다(반구광·환경광·노출의 시간대 배율을 되돌린다)
+    danggogae: { keyK: 0, ambK: 0.58, ambTint: 0xffdcae, ambTintK: 1, expK: 0.95, envK: 0.34, lampK: 1.8, candleK: 1.3, beamK: 0, fogTint: 0x6b4a2a, fogTintK: 0.6, dust: 30, dustK: 0, dustNight: 0,
+      sat: 0.98, warm: 0.06, vig: 0.3, con: 0.2, bloomT: 0.78, bloomS: 0.46, night: { ambK: 0.853, envK: 1.7, expK: 0.695, lampK: 1.9, fogTintK: 0.9 } },
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
     basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
   };

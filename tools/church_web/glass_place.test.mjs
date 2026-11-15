@@ -120,7 +120,7 @@ test('?photoglass=0 turns the table off: builders fall back to the old procedura
   const hi = off.find((c) => c.id === 'stpaul').windows.filter((w) => w.y > 9 && Math.abs(w.w - 0.92) < 1e-6);
   assert.equal(hi.length, 42);
   // 다른 성당(대응표에 없는 곳)은 켜든 끄든 창 목록이 같다
-  for (const id of ['lateran', 'maggiore', 'myeongdong', 'basic']) {
+  for (const id of ['lateran', 'maggiore', 'myeongdong', 'basic', 'danggogae']) {
     const a = church(id), b = off.find((c) => c.id === id);
     assert.equal(a.windows.length, b.windows.length, id); assert.equal(a.roses.length, b.roses.length, id);
     assert.equal(a.colliders.length, b.colliders.length, id);

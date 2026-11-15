@@ -98,6 +98,20 @@
     "note": "보류(사용자 '나중에'). 제작 여부·시안은 미정. 스토어 등록 전에는 필요."
   },
   {
+    "id": "T-08",
+    "title": "당고개 순교성지 추가(서울 용산, 지하 성당 + 입구 홀): 황토 미장 벽·한지 빛 창 28판·나무 마루, 84석, 14처는 티에폴로 동판화 배정, 상세 시트에 순교자 10위",
+    "category": "신규 요청",
+    "release": "R2",
+    "priority": "P1",
+    "effort": "L",
+    "risk": "성당 실측 치수·좌석 수·설계자 미확인(치수는 사진 추정 — 안내 시트에 밝힘). 성지의 성화·유리화·조각은 생존 작가 저작물이라 싣지 않음(무늬 없는 한지 빛 판·일반 형태). 전용 질감이 없어 절차 생성. 실기기 성능·화면 미확인",
+    "depends": "T-39",
+    "value": "한국 순교성지를 로사리움에서 둘러보고 기도함(명동에 이은 두 번째 한국 성당)",
+    "evidence": "docs/church/interiors/danggogae.md(조사·설계·구현 결과); assets/church/ch_danggogae.js; tools/church_web/danggogae.test.mjs; 사용자 지시(2026-11-15): 당고개순교성지도 새로 조사해 넣어",
+    "status": "review",
+    "note": "2026-11-15 구현(1차: 지하 성당 + 입구 홀). 헤드리스 측정: 월드 메시 27·삼각형 약 2.6만·draw call 은 우리 본당의 약 60%. 실기기 확인과 권리 답신(T-39) 대기. 지상 한옥 마당은 2차 후보(BACKLOG). 전용 질감(D-01~D-07)은 사용자가 올리면 교체."
+  },
+  {
     "id": "T-10",
     "title": "신자석 줄 간격 축소(현재 실제의 약 2배)",
     "category": "결정 대기",
@@ -348,6 +362,20 @@
     "evidence": "docs/legal/*.md(privacy_policy, terms_of_service, account_deletion, consent_texts, store_disclosures) · 남은 일 일괄 등록(2026-11-14 사용자 지시)",
     "status": "todo",
     "note": "출시 전 확인. docs/legal 의 {{…}} 와 '확인 필요' 항목 처리. 구글 플레이 제출 직전에 정책 재확인."
+  },
+  {
+    "id": "T-39",
+    "title": "당고개 순교성지 권리 확인: 성지 사무실·서울대교구에 3D 모형 게재 동의, 심순화 화백 작품(유리화·14처·성화) 처리 방식 확인",
+    "category": "출시 전",
+    "release": "R1",
+    "priority": "P0",
+    "effort": "M",
+    "risk": "답신이 없거나 거절이면 당고개를 배포판에서 뺌(코드·시험은 유지 가능: availableIds 에서만 뺀다). 건축 설계자 미확인. 교구 부서 연락처는 성지 사무실을 통해 확인해야 함",
+    "depends": "T-32",
+    "value": "권리 분쟁 없이 당고개 순교성지를 출시",
+    "evidence": "docs/church/interiors/danggogae.md §4(작품·권리, 연락처 02-711-0933 · dgg1839@kakao.com); docs/BACKLOG.md 출시 전 확인",
+    "status": "todo",
+    "note": "출시 전 확인. 서면 요청 → 답신을 docs/legal/ 에 보관. 허락 전에는 내부 시험까지만."
   },
   {
     "id": "T-50",

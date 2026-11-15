@@ -27,6 +27,7 @@ const Map<String, String> churchStyleById = {
   'milan': '고딕',
   'florence': '고딕',
   'myeongdong': '고딕',
+  'danggogae': '근대',
   'stmark': '로마네스크·비잔틴',
   'jeondong': '로마네스크·비잔틴',
   'yakhyeon': '고딕',
@@ -63,6 +64,7 @@ class ChurchSelectScreen extends StatefulWidget {
     'milan',
     'florence',
     'myeongdong',
+    'danggogae',
   };
 
   final AppSettings settings;
@@ -96,8 +98,10 @@ class ChurchSelectScreen extends StatefulWidget {
 
   static const String _note = '실제 건축을 단순화한 3D 모형입니다';
 
-  static String _noteFor(ChurchInfo info) =>
-      info.id == ChurchCatalog.defaultId ? '실제 성당이 아닌 가상의 본당입니다' : _note;
+  static String _noteFor(ChurchInfo info) {
+    if (info.id == ChurchCatalog.defaultId) return '실제 성당이 아닌 가상의 본당입니다';
+    return info.modelNote.isEmpty ? _note : '$_note. ${info.modelNote}';
+  }
 
   /// 목록을 걸러 정렬한다(즐겨찾기가 항상 먼저, 같은 즐겨찾기 상태 안에서는 정렬 기준대로).
   static List<ChurchInfo> arrange(
@@ -759,6 +763,61 @@ class _DetailSheet extends StatelessWidget {
                   info.blurb.isEmpty ? '설명 준비 중' : info.blurb,
                   style: theme.textTheme.bodyLarge,
                 ),
+                if (info.people.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _SheetSection(info.peopleTitle),
+                  for (final p in info.people)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(p.name, style: theme.textTheme.titleMedium),
+                          Text(
+                            p.detail,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (info.peopleNote.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      info.peopleNote,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+                if (info.facts.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  const _SheetSection('알아 둘 사실'),
+                  for (final f in info.facts)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('· ', style: theme.textTheme.bodyMedium),
+                          Expanded(
+                            child: Text(f, style: theme.textTheme.bodyMedium),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+                if (info.source.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    info.source,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -791,6 +850,27 @@ class _DetailSheet extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 상세 시트의 작은 구역 제목.
+class _SheetSection extends StatelessWidget {
+  const _SheetSection(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      child: Text(
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          color: theme.colorScheme.primary,
+        ),
+      ),
     );
   }
 }

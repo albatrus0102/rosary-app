@@ -48,7 +48,7 @@ test('normalize: 모르는 값은 안전한 기본값으로', () => {
 
 test('모든 성당에 장식 자리 표가 있다', () => {
   for (const c of churches) assert.ok(Liturgy.PLACES[c.id], c.id + ': PLACES 에 없음');
-  assert.equal(churches.length, 8);
+  assert.equal(churches.length, 9);
 });
 
 test('시기별 장식 구성', () => {
