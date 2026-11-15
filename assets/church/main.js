@@ -459,7 +459,7 @@
         App.turn.t -= dt; if (App.turn.t <= 0) App.turn = null;
       }
       me.speed = sp;
-      av.setWalk(Math.min(1, sp / 3.2 * 1.05));
+      av.setWalk(Math.min(1, sp / 4.0 * 1.05));
       if (sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5); } }
       var fy = logic.floorY(me.x, me.z);
       me.y += (fy - me.y) * Math.min(1, dt * 14);

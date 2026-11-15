@@ -1053,10 +1053,10 @@
     var kl = this.kneelLin, kt = this.kneelTarget;
     if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / KNEEL_DUR; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
     var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa, ka = this.kneelAmt * sa;
-    // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 3.2*walkAmt m/s)
+    // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 4.0*walkAmt m/s)
     var A = (0.09 + 0.27 * w) * sm(w * 6);
     if (w > 0.01) {
-      var vReal = 3.2 * w, stepLen = Math.max(0.25, 2 * 0.84 * Math.sin(Math.min(0.9, A)) * 0.95);
+      var vReal = 4.0 * w, stepLen = Math.max(0.25, 2 * 0.84 * Math.sin(Math.min(0.9, A)) * 0.95);
       this.phase += dt * PI * vReal / stepLen;
     }
     var emoting = this.emote >= 0, eU = 0, eEnv = 0;

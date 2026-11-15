@@ -206,10 +206,10 @@ test('floor height and joystick velocity', () => {
   assert.equal(L.floorY(0, 0), 0);
   const o = {};
   L.joyToVelocity(0, 1, 0, o);
-  assert.ok(Math.abs(o.vz + 3.2) < 1e-9 && Math.abs(o.vx) < 1e-9);
+  assert.ok(Math.abs(o.vz + 4.0) < 1e-9 && Math.abs(o.vx) < 1e-9);
   assert.ok(Math.abs(o.yaw) < 1e-9);
   L.joyToVelocity(1, 0, 0, o); // 오른쪽
-  assert.ok(Math.abs(o.vx - 3.2) < 1e-9);
+  assert.ok(Math.abs(o.vx - 4.0) < 1e-9);
   L.joyToVelocity(0, 1, Math.PI / 2, o); // 카메라가 -x를 봄
-  assert.ok(Math.abs(o.vx + 3.2) < 1e-9);
+  assert.ok(Math.abs(o.vx + 4.0) < 1e-9);
 });
