@@ -15,7 +15,9 @@ import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import '../stats/stats_screen.dart';
 import '../stats/stats_widgets.dart';
+import '../church/church_prayer_choice_sheet.dart';
 import 'prayer_screen.dart';
+import 'quiet_prayer_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/pill.dart';
 import 'widgets/section_header.dart';
@@ -104,6 +106,36 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
+  /// '기도 시작': 먼저 '잠시 기도하기 / 묵주기도 하기'를 묻는다(성당 안 시트와 같은 모양·문구).
+  /// 묵주기도면 고른 신비로 묵주 화면(설정이 기도문 중심이면 그 화면)을, 이어 하던 신비면 그 위치부터 연다.
+  Future<void> _choosePrayer() async {
+    final pick = await showChurchPrayerChoiceSheet(
+      context,
+      settings: settings,
+      inChurch: false,
+    );
+    if (pick == null || !mounted) return;
+    settings.churchPrayerChoice = pick.kind;
+    switch (pick.kind) {
+      case ChurchPrayerChoice.brief:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            settings: const RouteSettings(name: 'quiet_prayer'),
+            builder: (_) => const QuietPrayerScreen(),
+          ),
+        );
+      case ChurchPrayerChoice.rosary:
+        final set = pick.mysterySet ?? settings.mysterySet;
+        final saved = settings.savedPrayer;
+        await _startPrayer(
+          set: set,
+          initialIndex: saved != null && saved.mysterySet == set
+              ? saved.stepIndex
+              : 0,
+        );
+    }
+  }
+
   /// 기도 기록(통계) 화면을 연다. `stats_open`은 화면이 열릴 때 스스로 기록한다.
   Future<void> _openStats(AppServices services) => Navigator.of(context).push(
     MaterialPageRoute<void>(
@@ -161,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             icon: const Icon(Icons.play_arrow),
             label: Text(label, textAlign: TextAlign.center, maxLines: 2),
-            onPressed: () => unawaited(_startPrayer()),
+            onPressed: () => unawaited(_choosePrayer()),
           ),
         ),
       ),
