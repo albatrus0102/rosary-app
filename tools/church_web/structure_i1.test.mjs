@@ -81,8 +81,8 @@ test('basic: presider chair, credence table, font, choir and two confessionals a
   for (const [x, z, what] of [[0, -19.2, '주례석'], [1.45, -19.3, '복사석'], [3.4, -18.75, '주수상'], [-10.4, -15.4, '세례대'], [10.3, -12.2, '성가대 오르간'], [10.3, -10.4, '성가대 의자'], [9.5, 18.8, '고해소(오른쪽)'], [-9.5, 18.8, '고해소(왼쪽)']]) {
     assert.ok(inside(L, x, z), what + ' 자리에 충돌체가 없다');
   }
-  // 스폰·제대 앞·성수대 앞·맨 뒤 통로는 비어 있고 걸어서 닿는다
-  for (const [x, z] of [[0, 17], [0, -16], [0, 14], [7, 16.5], [-7, 16.5], [8.5, -13.6], [-10.6, -13.6]]) { assert.ok(S.free(x, z), `(${x}, ${z}) 막힘`); assert.ok(S.isReachable(x, z), `(${x}, ${z}) 못 감`); }
+  // 스폰·제대 앞(제단 첫 계단 앞: reverence.js)·성수대 앞·맨 뒤 통로는 비어 있고 걸어서 닿는다
+  for (const [x, z] of [[0, 17], [0, -13.6], [0, 14], [7, 16.5], [-7, 16.5], [8.5, -13.6], [-10.6, -13.6]]) { assert.ok(S.free(x, z), `(${x}, ${z}) 막힘`); assert.ok(S.isReachable(x, z), `(${x}, ${z}) 못 감`); }
   // 성가대 자리 옆면에 십자가의 길 판이 걸리지 않는다(충돌체를 둘로 나눈 이유)
   const r = WayCross.derive({ layout: ba.layout, logic: L, stations: S, walls: ba.walls, windows: ba.windows, roses: ba.roses, glassSlots: ba.glassSlots });
   assert.equal(r.why, 'ok');
