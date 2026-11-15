@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const Places = require('../../assets/church/shrine_places.js');
 const Shrine = require('../../assets/church/shrine.js');
 const { churches, Logic, Stations, WayCross } = loadChurches();
-const READY = ['basic', 'myeongdong', 'lateran', 'stpaul', 'milan', 'danggogae', 'maggiore', 'florence'], PENDING = ['stpeter'];
+const READY = ['basic', 'myeongdong', 'lateran', 'stpaul', 'milan', 'danggogae', 'maggiore', 'florence', 'stpeter'], PENDING = [];
 const by = Object.fromEntries(churches.map((c) => [c.id, c]));
 const rect = (q) => q.r !== undefined && q.x0 === undefined ? { x0: q.x - q.r, x1: q.x + q.r, z0: q.z - q.r, z1: q.z + q.r } : { x0: Math.min(q.x0, q.x1), x1: Math.max(q.x0, q.x1), z0: Math.min(q.z0, q.z1), z1: Math.max(q.z0, q.z1) };
 const overlap = (a, b, e = 0.02) => a.x0 < b.x1 - e && a.x1 > b.x0 + e && a.z0 < b.z1 - e && a.z1 > b.z0 + e;
