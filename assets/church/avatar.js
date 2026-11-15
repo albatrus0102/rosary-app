@@ -582,7 +582,9 @@
     var rings = pal.map(function (r) { return { c: [side * SX, r[0], r[3]], ru: r[1], rv: r[2], y: r[0] }; });
     loft(mb, rings, { nu: near ? 8 : 5, dense: false, inside: [side * SX, 0.8, 0], w: function (i, j, p) { return handW(side, p[1]); }, reg: R.SKIN, ao: 0.98, tn: function () { return 0.1; } });
     // 엄지(둥근 혹, 앞쪽-안쪽)
-    blob(mb, [side * SX - side * 0.010, 0.795, -0.040], [0.017, 0.035, 0.019], [0.0, 0, 0], { nu: near ? 8 : 5, nv: near ? 5 : 3, w: [[ha, 1]], reg: R.SKIN, ao: 0.98 });
+    // 두 마디로 가늘어지게(뿌리는 손바닥에 파묻고 끝은 앞-아래로 살짝): 붙인 혹이 아니라 손의 일부로 읽히게 한다
+    blob(mb, [side * SX - side * 0.012, 0.806, -0.034], [0.017, 0.031, 0.018], [0.0, 0, 0], { nu: near ? 8 : 5, nv: near ? 5 : 3, w: [[ha, 1]], reg: R.SKIN, ao: 0.98 });
+    if (near) blob(mb, [side * SX - side * 0.013, 0.770, -0.043], [0.0125, 0.0215, 0.0135], [0.0, 0, 0], { nu: 8, nv: 4, w: [[ha, 1]], reg: R.SKIN, ao: 0.98 });
     // 큰 머리에 맞춰 손도 조금 크게(손목 중심으로 HAND_S 배)
     var p = mb.pos, i;
     for (i = v0 * 3; i < mb.vc * 3; i += 3) { p[i] = side * SX + (p[i] - side * SX) * HAND_S; p[i + 1] = 0.872 + (p[i + 1] - 0.872) * HAND_S; p[i + 2] *= HAND_S; }

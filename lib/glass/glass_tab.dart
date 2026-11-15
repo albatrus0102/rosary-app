@@ -334,11 +334,16 @@ class _Header extends StatelessWidget {
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
-                      child: IndexedStack(
-                        index: isWindow ? 1 : 0,
-                        children: const [
-                          Text('세계의 아름다운 성당을 걷고, 기도하는 공간'),
-                          Text('성당의 창을 가까이에서 바라보는 곳'),
+                      child: Stack(
+                        children: [
+                          Visibility.maintain(
+                            visible: !isWindow,
+                            child: const Text('세계의 아름다운 성당을 걷고, 기도하는 공간'),
+                          ),
+                          Visibility.maintain(
+                            visible: isWindow,
+                            child: const Text('성당의 창을 가까이에서 바라보는 곳'),
+                          ),
                         ],
                       ),
                     ),

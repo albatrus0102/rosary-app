@@ -66,9 +66,8 @@ Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _pumpShell(
             ? AppTheme.dark()
             : AppTheme.light(),
         builder: (context, c) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(textScale)),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
           child: c!,
         ),
         home: AppShell(
@@ -134,15 +133,16 @@ void main() {
 
     testWidgets('내비게이션은 밝은 테마에서도 어두운 갈색 구성이고 성당 안에서는 성당 테마', (tester) async {
       final (_, _, scene) = await _pumpShell(tester);
-      Color navSurface() => Theme.of(
-        tester.element(find.byType(NavigationBar)),
-      ).colorScheme.surface;
+      Color navSurface() =>
+          Theme.of(tester.element(find.byType(NavigationBar)))
+              .colorScheme
+              .surface;
       expect(navSurface(), AppTheme.seedScheme(Brightness.dark).surface);
       // 본문은 밝은 상아색 그대로다.
       expect(
-        Theme.of(
-          tester.element(find.byKey(const ValueKey('entry-card'))),
-        ).colorScheme.surface,
+        Theme.of(tester.element(find.byKey(const ValueKey('entry-card'))))
+            .colorScheme
+            .surface,
         AppTheme.seedScheme(Brightness.light).surface,
       );
       await _enter(tester);
@@ -220,7 +220,9 @@ void main() {
   });
 
   group('큰 카드와 캐러셀', () {
-    testWidgets('캐러셀은 들어갈 수 있는 성당을 카탈로그에서 가져오고, 고른 성당이 선택됨으로 읽힌다', (tester) async {
+    testWidgets('캐러셀은 들어갈 수 있는 성당을 카탈로그에서 가져오고, 고른 성당이 선택됨으로 읽힌다', (
+      tester,
+    ) async {
       final handle = tester.ensureSemantics();
       await _pumpShell(tester);
       for (final c in ChurchCatalog.all) {
@@ -236,15 +238,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester.getSemantics(find.bySemanticsLabel('밀라노 대성당, 밀라노')),
-        containsSemantics(isSelected: true, isButton: true, hasTapAction: true),
+        isSemantics(isSelected: true, isButton: true, hasTapAction: true),
       );
       expect(
         tester.getSemantics(find.bySemanticsLabel('성 베드로 대성전, 바티칸 시국')),
-        containsSemantics(
-          isSelected: false,
-          isButton: true,
-          hasTapAction: true,
-        ),
+        isSemantics(isSelected: false, isButton: true, hasTapAction: true),
       );
       handle.dispose();
     });
@@ -259,11 +257,11 @@ void main() {
       expect(find.text('바티칸 시국, 바티칸 · 대성전'), findsOneWidget);
       expect(
         tester.getSemantics(find.bySemanticsLabel('성 베드로 대성전, 바티칸 시국')),
-        containsSemantics(isSelected: true),
+        isSemantics(isSelected: true),
       );
       expect(
         tester.getSemantics(find.bySemanticsLabel('밀라노 대성당, 밀라노')),
-        containsSemantics(isSelected: false),
+        isSemantics(isSelected: false),
       );
       // 아직 들어가지 않았다: 마지막 성당은 그대로, 접속도 없다.
       expect(settings.churchId, 'milan');
@@ -401,9 +399,7 @@ void main() {
             net: FakeChurchNet(),
             scene: FakeChurchSceneController(),
             // 다섯 장보다 많아야 넘길 것이 있다.
-            availableIds: {
-              for (final c in ChurchCatalog.all.take(9)) c.id,
-            },
+            availableIds: {for (final c in ChurchCatalog.all.take(9)) c.id},
           ),
         ),
       );
@@ -436,19 +432,11 @@ void main() {
         expect(find.bySemanticsLabel('밀라노 대성당 내부 모습'), findsOneWidget);
         expect(
           tester.getSemantics(find.byKey(const ValueKey('entry-enter'))),
-          containsSemantics(
-            label: '입장하기',
-            isButton: true,
-            hasTapAction: true,
-          ),
+          isSemantics(label: '입장하기', isButton: true, hasTapAction: true),
         );
         expect(
           tester.getSemantics(find.byKey(const ValueKey('entry-detail'))),
-          containsSemantics(
-            label: '상세 보기',
-            isButton: true,
-            hasTapAction: true,
-          ),
+          isSemantics(label: '상세 보기', isButton: true, hasTapAction: true),
         );
         handle.dispose();
       });

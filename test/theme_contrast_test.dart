@@ -167,10 +167,7 @@ void main() {
       ),
     ]) {
       test('$label >= $min:1', () {
-        expect(
-          contrast(fg(chrome), bg(chrome)),
-          greaterThanOrEqualTo(min),
-        );
+        expect(contrast(fg(chrome), bg(chrome)), greaterThanOrEqualTo(min));
       });
     }
   });

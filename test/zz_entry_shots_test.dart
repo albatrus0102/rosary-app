@@ -121,9 +121,8 @@ void main() {
               GlobalCupertinoLocalizations.delegate,
             ],
             builder: (context, c) => MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.linear(scale)),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
               child: c!,
             ),
             home: AppShell(
@@ -149,36 +148,108 @@ void main() {
   const phone = Size(360, 800);
 
   testWidgets('wide light', (t) async {
-    await shell(t, size: wide, dpr: 1.55, b: Brightness.light, name: 'entry_wide');
+    await shell(
+      t,
+      size: wide,
+      dpr: 1.55,
+      b: Brightness.light,
+      name: 'entry_wide',
+    );
   });
   testWidgets('phone light', (t) async {
-    await shell(t, size: phone, dpr: 3, b: Brightness.light, name: 'entry_phone');
+    await shell(
+      t,
+      size: phone,
+      dpr: 3,
+      b: Brightness.light,
+      name: 'entry_phone',
+    );
   });
   testWidgets('wide dark', (t) async {
-    await shell(t, size: wide, dpr: 1.55, b: Brightness.dark, name: 'entry_wide_dark');
+    await shell(
+      t,
+      size: wide,
+      dpr: 1.55,
+      b: Brightness.dark,
+      name: 'entry_wide_dark',
+    );
   });
   testWidgets('phone dark', (t) async {
-    await shell(t, size: phone, dpr: 3, b: Brightness.dark, name: 'entry_phone_dark');
+    await shell(
+      t,
+      size: phone,
+      dpr: 3,
+      b: Brightness.dark,
+      name: 'entry_phone_dark',
+    );
   });
   testWidgets('phone light x2', (t) async {
-    await shell(t, size: phone, dpr: 2, b: Brightness.light, name: 'entry_phone_x2', scale: 2);
+    await shell(
+      t,
+      size: phone,
+      dpr: 2,
+      b: Brightness.light,
+      name: 'entry_phone_x2',
+      scale: 2,
+    );
   });
   testWidgets('phone landscape', (t) async {
-    await shell(t, size: const Size(800, 360), dpr: 2, b: Brightness.light, name: 'entry_landscape');
+    await shell(
+      t,
+      size: const Size(800, 360),
+      dpr: 2,
+      b: Brightness.light,
+      name: 'entry_landscape',
+    );
   });
   testWidgets('expanded light', (t) async {
-    await shell(t, size: const Size(1280, 800), dpr: 1, b: Brightness.light, name: 'entry_expanded', church: 'stpeter');
+    await shell(
+      t,
+      size: const Size(1280, 800),
+      dpr: 1,
+      b: Brightness.light,
+      name: 'entry_expanded',
+      church: 'stpeter',
+    );
   });
   testWidgets('today phone', (t) async {
-    await shell(t, size: phone, dpr: 3, b: Brightness.light, name: 'today_phone', tab: AppShellTab.today);
+    await shell(
+      t,
+      size: phone,
+      dpr: 3,
+      b: Brightness.light,
+      name: 'today_phone',
+      tab: AppShellTab.today,
+    );
   });
   testWidgets('today phone dark', (t) async {
-    await shell(t, size: phone, dpr: 3, b: Brightness.dark, name: 'today_phone_dark', tab: AppShellTab.today);
+    await shell(
+      t,
+      size: phone,
+      dpr: 3,
+      b: Brightness.dark,
+      name: 'today_phone_dark',
+      tab: AppShellTab.today,
+    );
   });
   testWidgets('more phone', (t) async {
-    await shell(t, size: phone, dpr: 3, b: Brightness.light, name: 'more_phone', tab: AppShellTab.more);
+    await shell(
+      t,
+      size: phone,
+      dpr: 3,
+      b: Brightness.light,
+      name: 'more_phone',
+      tab: AppShellTab.more,
+    );
   });
   testWidgets('stats wide', (t) async {
-    await shell(t, size: wide, dpr: 1.55, b: Brightness.light, name: 'stats_wide', tab: AppShellTab.stats);
+    await shell(
+      t,
+      size: wide,
+      dpr: 1.55,
+      b: Brightness.light,
+      name: 'stats_wide',
+      tab: AppShellTab.stats,
+    );
   });
 }

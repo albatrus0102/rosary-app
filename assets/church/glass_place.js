@@ -18,10 +18,10 @@
   var FADE = 0.25, NEAR_EVERY = 0.25, NIGHT_K = 0.05, PLAN_EVERY = 0.25;
   var QS = (root.location && root.location.search) || '';
   var LEGACY = /[?&]gstream=0/.test(QS) || !GS;
-  var STRESS = (function () { var m = /[?&]gstress=(\d+)/.exec(QS); return m ? Math.min(400, +m[1]) : 0; })();
+  var STRESS0 = (function () { var m = /[?&]gstress=(\d+)/.exec(QS); return m ? Math.min(400, +m[1]) : 0; })();
 
   function create(App, H) {
-    var post = H.post;
+    var post = H.post, STRESS = STRESS0;
     var groups = [], slots = [], token = 0, pending = 0, nearCur = null, nearT = 0, lastNearId, planT = 0;
     var stats = { created: 0, disposed: 0, resident: 0, texMb: 0, loads: 0, errors: 0, farMb: 0, uploads: 0, evicted: 0, decodeMs: 0, uploadMsMax: 0 };
     var far = null;                 // {state, tex, mesh, mat, rects, mb, fade, slotOf}
@@ -89,6 +89,7 @@
     function upload(img, bitmap) {
       var tex = new T.Texture(img);
       setTexParams(tex, !bitmap);
+      tex.userData.w = img.naturalWidth || img.width; tex.userData.h = img.naturalHeight || img.height;   // 닫은 뒤에도 크기(메모리 추정)
       tex.needsUpdate = true;
       var gl = App.renderer.getContext();
       gl.getError();
@@ -164,7 +165,7 @@
       slots.forEach(function (s) {
         if (!GM.ID_RE.test(s.win)) return;
         var g = by[s.win];
-        if (!g) { g = by[s.win] = { win: s.win, src: s.src || s.win, slots: [], state: 'loading', near: 'none', fade: 0, tex: null, mesh: null, mat: null, mb: 0, used: 0, tok: 0 }; groups.push(g); }
+        if (!g) { g = by[s.win] = { id: s.win, win: s.win, src: s.src || s.win, slots: [], state: 'loading', near: 'none', fade: 0, tex: null, mesh: null, mat: null, mb: 0, used: 0, tok: 0 }; groups.push(g); }
         s.group = g; g.slots.push(s);
       });
       if (LEGACY) { groups.forEach(function (g) { startNear(g, tok); }); return; }
@@ -199,6 +200,7 @@
         items.forEach(function (it) { if (it.img.close) { try { it.img.close(); } catch (e) { /* ignore */ } } });
         var tex = new T.CanvasTexture(cv);
         setTexParams(tex, true);
+        tex.userData.w = L.w; tex.userData.h = L.h;
         App.renderer.initTexture(tex);
         cv.width = cv.height = 1;   // 올린 뒤 CPU 쪽 캔버스를 놓는다
         far.tex = tex; far.mb = GS.texMb(L.w, L.h); far.rects = L.rects; stats.created++;
@@ -399,6 +401,8 @@
     }
 
     return {
+      // 개발자 스위치(성능 표시의 '창 55 스트레스'): 다음 load 부터 가짜 창 n개를 더한다
+      setStress: function (n) { STRESS = Math.max(0, Math.min(400, n | 0)); },
       load: load, clear: clear, update: update, pick: pick, tap: tap, slotFor: slotFor, stats: stats,
       slots: function () { return slots; },
       // 걷기 카메라 거리 비율(0..1). 지금 보고 있는 창 자리가 camMax(미터)를 정했으면 D 를 그만큼으로 줄인다. 아니면 1.

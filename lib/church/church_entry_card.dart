@@ -334,10 +334,7 @@ class _HeroBox extends StatelessWidget {
       builder: (context, constraints) {
         final natural = constraints.maxWidth / (wide ? 9 / 4 : 16 / 9);
         final cap = screen * 0.4 < 160 ? 160.0 : screen * 0.4;
-        return SizedBox(
-          height: natural < cap ? natural : cap,
-          child: child,
-        );
+        return SizedBox(height: natural < cap ? natural : cap, child: child);
       },
     );
   }
@@ -515,7 +512,9 @@ class _CarouselState extends State<_Carousel> {
                       controller: _scroll,
                       scrollDirection: Axis.horizontal,
                       // 고른 카드의 테두리·그림자가 잘리지 않게 위아래 여백을 둔다.
-                      padding: const EdgeInsets.symmetric(vertical: AppSpace.xxs),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpace.xxs,
+                      ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -616,79 +615,80 @@ class _CarouselItem extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final gold = AppDecor.of(context).gold;
-    return Semantics(
-      // 카드 하나가 한 덩어리로 읽힌다: '이름, 도시, 버튼, 선택됨'.
-      container: true,
-      button: true,
-      selected: selected,
-      label: '${info.nameKo}, $_city',
-      child: Card(
-        key: ValueKey('entry-thumb-${info.id}'),
-        semanticContainer: false,
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        color: Colors.transparent,
-        shape: AppShape.mediumBorder,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ExcludeSemantics(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 썸네일: 고른 카드는 금색 테두리(2dp), 나머지는 가는 윤곽선.
-                DecoratedBox(
-                  position: DecorationPosition.foreground,
-                  decoration: BoxDecoration(
-                    borderRadius: AppShape.medium,
-                    border: Border.all(
-                      color: selected ? gold : scheme.outlineVariant,
-                      width: selected ? 2 : 1,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: AppShape.medium,
-                    child: AspectRatio(
-                      aspectRatio: 4 / 3,
-                      child: ChurchEntryImage(
-                        candidates: ChurchEntryArt.thumbCandidates(info.id),
+    // 카드 하나가 한 덩어리로 읽힌다: '이름, 도시, 버튼, 선택됨'(누르기 동작 포함).
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: '${info.nameKo}, $_city',
+        child: Card(
+          key: ValueKey('entry-thumb-${info.id}'),
+          semanticContainer: false,
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          color: Colors.transparent,
+          shape: AppShape.mediumBorder,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: ExcludeSemantics(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 썸네일: 고른 카드는 금색 테두리(2dp), 나머지는 가는 윤곽선.
+                  DecoratedBox(
+                    position: DecorationPosition.foreground,
+                    decoration: BoxDecoration(
+                      borderRadius: AppShape.medium,
+                      border: Border.all(
+                        color: selected ? gold : scheme.outlineVariant,
+                        width: selected ? 2 : 1,
                       ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpace.xxs,
-                    AppSpace.xs,
-                    AppSpace.xxs,
-                    AppSpace.xxs,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        info.nameKo,
-                        textAlign: TextAlign.center,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: selected ? scheme.primary : scheme.onSurface,
+                    child: ClipRRect(
+                      borderRadius: AppShape.medium,
+                      child: AspectRatio(
+                        aspectRatio: 4 / 3,
+                        child: ChurchEntryImage(
+                          candidates: ChurchEntryArt.thumbCandidates(info.id),
                         ),
                       ),
-                      const SizedBox(height: AppSpace.xxs),
-                      Text(
-                        _city,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpace.xxs,
+                      AppSpace.xs,
+                      AppSpace.xxs,
+                      AppSpace.xxs,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          info.nameKo,
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: selected ? scheme.primary : scheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpace.xxs),
+                        Text(
+                          _city,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
