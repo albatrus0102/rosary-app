@@ -1,6 +1,6 @@
 // 룩 개발(LOOK_DEV.md) 비교 스크린샷 + 프레임 비용 측정 — `node --test` 에는 넣지 않는다(헤드리스 swiftshader 로 수 분 걸림).
 // 사용: node tools/church_web/look_shots.mjs <out dir> [church ...] [--sizes 360x800,1280x800] [--hours 11,18.3,22] [--views entrance,nave,...]
-//                                               [--quality high|low] [--perf] [--frames 24]
+//                                               [--quality high|mid|low] [--perf] [--frames 24] [--looks all]   (--looks all: 초안 룩(DRAFTS) 전부 적용)
 //       CHURCH_ROOT=<assets 사본> 으로 '이전' 사본을 찍는다. --perf: 각 크기 첫 시점에서 프레임 비용(ms, gl.finish 포함) 중앙값을 잰다.
 // 시점(x,z,yaw,pitch,look 도): 카메라는 아바타 뒤에 있다(yaw 0 = 제대(-z) 쪽을 본다).
 import { createRequire } from 'node:module';
@@ -17,7 +17,7 @@ export const VIEWS = {
     entrance: { x: 0, z: 31, yaw: 0, pitch: 8 },
     nave: { x: 0, z: 12, yaw: 0, pitch: 6 },
     altar: { x: 0, z: -3.2, yaw: 0, pitch: 4, look: 14 },
-    aisle: { x: 9, z: 12, yaw: 0, pitch: 6 },
+    aisle: { x: 9, z: 2, yaw: 0, pitch: 6 },
     window: { x: 6.2, z: 17.2, yaw: -90, pitch: 8, look: 10 },
   },
 };
@@ -45,7 +45,7 @@ async function run(outDir, ids, o) {
         window.requestAnimationFrame = (cb) => { q.push(cb); return q.length; };
         window.__step = (n, dtMs) => { for (let i = 0; i < n; i++) { const cbs = q.splice(0); tNow = (tNow || performance.now()) + dtMs; cbs.forEach((cb) => cb(tNow)); } };
       });
-      await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality: o.quality, solo: '1', hideui: '1' }));
+      await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality: o.quality, solo: '1', hideui: '1', ...(o.looks ? { looks: o.looks } : {}) }));
       await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 180000, polling: 500 });
       await page.waitForTimeout(1500);
       await page.waitForFunction(() => !window.__church.place || window.__church.place.debug().pending === 0, null, { timeout: 120000, polling: 250 });
@@ -97,7 +97,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--sizes') o.sizes = a[++i].split(','); else if (a[i] === '--hours') o.hours = a[++i].split(',').map(Number);
     else if (a[i] === '--views') o.views = a[++i].split(','); else if (a[i] === '--quality') o.quality = a[++i];
-    else if (a[i] === '--perf') o.perf = true; else if (a[i] === '--frames') o.frames = +a[++i]; else ids.push(a[i]);
+    else if (a[i] === '--looks') o.looks = a[++i]; else if (a[i] === '--perf') o.perf = true; else if (a[i] === '--frames') o.frames = +a[++i]; else ids.push(a[i]);
   }
   if (!ids.length) ids.push('stpeter');
   fs.mkdirSync(outDir, { recursive: true });

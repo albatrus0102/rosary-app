@@ -268,9 +268,9 @@
       ctx.floor({ x0: -8.5, x1: 8.5, z0: -17.625, z1: -0.125, y: 0.012, tex: texCross, tile: [17, 17.5], gloss: 0.9, reflect: true });
       ctx.floor({ x0: -4.45, x1: 4.45, z0: -35.3, z1: -17.5, y: 0, tex: texFloor, tile: [8.9, 8.9], gloss: 0.85, reflect: false });
       // 입구 붉은 반암 원반 + 중심축 황동 표시
-      ctx.cyl({ x: 0, y: 0, z: 32.0, r: 0.62, h: 0.03, seg: 20, color: 0x6e2424 });
+      ctx.cyl({ x: 0, y: 0, z: 32.0, r: 0.62, h: 0.03, seg: 20, color: 0x9c3a34 });
       ctx.cyl({ x: 0, y: 0.03, z: 32.0, r: 0.66, rTop: 0.66, h: 0.012, seg: 20, color: GOLD_D, vary: 0 });
-      ctx.cyl({ x: 0, y: 0.04, z: 32.0, r: 0.54, h: 0.012, seg: 20, color: 0x7e2a2a, vary: 0 });
+      ctx.cyl({ x: 0, y: 0.04, z: 32.0, r: 0.54, h: 0.012, seg: 20, color: 0xb04640, vary: 0 });
       [26.5, 22.0, 17.5, 13.0, 8.5].forEach(function (z) { ctx.box({ x: 0, y: 0, z: z, w: 1.4, h: 0.02, d: 0.09, color: GOLD_D, vary: 0 }); });
 
       VC('floors');
