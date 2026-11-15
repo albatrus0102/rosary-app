@@ -289,4 +289,24 @@ void main() {
       );
     }
   });
+
+  group('성삼일 침묵(오르간 끔·빈 감실)', () {
+    // 2026년 부활: 4월 5일 → 성목요일 4/2, 성금요일 4/3, 성토요일 4/4. 시각은 KST(UTC+9).
+    DateTime kst(int m, int d, int h) => DateTime.utc(2026, m, d, h - 9);
+    bool silent(DateTime t) => isTriduumSilence(LiturgicalDay.now(t), t);
+    test('성목요일 저녁(주님 만찬 미사 뒤)부터 성토요일 부활 성야 전까지', () {
+      expect(silent(kst(4, 2, 10)), isFalse);
+      expect(silent(kst(4, 2, 20)), isTrue);
+      expect(silent(kst(4, 3, 12)), isTrue);
+      expect(silent(kst(4, 4, 18)), isTrue);
+      expect(silent(kst(4, 4, 19)), isFalse);
+      expect(silent(kst(4, 5, 10)), isFalse);
+      expect(silent(kst(11, 15, 12)), isFalse);
+    });
+    test('다시 계산할 시각: 19시·20시·자정 중 가장 가까운 것', () {
+      expect(untilNextLiturgyCheck(kst(4, 2, 18)), const Duration(hours: 1));
+      expect(untilNextLiturgyCheck(kst(4, 2, 19)), const Duration(hours: 1));
+      expect(untilNextLiturgyCheck(kst(4, 2, 21)), const Duration(hours: 3));
+    });
+  });
 }

@@ -118,3 +118,22 @@ test('reverence: setColliders 로 다시 지어도 금지 구역이 남는다', 
   L.setColliders(c.colliders);
   assert.ok(L.colliders.some((k) => k.keep));
 });
+
+test('피렌체: 북 측랑 그림 3점은 진본 사진 팩(art_florence.js)으로, 14처 판은 그림 틀과 겹치지 않는다', async () => {
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../../assets/church/ch_florence.js', import.meta.url), 'utf8');
+  assert.ok(!/function horse\(/.test(src), '도형으로 그린 말 탄 사람 그림이 남아 있다');
+  const art = fs.readFileSync(new URL('../../assets/church/art_florence.js', import.meta.url), 'utf8');
+  for (const k of ['tolentino', 'hawkwood', 'dante']) assert.ok(art.includes('"' + k + '":{"w":'), k);
+  const c = churches.find((k) => k.id === 'florence');
+  const frames = c.ctx._.artFrames || [];
+  assert.equal(frames.length, 3);
+  const PW = 0.7 / 2 + 0.1, Y0 = 1.35 - 0.1, Y1 = 1.35 + 0.7 * 504 / 248 + 0.1;   // way_cross.js 판 크기(+여유)
+  for (const p of c.layout.crossWay.plaques) {
+    for (const f of frames) {
+      if (Math.abs(p.x - f.x) > 0.6) continue;
+      const zHit = p.z + PW > f.z0 && p.z - PW < f.z1, yHit = Y1 > f.y0 && Y0 < f.y1;
+      assert.ok(!(zHit && yHit), `14처 판 z ${p.z} 가 그림 ${f.key} 틀(${f.z0.toFixed(2)}~${f.z1.toFixed(2)})과 겹친다`);
+    }
+  }
+});

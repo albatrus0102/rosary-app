@@ -865,6 +865,7 @@
         sbx({ x: -XW + 0.06, y: y - 0.12, z: z, w: 0.14, h: 0.14, d: w + 0.4, color: ST_L }); sbx({ x: -XW + 0.06, y: y + h, z: z, w: 0.14, h: 0.16, d: w + 0.4, color: ST_L });
         sbx({ x: -XW + 0.06, y: y - 0.1, z: z - w / 2 - 0.1, w: 0.14, h: h + 0.3, d: 0.2, color: ST_L }); sbx({ x: -XW + 0.06, y: y - 0.1, z: z + w / 2 + 0.1, w: 0.14, h: h + 0.3, d: 0.2, color: ST_L });
         ART.push({ key: key, mat: mat });
+        (ctx._.artFrames || (ctx._.artFrames = [])).push({ x: -XW, z0: z - w / 2 - 0.2, z1: z + w / 2 + 0.2, y0: y - 0.12, y1: y + h + 0.16, key: key });   // 14처 판과 겹치지 않는지 시험(reverence.test)
       }
       // 자리(F6, Opera del Duomo 목록): 2칸 = 니콜로 다 톨렌티노(카스타뇨 1456) · 3칸 = 존 호크우드(우첼로 1436) — 두 기마상은 2·3칸 경계(z 15.85) 양옆에 나란히,
       // 4칸 = 단테와 신곡(미켈리노 1465, 가로형). 기마상은 틀 포함 실제 5.15 × 8.2m → 2.32 × 3.69. 3·4칸 창(z 11.4, 2.5)을 가리지 않는다.

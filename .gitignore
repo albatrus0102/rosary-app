@@ -63,3 +63,7 @@ assets/church/dev/gpack_devrs_*.js
 
 # 도구 의존성(npm install 로 복원)
 tools/**/node_modules/
+
+# 위키미디어 원본(대용량, 저장소 밖 보관)
+art/commons_handoff/originals/
+art/commons_handoff/*.part

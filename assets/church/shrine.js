@@ -63,8 +63,7 @@
       ctx.cyl({ x: cx, y: y, z: cz, r: POND.R + 0.01, h: POND.WATER_Y - 0.012, seg: 24, color: 0x1c2a2c, flat: true });
       ctx.cyl({ x: cx, y: y + POND.WATER_Y - 0.012, z: cz, r: POND.R + 0.005, h: 0.012, seg: 24, color: 0x1f4a4c, mat: 'gloss', flat: true });
       if (ctx.aoDecalCircle) ctx.aoDecalCircle({ x: cx, z: cz, r: POND.R + POND.RIM + 0.05, y: y });
-      ctx.addCollider({ x: cx, z: cz, r: POND.R + POND.RIM });
-      ctx.addCollider({ x0: Math.min(p.x - f[0] * 0.3, p.x + f[0] * 0.4) - Math.abs(f[1]) * 0.5, x1: Math.max(p.x - f[0] * 0.3, p.x + f[0] * 0.4) + Math.abs(f[1]) * 0.5, z0: Math.min(p.z - f[1] * 0.3, p.z + f[1] * 0.4) - Math.abs(f[0]) * 0.5, z1: Math.max(p.z - f[1] * 0.3, p.z + f[1] * 0.4) + Math.abs(f[0]) * 0.5 });
+      ctx.addCollider(footprint(p));   // 성상 받침 ~ 연못 바깥 테두리를 한 상자로 막는다
       return sh;
     }
     // 봉헌초 받침(2단, 슬롯 높이 0.74 / 0.81 에 맞춤)

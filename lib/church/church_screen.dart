@@ -238,7 +238,6 @@ class _ChurchScreenState extends State<ChurchScreen>
             : createChurchNet(_settings));
     _ownsScene = widget.scene == null;
     _scene = widget.scene ?? WebViewChurchSceneController();
-    _lastAmbient = _ambientOn;
     _lastQuality = _settings.churchQuality;
     _lastAvatar = _settings.churchAvatar.toJsonString();
     _sceneSub = _scene.events.listen(_onScene);
@@ -246,6 +245,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _net.state.addListener(_onNetState);
     _settings.addListener(_onSettings);
     _liturgy = ChurchLiturgyBinding(onChanged: _onLiturgy);
+    _lastAmbient = _ambientOn;
     unawaited(_loadHintFlag());
     unawaited(_loadResume());
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());

@@ -55,20 +55,20 @@ test('danggogae: 걷기 — 스폰은 비어 있고, 뒷벽은 문 구멍(폭 2m
   assert.ok(!free(-6.8, -8), '기둥 뒤 모서리'); assert.ok(!free(6.35, -6.65), '기둥');
   assert.ok(free(-3.4, -8.6) && free(3.2, -8.0), '제단 위 통로');
   // 가구: 감실·독서대·사제석·해설대·피아노·성수대·봉헌초
-  for (const [x, z, n] of [[-2.4, -10.0, '감실'], [-2.7, -7.5, '독서대'], [3.8, -9.5, '사제석'], [-5.3, -5.3, '해설대'], [5.3, -5.2, '피아노'], [-1.7, 12.0, '성수대'], [6.4, 13.5, '봉헌초']]) assert.ok(!free(x, z), n);
+  for (const [x, z, n] of [[-2.4, -10.0, '감실'], [-2.7, -7.5, '독서대'], [3.8, -9.5, '사제석'], [-5.3, -5.3, '해설대'], [5.3, -5.2, '피아노'], [-1.7, 12.0, '성수대'], [5.45, 13.5, '연못'], [6.95, 13.5, '성모상']]) assert.ok(!free(x, z), n);
   assert.ok(c.colliders.length <= 60, '충돌체 ' + c.colliders.length);
 });
 
-test('danggogae: 스테이션 — 제대 앞(0, -7.6) 축 유도, 봉헌초(4.9, 13.5)', () => {
+test('danggogae: 스테이션 — 제대 앞(0, -7.6) 축 유도, 봉헌초 = 입구 홀 오른쪽 성모상 앞 연못', () => {
   const st = S.stations();
   assert.equal(st.altar.how, 'axis');
   assert.ok(near(st.altar.x, 0) && near(st.altar.z, -7.6), JSON.stringify(st.altar));
   assert.ok(st.altar.z < lay.spawn.z - 15);
-  assert.equal(st.candle.length, 2);   // 봉헌초 대 + 성모 기도 자리(shrine.js, 맨 끝)
-  assert.ok(near(st.candle[0].x, 4.9, 0.01) && near(st.candle[0].z, 13.5, 0.01), JSON.stringify(st.candle[0]));
+  assert.equal(st.candle.length, 1);   // 성모상 앞 연못 하나(shrine.js kind 'pond')
+  assert.ok(st.candle[0].shrine && st.candle[0].x > 3.6 && st.candle[0].x < 4.4 && near(st.candle[0].z, 13.5, 0.3), JSON.stringify(st.candle[0]));
   assert.ok(S.free(st.candle[0].x, st.candle[0].z) && S.isReachable(st.candle[0].x, st.candle[0].z));
   assert.notEqual(L.nearestCandleSlot(st.candle[0].x, st.candle[0].z, null), null);
-  assert.equal(L.slots.length, 48 + 14);   // + 성모 기도 자리 14
+  assert.equal(L.slots.length, 18);   // 연못 위 원형 2겹(6 + 12)
   assert.equal(st.font.length, 0);
 });
 

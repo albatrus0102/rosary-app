@@ -16,7 +16,7 @@ const overlap = (a, b, e = 0.02) => a.x0 < b.x1 - e && a.x1 > b.x0 + e && a.z0 <
 test('table covers every church: 8 placed, 1 pending', () => {
   assert.deepEqual(Object.keys(Places).sort(), READY.concat(PENDING).sort());
   for (const id of PENDING) { assert.equal(Places[id].pending, true); assert.ok(Places[id].note); assert.equal(Shrine.placeOf(id), null); }
-  for (const id of READY) { const p = Places[id]; assert.ok(['mary', 'plain', 'existing'].includes(p.kind)); assert.ok(p.label_ko); assert.equal(p.yaw % 90, 0); }
+  for (const id of READY) { const p = Places[id]; assert.ok(['mary', 'plain', 'existing', 'pond'].includes(p.kind)); assert.ok(p.label_ko); assert.equal(p.yaw % 90, 0); }
 });
 
 for (const id of PENDING) test(`shrine ${id}: pending -> no place, layout untouched`, () => {
@@ -31,7 +31,7 @@ for (const id of READY) test(`shrine ${id}: one place, clear, lightable, reachab
   const mine = lay.candles.stands.filter((s) => s.shrine);
   assert.equal(mine.length, 1);
   assert.equal(sh.stand, lay.candles.stands.length - 1, 'shrine stand is the last stand (existing slot ids unchanged)');
-  assert.ok(mine[0].slots >= 12 && mine[0].slots <= 16);
+  assert.ok(mine[0].slots >= 12 && mine[0].slots <= 20);
   const fp = Shrine.footprint(p);
   assert.ok(fp.x0 >= b.x0 - 0.35 && fp.x1 <= b.x1 + 0.35 && fp.z0 >= b.z0 - 0.35 && fp.z1 <= b.z1 + 0.35, 'inside walk bounds');
   // 충돌체: 자리 충돌체가 들어 있고, 다른 충돌체·좌석 줄과 겹치지 않는다(existing 은 성상 받침과 맞닿기만)
@@ -53,8 +53,27 @@ for (const id of READY) test(`shrine ${id}: one place, clear, lightable, reachab
   const stn = st.candle.find((q) => q.shrine);
   assert.ok(stn && stn.label === p.label_ko && stn.index === sh.stand);
   const f = Shrine.face(p), d = (stn.x - p.x) * f[0] + (stn.z - p.z) * f[1], lat = Math.abs((stn.x - p.x) * f[1] - (stn.z - p.z) * f[0]);
-  assert.ok(d > 1.35 && d < 2.0 && lat < 0.6, `station in front of the kneeler (d ${d.toFixed(2)}, lat ${lat.toFixed(2)})`);
+  if (p.kind === 'pond') assert.ok(d > 2.6 && d < 3.2 && lat < 0.6, `station in front of the pond (d ${d.toFixed(2)}, lat ${lat.toFixed(2)})`);
+  else assert.ok(d > 1.35 && d < 2.0 && lat < 0.6, `station in front of the kneeler (d ${d.toFixed(2)}, lat ${lat.toFixed(2)})`);
   assert.ok(S.free(stn.x, stn.z) && S.findPath(lay.spawn, stn), 'reachable from spawn');
   assert.ok(slots.some((s) => Math.hypot(s.x - stn.x, s.z - stn.z) <= 1.8));
   assert.equal(L.floorY(stn.x, stn.z), sh.y, 'station on the same floor as the shrine');
+});
+
+test('shrine danggogae: 입구 홀 오른쪽 성모상 앞 둥근 연못(지름 1.5m) — 원형 슬롯 18칸이 물 안에 있고 서로 겹치지 않는다', () => {
+  const c = by.danggogae, lay = c.layout, p = Places.danggogae, st = lay.candles.stands;
+  assert.equal(p.kind, 'pond');
+  assert.ok(p.x > 6 && p.z > 11.4 && p.z < 15.6, '입구 홀 오른쪽(성당 문을 바라볼 때 +x)');
+  assert.equal(st.length, 1, '입구 홀의 옛 48칸 봉헌초는 없애고 연못으로 일원화');
+  assert.ok(st[0].pond && st[0].float && st[0].ring.length === 2);
+  assert.equal(st[0].slots, 18); assert.equal(st[0].ring.reduce((n, r) => n + r.n, 0), 18);
+  const L = Logic.create(lay, { colliders: c.colliders, zones: c.zones });
+  assert.equal(L.slots.length, 18);
+  assert.ok(Math.abs(Math.hypot(st[0].x - p.x, st[0].z - p.z) - 1.5) < 1e-6, '연못 중심은 성상 앞 1.5m');
+  for (const s of L.slots) {
+    assert.ok(Math.hypot(s.x - st[0].x, s.z - st[0].z) <= Shrine.POND.R - 0.12, '물 안');
+    assert.equal(s.float, true); assert.ok(Math.abs(s.y - Shrine.POND.WATER_Y) < 1e-9);
+    for (const t of L.slots) if (t !== s) assert.ok(Math.hypot(s.x - t.x, s.z - t.z) > 0.24, '초끼리 겹침');
+  }
+  assert.equal(Shrine.POND.R * 2, 1.5);
 });

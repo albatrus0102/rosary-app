@@ -213,3 +213,23 @@ test('floor height and joystick velocity', () => {
   L.joyToVelocity(0, 1, Math.PI / 2, o); // 카메라가 -x를 봄
   assert.ok(Math.abs(o.vx + 4.0) < 1e-9);
 });
+
+test('candleSlots: 원형(ring) 배치 — 동심원, 전역 번호 이어짐, 직사각 배치는 그대로', () => {
+  const lay = { candles: { stands: [
+    { x: 0, z: 0, slots: 4, cols: 2, face: [0, 1], pitch: 0.5, step: 0.3, y0: 0.8, ystep: 0.1 },
+    { x: 5, z: 2, slots: 18, face: [-1, 0], y0: 0.15, float: true, reach: 2.1, ring: [{ r: 0.3, n: 6 }, { r: 0.56, n: 12, a0: Math.PI / 12 }] }
+  ] } };
+  const sl = Logic.candleSlots(lay);
+  assert.equal(sl.length, 22);
+  assert.deepEqual(sl.map((s) => s.slot), [...Array(22).keys()]);
+  assert.ok(sl.slice(0, 4).every((s) => s.stand === 0 && !s.float));
+  const ring = sl.slice(4);
+  ring.forEach((s, i) => {
+    assert.equal(s.stand, 1); assert.equal(s.float, true); assert.equal(s.y, 0.15); assert.equal(s.reach, 2.1);
+    assert.ok(Math.abs(Math.hypot(s.x - 5, s.z - 2) - (i < 6 ? 0.3 : 0.56)) < 1e-9);
+  });
+  assert.ok(Math.abs(ring[0].x - 4.7) < 1e-9 && Math.abs(ring[0].z - 2) < 1e-9, '각도 0 = face 방향');
+  // 직사각 배치만 있는 레이아웃의 결과는 옛 계산과 같다
+  const a = Logic.candleSlots({ candles: { stands: [lay.candles.stands[0]] } });
+  assert.deepEqual(a.map((s) => [+s.x.toFixed(3), +s.z.toFixed(3), +s.y.toFixed(3)]), [[-0.25, 0, 0.8], [0.25, 0, 0.8], [-0.25, -0.3, 0.9], [0.25, -0.3, 0.9]].map((v, i) => i < 2 ? [v[0], -0.3, 0.9] : [v[0], 0, 0.8]));
+});
