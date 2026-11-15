@@ -108,16 +108,9 @@
     // 2) 앞 가장자리: 단(바닥 높이 > 0) 위면 단의 첫 계단 발치까지 물러난다
     var front = uSt + K.FRONT_PAD, platHalf = 0;
     var fy = logic.floorY(st.x, st.z);
-    var width = alongZ ? (B.x1 - B.x0) : (B.z1 - B.z0);
     if (fy > 0.02) {
       var zs = (logic.layoutZones && logic.layoutZones()) || [];
-      var full = false;
-      zs.forEach(function (z) {
-        if (z.y <= 0.02 || st.x < z.x0 || st.x > z.x1 || st.z < z.z0 || st.z > z.z1) return;
-        var zw = alongZ ? (z.x1 - z.x0) : (z.z1 - z.z0);
-        if (zw >= width * K.FULL_WIDTH) full = true;
-      });
-      if (!full) {
+      {   // 단이 성당 폭 전체여도(익랑·넓은 제단) 같은 규칙: 신자는 첫 계단 앞(신자석 쪽)에서 멈춘다(2026-11-15 사용자 결정)
         // 제대가 놓인 단의 계단 발치 = 뒤로 걸으며 바닥이 내려간 뒤 1m 이상 평평한 곳(층계참·신랑 바닥)이 시작되는 곳.
         // (피렌체처럼 낮은 단(좌석이 있는 성가대석) 안에 높은 제단이 있으면 높은 제단 계단에서 멈춘다)
         var foot = uSt, base = 0, prev = fy, runStart = -1;
@@ -175,6 +168,9 @@
     if (segs[1]) { var r2 = rect(segs[1][0], segs[1][1]); if (r2 && (alongZ ? r2.z1 - r2.z0 : r2.x1 - r2.x0) >= K.MIN_DEPTH) out.extra.push(r2); }
     (P.extra || []).forEach(function (r) { out.extra.push({ x0: Math.min(r.x0, r.x1), x1: Math.max(r.x0, r.x1), z0: Math.min(r.z0, r.z1), z1: Math.max(r.z0, r.z1) }); });
     out.axis = ax; out.front = front; out.halfW = halfW; out.station = st; out.how = how;
+    // 제대 앞 자리(stations.js 가 쓴다): 구역 앞 가장자리 바로 앞, 축 위(지정 자리가 있으면 그 옆 위치). 무릎 꿇기·기도는 여기서.
+    var stand = at(front - K.R - 0.15, how.indexOf('layout') === 0 ? V(st.x, st.z) : 0);
+    out.stand = { x: stand.x, z: stand.z };
     return out;
   }
 
