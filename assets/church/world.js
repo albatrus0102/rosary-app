@@ -90,7 +90,7 @@
     var vcount = 0, mcount = ctx.stats.meshes;
     var shadowCasters = [];
     items.forEach(function (it) {
-      var grp = it.batch.build(it.material, it.name, { cast: it.cast, receive: it.receive });
+      var grp = it.batch.build(it.material, it.name, { cast: it.cast, receive: it.receive, spatial: true });
       if (it.decal) grp.children.forEach(function (m) { m.renderOrder = 3; });
       if (it.name === 'glass' || it.name === 'glow') grp.children.forEach(function (m) { m.renderOrder = 1; });
       if (it.name === 'glassRefl' || it.name === 'aodecal') grp.userData.noAO = true;

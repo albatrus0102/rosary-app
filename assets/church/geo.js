@@ -174,12 +174,20 @@
     }
   };
 
-  // opts: {cast, receive}
+  // opts: {cast, receive, spatial}
+  // spatial(2026-11-15, PERF_SCALE.md §2): 큰 배치(정점 3만 이상)를 삼각형 중심 기준 k-d 분할로 공간 덩어리(많아야 4개)로 나눈다.
+  // 예전 덩어리(넣은 순서대로 6만 정점)는 성당 전체에 퍼져 시야 밖이어도 컬링되지 않았다. 덩어리가 모이면 고개를 돌리거나
+  // 반사·그림자 카메라가 일부만 볼 때 GPU 가 그 덩어리를 통째로 건너뛴다. 화면은 같다(같은 삼각형·같은 재질).
   Batch.prototype.build = function (material, name, opts) {
     opts = opts || {};
     var group = new T.Group();
     if (name) group.name = name;
     var total = this.p.length / 3, CH = 60000;
+    if (opts.spatial && total >= 30000 && total % 3 === 0 && !/[?&]spatial=0/.test((root.location && root.location.search) || '')) {
+      buildSpatial(this, material, opts, group, total);
+      group.userData.vertexCount = total;
+      return group;
+    }
     for (var s = 0; s < total; s += CH) {
       var e = Math.min(total, s + CH);
       var g = new T.BufferGeometry();
@@ -195,6 +203,42 @@
     group.userData.vertexCount = total;
     return group;
   };
+
+  function buildSpatial(B, material, opts, group, total) {
+    var nt = total / 3, P = B.p, cx = new Float32Array(nt), cy = new Float32Array(nt), cz = new Float32Array(nt), ids = new Uint32Array(nt);
+    for (var t = 0; t < nt; t++) {
+      var o = t * 9;
+      cx[t] = (P[o] + P[o + 3] + P[o + 6]) / 3; cy[t] = (P[o + 1] + P[o + 4] + P[o + 7]) / 3; cz[t] = (P[o + 2] + P[o + 5] + P[o + 8]) / 3; ids[t] = t;
+    }
+    var target = Math.max(8000, Math.ceil(nt / 4));   // 삼각형 수(정점 = ×3). 덩어리를 많이 나누면 draw call 이 늘어 4개까지만
+    var chunks = [];
+    (function split(a, b) {
+      if (b - a <= target) { chunks.push([a, b]); return; }
+      var x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, z0 = 1e9, z1 = -1e9, i;
+      for (i = a; i < b; i++) { var k = ids[i]; if (cx[k] < x0) x0 = cx[k]; if (cx[k] > x1) x1 = cx[k]; if (cy[k] < y0) y0 = cy[k]; if (cy[k] > y1) y1 = cy[k]; if (cz[k] < z0) z0 = cz[k]; if (cz[k] > z1) z1 = cz[k]; }
+      var ax = x1 - x0 >= y1 - y0 && x1 - x0 >= z1 - z0 ? cx : (y1 - y0 >= z1 - z0 ? cy : cz);
+      var part = Array.prototype.slice.call(ids, a, b).sort(function (p, q) { return ax[p] - ax[q]; });
+      for (i = 0; i < part.length; i++) ids[a + i] = part[i];
+      var m = a + ((b - a) >> 1);
+      split(a, m); split(m, b);
+    })(0, nt);
+    var hasU = !!B.u;
+    chunks.forEach(function (c) {
+      var n = c[1] - c[0], pos = new Float32Array(n * 9), nor = new Float32Array(n * 9), col = new Float32Array(n * 9), uv = hasU ? new Float32Array(n * 6) : null;
+      for (var i = 0; i < n; i++) {
+        var t = ids[c[0] + i], s9 = t * 9, d9 = i * 9;
+        for (var j = 0; j < 9; j++) { pos[d9 + j] = B.p[s9 + j]; nor[d9 + j] = B.n[s9 + j]; col[d9 + j] = B.c[s9 + j]; }
+        if (uv) for (j = 0; j < 6; j++) uv[i * 6 + j] = B.u[t * 6 + j];
+      }
+      var g = new T.BufferGeometry();
+      g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('normal', new T.BufferAttribute(nor, 3)); g.setAttribute('color', new T.BufferAttribute(col, 3));
+      if (uv) g.setAttribute('uv', new T.BufferAttribute(uv, 2));
+      g.computeBoundingSphere();
+      var mesh = new T.Mesh(g, material);
+      mesh.castShadow = !!opts.cast; mesh.receiveShadow = opts.receive !== false;
+      group.add(mesh);
+    });
+  }
 
   // ---- 공용 단위 도형(바닥 기준: y 0..1, 중심 xz) ----
   var cache = {};
