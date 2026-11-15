@@ -1,0 +1,107 @@
+[
+  {
+    "id": "01_A",
+    "filename": "01_pieta_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Michelangelo%27s_Pieta,_St._Peter%27s_Basilica,_Vatican_City_(48466681337).jpg"
+  },
+  {
+    "id": "01_B",
+    "filename": "01_pieta_B.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Michelangelo%27s_Pieta,_St._Peter%27s_Basilica,_Vatican_City_(48466667502).jpg"
+  },
+  {
+    "id": "03_A",
+    "filename": "03_st_peter_bronze_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:St._Peter%27s_Basilica,_Bronze_Statue_of_St._Peter_(48466478846).jpg"
+  },
+  {
+    "id": "04_A",
+    "filename": "04_ciborium_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Ciborium_in_the_Basilica_di_San_Giovanni_in_Laterano_2013.jpg"
+  },
+  {
+    "id": "04_B",
+    "filename": "04_ciborium_B.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:High_Altar_and_Ciborium,_Basilica_San_Giovanni_in_Laterano_(45603136844).jpg"
+  },
+  {
+    "id": "05_A",
+    "filename": "05_apse_mosaic_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Apse_mosaic_of_the_Basilica_of_Saint_Paul_Outside_the_Walls.jpg"
+  },
+  {
+    "id": "05_B",
+    "filename": "05_apse_mosaic_B.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Apse_mosaic_Basilica_of_St_Paul_Outside_the_Walls.jpg"
+  },
+  {
+    "id": "06_A",
+    "filename": "06_st_paul_tomb_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:St._Paul%27s_Tomb.jpg"
+  },
+  {
+    "id": "07_A",
+    "filename": "07_madonna_albero_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Chapel_of_the_Madonna_dell%27Albero,_Milan_Cathedral.jpg"
+  },
+  {
+    "id": "08_A",
+    "filename": "08_hawkwood_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Paolo_uccello,_Monumento_equestre_di_John_Hawkwood,_1436,_01.JPG"
+  },
+  {
+    "id": "08_B",
+    "filename": "08_hawkwood_B.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Paolo_uccello,_Monumento_equestre_di_John_Hawkwood,_1436,_01-edit.jpg"
+  },
+  {
+    "id": "09_A",
+    "filename": "09_tolentino_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Andrea_del_castagno,_Monumento_equestre_di_Niccol%C3%B2_da_Tolentino,_1456,_01.JPG"
+  },
+  {
+    "id": "09_B",
+    "filename": "09_tolentino_B.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Firenze.Duomo.Tolentino.JPG"
+  },
+  {
+    "id": "10_A",
+    "filename": "10_dante_A.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Michelino_DanteAndHisPoem.jpg"
+  },
+  {
+    "id": "10_B",
+    "filename": "10_dante_B.jpg",
+    "status": "error",
+    "error": "HTTP Error 429: Too many requests - please contact noc@wikimedia.org to discuss a less disruptive approach or instead use thumbnail images in sizes listed on https://w.wiki/GHai. (0c640b1)",
+    "file_page": "https://commons.wikimedia.org/wiki/File:Dante_Domenico_di_Michelino.jpg"
+  }
+]
