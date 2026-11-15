@@ -161,8 +161,8 @@ test('series: every church maps to a bundled atlas pack; default is fugel', () =
     assert.ok(src.includes('data:image/webp;base64,'), id);
     if (id !== 'fugel') assert.ok(src.includes(`ChurchCrossPacks || {})["${id}"]`), `${id} 등록 이름`);
   }
-  // 성당마다 다른 그림: 연작이 4개 이상 쓰인다
-  assert.ok(new Set(Object.values(S.churches)).size >= 4);
+  // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다
+  assert.equal(new Set(Object.values(S.churches)).size, Object.keys(S.churches).length);
 });
 
 test('series loader: loads the church series only, releases the previous one', async () => {
@@ -186,7 +186,7 @@ test('series loader: loads the church series only, releases the previous one', a
   await PL.load(b.id);
   assert.deepEqual(PL.resident(), [b.id]);
   // 기본 연작 성당: cross_pack.js(window.ChurchCrossPack)
-  const d = PL.seriesFor('myeongdong');
+  const d = PL.seriesFor('basic');
   assert.equal(d.id, 'fugel'); assert.ok(d.isDefault);
   PL.release(d.id);
   const pd = await PL.load(d.id);

@@ -132,7 +132,8 @@ class _SeriesCard extends StatelessWidget {
             row('라이선스', '${series.licenseLabel} — ${series.licenseUrl}'),
             row('출처', series.source),
             row('변경', series.changes),
-            row('쓰는 곳', churches.isEmpty ? '쓰지 않음' : churches.join(', ')),
+            // 모든 연작은 더보기 → 십자가의 길의 '그림 연작' 칩으로 고를 수 있다.
+            row('쓰는 곳', [...churches, '십자가의 길 연작 선택'].join(', ')),
             if (series.license == StationsLicense.ccBy)
               Theme(
                 // 카드 안 펼침 목록: 위아래 구분선을 없앤다.

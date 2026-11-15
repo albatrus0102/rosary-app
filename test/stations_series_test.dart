@@ -10,6 +10,8 @@ import 'package:rosary_app/domain/art_credits.dart';
 import 'package:rosary_app/domain/stations_series.dart';
 import 'package:rosary_app/ui/art_credits_screen.dart';
 import 'package:rosary_app/ui/stations_sheet.dart';
+import 'package:rosary_app/ui/widgets/stations_series_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _app(
   Widget child, {
@@ -96,11 +98,14 @@ void main() {
       expect(StationsSeriesCatalog.forChurch('nowhere').id, 'fugel');
       expect(StationsSeriesCatalog.forChurch(null).id, 'fugel');
       expect(StationsSeriesCatalog.forChurch('stpeter').id, 'previati');
-      // 성당마다 다른 그림: 쓰이는 연작이 4개 이상
+      // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다
       expect(
         StationsSeriesCatalog.assignments.values.toSet().length,
-        greaterThanOrEqualTo(4),
+        StationsSeriesCatalog.assignments.length,
       );
+      for (final c in bundled) {
+        expect(StationsSeriesCatalog.assignments.containsKey(c), isTrue);
+      }
     });
 
     test('14 pictures mapped and bundled per series, ≤40KB each', () {
@@ -158,7 +163,21 @@ void main() {
       expect(File('docs/BACKLOG.md').readAsStringSync(), contains('프레비아티'));
     });
 
-    test('bundle size: all series pictures + atlases ≤ 3.2MB', () {
+    test('each series ≤ 0.45MB (pictures + atlas; first two are older)', () {
+      for (final m in (src['series'] as List).cast<Map<String, dynamic>>()) {
+        final id = m['id'] as String;
+        var total = File('assets/church/${m['pack']}').lengthSync();
+        for (var n = 1; n <= 14; n++) {
+          total += File(StationsSeriesCatalog.byId(id).imageAsset(n))
+              .lengthSync();
+        }
+        // 푸겔 1921(기본)·모슬러는 한도를 정하기 전에 만든 것(0.56MB·0.47MB).
+        final limit = (id == 'fugel' || id == 'mosler') ? 565 : 450;
+        expect(total, lessThanOrEqualTo(limit * 1000), reason: id);
+      }
+    });
+
+    test('bundle size: all series pictures + atlases ≤ 4.2MB', () {
       var total = 0;
       for (final f in Directory(
         'assets/images/stations',
@@ -170,7 +189,7 @@ void main() {
           total += f.lengthSync();
         }
       }
-      expect(total, lessThanOrEqualTo(3200 * 1000));
+      expect(total, lessThanOrEqualTo(4200 * 1000));
     });
 
     test('credits list covers every series', () {
@@ -219,7 +238,7 @@ void main() {
       await t.pumpWidget(_app(_opener(null)));
       await t.tap(find.text('open'));
       await t.pumpAndSettle();
-      expect(find.textContaining('푸겔'), findsOneWidget);
+      expect(find.textContaining('게프하르트 푸겔'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('stations-art-disclosure')),
         findsOneWidget,
@@ -256,6 +275,187 @@ void main() {
           expect(t.takeException(), isNull, reason: s.id);
           await t.tap(find.byKey(const ValueKey('stations-close')));
           await t.pumpAndSettle();
+        }
+      });
+    }
+  });
+
+  group('series chooser', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      StationsSeriesChoice.reset();
+    });
+    tearDown(StationsSeriesChoice.reset);
+
+    String assetOf(WidgetTester t, int n) {
+      final p = t
+          .widget<Image>(
+            find.descendant(
+              of: find.byKey(ValueKey('stations-item-$n')),
+              matching: find.byType(Image),
+            ),
+          )
+          .image;
+      return p is ResizeImage
+          ? (p.imageProvider as AssetImage).assetName
+          : (p as AssetImage).assetName;
+    }
+
+    testWidgets('list: chips switch the series and the choice is saved', (
+      t,
+    ) async {
+      _phone(t);
+      final auto = StationsSeriesCatalog.forChurch('milan');
+      await t.pumpWidget(_app(StationsOfCrossScreen(series: auto)));
+      await t.pumpAndSettle();
+      expect(assetOf(t, 1), auto.imageAsset(1));
+      // 칩 하나(지금 연작 이름)를 누르면 연작 선택 시트가 열린다: 연작마다 칩 하나 + '자동'
+      final button = find.byKey(const ValueKey('stations-series-button'));
+      expect(find.text('그림 연작: ${auto.short}'), findsOneWidget);
+      await t.tap(button);
+      await t.pumpAndSettle();
+      for (final s in StationsSeriesCatalog.all) {
+        expect(
+          find.byKey(ValueKey('stations-series-chip-${s.id}')),
+          findsOneWidget,
+        );
+      }
+      final chip = find.byKey(const ValueKey('stations-series-chip-tiepolo'));
+      await t.tap(chip);
+      await t.pumpAndSettle();
+      final tiepolo = StationsSeriesCatalog.byId('tiepolo');
+      expect(t.widget<ChoiceChip>(chip).selected, isTrue);
+      Navigator.of(t.element(chip)).pop();
+      await t.pumpAndSettle();
+      expect(assetOf(t, 1), tiepolo.imageAsset(1));
+      expect(find.text('그림 연작: ${tiepolo.short}'), findsOneWidget);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(StationsSeriesChoice.prefsKey), 'tiepolo');
+      // 고른 연작의 출처·안내가 함께 바뀐다
+      await t.scrollUntilVisible(
+        find.byKey(const ValueKey('stations-art-disclosure')),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.textContaining(tiepolo.title), findsOneWidget);
+      // '자동'으로 되돌리면 저장을 지운다
+      await t.scrollUntilVisible(
+        button,
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.tap(button);
+      await t.pumpAndSettle();
+      final autoChip = find.byKey(const ValueKey('stations-series-chip-auto'));
+      await t.tap(autoChip);
+      await t.pumpAndSettle();
+      Navigator.of(t.element(autoChip)).pop();
+      await t.pumpAndSettle();
+      expect(prefs.getString(StationsSeriesChoice.prefsKey), isNull);
+      expect(assetOf(t, 1), auto.imageAsset(1));
+      expect(t.takeException(), isNull);
+    });
+
+    testWidgets('saved choice is restored; unknown id falls back to auto', (
+      t,
+    ) async {
+      _phone(t);
+      SharedPreferences.setMockInitialValues({
+        StationsSeriesChoice.prefsKey: 'fahnroth',
+      });
+      await t.pumpWidget(_app(const StationsOfCrossScreen()));
+      await t.pumpAndSettle();
+      expect(
+        assetOf(t, 1),
+        StationsSeriesCatalog.byId('fahnroth').imageAsset(1),
+      );
+      StationsSeriesChoice.reset();
+      SharedPreferences.setMockInitialValues({
+        StationsSeriesChoice.prefsKey: 'gone',
+      });
+      await StationsSeriesChoice.load();
+      expect(StationsSeriesChoice.selected.value, isNull);
+    });
+
+    testWidgets('sheet: browse offers the chooser, pilgrimage keeps the '
+        'church series', (t) async {
+      _phone(t);
+      await StationsSeriesChoice.select('tiepolo');
+      final church = StationsSeriesCatalog.forChurch('stpeter');
+      await t.pumpWidget(
+        _app(
+          Scaffold(
+            body: StationsSheet(
+              mode: StationsSheetMode.pilgrimage,
+              series: church,
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.textContaining(church.title), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('stations-series-button')),
+        findsNothing,
+      );
+      await t.pumpWidget(_app(Scaffold(body: StationsSheet(series: church))));
+      await t.pumpAndSettle();
+      expect(
+        find.textContaining(StationsSeriesCatalog.byId('tiepolo').title),
+        findsOneWidget,
+      );
+      final button = find.byKey(const ValueKey('stations-series-button'));
+      await t.scrollUntilVisible(
+        button,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.tap(button);
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('stations-series-chip-corot')));
+      await t.pumpAndSettle();
+      expect(StationsSeriesChoice.selected.value, 'corot');
+      expect(t.takeException(), isNull);
+    });
+
+    for (final b in Brightness.values) {
+      testWidgets('text ×2 (${b.name}) at 360x800: chips do not overflow', (
+        t,
+      ) async {
+        _phone(t);
+        await t.pumpWidget(
+          _app(const StationsOfCrossScreen(), textScale: 2, b: b),
+        );
+        await t.pumpAndSettle();
+        final button = find.byKey(const ValueKey('stations-series-button'));
+        await t.scrollUntilVisible(
+          button,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await t.ensureVisible(button);
+        await t.pumpAndSettle();
+        expect(t.getRect(button).right, lessThanOrEqualTo(360));
+        await t.tap(button);
+        await t.pumpAndSettle();
+        expect(t.takeException(), isNull);
+        final rects = [
+          for (final e in find.byType(ChoiceChip).evaluate())
+            (e.renderObject! as RenderBox).localToGlobal(Offset.zero) &
+                (e.renderObject! as RenderBox).size,
+        ];
+        expect(rects, hasLength(StationsSeriesCatalog.all.length + 1));
+        for (var i = 0; i < rects.length; i++) {
+          expect(rects[i].left, greaterThanOrEqualTo(0));
+          expect(rects[i].right, lessThanOrEqualTo(360));
+          expect(rects[i].height, greaterThanOrEqualTo(48));
+          for (var j = i + 1; j < rects.length; j++) {
+            expect(
+              rects[i].deflate(0.5).overlaps(rects[j]),
+              isFalse,
+              reason: '$i/$j',
+            );
+          }
         }
       });
     }

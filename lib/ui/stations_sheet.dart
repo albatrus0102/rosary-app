@@ -440,9 +440,7 @@ class StationsOfCrossScreen extends StatelessWidget {
   StationsSeries get _series => StationsSeriesChoice.resolve(series);
 
   void _open(BuildContext context, int n) {
-    unawaited(
-      showStationsSheet(context, start: n, from: from, series: series),
-    );
+    unawaited(showStationsSheet(context, start: n, from: from, series: series));
   }
 
   @override
@@ -489,9 +487,9 @@ class StationsOfCrossScreen extends StatelessWidget {
                     onPressed: () => _open(context, 1),
                   ),
                 ),
-                const SizedBox(height: AppSpace.sm),
-                StationsSeriesChips(auto: series),
-                const SizedBox(height: AppSpace.sm),
+                const SizedBox(height: AppSpace.xxs),
+                StationsSeriesButton(auto: series),
+                const SizedBox(height: AppSpace.xs),
                 Card.filled(
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
