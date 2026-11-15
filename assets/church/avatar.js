@@ -1020,6 +1020,38 @@
     if (b) { spot = spot || KNEEL_DEFAULT; this.kneelFwd = spot.fwd; this.kneelY = spot.y; this.kneelRail = spot.rail ? 1 : 0; }
   };
   // 지금 몸(골반)이 좌석 중심에서 앞으로 나가 있는 거리(m). 카메라·이름표가 따라간다.
+  // 가까운 카메라용 흐리기(a: 1 불투명 … 0 투명). 공유 재질은 그대로 두고 이 아바타만 복제 재질(처음 한 번 만든다)로 바꿔 opacity 만 바꾼다.
+  // 이름표도 함께(이름표 재질은 이름별로 공유되므로 복제본; 이름이 바뀌면 다시 복제). 같은 값이면 아무것도 안 한다(할당 0).
+  function fadeClone(m) {
+    var c = m.clone();
+    c.onBeforeCompile = m.onBeforeCompile; c.customProgramCacheKey = m.customProgramCacheKey;
+    c.transparent = true; c.depthWrite = true;
+    return c;
+  }
+  var FADE_LV = ['near', 'mid'], FADE_K = ['smooth', 'cloth'];
+  Avatar.prototype.setFade = function (a) {
+    a = a >= 0.995 ? 1 : (a < 0 ? 0 : a);
+    if (a === this.fadeA) return;
+    this.fadeA = a;
+    var M = getMats(), on = a < 1;
+    if (on && !this._fm) this._fm = { smooth: fadeClone(M.smooth), cloth: fadeClone(M.cloth) };
+    var fm = this._fm, i, j;
+    if (fm) { fm.smooth.opacity = a; fm.cloth.opacity = a; }
+    for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+      var m = this.meshes[FADE_LV[i]][FADE_K[j]];
+      if (m) m.material = on ? fm[FADE_K[j]] : M[FADE_K[j]];
+    }
+    if (this.shadow) this.shadow.visible = this.lod < 2 && a > 0.3;
+    if (this.rosary) this.rosary.userData.fadeHide = a < 0.5;
+    var tg = this.tag;
+    if (tg) {
+      var base = this._tf && tg.material === this._tf ? this._tfBase : tg.material;
+      if (on) {
+        if (!this._tf || this._tfBase !== base) { this._tf = base.clone(); this._tfBase = base; }
+        this._tf.opacity = a; tg.material = this._tf;
+      } else tg.material = base;
+    }
+  };
   Avatar.prototype.kneelOffset = function () { return this.kneelAmt * this.sitAmt * this.kneelFwd; };
   // 묵주를 든다/내려놓는다(SPEC §32). 처음 들 때 메시를 만든다(지오메트리·재질 공유). 손 위치는 update 가 매 프레임 맞춘다.
   Avatar.prototype.setRosary = function (b) {
@@ -1220,7 +1252,7 @@
     var ro = this.rosary;
     if (ro) {
       var ra = this.rosaryAmt;
-      if (ra < 0.02 || this.lod !== 0) ro.visible = false;   // 가까운 아바타(LOD0)만 그린다
+      if (ra < 0.02 || this.lod !== 0 || ro.userData.fadeHide) ro.visible = false;   // 가까운 아바타(LOD0)만 그린다
       else {
         var hR = bs[B.haR];
         hR.updateWorldMatrix(true, false);
