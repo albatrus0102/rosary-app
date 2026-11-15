@@ -7,13 +7,14 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
-const a = process.argv.slice(2), o = { rounds: 3, churches: ['stpeter', 'milan', 'florence', 'stpaul'], root: process.env.CHURCH_ROOT || path.resolve(here, '../../assets/church') };
-for (let i = 0; i < a.length; i++) { if (a[i] === '--rounds') o.rounds = +a[++i]; else if (a[i] === '--churches') o.churches = a[++i].split(','); }
+const a = process.argv.slice(2), o = { rounds: 3, solo: '0', churches: ['stpeter', 'milan', 'florence', 'stpaul'], root: process.env.CHURCH_ROOT || path.resolve(here, '../../assets/church') };
+for (let i = 0; i < a.length; i++) { if (a[i] === '--rounds') o.rounds = +a[++i]; else if (a[i] === '--churches') o.churches = a[++i].split(','); else if (a[i] === '--solo') o.solo = '1'; }
+// --solo: 혼자 모드 배경 신자 켬. 신자 이름표 질감은 이름별 캐시(avatar.js)라 처음 몇 바퀴는 새 이름만큼 늘어난다(이름 수로 묶인 값, 누수 아님).
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--js-flags=--expose-gc', '--enable-precise-memory-info'] });
 const page = await browser.newPage({ viewport: { width: 240, height: 400 } });
 const errors = []; page.on('pageerror', (e) => errors.push(e.message));
 await page.addInitScript(() => { const q = []; let tNow = 0; window.requestAnimationFrame = (cb) => { q.push(cb); return q.length; }; window.__step = (n, dtMs) => { for (let i = 0; i < n; i++) { const cbs = q.splice(0); tNow = (tNow || performance.now()) + dtMs; cbs.forEach((cb) => cb(tNow)); } }; });
-await page.goto('file://' + o.root + '/test.html?' + new URLSearchParams({ church: o.churches[0], autotier: '0', quality: 'high', solo: '1', hideui: '1' }));
+await page.goto('file://' + o.root + '/test.html?' + new URLSearchParams({ church: o.churches[0], autotier: '0', quality: 'high', solo: o.solo, hideui: '1' }));
 await page.waitForFunction(() => window.__church && window.__church.world, null, { timeout: 180000, polling: 200 });
 async function settle() {
   for (let i = 0; i < 40; i++) {
