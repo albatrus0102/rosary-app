@@ -273,7 +273,7 @@
       var floorH = logic.floorY(slots[i].x, slots[i].z);
       slotY0[i] = floorH + slots[i].y;
       m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z);
-      if (slots[i].float) { m4.scale(tv.set(1.5, 0.4, 1.5)); floats.push(i); }   // 물 위에 뜬 초: 납작한 받침(원반)
+      if (slots[i].float) { floats.push(i); m4.copy(zeroM); }   // 물 위에 뜬 초: 붉은 유리 받침 없이 납작한 초(원반)만 뜬다
       cups.setMatrixAt(i, m4);
       candles.setMatrixAt(i, zeroM); candles.setColorAt(i, tc.setHex(0xffffff));
     }
@@ -289,16 +289,16 @@
       if (s < 0 || s >= nSlots) return;
       if (!lit[s]) litCount++;
       lit[s] = { intention: c.intention | 0, until: c.until || 0 };
-      var fl0 = slots[s].float;   // 뜬 초는 짧은 초(높이 0.12)
-      m4.makeTranslation(slots[s].x, slotY0[s] + (fl0 ? 0.02 : 0.05), slots[s].z);
-      if (fl0) m4.scale(tv.set(1, 0.6, 1));
+      var fl0 = slots[s].float;   // 뜬 초는 납작한 원반 초(반지름 0.09, 높이 0.08)
+      m4.makeTranslation(slots[s].x, slotY0[s] + (fl0 ? 0 : 0.05), slots[s].z);
+      if (fl0) m4.scale(tv.set(1.7, 0.4, 1.7));
       candles.setMatrixAt(s, m4);
       candles.setColorAt(s, tc.setHex(INTENT_COL[(c.intention | 0) % 8]));
       candles.instanceMatrix.needsUpdate = true; candles.instanceColor.needsUpdate = true;
       if (!flames[s]) {
         var f = new T.Sprite(flameMat);
         f.scale.set(0.1, 0.16, 1); f.renderOrder = 6;
-        f.position.set(slots[s].x, slotY0[s] + (fl0 ? 0.2 : 0.3), slots[s].z);
+        f.position.set(slots[s].x, slotY0[s] + (fl0 ? 0.17 : 0.3), slots[s].z);
         world.add(f); flames[s] = { sp: f, ph: Math.random() * 6.28 };
       }
       flames[s].sp.visible = true;
@@ -553,13 +553,11 @@
           for (var fi = 0; fi < floats.length; fi++) {
             var fs = floats[fi], fph = fs * 1.7, fS = slots[fs];
             var fx2 = fS.x + 0.012 * Math.sin(t * 0.31 + fph), fz2 = fS.z + 0.012 * Math.cos(t * 0.27 + fph * 1.3), fy2 = slotY0[fs] + 0.004 * Math.sin(t * 0.9 + fph);
-            m4.makeTranslation(fx2, fy2, fz2).scale(tv.set(1.5, 0.4, 1.5)); cups.setMatrixAt(fs, m4);
-            if (lit[fs]) {
-              m4.makeTranslation(fx2, fy2 + 0.02, fz2).scale(tv.set(1, 0.6, 1)); candles.setMatrixAt(fs, m4);
-              if (flames[fs]) { flames[fs].sp.position.x = fx2; flames[fs].sp.position.z = fz2; }
-            }
+            if (!lit[fs]) continue;
+            m4.makeTranslation(fx2, fy2, fz2).scale(tv.set(1.7, 0.4, 1.7)); candles.setMatrixAt(fs, m4);
+            if (flames[fs]) { flames[fs].sp.position.x = fx2; flames[fs].sp.position.z = fz2; }
           }
-          cups.instanceMatrix.needsUpdate = true; candles.instanceMatrix.needsUpdate = true;
+          candles.instanceMatrix.needsUpdate = true;
         }
         clock += dt;
         envTimer += dt;

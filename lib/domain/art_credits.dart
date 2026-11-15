@@ -162,4 +162,10 @@ const List<ArtCredit> churchArtCredits = [
         '틀에 맞게 잘라 크기를 줄임.',
     license: 'Public domain',
   ),
+  ArtCredit(
+    use: '성당 안 성모상(우리 본당·명동·당고개·라테라노·성 바오로·밀라노·피렌체의 성모 기도 자리)',
+    credit: 'AI 생성 성모상(ChatGPT, 사용자 제공) 그림 3점: 흰 돌 성모, 푸른 망토의 원죄 없으신 성모, '
+        '한복 차림에 묵주를 든 성모. 실제 조각 작품을 찍은 사진이 아닙니다. 크기를 줄임.',
+    license: 'AI 생성 이미지(비상업 앱에서 사용)',
+  ),
 ];

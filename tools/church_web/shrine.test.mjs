@@ -77,3 +77,21 @@ test('shrine danggogae: 입구 홀 오른쪽 성모상 앞 둥근 연못(지름 
   }
   assert.equal(Shrine.POND.R * 2, 1.5);
 });
+
+test('shrine statues: 그림 성모상 — 자리마다 그림 묶음이 있고(≤ 110KB js), 성 베드로·마조레는 성화 그대로', async () => {
+  const fs = await import('node:fs'), path = await import('node:path'), url = await import('node:url');
+  const { STATUES } = await import('./build_art_statues.mjs');
+  const dir = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '../../assets/church');
+  const want = { danggogae: 'plain_white', basic: 'immaculate_blue', lateran: 'immaculate_blue', stpaul: 'immaculate_blue', milan: 'immaculate_blue', florence: 'immaculate_blue', myeongdong: 'hanbok_rosary' };
+  for (const [id, key] of Object.entries(want)) assert.equal(Places[id].img, key, id);
+  assert.equal(Places.maggiore.img, undefined); assert.equal(Places.stpeter.img, undefined);
+  for (const key of Object.keys(STATUES)) {
+    const f = path.join(dir, 'art_statue_' + key + '.js'), src = fs.readFileSync(f, 'utf8');
+    assert.ok(src.length <= 110 * 1024, key + ' ' + src.length);
+    const sb = { window: {} }; new Function('window', src)(sb.window);
+    const a = sb.window.ChurchArt.statues[key];
+    assert.equal(a.w, 512); assert.equal(a.h, 1024); assert.ok(a.src.startsWith('data:image/webp;base64,'));
+  }
+  // 굽은 판: 호 60~90°, 성상 높이 1.3~1.5m. 브라우저가 아니면(시험) kit 도형 성상으로 물러난다 → 빌드가 깨지지 않는다
+  assert.ok(Shrine.STATUE.ARC >= Math.PI / 3 && Shrine.STATUE.ARC <= Math.PI / 2 && Shrine.STATUE.H >= 1.3 && Shrine.STATUE.H <= 1.5);
+});

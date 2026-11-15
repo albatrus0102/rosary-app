@@ -37,6 +37,41 @@
     layout.shrine = { x: p.x, z: p.z, y: p.y || 0, yaw: p.yaw || 0, kind: p.kind, label: p.label_ko || '성모상 앞', stand: layout.candles.stands.length - 1 };
     return layout;
   }
+  // 그림 성모상: 살짝 굽힌 판(호 80°, 볼록한 쪽이 앞)에 알파 그림을 입힌다. alphaTest(혼합 아님) → 정렬 문제·겹쳐 그리기 없음, draw call 1.
+  // 그림 묶음(art_statue_<img>.js)은 이 성당에 들어올 때만 읽고, 월드 해제 때 재질·질감이 함께 놓인다(world.dispose 가 map 을 놓는다).
+  // 브라우저가 아니면(시험) false → kit 도형 성상을 쓴다.
+  var STATUE = { H: 1.42, ARC: 80 * Math.PI / 180, SEG: 10, D0: -0.04 };
+  function imageStatue(ctx, p, f, y0) {
+    var T = ctx.THREE;
+    if (!T || !T.BufferGeometry || typeof document === 'undefined' || !document.head || !document.head.appendChild || typeof Image === 'undefined') return false;
+    var H = STATUE.H, W = H / 2, A = STATUE.ARC, N = STATUE.SEG, R = W / (2 * Math.sin(A / 2)), pos = [], nor = [], uv = [], idx = [];
+    for (var i = 0; i <= N; i++) {
+      var th = -A / 2 + A * i / N, lx = R * Math.sin(th), ld = STATUE.D0 + R * (Math.cos(th) - Math.cos(A / 2));
+      var x = p.x + f[0] * ld + f[1] * lx, z = p.z + f[1] * ld - f[0] * lx, u = 0.5 + Math.sin(th) / (2 * Math.sin(A / 2));
+      var nx = f[0] * Math.cos(th) + f[1] * Math.sin(th), nz = f[1] * Math.cos(th) - f[0] * Math.sin(th);
+      pos.push(x, y0, z, x, y0 + H, z); nor.push(nx, 0, nz, nx, 0, nz); uv.push(u, 0, u, 1);
+      if (i < N) { var a = i * 2; idx.push(a, a + 2, a + 3, a, a + 3, a + 1); }
+    }
+    var g = new T.BufferGeometry();
+    g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new T.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+    var mat = new T.MeshStandardMaterial({ color: 0xb4b0aa, roughness: 0.95, metalness: 0, alphaTest: 0.5, side: T.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0.07 });
+    var mesh = new T.Mesh(g, mat); mesh.name = 'shrine_statue'; mesh.visible = false; mesh.userData.noCam = true; mesh.userData.noAO = true;
+    var dead = false; mat.addEventListener('dispose', function () { dead = true; });
+    ctx.add(mesh); if (ctx.stats) ctx.stats.meshes++;
+    function apply() {
+      var a = root.ChurchArt && root.ChurchArt.statues && root.ChurchArt.statues[p.img]; if (!a || dead) return;
+      var im = new Image();
+      im.onload = function () {
+        if (dead) return;
+        var tx = new T.Texture(im); tx.encoding = T.sRGBEncoding; tx.anisotropy = 4; tx.needsUpdate = true;
+        mat.map = tx; mat.emissiveMap = tx; mat.needsUpdate = true; mesh.visible = true;
+      };
+      im.src = a.src;
+    }
+    if (root.ChurchArt && root.ChurchArt.statues && root.ChurchArt.statues[p.img]) apply();
+    else { var sc = document.createElement('script'); sc.src = 'art_statue_' + p.img + '.js'; sc.async = true; sc.onload = apply; document.head.appendChild(sc); }
+    return true;
+  }
   function build(ctx, layout) {
     var sh = layout && layout.shrine, p = sh && placeOf(layout.id);
     if (!p) return null;
@@ -46,12 +81,14 @@
     }
     var STONE = 0xe9e3d6, IRON = 0x2e2a26, WOOD = 0x5a3a24;
     if (p.kind !== 'existing') {
-      B(-0.27, 0, 0, 0.05, 1.1, 2.55, 0x26365c);                 // 뒤판(짙은 남색)
+      var BACK = p.kind === 'pond' ? 0x8a6a4a : 0x26365c;         // 뒤판(짙은 남색 / 당고개는 옹기빛 갈색)
+      B(-0.27, 0, 0, 0.05, 1.1, 2.55, BACK);
+      if (p.img) { B(-0.12, -0.525, 0, 0.3, 0.05, 2.55, BACK); B(-0.12, 0.525, 0, 0.3, 0.05, 2.55, BACK); }   // 얕은 벽감(옆 날개): 그림 성상이 정면 위주로 보이게
       B(-0.26, 0, 2.55, 0.09, 1.2, 0.07, 0xc9a24a, 'metal');     // 금빛 갓
       B(0, 0, 0, 0.5, 0.62, 0.85, STONE, 'gloss');               // 받침
       B(0, 0, 0.85, 0.56, 0.7, 0.06, STONE, 'gloss');
       var plain = p.kind === 'plain' || p.kind === 'pond';
-      ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
+      if (!(p.img && imageStatue(ctx, p, f, y + 0.91))) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
     }
     if (p.kind === 'pond') {
       // 둥근 연못: 낮은 돌 테두리(20조각, kit 묶음에 합쳐진다) + 어두운 바닥 + 물 표면(짙은 청록, 불투명 광택 — 실시간 반사·투명 없음)
@@ -81,7 +118,7 @@
     ctx.addCollider(fp);
     return sh;
   }
-  var S = { SLOTS: SLOTS, POND: POND, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
+  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
   // 레이아웃 등록을 감싼다: 이미 등록된 것 + 앞으로 등록될 것 모두
   var L = root.ChurchLayouts;
   if (L && !L._shrineWrapped) {

@@ -186,6 +186,21 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 | assets/church/art_florence.js — 호크우드(원본 art/images_src/florence/hawkwood.webp, 53KB) | https://commons.wikimedia.org/wiki/File:Paolo_uccello,_Monumento_equestre_di_John_Hawkwood,_1436,_01-edit.jpg | 파올로 우첼로 〈존 호크우드 기마 기념상〉 1436 · 사진 Sailko | 원작 Public domain · 사진 **CC BY 3.0**(저작자 표시: Sailko) | 피렌체 대성당 북 측랑 3칸 · 틀 비율로 잘라 크기를 줄임 · 상세 `licenses/florence.md` |
 | assets/church/art_florence.js — 단테(원본 art/images_src/florence/dante.webp, 42KB) | https://commons.wikimedia.org/wiki/File:Dante_Domenico_di_Michelino_Duomo_Florence.jpg | 도메니코 디 미켈리노 〈단테와 신곡〉 1465 · 사진 Jastrow | 원작 Public domain · 사진 Public domain(촬영자 공개) | 피렌체 대성당 북 측랑 4칸 · 틀 비율로 잘라 크기를 줄임 · 상세 `licenses/florence.md` |
 
+## AI 생성 성모상 그림 (art/statues/*.png → assets/church/art_statue_<키>.js, 2026-11-15 추가)
+
+사용자가 ChatGPT 로 만들어 올린 투명 배경 PNG 3장(887×1774). 실제 조각 작품의 사진이 아니며, 특정 작가의 작품을 본뜨지 않은 일반적인 성모상 그림이다.
+`tools/church_web/build_art_statues.mjs` 가 512×1024 webp(알파 포함, 80KB 이하)로 줄인 것을 data URI 묶음으로 만들고, `shrine.js` 가 그 성당에 들어올 때만 읽어 굽은 판(호 80°, alphaTest)에 입힌다.
+
+| 키 | 원본 | 내용 | 쓰는 성당 |
+|---|---|---|---|
+| `plain_white` | `art/statues/mary_plain_white.png` | 흰 돌 성모(소박한 형태) | 당고개(입구 홀 오른쪽 연못 앞) |
+| `immaculate_blue` | `art/statues/mary_immaculate_blue.png` | 푸른 망토·열두 별 관의 원죄 없으신 성모 | 우리 본당, 라테라노, 성 바오로, 밀라노, 피렌체 |
+| `hanbok_rosary` | `art/statues/mary_hanbok_rosary.png` | 한복 차림에 묵주를 든 성모 | 명동 |
+
+- 출처 표기: 앱 '성화 출처' 화면 → '성당 안 성화' → 'AI 생성 성모상(ChatGPT, 사용자 제공)'.
+- 권리: ChatGPT 생성 이미지. 앱은 완전 비상업(BACKLOG '결정(2026-11-15)'). 유료화·광고·후원을 도입하면 ChatGPT 생성 이미지 약관을 이 3장까지 포함해 다시 확인한다.
+- 성 베드로('기둥의 성모' 성화)·마조레('로마 백성의 구원' 성화)는 이 그림을 쓰지 않는다.
+
 ## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
 
 - **번들에 더한 사진·그림·질감 파일: 없음.** 성당의 모든 표면(황토 미장·쪼갠 돌·마루 2종·불 켜진 한지·옹기 조각 벽·분홍 화강암·신자석 나무)은
