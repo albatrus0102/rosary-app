@@ -10,11 +10,11 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
-const a = process.argv.slice(2), o = { church: 'milan', n: 55, modes: ['legacy', 'stream'], dpr: 2, root: process.env.CHURCH_ROOT || path.resolve(here, '../../assets/church') };
+const a = process.argv.slice(2), o = { church: 'milan', n: 55, modes: ['legacy', 'stream'], dpr: 2, path: 'aisle', root: process.env.CHURCH_ROOT || path.resolve(here, '../../assets/church') };
 let json = null;
 for (let i = 0; i < a.length; i++) {
   if (a[i] === '--church') o.church = a[++i]; else if (a[i] === '--n') o.n = +a[++i]; else if (a[i] === '--modes') o.modes = a[++i].split(',');
-  else if (a[i] === '--dpr') o.dpr = +a[++i]; else if (a[i] === '--json') json = a[++i];
+  else if (a[i] === '--dpr') o.dpr = +a[++i]; else if (a[i] === '--json') json = a[++i]; else if (a[i] === '--path') o.path = a[++i];
 }
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] });
 const out = [];
@@ -42,25 +42,34 @@ for (const mode of o.modes) {
   }
   const ready = Date.now() - t0;
   const entry = await page.evaluate(() => ({ long: { ...__long }, heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : -1 }));
-  // 신랑 걷기: 입구 → 제대 12 지점, 지점마다 6프레임(50ms) — 스트리밍 판단·업로드가 걷는 동안 일어난다
-  const walk = await page.evaluate(() => {
-    const A = __church, gl = A.renderer.getContext(), px = new Uint8Array(4), L = A.world.layout, D = Math.PI / 180, ms = [];
-    let calls = 0, tris = 0;
-    for (let k = 0; k < 12; k++) {
+  // 걷기: 입구 → 제대 12 지점, 지점마다 6프레임(50ms) — 스트리밍 판단·업로드가 걷는 동안 일어난다.
+  // --path aisle(기본): 가짜 창이 걸린 벽에서 3m 안쪽을 좌우 번갈아(가까운 창 1k 가 오르내림) · nave: 신랑 가운데 ±3m
+  // 지점마다 따로 evaluate 하고 사이에 실제 시간을 둔다(비동기 팩 읽기·디코드는 이벤트 루프가 돌아야 끝난다; 한 evaluate 안에서 몰아 돌리면 하나도 끝나지 않는다).
+  await page.evaluate(() => { window.__w = { ms: [], calls: 0, tris: 0 }; window.__long = { n: 0, sum: 0, max: 0 }; });
+  for (let k = 0; k < 12; k++) {
+    await page.evaluate(({ pathMode, k }) => {
+    const A = __church, gl = A.renderer.getContext(), px = new Uint8Array(4), L = A.world.layout, D = Math.PI / 180, W = window.__w, ms = W.ms;
+    {
       const z = L.bounds.z1 - 3 - (L.bounds.z1 - L.bounds.z0 - 8) * k / 11;
-      A.me.x = L.spawn.x + (k % 2 ? 3 : -3); A.me.z = z; A.me.y = A.logic.floorY(A.me.x, A.me.z); A.ctl.yaw = (k % 3 - 1) * 50 * D; A.me.yaw = A.ctl.yaw; A.ctl.pitch = 8 * D; A.camInit = false;
+      const cb = A.world.cameraBounds, wx = Math.min(-cb.x0, cb.x1) - 3;
+      A.me.x = pathMode === 'aisle' ? (k % 2 ? wx : -wx) : L.spawn.x + (k % 2 ? 3 : -3); A.me.z = z; A.me.y = A.logic.floorY(A.me.x, A.me.z); A.ctl.yaw = pathMode === 'aisle' ? (k % 2 ? -1 : 1) * 60 * D : (k % 3 - 1) * 50 * D; A.me.yaw = A.ctl.yaw; A.ctl.pitch = 8 * D; A.camInit = false;
       for (let f = 0; f < 6; f++) {
         const t = performance.now(); __step(1, 50); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); ms.push(performance.now() - t);
-        calls = Math.max(calls, A.renderer.info.render.calls); tris = Math.max(tris, A.renderer.info.render.triangles);
+        W.calls = Math.max(W.calls, A.renderer.info.render.calls); W.tris = Math.max(W.tris, A.renderer.info.render.triangles);
       }
     }
+    }, { pathMode: o.path, k });
+    await page.waitForTimeout(400);
+  }
+  const walk = await page.evaluate(() => {
+    const A = __church, W = window.__w, ms = W.ms.slice(), calls = W.calls, tris = W.tris;
     ms.sort((x, y) => x - y);
     const d = A.place.debug();
-    return { frameMed: Math.round(ms[ms.length >> 1]), frameMax: Math.round(ms[ms.length - 1]), calls, tris, glTex: A.renderer.info.memory.textures,
+    return { walkLongN: __long.n, walkLongMaxMs: Math.round(__long.max), frameMed: Math.round(ms[ms.length >> 1]), frameMax: Math.round(ms[ms.length - 1]), calls, tris, glTex: A.renderer.info.memory.textures,
       glassMB: d.stats.texMb, farMB: d.far ? d.far.mb : 0, resident1k: d.stats.resident, uploads: d.stats.uploads, evicted: d.stats.evicted, created: d.stats.created, uploadMsMax: d.stats.uploadMsMax,
       heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : -1, slots: d.slots, groups: d.groups.length };
   });
-  const r = { mode, church: o.church, n: o.n, dpr: o.dpr, readyMs: ready, longTasks: entry.long.n, longSumMs: Math.round(entry.long.sum), longMaxMs: Math.round(entry.long.max), heapEntryMB: entry.heapMB, ...walk, errors: errors.slice(0, 3) };
+  const r = { mode, path: o.path, church: o.church, n: o.n, dpr: o.dpr, readyMs: ready, longTasks: entry.long.n, longSumMs: Math.round(entry.long.sum), longMaxMs: Math.round(entry.long.max), heapEntryMB: entry.heapMB, ...walk, errors: errors.slice(0, 3) };
   out.push(r);
   console.log(JSON.stringify(r));
   await ctx.close();

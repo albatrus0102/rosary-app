@@ -144,11 +144,11 @@
     function stressSlots(world, real) {
       var srcs = []; real.forEach(function (s) { if (srcs.indexOf(s.win) < 0) srcs.push(s.win); });
       if (!srcs.length) srcs = ['dove_stpeter', 'alabaster_stpaul_1', 'oculus_florence_donatello', 'milan_apse_lower'];
-      var B = world.layout.bounds, out = [], per = Math.ceil(STRESS / 2);
+      var B = world.layout.bounds, cb = world.cameraBounds || B, out = [], per = Math.ceil(STRESS / 2), XW = Math.min(-cb.x0, cb.x1) - 0.3;   // 카메라가 갈 수 있는 벽 안쪽
       for (var k = 0; k < STRESS; k++) {
         var side = k % 2 ? 1 : -1, i = Math.floor(k / 2), z = B.z1 - 4 - (B.z1 - B.z0 - 8) * (per > 1 ? i / (per - 1) : 0.5);
         var src = srcs[k % srcs.length];
-        out.push({ win: 'stress_' + k, src: src, slot: 'stress', index: k, shape: 'rect', x: side * (Math.min(-B.x0, B.x1) - 0.6), y: 4.2, z: z, nx: -side, nz: 0, w: 1.4, h: 2.8 });
+        out.push({ win: 'stress_' + k, src: src, slot: 'stress', index: k, shape: 'rect', x: side * XW, y: 4.2, z: z, nx: -side, nz: 0, w: 1.4, h: 2.8 });
       }
       return out;
     }
@@ -410,7 +410,7 @@
       // 시험용: 지금 카메라로 스트리밍 판단을 바로 한 번 한다(헤드리스 도구가 프레임을 몰아 돌릴 때)
       plan: function () { if (App.camera) plan(App.camera); },
       debug: function () {
-        return { pending: pending, near: lastNearId || null, stats: JSON.parse(JSON.stringify(stats)), slots: slots.length, legacy: LEGACY, stress: STRESS,
+        return { pending: pending, decoding: decoding, upQ: upQ.length, near: lastNearId || null, stats: JSON.parse(JSON.stringify(stats)), slots: slots.length, legacy: LEGACY, stress: STRESS,
           far: far ? { state: far.state, mb: Math.round(far.mb * 10) / 10, n: Object.keys(far.rects).length, ms: far.ms || 0 } : null,
           groups: groups.map(function (g) { return { win: g.win, state: g.state, near: g.near, slots: g.slots.length, ms: g.ms || 0, mb: Math.round(g.mb * 10) / 10 }; }) };
       },
