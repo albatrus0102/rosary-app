@@ -115,3 +115,18 @@ test('render structure guards: one render per vsync, merged post passes, single 
   let planes = 0; sp.ctx.root.traverse((o) => { if (o.isMesh && o.geometry.type === 'PlaneGeometry') planes++; });
   assert.ok(planes <= 4, 'St Peter standalone textured planes after merge: ' + planes);
 });
+
+test('walking past: an in-flight load that is still a candidate is not cancelled; loads + residents never exceed the budget', () => {
+  const bud = { near: 4, nearMb: 100, cell: 128 };
+  const groups = aisle(30);
+  let cancelled = 0;
+  for (let z = 34; z >= -26; z -= 1) {   // 1m 씩 걷기
+    const r = GS.plan(groups, { cam: cam(z), focal: FOCAL / 2, cell: bud.cell }, bud);
+    for (const id of r.evict) { const g = groups.find((x) => x.id === id); if (g.near === 'loading') cancelled++; g.near = 'none'; }
+    for (const g of groups) if (g.near === 'loading') g.near = 'ready';   // 지난번에 읽기 시작한 것은 이제 다 읽혔다
+    for (const id of Array.from(r.load).slice(0, 1)) groups.find((x) => x.id === id).near = 'loading';   // 한 번에 하나씩 읽는다
+    const held = groups.filter((g) => g.near !== 'none').length;
+    assert.ok(held <= bud.near, `z${z}: ${held} > ${bud.near}`);
+  }
+  assert.equal(cancelled, 0, 'no load cancelled while walking at walking pace');
+});
