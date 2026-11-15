@@ -18,6 +18,7 @@
   var FADE = 0.25, NEAR_EVERY = 0.25, NIGHT_K = 0.08, PLAN_EVERY = 0.25;
   var QS = (root.location && root.location.search) || '';
   var LEGACY = /[?&]gstream=0/.test(QS) || !GS;
+  var PHOTOK_Q = (function () { var m = /[?&]photok=([0-9.]+)/.exec(QS); return m ? +m[1] : 0; })();   // 시험용: 밝기 이득 고정(1 = 사진 값 그대로)
   var STRESS0 = (function () { var m = /[?&]gstress=(\d+)/.exec(QS); return m ? Math.min(400, +m[1]) : 0; })();
 
   function create(App, H) {
@@ -329,7 +330,7 @@
     function tuneMat(mat, k, self, night, win) {
       var u = mat.uniforms, env = App.world && App.world.env, pw = env && env.photoWin && win ? env.photoWin[win] : 0;
       u.uK.value = k; u.uSelfTone.value = self;
-      if (u.uGain) u.uGain.value = (env && env.photoK ? env.photoK : 1) * (pw || 1);   // looks.js photoK · photoWin
+      if (u.uGain) u.uGain.value = PHOTOK_Q || (env && env.photoK ? env.photoK : 1) * (pw || 1);   // looks.js photoK · photoWin
       // 후처리가 없을 때(low)는 캔버스에 바로 그린다: 알파 0 표시가 캔버스 알파로 남지 않게 보통 알파 합성으로 바꾼다
       mat.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
       var r = 0.012 * night; u.uRefl.value.set(r, r * 0.7, r * 0.45);

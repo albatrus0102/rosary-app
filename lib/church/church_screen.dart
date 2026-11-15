@@ -15,6 +15,7 @@ import '../domain/stations_series.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_info_sheet.dart';
 import '../ui/prayer_screen.dart';
+import '../ui/stations_guide.dart';
 import '../ui/stations_sheet.dart';
 import 'avatar/avatar_config.dart';
 import 'avatar/avatar_editor_screen.dart';
@@ -1100,6 +1101,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   Future<void> _openCross(int n, {bool logOpen = false}) async {
     if (_sheetOpen || _disposed) return;
     _sheetOpen = true;
+    final churchTheme = ChurchTheme.of(context);
     final StationsSheetResult? r;
     try {
       r = await showStationsSheet(
@@ -1115,6 +1117,29 @@ class _ChurchScreenState extends State<ChurchScreen>
       _sheetOpen = false;
     }
     if (r == null || _disposed) return;
+    if (r.action == StationsSheetAction.guide) {
+      if (!mounted) return;
+      // '함께 바치기': 안내 화면에서 다음 처로 넘어갈 때마다 아바타가 그 처 판 앞으로 걷는다.
+      // 안내가 열려 있는 동안에는 도착해도 묵상 시트를 띄우지 않는다(_sheetOpen).
+      _sheetOpen = true;
+      try {
+        await showStationsGuide(
+          context,
+          start: r.n,
+          series: StationsSeriesCatalog.forChurch(widget.churchId),
+          fixedSeries: true,
+          theme: churchTheme,
+          onStation: (n) {
+            if (_disposed || n > StationsOfCrossWalk.count) return;
+            unawaited(_scene.setJoystick(0, 0));
+            unawaited(_scene.walkTo('cross', index: n - 1));
+          },
+        );
+      } finally {
+        _sheetOpen = false;
+      }
+      return;
+    }
     if (r.action == StationsSheetAction.next &&
         r.n < StationsOfCrossWalk.count) {
       unawaited(_scene.setJoystick(0, 0));

@@ -22,7 +22,7 @@
 
   var K = {
     R: 0.3, FRONT_PAD: 0.35, HALF_W: 6, PLAT_PAD: 0.3, PUBLIC_GAP: 1.0, MIN_HALF_W: 1.2,
-    FULL_WIDTH: 0.8, MAX_STEP_RUN: 10, WAVE_NEAR_ENTRANCE: 8
+    FULL_WIDTH: 0.8, MAX_STEP_RUN: 10, WAVE_NEAR_ENTRANCE: 8, PLAT_MIN_HALF_W: 4.5, CENTRAL: 3, MIN_DEPTH: 2
   };
   var EMOTE = { WAVE: 0, CROSS: 1, BOW: 2 };
 
@@ -136,28 +136,35 @@
     // 표의 front = 앞 가장자리의 세계 좌표(축이 z 면 z, x 면 x)
     if (typeof P.front === 'number') { front = alongZ ? (P.front - sp.z) * ax.z : (P.front - sp.x) * ax.x; how += '+table'; }
 
-    // 3) 폭
-    var halfW = platHalf > 0 ? platHalf + K.PLAT_PAD : K.HALF_W;
+    // 3) 폭과 깊이. 신자 자리(좌석·촛불대 등)는 1m 이상 비켜 둔다:
+    //    축 옆(|v| >= CENTRAL)의 자리는 폭을 줄이고, 축 가까이의 자리(예: 성 베드로 앱스 좌석)는 구역을 그 앞에서 끊는다.
+    //    끊긴 뒤 맨 뒤 신자 자리보다 더 깊은 곳(앱스 제대·주교좌)은 두 번째 구역으로 막는다.
+    var halfW = platHalf > 0 ? Math.max(platHalf + K.PLAT_PAD, K.PLAT_MIN_HALF_W) : K.HALF_W;
     if (typeof P.halfW === 'number') halfW = P.halfW;
-    publicPoints(layout, logic).forEach(function (p) {
-      var u = U(p[0], p[1]), v = Math.abs(V(p[0], p[1]));
-      if (u < front - K.PUBLIC_GAP) return;
-      if (v < halfW + K.PUBLIC_GAP) halfW = Math.max(K.MIN_HALF_W, v - K.PUBLIC_GAP);
-    });
-
-    // 4) AABB(축 정렬)
-    var bb = { x0: B.x0, x1: B.x1, z0: B.z0, z1: B.z1 };
-    var c0 = at(front, -halfW), c1 = at(front, halfW);
-    var out;
-    if (alongZ) {
-      out = { x0: Math.max(B.x0, Math.min(c0.x, c1.x)), x1: Math.min(B.x1, Math.max(c0.x, c1.x)) };
-      if (ax.z < 0) { out.z0 = bb.z0; out.z1 = c0.z; } else { out.z0 = c0.z; out.z1 = bb.z1; }
-    } else {
-      out = { z0: Math.max(B.z0, Math.min(c0.z, c1.z)), z1: Math.min(B.z1, Math.max(c0.z, c1.z)) };
-      if (ax.x < 0) { out.x0 = bb.x0; out.x1 = c0.x; } else { out.x0 = c0.x; out.x1 = bb.x1; }
+    var pub = publicPoints(layout, logic).map(function (p) { return { u: U(p[0], p[1]), v: Math.abs(V(p[0], p[1])) }; })
+      .filter(function (p) { return p.u > front - K.PUBLIC_GAP; }).sort(function (a, b) { return a.u - b.u; });
+    var far = 1e9, lastCentral = -1e9;
+    for (var i = 0; i < pub.length; i++) {
+      var pp = pub[i];
+      if (pp.v >= halfW + K.PUBLIC_GAP) continue;
+      if (pp.v < K.CENTRAL) { if (far > 1e8) far = pp.u - K.PUBLIC_GAP; lastCentral = Math.max(lastCentral, pp.u); continue; }
+      if (pp.u < far + K.PUBLIC_GAP) halfW = Math.max(K.MIN_HALF_W, pp.v - K.PUBLIC_GAP);
     }
+    var segs = [[front, far]];
+    if (far < 1e8 && lastCentral > -1e8) segs.push([lastCentral + K.PUBLIC_GAP, 1e9]);
+
+    // 4) AABB(축 정렬). 첫 구역의 앞 가장자리가 '신랑 쪽'이다(clamp 가 그쪽으로 내린다).
+    function rect(u0, u1) {
+      var a = at(u0, -halfW), b2 = at(Math.min(u1, 1e4), halfW);
+      var r = { x0: Math.max(B.x0, Math.min(a.x, b2.x)), x1: Math.min(B.x1, Math.max(a.x, b2.x)), z0: Math.max(B.z0, Math.min(a.z, b2.z)), z1: Math.min(B.z1, Math.max(a.z, b2.z)) };
+      return (r.x1 - r.x0 > 0.5 && r.z1 - r.z0 > 0.5) ? r : null;
+    }
+    var out = rect(segs[0][0], segs[0][1]);
+    if (!out) return null;
+    out.extra = [];
+    if (segs[1]) { var r2 = rect(segs[1][0], segs[1][1]); if (r2 && (alongZ ? r2.z1 - r2.z0 : r2.x1 - r2.x0) >= K.MIN_DEPTH) out.extra.push(r2); }
+    (P.extra || []).forEach(function (r) { out.extra.push({ x0: Math.min(r.x0, r.x1), x1: Math.max(r.x0, r.x1), z0: Math.min(r.z0, r.z1), z1: Math.max(r.z0, r.z1) }); });
     out.axis = ax; out.front = front; out.halfW = halfW; out.station = st; out.how = how;
-    out.extra = (P.extra || []).map(function (r) { return { x0: Math.min(r.x0, r.x1), x1: Math.max(r.x0, r.x1), z0: Math.min(r.z0, r.z1), z1: Math.max(r.z0, r.z1) }; });
     return out;
   }
 

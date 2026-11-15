@@ -68,7 +68,7 @@ test('danggogae: 스테이션 — 제대 앞(0, -7.6) 축 유도, 봉헌초(4.9,
   assert.ok(near(st.candle[0].x, 4.9, 0.01) && near(st.candle[0].z, 13.5, 0.01), JSON.stringify(st.candle[0]));
   assert.ok(S.free(st.candle[0].x, st.candle[0].z) && S.isReachable(st.candle[0].x, st.candle[0].z));
   assert.notEqual(L.nearestCandleSlot(st.candle[0].x, st.candle[0].z, null), null);
-  assert.equal(L.slots.length, 48);
+  assert.equal(L.slots.length, 48 + 14);   // + 성모 기도 자리 14
   assert.equal(st.font.length, 0);
 });
 

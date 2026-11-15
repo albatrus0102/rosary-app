@@ -76,7 +76,8 @@ async function grabFront(page, slotIndex, fov = 35) {
 export async function colorTest(browser, churches, out, extra = {}) {
   const rows = [];
   for (const id of churches) for (const quality of ['high', 'low']) {
-    const { page, errors } = await open(browser, id, { quality, extra });
+    // photok=1: 밝기 이득(looks.js photoK)을 끄고 '파이프라인이 사진 값을 그대로 내는가'만 잰다
+    const { page, errors } = await open(browser, id, { quality, extra: { photok: '1', ...extra } });
     await freeze(page);
     const slots = await page.evaluate(() => __church.place.slots().map((s, i) => ({ i, win: s.win, slot: s.slot })));
     // 창 종류(win+slot)마다 하나를 잰다. 측정 카메라와 창 사이에 성당 가구(조각상 벽감, 성가대석)가 끼면 색이 아니라 가림을 재게 되므로

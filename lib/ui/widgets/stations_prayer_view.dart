@@ -275,3 +275,13 @@ class StationsMeditationTile extends StatelessWidget {
     );
   }
 }
+
+/// 지시문 한 줄(다른 화면에서도 같은 모양·같은 낭독으로 쓰도록 공개한 것).
+class StationsRubricText extends StatelessWidget {
+  const StationsRubricText(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => _RubricText(text);
+}

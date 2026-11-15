@@ -22,15 +22,15 @@
     keyK: 1, keyTint: 0xffffff, keyTintK: 0, ambK: 1, ambTint: 0xffffff, ambTintK: 0, expK: 1, envK: 1, lampK: 1, candleK: 1, beamK: 1,
     fogTint: 0xffffff, fogTintK: 0, dust: 90, dustK: 1, dustNight: 0,
     sat: 0.94, warm: 0.03, vig: 0.16, con: 0, bloomT: 0.92, bloomS: 0.3, bloomR: 0.55, midBloomS: 0.8, reflK: 1,
-    glassK: 1.8, photoK: 2.4, photoWin: {},
-    night: { glassK: 1.3, photoK: 1.7 }   // 밤: 바깥 빛이 없으니 낮보다 약하게(실내등 대비 은은하게)
+    glassK: 1.8, photoK: 3.0, photoWin: {},
+    night: { glassK: 1.3, photoK: 2.0 }   // 밤: 바깥 빛이 없으니 낮보다 약하게(실내등 대비 은은하게)
   };
   var LOOKS = {
     // 성 베드로: 따뜻한 금빛 키, 낮은 앰비언트, 강한 대비, 청동·금의 번짐, 비네트. 낮의 하얗게 뜬 화면을 누른다.
     stpeter: {
       keyK: 0.9, keyTint: 0xffc887, keyTintK: 0.5, ambK: 0.45, ambTint: 0xffd9a8, ambTintK: 0.4, expK: 0.78, envK: 0.55, lampK: 2.0, candleK: 1.4, beamK: 0.45,
       fogTint: 0xb08a5c, fogTintK: 0.5, dust: 140, dustK: 1.5, dustNight: 0.25, reflK: 0.55,
-      photoWin: { dove_stpeter: 1.6 },   // 후진 '성령의 비둘기' 창: 실제로 후진에서 가장 밝게 빛나는 창(2.4×1.6)
+      photoWin: { dove_stpeter: 1.6 },   // 후진 '성령의 비둘기' 창: 실제로 후진에서 가장 밝게 빛나는 창(3.0×1.6)
       sat: 0.98, warm: 0.07, vig: 0.36, con: 0.32, bloomT: 0.74, bloomS: 0.5, bloomR: 0.62,
       night: { expK: 0.95, ambK: 0.7, lampK: 2.2, candleK: 1.6, con: 0.22, bloomT: 0.7, bloomS: 0.6, vig: 0.38 }
     },

@@ -7,6 +7,7 @@ import '../app/theme.dart';
 import '../app/track.dart';
 import '../domain/stations_of_cross.dart';
 import '../domain/stations_series.dart';
+import 'stations_guide.dart';
 import 'widgets/single_art_image.dart';
 import 'widgets/stations_series_picker.dart';
 import 'widgets/stations_prayer_view.dart';
@@ -30,6 +31,9 @@ enum StationsSheetAction {
 
   /// 14처 뒤 마침 화면까지 마쳤다.
   complete,
+
+  /// 순례: [StationsSheetResult.n]처부터 '함께 바치기'로 바꾼다.
+  guide,
 }
 
 class StationsSheetResult {
@@ -137,6 +141,19 @@ class _StationsSheetState extends State<StationsSheet> {
           .pop(StationsSheetResult(StationsSheetAction.next, _n));
     } else {
       _go(_n + 1);
+    }
+  }
+
+  /// '바치는 법' 안내. 거기서 '함께 바치기'를 고르면 이 처부터 안내 화면을 연다.
+  Future<void> _howTo() async {
+    final guide = await showStationsHowTo(context);
+    if (!guide || !mounted) return;
+    if (_pilgrim) {
+      // 성당 안: 시트를 닫고 성당 화면이 안내 화면을 연다(다음 처로 걷기를 잇는다).
+      Navigator.of(context)
+          .pop(StationsSheetResult(StationsSheetAction.guide, _n));
+    } else {
+      await showStationsGuide(context, start: _n, series: widget.series);
     }
   }
 
@@ -287,7 +304,17 @@ class _StationsSheetState extends State<StationsSheet> {
           const SizedBox(height: AppSpace.sm),
         ],
         StationsPrayerSection(n: st.n),
-        const SizedBox(height: AppSpace.sm),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const ValueKey('stations-howto-link'),
+            style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
+            icon: const Icon(Icons.help_outline),
+            label: const Text('바치는 법'),
+            onPressed: _howTo,
+          ),
+        ),
+        const SizedBox(height: AppSpace.xs),
         // 앱에서 쓴 보조 묵상은 접어 둔다.
         StationsMeditationTile(station: st),
         const SizedBox(height: AppSpace.sm),
@@ -468,6 +495,15 @@ class StationsOfCrossScreen extends StatelessWidget {
             ),
             sliver: SliverList.list(
               children: [
+                StationsHowToCard(
+                  onTap: () async {
+                    final guide = await showStationsHowTo(context);
+                    if (guide && context.mounted) {
+                      await showStationsGuide(context, series: series);
+                    }
+                  },
+                ),
+                const SizedBox(height: AppSpace.xs),
                 const Card.outlined(
                   child: Padding(
                     padding: EdgeInsets.all(AppSpace.sm),
@@ -475,17 +511,30 @@ class StationsOfCrossScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpace.sm),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.icon(
-                    key: const ValueKey('stations-start'),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(64, 48),
+                Wrap(
+                  spacing: AppSpace.xs,
+                  runSpacing: AppSpace.xs,
+                  children: [
+                    FilledButton.icon(
+                      key: const ValueKey('stations-guide'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(64, 48),
+                      ),
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('함께 바치기'),
+                      onPressed: () =>
+                          showStationsGuide(context, series: series),
                     ),
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text('1처부터 묵상하기'),
-                    onPressed: () => _open(context, 1),
-                  ),
+                    OutlinedButton.icon(
+                      key: const ValueKey('stations-start'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(64, 48),
+                      ),
+                      icon: const Icon(Icons.menu_book_outlined),
+                      label: const Text('1처부터 묵상하기'),
+                      onPressed: () => _open(context, 1),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpace.xxs),
                 StationsSeriesButton(auto: series),
