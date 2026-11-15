@@ -23,17 +23,34 @@
   // 최종 패스(G-04): 성당 걷기 = 예전과 같은 색보정(채도 0.94·난색 +3%·비네트) + ACES(three r149 와 같은 식),
   // 감상 프로필 = 보정 없음 + Khronos PBR Neutral(색상각 보존). 사진 창(GlassView 재질)은 알파 0 을 써서 표시하고,
   // 그 화소는 어느 프로필에서든 보정·톤매핑을 건너뛴다(1.0 이하 항등, 넘치면 색상 보존 어깨) → 화면 값 = 사진 값.
+  // (2026-11-15, PERF_SCALE.md §2) 후처리 합치기: 예전에는 AO 합성(전해상도 HalfFloat 쓰기)·블룸 더하기(전해상도 읽고-쓰기)·최종 패스가 따로 돌았다.
+  // 이제 최종 패스 한 번이 beauty × AO(반해상도, 깊이 가중 업샘플) + 블룸을 같은 식으로 계산한다 → 전해상도 패스 2개(모바일 대역폭의 큰 몫)가 없어진다.
+  // 블룸 밝은 부분 추출도 AO 를 곱한 값으로 한다(예전 입력 = AO 합성 결과와 같은 값).
+  var AO_GLSL = 'uniform sampler2D tAO; uniform sampler2D tDF; uniform sampler2D tDH; uniform vec2 halfRes; uniform float bilat; uniform float aoOn;\n' +
+    'float aoAt(vec2 uv){ if (aoOn < 0.5) return 1.0; if (bilat < 0.5) return texture2D(tAO, uv).r;\n' +
+    ' float df = texture2D(tDF, uv).x; vec2 p = uv * halfRes - 0.5; vec2 f = fract(p); vec2 b0 = (floor(p) + 0.5) / halfRes; vec2 px = vec2(1.0) / halfRes; float s = 0.0, w = 0.0;\n' +
+    ' for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) { vec2 q = b0 + vec2(float(i), float(j)) * px; float bw = (i == 0 ? 1.0 - f.x : f.x) * (j == 0 ? 1.0 - f.y : f.y);\n' +
+    '  float dw = 1.0 / (1e-5 + abs(texture2D(tDH, q).x - df) * 400.0); float ww = bw * dw + 1e-6; s += texture2D(tAO, q).r * ww; w += ww; }\n' +
+    ' return s / w; }\n';
+  function aoUniforms() { return { tAO: { value: null }, tDF: { value: null }, tDH: { value: null }, halfRes: { value: new T.Vector2(1, 1) }, bilat: { value: 1 }, aoOn: { value: 0 } }; }
   var FINAL_SHADER = {
-    uniforms: { tDiffuse: { value: null }, vignette: { value: 0.16 }, sat: { value: 0.94 }, warm: { value: 0.03 }, uExposure: { value: 1 }, curve: { value: 0 }, glassOn: { value: 1 }, con: { value: 0 } },
+    uniforms: { tDiffuse: { value: null }, vignette: { value: 0.16 }, sat: { value: 0.94 }, warm: { value: 0.03 }, uExposure: { value: 1 }, curve: { value: 0 }, glassOn: { value: 1 }, con: { value: 0 },
+      tAO: { value: null }, tDF: { value: null }, tDH: { value: null }, halfRes: { value: null }, bilat: { value: 1 }, aoOn: { value: 0 }, tBloom: { value: null }, bloomOn: { value: 0 }, bloomView: { value: 0 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform sampler2D tDiffuse; uniform float vignette; uniform float sat; uniform float warm; uniform float uExposure; uniform float curve; uniform float glassOn; uniform float con; varying vec2 vUv;\n' +
+      'uniform sampler2D tBloom; uniform float bloomOn; uniform float bloomView;\n' + AO_GLSL +
       'vec3 acesFit(vec3 v){ vec3 a = v * (v + 0.0245786) - 0.000090537; vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081; return a / b; }\n' +
       'vec3 acesTM(vec3 c){ const mat3 I = mat3(vec3(0.59719, 0.07600, 0.02840), vec3(0.35458, 0.90834, 0.13383), vec3(0.04823, 0.01566, 0.83777));\n' +
       ' const mat3 O = mat3(vec3(1.60475, -0.10208, -0.00327), vec3(-0.53108, 1.10813, -0.07276), vec3(-0.07367, -0.00605, 1.07602));\n' +
       ' c *= uExposure / 0.6; c = I * c; c = acesFit(c); c = O * c; return clamp(c, 0.0, 1.0); }\n' +
       NEUTRAL_GLSL +
       'vec3 glassTM(vec3 c){ float p = max(c.r, max(c.g, c.b)); if (p <= 1.0) return c; float w = 1.0 - 1.0 / (1.0 + 0.6 * (p - 1.0)); return mix(c / p, vec3(1.0), w); }\n' +
-      'void main(){ vec4 s = texture2D(tDiffuse, vUv); vec3 c = s.rgb; float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); vec3 g = mix(vec3(l), c, sat); g *= vec3(1.0 + warm, 1.0, 1.0 - warm);\n' +
+      'void main(){ vec4 s = texture2D(tDiffuse, vUv);\n' +
+      // 예전 AO 합성: rgb × mix(1, AO, 알파) (사진 창 화소 = 알파 0 은 AO 없음)
+      ' s.rgb *= mix(1.0, aoAt(vUv), clamp(s.a, 0.0, 1.0));\n' +
+      // 예전 블룸 더하기(혼합 상태를 식으로): 걷기 = rgb += 블룸·블룸알파·대상 알파(사진 창에는 번지지 않음, 알파 그대로), 감상 = rgb += 블룸·블룸알파, 알파 += 블룸알파²
+      ' if (bloomOn > 0.5) { vec4 t = texture2D(tBloom, vUv); vec3 ad = t.rgb * t.a; if (bloomView > 0.5) { s.rgb += ad; s.a += t.a * t.a; } else s.rgb += ad * s.a; }\n' +
+      ' vec3 c = s.rgb; float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); vec3 g = mix(vec3(l), c, sat); g *= vec3(1.0 + warm, 1.0, 1.0 - warm);\n' +
       ' float d = distance(vUv, vec2(0.5)); g *= 1.0 - vignette * smoothstep(0.3, 0.9, d);\n' +
       ' vec3 sc = curve > 0.5 ? neutralTM(g * uExposure) : acesTM(g);\n' +
       ' sc = mix(sc, sc * sc * (3.0 - 2.0 * sc), con);\n' +
@@ -109,6 +126,31 @@
     var aoDiv = /[?&]aofull=1/.test(root.location ? root.location.search : '') ? 1 : 2;
     function aoW() { return Math.max(2, Math.round(W * PR / aoDiv)); }
     function aoH() { return Math.max(2, Math.round(H * PR / aoDiv)); }
+    var postMerge = !/[?&]postmerge=0/.test(root.location ? root.location.search : ''), aoU = aoUniforms(), bloomHP = null;
+    // UnrealBloomPass(r149).render 와 같은 순서(추출 → 밉 블러 → 합성)이되, 추출은 AO 를 곱하고 마지막 '입력 위에 더하기'는 하지 않는다.
+    function bloomRender(r, writeBuffer, readBuffer) {
+      var b = bloom, oac = r.autoClear;
+      r.getClearColor(b._oldClearColor); b.oldClearAlpha = r.getClearAlpha();
+      r.autoClear = false; r.setClearColor(b.clearColor, 0);
+      var hu = bloomHP.uniforms;
+      hu.tDiffuse.value = readBuffer.texture; hu.luminosityThreshold.value = b.threshold;
+      b.fsQuad.material = bloomHP; r.setRenderTarget(b.renderTargetBright); r.clear(); b.fsQuad.render(r);
+      var inp = b.renderTargetBright;
+      for (var i = 0; i < b.nMips; i++) {
+        var m = b.separableBlurMaterials[i];
+        b.fsQuad.material = m;
+        m.uniforms.colorTexture.value = inp.texture; m.uniforms.direction.value = X.UnrealBloomPass.BlurDirectionX;
+        r.setRenderTarget(b.renderTargetsHorizontal[i]); r.clear(); b.fsQuad.render(r);
+        m.uniforms.colorTexture.value = b.renderTargetsHorizontal[i].texture; m.uniforms.direction.value = X.UnrealBloomPass.BlurDirectionY;
+        r.setRenderTarget(b.renderTargetsVertical[i]); r.clear(); b.fsQuad.render(r);
+        inp = b.renderTargetsVertical[i];
+      }
+      var cu = b.compositeMaterial.uniforms;
+      b.fsQuad.material = b.compositeMaterial;
+      cu.bloomStrength.value = b.strength; cu.bloomRadius.value = b.radius; cu.bloomTintColors.value = b.bloomTintColors;
+      r.setRenderTarget(b.renderTargetsHorizontal[0]); r.clear(); b.fsQuad.render(r);
+      r.setClearColor(b._oldClearColor, b.oldClearAlpha); r.autoClear = oac;
+    }
     function ensureComposer() {
       if (R.composer || !X.EffectComposer || !curScene) return;
       var hiT = R.tier === 'high';
@@ -155,8 +197,8 @@
           depthTest: false, depthWrite: false, toneMapped: false, blending: T.NoBlending
         });
         var ssaoRef = ssao;
-        ssao.aoMix = aoMix;
-        ssao.needsSwap = true;
+        ssao.aoMix = aoMix;   // ?postmerge=0 (예전 경로: 따로 합성) 비교용
+        ssao.needsSwap = !postMerge;
         // EffectComposer.setSize 가 모든 패스에 전해상도를 넘기므로 AO 는 여기서 나눈다
         var ssaoSet = ssao.setSize.bind(ssao);
         ssao.setSize = function (w, h) { ssaoSet(Math.max(2, Math.round(w / aoDiv)), Math.max(2, Math.round(h / aoDiv))); };
@@ -171,11 +213,15 @@
           u.tDiffuse.value = readBuffer.texture;
           me.renderPass(r, me.ssaoMaterial, me.ssaoRenderTarget);
           me.renderPass(r, me.blurMaterial, me.blurRenderTarget);
+          aoU.tAO.value = me.blurRenderTarget.texture; aoU.tDF.value = readBuffer.depthTexture || null; aoU.tDH.value = me.normalRenderTarget.depthTexture;
+          aoU.bilat.value = readBuffer.depthTexture ? 1 : 0; aoU.halfRes.value.set(me.width, me.height); aoU.aoOn.value = 1;
+          if (postMerge) return;   // 합성은 블룸 추출·최종 패스가 aoAt() 로 한다(전해상도 쓰기 없음)
           var mu = aoMix.uniforms;
           mu.tAO.value = me.blurRenderTarget.texture; mu.tBeauty.value = readBuffer.texture;
-          mu.tDF.value = readBuffer.depthTexture || null; mu.tDH.value = me.normalRenderTarget.depthTexture; mu.bilat.value = readBuffer.depthTexture ? 1 : 0;
+          mu.tDF.value = aoU.tDF.value; mu.tDH.value = aoU.tDH.value; mu.bilat.value = aoU.bilat.value;
           mu.halfRes.value.set(me.width, me.height);
           me.renderPass(r, aoMix, writeBuffer);
+          aoU.aoOn.value = 0;
         };
         // 쓰지 않는 beauty 타깃은 비운다(메모리)
         try { ssao.beautyRenderTarget.setSize(1, 1); ssao.beautyRenderTarget.setSize = function () {}; } catch (e) { /* ignore */ }
@@ -186,6 +232,16 @@
         // 보통(mid): 블룸 사슬을 한 단계 더 작게(1/4 해상도부터). 높음은 예전 그대로(1/2). addPass 가 곧바로 setSize 를 부르므로 그 전에 바꾼다.
         if (!hiT) { var bs = bloom.setSize.bind(bloom); bloom.setSize = function (w, h) { bs(Math.max(2, Math.round(w / 2)), Math.max(2, Math.round(h / 2))); }; }
         c.addPass(bloom);
+        if (postMerge) {
+          // 밝은 부분 추출 = 예전 셰이더(LuminosityHighPass) × AO. 마지막 '입력 위에 더하기' 패스는 하지 않는다(최종 패스가 tBloom 을 읽는다).
+          var hpU = T.UniformsUtils.merge([bloom.highPassUniforms, aoUniforms()]);
+          hpU.smoothWidth.value = bloom.highPassUniforms.smoothWidth.value;
+          bloomHP = new T.ShaderMaterial({ uniforms: hpU, vertexShader: bloom.materialHighPassFilter.vertexShader, depthTest: false, depthWrite: false,
+            fragmentShader: 'uniform sampler2D tDiffuse; uniform vec3 defaultColor; uniform float defaultOpacity; uniform float luminosityThreshold; uniform float smoothWidth; varying vec2 vUv;\n' + AO_GLSL +
+              'void main(){ vec4 texel = texture2D(tDiffuse, vUv); texel.rgb *= mix(1.0, aoAt(vUv), clamp(texel.a, 0.0, 1.0)); float v = dot(texel.xyz, vec3(0.299, 0.587, 0.114));\n' +
+              ' vec4 outputColor = vec4(defaultColor.rgb, defaultOpacity); float alpha = smoothstep(luminosityThreshold, luminosityThreshold + smoothWidth, v); gl_FragColor = mix(outputColor, texel, alpha); }' });
+          bloom.render = bloomRender;
+        }
         // 블룸을 장면에 더하는 마지막 합성(G-29): 예전(AdditiveBlending = 블룸 rgb × 블룸 알파를 더함)과 같은 값을 미리 곱해서 내보내고,
         // 걷기 프로필에서는 '대상 알파'를 곱해 더한다 → 사진 창 화소(알파 0 표시)에는 주변의 밝은 금·돌 블룸이 번지지 않고(창 색 불변, 알파 표시도 유지),
         // 그 밖의 화소(알파 1)는 예전과 같은 값. 감상 프로필은 예전 식 그대로(applyProfile).
@@ -198,6 +254,8 @@
       }
       finalPass = new X.ShaderPass(FINAL_SHADER);
       finalPass.material.toneMapped = false;
+      // AO 유니폼은 최종 패스·블룸 추출이 같은 객체를 나눠 쓴다(SSAO 패스가 프레임마다 채운다)
+      ['tAO', 'tDF', 'tDH', 'halfRes', 'bilat', 'aoOn'].forEach(function (k) { finalPass.uniforms[k] = aoU[k]; if (bloomHP) bloomHP.uniforms[k] = aoU[k]; });
       c.addPass(finalPass);
       R.composer = c;
       applyProfile();
@@ -207,7 +265,8 @@
       try { R.composer.renderTarget1.dispose(); R.composer.renderTarget2.dispose(); } catch (e) { /* ignore */ }
       if (ssao && ssao.dispose) ssao.dispose();
       if (bloom && bloom.dispose) bloom.dispose();
-      R.composer = null; ssao = bloom = finalPass = rpass = null;
+      if (bloomHP) bloomHP.dispose();
+      R.composer = null; ssao = bloom = finalPass = rpass = bloomHP = null; aoU.aoOn.value = 0;
     }
 
     R.resize = function (w, h, pr) {
@@ -299,7 +358,13 @@
         ensureComposer();
         if (rpass) { rpass.scene = scene; rpass.camera = camera; }
         if (ssao) { ssao.scene = scene; ssao.camera = camera; }
-        if (finalPass) finalPass.uniforms.uExposure.value = renderer.toneMappingExposure;
+        if (finalPass) {
+          var fu = finalPass.uniforms;
+          fu.uExposure.value = renderer.toneMappingExposure;
+          aoU.aoOn.value = 0;   // SSAO 패스가 이번 프레임에 돌면 1 로 채운다
+          fu.bloomOn.value = postMerge && bloom && bloom.enabled ? 1 : 0; fu.bloomView.value = R.profile === 'view' ? 1 : 0;
+          fu.tBloom.value = bloom ? bloom.renderTargetsHorizontal[0].texture : null;
+        }
         R.composer.render(dt);
       } else {
         renderer.render(scene, camera);

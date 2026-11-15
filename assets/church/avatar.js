@@ -469,7 +469,7 @@
   ];
   var COAT_YS_MID = [[1.446, 1.400, 1.280, 1.110, 0.940, 0.740, 0.555], [1.446, 1.400, 1.280, 1.120, 0.960, 0.795]];
   function buildCoat(mb, q) {
-    var ys = (q === 0 ? COAT_YS : COAT_YS_MID)[GN], nu = q === 0 ? 18 : 10, rings = [], hem = HEM[GN];
+    var ys = (q === 0 ? COAT_YS : COAT_YS_MID)[GN], nu = q === 0 ? (GN ? 18 : 24) : 10, rings = [], hem = HEM[GN];   // 여성 원피스는 열 24(앉은 자락 옆 모서리를 둥글게)
     ys.forEach(function (y) { var d = TORSO(y); rings.push({ c: [0, y, d[2]], ru: d[0], rv: d[1], n: TORSO_N }); });
     loft(mb, rings, {
       nu: nu, inside: [0, 1.1, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COAT,
@@ -478,7 +478,7 @@
     // 아랫단 트림(가는 금색 띠)
     var hy = q === 0 ? [hem, hem + 0.007, hem + 0.020, hem + 0.033, hem + 0.040] : [hem, hem + 0.020, hem + 0.040], ho = q === 0 ? [0.001, 0.007, 0.009, 0.007, 0.001] : [0.002, 0.009, 0.002], hr = [];
     hy.forEach(function (y, k) { var d = TORSO(y); hr.push({ c: [0, y, d[2]], ru: d[0] + ho[k], rv: d[1] + ho[k], n: TORSO_N }); });
-    loft(mb, hr, { nu: q === 0 ? 18 : 10, inside: [0, hem + 0.02, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COATIN, ao: 1 });
+    loft(mb, hr, { nu: nu, inside: [0, hem + 0.02, 0], w: function (i, j, p) { return torsoW(p, p[1]); }, reg: R.COATIN, ao: 1 });
     // 목 깃(가늘고 둥근 크림색 띠)
     var cy = 1.449, cnu = q === 0 ? 18 : 10, cnv = q === 0 ? 5 : 3, crx = 0.060, crz = 0.060, cr = 0.0125;
     surf(mb, {
