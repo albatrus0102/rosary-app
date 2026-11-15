@@ -77,7 +77,7 @@ test('forSlot / winsOf / contain', () => {
 });
 
 test('builders announce photo slots with the photo aspect (no distortion, no gap) inside the building', () => {
-  const want = { florence: 3, stpeter: 1, stpaul: 64, milan: 1 };
+  const want = { florence: 3, stpeter: 1, stpaul: 42, milan: 1 };   // 성 바오로: 측랑 22 + 신랑 고창 20(H-1 D1: 고창은 하나 건너 하나, 한쪽 10)
   for (const ch of churches) {
     const slots = slotsOf(ch);
     assert.equal(slots.length, want[ch.id] || 0, ch.id + ' slot count');
@@ -108,9 +108,9 @@ test('builders announce photo slots with the photo aspect (no distortion, no gap
   // 성 바오로: 두 사진이 번갈아, 좌우 대칭
   const pa = slotsOf(church('stpaul'));
   const n1 = pa.filter((s) => s.win === 'alabaster_stpaul_1').length, n2 = pa.filter((s) => s.win === 'alabaster_stpaul_2').length;
-  assert.equal(n1 + n2, 64); assert.ok(Math.abs(n1 - n2) <= 4);
-  assert.equal(pa.filter((s) => s.x > 0).length, 32);
-  assert.equal(pa.filter((s) => s.slot === 'clerestory').length, 42);
+  assert.equal(n1 + n2, 42); assert.ok(Math.abs(n1 - n2) <= 4);
+  assert.equal(pa.filter((s) => s.x > 0).length, 21);
+  assert.equal(pa.filter((s) => s.slot === 'clerestory').length, 20);
 });
 
 test('?photoglass=0 turns the table off: builders fall back to the old procedural windows', () => {
@@ -118,7 +118,7 @@ test('?photoglass=0 turns the table off: builders fall back to the old procedura
   for (const ch of off) assert.equal(slotsOf(ch).length, 0, ch.id);
   // 성 바오로 고창은 예전 치수(폭 0.92)로 돌아간다
   const hi = off.find((c) => c.id === 'stpaul').windows.filter((w) => w.y > 9 && Math.abs(w.w - 0.92) < 1e-6);
-  assert.equal(hi.length, 42);
+  assert.equal(hi.length, 20);
   // 다른 성당(대응표에 없는 곳)은 켜든 끄든 창 목록이 같다
   for (const id of ['lateran', 'maggiore', 'myeongdong', 'basic', 'danggogae']) {
     const a = church(id), b = off.find((c) => c.id === id);
