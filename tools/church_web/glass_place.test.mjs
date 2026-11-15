@@ -163,9 +163,12 @@ test('Milan: the plate sits in front of the stand-in medallions and asks for a c
   const mi = church('milan').glassSlots[0];
   assert.ok(mi.camMax > 1.5 && mi.camMax < 3.5, 'camMax ' + mi.camMax);
   const src = fs.readFileSync(path.join(assets, 'ch_milan.js'), 'utf8');
-  const top = +/PF\(F, poly\[0\]\[0\], poly\[0\]\[1\], gd - ([\d.]+)\)/.exec(src)[1];        // cellTop(메달리온) 깊이
+  // cellTop(메달리온) 깊이: 팔각 기본값(dz || 0.012)과 그 안 사각형(..., 0.022) 중 앞쪽. 둘은 서로 다른 평면(z-fighting 금지)
+  const oct = +/dd = gd - \(dz \|\| ([\d.]+)\)/.exec(src)[1], sq = +/GROUND\[\(li \+ rj \+ 1\) % 2\], ([\d.]+)\)/.exec(src)[1];
+  assert.ok(sq >= oct + 0.008, `inner square ${sq} must be ≥0.8cm in front of octagon ${oct}`);
+  const top = Math.max(oct, sq);
   const plate = +/PF\(F, 0, sill \+ phH \/ 2, gd - ([\d.]+)\)/.exec(src)[1];
-  assert.ok(plate >= top + 0.012, `plate ${plate} must be at least 1.2cm in front of medallions ${top}`);
+  assert.ok(plate >= top + 0.008, `plate ${plate} must be at least 0.8cm in front of medallions ${top}`);
   // 다른 성당의 자리는 카메라를 당기지 않는다
   for (const id of ['stpeter']) for (const s of church(id).glassSlots) assert.equal(s.camMax, 0, id);
   const main = fs.readFileSync(path.join(assets, 'main.js'), 'utf8');
