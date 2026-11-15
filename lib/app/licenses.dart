@@ -21,7 +21,7 @@ void registerFontLicenses() {
     yield LicenseEntryWithLineBreaks(
       const ['성화(기도 배경·십자가의 길)'],
       [
-        for (final c in [stationsArtCredit, ...mysteryArtCredits])
+        for (final c in [stationsArtCredit, ...mysteryArtCredits, ...churchArtCredits])
           '${c.use}: ${c.credit} (${c.license})',
       ].join('\n\n'),
     );

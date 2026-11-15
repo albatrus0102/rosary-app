@@ -7,6 +7,7 @@
 ## 보류(나중에 하기로 함)
 | 항목 | 내용 | 자료 |
 |---|---|---|
+| 마조레 정면 원형 창의 색조 패널(개발용 임시 유리) | 구조 수정 I-4(2026-11-15)에서 개구부만 지름 3.6m 원형으로 고치고 anchor `facade_center` 를 내보냈다. `dev/devglass_maggiore.js` 표·팩(파랑·금 색조, 하이날 1995 원작 비모사)·시험은 하지 않음. 마조레 대경당 돔·펜던티브·무덤은 절차 그림(저폴리)이라 실제 프레스코 사진으로 바꿀지, 대경당 좌석 수(파올리나 12·시스티나 6)·성화 판 크기(실제의 1.5배)도 사용자 확인 대상 | docs/church/STRUCTURE_AUDIT_ROME.md §3.4b, docs/church/GLASS_ALL_CHURCHES_PLAN.md §4 |
 | 시스티나 성당 추가 | 가능. 그림 사진 권리(법률 검토)·용량(+1.5MB) 결정 필요 | docs/church/SISTINE_CHAPEL_PLAN.md |
 | 새 3D 캐릭터(사실적 인물) | 현재 코드 아바타 유지. 변환 도구·새 아바타 모듈·이미지 프롬프트는 준비됨. 유료 3D 서비스는 쓰지 않기로 함(무료 대안: Mixamo 기본 캐릭터 / 코드 모델링 / Hugging Face TRELLIS 시험) | docs/art/CHARACTER_3D_PIPELINE.md, CHARACTER_IMAGE_PROMPTS.md |
 | 앱 아이콘 | 기본 아이콘 상태. 로사리움(장미 정원 + 스테인드글라스) 아이콘 제작 여부 미정 | — |
