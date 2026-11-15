@@ -1,0 +1,2759 @@
+{
+ "_meta": {
+  "title": "밀라노 대성당 스테인드글라스 창 목록 (조사 E-2)",
+  "compiled": "2026-11-15",
+  "status": "조사 데이터. 앱 번들에 포함되지 않는다(pubspec.yaml 의 assets 에 data/ 없음). 코드에서 읽지 않는다.",
+  "doc": "docs/church/MILAN_GLASS_RESEARCH.md",
+  "numbering_ko": {
+   "fabbrica_V": "Veneranda Fabbrica 의 창 번호. V01(남측랑 정문 쪽)에서 반시계 방향으로 후진을 돌아 V39(북측랑 정문 쪽), 이어서 정문 안쪽 V40~V47. V12bis 는 남익랑 경당 위 큰 창.",
+   "plan_P": "위키미디어 공용 도면(Carlo Dell'Orto)의 번호 1~45. Fabbrica 번호와 같은 체계다(P n = V n).",
+   "cvma": "Corpus Vitrearum: 후진 가운데 I, 북쪽 nII…nXX, 남쪽 sII…sXX. V = 21 − n (남), V = 19 + n (북). 하단 창만 번호가 있다."
+  },
+  "count_ko": "번호가 확인된 창: V01~V47(47개) + V12bis. it.wikipedia 는 \"55 vetrate monumentali\". 47 + 티부리오 8 = 55 로 보이나 이 셈법을 명시한 출처는 찾지 못했다(추정).",
+  "coordinates_ko": "앱 씬: 제대 −z, 정문 +z, 남 = +x, 북 = −x. model_opening_key 는 docs/church/MILAN_55_PLACEMENT.md §1.4 의 개구부 key. null 은 모델에 해당 개구부가 없음.",
+  "usable_legend_ko": {
+   "yes": "CC0 / CC BY — 프로젝트 권리 규칙 안(저작자 표시 기록 필요)",
+   "yes_attribution_template": "Commons {{Attribution}}(저작자 표시만 요구) — 내용은 CC BY 와 같으나 규칙 문구 밖이라 사용자 확인 필요",
+   "user_decision_by_sa": "CC BY-SA — 지금 규칙에서는 제외. 사용자 결정 필요",
+   "user_decision_gac_derived": "Commons 에는 PD-Art 로 올라 있으나 원본이 Google Arts & Culture(Fabbrica 촬영) — 사용자 결정 필요, 기본은 보류",
+   "no_artwork_in_copyright": "사진 라이선스와 무관하게 원작 저작권이 남아 있어 사용 불가"
+  },
+  "confidence_legend_ko": {
+   "confirmed": "공식 자료(Fabbrica/Google Arts asset) 또는 도면으로 직접 확인",
+   "probable": "여러 자료가 맞아떨어지지만 한 단계 추론 포함",
+   "secondary_source_only": "2차 자료(it.wikipedia 등)뿐",
+   "inferred_by_elimination": "소거법 추정",
+   "unknown": "찾지 못함"
+  },
+  "not_opened_ko": [
+   "lombardiabeniculturali.it 의 창 카탈로그 기록(w1010-002xx): curl 은 인증서 검증 실패, WebFetch 는 503, archive.org 는 차단 → 내용 직접 확인 못 함",
+   "CVMA 의 성 야고보·성녀 헬레나·성 요셉 창 기록: 사이트에 링크가 없음",
+   "Ernesto Brivio 의 안내서·논문(1969, 1973, 1980)과 Pirina(1986): 온라인에 없음",
+   "Google Arts & Culture 의 고해상도 타일: 내려받지 않음(권리 미확보)"
+  ]
+ },
+ "windows": [
+  {
+   "id": "milan_v01",
+   "fabbrica_no": "V01",
+   "plan_no": "P01",
+   "cvma_no": "sXX",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 1,
+   "position_ko": "남측랑(정문에서 제대 쪽) 1번째 칸",
+   "model_opening_key": "aisleS_b1",
+   "subject_ko": "성 요한 사도(복음사가)의 생애",
+   "subject_original": "Storie di san Giovanni Evangelista",
+   "subject_en": "Stories of Saint John the Apostle",
+   "artists": [
+    "Cristoforo de Mottis",
+    "Frati Gesuati (San Girolamo)"
+   ],
+   "date": "1473–1478 (CVMA) / 1475–1478 (Fabbrica); 19세기 보완; 1968년 현 위치",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "CVMA: 높이 1570 × 폭 280cm(석재 포함), 30개 장면"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/cgEGZF3F6tBF7g",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/3_giovanni_evangelista.htm",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/cgEGZF3F6tBF7g"
+   ],
+   "commons_photos": [
+    {
+     "file": "Interior of the Duomo (139).jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Interior_of_the_Duomo_(139).jpg",
+     "license": "CC BY-SA 3.0",
+     "author": "Darafsh",
+     "px": "미확인",
+     "covers_ko": "it.wikipedia 가 이 창으로 표기",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v02",
+   "fabbrica_no": "V02",
+   "plan_no": "P02",
+   "cvma_no": "sXIX",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 2,
+   "position_ko": "남측랑 2번째 칸",
+   "model_opening_key": "aisleS_b2",
+   "subject_ko": "구약 이야기(후진 V21·V19 에서 옮긴 15~16세기 패널 모음)",
+   "subject_original": "Storie del Vecchio Testamento",
+   "subject_en": "Stories from the Old Testament",
+   "artists": [
+    "Franceschino Zavattari",
+    "Maffiolo da Cremona",
+    "Niccolò da Varallo",
+    "Corrado de Mochis",
+    "Biagio e Giuseppe Arcimboldi",
+    "외"
+   ],
+   "date": "1417–1548경; 19세기 보완; 1830년대에 현 위치로",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.5,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "원죄, 불타는 떨기나무의 모세, 기도하는 모세 등 — 성경 순서대로가 아님(CVMA \"scattered panels\")"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/-AFcJsbYaMe0EA",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/-AFcJsbYaMe0EA"
+   ],
+   "commons_photos": [
+    {
+     "file": "IMG 4532 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4532_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1360×2048",
+     "covers_ko": "창 전체(3랜싯 여러 단)를 아래에서 비스듬히. 촬영자 설명 \"window No.2\"",
+     "usable": "yes_attribution_template",
+     "note_ko": "원근 보정 필요"
+    },
+    {
+     "file": "IMG 4534 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4534_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1784×1135",
+     "covers_ko": "부분(몇 단). \"window No.2\"",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "Milano, Duomo, Vetrata del Vecchio Testamento, navata destra, XV secolo 01.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_del_Vecchio_Testamento,_navata_destra,_XV_secolo_01.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "2928×4601",
+     "covers_ko": "구약 창(V02~V04 중 어느 것인지 파일에 없음)",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v03",
+   "fabbrica_no": "V03",
+   "plan_no": "P03",
+   "cvma_no": "sXVIII",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 3,
+   "position_ko": "남측랑 3번째 칸",
+   "model_opening_key": "aisleS_b3",
+   "subject_ko": "구약 이야기(후진 V21·V19 에서 옮긴 15~16세기 패널 모음)",
+   "subject_original": "Storie del Vecchio Testamento",
+   "subject_en": "Stories from the Old Testament",
+   "artists": [
+    "Franceschino Zavattari",
+    "Maffiolo da Cremona",
+    "Niccolò da Varallo",
+    "Corrado de Mochis",
+    "Biagio e Giuseppe Arcimboldi",
+    "외"
+   ],
+   "date": "1417–1548경; 19세기 보완; 1830년대에 현 위치로",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.5,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "노아의 방주, 카인과 아벨, 솔로몬, 이사악의 희생, 성령 강림 등 — 성경 순서대로가 아님(CVMA \"scattered panels\")"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/1gH-0yvhCKBOuw",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/1gH-0yvhCKBOuw"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano Duomo window3 016 3212.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano_Duomo_window3_016_3212.jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Ludvig14",
+     "px": "3414×18086",
+     "covers_ko": "창 전체를 이어 붙여 편 정면 사진(파일명 window3 → V03 로 추정). 부분 컷 5장 더 있음",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v04",
+   "fabbrica_no": "V04",
+   "plan_no": "P04",
+   "cvma_no": "sXVII",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 4,
+   "position_ko": "남측랑 4번째 칸",
+   "model_opening_key": "aisleS_b4",
+   "subject_ko": "구약 이야기(후진 V21·V19 에서 옮긴 15~16세기 패널 모음)",
+   "subject_original": "Storie del Vecchio Testamento",
+   "subject_en": "Stories from the Old Testament",
+   "artists": [
+    "Franceschino Zavattari",
+    "Maffiolo da Cremona",
+    "Niccolò da Varallo",
+    "Corrado de Mochis",
+    "Biagio e Giuseppe Arcimboldi",
+    "외"
+   ],
+   "date": "1417–1548경; 19세기 보완; 1830년대에 현 위치로",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.51,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.29
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "만나, 삼손과 사자, 해를 멈춘 여호수아 등 — 성경 순서대로가 아님(CVMA \"scattered panels\")"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/EQGqkzlr49teaQ",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/EQGqkzlr49teaQ"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v05",
+   "fabbrica_no": "V05",
+   "plan_no": "P05",
+   "cvma_no": "sXVI",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 5,
+   "position_ko": "남측랑 5번째 칸",
+   "model_opening_key": "aisleS_b5",
+   "subject_ko": "신약 이야기(\"포파풍\" 창)",
+   "subject_original": "Storie del Nuovo Testamento (vetrata \"foppesca\")",
+   "subject_en": "Stories from the New Testament",
+   "artists": [
+    "Antonio da Pandino",
+    "Niccolò da Varallo",
+    "Cristoforo e Agostino de Mottis",
+    "Vincenzo Foppa(밑그림)",
+    "Pietro da Velate"
+   ],
+   "date": "1416–17 / 1479–81 / 1519 (CVMA); 15세기 4/4분기~16세기 전반(Fabbrica); 1830년대 V19 에서 이전",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "33패널. 아래 1단: 수태고지 천사·성모·방문 → 꼭대기 십자가 처형. CVMA 높이 1570 × 폭 280cm"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/_gFy2MekTPHU_Q",
+    "https://artsandculture.google.com/story/uAVxjUYrWfJFLg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/4_n.testamento.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/_gFy2MekTPHU_Q"
+   ],
+   "commons_photos": [
+    {
+     "file": "IMG 4583 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4583_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1360×2048",
+     "covers_ko": "아래 1~7단, 아래에서 비스듬히(섬네일로 수태고지·방문 확인)",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "IMG 4581 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4581_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "2048×1360",
+     "covers_ko": "아래 3단",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "IMG 4582 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4582_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "2048×1360",
+     "covers_ko": "3단(부분)",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "Stories from the New Testament, Milan Duomo, Southern side.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Stories_from_the_New_Testament,_Milan_Duomo,_Southern_side.jpg",
+     "license": "Public domain (PD-Art|PD-old 표기)",
+     "author": "원작 15세기 · 출처 Google Arts & Culture",
+     "px": "5136×26131",
+     "covers_ko": "창 전체 정면(초고해상도)",
+     "usable": "user_decision_gac_derived",
+     "note_ko": "Commons 이용자가 Google Arts asset _gFy2MekTPHU_Q 에서 추출해 올린 것. 사진의 권리자는 Fabbrica"
+    },
+    {
+     "file": "Milano, Duomo, Vetrata del nuovoTestamento, navata destra, XV secolo.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_del_nuovoTestamento,_navata_destra,_XV_secolo.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "3477×2318",
+     "covers_ko": "부분",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v06",
+   "fabbrica_no": "V06",
+   "plan_no": "P06",
+   "cvma_no": "sXV",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 6,
+   "position_ko": "남측랑 6번째 칸",
+   "model_opening_key": "aisleS_b6",
+   "subject_ko": "성 엘리지오의 생애",
+   "subject_original": "Storie di sant'Eligio",
+   "subject_en": "Stories of Saint Eligius",
+   "artists": [
+    "Niccolò da Varallo"
+   ],
+   "date": "1480–1486; 1886–87 후진 쪽에서 이전·보완(P. Bertini)",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "아래 1~3단은 근대 모자이크 패널, 4단 건축 원근 삼면화(Bertini), 5단부터 생애. CVMA 높이 1570 × 폭 280cm"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/MQGotHwrKZfIgg",
+    "https://artsandculture.google.com/story/dwVhhSbG8HncIg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/6_eligio.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/MQGotHwrKZfIgg"
+   ],
+   "commons_photos": [
+    {
+     "file": "Stories of Saint Eligius, Milan Duomo, South side.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Stories_of_Saint_Eligius,_Milan_Duomo,_South_side.jpg",
+     "license": "Public domain (PD-Art|PD-old 표기)",
+     "author": "원작 15세기 · 출처 Google Arts & Culture",
+     "px": "6301×30705",
+     "covers_ko": "창 전체 정면(초고해상도)",
+     "usable": "user_decision_gac_derived",
+     "note_ko": "Google Arts asset MQGotHwrKZfIgg 에서 추출"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v07",
+   "fabbrica_no": "V07",
+   "plan_no": "P07",
+   "cvma_no": "sXIV",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 7,
+   "position_ko": "남측랑 7번째 칸, 성심 제대 위",
+   "model_opening_key": "aisleS_b7",
+   "subject_ko": "복자 페라리 추기경과 복자 슈스터 추기경",
+   "subject_original": "Beati cardinali Ferrari e Schuster",
+   "subject_en": "The Blessed Cardinals Ferrari and Schuster",
+   "artists": [
+    "Giovanni (János) Hajnal"
+   ],
+   "date": "1988",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "note_ko": "두오모에서 가장 새 창"
+   },
+   "artwork_copyright_ko": "저작권 존속: Hajnal 2010년 사망 → 2080년 말까지(이탈리아·한국 사후 70년)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/jwHTDmWxMgakvQ",
+    "https://artsandculture.google.com/story/ewWBBphjT3_NIA"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/jwHTDmWxMgakvQ"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano Duomo window7 016 3259.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano_Duomo_window7_016_3259.jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Ludvig14",
+     "px": "3106×14773",
+     "covers_ko": "창 전체(파일명 window7)",
+     "usable": "no_artwork_in_copyright",
+     "note_ko": "사진 라이선스와 별개로 원작 저작권 존속"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v08",
+   "fabbrica_no": "V08",
+   "plan_no": "P08",
+   "cvma_no": "sXIII",
+   "zone": "aisle_south",
+   "side": "south",
+   "order": 8,
+   "position_ko": "남측랑 8번째(익랑 앞 마지막) 칸",
+   "model_opening_key": "aisleS_b8",
+   "subject_ko": "성녀 아녜스, 성녀 테클라, 눈의 성모(성 마리아 마조레)",
+   "subject_original": "Storie di sant'Agnese, santa Tecla e Madonna della Neve",
+   "subject_en": "Stories of Saint Agnes, Saint Thecla, and Saint Mary Major",
+   "artists": [
+    "Pompeo Bertini",
+    "Guido Bertini"
+   ],
+   "date": "1897–1905",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/jgEy1O2bSm0j9w",
+    "https://artsandculture.google.com/story/SAVx1B6S-RqgLw"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/jgEy1O2bSm0j9w"
+   ],
+   "commons_photos": [],
+   "notes_ko": "it.wikipedia 는 이 창을 \"n. 40, 왼쪽 측랑 8칸\"이라 적었으나 Fabbrica 자료와 맞지 않는다(오기로 판단)."
+  },
+  {
+   "id": "milan_v09",
+   "fabbrica_no": "V09",
+   "plan_no": "P09",
+   "cvma_no": "sXII",
+   "zone": "transept_south",
+   "side": "south",
+   "order": "west_wall",
+   "position_ko": "남익랑 서쪽 벽(서향 창), 메데기노 영묘 위",
+   "model_opening_key": "trWestS",
+   "subject_ko": "성 제르바시오와 성 프로타시오",
+   "subject_original": "Storie dei santi Gervasio e Protasio",
+   "subject_en": "Stories of Saints Gervasius and Protasius",
+   "artists": [
+    "Giovanni Battista Bertini",
+    "Giuseppe Bertini"
+   ],
+   "date": "1846–1849",
+   "size_m": {
+    "w": 3.0,
+    "h": 21.6,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.41,
+     "h": 10.15
+    }
+   },
+   "structure": {
+    "lancets": null,
+    "note_ko": "네 장면이 2단씩 걸쳐 전개(순교·유해 발견·유해 이송)"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/egH4CzinSShs1A",
+    "https://artsandculture.google.com/story/OAUxAaJs_RZIIg",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/egH4CzinSShs1A"
+   ],
+   "commons_photos": [
+    {
+     "file": "IMG 6906 - Milano - Duomo - Tomba Medeghino - Vetrata Pio IV - Foto Giovanni Dall'Orto 8 mar 2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_6906_-_Milano_-_Duomo_-_Tomba_Medeghino_-_Vetrata_Pio_IV_-_Foto_Giovanni_Dall'Orto_8_mar_2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "2048×1360",
+     "covers_ko": "메데기노 영묘와 그 위 창. 촬영자는 \"비오 4세의 창\"(=V10)이라 적었고 Fabbrica 는 영묘 위 창을 V09 라 한다 → 어느 창인지 미확인",
+     "usable": "yes_attribution_template"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v10",
+   "fabbrica_no": "V10",
+   "plan_no": "P10",
+   "cvma_no": "sXI",
+   "zone": "transept_south",
+   "side": "south",
+   "order": "end_wall_west_bay",
+   "position_ko": "남익랑 끝 벽의 서쪽 칸(남향 창), 비오 4세 제대 쪽",
+   "model_opening_key": "trEndS_west",
+   "subject_ko": "성 야고보(대)의 생애",
+   "subject_original": "Storie di san Giacomo Maggiore",
+   "subject_en": "Stories of Saint James the Great",
+   "artists": [
+    "Corrado de Mochis (밑그림 작가 미상)"
+   ],
+   "date": "1562–1566/67 (Fabbrica); 1554–1564 (TCI)",
+   "size_m": {
+    "w": 3.53,
+    "h": 22.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.66,
+     "h": 10.57
+    }
+   },
+   "structure": {
+    "lancets": 4,
+    "note_ko": "8단: 1단 주교·성모·그리스도 흉상, 4단 문장·교황 휘장, 나머지 장면이 패널 8장씩 차지. 읽는 순서 아래→위, 오른쪽→왼쪽. 랜싯 수는 Commons 사진으로 본 값"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/6AH7-NsY8EZiow",
+    "https://artsandculture.google.com/story/xgUxgWytw3dMLw",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/6AH7-NsY8EZiow"
+   ],
+   "commons_photos": [
+    {
+     "file": "Il Duomo - panoramio - Emanuela Meme Giudic… (4).jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Il_Duomo_-_panoramio_-_Emanuela_Meme_Giudic%E2%80%A6_(4).jpg",
+     "license": "CC BY 3.0",
+     "author": "Emanuela Meme Giudic… (Panoramio)",
+     "px": "1536×2048",
+     "covers_ko": "창 전체(장미 포함)를 거의 정면에서. Commons 분류 \"Saint James the Greater Stained-glass window\"",
+     "usable": "yes",
+     "note_ko": "창이 화면의 일부라 유효 해상도는 더 낮다"
+    },
+    {
+     "file": "IMG 4556 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4556_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "2048×1360",
+     "covers_ko": "아래 몇 단 근접",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "IMG 4557 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4557_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1360×2048",
+     "covers_ko": "창 전체를 멀리서 비스듬히",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "Milano, Duomo, Vetrata di san Giacomo Maggiore, navata destra, XVI secolo 02.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_di_san_Giacomo_Maggiore,_navata_destra,_XVI_secolo_02.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "3072×4608",
+     "covers_ko": "창(부분) — 같은 연작 3장",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v11",
+   "fabbrica_no": "V11",
+   "plan_no": "P11",
+   "cvma_no": "sX",
+   "zone": "transept_south_chapel",
+   "side": "south",
+   "order": "west_oblique",
+   "position_ko": "성 요한 보노 경당 후진의 서쪽 사선 면(제대를 볼 때 오른쪽)",
+   "model_opening_key": null,
+   "subject_ko": "성 요한 보노: 교구 돌봄, 아리우스파 추방, 로마 여행, 장례",
+   "subject_original": "Storie di san Giovanni Bono (V11)",
+   "subject_en": "Stories of Saint John the Good – V11",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1838–1842",
+   "size_m": {
+    "w": 2.18,
+    "h": 16.36,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.69
+    }
+   },
+   "structure": {
+    "lancets": null,
+    "note_ko": "4장면"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/lQGpXTsrpDvX7w",
+    "https://artsandculture.google.com/story/EwXBzeODVz63IQ",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/lQGpXTsrpDvX7w"
+   ],
+   "commons_photos": [
+    {
+     "file": "IMG 4565 Milano - Duomo - Altare barocco - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4565_Milano_-_Duomo_-_Altare_barocco_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1360×2048",
+     "covers_ko": "성 요한 보노 제대와 경당 창 3개(V11·V12·V13)가 함께 보이는 전경. 창은 작고 비스듬함",
+     "usable": "yes_attribution_template",
+     "note_ko": "경당 형태 확인용. 텍스처로 쓰기엔 부족"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v12",
+   "fabbrica_no": "V12",
+   "plan_no": "P12",
+   "cvma_no": "sIX",
+   "zone": "transept_south_chapel",
+   "side": "south",
+   "order": "center",
+   "position_ko": "성 요한 보노 경당 후진의 끝(가운데) 면, 제대 위",
+   "model_opening_key": null,
+   "subject_ko": "성 요한 보노의 영광",
+   "subject_original": "Gloria di san Giovanni Bono",
+   "subject_en": "Stories of Saint John the Good – The glory of the Saint",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1838–1842",
+   "size_m": {
+    "w": 2.18,
+    "h": 16.36,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.69
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "note_ko": "랜싯 수는 Commons 사진(IMG 4565)으로 본 값"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/QwFnsFqIhWO7DA",
+    "https://artsandculture.google.com/asset/iAGS7W_7T-Zgmw",
+    "https://artsandculture.google.com/story/EwXBzeODVz63IQ"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/QwFnsFqIhWO7DA",
+    "https://artsandculture.google.com/asset/iAGS7W_7T-Zgmw"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v13",
+   "fabbrica_no": "V13",
+   "plan_no": "P13",
+   "cvma_no": "sVIII",
+   "zone": "transept_south_chapel",
+   "side": "south",
+   "order": "east_oblique",
+   "position_ko": "성 요한 보노 경당 후진의 동쪽 사선 면(제대를 볼 때 왼쪽)",
+   "model_opening_key": null,
+   "subject_ko": "성 요한 보노: 로마 공의회, 데시오 성 마테르노 성당 창건, 주교좌의 밀라노 귀환, 주교 선출(아래→위)",
+   "subject_original": "Storie di san Giovanni Bono (V13)",
+   "subject_en": "Stories of Saint John the Good",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1838–1842",
+   "size_m": {
+    "w": 2.18,
+    "h": 16.36,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.69
+    }
+   },
+   "structure": {
+    "lancets": null,
+    "note_ko": "4장면"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/DAFbpGjPWuzrXg",
+    "https://artsandculture.google.com/story/EwXBzeODVz63IQ"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/DAFbpGjPWuzrXg"
+   ],
+   "commons_photos": [],
+   "notes_ko": "Google Arts asset -wFSjbl3-KFmgw 는 제목이 \"V13\"이지만 설명문은 V12(영광)다(공식 자료 안의 불일치)."
+  },
+  {
+   "id": "milan_v12bis",
+   "fabbrica_no": "V12bis",
+   "plan_no": null,
+   "cvma_no": null,
+   "zone": "transept_south_upper",
+   "side": "south",
+   "order": "above_chapel",
+   "position_ko": "남익랑 끝 벽, 성 요한 보노 경당 위의 큰 첨두창",
+   "model_opening_key": "trEndS_center",
+   "subject_ko": "구세주 그리스도와 복음사가·교회 학자·성인들",
+   "subject_original": "Il Redentore tra Evangelisti, Dottori della Chiesa e Santi",
+   "subject_en": "Stained-glass window representing The Redeemer",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1838–1842",
+   "size_m": null,
+   "structure": {
+    "note_ko": "치수 미기재. 경당 후진(창 3개) 위에 익랑 끝 벽의 큰 창이 따로 있는 2층 구성 — Commons 사진 3386(익랑 전경)에서 확인"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/IQE83Pfv-NcuXQ"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/IQE83Pfv-NcuXQ"
+   ],
+   "commons_photos": [
+    {
+     "file": "3386 - Milano, Duomo - Altare S. Giovanni Bono (1763) - Foto Giovanni Dall'Orto, 6-Dec-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:3386_-_Milano,_Duomo_-_Altare_S._Giovanni_Bono_(1763)_-_Foto_Giovanni_Dall'Orto,_6-Dec-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "2048×1360",
+     "covers_ko": "남익랑 전경: 아래 경당 창 3개 + 위 큰 창(V12bis). 창은 작게 찍힘",
+     "usable": "yes_attribution_template"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v14",
+   "fabbrica_no": "V14",
+   "plan_no": "P14",
+   "cvma_no": "sVII",
+   "zone": "transept_south",
+   "side": "south",
+   "order": "end_wall_east_bay",
+   "position_ko": "남익랑 끝 벽의 동쪽 칸(남향 창)",
+   "model_opening_key": "trEndS_east",
+   "subject_ko": "알렉산드리아의 성녀 카타리나의 생애",
+   "subject_original": "Storie di santa Caterina d'Alessandria",
+   "subject_en": "Stories of Saint Catherine of Alexandria",
+   "artists": [
+    "Biagio e Giuseppe Arcimboldi (밑그림)",
+    "Corrado de Mochis"
+   ],
+   "date": "1549–1557 (1556); 19세기 보완",
+   "size_m": {
+    "w": 3.53,
+    "h": 22.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.66,
+     "h": 10.57
+    }
+   },
+   "structure": {
+    "lancets": 4,
+    "panel_rows": 15,
+    "panel_cm": "118 × 74",
+    "tracery_ko": "삼엽 + 장미(14~16세기 원형 장미 둘 중 하나)",
+    "note_ko": "CVMA: 높이 2254 × 폭 393cm. 위→아래, 왼→오 순서"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/gQE6_5hgCh1ISA",
+    "https://artsandculture.google.com/story/hwVRGPnE_2KEIA",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/24cat_aless.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/gQE6_5hgCh1ISA"
+   ],
+   "commons_photos": [
+    {
+     "file": "IMG 5880 - Milano - Duomo - Vetrata abside - Foto Giovanni Dall'Orto - 21-Feb-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_5880_-_Milano_-_Duomo_-_Vetrata_abside_-_Foto_Giovanni_Dall'Orto_-_21-Feb-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1138×1767",
+     "covers_ko": "4랜싯 약 7단, 아래에서 비스듬히",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "IMG 4569 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:IMG_4569_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "1360×2048",
+     "covers_ko": "아래 몇 단 근접, 비스듬함",
+     "usable": "yes_attribution_template"
+    },
+    {
+     "file": "Milano, Duomo, Vetrata di santa Caterina, Braccio sud del transetto, XVI secolo 05.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_di_santa_Caterina,_Braccio_sud_del_transetto,_XVI_secolo_05.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "2927×4279",
+     "covers_ko": "창(부분)",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v15",
+   "fabbrica_no": "V15",
+   "plan_no": "P15",
+   "cvma_no": "sVI",
+   "zone": "transept_south",
+   "side": "south",
+   "order": "east_wall",
+   "position_ko": "남익랑 동쪽 벽(동향 창), 성모 봉헌 제대(밤바야) 위",
+   "model_opening_key": "trEastS",
+   "subject_ko": "투르의 성 마르티노의 생애 · 성모의 성전 봉헌 · 예언자 삼엽 6점",
+   "subject_original": "Storie di san Martino; Presentazione della Vergine",
+   "subject_en": "The Life of Saint Martin of Tours",
+   "artists": [
+    "작가 미상(16세기 말)",
+    "Michelino da Besozzo (예언자 삼엽 6점, 1420년경, 옛 성녀 율리타 창)"
+   ],
+   "date": "1570–17세기 1/4분기",
+   "size_m": {
+    "w": 3.53,
+    "h": 22.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.66,
+     "h": 10.57
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "note_ko": "CVMA(성녀 율리타 창 기록): 3랜싯, 높이 2150 × 폭 320cm"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/dAExZR0pdd5vEQ",
+    "https://artsandculture.google.com/story/2QUxOKdMTVx6Lg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/2_giulitta.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/dAExZR0pdd5vEQ"
+   ],
+   "commons_photos": [
+    {
+     "file": "Duomo (Milano) Vetrata di San Martino.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Duomo_(Milano)_Vetrata_di_San_Martino.jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Carlo Dell'Orto",
+     "px": "4608×3072",
+     "covers_ko": "부분",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v16",
+   "fabbrica_no": "V16",
+   "plan_no": "P16",
+   "cvma_no": "sV",
+   "zone": "sacristy_south",
+   "side": "south",
+   "order": "south_wall",
+   "position_ko": "남쪽(참사회) 성구실 남쪽 바깥벽, 익랑 쪽 칸",
+   "model_opening_key": null,
+   "subject_ko": "미확인",
+   "subject_original": null,
+   "subject_en": null,
+   "artists": [],
+   "date": "미확인",
+   "size_m": null,
+   "structure": {
+    "note_ko": "공개 자료에서 주제·작가를 찾지 못함"
+   },
+   "artwork_copyright_ko": "미확인",
+   "confidence": {
+    "identity": "unknown",
+    "position": "probable"
+   },
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "도면에서 번호가 성구실 방의 남쪽 벽에 붙어 있다. 회랑(주보랑)의 창이 아니라 성구실 안을 밝히는 창이다."
+  },
+  {
+   "id": "milan_v17",
+   "fabbrica_no": "V17",
+   "plan_no": "P17",
+   "cvma_no": "sIV",
+   "zone": "sacristy_south",
+   "side": "south",
+   "order": "south_wall",
+   "position_ko": "남쪽(참사회) 성구실 남쪽 바깥벽, 후진 쪽 칸",
+   "model_opening_key": null,
+   "subject_ko": "미확인",
+   "subject_original": null,
+   "subject_en": null,
+   "artists": [],
+   "date": "미확인",
+   "size_m": null,
+   "structure": {
+    "note_ko": "공개 자료에서 주제·작가를 찾지 못함"
+   },
+   "artwork_copyright_ko": "미확인",
+   "confidence": {
+    "identity": "unknown",
+    "position": "probable"
+   },
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "도면에서 번호가 성구실 방의 남쪽 벽에 붙어 있다. 회랑(주보랑)의 창이 아니라 성구실 안을 밝히는 창이다."
+  },
+  {
+   "id": "milan_v18",
+   "fabbrica_no": "V18",
+   "plan_no": "P18",
+   "cvma_no": "sIII",
+   "zone": "sacristy_south",
+   "side": "south",
+   "order": "east_wall",
+   "position_ko": "남쪽(참사회) 성구실 동쪽 바깥벽(후진 V19 옆)",
+   "model_opening_key": null,
+   "subject_ko": "네 성인",
+   "subject_original": "Vetrata raffigurante quattro Santi",
+   "subject_en": "Stained-glass window representing four Saints",
+   "artists": [],
+   "date": "미기재",
+   "size_m": {
+    "w": 2.34,
+    "h": 15.28,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.1,
+     "h": 7.18
+    }
+   },
+   "structure": {
+    "note_ko": "Fabbrica: \"참사회 성구실 가까이, 토르나코로(회랑) 구역\". 성인 이름 미기재"
+   },
+   "artwork_copyright_ko": "미확인(제작 연대 미기재)",
+   "confidence": {
+    "identity": "probable",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/3AHPPFX1GhAFug",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/3AHPPFX1GhAFug"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v19",
+   "fabbrica_no": "V19",
+   "plan_no": "P19",
+   "cvma_no": "sII",
+   "zone": "apse",
+   "side": "south",
+   "order": "southeast",
+   "position_ko": "후진 남동 사선 면(제대를 볼 때 오른쪽)",
+   "model_opening_key": "apse_south",
+   "subject_ko": "신약 이야기",
+   "subject_original": "Storie del Nuovo Testamento",
+   "subject_en": "Stories from the New Testament",
+   "artists": [
+    "Bertini 공방 (Giovanni Battista, Giuseppe, Pompeo)"
+   ],
+   "date": "1838–1865",
+   "size_m": {
+    "w": 9.6,
+    "h": 22.77,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 4.51,
+     "h": 10.7
+    }
+   },
+   "structure": {
+    "lancets": 12,
+    "lancet_groups": "넓은 3구획 × 작은 랜싯 4",
+    "panel_rows": 11,
+    "panel_cm": "120 × 60",
+    "tracery_ko": "삼엽 + 큰 장미",
+    "note_ko": "130패널(it.wikipedia). 아래→위, 왼→오"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/HwFvMTGwHO5VdA",
+    "https://artsandculture.google.com/asset/lAHmghxgmvqPkw",
+    "https://artsandculture.google.com/asset/wgGuVVwXKksvoQ",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/HwFvMTGwHO5VdA",
+    "https://artsandculture.google.com/asset/lAHmghxgmvqPkw",
+    "https://artsandculture.google.com/asset/wgGuVVwXKksvoQ",
+    "https://artsandculture.google.com/asset/DQFC79h-ZHdBew"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v20",
+   "fabbrica_no": "V20",
+   "plan_no": "P20",
+   "cvma_no": "I",
+   "zone": "apse",
+   "side": null,
+   "order": "center",
+   "position_ko": "후진 끝(가운데) 면",
+   "model_opening_key": "apse_center",
+   "subject_ko": "요한 묵시록(\"라차\" 창 · 비스콘티 창)",
+   "subject_original": "Vetrata dell'Apocalisse (finestrone della raza)",
+   "subject_en": "Stained-glass window of the Apocalypse",
+   "artists": [
+    "Stefano da Pandino",
+    "Maffiolo da Cremona",
+    "Franceschino Zavattari",
+    "Cristoforo de' Mottis",
+    "Niccolò da Varallo",
+    "Pietro da Velate",
+    "외",
+    "Giovanni Battista Bertini (하부)"
+   ],
+   "date": "1416–1482 · 1541–45; 하부 1834–1838",
+   "size_m": {
+    "w": 9.6,
+    "h": 22.77,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 4.51,
+     "h": 10.7
+    }
+   },
+   "structure": {
+    "lancets": 12,
+    "lancet_groups": "넓은 3구획 × 작은 랜싯 4",
+    "panel_rows": 11,
+    "panel_cm": "120 × 60",
+    "tracery_ko": "삼엽 + 큰 장미",
+    "note_ko": "CVMA(창 I): 높이 2370 × 폭 1140cm(석재 포함). 아래 1~4단 12열 → 5단에서 좌우 구획은 예언자 삼엽으로 끝나고 가운데 4열만 5~8단 → 위 9~11단 다시 12열",
+    "raza_ko": "트레이서리 맨 위 가운데의 햇살 바퀴(석재, 안쪽 유리는 G. Bertini). 그 아래 문장 방패 10개, 바깥쪽 양옆에 수태고지 조각"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/mwE8-HCqjeaUmQ",
+    "https://artsandculture.google.com/asset/xAHipDq6Ss_fMw",
+    "https://artsandculture.google.com/story/iQVB48HrnXckLA",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/1_apocalisse.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/mwE8-HCqjeaUmQ",
+    "https://artsandculture.google.com/asset/xAHipDq6Ss_fMw",
+    "https://artsandculture.google.com/asset/OwEBVOr90hv3dw",
+    "https://artsandculture.google.com/asset/sgGtN2cKr3e8hA"
+   ],
+   "commons_photos": [
+    {
+     "file": "Duomo Milan (Vitraux).jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Duomo_Milan_(Vitraux).jpg",
+     "license": "CC0 1.0",
+     "author": "Van Der Meulen Christofle",
+     "px": "3024×4032",
+     "covers_ko": "아래 1~4단(12열 전부) + 가운데 4열의 5~8단, 아래에서 올려다봄. 이미 앱에서 milan_apse_lower 로 사용 중",
+     "usable": "yes",
+     "note_ko": "창 아래에 성 카롤로 보로메오의 봉헌 기념비가 찍혀 있고, 단 구성·명문 띠가 CVMA 의 창 I 기록과 맞아 V20 으로 판단(개연)"
+    },
+    {
+     "file": "Milano, Duomo,Vetrate absidali dell'Apocalisse, XV secolo 09.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,Vetrate_absidali_dell'Apocalisse,_XV_secolo_09.jpg",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "2994×1996",
+     "covers_ko": "상부 15세기 패널(부분)",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v21",
+   "fabbrica_no": "V21",
+   "plan_no": "P21",
+   "cvma_no": "nII",
+   "zone": "apse",
+   "side": "north",
+   "order": "northeast",
+   "position_ko": "후진 북동 사선 면(제대를 볼 때 왼쪽)",
+   "model_opening_key": "apse_north",
+   "subject_ko": "구약 이야기",
+   "subject_original": "Storie del Vecchio Testamento",
+   "subject_en": "Stories from the Old Testament",
+   "artists": [
+    "Bertini 공방"
+   ],
+   "date": "1835–1865",
+   "size_m": {
+    "w": 9.6,
+    "h": 22.77,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 4.51,
+     "h": 10.7
+    }
+   },
+   "structure": {
+    "lancets": 12,
+    "lancet_groups": "넓은 3구획 × 작은 랜싯 4",
+    "panel_rows": 11,
+    "panel_cm": "120 × 60",
+    "tracery_ko": "삼엽 + 큰 장미",
+    "note_ko": "원래 135패널(Fabbrica). 하단은 창세기(빛의 창조, 원죄, 노아의 방주 등)"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/NgH6Axau6RUMlw",
+    "https://artsandculture.google.com/asset/ZgGJwV7iBNsFtA",
+    "https://artsandculture.google.com/story/dAXhNmLtsG32Lg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/NgH6Axau6RUMlw",
+    "https://artsandculture.google.com/asset/ZgGJwV7iBNsFtA",
+    "https://artsandculture.google.com/asset/HwHKm-QHiCh0Lg"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v22",
+   "fabbrica_no": "V22",
+   "plan_no": "P22",
+   "cvma_no": "nIII",
+   "zone": "sacristy_north",
+   "side": "north",
+   "order": "east_wall",
+   "position_ko": "북쪽(아퀼로나레) 성구실 동쪽 바깥벽(후진 V21 옆)",
+   "model_opening_key": null,
+   "subject_ko": "미확인",
+   "subject_original": null,
+   "subject_en": null,
+   "artists": [],
+   "date": "미확인",
+   "size_m": null,
+   "structure": {
+    "note_ko": "공개 자료에서 주제·작가를 찾지 못함"
+   },
+   "artwork_copyright_ko": "미확인",
+   "confidence": {
+    "identity": "unknown",
+    "position": "probable"
+   },
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "회랑의 창이 아니라 성구실 바깥벽의 창."
+  },
+  {
+   "id": "milan_v23",
+   "fabbrica_no": "V23",
+   "plan_no": "P23",
+   "cvma_no": "nIV",
+   "zone": "sacristy_north",
+   "side": "north",
+   "order": "north_wall",
+   "position_ko": "북쪽 성구실 북쪽 바깥벽, 후진 쪽 칸",
+   "model_opening_key": null,
+   "subject_ko": "미확인",
+   "subject_original": null,
+   "subject_en": null,
+   "artists": [],
+   "date": "미확인",
+   "size_m": null,
+   "structure": {
+    "note_ko": "공개 자료에서 주제·작가를 찾지 못함"
+   },
+   "artwork_copyright_ko": "미확인",
+   "confidence": {
+    "identity": "unknown",
+    "position": "probable"
+   },
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "회랑의 창이 아니라 성구실 바깥벽의 창."
+  },
+  {
+   "id": "milan_v24",
+   "fabbrica_no": "V24",
+   "plan_no": "P24",
+   "cvma_no": "nV",
+   "zone": "sacristy_north",
+   "side": "north",
+   "order": "north_wall",
+   "position_ko": "북쪽 성구실 북쪽 바깥벽, 익랑 쪽 칸",
+   "model_opening_key": null,
+   "subject_ko": "미확인",
+   "subject_original": null,
+   "subject_en": null,
+   "artists": [],
+   "date": "미확인",
+   "size_m": null,
+   "structure": {
+    "note_ko": "공개 자료에서 주제·작가를 찾지 못함"
+   },
+   "artwork_copyright_ko": "미확인",
+   "confidence": {
+    "identity": "unknown",
+    "position": "probable"
+   },
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/piantaduomo.htm"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "회랑의 창이 아니라 성구실 바깥벽의 창."
+  },
+  {
+   "id": "milan_v25",
+   "fabbrica_no": "V25",
+   "plan_no": "P25",
+   "cvma_no": "nVI",
+   "zone": "transept_north",
+   "side": "north",
+   "order": "east_wall",
+   "position_ko": "북익랑 동쪽 벽(동향 창), 성녀 프락세데스 제대 위",
+   "model_opening_key": "trEastN",
+   "subject_ko": "다마스쿠스의 성 요한의 생애",
+   "subject_original": "Storie di san Giovanni Damasceno",
+   "subject_en": "Life of Saint John of Damascus",
+   "artists": [
+    "Niccolò da Varallo (밑그림 Vincenzo Foppa)"
+   ],
+   "date": "1479–1489 (CVMA 1478–1516); 19세기 보완; 2019 복원",
+   "size_m": {
+    "w": 3.8,
+    "h": 23.0,
+    "source": "CVMA(석재 포함); Fabbrica 는 전체 치수 미기재",
+    "app_scale_0_47": {
+     "w": 1.79,
+     "h": 10.81
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "panel_rows": 15,
+    "panel_cm": "114 × 80",
+    "note_ko": "서사 패널 30장, 아래→위·왼→오. 원래 남익랑(창 sXII)에 있다가 16세기에 이전"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/story/ewWBglm9X_GhKA",
+    "https://artsandculture.google.com/story/LwURbNoS3wAWIQ",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/5_gio_damasceno.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/egEKo919SXtZdw"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v26",
+   "fabbrica_no": "V26",
+   "plan_no": "P26",
+   "cvma_no": "nVII",
+   "zone": "transept_north",
+   "side": "north",
+   "order": "end_wall_east_bay",
+   "position_ko": "북익랑 끝 벽의 동쪽 칸(북향 창)",
+   "model_opening_key": "trEndN_east",
+   "subject_ko": "성 카롤로 보로메오의 생애",
+   "subject_original": "Storie di san Carlo Borromeo",
+   "subject_en": "Stories from the Life of Saint Charles Borromeo",
+   "artists": [
+    "Giovanni Beltrami",
+    "Giovanni Buffa",
+    "Guido Zuccaro",
+    "Innocente Cantinotti"
+   ],
+   "date": "1910; 2020 복원",
+   "size_m": {
+    "w": 3.53,
+    "h": 22.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.66,
+     "h": 10.57
+    }
+   },
+   "structure": {
+    "note_ko": "9구획, 아래→위"
+   },
+   "artwork_copyright_ko": "공동저작: 마지막 생존 저작자 Buffa(1954 사망, Fabbrica 표기) 기준 2025-01-01 부터 PD 로 보임. 나머지 세 사람의 사망 연도는 이번 조사에서 원문 확인 못 함",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/pQGG9Yg7-1wZUw"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/pQGG9Yg7-1wZUw"
+   ],
+   "commons_photos": [],
+   "notes_ko": "it.wikipedia 는 이 창을 \"n. 42\"라 적었으나 Fabbrica 번호는 V26."
+  },
+  {
+   "id": "milan_v27",
+   "fabbrica_no": "V27",
+   "plan_no": "P27",
+   "cvma_no": "nVIII",
+   "zone": "transept_north_chapel",
+   "side": "north",
+   "order": "east_oblique",
+   "position_ko": "나무의 성모(Madonna dell'Albero) 경당 후진의 동쪽 사선 면",
+   "model_opening_key": null,
+   "subject_ko": "성모의 생애(연작 3창 중 하나)",
+   "subject_original": "Storie della Vergine",
+   "subject_en": "Stories of the Virgin",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1842–1847",
+   "size_m": null,
+   "structure": {
+    "note_ko": "창별 장면·치수 미확인. 남쪽 경당 창(2.18×16.36m)과 같은 규모로 추정"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "secondary_source_only",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "Google Arts 에서 이 세 창의 asset 을 찾지 못했다. 주제·작가·연대는 it.wikipedia(TCI 인용)뿐."
+  },
+  {
+   "id": "milan_v28",
+   "fabbrica_no": "V28",
+   "plan_no": "P28",
+   "cvma_no": "nIX",
+   "zone": "transept_north_chapel",
+   "side": "north",
+   "order": "center",
+   "position_ko": "나무의 성모 경당 후진의 끝(가운데) 면",
+   "model_opening_key": null,
+   "subject_ko": "성모의 생애(연작 3창 중 하나)",
+   "subject_original": "Storie della Vergine",
+   "subject_en": "Stories of the Virgin",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1842–1847",
+   "size_m": null,
+   "structure": {
+    "note_ko": "창별 장면·치수 미확인. 남쪽 경당 창(2.18×16.36m)과 같은 규모로 추정"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "secondary_source_only",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [
+    {
+     "file": "DSC03035 - Duomo di Milano - Transetto sinistro - Foto di Giovanni Dall'Orto - 29-1-2007.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:DSC03035_-_Duomo_di_Milano_-_Transetto_sinistro_-_Foto_di_Giovanni_Dall'Orto_-_29-1-2007.jpg",
+     "license": "Attribution (Commons {{Attribution}})",
+     "author": "Giovanni Dall'Orto",
+     "px": "2048×1536",
+     "covers_ko": "북익랑 경당의 창 3개를 아래에서(어둡고 작음)",
+     "usable": "yes_attribution_template",
+     "note_ko": "형태 확인용"
+    }
+   ],
+   "notes_ko": "Google Arts 에서 이 세 창의 asset 을 찾지 못했다. 주제·작가·연대는 it.wikipedia(TCI 인용)뿐."
+  },
+  {
+   "id": "milan_v29",
+   "fabbrica_no": "V29",
+   "plan_no": "P29",
+   "cvma_no": "nX",
+   "zone": "transept_north_chapel",
+   "side": "north",
+   "order": "west_oblique",
+   "position_ko": "나무의 성모 경당 후진의 서쪽 사선 면",
+   "model_opening_key": null,
+   "subject_ko": "성모의 생애(연작 3창 중 하나)",
+   "subject_original": "Storie della Vergine",
+   "subject_en": "Stories of the Virgin",
+   "artists": [
+    "Giovanni Battista Bertini"
+   ],
+   "date": "1842–1847",
+   "size_m": null,
+   "structure": {
+    "note_ko": "창별 장면·치수 미확인. 남쪽 경당 창(2.18×16.36m)과 같은 규모로 추정"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "secondary_source_only",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "Google Arts 에서 이 세 창의 asset 을 찾지 못했다. 주제·작가·연대는 it.wikipedia(TCI 인용)뿐."
+  },
+  {
+   "id": "milan_v30",
+   "fabbrica_no": "V30",
+   "plan_no": "P30",
+   "cvma_no": "nXI",
+   "zone": "transept_north",
+   "side": "north",
+   "order": "end_wall_west_bay",
+   "position_ko": "북익랑 끝 벽의 서쪽 칸(북향 창)",
+   "model_opening_key": "trEndN_west",
+   "subject_ko": "시에나의 성녀 카타리나의 생애(위, 24패널) · 성 요아킴과 안나/성모의 생애(아래)",
+   "subject_original": "Storie di santa Caterina da Siena; Storie dei santi Gioacchino e Anna",
+   "subject_en": "The stories of Saint Joachim and Anne and the life of Saint Catherine of Siena",
+   "artists": [
+    "Corrado de Mochis",
+    "Giovanni da Monte (하부 밑그림)",
+    "Pier Angelo Sesini"
+   ],
+   "date": "1562–1567; 19세기 보완",
+   "size_m": {
+    "w": 3.53,
+    "h": 22.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.66,
+     "h": 10.57
+    }
+   },
+   "structure": {
+    "lancets": 4,
+    "panel_rows": 15,
+    "panel_cm": "118 × 74",
+    "tracery_ko": "삼엽 + 장미",
+    "note_ko": "CVMA: 높이 2254 × 폭 393cm"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/hQEUU8ScCJK_fg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/25cat_siena.htm",
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/hQEUU8ScCJK_fg"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v31",
+   "fabbrica_no": "V31",
+   "plan_no": "P31",
+   "cvma_no": "nXII",
+   "zone": "transept_north",
+   "side": "north",
+   "order": "west_wall",
+   "position_ko": "북익랑 서쪽 벽(서향 창)",
+   "model_opening_key": "trWestN",
+   "subject_ko": "사도들(성인 입상) · 성모 대관",
+   "subject_original": "Vetrata degli Apostoli",
+   "subject_en": "The Holy Apostles",
+   "artists": [
+    "Carlo Urbino da Crema (밑그림)",
+    "Corrado de Mochis"
+   ],
+   "date": "1567",
+   "size_m": {
+    "w": 3.0,
+    "h": 21.6,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.41,
+     "h": 10.15
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "panel_rows": 16,
+    "panel_cm": "117 × 81",
+    "note_ko": "인물 하나가 패널 2단을 차지. 6~8단은 과일 트로피·교황 휘장. CVMA: 높이 2086 × 폭 310cm"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/pAH7-Q67SwiE-Q",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/31apostoli.htm"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/pAH7-Q67SwiE-Q"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v32",
+   "fabbrica_no": "V32",
+   "plan_no": "P32",
+   "cvma_no": "nXIII",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 8,
+   "position_ko": "북측랑(정문에서 제대 쪽) 8번째 칸",
+   "model_opening_key": "aisleN_b8",
+   "subject_ko": "성 암브로시오의 생애",
+   "subject_original": "Storie di sant'Ambrogio",
+   "subject_en": "Life of St. Ambrose",
+   "artists": [
+    "Pompeo Bertini"
+   ],
+   "date": "1888–1895",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "네 장면(아우구스티노 세례, 주교 직무, 테오도시우스와의 만남, 장례)이 각각 6패널. 성 암브로시오 제대 위"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/MwE_6JI80Is2NQ",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/MwE_6JI80Is2NQ"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano Duomo Sant'AmbrogioWindow 016 3286.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano_Duomo_Sant'AmbrogioWindow_016_3286.jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Ludvig14",
+     "px": "2373×10294",
+     "covers_ko": "창 전체를 편 정면 사진(+부분 3장)",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v33",
+   "fabbrica_no": "V33",
+   "plan_no": "P33",
+   "cvma_no": "nXIV",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 7,
+   "position_ko": "북측랑(정문에서 제대 쪽) 7번째 칸",
+   "model_opening_key": "aisleN_b7",
+   "subject_ko": "성 요셉의 생애",
+   "subject_original": "Storie di san Giuseppe",
+   "subject_en": "The Life of Saint Joseph",
+   "artists": [
+    "Valerio Perfundavalle (Profondavalle)",
+    "Giovanni Battista Lampugnani (17세기 개작)"
+   ],
+   "date": "1576–1657",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "아래→위: 요셉의 꿈(it.wikipedia 는 수태고지), 방문, 탄생, 이집트 피신. 성 요셉 제대 가까이"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/tAEUFSfHcbRtJw",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/tAEUFSfHcbRtJw"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano, Duomo, Vetrata di San Giuseppe di Valerio Perfundavalle da Lovanio, navata sinistra, XVI secolo 11.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_di_San_Giuseppe_di_Valerio_Perfundavalle_da_Lovanio,_navata_sinistra,_XVI_secolo_11.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "3072×4608",
+     "covers_ko": "부분",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v34",
+   "fabbrica_no": "V34",
+   "plan_no": "P34",
+   "cvma_no": "nXV",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 6,
+   "position_ko": "북측랑(정문에서 제대 쪽) 6번째 칸",
+   "model_opening_key": "aisleN_b6",
+   "subject_ko": "성녀 헬레나와 십자가 발견",
+   "subject_original": "Storie di sant'Elena",
+   "subject_en": "Stories of Saint Helena and the finding of the Cross",
+   "artists": [
+    "Rainaldo da Umbria di Fiandra (?)",
+    "Valerio Perfundavalle",
+    "Pellegrino Tibaldi (밑그림 ?)"
+   ],
+   "date": "1570–1577",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "큰 장면 셋: 포로 석방, 십자가 발견, 십자가의 기적"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/jwGX3rjNvTOMhQ",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/jwGX3rjNvTOMhQ"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v35",
+   "fabbrica_no": "V35",
+   "plan_no": "P35",
+   "cvma_no": "nXVI",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 5,
+   "position_ko": "북측랑(정문에서 제대 쪽) 5번째 칸",
+   "model_opening_key": "aisleN_b5",
+   "subject_ko": "성모의 영광(성령 강림 · 성모 안식 · 승천)",
+   "subject_original": "Glorie della Vergine",
+   "subject_en": "The Glories of the Virgin",
+   "artists": [
+    "Giovanni da Monte (밑그림 ?)",
+    "Corrado de Mochis",
+    "Pietro Angelo Sesini"
+   ],
+   "date": "1565–1567",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "장면이 여러 패널에 걸침. CVMA: 높이 1565 × 181cm"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/iAE88tkW13trOg",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/29gloriev.htm",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/iAE88tkW13trOg"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano, Duomo, Vetrata delle Glorie della Vergine, di Giovanni da Monte, navata sinistra, XVI secolo 10.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_delle_Glorie_della_Vergine,_di_Giovanni_da_Monte,_navata_sinistra,_XVI_secolo_10.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "4608×3072",
+     "covers_ko": "부분",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v36",
+   "fabbrica_no": "V36",
+   "plan_no": "P36",
+   "cvma_no": "nXVII",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 4,
+   "position_ko": "북측랑(정문에서 제대 쪽) 4번째 칸",
+   "model_opening_key": "aisleN_b4",
+   "subject_ko": "네 관 쓴 순교 성인(Quattro Coronati)",
+   "subject_original": "Storie dei Santi Quattro Coronati",
+   "subject_en": "The Four Crowned Saints",
+   "artists": [
+    "Pellegrino Tibaldi (밑그림)",
+    "Corrado de Mochis"
+   ],
+   "date": "1567–1569; 19세기 보완",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "아래→위: 끌의 기적, 감옥의 세례, 일하는 조각가들, 재판, 순교. CVMA: 높이 1578 × 182cm. (Google Arts asset 설명문은 V25 의 글이 잘못 들어가 있다)"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/AwH7WMntQjSFRw",
+    "https://corpusvitrearum.it/bivi/eng/schede/Lombardia/Duomo/30santicoronati.htm",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/AwH7WMntQjSFRw"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano Duomo window36 016 3229.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano_Duomo_window36_016_3229.jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Ludvig14",
+     "px": "3373×14041",
+     "covers_ko": "창 전체를 편 정면 사진(+부분 3장)",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v37",
+   "fabbrica_no": "V37",
+   "plan_no": "P37",
+   "cvma_no": "nXVIII",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 3,
+   "position_ko": "북측랑(정문에서 제대 쪽) 3번째 칸",
+   "model_opening_key": "aisleN_b3",
+   "subject_ko": "성 미카엘 대천사와 악마들의 전투",
+   "subject_original": "Battaglia tra san Michele Arcangelo e i demoni",
+   "subject_en": "The Battle between Saint Michael and the Demons",
+   "artists": [
+    "Giovanni Buffa"
+   ],
+   "date": "1939–1947",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "높이 17m 전체가 한 장면"
+   },
+   "artwork_copyright_ko": "Buffa 1954년 사망(Fabbrica 표기) → 2025-01-01 부터 PD. 기존 조사에는 1956 이라는 표기도 있어 그 경우 2027-01-01 부터",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/QAGNcKtTyPeVRQ",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/QAGNcKtTyPeVRQ"
+   ],
+   "commons_photos": [
+    {
+     "file": "Milano, Duomo, Vetrata di san Michele Arcangelo, navata sinistra, XX secolo 07.JPG",
+     "url": "https://commons.wikimedia.org/wiki/File:Milano,_Duomo,_Vetrata_di_san_Michele_Arcangelo,_navata_sinistra,_XX_secolo_07.JPG",
+     "license": "CC BY-SA 3.0",
+     "author": "Carlo Dell'Orto",
+     "px": "3072×4608",
+     "covers_ko": "부분(2장)",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v38",
+   "fabbrica_no": "V38",
+   "plan_no": "P38",
+   "cvma_no": "nXIX",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 2,
+   "position_ko": "북측랑(정문에서 제대 쪽) 2번째 칸",
+   "model_opening_key": "aisleN_b2",
+   "subject_ko": "15~19세기 패널 모음(신약·묵시록 창에서 온 것: 부활하신 그리스도의 발현, 유혹, 예언자 등)",
+   "subject_original": "Vetrata ricomposta (Nuovo Testamento / Passione)",
+   "subject_en": "Miscellaneous windows from the 15th-19th century",
+   "artists": [
+    "여러 작가"
+   ],
+   "date": "15~19세기",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "주제가 통일되지 않음(CVMA \"scattered panels\")"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/7gFr9mVMqe98Sw",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/7gFr9mVMqe98Sw"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v39",
+   "fabbrica_no": "V39",
+   "plan_no": "P39",
+   "cvma_no": "nXX",
+   "zone": "aisle_north",
+   "side": "north",
+   "order": 1,
+   "position_ko": "북측랑(정문에서 제대 쪽) 1번째 칸",
+   "model_opening_key": "aisleN_b1",
+   "subject_ko": "다윗 임금의 생애",
+   "subject_original": "Storie di David",
+   "subject_en": "Stories of David",
+   "artists": [
+    "Aldo Carpi (제작 Luigi Vianello, Fontana Arte)"
+   ],
+   "date": "1939–1947",
+   "size_m": {
+    "w": 2.17,
+    "h": 15.49,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.02,
+     "h": 7.28
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "삼엽(trilobe) 띠 + 꼭대기 장미",
+    "panel_rows": 11,
+    "panel_cm": "약 114~119 × 59~61",
+    "source": "CVMA",
+    "note_ko": "북측랑의 마지막(정문 바로 옆) 창"
+   },
+   "artwork_copyright_ko": "저작권 존속: Carpi 1973년 사망 → 2043년 말까지",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/OQGWwPONqg6STA",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/OQGWwPONqg6STA"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v40",
+   "fabbrica_no": "V40",
+   "plan_no": "P40",
+   "cvma_no": null,
+   "zone": "counterfacade_lower",
+   "side": "north",
+   "order": "north_outer",
+   "position_ko": "정문 안쪽 하단, 북쪽 바깥 문 위(도면 왼쪽 끝 = 성당의 왼쪽 = 북). 안에서 정문을 바라보면 맨 오른쪽",
+   "model_opening_key": null,
+   "subject_ko": "성녀 테클라의 순교",
+   "subject_original": "Martirio di santa Tecla",
+   "subject_en": "The Martyrdom of Saint Thecla",
+   "artists": [
+    "Pietro Bagatti Valsecchi",
+    "Mauro Conconi (밑그림)"
+   ],
+   "date": "1860",
+   "size_m": {
+    "w": 2.46,
+    "h": 6.2,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.16,
+     "h": 2.91
+    }
+   },
+   "structure": {
+    "shape_ko": "반원 머리의 고전식 창(애디큘 안)"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/HAF9_VEhgkZGWQ",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/HAF9_VEhgkZGWQ"
+   ],
+   "commons_photos": [],
+   "notes_ko": "Fabbrica 설명 \"controfacciata, first on the left\"는 성당의 왼쪽(북) 기준으로 읽으면 도면·번호 순서(V39 옆이 V40)와 모두 맞는다."
+  },
+  {
+   "id": "milan_v41",
+   "fabbrica_no": "V41",
+   "plan_no": "P41",
+   "cvma_no": null,
+   "zone": "counterfacade_lower",
+   "side": "north",
+   "order": "north_inner",
+   "position_ko": "정문 안쪽 하단, 북쪽 안쪽 문 위. 안에서 정문을 바라보면 오른쪽에서 둘째",
+   "model_opening_key": null,
+   "subject_ko": "주교로 뽑히는 성 암브로시오",
+   "subject_original": "Sant'Ambrogio eletto vescovo di Milano",
+   "subject_en": "S. Ambrogio elected Bishop of Milan",
+   "artists": [
+    "Giuseppe Bertini"
+   ],
+   "date": "1855",
+   "size_m": {
+    "w": 2.46,
+    "h": 6.2,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.16,
+     "h": 2.91
+    }
+   },
+   "structure": {
+    "shape_ko": "반원 머리의 고전식 창"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/VwGjgIThX2YFqg",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/VwGjgIThX2YFqg"
+   ],
+   "commons_photos": [],
+   "notes_ko": "치수는 V40·V42 와 같다고 보고 적음(asset 에는 미기재). Google Arts 사진 한 장에 V41 과 그 위 V44 가 함께 찍혀 있다."
+  },
+  {
+   "id": "milan_v45",
+   "fabbrica_no": "V45",
+   "plan_no": "P45",
+   "cvma_no": null,
+   "zone": "counterfacade_lower",
+   "side": null,
+   "order": "center",
+   "position_ko": "정문 안쪽 하단 가운데(가운데 문 위)",
+   "model_opening_key": null,
+   "subject_ko": "성모 승천",
+   "subject_original": "Assunzione di Maria (Assunta)",
+   "subject_en": "Mary's Assumption to Heaven",
+   "artists": [
+    "Giovanni Battista Bertini (Banfi e Dell'Acqua 협업)",
+    "Luigi Sabatelli (밑그림 1834–38)"
+   ],
+   "date": "1834–1854",
+   "size_m": {
+    "w": 3.43,
+    "h": 7.69,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.61,
+     "h": 3.61
+    }
+   },
+   "structure": {
+    "shape_ko": "반원 머리의 고전식 창(애디큘, 양옆 조각상, 아래 발코니)"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/OwHPf5gpb4Zw5g",
+    "https://artsandculture.google.com/asset/wAH2VAYlSrFKsw"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/OwHPf5gpb4Zw5g",
+    "https://artsandculture.google.com/asset/DwFHqbneSRDx0g",
+    "https://artsandculture.google.com/asset/wAH2VAYlSrFKsw"
+   ],
+   "commons_photos": [
+    {
+     "file": "Duomo di Milano - Stained-glass windows.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano_-_Stained-glass_windows.jpg",
+     "license": "CC BY 3.0 PL",
+     "author": "Radosław Botev (Fundacja Nomos)",
+     "px": "3000×4000",
+     "covers_ko": "정문 안쪽 가운데 벽 정면: 위 V47(삼위일체) + 아래 V45(성모 승천). 창은 화면의 일부",
+     "usable": "yes",
+     "note_ko": "V45 부분만 사용 가능(V47 은 원작 저작권 존속)"
+    },
+    {
+     "file": "91.6.10-jpg-(53).jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:91.6.10-jpg-(53).jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Earthbanished",
+     "px": "미확인",
+     "covers_ko": "성모 승천 창",
+     "usable": "user_decision_by_sa"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v42",
+   "fabbrica_no": "V42",
+   "plan_no": "P42",
+   "cvma_no": null,
+   "zone": "counterfacade_lower",
+   "side": "south",
+   "order": "south_inner",
+   "position_ko": "정문 안쪽 하단, 남쪽 안쪽 문 위. 안에서 정문을 바라보면 왼쪽에서 둘째",
+   "model_opening_key": null,
+   "subject_ko": "오리아 영지를 파는 성 카롤로 보로메오",
+   "subject_original": "San Carlo Borromeo vende il principato d'Oria",
+   "subject_en": "Saint Charles Borromeo sells the Principality of Oria",
+   "artists": [
+    "Giuseppe Bertini"
+   ],
+   "date": "1855",
+   "size_m": {
+    "w": 2.46,
+    "h": 6.2,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.16,
+     "h": 2.91
+    }
+   },
+   "structure": {
+    "shape_ko": "반원 머리의 고전식 창"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/FAEVw4D4gEY20Q",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/FAEVw4D4gEY20Q",
+    "https://artsandculture.google.com/asset/7gHvbhb7HvvN5g"
+   ],
+   "commons_photos": [],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v43",
+   "fabbrica_no": "V43",
+   "plan_no": "P43",
+   "cvma_no": null,
+   "zone": "counterfacade_lower",
+   "side": "south",
+   "order": "south_outer",
+   "position_ko": "정문 안쪽 하단, 남쪽 바깥 문 위. 안에서 정문을 바라보면 맨 왼쪽",
+   "model_opening_key": null,
+   "subject_ko": "성 미카엘(추정)",
+   "subject_original": "San Michele",
+   "subject_en": "Saint Michael",
+   "artists": [
+    "Bertini 형제 (it.wikipedia)"
+   ],
+   "date": "19세기",
+   "size_m": {
+    "w": 2.46,
+    "h": 6.2,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.16,
+     "h": 2.91
+    }
+   },
+   "structure": {
+    "shape_ko": "반원 머리의 고전식 창"
+   },
+   "artwork_copyright_ko": "퍼블릭 도메인(작가 사후 70년 경과)",
+   "confidence": {
+    "identity": "inferred_by_elimination",
+    "position": "probable"
+   },
+   "sources": [
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano,_pianta_con_elenco_delle_vetrate.jpg"
+   ],
+   "google_arts_assets_reference_only": [],
+   "commons_photos": [],
+   "notes_ko": "Fabbrica 자료에서 V43 을 직접 찾지 못했다. it.wikipedia 가 하단 창 주제로 든 성 카롤로·성 암브로시오·성 미카엘·성녀 테클라·성모 승천 가운데 남는 것이 성 미카엘이라 V43 으로 추정. 치수는 V40 과 같다고 보고 적음."
+  },
+  {
+   "id": "milan_v44",
+   "fabbrica_no": "V44",
+   "plan_no": null,
+   "cvma_no": null,
+   "zone": "counterfacade_upper",
+   "side": "north",
+   "order": "north",
+   "position_ko": "정문 안쪽 상단, 북쪽(V41 바로 위). 안에서 정문을 바라보면 오른쪽",
+   "model_opening_key": "cfUpper_n1",
+   "subject_ko": "교회(Ecclesia)",
+   "subject_original": "La Chiesa",
+   "subject_en": "The Church",
+   "artists": [
+    "Giovanni (János) Hajnal"
+   ],
+   "date": "1955 (1953 공모)",
+   "size_m": {
+    "w": 2.53,
+    "h": 5.75,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.19,
+     "h": 2.7
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "신고딕 첨두창, 꼭대기 장미"
+   },
+   "artwork_copyright_ko": "저작권 존속: Hajnal 2010년 사망 → 2080년 말까지",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/VwGjgIThX2YFqg",
+    "https://artsandculture.google.com/asset/EgGKASdCD8L5kA",
+    "https://artsandculture.google.com/story/DwWRO34lHZa5LA"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/VwGjgIThX2YFqg"
+   ],
+   "commons_photos": [],
+   "notes_ko": "치수는 같은 크기로 보이는 다른 측면 창(asset PQH0ackcpF4KpQ)의 값. 정면 밖 발코니의 \"새 율법\" 상(북)·\"옛 율법\" 상(남)과 같은 배치."
+  },
+  {
+   "id": "milan_v47",
+   "fabbrica_no": "V47",
+   "plan_no": null,
+   "cvma_no": null,
+   "zone": "counterfacade_upper",
+   "side": null,
+   "order": "center",
+   "position_ko": "정문 안쪽 상단 가운데(V45 위)",
+   "model_opening_key": "cfUpper_c",
+   "subject_ko": "삼위일체",
+   "subject_original": "La Trinità",
+   "subject_en": "The Trinity",
+   "artists": [
+    "Giovanni (János) Hajnal"
+   ],
+   "date": "1955",
+   "size_m": {
+    "w": 3.3,
+    "h": 9.88,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.55,
+     "h": 4.64
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "tracery_ko": "위에 장미 3 + 큰 장미",
+    "note_ko": "아래 3랜싯: 가운데 성부, 왼쪽 가시관의 그리스도, 오른쪽 비둘기의 성령. 위: 수태고지·수난·부활"
+   },
+   "artwork_copyright_ko": "저작권 존속: Hajnal 2010년 사망 → 2080년 말까지",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "confirmed"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/EgGKASdCD8L5kA"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/EgGKASdCD8L5kA"
+   ],
+   "commons_photos": [
+    {
+     "file": "Duomo di Milano - Stained-glass windows.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano_-_Stained-glass_windows.jpg",
+     "license": "CC BY 3.0 PL",
+     "author": "Radosław Botev (Fundacja Nomos)",
+     "px": "3000×4000",
+     "covers_ko": "V47 + V45 정면",
+     "usable": "no_artwork_in_copyright"
+    }
+   ],
+   "notes_ko": null
+  },
+  {
+   "id": "milan_v46",
+   "fabbrica_no": "V46",
+   "plan_no": null,
+   "cvma_no": null,
+   "zone": "counterfacade_upper",
+   "side": "south",
+   "order": "south",
+   "position_ko": "정문 안쪽 상단, 남쪽(V42 위). 안에서 정문을 바라보면 왼쪽",
+   "model_opening_key": "cfUpper_s1",
+   "subject_ko": "시나고가(Synagoga)",
+   "subject_original": "La Sinagoga",
+   "subject_en": "The Synagogue",
+   "artists": [
+    "Giovanni (János) Hajnal"
+   ],
+   "date": "1955",
+   "size_m": {
+    "w": 2.53,
+    "h": 5.75,
+    "source": "Google Arts & Culture asset (Veneranda Fabbrica)",
+    "app_scale_0_47": {
+     "w": 1.19,
+     "h": 2.7
+    }
+   },
+   "structure": {
+    "lancets": 3,
+    "note_ko": "눈을 가린 여인, 양옆에 카인과 아벨"
+   },
+   "artwork_copyright_ko": "저작권 존속: Hajnal 2010년 사망 → 2080년 말까지",
+   "confidence": {
+    "identity": "confirmed",
+    "position": "probable"
+   },
+   "sources": [
+    "https://artsandculture.google.com/asset/PQH0ackcpF4KpQ",
+    "https://artsandculture.google.com/asset/EgGKASdCD8L5kA"
+   ],
+   "google_arts_assets_reference_only": [
+    "https://artsandculture.google.com/asset/PQH0ackcpF4KpQ"
+   ],
+   "commons_photos": [],
+   "notes_ko": "asset PQH0ackcpF4KpQ 는 시나고가를 \"V44\"라 적었지만, 삼위일체 asset 과 V41·V44 사진 설명은 V44 = 교회, V46 = 시나고가라고 한다(2 대 1). 후자를 따름."
+  }
+ ],
+ "groups": [
+  {
+   "id": "milan_tiburio",
+   "zone": "tiburio",
+   "count": 8,
+   "count_confidence": "inferred",
+   "subject_ko": "제2차 바티칸 공의회",
+   "date": "1968",
+   "artists": [
+    "Cristoforo De Amicis (일부)",
+    "외 미확인"
+   ],
+   "structure_ko": "3랜싯(가운데가 높은 계단식) + 트레이서리. 현대적 인물 구성(Commons 사진 1장으로 확인)",
+   "model_opening_keys": "tiburio_000…tiburio_315",
+   "artwork_copyright_ko": "저작권 존속(1968년 작, De Amicis 는 20세기 후반 사망)",
+   "sources": [
+    "https://it.wikipedia.org/wiki/Vetrate_del_Duomo_di_Milano",
+    "https://commons.wikimedia.org/wiki/File:430-68_-_Vetrata_Tiburio_del_Duomo.jpg"
+   ],
+   "commons_photos": [
+    {
+     "file": "430-68 - Vetrata Tiburio del Duomo.jpg",
+     "url": "https://commons.wikimedia.org/wiki/File:430-68_-_Vetrata_Tiburio_del_Duomo.jpg",
+     "license": "CC BY-SA 4.0",
+     "author": "Mdeamicis65",
+     "px": "667×1000",
+     "covers_ko": "티부리오 창 1개",
+     "usable": "no_artwork_in_copyright"
+    }
+   ],
+   "notes_ko": "창 수 8은 팔각 티부리오라는 점과 \"55 = 번호 창 47 + 8\" 산술에서 온 추정. 공의회 연작의 창별 주제·작가는 찾지 못함(Brivio 1969 논문은 열람 못 함)."
+  },
+  {
+   "id": "milan_clerestory",
+   "zone": "clerestory",
+   "count": null,
+   "subject_ko": "장식 유리(기하·식물·문장·바다 생물·복음사가 상징·천사·시빌라 얼굴 등)",
+   "date": "1950년대 초",
+   "artists": [
+    "여러 유리 회사"
+   ],
+   "structure_ko": "중앙 신랑과 안쪽 측랑의 높은 창(지붕 테라스 1·2단 높이)",
+   "model_opening_keys": "clereN_b01…, clereS_b01…",
+   "artwork_copyright_ko": "미확인(1950년대, 작가 미상 → 보호 기간이 남아 있을 수 있음)",
+   "sources": [
+    "https://artsandculture.google.com/story/bwUxC1G07lKNKQ"
+   ],
+   "commons_photos": [],
+   "notes_ko": "서사 창이 아니다. Fabbrica V 번호 밖."
+  }
+ ],
+ "unassigned_commons_photos": [
+  {
+   "file": "4216 - Milano, Duomo - Deambulatorio - Giovanni Battista e Giuseppe Bertini, Vetrate (1833-62) - Foto Giovanni Dall'Orto - 14-July-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:4216_-_Milano,_Duomo_-_Deambulatorio_-_Giovanni_Battista_e_Giuseppe_Bertini,_Vetrate_(1833-62)_-_Foto_Giovanni_Dall'Orto_-_14-July-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "2048×1536",
+   "covers_ko": "후진 창 하나의 중·하단(12열), 아래에서 비스듬히. V19/V20/V21 중 어느 것인지 미확인",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "4217- Milano, Duomo - Deambulatorio - Giovanni Battista e Giuseppe Bertini, Vetrate (1833-62) - Foto Giovanni Dall'Orto - 14-July-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:4217-_Milano,_Duomo_-_Deambulatorio_-_Giovanni_Battista_e_Giuseppe_Bertini,_Vetrate_(1833-62)_-_Foto_Giovanni_Dall'Orto_-_14-July-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "1536×2048",
+   "covers_ko": "후진 창 부분(세로), 비스듬함",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "4218 - Milano, Duomo - Deambulatorio - Giovanni Battista e Giuseppe Bertini, Vetrate (1833-62) - Foto Giovanni Dall'Orto - 14-July-2007a.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:4218_-_Milano,_Duomo_-_Deambulatorio_-_Giovanni_Battista_e_Giuseppe_Bertini,_Vetrate_(1833-62)_-_Foto_Giovanni_Dall'Orto_-_14-July-2007a.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "1288×1848",
+   "covers_ko": "후진 창 부분(섬네일 미확인)",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "DSC03071 - Duomo di Milano - Vetrate del coro - Foto di Giovanni Dall'Orto - 29-1-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:DSC03071_-_Duomo_di_Milano_-_Vetrate_del_coro_-_Foto_di_Giovanni_Dall'Orto_-_29-1-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "2048×1536",
+   "covers_ko": "후진 창 패널 격자 근접(약 5단 × 9열), 비스듬함",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "IMG 5893 - Milano - Duomo - Vetrata abside - Foto Giovanni Dall'Orto - 21-Feb-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:IMG_5893_-_Milano_-_Duomo_-_Vetrata_abside_-_Foto_Giovanni_Dall'Orto_-_21-Feb-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "2048×1360",
+   "covers_ko": "성가대 쪽에서 멀리 본 후진 창(작음)",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "The art of telling stories (24386041811).jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:The_art_of_telling_stories_(24386041811).jpg",
+   "license": "CC BY 2.0",
+   "author": "Pedro from Maia (Porto), Portugal",
+   "px": "3696×2448",
+   "covers_ko": "후진 창 아래 4단 안팎 근접, 올려다봄(명문 띠가 있는 19세기 패널)",
+   "usable": "yes"
+  },
+  {
+   "file": "The void (7889041670).jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:The_void_(7889041670).jpg",
+   "license": "CC BY 2.0",
+   "author": "Pedro from Maia (Porto), Portugal",
+   "px": "848×1280",
+   "covers_ko": "후진 창(섬네일 미확인)",
+   "usable": "yes"
+  },
+  {
+   "file": "IMG 4586 - Vetrata del Duomo di Milano - Foto di Giovanni Dall'Orto - 28-jan-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:IMG_4586_-_Vetrata_del_Duomo_di_Milano_-_Foto_di_Giovanni_Dall'Orto_-_28-jan-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "2048×1360",
+   "covers_ko": "3랜싯 창의 3단 근접(르네상스 장면). 어느 창인지 미확인",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "Duomo di Milano 米蘭大教堂 - panoramio (1).jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano_%E7%B1%B3%E8%98%AD%E5%A4%A7%E6%95%99%E5%A0%82_-_panoramio_(1).jpg",
+   "license": "CC BY 3.0",
+   "author": "lienyuan lee (Panoramio)",
+   "px": "2448×3264",
+   "covers_ko": "제대(또는 기념물) 위의 큰 창 전체를 거의 정면에서, 밝게. 어느 창인지 미확인(익랑 창으로 보임)",
+   "usable": "yes"
+  },
+  {
+   "file": "DSC02981 - Duomo di Milano - Cappella barocca - Foto di Giovanni Dall'Orto - 29-1-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:DSC02981_-_Duomo_di_Milano_-_Cappella_barocca_-_Foto_di_Giovanni_Dall'Orto_-_29-1-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "1536×2048",
+   "covers_ko": "바로크 제대와 창 2개(익랑 경당으로 보임, 남·북 미확인)",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "DSC03120 - Duomo di Milano - Vetrate della navata - Foto di Giovanni Dall'Orto - 29-1-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:DSC03120_-_Duomo_di_Milano_-_Vetrate_della_navata_-_Foto_di_Giovanni_Dall'Orto_-_29-1-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "1536×2048",
+   "covers_ko": "멀리서 본 창 3개 + 위 작은 창 3개(어두움)",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "DSC03093 - Duomo di Milano - Vetrate del transetto - Foto di Giovanni Dall'Orto - 29-1-2007.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:DSC03093_-_Duomo_di_Milano_-_Vetrate_del_transetto_-_Foto_di_Giovanni_Dall'Orto_-_29-1-2007.jpg",
+   "license": "Attribution (Commons {{Attribution}})",
+   "author": "Giovanni Dall'Orto",
+   "px": "1536×2048",
+   "covers_ko": "익랑 창(섬네일 미확인)",
+   "usable": "yes_attribution_template"
+  },
+  {
+   "file": "Milano, Gennaio 2011 (5364879392).jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:Milano,_Gennaio_2011_(5364879392).jpg",
+   "license": "CC BY 2.0",
+   "author": "mat's eye",
+   "px": "1280×833",
+   "covers_ko": "밤의 정면 외관: 안에서 불이 켜진 하단 5창·상단 3창이 보임(아주 작음). 배치 확인용",
+   "usable": "yes"
+  },
+  {
+   "file": "Vetrata Duomo di Milano.JPG",
+   "url": "https://commons.wikimedia.org/wiki/File:Vetrata_Duomo_di_Milano.JPG",
+   "license": "Public domain (PD-user)",
+   "author": "Aangelo (it.wikipedia)",
+   "px": "1150×1559",
+   "covers_ko": "후진 창의 바깥쪽 석조 트레이서리(유리 그림 아님). 트레이서리 형태 참고용",
+   "usable": "yes"
+  },
+  {
+   "file": "Mi-Milano-1964-Duomo-abside-vetrate.jpg",
+   "url": "https://commons.wikimedia.org/wiki/File:Mi-Milano-1964-Duomo-abside-vetrate.jpg",
+   "license": "Public domain (PD-Italy, 엽서 1964)",
+   "author": "작가 미상",
+   "px": "826×1168",
+   "covers_ko": "밤의 후진 외관(창 3개에 불). 참고용",
+   "usable": "yes"
+  }
+ ]
+}
