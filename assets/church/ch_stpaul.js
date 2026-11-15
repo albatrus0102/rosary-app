@@ -48,6 +48,22 @@
       function quad(a, b, c, d, color, hint, vary, B) { (B || solid).addQuad(a, b, c, d, color, hint, { vary: vary === undefined ? 0.02 : vary }); }
       function tri(a, b, c, color, hint, vary, B) { (B || solid).addTris([a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]], color, hint, { vary: vary === undefined ? 0.02 : vary }); }
       function glowMat(m, k, col) { m.emissive = new T.Color(col === undefined ? 0xffffff : col); if (m.map) m.emissiveMap = m.map; m.emissiveIntensity = k; return m; }
+      // 위키미디어 공용 사진 판(art_stpaul.js, C-15): 이 성당에 들어올 때만 읽고, 읽히면 cb(질감)을 부른다(art_florence.js 와 같은 방식)
+      var artWait = [], artAsked = false;
+      function artPhoto(key, cb) {
+        if (typeof document === 'undefined' || !document.head || !document.head.appendChild) return;
+        function one(it) {
+          var a = window.ChurchArt && window.ChurchArt.stpaul && window.ChurchArt.stpaul[it[0]]; if (!a) return;
+          var im = new Image();
+          im.onload = function () { var tx = new T.Texture(im); tx.encoding = T.sRGBEncoding; tx.anisotropy = 8; tx.needsUpdate = true; it[1](tx); };
+          im.src = a.src;
+        }
+        if (window.ChurchArt && window.ChurchArt.stpaul) { one([key, cb]); return; }
+        artWait.push([key, cb]);
+        if (artAsked) return;
+        artAsked = true;
+        var sc = document.createElement('script'); sc.src = 'art_stpaul.js'; sc.async = true; sc.onload = function () { artWait.forEach(one); artWait = []; }; document.head.appendChild(sc);
+      }
       function meshOf(pos, uv, nor, idx, mat) {
         var g = new T.BufferGeometry();
         g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
@@ -395,17 +411,14 @@
           for (i = 0; i < 80; i++) { g.fillStyle = ['#f2d36a', '#e9efe0', '#d9603f'][i % 3]; g.beginPath(); g.arc(rr() * w, h - bandH - 15 + rr() * 8, 3, 0, 6.28); g.fill(); }
           g.fillStyle = '#1e3a6e'; g.fillRect(0, 0, w, 20); g.fillStyle = '#d9b13e'; g.fillRect(0, 20, w, 5);
         });
-        var domeTex = ctx.tex.custom(1024, 512, function (g, w, h) {
+        // 반돔 모자이크(C-15): 위키미디어 공용 사진(art_stpaul.js — 그리스도와 베드로·바오로·안드레아·루카, 13세기, 19세기 복원. docs/church/licenses/stpaul.md)을
+        // 이 성당에 들어올 때만 읽는다. 아래에서 올려다본 사진을 카메라 맞춤으로 이 반돔의 (φ, el) 격자에 다시 편 판이라(tools/commons_art/apse_fit.py)
+        // UV 는 (둘레각, 올림각) 그대로다. 읽기 전·실패 때는 금 바탕뿐(도형으로 그린 인물은 쓰지 않는다: REVERENCE.md).
+        var domeTex = ctx.tex.custom(512, 256, function (g, w, h) {
           var rr = rng(32), i, j;
           for (j = 0; j < h; j += 5) for (i = 0; i < w; i += 5) { var c = 0.8 + rr() * 0.35; g.fillStyle = 'rgb(' + Math.round(222 * c) + ',' + Math.round(174 * c) + ',' + Math.round(62 * c) + ')'; g.fillRect(i, j, 4, 4); }
-          // 구름띠(붉은·푸른)
-          for (i = 0; i < 6; i++) { g.fillStyle = i % 2 ? '#c24a3a' : '#3a5ea8'; g.beginPath(); g.ellipse(w / 2, h * 0.5 + i * 0, w * (0.46 - i * 0.04), h * (0.42 - i * 0.035), 0, 0, PI, true); g.lineWidth = 7; g.strokeStyle = g.fillStyle; g.stroke(); }
-          g.fillStyle = '#d9b13e'; g.fillRect(0, h * 0.74, w, 10);
-          // 그리스도(가운데) + 양옆 성인
-          figure(g, w / 2, h * 0.73, h * 0.58, { robe: '#b53a30', mantle: '#2e55a2', skin: '#f0cfa8', big: true });
-          [[0.3, '#e9dfc7'], [0.7, '#6e7f52'], [0.16, '#9c3b2e'], [0.84, '#1e3a6e']].forEach(function (f) { figure(g, w * f[0], h * 0.84, h * 0.36, { robe: f[1], mantle: '#b0793e', skin: '#efcca3' }); });
-          g.fillStyle = '#3d7a4a'; g.fillRect(0, h * 0.83, w, h * 0.17);
-          g.fillStyle = '#d9b13e'; g.fillRect(0, h - 12, w, 12);
+          g.fillStyle = '#3d7a4a'; g.fillRect(0, h * 0.92, w, h * 0.08);
+          g.fillStyle = '#d9b13e'; g.fillRect(0, h - 6, w, 6);
         });
         var N = 36, i2, pos = [], uv = [], nor = [], idx = [];
         for (i2 = 0; i2 <= N; i2++) {
@@ -419,13 +432,15 @@
           var el = PI / 2 * j2 / R, rr2 = r * Math.cos(el), yy = ySp + rise * Math.sin(el);
           for (i2 = 0; i2 <= N; i2++) {
             var ph2 = -PI / 2 + PI * i2 / N, px = cx + rr2 * Math.sin(ph2), pz = cz - rr2 * Math.cos(ph2);
-            pos2.push(px, yy, pz); uv2.push(0.5 + (px - cx) / (2 * r), (yy - ySp) / rise);
+            pos2.push(px, yy, pz); uv2.push(i2 / N, j2 / R);
             var gx = -(px - cx) / (r * r), gy = -(yy - ySp) / (rise * rise), gz = -(pz - cz) / (r * r), gl = Math.sqrt(gx * gx + gy * gy + gz * gz) || 1;
             nor2.push(gx / gl, gy / gl, gz / gl);
             if (j2 < R && i2 < N) { var a = j2 * (N + 1) + i2, bq = a + 1, cq = a + N + 2, dq = a + N + 1; idx2.push(a, bq, cq, a, cq, dq); }
           }
         }
-        (function (mm) { glowMat(mm, 0.16); mm.metalness = 0.3; mm.roughness = 0.5; })(meshOf(pos2, uv2, nor2, idx2, ctx.mats.lambert({ tex: domeTex })).material);
+        var domeMat = meshOf(pos2, uv2, nor2, idx2, ctx.mats.lambert({ tex: domeTex })).material;
+        glowMat(domeMat, 0.16); domeMat.metalness = 0.3; domeMat.roughness = 0.5;
+        artPhoto('apse', function (tx) { domeMat.map = tx; domeMat.emissiveMap = tx; domeMat.emissiveIntensity = 0.3; domeMat.metalness = 0.15; domeMat.needsUpdate = true; });
         // 후진 충돌: 반원 바깥 띠
         var cn = 14, cr = 1.2;
         for (i2 = 0; i2 <= cn; i2++) { var ak = -PI / 2 + PI * i2 / cn; ctx.addCollider({ x: cx + Math.sin(ak) * (r + cr - 0.05), z: cz - Math.cos(ak) * (r + cr - 0.05), r: cr }); }
@@ -727,8 +742,6 @@
         var X = CFX, XO = CFX + CFW, Z0 = ZT + 0.03, Z1 = CFZ, ZO = CFZ + CFW, YF = CFY, RAIL = 0.95, MB = 0xe6dfd0, RM = 0xdad3c3, ZS = ZF + 1.25;
         function bx(x0, x1, y0, y1, z0, z1, c, m) { ctx.boxAABB({ x0: x0, x1: x1, y0: y0, y1: y1, z0: z0, z1: z1, color: c, mat: m }); }
         bx(-X, X, YF - 0.1, YF, ZT - CFW, Z1, 0xd8d1c0, 'gloss');                       // 바닥
-        bx(-0.95, 0.95, YF, YF + 0.012, Z0 + 0.2, Z0 + 1.3, C.porph, 'gloss');          // 붉은 반암 상감
-        bx(-0.8, 0.8, YF + 0.012, YF + 0.02, Z0 + 0.35, Z0 + 1.15, 0xd8d1c0, 'gloss');
         bx(-XO, XO, YF, SY - 0.012, ZT - CFW, Z0, MB, 'gloss');                          // 제대 쪽 벽(단 밑)
         bx(-XO, XO, YF, 0, Z1, ZO, MB, 'gloss');                                         // 신랑 쪽 벽(신랑 바닥 높이까지)
         [-1, 1].forEach(function (s) {
@@ -753,11 +766,15 @@
         bx(-X, X, RAIL - 0.09, RAIL, Z1, ZO, RM, 'gloss'); bx(-X, X, RAIL, RAIL + 0.03, Z1 - 0.012, ZO + 0.012, C.gold);
         for (var bq = -4; bq <= 4; bq++) bx(bq * 0.2 - 0.035, bq * 0.2 + 0.035, 0, RAIL - 0.09, Z1 + 0.04, Z1 + 0.11, RM, 'gloss');
         bx(-X, X, SY, SY + 0.55, ZT - CFW, ZT - 0.04, RM, 'gloss'); bx(-X, X, SY + 0.55, SY + 0.65, ZT - CFW - 0.02, ZT - 0.02, C.gold);
-        // 무덤 창살(페네스텔라): 제대 쪽 벽의 어두운 아치 감실 + 금 창살 + 등불 빛
-        bx(-0.62, 0.62, YF + 0.12, YF + 1.12, Z0, Z0 + 0.03, C.gold);
-        bx(-0.52, 0.52, YF + 0.2, YF + 1.04, Z0 + 0.03, Z0 + 0.045, 0x1b1410);
-        [-0.26, 0, 0.26].forEach(function (gx) { bx(gx - 0.015, gx + 0.015, YF + 0.2, YF + 1.04, Z0 + 0.045, Z0 + 0.06, C.gold); });
-        [0.48, 0.76].forEach(function (gy) { bx(-0.52, 0.52, YF + gy - 0.015, YF + gy + 0.015, Z0 + 0.045, Z0 + 0.06, C.gold); });
+        // 사도 바오로의 무덤(C-15): 제대 쪽 벽 전체 = 창살(페네스텔라)과 양옆 누런 대리석 판의 정면 사진, 그 앞 바닥 = 유리 밑으로 보이는 석관 자리 발굴면 사진
+        // (위키미디어 공용 "St. Paul's Tomb.jpg", CC BY 4.0 — art_stpaul.js, docs/church/licenses/stpaul.md). 읽기 전·실패 때는 대리석 빛 민판.
+        var tombWall = ctx.mats.lambert({ color: 0xb98a55 }), tombFloor = ctx.mats.lambert({ color: 0x8f8170 });
+        ctx.plane({ x: 0, y: (YF + SY - 0.012) / 2, z: Z0 + 0.012, w: 2 * X, h: SY - 0.012 - YF, mat: tombWall });
+        ctx.plane({ x: 0, y: YF + 0.012, z: Z0 + 0.75, rx: -PI / 2, w: 1.9, h: 1.09, mat: tombFloor });
+        bx(-0.99, 0.99, YF, YF + 0.01, Z0 + 0.17, Z0 + 1.33, C.bronze);                  // 유리판의 청동 테
+        if (ctx._.batches.glassRefl) ctx._.batches.glassRefl.addTris([-0.95, YF + 0.03, Z0 + 0.2, 0.95, YF + 0.03, Z0 + 0.2, 0.95, YF + 0.03, Z0 + 1.3, -0.95, YF + 0.03, Z0 + 0.2, 0.95, YF + 0.03, Z0 + 1.3, -0.95, YF + 0.03, Z0 + 1.3], 0xffffff, [0, YF + 3, Z0 + 0.75], { vary: 0 });
+        artPhoto('tombFront', function (tx) { tombWall.map = tx; tombWall.color.setHex(0xffffff); glowMat(tombWall, 0.3); tombWall.needsUpdate = true; });
+        artPhoto('tombFloor', function (tx) { tombFloor.map = tx; tombFloor.color.setHex(0xffffff); glowMat(tombFloor, 0.22); tombFloor.needsUpdate = true; });
         ctx.addGlow({ x: 0, y: YF + 0.62, z: Z0 + 0.3, size: 1.5, color: 0xffb65c, kind: 'lamp' });
         for (var ln = 0; ln < 5; ln++) { ctx.addFlame({ x: -1.2 + ln * 0.6, y: SY + 0.78, z: ZT - 0.1, scale: 0.9 }); }
         ctx.addGlow({ x: 0, y: SY + 0.9, z: ZT, size: 2.4, color: 0xffc977, kind: 'lamp' });
