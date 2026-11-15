@@ -55,3 +55,6 @@ assets/church/glass_src/*_orig.*
 
 # 십자가의 길 연작 원본(내려받은 파일; tools/stations/fetch_series.py 로 다시 받는다)
 art/stations_series/
+
+# Claude Code agent worktrees
+.claude/worktrees/
