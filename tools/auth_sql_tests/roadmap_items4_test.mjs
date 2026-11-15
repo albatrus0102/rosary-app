@@ -81,10 +81,10 @@ await check('earlier migration files are untouched (their seeds do not know T-xx
   assert(sqlOf(M2).includes(OLD_G01), 'M2 still has the original G-01 title');
 });
 
-await check('source JSON: T items are well formed and grouped (3 예약, 2 신규, 3 보류, 10 결정, 9 출시 전, 8 기술부채)', async () => {
-  assert(T.length >= 30 && T.length <= 50, 'count ' + T.length);
+await check('source JSON: T items are well formed and grouped (3 예약, 7 신규, 4 보류, 13 결정, 10 출시 전, 19 기술부채)', async () => {
+  assert(T.length >= 30 && T.length <= 70, 'count ' + T.length);
   const cat = (c) => T.filter((x) => x.category === c);
-  eq(['예약(월 01시)', '신규 요청', '보류', '결정 대기', '출시 전', '기술부채'].map((c) => cat(c).length), [3, 2, 3, 10, 9, 8]);   // 2026-11-15: 당고개 순교성지 T-08(신규 요청)·T-39(출시 전) 추가
+  eq(['예약(월 01시)', '신규 요청', '보류', '결정 대기', '출시 전', '기술부채'].map((c) => cat(c).length), [3, 7, 4, 13, 10, 19]);   // 2026-11-15: T-08·T-39 추가, 이후 조사 결과·남은 일 T-58~T-78 추가
   eq(new Set(T.map((x) => x.id)).size, T.length, 'unique ids');
   for (const x of T) {
     assert(/^T-\d\d$/.test(x.id), x.id);
@@ -94,7 +94,7 @@ await check('source JSON: T items are well formed and grouped (3 예약, 2 신�
   }
   eq(cat('예약(월 01시)').map((x) => x.status), ['todo', 'todo', 'todo']);
   assert(cat('예약(월 01시)').every((x) => x.note.includes('2026-11-16') && x.note.includes('01:00')), 'scheduled notes carry the time');
-  eq(cat('보류').map((x) => x.status), ['dropped', 'dropped', 'dropped']);
+  eq(cat('보류').map((x) => x.status), ['dropped', 'dropped', 'dropped', 'dropped']);
   assert(cat('결정 대기').every((x) => x.status === 'todo' && x.note.startsWith('[결정 필요]')), 'decision items');
   assert(cat('출시 전').every((x) => x.release === 'R1'), 'pre-release items are R1');
   eq(T.filter((x) => x.status === 'done').map((x) => x.id), ['T-55']);

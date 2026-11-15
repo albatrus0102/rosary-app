@@ -155,7 +155,7 @@ const STATUS_UPDATES = [
 {
   const seen = new Set([...items.map((x) => x.id), ...U_ITEMS.map((x) => x.id), ...U2_ITEMS.map((x) => x.id), ...G_ITEMS.map((x) => x.id)]);
   const need = ['id', 'title', 'category', 'release', 'priority', 'effort', 'risk', 'depends', 'value', 'evidence', 'status', 'note'];
-  if (B_ITEMS.length < 30 || B_ITEMS.length > 50) throw new Error('unexpected T count ' + B_ITEMS.length);
+  if (B_ITEMS.length < 30 || B_ITEMS.length > 70) throw new Error('unexpected T count ' + B_ITEMS.length);
   for (const x of B_ITEMS) {
     for (const k of need) if (typeof x[k] !== 'string' || !x[k].trim()) throw new Error(`${x.id}: missing ${k}`);
     if (!/^T-\d{2}$/.test(x.id) || seen.has(x.id)) throw new Error('bad or duplicate id ' + x.id);

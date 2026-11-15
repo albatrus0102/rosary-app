@@ -1,6 +1,6 @@
 # 보류·미결정 목록 (사용자 결정 대기)
 
-**로드맵에 모두 등록됨(총 140개, 이 목록·예약 작업·기술부채 T-xx 33개 포함, 마이그레이션 `supabase/migrations/20261116000000_roadmap_items_4.sql`, 설명 `docs/ux/ROADMAP_ADMIN.md` 마지막 절).**
+**로드맵에 모두 등록됨(총 163개, 이 목록·예약 작업·기술부채 T-xx 56개 포함, 마이그레이션 `supabase/migrations/20261116000000_roadmap_items_4.sql`, 설명 `docs/ux/ROADMAP_ADMIN.md` 마지막 절).**
 
 마지막 갱신: 2026-11-14 (로드맵 등록). 사용자가 "나중에"라고 한 것과 아직 정하지 않은 것을 한 곳에 모은다.
 
@@ -65,3 +65,27 @@
 ## 성모 기도 자리 — 구현됨(2026-11-15; 남은 곳: stpeter)
 - **구현됨(8곳: basic·myeongdong·lateran·stpaul·milan·danggogae·florence·maggiore(파올리나 경당 '로마 백성의 구원' 성화 앞, 성상 없이))**: `assets/church/shrine.js` + 자리 표 `assets/church/shrine_places.js`(빌더 변경 없음). 봉헌초 받침은 `layout.candles.stands` 맨 끝 스탠드(슬롯 14, 기존 번호 유지), 서는 자리는 candle 스테이션(이름표 '성모상 앞') + 제대 앞과 같은 '기도하기' 칩(잠시 기도/묵주기도). 시험 `tools/church_web/shrine.test.mjs`. **남은 것**: stpeter 는 구조 확정(병합) 뒤 표의 `pending` 을 자리로 바꾸고 `export_layouts.mjs` 재실행; 명동은 기존 성모상(후진, 걷기 경계 밖) 대신 왼쪽 익랑 벽 — 실제 자리 재확인; Flutter 쪽 전용 칩(앉기/무릎 꿇기/손 모으기)·'성모상 앞' 가기 시트 항목은 아직 없음(제대 앞 칩 재사용). 아래는 원래 요청.
 - **성당마다 '성모 기도 자리'**: 성모상(또는 그 성당의 대표 성상·성화) + 작은 봉헌초 받침(기존 봉헌초 기능 연결) + 무릎 꿇기 자리 + '묵주기도' 바로 시작을 한 곳에. 실제 그런 자리가 있는 곳은 그 위치(마조레 파올리나 경당 '로마 백성의 구원' 앞, 명동 성모상 자리 등). 참고: 다른 앱의 성인 경당(성상+봉헌초+무릎 자리) 스크린샷.
+
+## 2026-11-15 조사 결과·남은 일 (로드맵 T-58~T-78 등록)
+- T-58 성 베드로 구조 수정 마무리(돔 피어 회랑·모서리 경당 4·성체/성가대 대경당·측랑 끝 제대·피에타 중복) — STRUCTURE_AUDIT_ROME.md
+- T-59 성모 기도 자리: 성 베드로(구조 확정 후) — 아래 '성모 기도 자리' 절
+- T-60 피렌체 창 걸기: 진본 8창(원본 429 → 표준 섬네일 폭)·임시 색조 패널·QA 방·측랑 이련창 비율 — GLASS_ALL_CHURCHES_PLAN.md, STRUCTURE_AUDIT_OTHERS.md
+- T-61 피렌체 트리부나·팔각 동쪽 걷기 불가(팔각 좌석 OL/OR 이동) — STRUCTURE_AUDIT_OTHERS.md
+- T-62 명동·피렌체 시안 ChatGPT 요청(꼭 필요 23장·권장 17장) — glass_prompts/
+- T-63 마조레 정면 원형 창 색조 패널(흉내 금지)·대경당 프레스코 질감·성화 판 1.5배 — STRUCTURE_AUDIT_ROME.md
+- T-64 공용 kit.js ctx.vault 'groin'/'ribbed' 면 높이 min→max — STRUCTURE_AUDIT_OTHERS.md
+- T-65 밀라노 성구실 방 2개·시안 6장·티부리오/고창 색유리·고해상도 교체 — MILAN_GLASS_RESEARCH.md, MILAN_55_RESULT.md
+- T-66 입구 화면 그림 재촬영 7곳 + ChatGPT 3×3 시트·배경·레일 장식 — ENTRY_ART.md
+- T-67 ChatGPT 텍스처 25종(우선 A 8종) — TEXTURE_PROMPTS.md
+- T-68 [결정] CC BY-SA 사진 허용(피렌체 측랑 4·밀라노 V03/V32/V36·티에폴로 14점) — ASSET_LICENSES.md
+- T-69 [출시 전] 권리 허락: 밀라노 Veneranda Fabbrica·당고개·주교회의 기도문·명동 이남규 창·판로트·'로마 백성의 구원' 촬영자 — ASSET_LICENSES.md, PRAYER_VERIFICATION.md
+- T-70 [결정] Unity 전환 판정: 실기기 30초 벤치·화질 조정(MSAA 4→2, SSAO)·폴더블 픽셀 상한 — PERF_SCALE.md
+- T-71 KTX2 도입(고해상도 창 때, APK +0.6MB) — PERF_SCALE.md
+- T-72 두 성당 오갈 때 GL 질감 +1 잔여 누수 — PERF_SCALE.md
+- T-73 새 성당 후보 11곳(추천: 산 클레멘테 → 파티마 → 절두산/나바위) — 사용자 요청
+- T-74 당고개 2차(지상 한옥·마당·야외 제대)·실측 사진 — interiors/danggogae.md
+- T-04(기존) 우리 본당 현대풍 14처 — ai_stations_prompts/08_ourparish.txt (중복 등록 없이 보강)
+- T-75 명동 궁륭 펜던트 등·익랑 끝 창 분할·빛줄기 과다 — STRUCTURE_AUDIT_OTHERS.md
+- T-76 아바타 등신·옷 질감·머리카락 결 — AVATAR_LOOK.md
+- T-77 [결정] 십자가의 길: 마침 화면 글·'사도 신경'/'묵주 기도' 표기·접힌 '묵상' 14쌍 — PRAYER_VERIFICATION.md
+- T-78 3D 엔진 변경 검토(Babylon.js → Godot → Unity, 실기기 판정 후; 보류) — PERF_SCALE.md §8
