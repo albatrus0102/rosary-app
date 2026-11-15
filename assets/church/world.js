@@ -447,6 +447,13 @@
     var api = {
       id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9 },
+      // 3인칭 카메라 벽 가드(cam_guard.js): 머리→카메라 선분이 벽·천장에 닿으면 그 앞으로 당긴다(굽은 후진·경당 포함)
+      camGuard: (function () {
+        if (!root.ChurchCamGuard) return null;
+        var sp = layout.spawn || { x: 0, z: 0 }, fy0 = 0;
+        try { fy0 = logic.floorY(sp.x, sp.z) || 0; } catch (e) { /* ignore */ }
+        try { return root.ChurchCamGuard.build(ctx.root, { bounds: cb, yLow: fy0 + 1.6 }); } catch (e) { return null; }
+      })(),
       reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
       setHour: function (h) { curHour = ((h % 24) + 24) % 24; shForce = true; applyEnv(); },
