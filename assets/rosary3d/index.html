@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>묵주</title>
+<style>
+  html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#1e2842;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  canvas{display:block;position:fixed;left:0;top:0;width:100%;height:100%;outline:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<!-- three r149 와 RoomEnvironment 는 성당 자산을 그대로 쓴다(번들 중복 없음). 성당 WebView 와 동시에 띄우지 않는다. -->
+<script src="../church/three.min.js"></script>
+<script src="../church/three_extras.js"></script>
+<script src="layout.js"></script>
+<script src="defs.js"></script>
+<script src="materials.js"></script>
+<script src="models.js"></script>
+<script src="view.js"></script>
+</body>
+</html>

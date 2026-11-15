@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>묵주 화면 미리보기</title>
+<!-- tools/church_web/rosary3d_shots.mjs 전용: Flutter 기도 화면(C안·A안) 틀을 흉내 낸 360×800 미리보기. 3D 는 실제 assets/rosary3d 페이지. -->
+<style>
+ @font-face{font-family:P;src:url(../../assets/fonts/Pretendard-Regular.otf)} @font-face{font-family:P;font-weight:700;src:url(../../assets/fonts/Pretendard-Bold.otf)}
+ @font-face{font-family:P;font-weight:600;src:url(../../assets/fonts/Pretendard-SemiBold.otf)}
+ body{margin:0;width:360px;height:800px;background:#141b2e;color:#efe7d8;font-family:P,sans-serif;overflow:hidden;position:relative}
+ .bar{height:56px;display:flex;align-items:center;padding:0 4px;gap:4px}.ic{width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#d9cdb6}
+ .bar .t{flex:1;font-size:18px;font-weight:600}
+ .mys{height:80px;padding:6px 20px;box-sizing:border-box}.mys .a{font-size:13px;color:#c8a865;letter-spacing:.5px}.mys .b{font-size:16px;line-height:1.35;margin-top:4px;color:#e6dccb}
+ .prog{height:32px;display:flex;align-items:center;justify-content:center;gap:10px}.prog i{width:34px;height:6px;border-radius:3px;background:#3a4560}.prog i.d{background:#c8a865}.prog i.c{background:linear-gradient(90deg,#c8a865 30%,#3a4560 30%)}
+ .ttl{height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center}.ttl .a{font-size:28px;font-weight:700;line-height:1.1}.ttl .b{font-size:20px;color:#c8a865;font-weight:600;margin-top:2px}
+ iframe{display:block;border:0;width:360px;height:332px}
+ .row{height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;color:#d9cdb6}.chip{border:1px solid #3a4560;border-radius:20px;padding:8px 14px}
+ .nav{position:absolute;left:0;right:0;bottom:16px;height:72px;display:flex;gap:12px;padding:0 16px}.nav div{display:flex;align-items:center;justify-content:center;border-radius:28px;font-size:18px;font-weight:600}
+ .nav .p{width:96px;background:#252f4a}.nav .n{flex:1;background:#c8a865;color:#1b1406}
+ body.a iframe{position:absolute;top:56px;height:648px}body.a .mys,body.a .prog,body.a .ttl,body.a .row{visibility:hidden}
+ .hint{position:absolute;top:66px;left:0;right:0;text-align:center;font-size:14px;color:#c8bfae}
+</style></head><body>
+<div class="bar"><div class="ic">←</div><div class="t">환희의 신비 · 1단</div><div class="ic">◎</div><div class="ic">⋮</div></div>
+<div class="mys"><div class="a">환희의 신비 1단</div><div class="b">마리아께서 예수님을 잉태하심</div></div>
+<div class="prog"><i class="c"></i><i></i><i></i><i></i><i></i></div>
+<div class="ttl"><div class="a">성모송</div><div class="b">3 / 10</div></div>
+<iframe src="../../assets/rosary3d/index.html"></iframe>
+<div class="row"><span class="chip">기도문 펼치기 ▾</span></div>
+<div class="row"><span class="chip">진동·소리</span><span class="chip">음성 안내 끔</span></div>
+<div class="nav"><div class="p">이전</div><div class="n">다음 ↓</div></div>
+<script>var q=new URLSearchParams(location.search);if(q.get('view')==='a'){document.body.className='a';document.querySelector('.bar .t').textContent='전체 묵주 · 2단';var h=document.createElement('div');h.className='hint';h.textContent='2단 · 성모송 3/10 — 지난 알은 차분하게';document.body.appendChild(h);}</script>
+</body></html>
