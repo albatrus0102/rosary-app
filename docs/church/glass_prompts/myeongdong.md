@@ -31,11 +31,11 @@ restoration_verified:false, release_approved:false, notes).
 ## 묶음 A — 후진 랜싯 5장 (`myeongdong-A`)
 
 실제: 제대 뒤 다섯 긴 창이 묵주기도 15단(환희·고통·영광)을 담는다. **어느 창에 어느 신비가 있는지는 확인하지 못했다.** 그래서 시안은 "창마다 원형 장면 3개"만 지키고, 장면 배정은 아래의 **임시 순서**(왼쪽 창부터 1~3, 4~6 …, 창 안에서는 아래 → 위)를 쓴다. manifest 의 `notes` 에 "scene order provisional" 을 적는다.
-모델 창: 1.26 × 6.78 m(가로/세로 0.186), 가운데 1.46 × 7.68 m(0.19).
+모델 창(2026-11-15 구조 수정 I-1 뒤): 1.26 × 7.78 m(가로/세로 0.162), 가운데 1.46 × 8.18 m(0.178). (그 전: 1.26 × 6.78 / 1.46 × 7.68)
 
 ```
 Batch myeongdong-A (5 images). Canvas 1024x1536. Very tall single pointed lancet,
-ratio width/height = 0.19 (about 290 px wide at 1536 px height), pointed arch top.
+ratio width/height = 0.17 (about 260 px wide at 1536 px height), pointed arch top.
 Each lancet: cobalt-blue diaper ground, amber and ruby border, and THREE circular
 medallions stacked vertically (bottom, middle, top), each medallion a small painted
 scene with 2-4 figures.
@@ -67,18 +67,18 @@ MYD-DEV-007: Christ standing in the centre light blessing, with the twelve apost
 
 ## 묶음 C — 무늬창 4장 (`myeongdong-C`)
 
-측랑 "신자석 창"·고측창 "광창"·측랑 끝 작은 장미창. 인물 없는 장식 무늬. 같은 그림을 여러 창에 **반복**해서 쓴다(반복이라는 것을 개발 표에 적는다).
+측랑 "신자석 창"·고측창 "광창"·측랑 끝 작은 장미창. 인물 없는 장식 무늬. 비율은 I-1 구조 수정 뒤의 개구부에 맞췄다(측랑 2연 첨두 + 원창 2.2 × 4.4 m = 0.50, 고측창 단일 첨두 1.06 × 4.48 m = 0.24, 측랑 끝 장미창 지름 1.32 m). 같은 그림을 여러 창에 **반복**해서 쓴다(반복이라는 것을 개발 표에 적는다).
 
 ```
 Batch myeongdong-C (4 images). Ornamental windows, no figures.
-MYD-DEV-008  Canvas 1024x1536, ratio width/height = 0.40 (about 614 px wide): a pair of
+MYD-DEV-008  Canvas 1024x1536, ratio width/height = 0.50 (about 768 px wide): a pair of
              narrow pointed lights side by side with one circle above them (plate
              tracery layout); each light filled with a repeating quatrefoil-and-flower
              pattern in blue, red and amber with a pearl border; the circle holds a
              six-petal rosette.
 MYD-DEV-009  Same layout as 008 but a different pattern: interlaced vine and leaf
              grisaille on pale glass with coloured bosses and a red-blue border.
-MYD-DEV-010  Canvas 1024x1536, ratio width/height = 0.36 (about 553 px wide): single
+MYD-DEV-010  Canvas 1024x1536, ratio width/height = 0.24 (about 365 px wide): single
              pointed clerestory light, simple geometric lozenge pattern in pale
              grisaille with amber border and small blue/red squares (to be seen from
              far away, keep it simple and luminous).
