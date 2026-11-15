@@ -20,7 +20,7 @@ const art = path.resolve(here, '../../art/glass_milan55');
 const BACK = 0x2c241f, SCALE = 0.47;
 
 // church_harness.mjs 와 같은 가짜 canvas 샌드박스(밀라노 빌더 하나만 돌린다)
-function makeSandbox() {
+export function makeSandbox() {
   const sandbox = { console, performance, setTimeout, clearTimeout };
   sandbox.window = sandbox; sandbox.self = sandbox;
   const noop = () => {};
@@ -46,13 +46,20 @@ function makeSandbox() {
 }
 
 const r3 = (v) => Math.round(v * 1000) / 1000, r2 = (v) => Math.round(v * 100) / 100;
+// key 머리글 → 구역(E-4 에서 새로 생긴 개구부 포함)
+const ZONE_PREFIX = [['aisle', 'aisle'], ['trWest', 'transept_west_wall'], ['trEnd', 'transept_end'], ['trEast', 'transept_east_wall'], ['apse_', 'apse'], ['cfDoor', 'counterfacade_door'],
+  ['cfLower', 'counterfacade_lower'], ['cfUpper', 'counterfacade_upper'], ['clere', 'clerestory'], ['tiburio', 'tiburio'], ['amb', 'ambulatory'], ['chap', 'transept_chapel']];
+const zoneOfKey = (key) => { const z = ZONE_PREFIX.find((p) => key.startsWith(p[0])); return z ? z[1] : null; };
+
+export const CORE = ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'];
+/** 샌드박스에 assets/church 의 파일을 차례로 싣는다(시험 공용) */
+export function runFiles(sb, files) { for (const f of files) vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f }); return sb; }
 
 /** 밀라노 빌더를 돌려 개구부 목록을 돌려준다. opts.search: '?photoglass=0' 등 */
 export function measureMilan(opts = {}) {
   const sb = makeSandbox();
   if (opts.search) sb.location.search = opts.search;
-  const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_milan.js'].forEach(run);
+  runFiles(sb, CORE.concat(['ch_milan.js']));
   const b = sb.ChurchBuilders.milan;
   const ctx = sb.ChurchKit.createContext({ layout: b.layout, quality: 'low' });
   const backs = [], glassTris = [];
@@ -97,6 +104,7 @@ export function measureMilan(opts = {}) {
   L.XN = L.M; L.XA = 2 * L.M; L.XW = 3 * L.M; L.XT = 20.2;
   const zk = (k) => L.ZF - L.M * k;
   const near = (a, b2, e = 0.7) => Math.abs(a - b2) < e;
+  const anchors = (S.glassAnchors || []).map((a) => ({ ...a }));
   const out = openings.map((o) => {
     const gd = o.glassTris ? Math.max(...o.gd) : 0.02;            // 유리 칸 평면(메달리온은 1.2cm 앞이라 최댓값 쪽이 바탕 유리)
     const x = o.bx + o.nx * gd, z = o.bz + o.nz * gd;             // 유리 평면 가운데
@@ -120,8 +128,12 @@ export function measureMilan(opts = {}) {
     else if (near(z, zk(12), 0.8) && Math.abs(x) > L.XW) { zone = 'transept_east_wall'; key = 'trEast' + side; }
     else if (near(Math.abs(x), L.XW, 0.8)) { zone = 'aisle'; bay = Math.round((L.ZF - z) / L.M + 0.5); key = 'aisle' + side + '_b' + bay; }
     else { zone = 'other'; key = 'other_' + r2(x) + '_' + r2(z); }
+    // E-4: 빌더가 직접 내보낸 anchor(ctx._.glassAnchors)가 있으면 그 key 를 쓴다(위의 위치 추론은 inferredKey 로 남겨 대조한다).
+    const inferredKey = key, yc = o.sill + h / 2;
+    const an = anchors.find((a) => Math.hypot(a.x - x, a.z - z) < 0.08 && Math.abs(a.y - yc) < 0.1);
+    if (an) { key = an.key; if (key !== inferredKey) zone = zoneOfKey(key) || zone; }
     return {
-      key, zone, side, bay, kind: o.glassTris ? 'glass' : 'door',
+      key, inferredKey, anchor: !!an, zone, side, bay, kind: o.glassTris ? 'glass' : 'door',
       x: r3(x), y: r3(o.sill + h / 2), z: r3(z), nx: r3(o.nx) + 0, nz: r3(o.nz) + 0,
       yawDeg: ((v) => (v <= -179.99 ? 180 : v))(r2(Math.atan2(o.nx, o.nz) * 180 / Math.PI)),         // 판의 +Z(앞면)가 실내를 보게 하는 Y 회전
       w: r3(o.w), sill: r3(o.sill), spring: r3(o.spring), apex: r3(o.apex), h: r3(h), rise: r3(o.apex - o.spring),
@@ -129,12 +141,15 @@ export function measureMilan(opts = {}) {
     };
   });
   const slots = (S.glassSlots || []).map((s) => ({ win: s.win, slot: s.slot, x: r3(s.x), y: r3(s.y), z: r3(s.z), nx: r3(s.nx), nz: r3(s.nz), w: r3(s.w), h: r3(s.h) }));
-  // 정면 벽기둥(ch_milan.js facade(): x = ±XN, ±XA, 폭 1.3m, 돌출 0.8m, 높이 14.66 / 11.78m)과 같은 x 에 있는 문·창은 벽기둥 뒤에 있어 실내에서 보이지 않는다
-  for (const o of out) o.hidden = (o.zone === 'counterfacade_door' || o.zone === 'counterfacade_upper') && Math.abs(o.x) > 1 ? '정면 벽기둥에 가림' : null;
+    // 정면 안쪽 벽의 문·창이 벽기둥과 겹치는가(E-4 에서 문·창을 랑 중심선으로 옮겨 겹치지 않게 했다; 시험 devglass.test.mjs 가 고정)
+  const PIL_HALF = 0.75;   // 벽기둥 폭 1.3m 의 절반 + 머리·받침 돌출 0.1m
+  for (const o of out) o.hidden = o.zone.startsWith('counterfacade') && [-L.XA, -L.XN, L.XN, L.XA].some((px) => Math.abs(o.x - px) < o.w / 2 + PIL_HALF) ? '정면 벽기둥에 가림' : null;
   for (const o of out) { const s = slots.find((q) => Math.hypot(q.x - o.x, q.z - o.z) < 0.3); o.now = (o.kind === 'door' ? '문짝(절차적)' : (s ? '절차적 유리 + 사진 ' + s.win + ' (' + s.slot + ', 아래 ' + s.h + 'm)' : '절차적 유리')) + (o.hidden ? ' · ' + o.hidden : ''); }
-  const order = ['aisle', 'transept_west_wall', 'transept_end', 'transept_east_wall', 'apse', 'counterfacade_door', 'counterfacade_upper', 'clerestory', 'tiburio', 'other'];
+  const order = ['aisle', 'transept_west_wall', 'transept_end', 'transept_chapel', 'transept_east_wall', 'ambulatory', 'apse', 'counterfacade_door', 'counterfacade_lower', 'counterfacade_upper', 'clerestory', 'tiburio', 'other'];
   out.sort((a, b2) => order.indexOf(a.zone) - order.indexOf(b2.zone) || a.key.localeCompare(b2.key));
-  return { layout: b.layout, consts: { ...L, zk: Array.from({ length: 14 }, (_, k) => r3(zk(k))) }, openings: out, glassSlots: slots, beams: (S.beams || []).length };
+  return { colliders: S.colliders.slice(), zones: S.zones.slice(), glassTriangles: glassTris.reduce((n, t) => n + t.length / 9, 0), stats: ctx.stats,
+    anchors: anchors.map((a) => ({ key: a.key, kind: a.kind, x: r3(a.x), y: r3(a.y), z: r3(a.z), nx: r3(a.nx) + 0, nz: r3(a.nz) + 0, yawDeg: r2(a.yaw * 180 / Math.PI), w: r3(a.w), h: r3(a.h), sill: r3(a.sill), spring: r3(a.spring), apex: r3(a.apex), lights: a.lights, photoH: r3(a.photoH) })),
+    layout: b.layout, consts: { ...L, zk: Array.from({ length: 14 }, (_, k) => r3(zk(k))) }, openings: out, glassSlots: slots, beams: (S.beams || []).length };
 }
 
 // ---- 55행 대조 ----

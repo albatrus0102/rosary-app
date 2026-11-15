@@ -215,7 +215,8 @@
       else if (L.length < N - half && R.length >= half) R = pick(cands.R, N - L.length, sB, sF, gap);
       if (R.length + L.length >= N) break;
     }
-    if (R.length + L.length < N) return { plaques: [], why: 'room', counts: { R: cands.R.length, L: cands.L.length, pickR: R.length, pickL: L.length } };
+    var ovAll = !!(layout.crossWay && layout.crossWay.plaques && layout.crossWay.plaques.length === N);   // 레이아웃이 14곳을 직접 정했으면 자동 후보가 모자라도 된다(밀라노)
+    if (R.length + L.length < N && !ovAll) return { plaques: [], why: 'room', counts: { R: cands.R.length, L: cands.L.length, pickR: R.length, pickL: L.length } };
     // 순서: 오른쪽 벽 제대 쪽(큰 s) → 입구 쪽, 왼쪽 벽 입구 쪽 → 제대 쪽. layout.crossWay.start='L' 이면 좌우를 바꾼다.
     R.sort(function (a, b) { return b.s - a.s; });
     L.sort(function (a, b) { return a.s - b.s; });

@@ -6,11 +6,37 @@
   var ZF = 34.9;            // 정면 안쪽 벽 z
   var XN = M, XA = 2 * M, XW = 3 * M, XT = 20.2;   // 중앙 신랑 기둥줄 / 측랑 기둥줄 / 바깥 벽 / 익랑 끝 벽
   function zk(k) { return ZF - M * k; }            // 기둥 가로줄 z (k=1..13)
+  // 익랑 끝 경당(E-4, 남: 성 요한 보노 · 북: 나무의 성모). 조사(E-2, docs/church/MILAN_GLASS_RESEARCH.md §4 d)로 **형태는 확인**: 반육각형 후진
+  // (서쪽 사선 – 끝 – 동쪽 사선, 면마다 창 1개) + 그 위 익랑 끝 벽의 큰 첨두창. **치수는 단서 수준**(330px 도면, ±20%: 깊이 약 6m, 끝 면 약 6m,
+  // 사선 면 4.5~5m) → 한 변 2.8m(실제 6m × 0.47)의 정육각형 절반으로 지었다. 실측 도면이 오면 이 표만 고친다.
+  // (단위 앱 m. mouth/end = 입구·끝 면의 반폭, depth = 익랑 끝 벽 안쪽 면에서 끝 면까지, wallT = 끝 벽 두께, spring/rise = 입구 아치·궁륭)
+  // 창: 경당 3창은 실제 유리 2.18×16.36m × 0.47 = 1.02×7.69. 위 큰 창(남 = V12bis)은 실제 치수 미기재 → 벽·궁륭이 허용하는 크기.
+  var CHAP = { mouth: 2.8, end: 1.4, depth: 3.12, wallT: 0.7, spring: 8.2, rise: 3.3, vaultR: 4.6, lunette: 3.0,
+    win: { sill: 2.2, w: 1.02, h: 6.3, rise: 1.39 }, upper: { sill: 12.9, w: 3.6, h: 3.6, rise: 3.1 } };
+  var ZCH = (zk(11) + zk(9)) / 2;                  // 경당 축(익랑 가운데 줄) z
+  // 익랑 창(조사 E-2): 실제 유리는 측랑 창(2.17×15.49m)보다 훨씬 높다 — 끝 벽 양옆 칸·동쪽 벽 3.53×22.49m, 서쪽 벽 3.00×21.60m
+  // (× 0.47 = 1.66×10.57, 1.41×10.15). 이 칸의 궁륭 꼭대기가 11.28m 라 그 높이는 들어가지 않는다 → 창턱을 1.7m 로 내리고 꼭대기를 10.7m 로
+  // 올려 9.0m 로 지었다(실제 환산의 85~89%). 폭은 실제 환산값.
+  var TRW = { end: { sill: 1.7, w: 1.66, h: 6.6, rise: 2.4 }, east: { sill: 1.7, w: 1.66, h: 6.6, rise: 2.4 }, west: { sill: 1.7, w: 1.41, h: 6.7, rise: 2.3 } };
+  var XB = Math.round((XT + CHAP.depth + 0.2) * 100) / 100;   // 걷기 경계 x(= 25.0)
+  // 십자가의 길 14처 판 자리(E-4 에서 직접 정함): 벽기둥 앞면에 건다 → 창·문·경당 입구와 겹치지 않는다.
+  // 제대를 볼 때 오른쪽(남) 익랑 끝 벽의 경당 입구 양옆 벽기둥 2 → 남측랑 벽기둥 5(제대 쪽 → 입구 쪽) → 북쪽은 거울(입구 쪽 → 제대 쪽).
+  function crossPlaques() {
+    var out = [], g = 0.074;                        // 벽기둥 앞면에서 판까지(way_cross.js: wallGap + depth + quadGap)
+    function end(sg, k) { return { x: sg * (XT - 0.5 - g), z: zk(k), face: [-sg, 0], side: sg > 0 ? 'R' : 'L' }; }
+    function aisle(sg, k) { return { x: sg * (XW - 0.5 - g), z: zk(k), face: [-sg, 0], side: sg > 0 ? 'R' : 'L' }; }
+    out.push(end(1, 11), end(1, 9));
+    [7, 4, 3, 2, 1].forEach(function (k) { out.push(aisle(1, k)); });
+    [1, 2, 3, 4, 7].forEach(function (k) { out.push(aisle(-1, k)); });
+    out.push(end(-1, 9), end(-1, 11));
+    return out;
+  }
 
   var layout = {
     id: 'milan', scalePercent: 47,
-    bounds: { x0: -20.4, x1: 20.4, z0: -34.5, z1: 34.5 },
+    bounds: { x0: -XB, x1: XB, z0: -34.5, z1: 34.5 },   // 익랑 끝 경당까지(그 밖은 벽 충돌체가 막는다)
     spawn: { x: 0, z: 32.5, r: 0 },
+    crossWay: { plaques: crossPlaques() },
     seatGroups: [
       { g: 'NL', rows: 12, perRow: 3, origin: { x: -1.3, z: -3.0 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.5] },
       { g: 'NR', rows: 12, perRow: 3, origin: { x: 1.3, z: -3.0 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.5] },
@@ -39,6 +65,8 @@
     var MT = ctx.metalB || S, GS = ctx.gloss || S, WD = ctx.woodB || S, RF = (ctx._ && ctx._.batches && ctx._.batches.glassRefl) || null;
     var GG = window.ChurchGeo, Geo = GG.Geo;
     var _gc = {};
+    var ANCH = [];                                // 창 개구부 anchor 목록(아래 anchorAdd)
+    if (ctx._) ctx._.glassAnchors = ANCH;
     function openCyl(seg, rt) { var k = 'oc' + seg + '_' + rt; return _gc[k] || (_gc[k] = new T.CylinderGeometry(rt, 1, 1, seg, 1, true).translate(0, 0.5, 0)); }
     function openCone(seg) { var k = 'ok' + seg; return _gc[k] || (_gc[k] = new T.ConeGeometry(1, 1, seg, 1, true).translate(0, 0.5, 0)); }
     function tetra() { return _gc.tet || (_gc.tet = new T.TetrahedronGeometry(1, 0)); }
@@ -206,7 +234,8 @@
 
     mark('tex');
     /* ===== 2. 바닥 ===== */
-    ctx.floor({ x0: -XT, x1: XT, z0: -ZF, z1: ZF + 0.1, y: 0, tex: floorTex, tile: M });
+    var XF = XT + CHAP.depth + 0.3;                // 바닥은 익랑 끝 경당까지 덮는다
+    ctx.floor({ x0: -XF, x1: XF, z0: -ZF, z1: ZF + 0.1, y: 0, tex: floorTex, tile: M });
     ctx.floor({ x0: -XN, x1: XN, z0: zk(11), z1: zk(9), y: 0.012, tex: crossTex, tile: 2 * XN });
     // 자오선(황동 띠) + 12궁 원판
     MT.add(Geo.box(), 0xd0a23a, { x: 0, y: 0.014, z: 32.0, sx: 2 * XW - 0.6, sy: 0.02, sz: 0.1, flat: true, vary: 0 });
@@ -415,7 +444,8 @@
         var A = ov[i], B = ov[(i + 1) % 8], mid2 = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], nxy = [cx - mid2[0], cz - mid2[1]], nl = hyp(nxy[0], nxy[1]);
         var Fw = { x: mid2[0], z: mid2[1], nx: nxy[0] / nl, nz: nxy[1] / nl };
         Fw.ux = Fw.nz; Fw.uz = -Fw.nx;
-        windowPanel({ F: Fw, W: dist(A, B), y0: Y_OCT, y1: Y_OCT + DH, color: 0x9d9180, win: { sill: Y_OCT + 0.55, w: 1.5, h: 1.45, rise: 1.0, lights: 2, rows: 2, pal: PAL_HI, seed: 30 + i, splay: 0.22, dg: 0.3, beam: 0.9, beamReach: 12 } });
+        var tdeg = Math.round(((Math.atan2(-Fw.nz, -Fw.nx) * 180 / PI) + 360) % 360);
+        windowPanel({ key: 'tiburio_' + ('00' + tdeg).slice(-3), F: Fw, W: dist(A, B), y0: Y_OCT, y1: Y_OCT + DH, color: 0x9d9180, win: { sill: Y_OCT + 0.55, w: 1.5, h: 1.45, rise: 1.0, lights: 2, rows: 2, pal: PAL_HI, seed: 30 + i, splay: 0.22, dg: 0.3, beam: 0.9, beamReach: 12 } });
       }
       // 드럼 위 코니스
       for (i = 0; i < 8; i++) { var A2 = ov[i], B2 = ov[(i + 1) % 8]; S.addQuad([A2[0], Y_OCT + DH, A2[1]], [B2[0], Y_OCT + DH, B2[1]], [B2[0] * 0.995 + cx * 0.005, Y_OCT + DH + 0.25, B2[1]], [A2[0] * 0.995, Y_OCT + DH + 0.25, A2[1]], 0xa89d8f, [cx, Y_OCT + 2, cz], { vary: 0.02 }); }
@@ -537,6 +567,15 @@
     mark('piers');
     /* ===== 6. 벽 패널 + 창(진짜 개구부, 스테인드글라스) ===== */
     function PF(F, u, v, d) { return [F.x + F.ux * u - F.nx * d, v, F.z + F.uz * u - F.nz * d]; }
+    // 창 개구부 목록(E-4): 개구부마다 key(docs/church/MILAN_55_PLACEMENT.md 의 key 체계)와 유리 평면의 위치·방향·크기를 내보낸다.
+    // 유리는 한 배치로 합쳐져 창별 Mesh 가 없으므로, 창별 판(개발용 임시 유리 dev/devglass.js 등)은 이 목록을 anchor 로 쓴다.
+    // x·z = 유리 평면 가운데, y = 개구부 중심, (nx, nz) = 실내 쪽 법선, yaw = atan2(nx, nz). photoH = 아래쪽 진본 사진이 차지한 높이.
+    function anchorAdd(key, F, win, gd, phH) {
+      if (!key) return;
+      var c = PF(F, 0, 0, gd), top = win.sill + win.h + win.rise;
+      ANCH.push({ key: key, kind: win.door ? 'door' : 'glass', x: c[0], y: (win.sill + top) / 2, z: c[2], nx: F.nx, nz: F.nz, yaw: Math.atan2(F.nx, F.nz),
+        w: win.w, h: top - win.sill, sill: win.sill, spring: win.sill + win.h, apex: top, lights: win.lights || 1, photoH: phH || 0 });
+    }
     function outlinePts(w, sill, h, rise, n) {
       var a = w / 2, f = pf(a, rise), pts = [[-a, sill], [a, sill], [a, sill + h]], kk;
       for (kk = 1; kk < n; kk++) { var u = a - 2 * a * kk / n; pts.push([u, sill + h + f(u)]); }
@@ -605,6 +644,16 @@
         var A = PF(F, O[i][0], O[i][1], 0), B = PF(F, O[j][0], O[j][1], 0), Cc = PF(F, G[j][0], G[j][1], dg), D = PF(F, G[i][0], G[i][1], dg);
         WB.addQuad(A, B, Cc, D, rcol, PF(F, 0, sill + h * 0.5, -3), { vary: 0.03 });
       }
+      // 창 둘레 석재 틀(아치 몰딩)
+      function archMould() {
+        var oc = tone(base, 1.18);
+        for (var q = 2; q < O.length - 1; q++) {
+          var pA2 = O[q], pB2 = O[q + 1];
+          var l0 = PF(F, pA2[0], pA2[1], 0.0), l1 = PF(F, pB2[0], pB2[1], 0.0);
+          S.addQuad(l0, l1, [l1[0] + F.nx * 0.12, l1[1] + 0.1, l1[2] + F.nz * 0.12], [l0[0] + F.nx * 0.12, l0[1] + 0.1, l0[2] + F.nz * 0.12], oc, PF(F, 0, sill + h * 0.5, -3), { vary: 0.03 });
+        }
+      }
+      if (win.open) { archMould(); return; }   // 뚫린 아치(경당 입구): 벽 구멍과 안쪽 두께, 몰딩만
       // 납틀 뒷판
       var back = [];
       for (i = 1; i < G.length - 1; i++) { var p0 = PF(F, c[0], c[1], dg + 0.04), p1 = PF(F, G[i][0], G[i][1], dg + 0.04), p2 = PF(F, G[i + 1][0], G[i + 1][1], dg + 0.04); back.push(p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]); }
@@ -613,6 +662,7 @@
       S.addTris(back, 0x2c241f, PF(F, 0, sill + h * 0.5, -4), { vary: 0 });
       // G-29: 사진 창(가로로 긴 '아래 여섯 단')을 이 창 아랫부분에 건다 → 그 높이(phH)까지는 사진 속 돌 창살이 보이므로 우리 창살·가로대를 만들지 않는다
       var ph = win.photo || null, phH = ph ? Math.min(h, win.w / ph.aspect) : 0;
+      anchorAdd(o.key, F, win, dg + 0.02, phH);
       // 유리 칸
       var pal = win.pal || PAL_HI, wr = GG.rng(win.seed || 1), lights = win.lights || 2, rows = win.rows || Math.max(2, Math.round(h / 0.8)), gd = dg + 0.02;
       function pick() { return pal[Math.floor(wr() * pal.length)]; }
@@ -663,13 +713,7 @@
         var pc = PF(F, 0, sill + phH / 2, gd - 0.03);
         ctx.glassSlot({ photo: ph, x: pc[0], y: pc[1], z: pc[2], face: [F.nx, F.nz], w: 2 * a, h: phH, camMax: 2.3 });
       }
-      // 창 둘레 석재 틀(아치 몰딩)
-      var oc = tone(base, 1.18);
-      for (i = 2; i < O.length - 1; i++) {
-        var pA2 = O[i], pB2 = O[i + 1];
-        var l0 = PF(F, pA2[0], pA2[1], 0.0), l1 = PF(F, pB2[0], pB2[1], 0.0);
-        S.addQuad(l0, l1, [l1[0] + F.nx * 0.12, l1[1] + 0.1, l1[2] + F.nz * 0.12], [l0[0] + F.nx * 0.12, l0[1] + 0.1, l0[2] + F.nz * 0.12], oc, PF(F, 0, sill + h * 0.5, -3), { vary: 0.03 });
-      }
+      archMould();
       if (win.beam && !win.door) {
         while (beamCols.length < 3) beamCols.push(pick());
         var bc = PF(F, 0, sill + h * 0.55, 0);
@@ -698,12 +742,62 @@
       boxOpen(WB, pd, x + nx * (d / 2 + 0.05), 0, z + nz * (d / 2 + 0.05), w + 0.2, 0.4, d + 0.1, ry);
     }
 
+    // 익랑 끝 경당(E-4, 추정 설계: CHAP). sg = +1 남(성 요한 보노), -1 북(나무의 성모).
+    // 평면: 끝 벽 뒤(wallT)에서 입구 폭 그대로 시작해 끝 면으로 좁아지는 사다리꼴 = 사선 2면 + 끝 면. 창 key: chap{S|N}_w(서쪽 사선)·_c(끝)·_e(동쪽 사선).
+    function chapel(sg) {
+      var SD = sg > 0 ? 'S' : 'N', xa = sg * (XT + CHAP.wallT), xb = sg * (XT + CHAP.depth);
+      var E = [[xa, ZCH + CHAP.mouth], [xb, ZCH + CHAP.end], [xb, ZCH - CHAP.end], [xa, ZCH - CHAP.mouth]];   // 서쪽 입구 모서리 → 끝 면 → 동쪽 입구 모서리
+      var KC = [(xa + xb) / 2, ZCH], wy1 = CHAP.spring + CHAP.vaultR + 0.4, nm = ['w', 'c', 'e'], e, q;
+      for (e = 0; e < 3; e++) {
+        var A = E[e], B = E[e + 1], mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], len = dist(A, B), nx = -(B[1] - A[1]), nz = B[0] - A[0];
+        if (nx * (KC[0] - mid[0]) + nz * (KC[1] - mid[1]) < 0) { nx = -nx; nz = -nz; }
+        windowPanel({ key: 'chap' + SD + '_' + nm[e], F: fr(mid[0], mid[1], nx, nz), W: len, y0: 0, y1: wy1, color: WALLC,
+          win: { sill: CHAP.win.sill, w: CHAP.win.w, h: CHAP.win.h, rise: CHAP.win.rise, lights: 2, rows: 6, medal: e === 1, pal: e === 1 ? PAL_APSE : PAL_HI, seed: 150 + e * 3 + (sg > 0 ? 1 : 0), splay: 0.3, dg: 0.4, beam: e === 1 ? 1 : 0, beamReach: 8 } });
+      }
+      // 궁륭: 꼭짓점 KC 에서 네 변(벽 3 + 입구)으로 내려오는 부채꼴 4면. 입구 변의 반월은 입구 아치와 같은 곡선이라 익랑에서 보면 아치 뒤로 그대로 이어진다.
+      var hint = [KC[0], CHAP.spring - 3, KC[1]], nS = 6, nT = 4;
+      for (e = 0; e < 4; e++) {
+        var E0 = E[e], E1 = E[(e + 1) % 4], eLen = dist(E0, E1), fbE = pf(eLen / 2, e === 3 ? CHAP.rise : CHAP.lunette);
+        for (var ti = 0; ti < nT; ti++) for (var si = 0; si < nS; si++) {
+          var vp = function (t, sx) {
+            var ex = lerp(E0[0], E1[0], sx), ez = lerp(E0[1], E1[1], sx);
+            return [lerp(KC[0], ex, t), CHAP.spring + Math.max(CHAP.vaultR * (1 - Math.pow(t, 1.6)), fbE((sx - 0.5) * eLen)), lerp(KC[1], ez, t)];
+          };
+          var t0 = ti / nT, t1 = (ti + 1) / nT, s0 = si / nS, s1 = (si + 1) / nS;
+          S.addQuad(vp(t0, s0), vp(t0, s1), vp(t1, s1), vp(t1, s0), tone((ti + si + e) % 2 ? 0x2e4a87 : 0x8a5a2b, 0.95 + 0.1 * rnd()), hint, { vary: 0.02 });
+        }
+        var rp = [];
+        for (q = 0; q <= 6; q++) { var tt = 1 - q / 6; rp.push([lerp(KC[0], E0[0], tt), CHAP.spring + CHAP.vaultR * (1 - Math.pow(tt, 1.6)) - 0.03, lerp(KC[1], E0[1], tt)]); }
+        ribStrip(rp, 0.3, 0.24, 0x908574, hint);
+      }
+      MT.add(Geo.ico(0), GOLD, { x: KC[0], y: CHAP.spring + CHAP.vaultR - 0.25, z: KC[1], sx: 0.36, sy: 0.3, sz: 0.36, flat: true, vary: 0 });
+      // 단순한 제단(끝 면 앞) + 성인상 + 촛대 2
+      var ax = xb - sg * 0.62, ry = Math.atan2(-sg, 0);
+      S.add(Geo.box(), 0xcab8a6, { x: ax, y: 0, z: ZCH, ry: ry, sx: 2.0, sy: 0.95, sz: 0.85, flat: true, vary: 0.02 });
+      S.add(Geo.box(), 0xf2ece2, { x: ax - sg * 0.04, y: 0.95, z: ZCH, ry: ry, sx: 2.15, sy: 0.08, sz: 0.95, flat: true, vary: 0.02 });
+      S.add(Geo.box(), sg > 0 ? 0x7a2f35 : 0x2f4f8f, { x: ax + sg * 0.34, y: 1.03, z: ZCH, ry: ry, sx: 1.5, sy: 1.25, sz: 0.1, flat: true, vary: 0.03 });
+      MT.add(Geo.box(), GOLD, { x: ax + sg * 0.3, y: 2.28, z: ZCH, ry: ry, sx: 1.7, sy: 0.12, sz: 0.2, flat: true, vary: 0 });
+      miniStatue(ax + sg * 0.16, 1.03, ZCH, 1.15, 0xf0e8dc);
+      [-1, 1].forEach(function (cc) {
+        MT.add(Geo.cyl(6, 0.5), GOLD, { x: ax - sg * 0.1, y: 1.03, z: ZCH + cc * 0.8, sx: 0.07, sy: 0.42, sz: 0.07, flat: true, vary: 0 });
+        ctx.addFlame({ x: ax - sg * 0.1, y: 1.58, z: ZCH + cc * 0.8, scale: 0.9 });
+      });
+      ctx.addGlow({ x: ax - sg * 0.5, y: 1.7, z: ZCH, size: 2.4, color: 0xffcf80, kind: 'always' });
+      // 충돌: 사선 벽(원 사슬), 끝 벽, 제단
+      [[E[0], E[1]], [E[2], E[3]]].forEach(function (sgm) {
+        var n = Math.ceil(dist(sgm[0], sgm[1]) / 0.6);
+        for (var i = 0; i <= n; i++) ctx.addCollider({ x: lerp(sgm[0][0], sgm[1][0], i / n) , z: lerp(sgm[0][1], sgm[1][1], i / n) + (sgm[0][1] > ZCH || sgm[1][1] > ZCH ? 0.3 : -0.3), r: 0.5 });
+      });
+      ctx.addCollider({ x0: sg > 0 ? xb - 0.25 : xb - 1.2, x1: sg > 0 ? xb + 1.2 : xb + 0.25, z0: ZCH - CHAP.end - 0.6, z1: ZCH + CHAP.end + 0.6 });
+      ctx.addCollider({ x0: Math.min(ax - sg * 0.55, xb), x1: Math.max(ax - sg * 0.55, xb), z0: ZCH - 1.15, z1: ZCH + 1.15 });
+    }
+
     // 바깥 벽(양쪽 8칸): 안쪽 면 x=±XW
     for (k = 1; k <= 8; k++) {
       var zc = (zk(k) + zk(k - 1)) / 2, altar = (k === 7 || k === 8);
       [-1, 1].forEach(function (sg) {
         var F = fr(sg * XW, zc, -sg, 0);
-        windowPanel({ F: F, W: M, y0: 0, y1: 11.6, color: WALLC, win: { sill: altar ? 4.5 : 2.7, w: 1.75, h: altar ? 3.4 : 5.4, rise: 2.4, lights: 2, rows: altar ? 5 : 7, pal: PAL_HI, seed: k * 7 + (sg > 0 ? 3 : 0), splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
+        windowPanel({ key: 'aisle' + (sg > 0 ? 'S' : 'N') + '_b' + k, F: F, W: M, y0: 0, y1: 11.6, color: WALLC, win: { sill: altar ? 4.5 : 2.7, w: 1.75, h: altar ? 3.4 : 5.4, rise: 2.4, lights: 2, rows: altar ? 5 : 7, pal: PAL_HI, seed: k * 7 + (sg > 0 ? 3 : 0), splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
       });
     }
     // 바깥 벽 징두리(광택 짙은 대리석 띠 + 몰딩)
@@ -714,37 +808,51 @@
     }
     for (k = 1; k <= 8; k++) [-1, 1].forEach(function (sg) { dado(sg * XW, bayC(k), -sg, 0, M); });
     [-1, 1].forEach(function (sg) {
-      dado(sg * XT, (zk(11) + zk(9)) / 2, -sg, 0, 2 * M); dado(sg * XT, (zk(9) + zk(8)) / 2, -sg, 0, M); dado(sg * XT, (zk(12) + zk(11)) / 2, -sg, 0, M);
+      dado(sg * XT, (zk(9) + zk(8)) / 2, -sg, 0, M); dado(sg * XT, (zk(12) + zk(11)) / 2, -sg, 0, M);
       dado(sg * (XW + XT) / 2, zk(8), 0, -1, XT - XW); dado(sg * (XW + XT) / 2, zk(12), 0, 1, XT - XW); dado(sg * (XA + XW) / 2, zk(12), 0, 1, M);
     });
     // 바깥 벽 벽기둥(칸 경계)
     for (k = 0; k <= 8; k++) [-1, 1].forEach(function (sg) { pilaster(sg * XW, zk(k), -sg, 0, 0.9, 0.5, SP_O + 0.2); });
-    // 정면(콘트로파차타): 문 5개 + 위 작은 창
+    // 정면(콘트로파차타, E-4 에서 다시 짬): 문 5 + 하단 창 5 + 상단 창 3 을 **랑 중심선**(0, ±6.77, ±11.28)에 둔다.
+    // 벽기둥은 기둥줄(±XN, ±XA) 그대로라 문·창을 가리지 않는다(예전에는 옆문 4개와 상단 양옆 창이 벽기둥 뒤에 숨어 있었다).
+    // 창 크기는 실제 유리 치수 × 0.47(조사 E-2 §3.6): 하단 가운데 V45 3.43×7.69m → 1.61×3.61, 하단 옆 V40~V43 2.46×6.20m → 1.16×2.91,
+    // 상단 가운데 V47 3.30×9.88m → 1.55×4.64, 상단 옆 V44·V46 2.53×5.75m → 1.19×2.70.
+    // **하단 5창은 반원 머리(고전식), 상단 3창만 첨두창**이다 → 하단은 rise = 폭/2(pf 가 반원이 된다).
     (function facade() {
-      var dx = [-XA, -XN, 0, XN, XA];
-      dx.forEach(function (x, i) {
-        var big = i === 2, F = fr(x, ZF, 0, -1);
-        windowPanel({ F: F, W: M, y0: 0, y1: 7.0, color: WALLC, win: { sill: 0, w: big ? 2.7 : 2.0, h: big ? 3.9 : 3.3, rise: big ? 2.6 : 2.0, lights: 1, rows: 1, door: true, pal: PAL_HI, seed: i + 2, splay: 0.3, dg: 0.5, beam: 0 } });
-        windowPanel({ F: F, W: M, y0: 7.0, y1: 22, color: WALLC, win: i === 2 || i === 1 || i === 3 ? { sill: 8.2, w: 1.2, h: 2.6, rise: 1.4, lights: 1, rows: 3, pal: PAL_HI, seed: 60 + i, splay: 0.25, dg: 0.35, beam: 0 } : null });
+      var cols = [['n2', -(XA + XW) / 2, M, 0], ['n1', -(XN + XA) / 2, M, 1], ['c', 0, 2 * XN, 2], ['s1', (XN + XA) / 2, M, 1], ['s2', (XA + XW) / 2, M, 0]];
+      cols.forEach(function (cc, i) {
+        var nm = cc[0], big = cc[3] === 2, F = fr(cc[1], ZF, 0, -1), yA = big ? 7.0 : 5.9, yB = big ? 11.9 : 9.9;
+        windowPanel({ key: 'cfDoor_' + nm, F: F, W: cc[2], y0: 0, y1: yA, color: WALLC, win: { sill: 0, w: big ? 2.7 : 2.0, h: big ? 3.9 : 3.3, rise: big ? 2.6 : 2.0, lights: 1, rows: 1, door: true, pal: PAL_HI, seed: i + 2, splay: 0.3, dg: 0.5, beam: 0 } });
+        windowPanel({ key: 'cfLower_' + nm, F: F, W: cc[2], y0: yA, y1: cc[3] === 0 ? 22 : yB, color: WALLC, win: big
+          ? { sill: 7.6, w: 1.61, h: 2.805, rise: 0.805, lights: 2, rows: 3, pal: PAL_APSE, seed: 72, splay: 0.25, dg: 0.35, beam: 0 }
+          : { sill: 6.35, w: 1.16, h: 2.33, rise: 0.58, lights: 1, rows: 3, pal: PAL_HI, seed: 70 + i, splay: 0.25, dg: 0.35, beam: 0 } });
+        if (cc[3] > 0) windowPanel({ key: 'cfUpper_' + nm, F: F, W: cc[2], y0: yB, y1: 22, color: WALLC, win: big
+          ? { sill: 12.4, w: 1.55, h: 3.44, rise: 1.2, lights: 3, rows: 4, pal: PAL_HI, seed: 62, splay: 0.25, dg: 0.35, beam: 0 }
+          : { sill: 10.4, w: 1.19, h: 1.7, rise: 1.0, lights: 1, rows: 3, pal: PAL_HI, seed: 60 + i, splay: 0.25, dg: 0.35, beam: 0 } });
       });
-      [-1, 1].forEach(function (sg) { windowPanel({ F: fr(sg * 12.4, ZF, 0, -1), W: 2.26, y0: 0, y1: 22, color: WALLC, win: null }); });
       [-XA, -XN, XN, XA].forEach(function (x) { pilaster(x, ZF, 0, -1, 1.3, 0.8, Math.abs(x) === XN ? SP_N : SP_I + 0.5); });
     })();
     // 익랑 끝 벽(x=±XT): 가운데 큰 창 + 양옆 측랑 창
     [-1, 1].forEach(function (sg) {
-      var N = [-sg, 0];
-      windowPanel({ F: fr(sg * XT, (zk(11) + zk(9)) / 2, N[0], N[1]), W: 2 * M, y0: 0, y1: 22, color: WALLC, win: { sill: 3.4, w: 4.4, h: 8.8, rise: 4.6, lights: 3, rows: 11, medal: true, pal: PAL_APSE, seed: 90 + sg, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12 } });
-      windowPanel({ F: fr(sg * XT, (zk(9) + zk(8)) / 2, N[0], N[1]), W: M, y0: 0, y1: 12, color: WALLC, win: { sill: 2.7, w: 1.75, h: 5.4, rise: 2.4, lights: 2, rows: 7, pal: PAL_HI, seed: 101 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
-      windowPanel({ F: fr(sg * XT, (zk(12) + zk(11)) / 2, N[0], N[1]), W: M, y0: 0, y1: 12, color: WALLC, win: { sill: 2.7, w: 1.75, h: 5.4, rise: 2.4, lights: 2, rows: 7, pal: PAL_HI, seed: 111 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
+      var N = [-sg, 0], SD = sg > 0 ? 'S' : 'N';
+      // 가운데 칸(E-4, 조사 E-2): 실제대로 '아래 = 끝 경당으로 들어가는 뚫린 첨두 아치, 위 = 큰 첨두창'(남쪽 위 창이 V12bis).
+      // 예전에는 바닥 가까이부터 큰 창 하나(4.4×13.4m)였다. 북쪽 위 창은 번호·주제 미확인 → 창은 있되 절차적 유리 그대로.
+      var yU = CHAP.spring + CHAP.rise + 0.8;
+      windowPanel({ F: fr(sg * XT, ZCH, N[0], N[1]), W: 2 * M, y0: 0, y1: yU, color: WALLC, win: { open: true, sill: 0, w: 2 * CHAP.mouth, h: CHAP.spring, rise: CHAP.rise, splay: 0.3, dg: CHAP.wallT, n: 14 } });
+      windowPanel({ key: 'chap' + SD + '_upper', F: fr(sg * XT, ZCH, N[0], N[1]), W: 2 * M, y0: yU, y1: 22, color: WALLC, win: { sill: CHAP.upper.sill, w: CHAP.upper.w, h: CHAP.upper.h, rise: CHAP.upper.rise, lights: 3, rows: 5, medal: true, pal: PAL_APSE, seed: 90 + sg, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12 } });
+      chapel(sg);
+      windowPanel({ key: 'trEnd' + SD + '_west', F: fr(sg * XT, (zk(9) + zk(8)) / 2, N[0], N[1]), W: M, y0: 0, y1: 12, color: WALLC, win: { sill: TRW.end.sill, w: TRW.end.w, h: TRW.end.h, rise: TRW.end.rise, lights: 2, rows: 8, pal: PAL_HI, seed: 101 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
+      windowPanel({ key: 'trEnd' + SD + '_east', F: fr(sg * XT, (zk(12) + zk(11)) / 2, N[0], N[1]), W: M, y0: 0, y1: 12, color: WALLC, win: { sill: TRW.end.sill, w: TRW.end.w, h: TRW.end.h, rise: TRW.end.rise, lights: 2, rows: 8, pal: PAL_HI, seed: 111 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
       pilaster(sg * XT, zk(9), -sg, 0, 0.9, 0.5, SP_I + 0.3); pilaster(sg * XT, zk(11), -sg, 0, 0.9, 0.5, SP_I + 0.3);
       pilaster(sg * XT, zk(8), -sg, 0, 0.9, 0.5, SP_O + 0.2); pilaster(sg * XT, zk(12), -sg, 0, 0.9, 0.5, SP_O + 0.2);
       // 익랑 남/북 벽(z=zk(8): x∈[XW,XT]; z=zk(12): x∈[XA..XT])
-      windowPanel({ F: fr(sg * (XW + XT) / 2, zk(8), 0, -1), W: XT - XW, y0: 0, y1: 12, color: WALLC, win: { sill: 2.7, w: 1.9, h: 5.4, rise: 2.5, lights: 2, rows: 7, pal: PAL_HI, seed: 121 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
-      windowPanel({ F: fr(sg * (XW + XT) / 2, zk(12), 0, 1), W: XT - XW, y0: 0, y1: 12, color: WALLC, win: { sill: 2.7, w: 1.9, h: 5.4, rise: 2.5, lights: 2, rows: 7, pal: PAL_HI, seed: 131 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
+      windowPanel({ key: 'trWest' + SD, F: fr(sg * (XW + XT) / 2, zk(8), 0, -1), W: XT - XW, y0: 0, y1: 12, color: WALLC, win: { sill: TRW.west.sill, w: TRW.west.w, h: TRW.west.h, rise: TRW.west.rise, lights: 2, rows: 8, pal: PAL_HI, seed: 121 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
+      windowPanel({ key: 'trEast' + SD, F: fr(sg * (XW + XT) / 2, zk(12), 0, 1), W: XT - XW, y0: 0, y1: 12, color: WALLC, win: { sill: TRW.east.sill, w: TRW.east.w, h: TRW.east.h, rise: TRW.east.rise, lights: 2, rows: 8, pal: PAL_HI, seed: 131 + sg, splay: 0.3, dg: 0.4, beam: 1, beamReach: 9 } });
       windowPanel({ F: fr(sg * (XA + XW) / 2, zk(12), 0, 1), W: M, y0: 0, y1: 12, color: WALLC, win: null });
       // 성구실 쪽 벽(x=±XA, z∈[zk(12), zk(13)+...]) 맹아치
+      // 성구실 쪽 벽(x=±XA, z∈[zk(12), zk(13)]) — 맹벽. 조사(E-2 §4 c): 실제 주보랑 바깥벽도 성구실 문이 있는 맹벽이고,
+      // 도면의 P16~18·P22~24 는 그 뒤 성구실 방의 바깥벽 창이다(성구실 방은 아직 짓지 않았다).
       windowPanel({ F: fr(sg * XA, (zk(12) + zk(13)) / 2, -sg, 0), W: M, y0: 0, y1: 15.2, color: WALLC, win: null });
-      windowPanel({ F: fr(sg * XA, (zk(13) - 29.0) / 2 + zk(13) / 2 - zk(13) / 2, -sg, 0), W: 0.01, y0: 0, y1: 0.01, color: WALLC, win: null });
     });
     // 후진 외벽(다각형): 큰 창 3개
     (function apseWalls() {
@@ -759,7 +867,7 @@
         var toC = [0 - mid[0], -26.0 - mid[1]];
         if (nx * toC[0] + nz * toC[1] < 0) { nx = -nx; nz = -nz; }
         var F = fr(mid[0], mid[1], nx, nz), center = e === 2;
-        windowPanel({ F: F, W: len, y0: 0, y1: 15.2, color: WALLC, win: center ? { sill: 2.0, w: 4.8, h: 5.5, rise: 3.6, lights: 4, rows: 8, medal: true, pal: PAL_APSE, seed: 7, splay: 0.45, dg: 0.55, beam: 1, beamReach: 14, n: 14, photo: ctx.glassPhoto('apse_center_lower') } : { sill: 2.0, w: 3.5, h: 5.0, rise: 3.1, lights: 3, rows: 7, medal: true, pal: PAL_APSE, seed: e * 13, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12, n: 12 } });
+        windowPanel({ key: 'apse_' + (center ? 'center' : (mid[0] > 0 ? 'south' : 'north')), F: F, W: len, y0: 0, y1: 15.2, color: WALLC, win: center ? { sill: 2.0, w: 4.8, h: 5.5, rise: 3.6, lights: 4, rows: 8, medal: true, pal: PAL_APSE, seed: 7, splay: 0.45, dg: 0.55, beam: 1, beamReach: 14, n: 14, photo: ctx.glassPhoto('apse_center_lower') } : { sill: 2.0, w: 3.5, h: 5.0, rise: 3.1, lights: 3, rows: 7, medal: true, pal: PAL_APSE, seed: e * 13, splay: 0.4, dg: 0.5, beam: 1, beamReach: 12, n: 12 } });
         S.add(Geo.box(), STONE_L, { x: mid[0] + F.nx * 0.08, y: 12.4, z: mid[1] + F.nz * 0.08, ry: Math.atan2(F.nx, F.nz), sx: len, sy: 0.2, sz: 0.2, flat: true, vary: 0.02 });
       }
     })();
@@ -817,7 +925,7 @@
         var wsill = cut + 0.75, wh = Math.min(2.8, o.ySpTop + o.R - wsill - 1.9), wr = 1.3;
         if (wh > 0.8) {
           // 창 개구부 패널(볼록 외곽에 맞춰)
-          var wt = { sill: wsill, w: 1.1, h: wh, rise: wr, lights: 1, rows: 3, pal: PAL_HI, seed: o.seed || 5, splay: 0.16, dg: 0.28, beam: 0 };
+          var wt = { key: o.key, sill: wsill, w: 1.1, h: wh, rise: wr, lights: 1, rows: 3, pal: PAL_HI, seed: o.seed || 5, splay: 0.16, dg: 0.28, beam: 0 };
           windowPanelPoly(F, outer, WALLC, wt);
         } else {
           addFaceTris(F, fanTris(outer), WALLC);
@@ -835,6 +943,7 @@
       }
       // 유리(단순 5~6색 칸)
       var pal = win.pal, wr = GG.rng(win.seed), rows = win.rows, gd = dg + 0.02, hintG = PF(F, 0, sill + h * 0.5, -3), top = sill + h;
+      anchorAdd(win.key, F, win, gd, 0);
       function cellP(poly, col) { var sh = shrinkPoly(poly, 0.88), vv = []; for (var q = 1; q < sh.length - 1; q++) { var a0 = PF(F, sh[0][0], sh[0][1], gd), b0 = PF(F, sh[q][0], sh[q][1], gd), c0 = PF(F, sh[q + 1][0], sh[q + 1][1], gd); vv.push(a0[0], a0[1], a0[2], b0[0], b0[1], b0[2], c0[0], c0[1], c0[2]); } GL.addTris(vv, C(col), hintG, { vary: 0.1 }); if (RF) RF.addTris(vv, 0xffffff, hintG, { vary: 0 }); }
       var bk = []; // 뒷판
       for (i = 1; i < G.length - 1; i++) { var p0 = PF(F, 0, c[1], dg + 0.04), p1 = PF(F, G[i][0], G[i][1], dg + 0.04), p2 = PF(F, G[i + 1][0], G[i + 1][1], dg + 0.04); bk.push(p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]); }
@@ -851,7 +960,8 @@
     function bayC(kk) { return (zk(kk) + zk(kk - 1)) / 2; }
     function arcadeLine(x, sg, bays, isNave) {
       bays.forEach(function (cz, bi) {
-        archWall({ axis: 'z', fix: x, c: cz, a: isNave ? 1.2 : 1.25, b: M / 2, spA: isNave ? 12.1 : 10.3, rise: isNave ? 2.5 : 2.3, ySpTop: isNave ? SP_N : SP_I, R: isNave ? R_NAVE : R_AIS, t: isNave ? 0.7 : 0.6, cut: isNave ? 15.4 : null, win: isNave, winSide: -sg, seed: bi * 3 + (sg > 0 ? 1 : 0) });
+        archWall({ axis: 'z', fix: x, c: cz, a: isNave ? 1.2 : 1.25, b: M / 2, spA: isNave ? 12.1 : 10.3, rise: isNave ? 2.5 : 2.3, ySpTop: isNave ? SP_N : SP_I, R: isNave ? R_NAVE : R_AIS, t: isNave ? 0.7 : 0.6, cut: isNave ? 15.4 : null, win: isNave, winSide: -sg, seed: bi * 3 + (sg > 0 ? 1 : 0),
+          key: isNave ? 'clere' + (sg > 0 ? 'S' : 'N') + '_b' + ('0' + (bi < 9 ? bi + 1 : bi + 3)).slice(-2) : null });
       });
     }
     var naveBays = [], k2;
@@ -1079,7 +1189,9 @@
         // 바깥 벽
         ctx.addCollider({ x0: sg > 0 ? XW - inset : -XW - 1.2, x1: sg > 0 ? XW + 1.2 : -XW + inset, z0: zk(8), z1: ZF + 1.2 });
         // 익랑 끝 벽 / 남북 벽
-        ctx.addCollider({ x0: sg > 0 ? XT - inset : -XT - 1.2, x1: sg > 0 ? XT + 1.2 : -XT + inset, z0: zk(12) - 1.2, z1: zk(8) + 1.2 });
+        // (E-4) 가운데는 경당 입구라 비운다: 입구 아치 양옆 두 조각
+        ctx.addCollider({ x0: sg > 0 ? XT - inset : -XT - 1.2, x1: sg > 0 ? XT + 1.2 : -XT + inset, z0: zk(12) - 1.2, z1: ZCH - CHAP.mouth });
+        ctx.addCollider({ x0: sg > 0 ? XT - inset : -XT - 1.2, x1: sg > 0 ? XT + 1.2 : -XT + inset, z0: ZCH + CHAP.mouth, z1: zk(8) + 1.2 });
         ctx.addCollider({ x0: sg > 0 ? XW - 0.1 : -XT - 1.2, x1: sg > 0 ? XT + 1.2 : -XW + 0.1, z0: zk(8) - 0.0, z1: zk(8) + 1.2 });
         ctx.addCollider({ x0: sg > 0 ? XA : -XT - 1.2, x1: sg > 0 ? XT + 1.2 : -XA, z0: zk(12) - 1.2, z1: zk(12) + inset });
         // 성구실 쪽 벽 x=±XA, z -19.25..-29
@@ -1095,7 +1207,7 @@
       // 정면 벽기둥
       [-XA, -XN, XN, XA].forEach(function (x) { ctx.addCollider({ x0: x - 0.7, x1: x + 0.7, z0: ZF - 0.9, z1: ZF + 0.1 }); });
       // 성구실 모서리 벽 돌출 / 팔 모서리
-      ctx.setCameraBounds({ x0: -XT + 0.1, x1: XT - 0.1, z0: -34.4, z1: ZF - 0.5, yMax: 28 });
+      ctx.setCameraBounds({ x0: -(XT + CHAP.depth) + 0.3, x1: XT + CHAP.depth - 0.3, z0: -34.4, z1: ZF - 0.5, yMax: 28 });
       ctx.setSky({ outside: false });
     })();
 
@@ -1106,6 +1218,11 @@
         if (Math.abs(x) <= XW - m && z <= ZF - m && z >= zk(8) - 0.3) return true;          // 신랑부
         if (Math.abs(x) <= XT - m && z <= zk(8) + 0.3 && z >= zk(12) + m) return true;       // 익랑
         if (Math.abs(x) <= XA - m && z <= zk(12) + 0.3 && z >= -34.3) return true;           // 성가대·후진
+        var ax = Math.abs(x), az = Math.abs(z - ZCH);                                        // 익랑 끝 경당(사다리꼴)
+        if (ax > XT - m && ax <= XT + CHAP.depth - m) {
+          var hw = ax <= XT + CHAP.wallT ? CHAP.mouth : lerp(CHAP.mouth, CHAP.end, (ax - XT - CHAP.wallT) / (CHAP.depth - CHAP.wallT));
+          if (az <= hw - m) return true;
+        }
         return false;
       }
       var tmp = { x: 0, z: 0 };
