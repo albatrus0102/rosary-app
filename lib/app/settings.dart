@@ -33,6 +33,18 @@ enum PrayerPosture {
   kneel,
 }
 
+/// 기도 화면 모양(T-81). [rosary] 손안의 묵주(3D, 새 기본), [classic] 기도문 중심(기존 화면).
+enum PrayerView { rosary, classic }
+
+/// 묵주 화면에서 묵주를 둘 위치(엄지 쪽). 가운데가 기본.
+enum RosaryHand { center, left, right }
+
+/// 묵주 화면 바탕: 짙은 네이비(기본) · 검정(어두운 집중) · 웜 아이보리.
+enum RosaryBackdrop { navy, black, ivory }
+
+/// 묵주 화면의 촉각·소리 알림: 둘 다(기본) · 진동만 · 소리만 · 모두 끔.
+enum RosaryFeedback { both, vibrate, sound, off }
+
 /// 이어서 기도하기를 위해 저장해 두는 진행 상태.
 class SavedPrayer {
   const SavedPrayer({
@@ -127,6 +139,150 @@ class AppSettings extends ChangeNotifier {
       ChurchPrayerChoice.brief,
     );
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
+    _prayerView = _enumByName(
+      PrayerView.values,
+      _prefs.getString(_kPrayerView),
+      defaultPrayerView,
+    );
+    _rosaryId = _prefs.getString(_kRosaryId) ?? 'olive';
+    _rosaryFavorites = {...?_prefs.getStringList(_kRosaryFavorites)};
+    _rosaryTextExpanded = _prefs.getBool(_kRosaryTextExpanded) ?? false;
+    _rosaryHand = _enumByName(
+      RosaryHand.values,
+      _prefs.getString(_kRosaryHand),
+      RosaryHand.center,
+    );
+    _rosaryBackdrop = _enumByName(
+      RosaryBackdrop.values,
+      _prefs.getString(_kRosaryBackdrop),
+      RosaryBackdrop.navy,
+    );
+    _rosaryFeedback = _enumByName(
+      RosaryFeedback.values,
+      _prefs.getString(_kRosaryFeedback),
+      RosaryFeedback.both,
+    );
+    _rosaryVibeStrength = (_prefs.getDouble(_kRosaryVibe) ?? 0.7).clamp(
+      0.2,
+      1.0,
+    );
+    _rosaryDecadeOnly = _prefs.getBool(_kRosaryDecadeOnly) ?? false;
+    _rosaryVoiceTitle = _prefs.getBool(_kRosaryVoiceTitle) ?? false;
+  }
+
+  /// 새 설치의 기도 화면. 앱은 묵주 화면(T-81)이고, 기존 위젯 테스트는 test/flutter_test_config.dart 가
+  /// 기도문 중심 화면으로 돌려 그대로 검증한다(새 화면은 test/rosary3d_*_test.dart).
+  static PrayerView defaultPrayerView = PrayerView.rosary;
+
+  static const _kPrayerView = 'prayer_view';
+  static const _kRosaryId = 'rosary3d_id';
+  static const _kRosaryFavorites = 'rosary3d_favorites';
+  static const _kRosaryTextExpanded = 'rosary3d_text_expanded';
+  static const _kRosaryHand = 'rosary3d_hand';
+  static const _kRosaryBackdrop = 'rosary3d_backdrop';
+  static const _kRosaryFeedback = 'rosary3d_feedback';
+  static const _kRosaryVibe = 'rosary3d_vibe';
+  static const _kRosaryDecadeOnly = 'rosary3d_decade_only';
+  static const _kRosaryVoiceTitle = 'rosary3d_voice_title';
+
+  late PrayerView _prayerView;
+  late String _rosaryId;
+  late Set<String> _rosaryFavorites;
+  late bool _rosaryTextExpanded;
+  late RosaryHand _rosaryHand;
+  late RosaryBackdrop _rosaryBackdrop;
+  late RosaryFeedback _rosaryFeedback;
+  late double _rosaryVibeStrength;
+  late bool _rosaryDecadeOnly;
+  late bool _rosaryVoiceTitle;
+
+  /// 기도 화면 모양(묵주 | 기도문 중심).
+  PrayerView get prayerView => _prayerView;
+  set prayerView(PrayerView v) =>
+      _setEnum(v, _prayerView, _kPrayerView, () => _prayerView = v);
+
+  /// 쓰는 3D 묵주 id(assets/rosary3d/defs.js). 갤러리·기도 화면·전체 보기가 같은 묵주를 쓴다.
+  String get rosaryId => _rosaryId;
+  set rosaryId(String v) {
+    if (v == _rosaryId) return;
+    _rosaryId = v;
+    _prefs.setString(_kRosaryId, v);
+    notifyListeners();
+  }
+
+  Set<String> get rosaryFavorites => Set.unmodifiable(_rosaryFavorites);
+  void toggleRosaryFavorite(String id) {
+    if (!_rosaryFavorites.remove(id)) _rosaryFavorites.add(id);
+    _prefs.setStringList(_kRosaryFavorites, _rosaryFavorites.toList()..sort());
+    notifyListeners();
+  }
+
+  /// 묵주 화면에서 기도문을 펼쳐 두었는지(다음에도 그대로). 입문자는 켜 두면 '항상 표시'.
+  bool get rosaryTextExpanded => _rosaryTextExpanded;
+  set rosaryTextExpanded(bool v) => _setBool(
+    v,
+    _rosaryTextExpanded,
+    _kRosaryTextExpanded,
+    () => _rosaryTextExpanded = v,
+  );
+
+  RosaryHand get rosaryHand => _rosaryHand;
+  set rosaryHand(RosaryHand v) =>
+      _setEnum(v, _rosaryHand, _kRosaryHand, () => _rosaryHand = v);
+
+  RosaryBackdrop get rosaryBackdrop => _rosaryBackdrop;
+  set rosaryBackdrop(RosaryBackdrop v) =>
+      _setEnum(v, _rosaryBackdrop, _kRosaryBackdrop, () => _rosaryBackdrop = v);
+
+  RosaryFeedback get rosaryFeedback => _rosaryFeedback;
+  set rosaryFeedback(RosaryFeedback v) =>
+      _setEnum(v, _rosaryFeedback, _kRosaryFeedback, () => _rosaryFeedback = v);
+
+  /// 진동 세기(0.2..1.0).
+  double get rosaryVibeStrength => _rosaryVibeStrength;
+  set rosaryVibeStrength(double v) {
+    final c = v.clamp(0.2, 1.0).toDouble();
+    if (c == _rosaryVibeStrength) return;
+    _rosaryVibeStrength = c;
+    _prefs.setDouble(_kRosaryVibe, c);
+    notifyListeners();
+  }
+
+  /// 성모송 10번 완료(단의 끝) 알림만 받기.
+  bool get rosaryDecadeOnly => _rosaryDecadeOnly;
+  set rosaryDecadeOnly(bool v) => _setBool(
+    v,
+    _rosaryDecadeOnly,
+    _kRosaryDecadeOnly,
+    () => _rosaryDecadeOnly = v,
+  );
+
+  /// 음성 제목 안내('성모송 열 번째입니다' 등, 기기 음성).
+  bool get rosaryVoiceTitle => _rosaryVoiceTitle;
+  set rosaryVoiceTitle(bool v) => _setBool(
+    v,
+    _rosaryVoiceTitle,
+    _kRosaryVoiceTitle,
+    () => _rosaryVoiceTitle = v,
+  );
+
+  void _setBool(bool v, bool old, String key, void Function() assign) {
+    if (v == old) return;
+    assign();
+    _prefs.setBool(key, v);
+    notifyListeners();
+  }
+
+  void _setEnum<E extends Enum>(
+    E v,
+    E old,
+    String key,
+    void Function() assign,
+  ) {
+    if (v == old) return;
+    assign();
+    _prefs.setString(key, v.name);
+    notifyListeners();
   }
 
   static const _kChime = 'chime_ten';

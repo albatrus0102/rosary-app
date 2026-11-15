@@ -20,6 +20,11 @@ import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
+import '../rosary3d/rosary_feedback.dart';
+import '../rosary3d/rosary_gallery_screen.dart';
+import '../rosary3d/rosary_model.dart';
+import '../rosary3d/rosary_prayer_view.dart';
+import '../rosary3d/rosary_scene.dart';
 import '../stats/prayer_stats_store.dart';
 import '../stats/stats_screen.dart';
 import 'widgets/prayer_actions.dart';
@@ -41,7 +46,15 @@ class PrayerScreen extends StatefulWidget {
     this.leaderVoice,
     this.session,
     this.onOpenStats,
+    this.rosaryScene,
+    this.rosaryFeedback,
   });
+
+  /// 묵주 화면(T-81) 3D 장면. 테스트용 주입, 없으면 화면이 만든다.
+  final RosaryScene? rosaryScene;
+
+  /// 묵주 화면 촉각·소리. 테스트용 주입, 없으면 기기 것을 쓴다.
+  final RosaryFeedbackSink? rosaryFeedback;
 
   final AppSettings settings;
   final MysterySet mysterySet;
@@ -113,6 +126,12 @@ class _PrayerScreenState extends State<PrayerScreen>
 
   late final bool _speaksResponder;
 
+  /// 묵주 화면(손안의 묵주)으로 그리는지. 화면을 여는 순간의 설정으로 정한다.
+  late final bool _rosaryMode;
+  RosaryScene? _scene;
+  RosaryFeedbackSink? _fb;
+  int _fbLast = 0;
+
   AppSettings get _settings => widget.settings;
 
   @override
@@ -150,6 +169,20 @@ class _PrayerScreenState extends State<PrayerScreen>
       }),
     );
 
+    _rosaryMode = _settings.prayerView == PrayerView.rosary;
+    if (_rosaryMode) {
+      final scene = _scene = widget.rosaryScene ?? RosaryScene.create();
+      scene.state
+        ..['rosary'] = _settings.rosaryId
+        ..['step'] = _session.index
+        ..['theme'] = _settings.rosaryBackdrop.name
+        ..['hand'] = _settings.rosaryHand.name;
+      scene.setStep(_session.index, animate: false);
+      _fb = widget.rosaryFeedback ?? DeviceRosaryFeedback();
+      _fbLast = _session.index;
+      _session.addListener(_onRosaryStep);
+      _settings.addListener(_onRosarySettings);
+    }
     _eventSub = _session.events.listen(_onSessionEvent);
     _session.addListener(_onProgress);
     HardwareKeyboard.instance.addHandler(_onKey);
@@ -200,6 +233,65 @@ class _PrayerScreenState extends State<PrayerScreen>
     } catch (e) {
       debugPrint('leader voice failed: $e');
     }
+  }
+
+  /// 묵주 화면: 스텝이 바뀌면 3D 를 옮기고, 한 칸 이동이면 요구서 표대로 진동·소리·음성 제목을 낸다.
+  void _onRosaryStep() {
+    final scene = _scene;
+    if (scene == null || _session.isFinished) return;
+    final now = _session.index, before = _fbLast;
+    if (now == before) return;
+    _fbLast = now;
+    scene.setStep(now, animate: !MediaQuery.disableAnimationsOf(context));
+    if ((now - before).abs() != 1) return;
+    final cue = rosaryCueFor(
+      _session.steps[before],
+      _session.steps[now],
+      forward: now > before,
+    );
+    final s = _settings;
+    if (s.rosaryDecadeOnly && !rosaryCueIsMilestone(cue)) return;
+    _fb?.play(
+      cue,
+      vibrate:
+          s.rosaryFeedback == RosaryFeedback.both ||
+          s.rosaryFeedback == RosaryFeedback.vibrate,
+      sound:
+          s.rosaryFeedback == RosaryFeedback.both ||
+          s.rosaryFeedback == RosaryFeedback.sound,
+      strength: s.rosaryVibeStrength,
+      volume: s.chimeVolume,
+    );
+    // 앞단·뒷단 음성이 나오는 중이면 제목 안내는 겹치지 않게 건너뛴다.
+    if (s.rosaryVoiceTitle && _voice == null) {
+      _fb?.announce(rosaryVoiceTitle(_session.current));
+    }
+  }
+
+  void _onRosarySettings() {
+    final scene = _scene;
+    if (scene == null) return;
+    scene
+      ..setRosary(_settings.rosaryId)
+      ..setTheme(_settings.rosaryBackdrop.name)
+      ..setHand(_settings.rosaryHand.name);
+  }
+
+  void _toggleFullView() {
+    final scene = _scene;
+    if (scene == null) return;
+    scene.setFullView(!scene.fullView);
+  }
+
+  void _openGallery() {
+    unawaited(
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          settings: const RouteSettings(name: 'rosary_gallery'),
+          builder: (_) => RosaryGalleryScreen(settings: _settings),
+        ),
+      ),
+    );
   }
 
   void _onSpeakingChanged() {
@@ -324,6 +416,7 @@ class _PrayerScreenState extends State<PrayerScreen>
   }
 
   void _onSessionEvent(SessionEvent e) {
+    if (_rosaryMode) return; // 묵주 화면은 _onRosaryStep 이 차등 진동·소리를 낸다(중복 없음).
     _haptic(_hapticFor(e));
     switch (e) {
       case SessionEvent.hailMarysCompleted:
@@ -370,6 +463,12 @@ class _PrayerScreenState extends State<PrayerScreen>
     _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     _session.removeListener(_onSessionChanged);
     _session.removeListener(_onProgress);
+    if (_rosaryMode) {
+      _session.removeListener(_onRosaryStep);
+      _settings.removeListener(_onRosarySettings);
+      if (widget.rosaryScene == null) _scene?.dispose();
+      if (widget.rosaryFeedback == null) unawaited(_fb?.dispose());
+    }
     final voice = _voice;
     if (voice != null) {
       voice.isSpeaking.removeListener(_onSpeakingChanged);
@@ -619,15 +718,19 @@ class _PrayerScreenState extends State<PrayerScreen>
       listenable: Listenable.merge([_session, _settings]),
       builder: (context, _) {
         final finished = _session.isFinished;
-        return PopScope(
+        final rosary = _rosaryMode && !finished;
+        final page = PopScope(
           canPop: finished,
           onPopInvokedWithResult: (didPop, _) {
             if (!didPop) _confirmExit();
           },
           child: Scaffold(
+            backgroundColor: rosary
+                ? rosaryBackdropColor(_settings.rosaryBackdrop)
+                : null,
             // 기도 배경 그림(설정 '기도 배경 그림', 기본 켬): 그 단의 성화를 낮은 대비로 맨 아래에 깐다.
             body: PrayerBackground(
-              enabled: _settings.prayerBackground && !finished,
+              enabled: _settings.prayerBackground && !finished && !_rosaryMode,
               art: mysteryArtFor(widget.mysterySet, _session.current.decade),
               child: SafeArea(
                 child: finished
@@ -646,6 +749,11 @@ class _PrayerScreenState extends State<PrayerScreen>
               ),
             ),
           ),
+        );
+        if (!rosary) return page;
+        return Theme(
+          data: rosaryTheme(_settings.rosaryBackdrop, _settings.prayerFont),
+          child: page,
         );
       },
     );
@@ -690,6 +798,8 @@ class _PrayerScreenState extends State<PrayerScreen>
         Track.setting('short_prayers');
       case _PrayerMenu.end:
         unawaited(_confirmExit());
+      case _PrayerMenu.gallery:
+        _openGallery();
     }
   }
 
@@ -845,6 +955,11 @@ class _PrayerScreenState extends State<PrayerScreen>
       onTextSize: () => _showTextSizeSheet(context),
       menuBuilder: (context) => [
         const PopupMenuItem(value: _PrayerMenu.map, child: Text('묵주 전체 보기')),
+        if (_rosaryMode)
+          const PopupMenuItem(
+            value: _PrayerMenu.gallery,
+            child: Text('묵주 고르기'),
+          ),
         CheckedPopupMenuItem(
           value: _PrayerMenu.shortPrayers,
           checked: _settings.shortPrayers,
@@ -854,7 +969,37 @@ class _PrayerScreenState extends State<PrayerScreen>
       ],
       onMenu: _onMenu,
       menuFocusNode: _menuFocus,
+      extra: _scene == null
+          ? null
+          : IconButton(
+              key: const ValueKey('rosary-full-toggle'),
+              tooltip: _scene!.fullView ? '손안의 묵주로' : '전체 묵주 보기',
+              isSelected: _scene!.fullView,
+              icon: const Icon(Icons.radio_button_checked_outlined),
+              selectedIcon: const Icon(Icons.adjust),
+              onPressed: _toggleFullView,
+            ),
     );
+
+    final scene = _scene;
+    if (scene != null) {
+      return _clampChrome(
+        RosaryPrayerView(
+          session: _session,
+          settings: _settings,
+          mysterySet: widget.mysterySet,
+          scene: scene,
+          header: ListenableBuilder(
+            listenable: scene,
+            builder: (_, _) => header,
+          ),
+          textView: text,
+          actions: actions,
+          onNext: _advance,
+          onBack: _session.back,
+        ),
+      );
+    }
 
     if (!wide) {
       return _clampChrome(
@@ -942,7 +1087,7 @@ class _PrayerScreenState extends State<PrayerScreen>
   }
 }
 
-enum _PrayerMenu { map, shortPrayers, end }
+enum _PrayerMenu { map, shortPrayers, end, gallery }
 
 /// 고정 48dp 머리줄: 뒤로, 제목(+부제), 글자 크기, ⋮.
 class _PrayerHeader extends StatelessWidget {
@@ -954,7 +1099,11 @@ class _PrayerHeader extends StatelessWidget {
     this.menuBuilder,
     this.onMenu,
     this.menuFocusNode,
+    this.extra,
   });
+
+  /// 글자 크기 앞에 놓는 추가 단추(묵주 화면의 ◎ 전체 보기).
+  final Widget? extra;
 
   final String title;
   final String? subtitle;
@@ -1008,6 +1157,7 @@ class _PrayerHeader extends StatelessWidget {
               ],
             ),
           ),
+          ?extra,
           if (onTextSize != null)
             IconButton(
               key: const ValueKey('prayer-text-size'),

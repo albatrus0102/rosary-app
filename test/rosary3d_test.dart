@@ -1,0 +1,300 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/settings.dart';
+import 'package:rosary_app/app/sound_player.dart';
+import 'package:rosary_app/domain/prayer_data.dart';
+import 'package:rosary_app/domain/rosary_sequence.dart';
+import 'package:rosary_app/rosary3d/rosary_feedback.dart';
+import 'package:rosary_app/rosary3d/rosary_model.dart';
+import 'package:rosary_app/rosary3d/rosary_scene.dart';
+import 'package:rosary_app/ui/prayer_screen.dart';
+import 'package:rosary_app/ui/widgets/prayer_bead_strip.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class _SilentSoundPlayer extends SoundPlayer {
+  @override
+  Future<void> init() async {}
+  @override
+  Future<void> playDecadeChime() async {}
+  @override
+  Future<void> playBeadTick() async {}
+  @override
+  Future<void> dispose() async {}
+}
+
+void main() {
+  final steps = buildRosarySequence(MysterySet.joyful);
+
+  group('진행 → 묵주 위치 매핑', () {
+    test('73 스텝이 59알 + 십자가 + 메달에 대응하고, 알을 더하지 않는다', () {
+      expect(steps.length, 73);
+      var prev = -1.0;
+      final beads = <int>{};
+      for (var i = 0; i < steps.length; i++) {
+        final p = rosaryStepPos(i), s = steps[i];
+        expect(p, greaterThanOrEqualTo(prev), reason: 'step $i');
+        prev = p;
+        switch (s.kind) {
+          case StepKind.hailMary:
+            expect(rosaryNodeKind(p.toInt()), RosaryNodeKind.small);
+            expect(p % 1, 0);
+            beads.add(p.toInt());
+          case StepKind.ourFather:
+            expect(rosaryNodeKind(p.toInt()), RosaryNodeKind.big);
+            beads.add(p.toInt());
+          case StepKind.gloryBe || StepKind.fatima:
+            // 체인 위(알 사이 소수 위치)
+            expect(p % 1, isNot(0), reason: 'step $i ${s.title}');
+          case StepKind.signOfCross || StepKind.apostlesCreed:
+            expect(rosaryNodeKind(p.toInt()), RosaryNodeKind.cross);
+          case StepKind.closing:
+            expect(rosaryNodeKind(p.toInt()), RosaryNodeKind.medal);
+        }
+      }
+      expect(beads.length, rosaryBeadCount);
+      final all = [
+        for (var i = 0; i < rosaryNodeCount; i++)
+          if (rosaryNodeKind(i) == RosaryNodeKind.big ||
+              rosaryNodeKind(i) == RosaryNodeKind.small)
+            i,
+      ];
+      expect(all.length, 59);
+      expect(beads, all.toSet());
+      expect(
+        all.where((i) => rosaryNodeKind(i) == RosaryNodeKind.big).length,
+        6,
+      );
+    });
+
+    test('영광송·구원의 기도는 10번째 알과 다음 큰 알 사이 체인 위', () {
+      final glory = rosaryStepPos(7 + 11), fatima = rosaryStepPos(7 + 12);
+      final ten = rosaryStepPos(7 + 10), nextOf = rosaryStepPos(7 + 13);
+      expect(glory, greaterThan(ten));
+      expect(fatima, greaterThan(glory));
+      expect(nextOf, greaterThan(fatima));
+      expect(nextOf - ten, 1);
+      expect(rosaryStepPos(6), 4.5); // 서두 영광송
+    });
+  });
+
+  group('당기기 판정', () {
+    test('아무리 길게 끌어도 한 제스처 = 한 단계, 표시 이동은 ±1 안', () {
+      final p = BeadPull();
+      p.start();
+      double off = 0;
+      for (var i = 0; i < 30; i++) {
+        off = p.update(20, 100);
+      }
+      expect(off, lessThanOrEqualTo(1));
+      expect(p.end(0, 100, now: Duration.zero), 1);
+    });
+
+    test('임계 미달이면 제자리, 위로 당기면 이전, 빠른 연타는 한 번만', () {
+      final p = BeadPull();
+      const t = Duration(seconds: 1);
+      p.start();
+      p.update(20, 100);
+      expect(p.end(0, 100, now: t), 0);
+      p.start();
+      p.update(-50, 100);
+      expect(p.end(0, 100, now: t), -1);
+      p.start();
+      p.update(60, 100);
+      expect(p.end(0, 100, now: t + const Duration(milliseconds: 100)), 0);
+      p.start();
+      p.update(60, 100);
+      expect(p.end(0, 100, now: t + const Duration(milliseconds: 500)), 1);
+    });
+  });
+
+  test('10번째 성모송 완료 신호는 10번째를 바친 뒤 넘길 때', () {
+    final ten = steps.indexWhere((s) => s.decade == 1 && s.beadIndex == 10);
+    expect(
+      rosaryCueFor(steps[ten - 1], steps[ten], forward: true),
+      RosaryCue.bead,
+    );
+    expect(
+      rosaryCueFor(steps[ten], steps[ten + 1], forward: true),
+      RosaryCue.tenComplete,
+    );
+    expect(
+      rosaryCueFor(steps[ten + 1], steps[ten], forward: false),
+      RosaryCue.minor,
+    );
+    expect(
+      rosaryCueFor(steps[1], steps[2], forward: true),
+      RosaryCue.ourFather,
+    );
+    expect(rosaryCueFor(steps[6], steps[7], forward: true), RosaryCue.mystery);
+    expect(
+      rosaryCueFor(steps[71], steps[72], forward: true),
+      RosaryCue.rosaryComplete,
+    );
+    expect(rosaryVoiceTitle(steps[ten]), '성모송 열 번째입니다');
+  });
+
+  group('묵주 화면(위젯)', () {
+    Future<AppSettings> load([Map<String, Object> extra = const {}]) async {
+      SharedPreferences.setMockInitialValues({
+        'prayer_view': 'rosary',
+        'leader_audio': false,
+        ...extra,
+      });
+      return AppSettings.load();
+    }
+
+    void phone(WidgetTester tester) {
+      tester.view.devicePixelRatio = 2;
+      tester.view.physicalSize = const Size(720, 1600);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
+    Widget app(
+      AppSettings s,
+      FakeRosaryScene scene,
+      RecordingRosaryFeedback fb, {
+      int initialIndex = 0,
+      double? textScale,
+    }) => MaterialApp(
+      builder: textScale == null
+          ? null
+          : (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(textScale)),
+              child: child!,
+            ),
+      home: PrayerScreen(
+        settings: s,
+        mysterySet: MysterySet.joyful,
+        initialIndex: initialIndex,
+        soundPlayer: _SilentSoundPlayer(),
+        rosaryScene: scene,
+        rosaryFeedback: fb,
+      ),
+    );
+
+    testWidgets('당기기: 아래로 길게 끌어도 한 단계, 위로 당기면 이전, 3D 는 진행을 따라간다', (
+      tester,
+    ) async {
+      phone(tester);
+      final s = await load();
+      final scene = FakeRosaryScene(), fb = RecordingRosaryFeedback();
+      await tester.pumpWidget(app(s, scene, fb, initialIndex: 3));
+      await tester.pump();
+      expect(find.text('성모송'), findsOneWidget);
+      expect(find.text('1 / 3'), findsOneWidget);
+      final area = find.byKey(const ValueKey('rosary-area'));
+      await tester.drag(area, const Offset(0, 600));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('2 / 3'), findsOneWidget);
+      expect(scene.calls.last.$1, 'setDrag');
+      expect(scene.calls.where((c) => c.$1 == 'setStep').last.$2['step'], 4);
+      await tester.drag(area, const Offset(0, -300));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('1 / 3'), findsOneWidget);
+      // 짧게 끌면 제자리
+      await tester.drag(area, const Offset(0, 20));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('1 / 3'), findsOneWidget);
+      expect(fb.played.first.$1, RosaryCue.bead);
+      expect(fb.played.last.$1, RosaryCue.minor);
+    });
+
+    testWidgets('10번째 성모송 신호, 전체 보기 전환 뒤 상태 유지, 기도문 펼침 기억, 재시작 복원', (
+      tester,
+    ) async {
+      phone(tester);
+      final s = await load();
+      final scene = FakeRosaryScene(), fb = RecordingRosaryFeedback();
+      final ten = steps.indexWhere((x) => x.decade == 1 && x.beadIndex == 10);
+      await tester.pumpWidget(app(s, scene, fb, initialIndex: ten - 1));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(find.text('10 / 10'), findsOneWidget);
+      expect(fb.played.map((p) => p.$1), [RosaryCue.bead]);
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(fb.played.last.$1, RosaryCue.tenComplete);
+      expect(find.text('영광송'), findsOneWidget);
+
+      // ◎ 전체 보기 → 진행 그대로, 돌아오면 현재 알
+      await tester.tap(find.byKey(const ValueKey('rosary-full-toggle')));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(scene.fullView, isTrue);
+      expect(find.byKey(const ValueKey('rosary-full-caption')), findsOneWidget);
+      expect(find.byKey(const ValueKey('rosary-title')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('rosary-full-toggle')));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(scene.fullView, isFalse);
+      expect(find.text('영광송'), findsOneWidget);
+      expect(scene.state['step'], ten + 1);
+
+      // 기도문 펼치기 → 설정에 기억
+      await tester.tap(find.byKey(const ValueKey('rosary-text-toggle')));
+      await tester.pump();
+      expect(s.rosaryTextExpanded, isTrue);
+      expect(find.byKey(const ValueKey('rosary-text-panel')), findsOneWidget);
+
+      // 앱 재시작: 같은 위치·펼침 상태로 이어서
+      expect(s.savedPrayer?.stepIndex, ten + 1);
+      await tester.pumpWidget(const SizedBox());
+      final s2 = await AppSettings.load();
+      final scene2 = FakeRosaryScene();
+      await tester.pumpWidget(
+        app(
+          s2,
+          scene2,
+          RecordingRosaryFeedback(),
+          initialIndex: s2.savedPrayer!.stepIndex,
+        ),
+      );
+      await tester.pump();
+      expect(find.text('영광송'), findsOneWidget);
+      expect(find.byKey(const ValueKey('rosary-text-panel')), findsOneWidget);
+      expect(scene2.state['step'], ten + 1);
+    });
+
+    for (final b in RosaryBackdrop.values) {
+      testWidgets('360×800 글자 2배(${b.name}) 넘침 없음 + 버튼만으로 끝까지', (tester) async {
+        phone(tester);
+        final s = await load({
+          'rosary3d_backdrop': b.name,
+          'short_prayers_asked': true,
+        });
+        final scene = FakeRosaryScene(), fb = RecordingRosaryFeedback();
+        await tester.pumpWidget(app(s, scene, fb, textScale: 2));
+        await tester.pump();
+        for (var i = 0; i < 73; i++) {
+          if (i == 20) {
+            await tester.tap(find.byKey(const ValueKey('rosary-text-toggle')));
+          }
+          await tester.tap(find.byKey(const ValueKey('prayer-next')));
+          await tester.pump(const Duration(milliseconds: 50));
+          expect(tester.takeException(), isNull, reason: 'step $i');
+        }
+        expect(find.text('묵주기도를 마쳤습니다'), findsOneWidget);
+        expect(fb.played.where((p) => p.$1 == RosaryCue.tenComplete).length, 5);
+        expect(
+          fb.played.where((p) => p.$1 == RosaryCue.rosaryComplete).length,
+          1,
+        );
+      });
+    }
+
+    testWidgets('설정 전환: 기도문 중심(기존) 화면은 그대로 동작', (tester) async {
+      phone(tester);
+      final s = await load({'prayer_view': 'classic'});
+      final scene = FakeRosaryScene(), fb = RecordingRosaryFeedback();
+      await tester.pumpWidget(app(s, scene, fb));
+      await tester.pump();
+      expect(find.byType(PrayerBeadStrip), findsOneWidget);
+      expect(find.byKey(const ValueKey('rosary-area')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(find.text('사도신경'), findsWidgets);
+      expect(fb.played, isEmpty);
+    });
+  });
+}
