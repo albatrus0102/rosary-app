@@ -43,6 +43,7 @@
 | 넓은 화면에서 레일을 상태 바까지 올릴지(시안처럼) | 상태 바 아래에서 시작(밝은 테마의 어두운 시계 글자가 어두운 레일에 묻히지 않게) |
 
 ## 출시 전 확인
+- **피렌체 구조 수정(I-3, 2026-11-15)**: 실기기에서 ① 큰 아치·트리부나가 높아진 뒤의 제대 시점 프레임(삼각형 +9%), ② 측랑 → 팔각 통로 걷기·카메라(좁은 통로에서 카메라가 벽을 뚫지 않는지), ③ 돌 색(갈색 사암)과 룩 조합을 확인. 북 측랑 그림 3점은 절차적 색면 자리 표시다(PD 진본을 구하면 교체). 창 그림(진본 8창·임시 패널)은 아직 걸지 않았다(`docs/church/STRUCTURE_AUDIT_OTHERS.md §1.6`).
 - **개발용 임시 유리(시안) 제거 확인(2026-11-15, docs/church/GLASS_DEV_PIPELINE.md)**: 밀라노 55장(`art/glass_milan55/`, `assets/church/dev/`)은 AI 창작 시안이고 실제 작품이 아니다(`release_approved=false`). 일반 APK 에는 들어가지 않게 세 겹으로 막았다. 출시 빌드마다 `bash tools/check_release_apk.sh <apk>` 가 통과하는지(파일 0·문자열 0·Dart 표시 0) 확인하고, 스토어에 올리는 APK/AAB 가 `tools/build_dev_apk.sh` 산출물(rosarium-dev-*.apk)이 아닌지 확인한다.
 - **밀라노 실제 작품 권리(2026-11-15, docs/church/MILAN_GLASS_RESEARCH.md §5~6)**: 시안을 실제 창 사진으로 바꾸려면 창마다 사진·원작·문화유산 권리를 확인해야 한다. Google Arts & Culture 이미지는 허락 없이 쓸 수 없다. 원작 저작권이 남은 창(V07·V44·V46·V47 Hajnal, V39 Carpi, 티부리오 1968)은 복제·모사를 넣지 않는다(대응표의 `real_work_copyrighted`).
 - **개발용 APK 실기기 확인**: 장면을 `file:///android_asset/…/index.html?devglass=1` 로 여는 방식과 QA Gallery 의 터치 조작은 기기에서 확인하지 못했다.

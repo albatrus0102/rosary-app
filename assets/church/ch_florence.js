@@ -168,8 +168,10 @@
           quad4(W(F, a[0], a[1], 0), W(F, b[0], b[1], 0), W(F, b[0], b[1], -D), W(F, a[0], a[1], -D), cfWarm, hint);
         }
       }
-      function holeLancet(cu, y0, w, h) {
-        var hw = w / 2 + 0.16, rise = 0.72 * w + 0.1, P = Pt(hw, rise), y1 = y0 + h, loop = [[cu - hw, y0], [cu + hw, y0], [cu + hw, y1]], i, arc = P.arc(8);
+      // m = 유리 둘레의 여유(기본 0.16: 키트 창의 돌 틀이 덮는다). 틀 없는 창은 0.02 로 유리에 맞춘다
+      function holeLancet(cu, y0, w, h, m) {
+        m = m === undefined ? 0.16 : m;
+        var hw = w / 2 + m, rise = 0.72 * w + Math.min(0.1, m), P = Pt(hw, rise), y1 = y0 + h, loop = [[cu - hw, y0], [cu + hw, y0], [cu + hw, y1]], i, arc = P.arc(8);
         for (i = 1; i <= 8; i++) loop.push([cu + arc[i].u, y1 + arc[i].h]);
         for (i = 7; i >= 0; i--) loop.push([cu - arc[i].u, y1 + arc[i].h]);
         loop.push([cu - hw, y1]);
@@ -740,7 +742,7 @@
           var tx = (p1[0] - p0[0]) / L, tz = (p1[1] - p0[1]) / L, nx = fc[0] - mx, nz = fc[1] - mz, nl = Math.hypot(nx, nz); nx /= nl; nz /= nl;
           var F = FR(mx, mz, tx, tz, nx, nz), cn = 5 - i, ryS = Math.atan2(-tz, tx);
           function B(u, d) { return [F.ox + F.ux * u + F.nx * d, F.oz + F.uz * u + F.nz * d]; }
-          var hu = holeLancet(0, 8.45, 0.86, 2.2);
+          var hu = holeLancet(0, 8.6, 0.86, 2.05, 0.02);
           archedWall(F, { u0: -L / 2, u1: L / 2, a: CH_A, spring: CH_SP, rise: CH_RISE, T: 0.22, top: YS, jambs: true, n: 8, holes: [hu] });
           reveal(F, hu, 0.6);
           var up = B(0, -0.45);
