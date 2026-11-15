@@ -65,13 +65,13 @@
     mats = MATS.create(renderer, S.quality);
     backdrop.material = mats.backdrop(S.theme);
     var group = new T.Group(); scene.add(group);
-    var dims = { small: def.bead.small, big: def.bead.big * def.bead.aspect, cross: def.cross.height + 0.6, medal: def.medal.height, gap: def.link.gap };
+    var dims = { small: def.bead.small * def.bead.aspect, big: def.bead.big * def.bead.aspect, cross: def.cross.height + 0.6, medal: def.medal.height, gap: def.link.gap };
     var s = L.arcLengths(dims);
     var beadGeo = MODELS.beadGeometry(def), beadMat = mats.get(def.bead.material);
     var nSmall = 0, nBig = 0;
     L.nodes.forEach(function (n) { if (n.kind === L.NODE.SMALL) nSmall++; else if (n.kind === L.NODE.BIG) nBig++; });
     function inst(geo, mat, count, shadow) { var m = new T.InstancedMesh(geo, mat, count); m.castShadow = shadow !== false; m.receiveShadow = true; m.frustumCulled = false; m.instanceMatrix.setUsage(T.DynamicDrawUsage); group.add(m); return m; }
-    var bs = def.bead.material !== 'crystalBlue'; // 투명 수정은 짙은 그림자를 만들지 않는다
+    var bs = def.bead.shadow !== false; // 투명·반투명 알은 짙은 그림자를 만들지 않는다
     var small = inst(beadGeo, beadMat, nSmall, bs), big = inst(beadGeo, beadMat, nBig, bs);
     [small, big].forEach(function (m) { m.instanceColor = new T.InstancedBufferAttribute(new Float32Array(m.count * 3).fill(1), 3); m.instanceColor.setUsage(T.DynamicDrawUsage); });
     var caps = def.bead.caps ? inst(MODELS.capGeometry(), mats.get(def.bead.caps), (nSmall + nBig) * 2) : null;

@@ -60,6 +60,18 @@ const List<RosaryInfo> rosaryCatalog = [
         '나무 십자가에 앤티크 은빛 예수님 형상.',
   ),
   RosaryInfo(
+    'ebony',
+    '흑단 원목 묵주',
+    '원목',
+    '깊은 검정에 은은한 결이 비치는 반광택 흑단 원통 알, 앤티크 은 체인, 성 베네딕토 메달 십자가.',
+  ),
+  RosaryInfo(
+    'rosewood',
+    '로즈우드 묵주',
+    '원목',
+    '적갈색 결이 촘촘히 겹친 로즈우드 둥근 알과 매듭 끈, 금 장식을 두른 로즈우드 십자가.',
+  ),
+  RosaryInfo(
     'pearl',
     '아이보리 진주 묵주',
     '진주',
@@ -68,10 +80,68 @@ const List<RosaryInfo> rosaryCatalog = [
   RosaryInfo(
     'crystal',
     '청색 수정 묵주',
-    '수정',
+    '수정·유리',
     '빛을 꺾는 면 깎은 청색 수정 알, 은 체인과 투각 세공 은 십자가.',
   ),
+  RosaryInfo(
+    'glass',
+    '초록 유리 묵주',
+    '수정·유리',
+    '손으로 녹여 빚은 초록 유리알(기포·잔물결), 은 고리, 단순한 은 십자가와 성심 하트 메달.',
+  ),
+  RosaryInfo(
+    'amethyst',
+    '자수정 묵주',
+    '수정·유리',
+    '색띠가 지는 보라 결정을 길쭉하게 깎은 알, 은 고리, 은 투각 십자가와 세공 메달.',
+  ),
+  RosaryInfo(
+    'rosequartz',
+    '장미석 묵주',
+    '수정·유리',
+    '우윳빛 결이 비치는 분홍 장미석, 로즈골드 꽃잎 마개와 고리, 꽃봉오리형 십자가와 하트 메달.',
+  ),
+  RosaryInfo(
+    'amber',
+    '호박 묵주',
+    '보석',
+    '따뜻한 금빛 호박을 자연 그대로 다듬은 알(속 무늬·내포물), 매듭 끈, 청동 켈트 십자가.',
+  ),
+  RosaryInfo(
+    'lapis',
+    '청금석 묵주',
+    '보석',
+    '금빛 황철석 점과 흰 결이 박힌 짙푸른 청금석 큐브 알, 금 체인, 금 성 베네딕토 십자가.',
+  ),
+  RosaryInfo(
+    'jade',
+    '옥 묵주',
+    '보석',
+    '은은히 빛이 스미는 녹색 옥 론델 알과 붉은 매듭 끈, 금 장식 옥 십자가.',
+  ),
+  RosaryInfo(
+    'silver',
+    '앤티크 실버 세공 묵주',
+    '금속',
+    '마름모·꽃잎을 새긴 세공 은구슬(홈은 산화), 굵은 은 체인, 은 투각 십자가.',
+  ),
+  RosaryInfo(
+    'gold',
+    '금도금 묵주',
+    '금속',
+    '골이 진 멜론형 금도금 알(미세한 두드림 결), 금 체인, 금 켈트 십자가와 세공 메달.',
+  ),
+  RosaryInfo(
+    'ceramic',
+    '세라믹 묵주',
+    '도자',
+    '흰 유약 위에 쪽빛 꽃을 손으로 그린 도자 알, 파란 끈, 도자 십자가와 은 메달.',
+  ),
 ];
+
+/// 갤러리 재질 분류(카탈로그 순서).
+List<String> get rosaryCategories =>
+    <String>{for (final r in rosaryCatalog) r.category}.toList();
 
 RosaryInfo rosaryInfo(String id) => rosaryCatalog.firstWhere(
   (r) => r.id == id,

@@ -37,7 +37,8 @@
         var g = pz * 1.5 + px * 0.5 + 3.4 * w1;
         var g2 = pz * 2.2 - py * 0.4 + 2.2 * w2 + 1.3 * w1;
         var thick = 1.4 + 3.2 * fbm3(px * 1.7 + 3, py * 1.7, pz * 0.9 + seed, 2);   // 결 굵기가 곳곳에서 달라진다
-        var streak = Math.pow(1 - Math.abs(Math.sin(g * 2.4)), thick) * 0.95 + Math.pow(1 - Math.abs(Math.sin(g2 * 4.1)), 16) * 0.45;
+        var fq = pal[3] ? pal[3][0] : 1;
+        var streak = Math.pow(1 - Math.abs(Math.sin(g * 2.4 * fq)), thick) * 0.95 + Math.pow(1 - Math.abs(Math.sin(g2 * 4.1 * fq)), 16) * 0.45;
         var broad = smooth(Math.min(1, Math.max(0, fbm3(px * 0.8 + 9, py * 0.8, pz * 0.45 + seed, 3) * 1.9 - 0.62)));
         var fiber = fbm3(px * 26, py * 26, pz * 2.4 + seed, 2);          // 결 방향 섬유
         var dark = Math.min(1, streak * 0.75 + broad * 0.6 + (fiber - 0.5) * 0.2 + 0.08);
@@ -80,6 +81,24 @@
     }
     x.putImageData(im, 0, 0); return c;
   }
+
+  // 범용 절차 화가: 구 UV 를 원기둥 좌표(이음매 없음)로 돌려 fn(px,py,pz,u,v) → [r,g,b, 높이 0..1, 거칠기 0..1, 금속 0..1] 를 칠한다.
+  function paint(size, fn, wantMetal) {
+    var names = ['color', 'bump', 'rough'].concat(wantMetal ? ['metal'] : []), out = {}, ims = {}, ctx = {};
+    names.forEach(function (n) { out[n] = canvas(size, size); ctx[n] = out[n].getContext('2d'); ims[n] = ctx[n].createImageData(size, size); });
+    for (var j = 0; j < size; j++) for (var i = 0; i < size; i++) {
+      var u = i / size, v = j / size, a = u * 2 * Math.PI;
+      var r = fn(Math.cos(a), Math.sin(a), v * 3.1, u, v), k = (j * size + i) * 4;
+      ims.color.data[k] = r[0]; ims.color.data[k + 1] = r[1]; ims.color.data[k + 2] = r[2]; ims.color.data[k + 3] = 255;
+      ims.bump.data[k] = ims.bump.data[k + 1] = ims.bump.data[k + 2] = r[3] * 255; ims.bump.data[k + 3] = 255;
+      ims.rough.data[k] = ims.rough.data[k + 1] = ims.rough.data[k + 2] = r[4] * 255; ims.rough.data[k + 3] = 255;
+      if (wantMetal) { ims.metal.data[k] = ims.metal.data[k + 1] = ims.metal.data[k + 2] = (r[5] || 0) * 255; ims.metal.data[k + 3] = 255; }
+    }
+    names.forEach(function (n) { ctx[n].putImageData(ims[n], 0, 0); });
+    return out;
+  }
+  function lerp3(a, b, t) { return [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)]; }
+  function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
 
   function create(renderer, quality) {
     var low = quality === 'low';
@@ -126,6 +145,143 @@
           attenuationColor: new T.Color(0x4d8cff), attenuationDistance: 0.9, emissive: new T.Color(0x1a4fb8), emissiveIntensity: 0.38, specularIntensity: 1, specularColor: new T.Color(0xffffff),
           envMapIntensity: 3.0, flatShading: true, clearcoat: 1, clearcoatRoughness: 0.01 });
       },
+      ebony: function () {
+        // 흑단: 깊은 검정 + 은은한 갈색 결, 반광택(오일 마감)
+        var w = woodCanvases(TS, [[64, 52, 44], [34, 27, 23], [12, 10, 9], [2.2]], 6.1, false);
+        return new T.MeshPhysicalMaterial({ map: tex(w.color, true), bumpMap: tex(w.bump), bumpScale: 0.004, roughnessMap: tex(w.rough), roughness: 0.42,
+          clearcoat: 0.7, clearcoatRoughness: 0.22, envMapIntensity: 1.1 });
+      },
+      rosewood: function () {
+        // 로즈우드: 적갈색, 굵고 가는 결이 겹친 복합 무늬
+        var w = woodCanvases(TS, [[138, 60, 36], [98, 38, 22], [44, 14, 8], [3.1]], 8.3, false);
+        return new T.MeshPhysicalMaterial({ map: tex(w.color, true), bumpMap: tex(w.bump), bumpScale: 0.006, roughnessMap: tex(w.rough), roughness: 0.5,
+          clearcoat: 0.55, clearcoatRoughness: 0.28, sheen: 0.2, sheenColor: new T.Color(0xffb38a), envMapIntensity: 1.0 });
+      },
+      rosewoodCross: function () {
+        var w = woodCanvases(TS, [[160, 76, 46], [108, 44, 24], [48, 18, 9], [1.4]], 3.3, true);
+        return new T.MeshPhysicalMaterial({ map: tex(w.color, true), bumpMap: tex(w.bump), bumpScale: 0.005, roughnessMap: tex(w.rough), roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.3 });
+      },
+      glassGreen: function () {
+        // 손으로 녹여 만든 유리: 맑은 초록 속에 짙고 옅은 소용돌이 줄, 기포, 표면의 잔물결(범프)
+        var c = paint(low ? 128 : 256, function (x, y, z, u, v) {
+          var n = fbm3(x * 1.6, y * 1.6, z * 0.9, 3), b = fbm3(x * 6, y * 6, z * 3 + 2, 2);
+          var sw = 0.5 + 0.5 * Math.sin(u * 6.283 * 3 + v * 9 + n * 4);
+          var bub = Math.pow(clamp01(1 - Math.abs(noise3(x * 11 + 3, y * 11, z * 7) - 0.9) * 22), 2);
+          var col = lerp3([196, 246, 214], [40, 150, 96], clamp01(sw * 0.8 + n * 0.3 - 0.05));
+          col = lerp3(col, [255, 255, 255], bub * 0.7);
+          return [col[0], col[1], col[2], 0.45 + 0.35 * n + 0.2 * b, 0.04 + bub * 0.2];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), bumpMap: tex(c.bump), bumpScale: 0.014, roughnessMap: tex(c.rough), roughness: 1,
+          transmission: 1, ior: 1.52, thickness: 0.7, attenuationColor: new T.Color(0x3fbf7f), attenuationDistance: 1.4,
+          emissive: new T.Color(0x0e5a34), emissiveIntensity: 0.22, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 2.8, specularIntensity: 1 });
+      },
+      amethyst: function () {
+        // 자수정: 보라 결정, 끝으로 갈수록 짙어지는 색띠(셰브런)와 맑은 부분의 편차
+        var c = paint(low ? 128 : 256, function (x, y, z, u, v) {
+          var n = fbm3(x * 1.3, y * 1.3, z * 0.8 + 4, 4);
+          var band = 0.5 + 0.5 * Math.sin((Math.abs(v - 0.5) * 9 + n * 3) * 2.2);
+          var t = clamp01(band * 0.7 + n * 0.5 - 0.1);
+          var col = lerp3([226, 196, 250], [126, 62, 196], t);
+          return [col[0], col[1], col[2], 0.5, 0.04];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), roughness: 0.02, transmission: 0.94, ior: 1.65, thickness: 1.0,
+          attenuationColor: new T.Color(0x8a3fd6), attenuationDistance: 1.0, emissive: new T.Color(0x3b1170), emissiveIntensity: 0.4,
+          flatShading: true, clearcoat: 1, clearcoatRoughness: 0.01, envMapIntensity: 2.8, specularIntensity: 1 });
+      },
+      roseQuartz: function () {
+        // 장미석: 반투명 분홍, 안쪽에 우윳빛 결(실금·구름)
+        var c = paint(low ? 128 : 256, function (x, y, z) {
+          var n = fbm3(x * 1.4, y * 1.4, z * 0.7 + 8, 4), vein = Math.pow(1 - Math.abs(Math.sin((z * 2.4 + x * 1.3 + n * 4) * 3)), 18);
+          var col = lerp3([255, 214, 224], [240, 160, 184], n);
+          col = lerp3(col, [255, 244, 246], vein * 0.85);
+          return [col[0], col[1], col[2], 0.5 + vein * 0.1, 0.12 + vein * 0.2];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), roughnessMap: tex(c.rough), roughness: 0.6, transmission: 0.45, ior: 1.54, thickness: 1.4,
+          attenuationColor: new T.Color(0xf590aa), attenuationDistance: 1.8, emissive: new T.Color(0xb04a68), emissiveIntensity: 0.3,
+          clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.4 });
+      },
+      amber: function () {
+        // 호박: 따뜻한 반투명 황금색, 안쪽 흐름 무늬와 작은 내포물
+        var c = paint(low ? 128 : 256, function (x, y, z) {
+          var n = fbm3(x * 1.2, y * 1.2, z * 0.6 + 2, 4), flow = 0.5 + 0.5 * Math.sin((z * 3 + n * 5) * 1.6);
+          var inc = noise3(x * 14, y * 14, z * 9) > 0.93 ? 1 : 0;
+          var col = lerp3([255, 196, 92], [176, 82, 18], clamp01(flow * 0.6 + n * 0.5 - 0.15));
+          col = lerp3(col, [70, 34, 10], inc * 0.8);
+          return [col[0], col[1], col[2], 0.5 + 0.2 * n, 0.1 + inc * 0.4];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), roughnessMap: tex(c.rough), roughness: 1, transmission: 0.8, ior: 1.54, thickness: 1.1,
+          attenuationColor: new T.Color(0xd06a10), attenuationDistance: 0.9, emissive: new T.Color(0x6e2c04), emissiveIntensity: 0.42,
+          clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.8 });
+      },
+      lapis: function () {
+        // 청금석: 깊은 청색 바탕 + 흰 방해석 줄 + 금빛 황철석 점(금속 맵으로 점만 금속)
+        var c = paint(TS, function (x, y, z) {
+          var n = fbm3(x * 2.2, y * 2.2, z * 1.2 + 5, 4), m = fbm3(x * 5, y * 5, z * 3, 3);
+          var calc = Math.pow(clamp01(1 - Math.abs(m - 0.55) * 9), 3) * 0.55;
+          var py = (noise3(x * 48 + 1, y * 48, z * 30) > 0.9 && noise3(x * 7, y * 7, z * 4 + 9) > 0.45) ? 1 : 0;
+          var col = lerp3([52, 82, 186], [14, 24, 84], clamp01(n * 1.3 - 0.15));
+          col = lerp3(col, [200, 206, 222], calc);
+          if (py) col = [224, 184, 96];
+          return [col[0], col[1], col[2], 0.5 + py * 0.3 - calc * 0.1, py ? 0.25 : 0.32 + calc * 0.2, py];
+        }, true);
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), bumpMap: tex(c.bump), bumpScale: 0.003, roughnessMap: tex(c.rough), roughness: 1,
+          metalnessMap: tex(c.metal), metalness: 1, clearcoat: 0.6, clearcoatRoughness: 0.12, envMapIntensity: 1.3 });
+      },
+      jade: function () {
+        // 옥: 부드러운 녹색 얼룩과 밝은 구름, 기름 같은 은은한 광택(안쪽 투광은 약한 투과 + 몸빛)
+        var c = paint(low ? 128 : 256, function (x, y, z) {
+          var n = fbm3(x * 1.8, y * 1.8, z * 1.0 + 11, 5), cl = fbm3(x * 0.8 + 3, y * 0.8, z * 0.5, 3);
+          var col = lerp3([120, 190, 134], [24, 104, 58], clamp01(n * 1.4 - 0.2));
+          col = lerp3(col, [196, 228, 196], clamp01((cl - 0.58) * 3) * 0.55);
+          return [col[0], col[1], col[2], 0.5, 0.28];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), roughness: 0.35, transmission: 0.55, ior: 1.6, thickness: 1.6,
+          attenuationColor: new T.Color(0x2f8a52), attenuationDistance: 0.7, emissive: new T.Color(0x0f3a22), emissiveIntensity: 0.3,
+          clearcoat: 0.7, clearcoatRoughness: 0.22, envMapIntensity: 1.4 });
+      },
+      silverCarved: function () {
+        // 세공 은구슬: 마름모 격자 + 꽃잎 음각, 홈은 거칠고 검게(산화), 돋은 면은 반들반들
+        var c = paint(TS, function (x, y, z, u, v) {
+          var a = u * 16, b = v * 10, d1 = Math.abs(((a + b) % 2 + 2) % 2 - 1), d2 = Math.abs(((a - b) % 2 + 2) % 2 - 1);
+          var groove = Math.max(1 - Math.min(d1, d2) * 9, 0);
+          var cx = (((a) % 2) + 2) % 2 - 1, cy2 = (((b + 1) % 2) + 2) % 2 - 1, pet = Math.abs(Math.hypot(cx, cy2) - 0.45) < 0.08 ? 1 : 0;
+          var g = clamp01(groove + pet), n = fbm3(x * 8, y * 8, z * 6, 2);
+          var col = lerp3([230, 228, 222], [60, 56, 52], g * 0.85);
+          return [col[0] * (0.9 + 0.1 * n), col[1] * (0.9 + 0.1 * n), col[2] * (0.9 + 0.1 * n), 1 - g * 0.8, 0.22 + g * 0.5];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), bumpMap: tex(c.bump), bumpScale: 0.02, roughnessMap: tex(c.rough), roughness: 1, metalness: 1, envMapIntensity: 1.7 });
+      },
+      goldPlated: function () {
+        // 금도금: 따뜻한 금속광 + 미세한 두드림 결(망치 자국)
+        var c = paint(TS, function (x, y, z) {
+          var n = noise3(x * 18, y * 18, z * 12), f = fbm3(x * 40, y * 40, z * 26, 2);
+          var dent = Math.pow(n, 3);
+          return [250, 206, 122, 0.6 - dent * 0.2 + f * 0.1, 0.16 + dent * 0.1 + f * 0.06];
+        });
+        return new T.MeshPhysicalMaterial({ color: 0xffffff, map: tex(c.color, true), bumpMap: tex(c.bump), bumpScale: 0.004, roughnessMap: tex(c.rough), roughness: 1, metalness: 1, envMapIntensity: 2.0, clearcoat: 0.3, clearcoatRoughness: 0.15 });
+      },
+      ceramic: function () {
+        // 세라믹: 흰 유약 위 손으로 그린 쪽빛 꽃과 띠, 붓 자국 같은 미세 굴곡, 유약 광택
+        var c = paint(TS, function (x, y, z, u, v) {
+          var n = fbm3(x * 2, y * 2, z * 1.5 + 6, 3), wob = 0.012 * Math.sin(u * 40);
+          var band = (Math.abs(v - 0.28 + wob) < 0.022 || Math.abs(v - 0.72 + wob) < 0.022) ? 1 : 0;
+          var pu = (u * 6) % 1 - 0.5, pv = (v - 0.5) * 3.2, rr = Math.hypot(pu, pv), ang = Math.atan2(pv, pu);
+          var petal = rr < 0.28 * (0.6 + 0.4 * Math.abs(Math.cos(ang * 2.5))) && rr > 0.05 ? 1 : 0;
+          var dot = rr < 0.05 ? 1 : 0;
+          var ink = clamp01(band + petal * (0.75 + 0.25 * n));
+          var col = lerp3([244, 240, 230], [38, 72, 150], ink);
+          if (dot) col = [196, 150, 60];
+          return [col[0] * (0.97 + 0.03 * n), col[1] * (0.97 + 0.03 * n), col[2], 0.5 + 0.25 * n + ink * 0.05, 0.12 + 0.1 * n];
+        });
+        return new T.MeshPhysicalMaterial({ map: tex(c.color, true), bumpMap: tex(c.bump), bumpScale: 0.006, roughnessMap: tex(c.rough), roughness: 1,
+          clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.1 });
+      },
+      cordBlack: function () { return new T.MeshPhysicalMaterial({ color: 0x1a1716, roughness: 0.8, sheen: 0.6, sheenColor: new T.Color(0x5a5550), envMapIntensity: 0.6 }); },
+      cordRed: function () { return new T.MeshPhysicalMaterial({ color: 0x8e1c22, roughness: 0.7, sheen: 0.8, sheenColor: new T.Color(0xff8a8a), envMapIntensity: 0.7 }); },
+      cordBlue: function () { return new T.MeshPhysicalMaterial({ color: 0x24407e, roughness: 0.75, sheen: 0.7, sheenColor: new T.Color(0x9ab4ff), envMapIntensity: 0.7 }); },
+      cordAmber: function () { return new T.MeshPhysicalMaterial({ color: 0x6a4214, roughness: 0.75, sheen: 0.6, sheenColor: new T.Color(0xd8a050), envMapIntensity: 0.7 }); },
+      roseGold: function () { return new T.MeshPhysicalMaterial({ color: 0xeab09a, metalness: 1, roughness: 0.24, envMapIntensity: 1.5 }); },
+      bronze: function () { return new T.MeshPhysicalMaterial({ color: 0xb0804a, metalness: 1, roughness: 0.36, envMapIntensity: 1.3 }); },
       gold: function () {
         var n = noiseCanvas(128, 14, 3, 80, 140, 5.1);
         return new T.MeshPhysicalMaterial({ color: 0xe8bd6a, metalness: 1, roughness: 0.26, roughnessMap: tex(n, false, 2), envMapIntensity: 1.25, clearcoat: 0.2, clearcoatRoughness: 0.2 });

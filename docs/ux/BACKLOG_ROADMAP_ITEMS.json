@@ -837,7 +837,7 @@
     "value": "기존 '묵주 스타일' 12종(장미목·옥·루르드·파티마·형벌 묵주 등)을 3D 로 같은 모습으로 쓴다",
     "evidence": "docs/rosary/ROSARY_3D.md · assets/rosary3d/defs.js",
     "status": "todo",
-    "note": "defs.js 에 항목 추가 + materials.js 재질 + models.js 십자가/메달 형태. 형벌 묵주(한 단 + 반지)는 layout.js 구조 변형 필요."
+    "note": "1차 구현(2026-11-15): 11종 추가로 14종(defs.js) — 알 모양 9가지·십자가 6형·메달 4형, 절차 텍스처. 남은 것: 실기기 색감 확인, 기존 '묵주 스타일'(이미지) 12종과 통합 여부 결정."
   },
   {
     "id": "T-83",

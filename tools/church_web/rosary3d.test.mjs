@@ -33,7 +33,7 @@ test('Dart 매핑(rosary_model.dart)과 같은 규칙', () => {
 
 test('A안 배치: 고리가 닫히고(61 = 메달 자리) 꼬리는 메달 아래로', () => {
   for (const id of D.ORDER) {
-    const def = D.get(id), dims = { small: def.bead.small, big: def.bead.big * def.bead.aspect, cross: def.cross.height + 0.6, medal: def.medal.height, gap: def.link.gap };
+    const def = D.get(id), dims = { small: def.bead.small * def.bead.aspect, big: def.bead.big * def.bead.aspect, cross: def.cross.height + 0.6, medal: def.medal.height, gap: def.link.gap };
     const s = L.arcLengths(dims), a = L.aLayout(s, dims);
     assert.ok(Math.hypot(a.pts[61].x - a.pts[6].x, a.pts[61].y - a.pts[6].y) < 1e-6, id);
     for (let i = 0; i < 6; i++) assert.ok(a.pts[i].y < a.pts[6].y, id + ' tail ' + i);
@@ -53,10 +53,30 @@ test('C안 배치: 현재 위치가 가장 앞, 위쪽이 다음 알', () => {
   assert.ok(c[10].z > c[11].z && c[10].z > c[9].z);
 });
 
-test('묵주 정의: Flutter 목록과 id 가 같고, 알 모양·연결·십자가가 서로 다르다', () => {
-  for (const id of D.ORDER) assert.ok(dart.includes(`'${id}',`), id);
-  const shapes = new Set(D.ORDER.map((i) => D.get(i).bead.shape)), links = new Set(D.ORDER.map((i) => D.get(i).link.type)), crosses = new Set(D.ORDER.map((i) => D.get(i).cross.type));
-  assert.equal(shapes.size, 3); assert.equal(links.size, 3); assert.equal(crosses.size, 3);
+const mats = fs.readFileSync(new URL('../../assets/rosary3d/materials.js', import.meta.url), 'utf8');
+const models = fs.readFileSync(new URL('../../assets/rosary3d/models.js', import.meta.url), 'utf8');
+test('묵주 정의 14종: 형식, Flutter 목록과 같은 id, 쓰는 재질·형태가 모두 구현돼 있다', () => {
+  assert.equal(D.ORDER.length, 14);
+  assert.deepEqual(Object.keys(D.DEFS).sort(), [...D.ORDER].sort());
+  for (const id of D.ORDER) {
+    const d = D.get(id);
+    assert.equal(d.id, id); assert.ok(dart.includes(`'${id}',`), id);
+    for (const k of ['small', 'big', 'aspect']) assert.ok(d.bead[k] > 0, id + ' bead.' + k);
+    assert.ok(d.bead.big > d.bead.small, id + ' big > small');
+    for (const m of [d.bead.material, d.bead.caps, d.link.material, d.cross.material, d.cross.trim, d.cross.corpus, d.medal.material].filter(Boolean)) assert.ok(mats.includes(`      ${m}: function`), id + ' material ' + m);
+    const shape = d.bead.shape;
+    assert.ok(['sphere', 'ellipsoid', 'nugget', 'melon'].includes(shape) || models.includes(`'${shape}'`), id + ' shape ' + shape);
+    assert.ok(['cord', 'eyepin', 'chain'].includes(d.link.type), id + ' link');
+    assert.ok(models.includes(`'${d.cross.type}'`), id + ' cross ' + d.cross.type);
+    assert.ok(['oval', 'filigreeOval', 'round', 'heart'].includes(d.medal.type), id + ' medal');
+  }
+});
+
+test('색만 바꾼 변형 금지: 묵주마다 (알 모양·연결·십자가·메달·재질) 조합이 다르고 형태도 다양하다', () => {
+  const sig = D.ORDER.map((i) => { const d = D.get(i); return [d.bead.shape, d.bead.aspect, d.link.type + d.link.material, d.cross.type + d.cross.material, d.medal.type, d.bead.material].join('|'); });
+  assert.equal(new Set(sig).size, 14);
+  const shapes = new Set(D.ORDER.map((i) => D.get(i).bead.shape)), crosses = new Set(D.ORDER.map((i) => D.get(i).cross.type)), mm = new Set(D.ORDER.map((i) => D.get(i).bead.material));
+  assert.ok(shapes.size >= 8, 'shapes ' + shapes.size); assert.ok(crosses.size >= 6, 'crosses ' + crosses.size); assert.equal(mm.size, 14);
 });
 
 test('효과음: 코드 합성 WAV 5개, 각 30KB 이하', () => {

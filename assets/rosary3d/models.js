@@ -49,6 +49,37 @@
       g = g.toNonIndexed(); g.computeVertexNormals();
       return g;
     }
+    var h = 0.5 * b.aspect, pts, i0;
+    if (b.shape === 'cylinder' || b.shape === 'rondelle') {
+      // 원통(배럴)·납작(론델): 둥근 모서리 회전체. 구멍 가장자리는 살짝 오목.
+      var bul = b.shape === 'cylinder' ? 0.035 : 0.0;
+      pts = [];
+      var prof = b.shape === 'cylinder'
+        ? [[0.1, -h], [0.3, -h], [0.4, -h + 0.02], [0.46, -h + 0.07], [0.49, -h + 0.16], [0.5 + bul, 0], [0.49, h - 0.16], [0.46, h - 0.07], [0.4, h - 0.02], [0.3, h], [0.1, h]]
+        : [[0.1, -h], [0.26, -h], [0.37, -h * 0.9], [0.45, -h * 0.65], [0.49, -h * 0.3], [0.5, 0], [0.49, h * 0.3], [0.45, h * 0.65], [0.37, h * 0.9], [0.26, h], [0.1, h]];
+      for (i0 = 0; i0 < prof.length; i0++) pts.push(new T.Vector2(prof[i0][0], prof[i0][1]));
+      var sp = new T.SplineCurve(pts).getPoints(40);
+      g = new T.LatheGeometry(sp, 48);
+      if (b.irregular) {
+        var lp = g.attributes.position, lv = new T.Vector3();
+        for (i0 = 0; i0 < lp.count; i0++) { lv.fromBufferAttribute(lp, i0); var lk = 1 + b.irregular * Math.sin(lv.y * 9 + Math.atan2(lv.z, lv.x) * 2); lp.setXYZ(i0, lv.x * lk, lv.y, lv.z * lk); }
+      }
+      g.computeVertexNormals();
+      return g;
+    }
+    if (b.shape === 'cube') {
+      // 둥근 정육면체(초타원체): 청금석 큐브 알
+      g = new T.SphereGeometry(0.5, 40, 30);
+      var cp0 = g.attributes.position, cv = new T.Vector3();
+      for (i0 = 0; i0 < cp0.count; i0++) {
+        cv.fromBufferAttribute(cp0, i0).normalize();
+        var e = 0.3, f = function (x) { return Math.sign(x) * Math.pow(Math.abs(x), e); };
+        cv.set(f(cv.x), f(cv.y), f(cv.z)).multiplyScalar(0.43);
+        cp0.setXYZ(i0, cv.x, cv.y * b.aspect, cv.z);
+      }
+      g.computeVertexNormals();
+      return g;
+    }
     var seg = b.shape === 'sphere' ? 44 : 40;
     g = new T.SphereGeometry(0.5, seg, Math.round(seg * 0.75));
     g.scale(1, b.aspect, 1);
@@ -60,6 +91,7 @@
       var yy = Math.abs(v.y) / (0.5 * b.aspect);
       var flat = yy > 0.93 ? 1 - (yy - 0.93) * 0.9 : 1;
       var k = 1 + irr * n;
+      if (b.shape === 'melon') k *= 1 + 0.12 * Math.pow(Math.abs(Math.cos(Math.atan2(v.z, v.x) * 6)), 0.6) * (1 - yy * yy) - 0.035;
       v.x *= k; v.z *= k; v.y *= flat;
       p.setXYZ(i, v.x, v.y, v.z);
     }
@@ -230,7 +262,38 @@
       eg.translate(0, 0, front + 0.045); pieces.push(eg);
       add(merge(pieces), bodyMat);
       var plate2 = new T.BoxGeometry(0.5, 0.24, 0.05); plate2.translate(0, cy + H * 0.14, front + 0.07); add(plate2, metal);
-    } else { // filigree: 투각 막대 + 창촉·꽃잎 끝 + 알갱이 + 가운데 고리
+    } else if (c.type === 'plain' || c.type === 'benedict' || c.type === 'celtic') {
+      var pp = [], pbw = c.type === 'plain' ? 0.5 : c.type === 'benedict' ? 0.62 : 0.52;
+      pp.push(extrude(latinShape(H * 0.95, W, pbw, cy, c.type === 'benedict' ? 0.55 : c.type === 'plain' ? 0.12 : 0.3), D, c.type === 'plain' ? 0.09 : 0.05));
+      if (c.type === 'benedict') {
+        // 성 베네딕토 메달 십자가: 가운데 둥근 메달(테두리·작은 십자), 팔마다 새긴 글자 자리(작은 돋을 막대)
+        var bd = new T.Shape(); bd.absarc(0, 0, 0.78, 0, Math.PI * 2, false);
+        var bdg = extrude(bd, D * 1.1, 0.05); bdg.translate(0, cy, 0.03); pp.push(bdg);
+        var br = ringGeo(0.74, 0.05); br.translate(0, cy, front + 0.1); pp.push(br);
+        for (var bi2 = 0; bi2 < 24; bi2++) { var ba = bi2 / 24 * Math.PI * 2; pp.push(ball(Math.cos(ba) * 0.6, cy + Math.sin(ba) * 0.6, front + 0.08, 0.04, 0.04, 0.03, 6)); }
+        [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(function (d) {
+          var len = d[1] > 0 ? H * 0.47 - cy : d[1] < 0 ? H * 0.47 + cy : W / 2;
+          for (var t2 = 1.0, n2 = 0; t2 < len - 0.35 && n2 < 5; t2 += 0.36, n2++) {
+            var lb = new T.BoxGeometry(d[1] ? 0.26 : 0.06, d[1] ? 0.06 : 0.26, 0.04); lb.translate(d[0] * t2, cy + d[1] * t2, front + 0.05); pp.push(lb);
+            var lb2 = new T.BoxGeometry(d[1] ? 0.06 : 0.2, d[1] ? 0.2 : 0.06, 0.04); lb2.translate(d[0] * t2, cy + d[1] * t2, front + 0.05); pp.push(lb2);
+          }
+        });
+      } else if (c.type === 'celtic') {
+        // 켈트 십자가: 교차부를 두르는 고리 + 팔을 따라 매듭 알갱이
+        var cr = ringGeo(0.95, 0.13); cr.scale(1, 1, 1.4); cr.translate(0, cy, 0); pp.push(cr);
+        var cr2 = ringGeo(0.95, 0.05); cr2.translate(0, cy, front + 0.08); pp.push(cr2);
+        [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(function (d) {
+          var len = d[1] > 0 ? H * 0.47 - cy : d[1] < 0 ? H * 0.47 + cy : W / 2;
+          for (var t3 = 0.35; t3 < len - 0.25; t3 += 0.28) { var tk = new T.TorusGeometry(0.1, 0.03, 6, 14); tk.rotateZ(t3 * 3); tk.translate(d[0] * t3, cy + d[1] * t3, front + 0.04); pp.push(tk); }
+        });
+      } else {
+        // 단순 금속 십자가: 둥근 모서리 + 테두리 홈선 + 팔 끝 작은 구슬
+        var pl = latinShape(H * 0.95 - 0.28, W - 0.28, 0.08, cy, 0), plg = new T.ExtrudeGeometry(pl, { depth: 0.02, bevelEnabled: false }); plg.translate(0, 0, front + 0.085); pp.push(plg);
+        [[0, H * 0.475 + 0.08], [0, -H * 0.475 - 0.08], [W / 2 + 0.08, cy], [-W / 2 - 0.08, cy]].forEach(function (e2) { pp.push(ball(e2[0], e2[1], 0, 0.15, 0.15, 0.15, 12)); });
+      }
+      add(merge(pp), bodyMat);
+      if (c.trim) { var pt = new T.BoxGeometry(0.5, 0.24, 0.05); pt.translate(0, cy + H * 0.15, front + 0.09); add(pt, metal); }
+    } else { // c.type === 'filigree': 투각 막대 + 창촉·꽃잎 끝 + 알갱이 + 가운데 고리
       var fp = [], fb = 0.56, tipL = 0.5, inset = 0.12;
       var topY = H * 0.485 - tipL, botY = -H * 0.485 + tipL, rx = W / 2 - tipL;
       function bar(x0, y0, x1, y1) { // 둥근 끝 직사각형 + 안쪽 슬롯 구멍
@@ -280,9 +343,17 @@
   // 메달(가운데 연결 메달). 로컬 +Z 앞면, 높이 h, 원점 = 중심.
   function buildMedal(def, mats) {
     var m = def.medal, h = m.height, g = new T.Group(), mat = mats.get(m.material);
-    var oval = m.type !== 'round', sx = oval ? 0.8 : 1;
+    var oval = m.type !== 'round' && m.type !== 'heart', sx = oval ? 0.8 : 1;
     var prof = [[0, 0.07], [0.6, 0.055], [0.78, 0.07], [0.86, 0.12], [0.94, 0.11], [1, 0.06], [1, -0.06], [0.9, -0.08], [0, -0.07]].map(function (p) { return new T.Vector2(p[0], p[1]); });
-    var disc = new T.LatheGeometry(prof.reverse(), 56); disc.rotateX(Math.PI / 2); disc.scale(sx, 1, 1);
+    var disc;
+    if (m.type === 'heart') {
+      // 하트 메달(성심): 윤곽 + 테두리 둔덕
+      var hs = new T.Shape(); hs.moveTo(0, -0.95);
+      hs.bezierCurveTo(-0.35, -0.6, -1.0, -0.2, -0.95, 0.3); hs.bezierCurveTo(-0.9, 0.85, -0.25, 0.95, 0, 0.55);
+      hs.bezierCurveTo(0.25, 0.95, 0.9, 0.85, 0.95, 0.3); hs.bezierCurveTo(1.0, -0.2, 0.35, -0.6, 0, -0.95);
+      disc = new T.ExtrudeGeometry(hs, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.06, bevelSegments: 4, curveSegments: 24 }); disc.translate(0, 0, -0.04);
+      sx = 1;
+    } else { disc = new T.LatheGeometry(prof.reverse(), 56); disc.rotateX(Math.PI / 2); disc.scale(sx, 1, 1); }
     var parts = [disc];
     // 성모 모노그램(M 과 그 위 십자가)
     var M = new T.Shape(), w = 0.36, mh = 0.34, st = 0.08;

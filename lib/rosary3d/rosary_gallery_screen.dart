@@ -142,13 +142,7 @@ class _RosaryGalleryScreenState extends State<RosaryGalleryScreen> {
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          for (final f in const [
-                            '전체',
-                            '원목',
-                            '진주',
-                            '수정',
-                            '즐겨찾기',
-                          ])
+                          for (final f in ['전체', ...rosaryCategories, '즐겨찾기'])
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: ChoiceChip(
