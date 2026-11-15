@@ -158,7 +158,7 @@
         if (e > 0.02) VIS[i] = true;
       }
       // A안: 현재 알은 조금 들어 올린다(재질은 그대로, 위치로 강조)
-      if (e > 0) { var cur = Math.round(p); if (i === cur && Math.abs(p - cur) < 0.3) P[i].z += 0.55 * e; }
+      if (e > 0) { var cur = Math.round(p); if (i === cur && Math.abs(p - cur) < 0.3) { P[i].z += 0.9 * e; SC[i] *= 1 + 0.3 * e; } }
     }
     if (e < 0.02) { // C안: 같은 메달 하나만(가까운 쪽 경로 위치)
       var other = medalNode === 6 ? 61 : 6; VIS[other] = false;
@@ -271,7 +271,7 @@
     keyLight.target.position.copy(_tgt); keyLight.position.copy(_tgt).add(_v.set(-5, 9, 20));
     // A안 현재 알 조명(은은한 스폿)
     var cur = Math.max(0, Math.min(61, Math.round(S.p)));
-    spot.intensity = e * 900; spot.target.position.copy(P[cur]); spot.position.set(P[cur].x + 2, P[cur].y + 4, P[cur].z + 26);
+    spot.intensity = e * 1600; spot.target.position.copy(P[cur]); spot.position.set(P[cur].x + 2, P[cur].y + 4, P[cur].z + 26);
   }
 
   // ---- 애니메이션 루프(정지하면 멈춘다) ----

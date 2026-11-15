@@ -6,7 +6,10 @@
   var T = root.THREE;
 
   // ---- 3D 값 노이즈(주기 없는 해시) ----
-  function hash(x, y, z) { var h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return h - Math.floor(h); }
+  // 순열표 해시(Math.sin 해시보다 3~4배 빠르다: 묵주를 바꿀 때 텍스처 생성 시간을 줄인다)
+  var PERM = new Uint8Array(512), RV = new Float32Array(256);
+  (function () { var sd = 1234567, i; function r() { sd = (sd * 16807) % 2147483647; return sd / 2147483647; } var p = []; for (i = 0; i < 256; i++) { p.push(i); RV[i] = r(); } for (i = 255; i > 0; i--) { var j = Math.floor(r() * (i + 1)), t = p[i]; p[i] = p[j]; p[j] = t; } for (i = 0; i < 512; i++) PERM[i] = p[i & 255]; })();
+  function hash(x, y, z) { return RV[PERM[PERM[PERM[x & 255] + (y & 255)] + (z & 255)]]; }
   function smooth(t) { return t * t * (3 - 2 * t); }
   function noise3(x, y, z) {
     var xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z), xf = smooth(x - xi), yf = smooth(y - yi), zf = smooth(z - zi);
@@ -33,7 +36,7 @@
         var w2 = fbm3(px * 2.3, py * 2.3 + seed, pz * 1.2, 3);
         var g = pz * 1.5 + px * 0.5 + 3.4 * w1;
         var g2 = pz * 2.2 - py * 0.4 + 2.2 * w2 + 1.3 * w1;
-        var thick = 2.2 + 5 * fbm3(px * 1.7 + 3, py * 1.7, pz * 0.9 + seed, 2);   // 결 굵기가 곳곳에서 달라진다
+        var thick = 1.4 + 3.2 * fbm3(px * 1.7 + 3, py * 1.7, pz * 0.9 + seed, 2);   // 결 굵기가 곳곳에서 달라진다
         var streak = Math.pow(1 - Math.abs(Math.sin(g * 2.4)), thick) * 0.95 + Math.pow(1 - Math.abs(Math.sin(g2 * 4.1)), 16) * 0.45;
         var broad = smooth(Math.min(1, Math.max(0, fbm3(px * 0.8 + 9, py * 0.8, pz * 0.45 + seed, 3) * 1.9 - 0.62)));
         var fiber = fbm3(px * 26, py * 26, pz * 2.4 + seed, 2);          // 결 방향 섬유
@@ -92,7 +95,7 @@
     var TS = low ? 256 : 512;
     var BUILD = {
       oliveWood: function () {
-        var w = woodCanvases(TS, [[214, 172, 110], [150, 98, 50], [66, 38, 18]], 1.7, false);
+        var w = woodCanvases(TS, [[210, 164, 98], [146, 92, 44], [62, 34, 14]], 1.7, false);
         return new T.MeshPhysicalMaterial({ map: tex(w.color, true), bumpMap: tex(w.bump), bumpScale: 0.006, roughnessMap: tex(w.rough), roughness: 0.55,
           metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.38, sheen: 0.15, sheenRoughness: 0.6, sheenColor: new T.Color(0xffe2b8), envMapIntensity: 0.9 });
       },
@@ -110,15 +113,18 @@
         return new T.MeshPhysicalMaterial({ color: 0x4a2c18, roughness: 0.8, bumpMap: t, bumpScale: 0.006, sheen: 0.6, sheenRoughness: 0.5, sheenColor: new T.Color(0x9c7454), envMapIntensity: 0.6 });
       },
       pearl: function () {
+        // 진주: 크림색 몸빛은 낮추고, 매끈한 표면 반사(클리어코트)와 얇은 막 간섭(무지갯빛 오리엔트)으로 광택을 낸다.
         var n = noiseCanvas(low ? 128 : 256, 6, 4, 90, 170, 3.3);
-        return new T.MeshPhysicalMaterial({ color: 0xc9b99d, roughness: 0.16, metalness: 0.05, bumpMap: tex(n), bumpScale: 0.003,
-          clearcoat: 1, clearcoatRoughness: 0.04, sheen: 0.0, sheenRoughness: 0.3, sheenColor: new T.Color(0xf6d8d0),
-          iridescence: 0.9, iridescenceIOR: 1.35, iridescenceThicknessRange: [320, 680], envMapIntensity: 1.5, specularIntensity: 1 });
+        return new T.MeshPhysicalMaterial({ color: 0x9c8d78, roughness: 0.28, metalness: 0.6, bumpMap: tex(n), bumpScale: 0.0025,
+          clearcoat: 1, clearcoatRoughness: 0.03, sheen: 0, sheenRoughness: 0.25, sheenColor: new T.Color(0xd9b8c4),
+          iridescence: 1, iridescenceIOR: 1.3, iridescenceThicknessRange: [240, 460], envMapIntensity: 2.4, specularIntensity: 1 });
       },
       crystalBlue: function () {
-        return new T.MeshPhysicalMaterial({ color: 0xd6e6ff, metalness: 0, roughness: 0.02, transmission: 1, ior: 1.6, thickness: 1.1,
-          attenuationColor: new T.Color(0x2c6cf0), attenuationDistance: 0.85, specularIntensity: 1, specularColor: new T.Color(0xffffff),
-          envMapIntensity: 2.4, flatShading: true, clearcoat: 0.6, clearcoatRoughness: 0.02 });
+        // 수정: 굴절(transmission·ior)로 바탕이 비치고, 두꺼운 곳일수록 푸르게(attenuation). 파셋마다 반사가 갈린다.
+        // r149 는 알 속 내부 반사를 그리지 못해 어두운 바탕에서 검게 죽으므로, 알 속에서 흩어진 빛만큼의 옅은 몸빛(emissive)을 더한다.
+        return new T.MeshPhysicalMaterial({ color: 0xb5d2ff, metalness: 0, roughness: 0.015, transmission: 0.95, ior: 2.0, thickness: 0.8,
+          attenuationColor: new T.Color(0x4d8cff), attenuationDistance: 0.9, emissive: new T.Color(0x1a4fb8), emissiveIntensity: 0.38, specularIntensity: 1, specularColor: new T.Color(0xffffff),
+          envMapIntensity: 3.0, flatShading: true, clearcoat: 1, clearcoatRoughness: 0.01 });
       },
       gold: function () {
         var n = noiseCanvas(128, 14, 3, 80, 140, 5.1);
@@ -127,11 +133,11 @@
       goldBright: function () { return new T.MeshPhysicalMaterial({ color: 0xf0c978, metalness: 1, roughness: 0.2, envMapIntensity: 1.35 }); },
       silver: function () {
         var n = noiseCanvas(128, 16, 3, 70, 130, 8.4);
-        return new T.MeshPhysicalMaterial({ color: 0xe4e6ea, metalness: 1, roughness: 0.18, roughnessMap: tex(n, false, 2), envMapIntensity: 1.3 });
+        return new T.MeshPhysicalMaterial({ color: 0xf0f2f5, metalness: 1, roughness: 0.24, roughnessMap: tex(n, false, 2), envMapIntensity: 1.9 });
       },
       antiqueSilver: function () {
         var n = noiseCanvas(128, 10, 4, 90, 200, 2.2);
-        return new T.MeshPhysicalMaterial({ color: 0xa9a59c, metalness: 1, roughness: 0.42, roughnessMap: tex(n, false, 2), envMapIntensity: 1.0 });
+        return new T.MeshPhysicalMaterial({ color: 0xc4beb2, metalness: 1, roughness: 0.4, roughnessMap: tex(n, false, 2), envMapIntensity: 1.5 });
       }
     };
     function get(name) { if (!made[name]) made[name] = (BUILD[name] || BUILD.silver)(); return made[name]; }

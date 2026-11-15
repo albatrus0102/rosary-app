@@ -89,38 +89,43 @@
   function corpusGeometry() {
     var parts = [];
     var Z = 0.55; // 앞뒤 납작함
-    // 머리(오른 어깨 쪽으로 기울어짐)와 가시관, 목
-    parts.push(ball(0.028, 0.432, 0.02, 0.058, 0.07, 0.06 * 1.0, 20));
-    var crown = new T.TorusGeometry(0.06, 0.011, 6, 22); crown.rotateX(Math.PI / 2 - 0.25); crown.rotateZ(-0.35); crown.translate(0.03, 0.47, 0.02); parts.push(crown);
-    parts.push(ball(0.032, 0.395, 0.045, 0.034, 0.03, 0.03, 12)); // 수염 턱
-    parts.push(limb(0.018, 0.37, 0, 0.004, 0.33, 0, 0.026, 0.03, 12));
-    // 몸통(가슴 → 허리)
-    var tp = [[0.0, 0.345], [0.07, 0.338], [0.093, 0.31], [0.09, 0.26], [0.075, 0.19], [0.062, 0.13], [0.066, 0.09], [0.0, 0.085]].map(function (p) { return new T.Vector2(p[0], p[1]); });
-    var torso = new T.LatheGeometry(tp, 24); torso.scale(1, 1, Z); parts.push(torso);
-    // 갈비뼈 결(가는 띠 몇 줄)
-    for (var r = 0; r < 3; r++) { var rib = new T.TorusGeometry(0.083 - r * 0.004, 0.0045, 4, 24, Math.PI * 0.8); rib.rotateX(Math.PI / 2); rib.rotateY(Math.PI * 0.1 + Math.PI); rib.scale(1, 1, Z); rib.translate(0, 0.27 - r * 0.03, 0.006); parts.push(rib); }
-    // 허리옷(주름이 있는 천)
+    // 머리(오른 어깨 쪽으로 기울어짐)·머리카락·수염, 가시관, 목
+    parts.push(ball(0.03, 0.432, 0.02, 0.07, 0.083, 0.072, 22));
+    parts.push(ball(0.022, 0.445, -0.012, 0.074, 0.08, 0.06, 16));        // 뒤로 흘러내린 머리카락
+    parts.push(ball(0.04, 0.392, 0.04, 0.042, 0.04, 0.034, 12));          // 수염
+    var crown = new T.TorusGeometry(0.072, 0.014, 6, 24); crown.rotateX(Math.PI / 2 - 0.25); crown.rotateZ(-0.35); crown.translate(0.03, 0.478, 0.018); parts.push(crown);
+    parts.push(limb(0.02, 0.37, 0, 0.004, 0.335, 0, 0.034, 0.04, 12));
+    // 몸통(가슴 → 허리), 갈비뼈 결
+    var tp = [[0.0, 0.352], [0.095, 0.345], [0.124, 0.316], [0.12, 0.26], [0.1, 0.19], [0.084, 0.13], [0.088, 0.09], [0.0, 0.085]].map(function (p) { return new T.Vector2(p[0], p[1]); });
+    var torso = new T.LatheGeometry(tp, 28); torso.scale(1, 1, Z); parts.push(torso);
+    // 가슴·배의 볼륨(띠 대신 둥근 근육 덩이: 금속 반사가 몸의 결을 보여 준다)
+    [-1, 1].forEach(function (sd) { parts.push(ball(sd * 0.05, 0.292, 0.05, 0.06, 0.042, 0.035, 14)); parts.push(ball(sd * 0.075, 0.205, 0.035, 0.03, 0.05, 0.028, 10)); });
+    parts.push(ball(0, 0.17, 0.042, 0.055, 0.06, 0.03, 14));
+    // 허리옷(주름이 있는 천)과 매듭
     var lp = [], i;
-    for (i = 0; i <= 10; i++) { var t = i / 10; lp.push(new T.Vector2(0.07 + 0.022 * t + 0.008 * Math.sin(t * 9), 0.115 - t * 0.15)); }
-    var cloth = new T.LatheGeometry(lp, 28), cp = cloth.attributes.position, v = new T.Vector3();
-    for (i = 0; i < cp.count; i++) { v.fromBufferAttribute(cp, i); var a = Math.atan2(v.z, v.x), k = 1 + 0.09 * Math.sin(a * 9) * ((0.115 - v.y) / 0.15); cp.setXYZ(i, v.x * k, v.y - (v.x > 0 ? 0.03 * ((0.115 - v.y) / 0.15) : 0), v.z * k * Z); }
+    for (i = 0; i <= 10; i++) { var t = i / 10; lp.push(new T.Vector2(0.093 + 0.03 * t + 0.01 * Math.sin(t * 9), 0.118 - t * 0.17)); }
+    var cloth = new T.LatheGeometry(lp, 32), cp = cloth.attributes.position, v = new T.Vector3();
+    for (i = 0; i < cp.count; i++) { v.fromBufferAttribute(cp, i); var a = Math.atan2(v.z, v.x), k = 1 + 0.1 * Math.sin(a * 9) * ((0.118 - v.y) / 0.17); cp.setXYZ(i, v.x * k, v.y - (v.x > 0 ? 0.035 * ((0.118 - v.y) / 0.17) : 0), v.z * k * Z); }
     cloth.computeVertexNormals(); parts.push(cloth);
-    parts.push(ball(0.085, 0.05, 0.02, 0.025, 0.04, 0.02, 10)); // 허리옷 매듭
-    // 다리(무릎이 살짝 굽고 발은 겹친다)
-    parts.push(limb(-0.036, 0.0, 0, -0.03, -0.24, 0.02, 0.038, 0.029));
-    parts.push(limb(0.036, 0.0, 0, 0.024, -0.24, 0.024, 0.038, 0.029));
-    parts.push(ball(-0.03, -0.24, 0.02, 0.03, 0.032, 0.03, 12)); parts.push(ball(0.024, -0.24, 0.024, 0.03, 0.032, 0.03, 12));
-    parts.push(limb(-0.03, -0.24, 0.02, -0.006, -0.49, 0.0, 0.029, 0.017));
-    parts.push(limb(0.024, -0.24, 0.024, 0.006, -0.49, 0.012, 0.029, 0.017));
-    parts.push(limb(-0.006, -0.49, 0.0, -0.002, -0.565, 0.02, 0.018, 0.012));
-    parts.push(limb(0.006, -0.49, 0.012, 0.0, -0.56, 0.04, 0.018, 0.012));
-    // 팔(어깨 → 팔꿈치 → 손), 손바닥
+    parts.push(ball(0.105, 0.06, 0.02, 0.032, 0.05, 0.026, 10));
+    // 다리: 무릎이 한쪽으로 굽은 S자(전통 코르푸스의 자세), 무릎·종아리 볼륨, 오른발이 왼발 위로 겹친다
+    var KX = -0.055, KZ = 0.05;
+    parts.push(limb(-0.048, 0.0, 0, -0.03 + KX, -0.245, KZ, 0.058, 0.04));
+    parts.push(limb(0.048, 0.0, 0, 0.026 + KX, -0.25, KZ + 0.012, 0.058, 0.04));
+    parts.push(ball(-0.03 + KX, -0.245, KZ + 0.005, 0.044, 0.046, 0.044, 12)); parts.push(ball(0.026 + KX, -0.25, KZ + 0.017, 0.044, 0.046, 0.044, 12));
+    parts.push(ball(-0.026 + KX * 0.6, -0.33, KZ * 0.6, 0.042, 0.07, 0.04, 12)); parts.push(ball(0.02 + KX * 0.6, -0.335, KZ * 0.6 + 0.012, 0.042, 0.07, 0.04, 12));
+    parts.push(limb(-0.03 + KX, -0.245, KZ, -0.012, -0.5, 0.0, 0.04, 0.022));
+    parts.push(limb(0.026 + KX, -0.25, KZ + 0.012, 0.008, -0.5, 0.018, 0.04, 0.022));
+    parts.push(limb(-0.012, -0.5, 0.0, -0.006, -0.575, 0.03, 0.024, 0.016));
+    parts.push(limb(0.008, -0.5, 0.018, 0.0, -0.57, 0.055, 0.024, 0.016));
+    // 팔(어깨 → 팔꿈치 → 손), 손바닥·손가락
     [-1, 1].forEach(function (s) {
-      parts.push(ball(s * 0.078, 0.318, 0, 0.034, 0.03, 0.03, 12));
-      parts.push(limb(s * 0.08, 0.318, 0, s * 0.24, 0.37, 0.0, 0.03, 0.023));
-      parts.push(limb(s * 0.24, 0.37, 0.0, s * 0.395, 0.405, 0.0, 0.023, 0.017));
-      parts.push(ball(s * 0.418, 0.41, 0.004, 0.03, 0.022, 0.011, 12));
-      parts.push(limb(s * 0.44, 0.414, 0.004, s * 0.475, 0.425, 0.004, 0.006, 0.004, 6)); // 손가락
+      parts.push(ball(s * 0.1, 0.322, 0, 0.046, 0.04, 0.04, 12));
+      parts.push(limb(s * 0.1, 0.322, 0, s * 0.25, 0.37, 0.0, 0.04, 0.031));
+      parts.push(ball(s * 0.25, 0.37, 0, 0.031, 0.031, 0.031, 10));
+      parts.push(limb(s * 0.25, 0.37, 0.0, s * 0.39, 0.402, 0.0, 0.031, 0.022));
+      parts.push(ball(s * 0.415, 0.408, 0.004, 0.036, 0.026, 0.013, 12));
+      parts.push(limb(s * 0.44, 0.412, 0.004, s * 0.478, 0.424, 0.004, 0.008, 0.005, 6));
     });
     return merge(parts);
   }
@@ -225,22 +230,46 @@
       eg.translate(0, 0, front + 0.045); pieces.push(eg);
       add(merge(pieces), bodyMat);
       var plate2 = new T.BoxGeometry(0.5, 0.24, 0.05); plate2.translate(0, cy + H * 0.14, front + 0.07); add(plate2, metal);
-    } else { // filigree
-      add(extrude(filigreeShape(H * 0.97, W, 0.62, cy), D, 0.045), bodyMat);
-      // 투각 구멍 안의 가는 줄과 알갱이(그래뉼레이션)
-      var dots = [];
-      [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(function (d) {
-        var len = d[1] ? (d[1] > 0 ? H * 0.485 - cy : H * 0.485 + cy) : W / 2;
-        for (var t = 0.42; t < len - 0.75; t += 0.24) dots.push(ball(d[0] * t, cy + d[1] * t, 0, 0.07, 0.07, 0.07, 10));
+    } else { // filigree: 투각 막대 + 창촉·꽃잎 끝 + 알갱이 + 가운데 고리
+      var fp = [], fb = 0.56, tipL = 0.5, inset = 0.12;
+      var topY = H * 0.485 - tipL, botY = -H * 0.485 + tipL, rx = W / 2 - tipL;
+      function bar(x0, y0, x1, y1) { // 둥근 끝 직사각형 + 안쪽 슬롯 구멍
+        var sh = new T.Shape(), w2 = (x1 - x0) / 2, h2 = (y1 - y0) / 2, cx = (x0 + x1) / 2, cy2 = (y0 + y1) / 2, r0 = Math.min(w2, h2) * 0.5;
+        function rr(path, hw, hh, rad) { path.moveTo(cx - hw + rad, cy2 - hh); path.lineTo(cx + hw - rad, cy2 - hh); path.quadraticCurveTo(cx + hw, cy2 - hh, cx + hw, cy2 - hh + rad); path.lineTo(cx + hw, cy2 + hh - rad); path.quadraticCurveTo(cx + hw, cy2 + hh, cx + hw - rad, cy2 + hh); path.lineTo(cx - hw + rad, cy2 + hh); path.quadraticCurveTo(cx - hw, cy2 + hh, cx - hw, cy2 + hh - rad); path.lineTo(cx - hw, cy2 - hh + rad); path.quadraticCurveTo(cx - hw, cy2 - hh, cx - hw + rad, cy2 - hh); }
+        rr(sh, w2, h2, r0);
+        var hole = new T.Path(); rr(hole, w2 - inset, h2 - inset, Math.max(0.02, r0 - inset)); hole.curves.reverse && 0; sh.holes.push(hole);
+        return extrude(sh, D, 0.035);
+      }
+      fp.push(bar(-fb / 2, cy + 0.42, fb / 2, topY));
+      fp.push(bar(-fb / 2, botY, fb / 2, cy - 0.42));
+      fp.push(bar(0.42, cy - fb / 2, rx, cy + fb / 2));
+      fp.push(bar(-rx, cy - fb / 2, -0.42, cy + fb / 2));
+      // 가운데 원판 + 고리
+      var disc = new T.Shape(); disc.absarc(0, 0, 0.52, 0, Math.PI * 2, false);
+      var dg = extrude(disc, D, 0.04); dg.translate(0, cy, 0); fp.push(dg);
+      var ring = ringGeo(0.5, 0.055); ring.translate(0, cy, front + 0.02); fp.push(ring);
+      // 팔 끝: 창촉(마름모) + 양옆 꽃잎 + 작은 구슬
+      [[0, topY, 0, 1], [0, botY, 0, -1], [rx, cy, 1, 0], [-rx, cy, -1, 0]].forEach(function (e) {
+        var dx = e[2], dy = e[3], nx = -dy, ny = dx, ex = e[0], ey = e[1];
+        var dia = new T.Shape();
+        dia.moveTo(ex - dx * 0.02, ey - dy * 0.02); dia.lineTo(ex + dx * 0.24 + nx * 0.2, ey + dy * 0.24 + ny * 0.2); dia.lineTo(ex + dx * 0.52, ey + dy * 0.52); dia.lineTo(ex + dx * 0.24 - nx * 0.2, ey + dy * 0.24 - ny * 0.2); dia.lineTo(ex - dx * 0.02, ey - dy * 0.02);
+        fp.push(extrude(dia, D, 0.035));
+        [-1, 1].forEach(function (sd) {
+          var c = new T.Shape(); c.absarc(ex + dx * 0.02 + nx * sd * 0.3, ey + dy * 0.02 + ny * sd * 0.3, 0.12, 0, Math.PI * 2, false); fp.push(extrude(c, D * 0.9, 0.03));
+        });
+        fp.push(ball(ex + dx * 0.6, ey + dy * 0.6, 0, 0.07, 0.07, 0.07, 10));
       });
-      // 가운데 원형 테두리
-      var ring = ringGeo(0.48, 0.05); ring.translate(0, cy, front + 0.02); dots.push(ring);
-      add(merge(dots), bodyMat);
-      var plate3 = new T.BoxGeometry(0.5, 0.24, 0.04); plate3.translate(0, cy + H * 0.15, front + 0.06); add(plate3, metal);
+      // 슬롯 안 알갱이 줄
+      [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(function (d) {
+        var len = d[1] > 0 ? topY - cy : d[1] < 0 ? cy - botY : rx;
+        for (var t = 0.62; t < len - 0.12; t += 0.2) fp.push(ball(d[0] * t, cy + d[1] * t, 0, 0.065, 0.065, 0.065, 10));
+      });
+      add(merge(fp), bodyMat);
+      var plate3 = new T.BoxGeometry(0.46, 0.22, 0.04); plate3.translate(0, cy + H * 0.16, front + 0.06); add(plate3, metal);
     }
     // 예수님 형상: 양손이 가로대 높이에 오게
     var hc = Math.min(H * 0.56, (W - 0.5) / 0.95), cg2 = corpusGeometry();
-    cg2.scale(hc, hc, hc * 1.25); cg2.translate(0, cy - 0.41 * hc, front + 0.1);
+    cg2.scale(hc, hc, hc * 1.1); cg2.translate(0, cy - 0.41 * hc, front + 0.06 + 0.075 * hc); // 몸 뒤가 십자가 앞면에 닿게
     add(cg2, corpusMat);
     // 위 끝 고리(체인이 붙는다)
     var bail = ringGeo(0.17, 0.05); bail.rotateY(Math.PI / 2); bail.translate(0, H / 2 + 0.12, 0); add(bail, metal);
