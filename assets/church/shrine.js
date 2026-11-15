@@ -37,39 +37,68 @@
     layout.shrine = { x: p.x, z: p.z, y: p.y || 0, yaw: p.yaw || 0, kind: p.kind, label: p.label_ko || '성모상 앞', stand: layout.candles.stands.length - 1 };
     return layout;
   }
-  // 그림 성모상: 살짝 굽힌 판(호 80°, 볼록한 쪽이 앞)에 알파 그림을 입힌다. alphaTest(혼합 아님) → 정렬 문제·겹쳐 그리기 없음, draw call 1.
-  // 그림 묶음(art_statue_<img>.js)은 이 성당에 들어올 때만 읽고, 월드 해제 때 재질·질감이 함께 놓인다(world.dispose 가 map 을 놓는다).
+  // 그림 성모상(입체): 그림에서 만든 깊이(statue3d_<img>.js — tools/statues/make_statue3d.py: 실루엣 부풀림 + 밝기 요철)로
+  // 격자 변위 메시를 세운다. 앞면만(뒤는 벽감이 가린다) — 실루엣 가장자리 깊이 0 이라 옆에서 보면 둥글게 말려 들어간다.
+  // 격자 1칸 바깥까지 정점을 넣고(깊이 0) 실루엣은 alphaTest 로 그림 해상도에서 자른다 → 계단 없음. 옆면은 가장자리 색(그림 번짐)이 늘어난다.
+  // 가까이는 격자 그대로(≤ 30k 삼각형), 9m 밖은 3칸 간격(≤ 5k) — THREE.LOD 라 그리기 호출은 늘 1.
+  // 묶음은 이 성당에 들어올 때만 읽고, 월드 해제 때 기하·재질·질감이 함께 놓인다(world.dispose).
   // 브라우저가 아니면(시험) false → kit 도형 성상을 쓴다.
-  var STATUE = { H: 1.42, ARC: 80 * Math.PI / 180, SEG: 10, D0: -0.04 };
+  var STATUE = { H: 1.42, BACK: -0.14, LOD_FAR: 9, LOD_STEP: 3 };
+  // 깊이 격자(dw×dh, 미터, 0 = 실루엣 밖) → 앞면 메시 자료. step 칸 간격으로 표본, 실루엣 1칸 바깥까지 넣는다.
+  function statueMesh(d, dw, dh, W, H, step) {
+    var nx = Math.floor((dw - 1) / step) + 1, ny = Math.floor((dh - 1) / step) + 1, id = new Int32Array(nx * ny), pos = [], uv = [], idx = [], n = 0;
+    function at(i, j) { return i < 0 || j < 0 || i >= dw || j >= dh ? 0 : d[j * dw + i]; }
+    for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
+      var pi = Math.min(i * step, dw - 1), pj = Math.min(j * step, dh - 1), on = false;
+      for (var b = -step; b <= step && !on; b++) for (var a = -step; a <= step; a++) if (at(pi + a, pj + b) > 0) { on = true; break; }
+      if (!on) { id[j * nx + i] = -1; continue; }
+      var u = pi / (dw - 1), v = 1 - pj / (dh - 1);
+      pos.push((u - 0.5) * W, v * H, at(pi, pj)); uv.push(u, v); id[j * nx + i] = n++;
+    }
+    for (j = 0; j < ny - 1; j++) for (i = 0; i < nx - 1; i++) {
+      var A = id[j * nx + i], B = id[j * nx + i + 1], C = id[(j + 1) * nx + i], D = id[(j + 1) * nx + i + 1];
+      var k = (A >= 0) + (B >= 0) + (C >= 0) + (D >= 0);
+      if (k === 4) {   // 깊이 차가 작은 대각선으로 나눈다(주름 능선이 톱니가 되지 않게)
+        if (Math.abs(pos[A * 3 + 2] - pos[D * 3 + 2]) <= Math.abs(pos[B * 3 + 2] - pos[C * 3 + 2])) idx.push(A, C, D, A, D, B); else idx.push(A, C, B, B, C, D);
+      } else if (k === 3) {
+        if (A < 0) idx.push(B, C, D); else if (B < 0) idx.push(A, C, D); else if (C < 0) idx.push(A, D, B); else idx.push(A, C, B);
+      }
+    }
+    return { pos: pos, uv: uv, idx: idx, verts: n, tris: idx.length / 3 };
+  }
   function imageStatue(ctx, p, f, y0) {
     var T = ctx.THREE;
-    if (!T || !T.BufferGeometry || typeof document === 'undefined' || !document.head || !document.head.appendChild || typeof Image === 'undefined') return false;
-    var H = STATUE.H, W = H / 2, A = STATUE.ARC, N = STATUE.SEG, R = W / (2 * Math.sin(A / 2)), pos = [], nor = [], uv = [], idx = [];
-    for (var i = 0; i <= N; i++) {
-      var th = -A / 2 + A * i / N, lx = R * Math.sin(th), ld = STATUE.D0 + R * (Math.cos(th) - Math.cos(A / 2));
-      var x = p.x + f[0] * ld + f[1] * lx, z = p.z + f[1] * ld - f[0] * lx, u = 0.5 + Math.sin(th) / (2 * Math.sin(A / 2));
-      var nx = f[0] * Math.cos(th) + f[1] * Math.sin(th), nz = f[1] * Math.cos(th) - f[0] * Math.sin(th);
-      pos.push(x, y0, z, x, y0 + H, z); nor.push(nx, 0, nz, nx, 0, nz); uv.push(u, 0, u, 1);
-      if (i < N) { var a = i * 2; idx.push(a, a + 2, a + 3, a, a + 3, a + 1); }
-    }
-    var g = new T.BufferGeometry();
-    g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new T.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
-    var mat = new T.MeshStandardMaterial({ color: 0xb4b0aa, roughness: 0.95, metalness: 0, alphaTest: 0.5, side: T.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0.07 });
-    var mesh = new T.Mesh(g, mat); mesh.name = 'shrine_statue'; mesh.visible = false; mesh.userData.noCam = true; mesh.userData.noAO = true;
+    if (!T || !T.BufferGeometry || !T.LOD || typeof document === 'undefined' || !document.head || !document.head.appendChild || typeof Image === 'undefined') return false;
+    var mat = new T.MeshStandardMaterial({ color: 0xc4c0ba, roughness: 0.82, metalness: 0, alphaTest: 0.5, side: T.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0.05 });
+    var lod = new T.LOD(); lod.name = 'shrine_statue'; lod.visible = false; lod.userData.noCam = true; lod.userData.noAO = true;
+    lod.position.set(p.x + f[0] * STATUE.BACK, y0, p.z + f[1] * STATUE.BACK); lod.rotation.y = Math.atan2(f[0], f[1]);   // 지역 +z(앞) = 성상이 바라보는 쪽
     var dead = false; mat.addEventListener('dispose', function () { dead = true; });
-    ctx.add(mesh); if (ctx.stats) ctx.stats.meshes++;
+    ctx.add(lod); if (ctx.stats) ctx.stats.meshes++;
+    function img(src, cb) { var im = new Image(); im.onload = function () { if (!dead) cb(im); }; im.src = src; }
     function apply() {
-      var a = root.ChurchArt && root.ChurchArt.statues && root.ChurchArt.statues[p.img]; if (!a || dead) return;
-      var im = new Image();
-      im.onload = function () {
-        if (dead) return;
+      var a = root.ChurchArt && root.ChurchArt.statues3d && root.ChurchArt.statues3d[p.img]; if (!a || dead) return;
+      var left = 2;
+      img(a.depth, function (im) {
+        var cv = document.createElement('canvas'); cv.width = a.dw; cv.height = a.dh;
+        var c2 = cv.getContext('2d'); c2.drawImage(im, 0, 0); var px = c2.getImageData(0, 0, a.dw, a.dh).data, d = new Float32Array(a.dw * a.dh);
+        for (var i = 0; i < d.length; i++) d[i] = (px[i * 4] * 256 + px[i * 4 + 1]) / 65535 * a.zmax;
+        [[1, 0], [STATUE.LOD_STEP, STATUE.LOD_FAR]].forEach(function (L) {
+          var m = statueMesh(d, a.dw, a.dh, STATUE.H * a.w / a.h, STATUE.H, L[0]), g = new T.BufferGeometry();
+          g.setAttribute('position', new T.Float32BufferAttribute(m.pos, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(m.uv, 2)); g.setIndex(m.idx);
+          g.computeVertexNormals();
+          var mesh = new T.Mesh(g, mat); mesh.name = 'shrine_statue_lod' + L[0]; mesh.userData.noCam = true; mesh.userData.noAO = true;
+          lod.addLevel(mesh, L[1]);
+        });
+        if (--left === 0) lod.visible = true;
+      });
+      img(a.src, function (im) {
         var tx = new T.Texture(im); tx.encoding = T.sRGBEncoding; tx.anisotropy = 4; tx.needsUpdate = true;
-        mat.map = tx; mat.emissiveMap = tx; mat.needsUpdate = true; mesh.visible = true;
-      };
-      im.src = a.src;
+        mat.map = tx; mat.emissiveMap = tx; mat.needsUpdate = true;
+        if (--left === 0) lod.visible = true;
+      });
     }
-    if (root.ChurchArt && root.ChurchArt.statues && root.ChurchArt.statues[p.img]) apply();
-    else { var sc = document.createElement('script'); sc.src = 'art_statue_' + p.img + '.js'; sc.async = true; sc.onload = apply; document.head.appendChild(sc); }
+    if (root.ChurchArt && root.ChurchArt.statues3d && root.ChurchArt.statues3d[p.img]) apply();
+    else { var sc = document.createElement('script'); sc.src = 'statue3d_' + p.img + '.js'; sc.async = true; sc.onload = apply; document.head.appendChild(sc); }
     return true;
   }
   function build(ctx, layout) {
@@ -118,7 +147,7 @@
     ctx.addCollider(fp);
     return sh;
   }
-  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
+  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, statueMesh: statueMesh, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
   // 레이아웃 등록을 감싼다: 이미 등록된 것 + 앞으로 등록될 것 모두
   var L = root.ChurchLayouts;
   if (L && !L._shrineWrapped) {
