@@ -60,3 +60,6 @@ art/stations_series/
 .claude/worktrees/
 # 개발용 임시 유리의 부하 시험용 리샘플 팩(tools/glass_bundle/devglass_pack.py --resample; 원본 팩 gpack_dev_*.js 는 커밋한다)
 assets/church/dev/gpack_devrs_*.js
+
+# 도구 의존성(npm install 로 복원)
+tools/**/node_modules/
