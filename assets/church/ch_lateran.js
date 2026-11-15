@@ -10,9 +10,11 @@
     id: 'lateran', scalePercent: 53,
     bounds: { x0: -16.4, x1: 16.4, z0: -34.45, z1: 34.45 },
     spawn: { x: 0, z: 32.5, r: 0 },
+    // '제대 앞' 자리: 콘페시오가 신랑으로 나와(H-1 B5) 축 위 첫 장애물이 콘페시오 앞 난간이 됐다 → 콘페시오 뒤, 교황 제대 바로 앞(익랑 단 위)을 직접 지정한다
+    stations: { altar: { x: 0, z: -6.7 } },
     seatGroups: [
-      { g: 'L', rows: 16, perRow: 4, origin: { x: -1.6, z: -3.5 }, dx: -0.75, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6] },
-      { g: 'R', rows: 16, perRow: 4, origin: { x: 1.6, z: -3.5 }, dx: 0.75, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6] }
+      { g: 'L', rows: 16, perRow: 4, origin: { x: -1.6, z: -1.6 }, dx: -0.75, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6] },
+      { g: 'R', rows: 16, perRow: 4, origin: { x: 1.6, z: -1.6 }, dx: 0.75, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.6] }
     ],
     candles: { stands: [{ x: 11.7, z: 20, slots: 96, reach: 1.8, cols: 16, face: [-1, 0], pitch: 0.5, step: 0.25, ystep: 0.3, y0: 0.8 }] },
     info: { name: '라테라노 성 요한 대성전', place: '로마, 이탈리아', builtYear: 324 }
@@ -37,6 +39,7 @@
       // 익랑(H-1 구조 대조 B3·B4): 전체 길이 69 → 62 m(XT 18.3 → 16.4, 측랑 벽보다 한쪽 2.4 만 나온다), 안길이 18 → 16 m(ZT0 -15.44 → -14.4)
       var XN = 4.77, XB = 6.37, XA = 9.57, XC = 10.07, XO = 13.97, XT = 16.4;
       var ZE = 34.45, ZT1 = -5.9, ZT0 = -14.4, ZAC = -29.68, ZAP = -34.45, HC = 14.3, TY = 0.3;
+      var CFX = 1.75, CFZ = -4.4, CFW = 0.15;              // 콘페시오(B5): 안쪽 x ±CFX, z ZT1…CFZ(신랑으로 1.5 나온다), 벽 두께 CFW
       var ZTC = (ZT0 + ZT1) / 2;                           // 익랑 가운데 z (오르간·성체 제대의 축)
       var ZP = [32.4, 25.1, 17.8, 10.5, 3.2, -4.1];       // 신랑 피어 중심 z
       var ZB = [28.75, 21.45, 14.15, 6.85, -0.45];         // 아케이드 아치 중심 z
@@ -385,7 +388,9 @@
       // =====================================================================
       // 1. 바닥
       // =====================================================================
-      texFloor({ x0: -XB, x1: XB, z0: ZT1, z1: ZE, y: 0, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: -4.1, reflect: true });
+      // 신랑 바닥은 콘페시오 앞벽에서 시작한다(무늬 기준점 bx·bz 는 그대로). 계단 앞의 남는 띠(계단 ~ 콘페시오 앞벽)는 대리석 문지방 판
+      texFloor({ x0: -XB, x1: XB, z0: CFZ + CFW, z1: ZE, y: 0, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: -4.1, reflect: true });
+      SIDES.forEach(function (s) { B(s < 0 ? -XN : CFX + CFW, s < 0 ? -CFX - CFW : XN, -0.06, 0, ZT1 + 0.8, CFZ + CFW, MARB); });
       SIDES.forEach(function (s) {
         texFloor({ x0: s < 0 ? -XO : XB, x1: s < 0 ? -XB : XO, z0: -5.3, z1: ZE, y: 0, tex: texPanels, tw: 3.8, th: 3.65, bx: s < 0 ? -XO : XB, bz: -5.3 });
       });
@@ -394,15 +399,12 @@
       texFloor({ x0: -XT, x1: XT, z0: ZT0, z1: ZT1, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT1, reflect: true });
       texFloor({ x0: -XN - 0.2, x1: XN + 0.2, z0: ZAP, z1: ZT0, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT0 });
       ctx.floorZone({ x0: -XT, x1: XT, z0: ZAP, z1: ZT1, y: TY });
-      // 신랑→익랑 계단 4단 + 붉은 카펫
-      ctx.steps({ x0: -XN, x1: XN, z0: ZT1, z1: ZT1 + 0.8, y0: 0, y1: TY, n: 4, dir: [0, -1], color: MARB });
+      // 신랑→익랑 계단 4단: 가운데(x ±1.9)는 콘페시오가 끊어 두 갈래(H-1 B5)
+      SIDES.forEach(function (s) { ctx.steps({ x0: s < 0 ? -XN : CFX + CFW, x1: s < 0 ? -CFX - CFW : XN, z0: ZT1, z1: ZT1 + 0.8, y0: 0, y1: TY, n: 4, dir: [0, -1], color: MARB }); });
       // 측랑 끝 → 익랑 계단 4단(측랑 4개마다; 계단 옆면은 문설주 속에 4cm 묻는다)
       SIDES.forEach(function (s) { AEND.forEach(function (a) {
         ctx.steps({ x0: s * a.c - a.w / 2 - 0.04, x1: s * a.c + a.w / 2 + 0.04, z0: ZT1, z1: ZT1 + 0.8, y0: 0, y1: TY, n: 4, dir: [0, -1], color: MARB });
       }); });
-      solid.addBeam([0, 0.075 + 0.014, ZT1 + 0.8 - 0.03], [0, TY + 0.014, ZT1 + 0.2], 0.02, 3.2, 0xa8323a, { vary: 0 });
-      B(-1.6, 1.6, TY, TY + 0.014, -8.0, ZT1 + 0.2, 0xa8323a, { vary: 0 });
-      B(-1.6, -1.5, TY + 0.014, TY + 0.02, -8.0, ZT1 + 0.2, GOLD2, { vary: 0 }); B(1.5, 1.6, TY + 0.014, TY + 0.02, -8.0, ZT1 + 0.2, GOLD2, { vary: 0 });
 
       mark('before');
       // =====================================================================
@@ -749,15 +751,15 @@
 
       mark('before');
       // =====================================================================
-      // 6. 고딕 치보리오 + 교황 제대 (z=-10.65)
+      // 6. 고딕 치보리오 + 교황 제대 (z=-9.4: 개선 아치 바로 뒤 — H-1 B5) + 신랑으로 나온 콘페시오
       // =====================================================================
       (function () {
-        var cx = 0, cz = -10.65, y0 = TY + 0.2, hw = 1.6;
-        B(-2.7, 2.7, TY, y0, cz - 2.7, cz + 2.7, MARB); B(-2.8, 2.8, TY, TY + 0.08, cz - 2.8, cz + 2.8, STU_SH);
+        var cx = 0, cz = -9.4, y0 = TY + 0.2, hw = 1.6;   // 예전 -10.65(익랑 한가운데). 콘페시오 뒤 난간과 제대 받침 사이 1.2m 는 '제대 앞' 자리로 비워 둔다
+        B(-2.1, 2.1, TY, y0, cz - 2.1, cz + 2.1, MARB); B(-2.2, 2.2, TY, TY + 0.08, cz - 2.2, cz + 2.2, STU_SH);
         // 붉은 카펫 + 금 테
-        B(-2.0, 2.0, y0, y0 + 0.014, cz - 2.0, cz + 2.7, 0xa8323a, { vary: 0 });
-        B(-2.0, -1.92, y0 + 0.014, y0 + 0.02, cz - 2.0, cz + 2.7, GOLD2, { vary: 0 }); B(1.92, 2.0, y0 + 0.014, y0 + 0.02, cz - 2.0, cz + 2.7, GOLD2, { vary: 0 });
-        ctx.addCollider({ x0: -2.8, x1: 2.8, z0: cz - 2.8, z1: cz + 2.8 });
+        B(-2.0, 2.0, y0, y0 + 0.014, cz - 2.0, cz + 2.1, 0xa8323a, { vary: 0 });
+        B(-2.0, -1.92, y0 + 0.014, y0 + 0.02, cz - 2.0, cz + 2.1, GOLD2, { vary: 0 }); B(1.92, 2.0, y0 + 0.014, y0 + 0.02, cz - 2.0, cz + 2.1, GOLD2, { vary: 0 });
+        ctx.addCollider({ x0: -2.1, x1: 2.1, z0: cz - 2.1, z1: cz + 2.1 });
         // 제대(금빛 앞면)
         B(-1.1, 1.1, y0, y0 + 1.0, cz - 0.5, cz + 0.5, 0xd9b45a); B(-1.2, 1.2, y0 + 0.95, y0 + 1.06, cz - 0.6, cz + 0.6, MARB);
         B(-0.9, 0.9, y0 + 0.15, y0 + 0.85, cz + 0.5, cz + 0.52, 0xb98a2e); B(-0.8, 0.8, y0 + 0.2, y0 + 0.8, cz + 0.52, cz + 0.54, 0x7a2222);
@@ -811,15 +813,40 @@
         ctx.cyl({ x: cx, y: ys + 1.65, z: cz, r: 1.15, rTop: 0.1, h: 2.4, seg: 4, color: 0xf2ead8, ry: PI / 4 });
         ctx.cyl({ x: cx, y: ys + 4.05, z: cz, r: 0.05, h: 0.45, seg: 5, color: GOLD2 }); ctx.box({ x: cx, y: ys + 4.25, z: cz, w: 0.28, h: 0.05, d: 0.05, color: GOLD2 });
         ctx.addGlow({ x: cx, y: ys + 1.1, z: cz, size: 1.8, color: 0xffd98a, kind: 'lamp' });
-        // 고해소(콘페시오): U자 난간
-        var rz0 = -8.4, rz1 = -6.9;
-        B(-1.7, 1.7, TY, TY + 0.02, rz0 - 0.1, rz1, 0x2a2a30);
-        B(-1.8, 1.8, TY + 0.82, TY + 0.92, rz1 - 0.1, rz1 + 0.1, MARB); B(-1.8, -1.6, TY + 0.82, TY + 0.92, rz0, rz1, MARB); B(1.6, 1.8, TY + 0.82, TY + 0.92, rz0, rz1, MARB);
-        B(-1.8, 1.8, TY, TY + 0.1, rz1 - 0.12, rz1 + 0.12, MARB);
-        for (var bi = -9; bi <= 9; bi++) ctx.cyl({ x: bi * 0.19, y: TY + 0.1, z: rz1, r: 0.045, rTop: 0.035, h: 0.72, seg: 6, color: MARB });
-        [-1.7, 1.7].forEach(function (x) { for (var bj = 0; bj < 7; bj++) ctx.cyl({ x: x, y: TY + 0.1, z: rz1 - 0.1 - bj * 0.21, r: 0.045, rTop: 0.035, h: 0.72, seg: 6, color: MARB }); });
-        ctx.addCollider({ x0: -1.9, x1: 1.9, z0: rz0 - 0.1, z1: rz1 + 0.2 });
-        ctx.addLight({ x: 0, y: 4.5, z: -9.5, color: 0xffc27a, intensity: 1.1, distance: 20, kind: 'lamp' });
+        // 콘페시오(H-1 B5): 예전에는 익랑 단 위의 검은 판 + U자 난간이었다. 교황 제대 앞에서 신랑 쪽으로 내려앉은 반지하(바닥 -0.9)로 짓는다.
+        // 양옆 계단 두 줄(보기만 — 충돌체로 막는다), 바닥에 마르티노 5세의 청동 묘판, 제대 쪽 벽에 금 창살 감실.
+        var X = CFX, XO = CFX + CFW, Z0 = ZT1 + 0.03, Z1 = CFZ, ZO = CFZ + CFW, YF = -0.9, RL = 0.92, ZS = ZT1 + 0.8, DB = 0x4a3a28;
+        function bal(x, z, yb) { ctx.cyl({ x: x, y: yb, z: z, r: 0.045, rTop: 0.035, h: RL - 0.1 - yb, seg: 6, color: MARB }); }
+        B(-X, X, YF - 0.1, YF, ZT1 - CFW, Z1, MARB);                                    // 바닥
+        B(-0.62, 0.62, YF, YF + 0.015, Z0 + 0.22, Z0 + 1.12, GOLD_D, { vary: 0 });      // 청동 묘판(금 테 + 어두운 청동)
+        B(-0.55, 0.55, YF + 0.015, YF + 0.03, Z0 + 0.29, Z0 + 1.05, DB, { vary: 0.03 });
+        B(-XO, XO, YF, TY - 0.012, ZT1 - CFW, Z0, MARB);                                // 제대 쪽 벽(익랑 단 밑)
+        B(-XO, XO, YF, 0, Z1, ZO, MARB);                                                // 신랑 쪽 벽
+        SIDES.forEach(function (s) {
+          var xa = s < 0 ? -XO : X, xb = s < 0 ? -X : XO, xm = s * (X + CFW / 2);
+          B(xa, xb, YF, TY, Z0, ZS, MARB); B(xa, xb, YF, 0, ZS, Z1, MARB);              // 옆벽(계단 옆은 단 높이까지)
+          for (var q = 0; q < 4; q++) B(s < 0 ? -X : X - 0.62, s < 0 ? -X + 0.62 : X, YF, -0.18 * (q + 1), Z1 - 0.3 * (q + 1), Z1 - 0.3 * q, 0xe3ddd0);   // 내려가는 계단
+          for (var gq = 0; gq < 5; gq++) { var gx = s * (X - 0.58 + gq * 0.135); B(gx - 0.014, gx + 0.014, 0, RL - 0.1, Z1 + 0.06, Z1 + 0.09, GOLD_D, { vary: 0 }); }   // 계단 어귀의 닫힌 창살문
+          B(s < 0 ? -X : X - 0.62, s < 0 ? -X + 0.62 : X, 0.42, 0.46, Z1 + 0.06, Z1 + 0.09, GOLD_D, { vary: 0 });
+          B(xa, xb, RL - 0.1, RL, ZT1 - CFW, ZO, MARB);                                 // 옆 난간 두겁
+          [-5.68, -5.45, -5.22].forEach(function (z) { bal(xm, z, TY); });
+          [-4.88, -4.66].forEach(function (z) { bal(xm, z, 0); });
+          B(xa, xb, 0, RL - 0.1, ZS - 0.08, ZS + 0.08, MARB);                           // 계단이 끝나는 자리의 난간 기둥
+          B(xa - 0.03, xb + 0.03, 0, RL + 0.04, ZO - 0.21, ZO + 0.03, MARB);            // 앞 모서리 기둥
+          ctx.sphere({ x: xm, y: RL + 0.12, z: ZO - 0.09, r: 0.09, color: GOLD2, w: 8, h: 6 });
+        });
+        B(-X, X, RL - 0.1, RL, Z1, ZO, MARB);                                           // 앞 난간(신랑 쪽)
+        for (var bi = -5; bi <= 5; bi++) bal(bi * 0.2, Z1 + CFW / 2, 0);
+        B(-XO, XO, TY, TY + 0.1, ZT1 - CFW, ZT1 - 0.02, MARB); B(-XO, XO, TY + 0.82, TY + 0.92, ZT1 - CFW, ZT1 - 0.02, MARB);   // 제대 쪽 난간(익랑 단 가장자리)
+        for (var bj = -9; bj <= 9; bj++) ctx.cyl({ x: bj * 0.19, y: TY + 0.1, z: ZT1 - 0.085, r: 0.045, rTop: 0.035, h: 0.72, seg: 6, color: MARB });
+        // 감실(제대 쪽 벽): 금 틀 + 어두운 안쪽 + 금 창살 + 등불 빛
+        B(-0.62, 0.62, YF + 0.12, YF + 1.1, Z0, Z0 + 0.03, GOLD2, { vary: 0 });
+        B(-0.52, 0.52, YF + 0.2, YF + 1.02, Z0 + 0.03, Z0 + 0.045, 0x1b1410, { vary: 0 });
+        [-0.26, 0, 0.26].forEach(function (gx2) { B(gx2 - 0.015, gx2 + 0.015, YF + 0.2, YF + 1.02, Z0 + 0.045, Z0 + 0.06, GOLD2, { vary: 0 }); });
+        [0.47, 0.75].forEach(function (gy) { B(-0.52, 0.52, YF + gy - 0.015, YF + gy + 0.015, Z0 + 0.045, Z0 + 0.06, GOLD2, { vary: 0 }); });
+        ctx.addGlow({ x: 0, y: YF + 0.6, z: Z0 + 0.3, size: 1.5, color: 0xffb65c, kind: 'lamp' });
+        ctx.addCollider({ x0: -XO - 0.06, x1: XO + 0.06, z0: ZT1 - CFW - 0.05, z1: ZO + 0.06 });
+        ctx.addLight({ x: 0, y: 4.5, z: cz + 1.15, color: 0xffc27a, intensity: 1.1, distance: 20, kind: 'lamp' });
       })();
 
       mark('before');
