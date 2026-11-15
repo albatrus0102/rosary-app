@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
 import 'package:rosary_app/church/church_constants.dart';
+import 'package:rosary_app/church/church_candle_store.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
 import 'package:rosary_app/church/net/church_net.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_session.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'church_screen_fakes.dart';
 
@@ -478,7 +480,11 @@ void main() {
       final args = h.scene.lastArgs('lightCandle')!;
       expect(args['slot'], 5);
       expect(args['intention'], 2);
-      expect(args['until'], 0); // 만료 없음
+      // 켠 뒤 하루 동안 탄다
+      final until = args['until']! as int;
+      final left = until - DateTime.now().millisecondsSinceEpoch;
+      expect(left, greaterThan(const Duration(hours: 23).inMilliseconds));
+      expect(left, lessThanOrEqualTo(churchCandleBurn.inMilliseconds));
     });
 
     testWidgets('offline lights the candle locally', (tester) async {
@@ -490,6 +496,36 @@ void main() {
       await tester.tap(_sheetButton);
       await tester.pumpAndSettle();
       expect(h.scene.count('lightCandle'), 1);
+      expect(find.text('켠 초는 하루 동안 타요.'), findsNothing); // 시트는 닫혔다
+      // 혼자 모드: 기기에 남는다(하루 안이면 다시 켜진다)
+      final saved = await ChurchCandleStore.load('basic');
+      expect(saved.map((c) => c.slot), [1]);
+      // 같은 자리가 다시 오면(닿는 곳이 모두 켜짐) 시트 대신 안내만
+      await tester.tap(find.text('초 켜기'));
+      await tester.pump();
+      expect(find.text(churchCandleFullNote), findsOneWidget);
+      expect(h.scene.count('lightCandle'), 1);
+    });
+
+    test('store: 하루 안의 초만 돌려주고 성당별로 나눈다', () async {
+      SharedPreferences.setMockInitialValues({});
+      final t0 = DateTime(2026, 11, 15, 9);
+      CandleInfo c(int slot, DateTime lit) => CandleInfo(
+        slot: slot,
+        until: lit.add(churchCandleBurn).millisecondsSinceEpoch,
+        intention: slot % 8,
+      );
+      expect(churchCandleBurn, const Duration(hours: 24));
+      await ChurchCandleStore.add('basic', c(4, t0), now: t0);
+      await ChurchCandleStore.add('basic', c(2, t0.add(const Duration(hours: 5))), now: t0);
+      await ChurchCandleStore.add('danggogae', c(7, t0), now: t0);
+      final later = t0.add(const Duration(hours: 23, minutes: 59));
+      expect((await ChurchCandleStore.load('basic', now: later)).map((e) => e.slot), [2, 4]);
+      expect((await ChurchCandleStore.load('danggogae', now: later)).single.slot, 7);
+      final next = t0.add(const Duration(hours: 24, minutes: 1));
+      expect((await ChurchCandleStore.load('basic', now: next)).map((e) => e.slot), [2]);
+      expect(await ChurchCandleStore.load('danggogae', now: next), isEmpty);
+      expect(await ChurchCandleStore.load('milan', now: next), isEmpty);
     });
   });
 

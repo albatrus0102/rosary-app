@@ -20,6 +20,7 @@ import '../ui/stations_sheet.dart';
 import 'avatar/avatar_config.dart';
 import 'avatar/avatar_editor_screen.dart';
 import 'church_candle_sheet.dart';
+import 'church_candle_store.dart';
 import 'church_catalog.dart';
 import 'church_cross.dart';
 import 'church_go_sheet.dart';
@@ -222,6 +223,8 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   // 분석(church_exit): 들어온 시각과 앉아 있던 시간.
   DateTime? _enteredAt;
+  /// 켜진 초: 슬롯 → 꺼지는 시각(epoch ms). 가득 찼는지 안내할 때 쓴다.
+  final Map<int, int> _candleUntil = {};
   DateTime? _satSince;
   Duration _satTotal = Duration.zero;
 
@@ -645,7 +648,29 @@ class _ChurchScreenState extends State<ChurchScreen>
     }
     if (_hidden) unawaited(_scene.pause());
     final w = _lastWelcome;
-    if (w != null && _net.state.value == NetState.online) _applyWelcome(w);
+    if (w != null && _net.state.value == NetState.online) {
+      _applyWelcome(w);
+    } else if (_net.state.value != NetState.online) {
+      unawaited(_restoreSoloCandles());
+    }
+  }
+
+  /// 혼자 모드: 기기에 남긴 내 초(켠 지 하루가 안 된 것)를 다시 켠다.
+  Future<void> _restoreSoloCandles() async {
+    final list = await ChurchCandleStore.load(widget.churchId);
+    if (_disposed || list.isEmpty) return;
+    if (_net.state.value == NetState.online) return; // 그 사이 접속됨: 서버가 권위
+    for (final c in list) {
+      _candleUntil[c.slot] = c.until;
+    }
+    unawaited(_scene.setCandles([for (final c in list) c.toJson()]));
+  }
+
+  /// 그 슬롯의 초가 아직 타고 있나(꺼지는 시각이 지나지 않음).
+  bool _candleLit(int slot) {
+    final until = _candleUntil[slot];
+    return until != null &&
+        until > DateTime.now().millisecondsSinceEpoch;
   }
 
   // --- 웹 장면 이벤트 ---
@@ -948,6 +973,7 @@ class _ChurchScreenState extends State<ChurchScreen>
           );
         }
       case Candle():
+        _candleUntil[e.slot] = e.until;
         unawaited(
           _scene.lightCandle(
             slot: e.slot,
@@ -976,6 +1002,9 @@ class _ChurchScreenState extends State<ChurchScreen>
           if (p.id != w.you) p.toJson(),
       ], w.seats),
     );
+    _candleUntil
+      ..clear()
+      ..addEntries([for (final c in w.candles) MapEntry(c.slot, c.until)]);
     unawaited(_scene.setCandles([for (final c in w.candles) c.toJson()]));
     // 서버는 새 연결을 입구에 둔다: 마지막 위치를 알려 따라잡게 한다(처음 입장이면 할 일이 없다).
     _farRetries = 0;
@@ -1278,6 +1307,14 @@ class _ChurchScreenState extends State<ChurchScreen>
   Future<void> _onLight() async {
     final slot = _near.candle;
     if (slot == null || _sheetOpen) return;
+    // 장면은 닿는 빈 자리를 먼저 고른다. 켜진 자리가 왔다면 닿는 곳이 모두 찼다:
+    // 남의 초를 끄지 않고 안내만 한다.
+    if (_candleLit(slot)) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text(churchCandleFullNote)));
+      return;
+    }
     _sheetOpen = true;
     final int? intention;
     try {
@@ -1289,8 +1326,21 @@ class _ChurchScreenState extends State<ChurchScreen>
     _net.lightCandle(slot, intention);
     // 촛불을 켰다는 사실만 기록한다. 지향 값은 절대 넘기지 않는다.
     Track.church('church_candle', widget.churchId);
-    // 켠 촛불은 꺼지지 않는다(until 0 = 만료 없음).
-    unawaited(_scene.lightCandle(slot: slot, until: 0, intention: intention));
+    // 켠 초는 하루 동안 탄다. 혼자 모드에서는 기기에 남겨 앱을 다시 열어도 이어진다
+    // (접속 중에는 서버가 권위: 서버가 돌려주는 until 로 덮어쓴다).
+    final until = DateTime.now().add(churchCandleBurn).millisecondsSinceEpoch;
+    _candleUntil[slot] = until;
+    if (_net.state.value != NetState.online) {
+      unawaited(
+        ChurchCandleStore.add(
+          widget.churchId,
+          CandleInfo(slot: slot, until: until, intention: intention),
+        ),
+      );
+    }
+    unawaited(
+      _scene.lightCandle(slot: slot, until: until, intention: intention),
+    );
   }
 
   /// 일어난다. 진행은 저장하고 기도 카드를 닫는다.

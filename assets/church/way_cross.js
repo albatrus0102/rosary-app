@@ -59,7 +59,9 @@
     var layout = o.layout, logic = o.logic, S = o.stations, N = o.n || 14;
     var sp = layout.spawn, f = seatAxis(layout), r = { x: -f.z, z: f.x };   // r = 제대를 바라볼 때 오른쪽
     var st = S.stations(), altar = st.altar;
-    var len = (altar.x - sp.x) * f.x + (altar.z - sp.z) * f.z;
+    // 판을 걸 벽 길이는 제대 자리 기준: 제단 출입 금지(reverence.js)로 '제대 앞' 자리가 첫 계단 앞으로 물러나도 벽은 그대로 쓴다
+    var rz = logic.reverence && logic.reverence.zone, ref = rz ? rz.station : altar;
+    var len = (ref.x - sp.x) * f.x + (ref.z - sp.z) * f.z;
     if (!(len > 12)) return { plaques: [], why: 'short_nave' };
     var sB = 3.0, sF = len - 3.0;
     // layout.crossWay.front = {x,z}: 판을 이 점(축 방향)보다 제대 쪽에는 걸지 않는다(낮은 성가대 울타리 등, 성당별 자료)

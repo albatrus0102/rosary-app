@@ -37,6 +37,15 @@ class _CandleSheetState extends State<CandleSheet> {
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
           child: Text('누구를 위해 초를 켤까요?', style: theme.textTheme.titleMedium),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+          child: Text(
+            '켠 초는 하루 동안 타요.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
         // M3 라디오 목록(RadioGroup + RadioListTile): 하나만 고르는 의미·키보드 탐색이 자동.
         Flexible(

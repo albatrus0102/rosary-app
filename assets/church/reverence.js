@@ -124,9 +124,12 @@
         }
         if (foot < uSt) {
           front = foot;
-          // 단 폭: 축(v=0) 위 [foot, uSt+3] 을 지나는, 층계참보다 높은 구역들의 옆 폭
+          // 단 폭: 축(v=0) 위 [foot, uSt+3] 을 지나는, 층계참보다 높은 구역들의 옆 폭.
+          // 단이 성당 폭 대부분(80%+)이면 익랑·넓은 단이라 폭은 기본(축 좌우 6m)으로 둔다(옆 벽 십자가의 길·경당 길을 남긴다).
+          var width = alongZ ? (B.x1 - B.x0) : (B.z1 - B.z0);
           zs.forEach(function (z) {
             if (z.y <= base + 0.02) return;
+            if ((alongZ ? z.x1 - z.x0 : z.z1 - z.z0) >= width * K.FULL_WIDTH) return;
             var a0 = U(z.x0, z.z0), a1 = U(z.x1, z.z1), v0 = V(z.x0, z.z0), v1 = V(z.x1, z.z1);
             if (Math.max(a0, a1) < foot - 0.01 || Math.min(a0, a1) > uSt + 3) return;
             if (Math.min(v0, v1) > 0 || Math.max(v0, v1) < 0) return;
