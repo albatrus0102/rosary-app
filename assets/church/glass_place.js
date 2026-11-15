@@ -410,6 +410,15 @@
       camReach: function (D) { return nearCur && nearCur.camMax > 0 && D > 0 ? Math.min(1, nearCur.camMax / D) : 1; },
       // 시험용: 지금 카메라로 스트리밍 판단을 바로 한 번 한다(헤드리스 도구가 프레임을 몰아 돌릴 때)
       plan: function () { if (App.camera) plan(App.camera); },
+      // 시험용(glassplace.mjs 색 측정): 그 창의 1k 를 판단 없이 올린다. 업로드는 update() 가 한다 → Promise(가까운 층 상태)
+      prefetch: function (win) {
+        var g = byId(win);
+        if (!g || LEGACY) return Promise.resolve(g ? g.near : 'none');
+        if (g.near === 'none') startNear(g, token);
+        return new Promise(function (res) {
+          (function poll() { if (g.near === 'ready' || g.near === 'error' || g.state === 'gone') res(g.near); else { flushUploads(1); setTimeout(poll, 50); } })();
+        });
+      },
       debug: function () {
         return { pending: pending, decoding: decoding, upQ: upQ.length, lastEvict: lastEvict, near: lastNearId || null, stats: JSON.parse(JSON.stringify(stats)), slots: slots.length, legacy: LEGACY, stress: STRESS,
           far: far ? { state: far.state, mb: Math.round(far.mb * 10) / 10, n: Object.keys(far.rects).length, ms: far.ms || 0 } : null,

@@ -52,6 +52,9 @@ async function freeze(page) {
 
 // 창 정면(법선 위, 창이 화면 높이·폭의 70% 안)에 카메라를 놓고 걷기 프로필로 그린다 → 화면 화소 + 창 사각형
 async function grabFront(page, slotIndex, fov = 35) {
+  // 창 스트리밍(PERF_SCALE.md §3): 멀리서는 256px 사본이 보이므로 그 창의 1k 를 먼저 올리고 페이드를 끝낸다
+  await page.evaluate((si) => { const s = __church.place.slots()[si]; return __church.place.prefetch ? __church.place.prefetch(s.win) : null; }, slotIndex);
+  await page.evaluate(() => { for (let i = 0; i < 3; i++) __church.place.update(0.2, null, null); });
   return page.evaluate(({ si, fov }) => {
     const A = __church, c = document.getElementById('c'), s = A.place.slots()[si], cam = A.camera;
     const d = ChurchGlassMath.frameDistance(s.w, s.h, c.width / c.height, fov, 0.7);
