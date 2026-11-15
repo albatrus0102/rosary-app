@@ -67,3 +67,4 @@ tools/**/node_modules/
 # 위키미디어 원본(대용량, 저장소 밖 보관)
 art/commons_handoff/originals/
 art/commons_handoff/*.part
+art/commons_handoff/received/

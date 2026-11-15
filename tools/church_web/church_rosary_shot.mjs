@@ -15,7 +15,7 @@ const fr = async (k) => { let f; while (!(f = p.frames().find((x) => x.url().inc
 const C = await fr('church/index.html'), R = await fr('rosary3d/index.html');
 await C.evaluate(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
 await C.waitForFunction(() => window.ChurchAPI);
-await C.evaluate((ch) => ChurchAPI.init({ church: ch, avatar: { skin: 1, style: 2, hair: 1, outfit: 3, name: 5 }, hour: 10, ambient: false, solo: true, quality: 'high' }), church);
+await C.evaluate((ch) => ChurchAPI.init({ church: ch, avatar: { skin: 1, style: 2, hair: 1, outfit: 3, name: 5 }, hour: 10, ambient: false, solo: true, quality: 'low' }), church);
 await C.waitForFunction(() => window.__church && window.__church.world, null, { timeout: 180000 });
 const seat = await C.evaluate(() => { const L = __church.logic, s = L.seats[Math.floor(L.seats.length * 0.3)], id = s.id || s; const sp = L.standPos(id); __church.me.x = sp.x; __church.me.z = sp.z; return id; });
 await C.waitForFunction(() => __church.near && __church.near.seat, null, { timeout: 120000 });
@@ -27,6 +27,7 @@ await R.evaluate(() => RosaryAPI.init({ rosary: 'gold', step: 10, compact: true,
 await R.waitForFunction(() => __rosary.R && __rosary.settled(), null, { timeout: 120000 });
 await p.waitForTimeout(6000);
 const mem = { church: await C.evaluate(() => performance.memory && performance.memory.usedJSHeapSize), rosary: await R.evaluate(() => performance.memory && performance.memory.usedJSHeapSize) };
-await p.screenshot({ path: out, type: 'jpeg', quality: 80 });
+await C.evaluate(() => { try { ChurchAPI.pause({}); } catch (e) {} });
+await p.screenshot({ path: out, type: 'jpeg', quality: 80, timeout: 180000 });
 console.log('seat', seat, 'heapMB', Object.fromEntries(Object.entries(mem).map(([k, v]) => [k, +(v / 1048576).toFixed(1)])), 'errors', errs.slice(0, 3));
 await b.close();
