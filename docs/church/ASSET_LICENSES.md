@@ -177,6 +177,12 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 | glass_lancet_chartres_incarnation.webp (+_2k, _1k) | https://commons.wikimedia.org/wiki/File:Chartres_50_-rectifi%C3%A9.JPG | Micheletb (Michelet-密是力) | Public domain | 그리스도의 생애 (강생) 창 · 1421×4096 · 원본 4434×12787 (thumb3840) |
 | glass_rose_notredame_north.webp (+_2k, _1k) | https://commons.wikimedia.org/wiki/File:North_rose_window_of_Notre-Dame_de_Paris,_Dec._2024_(1).jpg | Ibex73 | CC BY 4.0 | 파리 노트르담 북쪽 장미창 (2024년 재개관 뒤) · 3510×3510 · 원본 5368×3579 (thumb3840) |
 
+## 성당 안 진본 성화 (assets/church/art_<성당>.js, 2026-11-15 추가)
+
+| 파일 | 출처 URL | 작가 · 사진 | 라이선스 | 쓰는 곳 · 변경 |
+|---|---|---|---|---|
+| assets/church/art_maggiore.js (원본 art/images_src/maggiore/salus_populi_romani.webp, 49KB) | https://commons.wikimedia.org/wiki/File:Salus_Populi_Romani_after_restoration.jpg | 〈로마 백성의 구원(Salus Populi Romani)〉 작가 미상, 7~13세기 · 사진 LossRom(Commons) | 원작 Public domain · 사진 CC0 1.0 (PD-Art) | 성 마리아 마조레 대성전 파올리나 경당 제단 · 여백을 잘라 내고 크기를 줄임 · 상세 `licenses/maggiore.md` · 권리 확인: 확인(Commons 표기 기준) |
+
 ## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
 
 - **번들에 더한 사진·그림·질감 파일: 없음.** 성당의 모든 표면(황토 미장·쪼갠 돌·마루 2종·불 켜진 한지·옹기 조각 벽·분홍 화강암·신자석 나무)은

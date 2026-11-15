@@ -59,6 +59,14 @@ class ArtCreditsScreen extends StatelessWidget {
                   _SeriesCard(series: s),
                   const SizedBox(height: AppSpace.xs),
                 ],
+                const SectionHeader('성당 안 성화'),
+                Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  child: Column(
+                    children: [for (final c in churchArtCredits) tile(c)],
+                  ),
+                ),
                 const SectionHeader('기도 배경'),
                 Card.filled(
                   margin: EdgeInsets.zero,

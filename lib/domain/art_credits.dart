@@ -131,3 +131,14 @@ const ArtCredit stationsArtCredit = ArtCredit(
   credit: StationsOfCross.artCredit,
   license: 'Public domain',
 );
+
+/// 성당 안에 걸린 진본 성화(가상 성당의 그 자리에 실제로 모셔진 작품의 사진).
+const List<ArtCredit> churchArtCredits = [
+  ArtCredit(
+    use: '성 마리아 마조레 대성전 · 파올리나 경당의 성화',
+    credit: '〈로마 백성의 구원(Salus Populi Romani)〉, 작가 미상, 7~13세기, 산타 마리아 마조레 대성전(로마). '
+        '사진: Wikimedia Commons "Salus Populi Romani after restoration.jpg" (LossRom). '
+        '여백을 잘라 내고 크기를 줄임.',
+    license: 'Public domain(원작) · CC0 1.0(사진)',
+  ),
+];

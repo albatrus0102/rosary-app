@@ -797,12 +797,14 @@
           [0.4, 1.0, 1.6].forEach(function (x, i) { saint(g, x, 1.88, i === 1 ? 1.6 : 1.35, 0xd6cfbf, 0xf6f2e8); });
           g.strokeStyle = css(0xbfb7a4, 1); g.lineWidth = 0.07; g.strokeRect(0.03, 0.03, w - 0.06, w - 0.06);
         });
-        // 바닥 한 칸(3.4): 오푸스 섹틸레 원판 + 모서리 1/4 원판(이으면 온 원판)
+        // 바닥 한 칸(3.4): 흰 대리석 판 + 가는 테두리 + 마름모 띠 + 가운데 작은 포르피리 원판(차분한 오푸스 섹틸레)
         reg(RG.floor, function (w) {
           marb(0, 0, w, w, 0xd6cebb, 2.5);
-          g.fillStyle = css(0x8f8a80, 1); g.fillRect(0, 0, w, 0.05); g.fillRect(0, w - 0.05, w, 0.05); g.fillRect(0, 0, 0.05, w); g.fillRect(w - 0.05, 0, 0.05, w);
-          [[1.05, 0x8f8a80], [0.99, 0xcbbf9f], [0.86, VERDE], [0.66, 0xd6cebb], [0.54, PORPH], [0.2, GIALLO]].forEach(function (d) { g.fillStyle = css(d[1], 1); g.beginPath(); g.arc(w / 2, w / 2, d[0], 0, 6.3); g.fill(); });
-          [[0, 0], [w, 0], [0, w], [w, w]].forEach(function (c) { g.fillStyle = css(0x8f8a80, 1); g.beginPath(); g.arc(c[0], c[1], 0.5, 0, 6.3); g.fill(); g.fillStyle = css(ROSSO, 1); g.beginPath(); g.arc(c[0], c[1], 0.44, 0, 6.3); g.fill(); g.fillStyle = css(0xcbbf9f, 1); g.beginPath(); g.arc(c[0], c[1], 0.22, 0, 6.3); g.fill(); });
+          g.fillStyle = css(0x8f8a80, 1); g.fillRect(0, 0, w, 0.04); g.fillRect(0, w - 0.04, w, 0.04); g.fillRect(0, 0, 0.04, w); g.fillRect(w - 0.04, 0, 0.04, w);
+          g.strokeStyle = css(0xb9ad92, 1); g.lineWidth = 0.1; g.beginPath(); g.moveTo(w / 2, 0.14); g.lineTo(w - 0.14, w / 2); g.lineTo(w / 2, w - 0.14); g.lineTo(0.14, w / 2); g.closePath(); g.stroke();
+          g.strokeStyle = css(VERDE, 1); g.lineWidth = 0.035; g.stroke();
+          [[0.5, 0x8f8a80], [0.46, GIALLO], [0.36, PORPH], [0.12, 0xcbbf9f]].forEach(function (d) { g.fillStyle = css(d[1], 1); g.beginPath(); g.arc(w / 2, w / 2, d[0], 0, 6.3); g.fill(); });
+          [[0, 0], [w, 0], [0, w], [w, w]].forEach(function (c) { g.fillStyle = css(0x8f8a80, 1); g.beginPath(); g.arc(c[0], c[1], 0.3, 0, 6.3); g.fill(); g.fillStyle = css(ROSSO, 1); g.beginPath(); g.arc(c[0], c[1], 0.25, 0, 6.3); g.fill(); });
         });
       });
       chTex.wrapS = chTex.wrapT = T.ClampToEdgeWrapping; chTex.anisotropy = 8;
@@ -954,17 +956,15 @@
           }
         }
         var rT = DM_R * Math.cos(PMAX * PI / 2), yT = Y_D + DM_RISE * Math.sin(PMAX * PI / 2), oc = [];
-        for (k = 0; k < 12; k++) { var o0 = ringP(rT, yT, 2 * PI * k / 12), o1 = ringP(rT, yT, 2 * PI * (k + 1) / 12); oc.push(cx, yT + 0.25, cz, o0[0], o0[1], o0[2], o1[0], o1[1], o1[2]); }
+        for (k = 0; k < 12; k++) { var o0 = ringP(rT, yT, 2 * PI * k / 12), o1 = ringP(rT, yT, 2 * PI * (k + 1) / 12); oc.push(cx, yT, cz, o0[0], o0[1], o0[2], o1[0], o1[1], o1[2]); }
         ctx.glass.addTris(oc, G.toColor(0xfff4d6), [cx, yT - 2, cz], { vary: 0.03 });
         for (k = 0; k < 8; k++) {   // 드럼 창(유리 판: 사각 + 반원)
           var wa = 2 * PI * (k + 0.5) / 8, hw = 0.5 / (DM_R - 0.05), wr = DM_R - 0.05, gy0 = RING + 0.42, gy1 = RING + 1.63, gc = G.toColor(GL[k % GL.length]);
-          var gv = [], gA = ringP(wr, gy0, wa - hw), gB = ringP(wr, gy0, wa + hw), gC = ringP(wr, gy1, wa + hw), gD = ringP(wr, gy1, wa - hw), gM = ringP(wr, gy1, wa);
+          var gv = [], gA = ringP(wr, gy0, wa - hw), gB = ringP(wr, gy0, wa + hw), gC = ringP(wr, gy1, wa + hw), gD = ringP(wr, gy1, wa - hw), gM = [(gC[0] + gD[0]) / 2, gy1, (gC[2] + gD[2]) / 2];
           gv.push(gA[0], gA[1], gA[2], gB[0], gB[1], gB[2], gC[0], gC[1], gC[2], gA[0], gA[1], gA[2], gC[0], gC[1], gC[2], gD[0], gD[1], gD[2]);
-          for (var q = 0; q < 6; q++) { var t0 = PI * q / 6, t1 = PI * (q + 1) / 6, e0 = ringP(wr, gy1 + 0.5 * Math.sin(t0), wa - hw * Math.cos(t0)), e1 = ringP(wr, gy1 + 0.5 * Math.sin(t1), wa - hw * Math.cos(t1)); gv.push(gM[0], gM[1], gM[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2]); }
+          for (var q = 0; q < 6; q++) { var t0 = PI * q / 6, t1 = PI * (q + 1) / 6, c0 = Math.cos(t0), c1 = Math.cos(t1), e0 = [gM[0] + (gD[0] - gM[0]) * c0, gy1 + 0.5 * Math.sin(t0), gM[2] + (gD[2] - gM[2]) * c0], e1 = [gM[0] + (gD[0] - gM[0]) * c1, gy1 + 0.5 * Math.sin(t1), gM[2] + (gD[2] - gM[2]) * c1]; gv.push(gM[0], gM[1], gM[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2]); }
           ctx.glass.addTris(gv, gc, [cx, RING + 1, cz], { vary: 0.08 });
         }
-        // 빛줄기(가짜 빛): 드럼에서 비스듬히 내려오는 두 줄기
-        [1.75, 4.55].forEach(function (ba) { var bp = ringP(DM_R - 0.3, RING + 1.3, ba); ctx.addWindowBeam({ x: bp[0], y: bp[1], z: bp[2], face: [-sg * Math.cos(ba), -Math.sin(ba)], w: 1.1, h: 1.6, colors: [0xfff1c0, 0xffe39a], reach: 7, dome: true }); });
 
         // ----- 걷기 경계(벽 바깥은 모두 막는다) -----
         var OUT = 31 - CHX, IN = XA - CHX;   // 국소 a: 바깥 한계 / 측랑 외벽 안쪽면

@@ -337,11 +337,12 @@ ADAPTERS.maggiore = {
   axes: { altar: '-z (북서)', entrance: '+z (남동)', plusX: '북동(오른쪽 R)', minusX: '남서(왼쪽 L)',
     summary: '입구 +z(남동) → 후진 -z(북서). 제대를 볼 때 오른쪽 R = +x = 북동, 왼쪽 L = -x = 남서. 근거: interiors/maggiore.md 180행.' },
   rules: [
-    { zone: 'facade', test: (e) => e.z > 34 && e.sill > 8, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : Lr(e)) },
-    { zone: 'facade_aisle', test: (e) => e.z > 34 && e.sill < 8, side: Lr, prefix: 'facadeAisle' },
+    { zone: 'facade', test: (e) => e.z > 27.5 && e.sill > 8, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : Lr(e)) },
+    { zone: 'facade_aisle', test: (e) => e.z > 27.5 && e.sill < 8, side: Lr, prefix: 'facadeAisle' },
     { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 6.75, 0.5), side: Lr, prefix: 'clere', always: true },
     { zone: 'aisle', test: (e) => near(Math.abs(e.x), 12.48, 0.5), side: Lr, prefix: 'aisle', always: true },
-    { zone: 'apse', test: (e) => e.z < -29, sort: (a, b2) => a.x - b2.x, prefix: 'apse', always: true, tag: 'w' }
+    { zone: 'apse', test: (e) => e.z < -29, sort: (a, b2) => a.x - b2.x, prefix: 'apse', always: true, tag: 'w' },
+    { zone: 'chapel', test: (e) => Math.abs(e.x) > 13, side: Lr, prefix: 'chapel', always: true, note: '대경당(시스티나 R·파올리나 L)의 루네트 창·드럼 창·정점 채광 — 손 지은 무색 유리' }
   ]
 };
 
