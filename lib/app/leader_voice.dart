@@ -45,10 +45,15 @@ const String aiVoiceDisclosure = 'AI로 합성한 음성이며, 사람이 녹음
 /// 선창 음성 설정에 한 줄로 보이는 고지(D-01).
 const String aiVoiceNotice = 'AI로 만든 음성입니다. 성사가 아니며, 교회의 공식 녹음이 아닙니다.';
 
+/// 가상 성당의 기도가 미사·성사를 대신하지 않는다는 안내(성당 입구·정보, 작업 Q).
+/// 근거: 교회법 제1247조(주일·의무 축일 미사 참여 의무), 제1248조 1항(미사가 거행되는 곳에서 참여).
+const String virtualPrayerNotice =
+    '가상 성당에서 바치는 기도는 미사 참례와 성사(고해성사·성체성사 등)를 대신하지 않습니다.';
+
 /// 더보기 > 정보의 고지(D-01).
 const String appUnofficialNotice =
     '이 앱은 가톨릭 교회의 공식 서비스가 아닙니다. 사이버 성당은 실제 성당이 아닌 3D 모형이며, '
-    '실제 봉헌·성사와 무관합니다.';
+    '실제 봉헌·성사와 무관합니다. $virtualPrayerNotice';
 
 /// 큐 하나([cueId])만 말하게 하는 스텝. [LeaderVoice.speakStep]에는
 /// `leaderCueIds`만 쓰이므로 나머지 필드는 자리만 채운다.

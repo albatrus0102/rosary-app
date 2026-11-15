@@ -5,6 +5,7 @@ import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/ui/home_screen.dart';
 import 'package:rosary_app/ui/prayer_screen.dart';
+import 'package:rosary_app/ui/quiet_prayer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _SilentSoundPlayer extends SoundPlayer {
@@ -204,15 +205,35 @@ void main() {
     });
   });
 
-  testWidgets('기도 시작 starts the prayer directly', (tester) async {
+  testWidgets('기도 시작: 먼저 잠시 기도/묵주기도를 묻고, 묵주기도면 기도 화면', (tester) async {
     final settings = await _load();
     await _pumpHome(tester, settings);
 
     await tester.tap(find.textContaining('신비 시작'));
     await _pumpRoute(tester);
+    expect(find.byType(PrayerScreen), findsNothing);
+    expect(find.text('어떻게 기도할까요?'), findsOneWidget);
+    expect(find.text('조용히 마음을 모아 잠시 기도해요'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('pray-rosary')));
+    await _pumpRoute(tester);
 
     expect(find.byType(PrayerScreen), findsOneWidget);
     expect(find.text('성호경'), findsWidgets);
+    expect(settings.churchPrayerChoice, ChurchPrayerChoice.rosary);
+  });
+
+  testWidgets('기도 시작 → 잠시 기도하기: 기도문 없이 조용한 화면', (tester) async {
+    final settings = await _load();
+    await _pumpHome(tester, settings);
+    await tester.tap(find.textContaining('신비 시작'));
+    await _pumpRoute(tester);
+    await tester.tap(find.byKey(const ValueKey('pray-brief')));
+    await _pumpRoute(tester);
+    expect(find.byType(QuietPrayerScreen), findsOneWidget);
+    expect(find.byType(PrayerScreen), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('quiet-done')));
+    await _pumpRoute(tester);
+    expect(find.byType(QuietPrayerScreen), findsNothing);
   });
 
   testWidgets('no overflow at 360x640 with text scale 1.5', (tester) async {

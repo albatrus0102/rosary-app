@@ -1,9 +1,14 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/rosary_style.dart';
+import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/sound_player.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
+import 'package:rosary_app/domain/prayer_mode.dart';
 import 'package:rosary_app/domain/rosary_sequence.dart';
 import 'package:rosary_app/rosary3d/rosary_feedback.dart';
 import 'package:rosary_app/rosary3d/rosary_gallery_screen.dart';
@@ -22,6 +27,49 @@ class _SilentSoundPlayer extends SoundPlayer {
   Future<void> playBeadTick() async {}
   @override
   Future<void> dispose() async {}
+}
+
+class _Voice implements LeaderVoice {
+  final log = <String>[];
+  final speaking = ValueNotifier<bool>(false);
+  final _pending = <Completer<void>>[];
+  @override
+  ValueListenable<bool> get isSpeaking => speaking;
+  @override
+  Future<void> init() async {}
+  @override
+  Future<void> speakStep(RosaryStep step) async =>
+      log.add('step:${step.title}');
+  @override
+  Future<void> speakResponder(RosaryStep step) {
+    log.add('resp:${step.title}');
+    final c = Completer<void>();
+    _pending.add(c);
+    return c.future;
+  }
+
+  void finish() {
+    for (final c in _pending) {
+      if (!c.isCompleted) c.complete();
+    }
+    _pending.clear();
+  }
+
+  @override
+  Future<void> stop() async => finish();
+  @override
+  Future<void> dispose() async {}
+}
+
+/// 음성 제목 안내 순서를 [log]에 함께 남기는 기록기.
+class _OrderedFeedback extends RecordingRosaryFeedback {
+  _OrderedFeedback(this.log);
+  final List<String> log;
+  @override
+  Future<void> announce(String text) async {
+    log.add('title:$text');
+    await super.announce(text);
+  }
 }
 
 void main() {
@@ -362,6 +410,162 @@ void main() {
       final again = await AppSettings.load();
       expect(again.rosaryId, 'lapis');
       expect(again.rosaryStyle, RosaryStyle.bead);
+    });
+  });
+
+  group('묵주 화면 음성·묵주 바꾸기', () {
+    Future<AppSettings> load([Map<String, Object> extra = const {}]) async {
+      SharedPreferences.setMockInitialValues({
+        'prayer_view': 'rosary',
+        'leader_audio': false,
+        ...extra,
+      });
+      return AppSettings.load();
+    }
+
+    void phone(WidgetTester tester) {
+      tester.view.devicePixelRatio = 2;
+      tester.view.physicalSize = const Size(720, 1600);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
+    Widget app(
+      AppSettings s,
+      FakeRosaryScene scene,
+      RosaryFeedbackSink fb, {
+      int initialIndex = 0,
+      LeaderVoice? voice,
+    }) => MaterialApp(
+      home: PrayerScreen(
+        settings: s,
+        mysterySet: MysterySet.joyful,
+        initialIndex: initialIndex,
+        soundPlayer: _SilentSoundPlayer(),
+        rosaryScene: scene,
+        rosaryFeedback: fb,
+        leaderVoice: voice,
+      ),
+    );
+
+    testWidgets('음성 제목: 칩을 켜면 넘길 때마다 제목을 소리로 알린다', (tester) async {
+      phone(tester);
+      final s = await load();
+      final fb = RecordingRosaryFeedback();
+      final ten = steps.indexWhere((x) => x.decade == 3 && x.beadIndex == 10);
+      await tester.pumpWidget(
+        app(s, FakeRosaryScene(), fb, initialIndex: ten - 1),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(fb.announced, isEmpty, reason: '끈 동안은 말하지 않는다');
+      await tester.tap(find.byKey(const ValueKey('rosary-voice-title')));
+      await tester.pump();
+      expect(s.rosaryVoiceTitle, isTrue);
+      await tester.tap(find.byKey(const ValueKey('prayer-back')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(fb.announced, [
+        '성모송 아홉 번째입니다',
+        '성모송 열 번째입니다',
+        '영광송입니다',
+        '구원을 비는 기도입니다',
+        '환희의 신비 제4단입니다',
+      ]);
+    });
+
+    testWidgets('음성 인도 칩: 후창이면 제목 안내 뒤에 앞단 음성, 끄면 조용히', (tester) async {
+      phone(tester);
+      final s = await load({'rosary3d_voice_title': true});
+      final log = <String>[];
+      final voice = _Voice();
+      voice.log.addAll([]);
+      final fb = _OrderedFeedback(log);
+      await tester.pumpWidget(
+        app(s, FakeRosaryScene(), fb, initialIndex: 3, voice: voice),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('rosary-voice-mode')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('후창 — 앱이 앞단, 내가 뒷단'));
+      await tester.pumpAndSettle();
+      expect(s.prayerMode, PrayerMode.responder);
+      expect(s.leaderAudioEnabled, isTrue);
+      voice.log.clear();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 10));
+      expect(log, ['title:성모송 두 번째입니다']);
+      expect(voice.log, ['step:성모송 2/3'], reason: '제목 안내가 끝난 뒤 앞단');
+      // 끄기
+      await tester.tap(find.byKey(const ValueKey('rosary-voice-mode')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('음성 끄기'));
+      await tester.pumpAndSettle();
+      expect(s.leaderAudioEnabled, isFalse);
+      voice.log.clear();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(voice.log, isEmpty);
+    });
+
+    testWidgets('선창: 뒷단 재생 중 다음을 또 눌러도 한 단계만', (tester) async {
+      phone(tester);
+      final s = await load({'prayer_mode': 'leader', 'leader_audio': true});
+      final voice = _Voice();
+      await tester.pumpWidget(
+        app(
+          s,
+          FakeRosaryScene(),
+          RecordingRosaryFeedback(),
+          initialIndex: 3,
+          voice: voice,
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      expect(voice.log.last, 'resp:성모송 1/3');
+      expect(find.text('1 / 3'), findsOneWidget, reason: '뒷단을 듣는 동안은 그대로');
+      await tester.tap(find.byKey(const ValueKey('prayer-next')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 10));
+      expect(find.text('2 / 3'), findsOneWidget, reason: '재생을 끊고 한 칸만');
+    });
+
+    testWidgets('기도 중 묵주 바꾸기: 진행 위치는 그대로, 3D 묵주만 바뀐다', (tester) async {
+      phone(tester);
+      final s = await load();
+      final scene = FakeRosaryScene();
+      await tester.pumpWidget(
+        app(s, scene, RecordingRosaryFeedback(), initialIndex: 12),
+      );
+      await tester.pump();
+      final before = find.text('5 / 10');
+      expect(before, findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('prayer-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('묵주 바꾸기'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('gallery-item-ebony')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('gallery-use')));
+      await tester.pump();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(
+        scene.calls.where((c) => c.$1 == 'setRosary').last.$2['id'],
+        'ebony',
+      );
+      expect(find.text('5 / 10'), findsOneWidget);
     });
   });
 }

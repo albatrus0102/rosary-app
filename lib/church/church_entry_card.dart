@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/leader_voice.dart' show virtualPrayerNotice;
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../app/window_class.dart';
@@ -166,6 +167,18 @@ class _ChurchEntryCardState extends State<ChurchEntryCard> {
                       icon: const Icon(Icons.search),
                       label: Text(
                         widget.churches.length > 1 ? '모든 성당 보기' : '다른 성당 고르기',
+                      ),
+                    ),
+                  ),
+                  // 가상 공간의 기도가 미사·성사를 대신하지 않는다는 안내 한 줄(작업 Q).
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpace.xs),
+                    child: Text(
+                      virtualPrayerNotice,
+                      key: const ValueKey('entry-sacrament-notice'),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
                   ),

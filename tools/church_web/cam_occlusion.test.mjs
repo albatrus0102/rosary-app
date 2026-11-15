@@ -73,12 +73,13 @@ test('여러 성당에서 홀로 선 기둥은 가늘고, 기존 벽 가드 시�
   }
 });
 
-test('근접 흐리기: 카메라–머리 1.3m 이상 불투명, 0.6m 이하 거의 투명, 단조', () => {
-  assert.equal(Guard.avatarAlpha(1.3), 1);
+test('근접 흐리기: 카메라–머리 1.7m 이상 불투명, 0.7m 이하 거의 투명, 1.3m 에서는 이미 반쯤, 단조', () => {
+  assert.equal(Guard.avatarAlpha(1.7), 1);
+  assert.ok(Guard.avatarAlpha(1.3) < 0.75);
   assert.equal(Guard.avatarAlpha(3), 1);
-  assert.ok(Guard.avatarAlpha(0.6) < 0.1 && Guard.avatarAlpha(0.3) < 0.1);
+  assert.ok(Guard.avatarAlpha(0.7) < 0.1 && Guard.avatarAlpha(0.3) < 0.1);
   let p = 0;
-  for (let d = 0.4; d <= 1.4; d += 0.05) { const a = Guard.avatarAlpha(d); assert.ok(a >= p - 1e-9); p = a; }
+  for (let d = 0.4; d <= 1.8; d += 0.05) { const a = Guard.avatarAlpha(d); assert.ok(a >= p - 1e-9); p = a; }
 });
 
 test('자리 시점: 봉헌초·성모 기도 자리·제대 앞에 도착하면 목표물이 화면 가운데~위, 아바타는 아래', () => {

@@ -41,6 +41,9 @@ test('normalize: 모르는 값은 안전한 기본값으로', () => {
   assert.equal(Liturgy.normalize({ season: 'triduum', color: 'red', emptyTab: true }).emptyTab, true);
   assert.ok(Liturgy.plan('basic', { season: 'triduum', color: 'red', emptyTab: true }).items.some((i) => i.kind === 'tabopen'));
   assert.ok(!Liturgy.plan('basic', { season: 'triduum', color: 'red', emptyTab: true }).items.some((i) => i.kind === 'tabveil'));
+  // 성목요일: 주님 만찬 미사 전에는 흰 제대 앞 보, 미사 뒤(emptyTab)에는 제대를 벗긴다
+  assert.ok(Liturgy.plan('basic', { season: 'triduum', color: 'white', feast: 'holyThursday' }).items.some((i) => i.kind === 'frontal'));
+  assert.ok(!Liturgy.plan('basic', { season: 'triduum', color: 'white', feast: 'holyThursday', emptyTab: true }).items.some((i) => i.kind === 'frontal'));
   assert.equal(Liturgy.normalize({ season: 'xmas' }).season, 'none');
   assert.equal(Liturgy.normalize({ season: 'lent', color: 'pink' }).color, 'violet');
   assert.equal(Liturgy.normalize({ season: 'easter' }).color, 'white');

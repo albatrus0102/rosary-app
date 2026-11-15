@@ -108,8 +108,9 @@
         colliders.push({ x: list[i][0], z: list[i][1], r: 0.2 });
       }
     }
-    // 1) 전례 색 천: 제대 앞 보 + 독서대 보 + 감실 보(성금요일·성토요일은 제대를 벗긴다: 천 없음. 성삼일 중 흰색 = 주님 만찬 성목요일만 천)
-    var bare = s.season === 'triduum' && c !== 'white';
+    // 1) 전례 색 천: 제대 앞 보 + 독서대 보 + 감실 보(성금요일·성토요일은 제대를 벗긴다: 천 없음. 성삼일 중 흰색 = 주님 만찬 성목요일만 천,
+    //    그것도 주님 만찬 미사 뒤(emptyTab)에는 벗긴다 — 『로마 미사 경본』 성목요일 지시 '미사가 끝나면 제대를 벗긴다')
+    var bare = s.season === 'triduum' && (c !== 'white' || s.emptyTab);
     if (!bare) {
       items.push({ kind: 'frontal', x: A.x, y: A.y, z: A.z, w: A.w, d: A.d, h: A.h, off: A.off || 0, color: c, festive: c === 'white' });
       if (P.ambo) items.push({ kind: 'fall', x: P.ambo.x, y: P.ambo.y, z: P.ambo.z, color: c });

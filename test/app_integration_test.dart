@@ -421,6 +421,9 @@ void main() {
       await tester.tap(find.textContaining('신비 시작'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
+      await tester.tap(find.byKey(const ValueKey('pray-rosary')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       await _nexts(tester, _nextsForOneDecade(settings.mysterySet));
       expect(stats.records, isEmpty); // 아직 나가지 않았다.
