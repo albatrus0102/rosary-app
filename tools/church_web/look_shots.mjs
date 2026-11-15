@@ -20,6 +20,13 @@ export const VIEWS = {
     aisle: { x: 9, z: 2, yaw: 0, pitch: 6 },
     window: { x: 6.2, z: 17.2, yaw: -90, pitch: 8, look: 10 },
   },
+  // 당고개(지하 성당 + 입구 홀): 입구 홀 스폰, 신랑, 제대 앞, 옆벽 한지 빛 창·14처
+  danggogae: {
+    entrance: { x: 0, z: 14.4, yaw: 0, pitch: 4 },
+    nave: { x: 0, z: 3.2, yaw: 0, pitch: 7 },
+    altar: { x: 0, z: -4.6, yaw: 0, pitch: 4 },
+    window: { x: 4.6, z: -1.2, yaw: -90, pitch: 2 },
+  },
 };
 // 다른 성당: 스폰에서 제대 쪽 + 중간
 function defaultViews(layout) {

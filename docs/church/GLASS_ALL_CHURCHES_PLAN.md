@@ -652,3 +652,13 @@ node tools/church_web/church_openings.mjs --check         # data/glass_windows/*
 
 - `data/glass_windows/<church>.json`: `coordinate_system`(축·축척), `model.openings`(측정값), `real_windows`(조사: 위치·주제·작가·연대·치수·출처·확신도·분류·대응 key·자유 사진·시안 묶음), `model_openings_without_real_picture_window`, `sourcing`, `work_items`, `rights`, `unverified`. `pubspec.yaml` 의 assets 는 `assets/…` 만 싣는다 → `data/` 와 `docs/` 는 APK 에 들어가지 않는다.
 - ICCD 기록: `https://sigecweb.beniculturali.it/sigec/item/print/ICCD<번호>`(PDF). 피렌체 창은 13663940~13663991 사이에 있다.
+
+## 부록. 당고개 순교성지 (`danggogae`, 100%) — 2026-11-15 추가
+
+| 항목 | 내용 |
+|---|---|
+| 실제 창 | 옆벽의 **한지 유리화 빛 상자**(지하라 바깥 창이 아니다). 한 줄 = 아래 직사각 판 + 위 뾰족 아치 판, 옆벽마다 두 줄 한 쌍 3무리 + 한 줄 → **28판**. 작가 표기 미확인, 2011년 작 → **저작권 존속으로 본다** |
+| 모델 창 | 같은 자리에 28판. `ctx.window(painted, beam:false)` 로 자리만 등록하고(14처 유도가 피한다), 그 앞에 **무늬 없는 한지 빛 판(절차 생성, 항상 같은 밝기) + 전통 격자 창살**을 짓는다 |
+| 분류 | (e) 그림 유리가 있으나 **권리 때문에 그림을 싣지 않는 창**. 흐린 사본도 쓰지 않는다(명동 §2.6 이남규 창과 같은 처리) |
+| 자유 라이선스 사진 | 0장(위키미디어 공용 조사, `interiors/danggogae.md` §4.2) |
+| 사진 창 | 없음. `glass_placements.js`·`glass_catalog.*` 변경 없음. 허락을 받으면 아래 판 자리를 `ctx.glassSlot` 으로 바꾼다(판 치수는 사진 비율에 맞춰 다시 정함) |

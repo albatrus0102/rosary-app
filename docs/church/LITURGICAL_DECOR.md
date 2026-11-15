@@ -97,7 +97,7 @@ node tools/church_web/liturgy_perf.mjs --churches basic,stpeter,milan
 ### 끝난 것
 
 - 전례 달력 도메인(`lib/domain/liturgical_season.dart`) + 단위 시험(2024~2040, KST 경계, 미리 보기 대표 날).
-- 3D 장식(`assets/church/liturgy.js`): 8개 성당 전부에 자리 표가 있고 12종 장식이 모두 지어진다. `main.js`·`bridge.js`·`index.html`·`test.html` 연결 완료.
+- 3D 장식(`assets/church/liturgy.js`): 9개 성당 전부(당고개 순교성지 포함: 제단 y 0.34, 표지는 제대 오른쪽 앞·구유는 왼쪽 계단 옆·트리는 오른쪽 기둥 앞)에 자리 표가 있고 12종 장식이 모두 지어진다. `main.js`·`bridge.js`·`index.html`·`test.html` 연결 완료.
 - Flutter 연결: `ChurchSceneController.setLiturgy`, `ChurchLiturgyBinding`(입장·KST 자정·미리 보기 변경 때 전송), 상태 칩 부제(`ChurchStatusChip.subtitle`), 설정 → 성당 → '전례 시기 미리 보기'.
 - 시험: `tools/church_web/liturgy.test.mjs`(13개), `test/liturgical_season_test.dart`(8개), `test/church_liturgy_test.dart`(6개).
 - 눈으로 확인한 성당: 성 베드로·밀라노·명동·우리 본당 × 6개 시기(낮), 우리 본당 밤(21시) 3종.

@@ -507,7 +507,8 @@
       // ---------- 빛 번짐(가짜 반사광): 더하기 혼합 사각형을 한 메시로. 실시간 조명이 아니다 ----------
       var spill = new G.Batch(212); spill.enableUV(1, 1);
       var UV_R = [0, 0, 1, 0, 1, 1, 0, 1], UV_H = [0, 0.5, 1, 0.5, 1, 1, 0, 1], UV_V = [0.5, 0.5, 0.5, 0.5, 0.5, 1, 0.5, 1];
-      function sp(a, b, c, d, col, hintS, uv) { spill.addQuad(a, b, c, d, col, hintS, { vary: 0 }, uv); }
+      // 간단 화질은 톤매핑이 없어 더한 빛이 그대로 보인다 → 조금 약하게
+      function sp(a, b, c, d, col, hintS, uv) { spill.addQuad(a, b, c, d, low ? col.multiplyScalar(0.6) : col, hintS, { vary: 0 }, uv); }
       [-1, 1].forEach(function (s) {
         var xw = s * HW;
         // 창 무리마다: 벽의 빛 번짐 + 옆 통로 바닥의 빛 웅덩이

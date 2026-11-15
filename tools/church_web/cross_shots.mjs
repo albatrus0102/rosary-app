@@ -18,7 +18,7 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); if (i < 0) return d; const v = args[i + 1]; args.splice(i, 2); return v; };
 const quality = opt('--quality', 'high'), hour = opt('--hour', '11'), before = opt('--before', '0') === '1';   // --before 1: 판 없이(?cross=0) 같은 자리
 const out = args[0] || '/tmp/cross_shots';
-const ids = args.slice(1).length ? args.slice(1) : ['basic', 'stpeter', 'stpaul', 'milan', 'florence', 'myeongdong', 'lateran', 'maggiore'];
+const ids = args.slice(1).length ? args.slice(1) : ['basic', 'stpeter', 'stpaul', 'milan', 'florence', 'myeongdong', 'lateran', 'maggiore', 'danggogae'];
 fs.mkdirSync(out, { recursive: true });
 const { churches, Logic, Stations, WayCross } = loadChurches();
 const deg = (r) => r * 180 / Math.PI;
