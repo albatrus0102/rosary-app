@@ -323,7 +323,7 @@
   ChurchBuilders['danggogae'] = {
     layout: layout,
     lancets: LANCETS, win: WIN,   // 시험이 14처 판과 창 자리를 견줄 때 쓴다
-    thumb: { x: 0, z: 9.4, yaw: 0, pitch: 9, zoom: 0.9, hour: 11 },
+    thumb: { x: 0, z: 3.0, yaw: 0, pitch: 9, zoom: 0.9, hour: 11 },   // 카메라는 아바타 뒤 약 6.4m = 뒤 통로(z 9.4)에서 제대 쪽
     build: function (ctx) {
       var T = ctx.THREE, KIT = ChurchKit, G = ChurchGeo, Geo = G.Geo, PI = Math.PI, low = ctx.quality === 'low';
       var min = Math.min, max = Math.max, cos = Math.cos, sin = Math.sin, sqrt = Math.sqrt;
@@ -513,28 +513,30 @@
         // 창 무리마다: 벽의 빛 번짐 + 옆 통로 바닥의 빛 웅덩이
         [[-5.0, 0.9], [-2.4, 1.25], [2.2, 1.25], [6.8, 1.25]].forEach(function (g) {
           var z = g[0], r = g[1], x1 = xw - s * 0.014, hi = [xw - s * 5, 2.3, z];
-          sp([x1, 0.2, z - r - 0.9], [x1, 0.2, z + r + 0.9], [x1, 4.45, z + r + 0.9], [x1, 4.45, z - r - 0.9], hdr(C.amber, 0.34), hi, UV_R);
-          sp([xw - s * 0.02, 0.016, z - r - 0.7], [xw - s * 0.02, 0.016, z + r + 0.7], [xw - s * 2.3, 0.016, z + r + 0.7], [xw - s * 2.3, 0.016, z - r - 0.7], hdr(C.amber, 0.42), [xw - s, 3, z], UV_H);
+          sp([x1, 0.2, z - r - 0.9], [x1, 0.2, z + r + 0.9], [x1, 4.45, z + r + 0.9], [x1, 4.45, z - r - 0.9], hdr(C.amber, 0.2), hi, UV_R);
+          sp([xw - s * 0.02, 0.016, z - r - 0.7], [xw - s * 0.02, 0.016, z + r + 0.7], [xw - s * 2.3, 0.016, z + r + 0.7], [xw - s * 2.3, 0.016, z - r - 0.7], hdr(C.amber, 0.3), [xw - s, 3, z], UV_H);
         });
       });
       // 빛 띠의 널 아랫면: 널 사이 간접등이 비추는 쪽(입구 쪽 높은 끝)이 밝다
       for (si = 0; si < slats; si++) {
         var szc = BZ0 + BSTEP * si, zh = SLD / 2, yh = bandY + 0.03 - sin(SLT) * zh - 0.003, yl = bandY + 0.03 + sin(SLT) * zh - 0.003;
-        sp([-BX, yh, szc + cos(SLT) * zh], [BX, yh, szc + cos(SLT) * zh], [BX, yl, szc - cos(SLT) * zh], [-BX, yl, szc - cos(SLT) * zh], hdr(C.lamp, 0.62), [0, 0, szc], [0, 0.5, 1, 0.5, 1, 0.93, 0, 0.93]);
+        sp([-BX, yh, szc + cos(SLT) * zh], [BX, yh, szc + cos(SLT) * zh], [BX, yl, szc - cos(SLT) * zh], [-BX, yl, szc - cos(SLT) * zh], hdr(C.lamp, 0.45), [0, 0, szc], [0, 0.5, 1, 0.5, 1, 0.93, 0, 0.93]);
       }
       // 빛 띠 아래 중앙 통로, 매입등 둘레 천장, 제대 벽 위쪽, 십자가 뒤
-      sp([-2.6, 0.016, 10.4], [2.6, 0.016, 10.4], [2.6, 0.016, -5.9], [-2.6, 0.016, -5.9], hdr(C.lamp, 0.16), [0, 3, 2], [0, 0.5, 1, 0.5, 1, 0.5, 0, 0.5]);
-      downs.forEach(function (p) { var r = 0.55, y = p[1] - 0.004; sp([p[0] - r, y, p[2] - r], [p[0] + r, y, p[2] - r], [p[0] + r, y, p[2] + r], [p[0] - r, y, p[2] + r], hdr(C.lamp, 0.3), [p[0], 0, p[2]], UV_R); });
+      sp([-2.6, 0.016, 10.4], [2.6, 0.016, 10.4], [2.6, 0.016, -5.9], [-2.6, 0.016, -5.9], hdr(C.lamp, 0.1), [0, 3, 2], [0, 0.5, 1, 0.5, 1, 0.5, 0, 0.5]);
+      downs.forEach(function (p) { var r = 0.55, y = p[1] - 0.004; sp([p[0] - r, y, p[2] - r], [p[0] + r, y, p[2] - r], [p[0] + r, y, p[2] + r], [p[0] - r, y, p[2] + r], hdr(C.lamp, 0.2), [p[0], 0, p[2]], UV_R); });
       for (ai = 0; ai < 5; ai++) {
         var wa = AV[ai], wb = AV[ai + 1], wdx = wb[0] - wa[0], wdz = wb[1] - wa[1], wl = sqrt(wdx * wdx + wdz * wdz), wnx = -wdz / wl * 0.016, wnz = wdx / wl * 0.016;
-        sp([wa[0] + wnx, 4.6, wa[1] + wnz], [wb[0] + wnx, 4.6, wb[1] + wnz], [wb[0] + wnx, 1.6, wb[1] + wnz], [wa[0] + wnx, 1.6, wa[1] + wnz], hdr(C.lamp, 0.34), [wnx * 400, 3, -8], UV_V);
+        sp([wa[0] + wnx, 4.6, wa[1] + wnz], [wb[0] + wnx, 4.6, wb[1] + wnz], [wb[0] + wnx, 1.6, wb[1] + wnz], [wa[0] + wnx, 1.6, wa[1] + wnz], hdr(C.lamp, 0.22), [wnx * 400, 3, -8], UV_V);
       }
       var CRY = SY + 1.85, CRH = 1.9;
-      sp([-1.9, CRY - 0.8, -10.78], [1.9, CRY - 0.8, -10.78], [1.9, CRY + CRH + 0.7, -10.78], [-1.9, CRY + CRH + 0.7, -10.78], hdr(0xffe6b8, 0.26), [0, 3, 0], UV_R);
+      sp([-1.9, CRY - 0.8, -10.78], [1.9, CRY - 0.8, -10.78], [1.9, CRY + CRH + 0.7, -10.78], [-1.9, CRY + CRH + 0.7, -10.78], hdr(0xffe6b8, 0.16), [0, 3, 0], UV_R);
       // 입구 홀: 매입등 아래 바닥의 빛 웅덩이, 문 쪽 벽과 옹기 벽을 훑는 빛
-      [[-4.6, 12.6], [0, 12.6], [4.6, 12.6], [-4.6, 14.6], [0, 14.6], [4.6, 14.6]].forEach(function (p) { sp([p[0] - 1.9, 0.016, p[1] - 1.5], [p[0] + 1.9, 0.016, p[1] - 1.5], [p[0] + 1.9, 0.016, p[1] + 1.5], [p[0] - 1.9, 0.016, p[1] + 1.5], hdr(C.lamp, 0.2), [p[0], 3, p[1]], UV_R); });
-      sp([-HW, LH, ZBO + 0.05], [HW, LH, ZBO + 0.05], [HW, 1.0, ZBO + 0.05], [-HW, 1.0, ZBO + 0.05], hdr(C.lamp, 0.16), [0, 2, 20], UV_V);
-      sp([-HW, LH, ZL - 0.016], [HW, LH, ZL - 0.016], [HW, 1.2, ZL - 0.016], [-HW, 1.2, ZL - 0.016], hdr(C.lamp, 0.22), [0, 2, 0], UV_V);
+      [[-4.6, 12.6], [0, 12.6], [4.6, 12.6], [-4.6, 14.6], [0, 14.6], [4.6, 14.6]].forEach(function (p) { sp([p[0] - 1.9, 0.016, p[1] - 1.5], [p[0] + 1.9, 0.016, p[1] - 1.5], [p[0] + 1.9, 0.016, p[1] + 1.5], [p[0] - 1.9, 0.016, p[1] + 1.5], hdr(C.lamp, 0.5), [p[0], 3, p[1]], UV_R); });
+      // 열린 문으로 성당의 빛이 입구 홀 바닥에 번진다
+      sp([-1.0, 0.018, ZBO], [1.0, 0.018, ZBO], [2.6, 0.018, ZBO + 3.4], [-2.6, 0.018, ZBO + 3.4], hdr(C.lamp, 1.1), [0, 3, 13], UV_H);
+      sp([-HW, LH, ZBO + 0.05], [HW, LH, ZBO + 0.05], [HW, 1.0, ZBO + 0.05], [-HW, 1.0, ZBO + 0.05], hdr(C.lamp, 0.1), [0, 2, 20], UV_V);
+      sp([-HW, LH, ZL - 0.016], [HW, LH, ZL - 0.016], [HW, 1.2, ZL - 0.016], [-HW, 1.2, ZL - 0.016], hdr(C.lamp, 0.14), [0, 2, 0], UV_V);
 
       // ---------- 상징 기둥 2(돌 쌓기, 어두운 조약돌 물결 띠 — 십자가·문양 없음) ----------
       [-1, 1].forEach(function (s) {
@@ -585,7 +587,7 @@
         ctx.box({ x: x, y: y, z: z, w: 0.62, h: 1.1, d: 0.52, surf: 'dg_stone' });
         solid.add(Geo.cyl(16, 1), 0x1a1412, { x: x, y: y + 0.62, z: z + 0.262, rx: PI / 2, sx: 0.115, sy: 0.006, sz: 0.115, flat: true, vary: 0 });
         glow.add(Geo.sph(8, 6), hdr(0xff4a3a, 2.2), { x: x, y: y + 0.62, z: z + 0.285, sx: 0.045, sy: 0.06, sz: 0.03, flat: false, vary: 0 });
-        sp([x - 0.4, y + 0.22, z + 0.275], [x + 0.4, y + 0.22, z + 0.275], [x + 0.4, y + 1.02, z + 0.275], [x - 0.4, y + 1.02, z + 0.275], hdr(0xff5040, 0.5), [x, y + 0.6, 0], UV_R);
+        sp([x - 0.4, y + 0.22, z + 0.275], [x + 0.4, y + 0.22, z + 0.275], [x + 0.4, y + 1.02, z + 0.275], [x - 0.4, y + 1.02, z + 0.275], hdr(0xff5040, 0.35), [x, y + 0.6, 0], UV_R);
         ctx.cyl({ x: x, y: y + 1.1, z: z, r: 0.3, h: 0.03, seg: 8, ry: PI / 8, color: C.bronze, mat: 'metal' });
         ctx.cyl({ x: x, y: y + 1.13, z: z, r: 0.27, h: 0.47, seg: 8, ry: PI / 8, color: C.bronze, mat: 'metal' });
         ctx.cyl({ x: x, y: y + 1.6, z: z, r: 0.3, rTop: 0.04, h: 0.17, seg: 8, ry: PI / 8, color: ctx.shade(C.bronze, 1.15), mat: 'metal' });
@@ -686,7 +688,7 @@
       var spTex = ctx.tex.custom(64, 64, function (g, w, h) {
         var im = g.createImageData(w, h);
         for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
-          var dx = (x + 0.5) / w - 0.5, dy = (y + 0.5) / h - 0.5, r = min(1, sqrt(dx * dx + dy * dy) * 2), v = Math.pow(1 - r, 1.7), o = (y * w + x) * 4;
+          var dx = (x + 0.5) / w - 0.5, dy = (y + 0.5) / h - 0.5, r = min(1, sqrt(dx * dx + dy * dy) * 2), v = Math.pow(1 - r, 1.15), o = (y * w + x) * 4;
           im.data[o] = im.data[o + 1] = im.data[o + 2] = Math.round(255 * v); im.data[o + 3] = 255;
         }
         g.putImageData(im, 0, 0);

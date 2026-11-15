@@ -689,6 +689,100 @@ void main() {
       );
     });
   });
+
+  group('당고개 순교성지 상세 시트', () {
+    Future<void> open(WidgetTester tester, Size size, double scale) async {
+      final h = AppSettingsHolder();
+      await _pumpSelect(tester, holder: h, size: size, textScale: scale);
+      await _reveal(tester, _card('danggogae'));
+      await tester.tap(_card('danggogae'));
+      await tester.pumpAndSettle();
+    }
+
+    Finder inSheet(Finder f) =>
+        find.descendant(of: find.byType(BottomSheet), matching: f);
+
+    testWidgets('순교자 10위·근거·알아 둘 사실·모형 고지가 보이고 [입장]이 된다', (tester) async {
+      final info = ChurchCatalog.byId['danggogae']!;
+      await open(tester, const Size(400, 800), 1.0);
+      expect(inSheet(find.text('당고개 순교성지')), findsOneWidget);
+      expect(inSheet(find.textContaining('성지')), findsWidgets);
+      expect(inSheet(find.text(info.blurb)), findsOneWidget);
+      final scroll = inSheet(find.byType(Scrollable)).first;
+      await tester.scrollUntilVisible(
+        find.text('당고개의 순교자 10위'),
+        200,
+        scrollable: scroll,
+      );
+      for (final p in info.people) {
+        await tester.scrollUntilVisible(
+          find.text(p.name),
+          200,
+          scrollable: scroll,
+        );
+        expect(find.text(p.name), findsOneWidget);
+      }
+      expect(
+        find.text('1840년 1월 31일 순교', skipOffstage: false),
+        findsNWidgets(7),
+      );
+      expect(
+        find.text('1840년 2월 1일 순교', skipOffstage: false),
+        findsNWidgets(3),
+      );
+      await tester.scrollUntilVisible(
+        find.text(info.peopleNote),
+        200,
+        scrollable: scroll,
+      );
+      await tester.scrollUntilVisible(
+        find.text('알아 둘 사실'),
+        200,
+        scrollable: scroll,
+      );
+      await tester.scrollUntilVisible(
+        find.text(info.source),
+        200,
+        scrollable: scroll,
+      );
+      // 추정으로 지은 부분을 한 줄로 밝힌다
+      final note = find.textContaining('실제 치수는 확인 전이며 사진을 보고 분위기를 재현한 것입니다');
+      await tester.scrollUntilVisible(note, 200, scrollable: scroll);
+      expect(note, findsOneWidget);
+      expect(find.textContaining('실제 건축을 단순화한 3D 모형입니다'), findsOneWidget);
+      expect(find.textContaining('성화·유리화·조각은 싣지 않았습니다'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(find.widgetWithText(FilledButton, '입장'), findsOneWidget);
+    });
+
+    testWidgets('360x800 글자 2배에서도 넘치지 않고 끝까지 스크롤된다', (tester) async {
+      final info = ChurchCatalog.byId['danggogae']!;
+      await open(tester, const Size(360, 800), 2.0);
+      expect(tester.takeException(), isNull);
+      final scroll = inSheet(find.byType(Scrollable)).first;
+      for (final t in [info.people.last.name, info.source]) {
+        await tester.scrollUntilVisible(find.text(t), 240, scrollable: scroll);
+        expect(tester.takeException(), isNull);
+      }
+      await tester.scrollUntilVisible(
+        find.textContaining('싣지 않았습니다'),
+        240,
+        scrollable: scroll,
+      );
+      expect(tester.takeException(), isNull);
+      // 긴 이름·날짜가 화면 밖으로 나가지 않는다
+      final sheet = tester.getRect(find.byType(BottomSheet));
+      for (final e in find.textContaining('싣지 않았습니다').evaluate()) {
+        final r = tester.getRect(find.byWidget(e.widget));
+        expect(r.left >= sheet.left && r.right <= sheet.right, isTrue);
+      }
+      // [입장]은 스크롤 밖에 늘 보인다
+      final btn = find.widgetWithText(FilledButton, '입장');
+      expect(btn, findsOneWidget);
+      expect(tester.getRect(btn).bottom <= 800, isTrue);
+      expect(tester.getSize(btn).height >= 48, isTrue);
+    });
+  });
 }
 
 class _Probe extends StatefulWidget {

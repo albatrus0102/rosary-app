@@ -80,7 +80,8 @@ void main() {
       final ids = StationsSeriesCatalog.all.map((s) => s.id).toSet();
       const bundled = [
         'basic', 'stpeter', 'lateran', 'maggiore', //
-        'stpaul', 'milan', 'florence', 'myeongdong',
+        'stpaul', 'milan', 'florence', 'myeongdong', //
+        'danggogae',
       ];
       for (final c in bundled) {
         expect(ChurchCatalog.byId.containsKey(c), isTrue, reason: c);
