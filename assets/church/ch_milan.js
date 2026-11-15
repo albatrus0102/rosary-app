@@ -687,16 +687,9 @@
         var u0 = -a + lw * li, u1 = u0 + lw, v0 = sill + h * rj / rows, v1 = sill + h * (rj + 1) / rows;
         var cc;
         if (win.door) cc = (rj + li) % 2 ? 0x4e3425 : 0x5b3d2a;
-        else if (win.medal) cc = GROUND[(li + rj) % 2]; else cc = pick();
-        if (beamCols.length < 3 && rnd() < 0.3 && !win.door) beamCols.push(win.medal ? ACCENT[Math.floor(wr() * ACCENT.length)] : cc);
+        else cc = pick();   // 예전 medal(파랑·빨강 바둑판 + 팔각 메달리온)은 '이상한 도형'이라 없앴다: 모든 창이 같은 보석색 칸
+        if (beamCols.length < 3 && rnd() < 0.3 && !win.door) beamCols.push(cc);
         cell([[u0, v0], [u1, v0], [u1, v1], [u0, v1]], cc);
-        if (win.medal) {
-          // 메달리온(팔각) : 바탕 위에 밝은 색 면
-          var mu = (u0 + u1) / 2, mv = (v0 + v1) / 2, rx = (u1 - u0) * 0.36, ry2 = (v1 - v0) * 0.36, oct = [];
-          for (var q = 0; q < 8; q++) { var aq = q * PI / 4 + PI / 8; oct.push([mu + Math.cos(aq) * rx * 1.08, mv + Math.sin(aq) * ry2 * 1.08]); }
-          cellTop(oct, ACCENT[Math.floor(wr() * ACCENT.length)]);
-          cellTop([[mu - rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv + ry2 * 0.28], [mu - rx * 0.28, mv + ry2 * 0.28]], GROUND[(li + rj + 1) % 2], 0.022);
-        }
       }
       // 아치부 부채꼴 칸
       var top = sill + h, ar = [], cA = [0, top + rise * 0.2], f = pf(a, rise), m = 12;

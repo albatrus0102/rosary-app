@@ -128,7 +128,7 @@ test('side order as the avatar sees it: facing the altar, DEV-001 is the first w
 const planned = DG.plan(table, anchors, { dev: true });
 test('plan: all 55 rows are either placed in the church or QA-only; no duplicate anchors', () => {
   const s = DG.summary(planned);
-  assert.deepEqual(s, { total: 55, placed: 42, qa: 13, skipped: 0, confirmed: 35, probable: 7, assumed: 0, hold: 6 });
+  assert.deepEqual(s, { total: 55, filler: 36, placed: 42, qa: 13, skipped: 0, confirmed: 35, probable: 7, assumed: 0, hold: 6 });
   const used = new Set();
   for (const p of planned) {
     assert.ok(['placed', 'qa'].includes(p.status), p.dev_id + ' ' + p.status + ' ' + p.why);
@@ -263,13 +263,14 @@ test('dispose: entering and leaving 6 times frees every dev texture, material an
     assert.equal(w.devGlass.state, 'fading');
     const sum = w.devGlass.summary;
     assert.equal(sum.placed, id === 'milan' ? 42 : 55);
-    // 아틀라스 1 + 큰 그림 3 + 뒤판 1 = draw call 5
-    same(Array.from(w.group.children, (c) => c.name), ['devglass-lead', 'devglass-atlas', 'devglass-DEV-001', 'devglass-DEV-002', 'devglass-DEV-003']);
+    // 아틀라스 1 + (밀라노만) 빌린 그림 1 + 큰 그림 3 = draw call 5 (QA 는 4). 뒤판은 없다(칸이 개구부를 다 덮는다).
+    same(Array.from(w.group.children, (c) => c.name), id === 'milan' ? ['devglass-atlas', 'devglass-filler', 'devglass-DEV-001', 'devglass-DEV-002', 'devglass-DEV-003'] : ['devglass-atlas', 'devglass-DEV-001', 'devglass-DEV-002', 'devglass-DEV-003']);
     assert.equal(w.devGlass.textures.length, 4);
     for (const c of w.group.children) { c.geometry.addEventListener('dispose', () => geoDisposed++); c.material.addEventListener('dispose', () => matDisposed++); }
     for (const x of w.devGlass.textures) x.addEventListener('dispose', () => texDisposed++);
-    const quads = w.group.children.filter((c) => c.name !== 'devglass-lead').reduce((n, c) => n + c.geometry.index.count / 6, 0);
-    assert.equal(quads, sum.placed, 'one quad per placed row');
+    const quads = w.group.children.reduce((n, c) => n + c.geometry.index.count / 6, 0);
+    const want = w.devGlass.planned.filter((p) => p.status === 'placed').concat(w.devGlass.planned.fillers || []).reduce((n, p) => n + p.lancets.length, 0);
+    assert.equal(quads, want, 'one quad per lancet');
     w.update(0.1); w.update(0.2);
     assert.equal(w.devGlass.state, 'ready');
     assert.equal(w.updates, 2, 'the original update still runs');
@@ -283,7 +284,7 @@ test('dispose: entering and leaving 6 times frees every dev texture, material an
   assert.equal(D.stats.created, 24);
   assert.equal(D.stats.disposed, 24);
   assert.equal(D.stats.meshes, 0);
-  assert.deepEqual([texDisposed, geoDisposed, matDisposed], [24, 30, 30]);
+  assert.deepEqual([texDisposed, geoDisposed, matDisposed], [24, 27, 27]);
   assert.equal(D.current(), null);
   assert.equal(D.stats.errors, 0);
 });

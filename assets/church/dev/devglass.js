@@ -16,6 +16,7 @@
 })(typeof window !== 'undefined' ? window : this, function (root) {
   'use strict';
   var FRONT = 0.03, BACK = 0.018;          // 유리 평면에서 실내 쪽으로: 그림 판 3cm, 뒤판 1.8cm (메달리온 유리 1.2cm 보다 앞)
+  var FILL_DIM = 0.62, FILL_BIAS = 1.6;     // 빌린 그림(그림 없는 창): 어둡게(×0.62)·흐리게(밉 +1.6)
   var FADE = 0.25, NIGHT_K = 0.08, ATLAS_MAX = 512, GUT = 4, LEAD = 0x14100d;
   var tables = {}, packs = {};
   var stats = { created: 0, disposed: 0, meshes: 0, attaches: 0, clears: 0, errors: 0 };
@@ -34,6 +35,21 @@
      plan(table, anchors, {dev, sizes}) → [{dev_id, anchor, status, why, certainty, rect?}]
        status: 'placed'(판을 건다) | 'qa'(성당 안에 걸지 않음: why 'unplaced' = anchor 없음, 'hold' = hang:false) | 'skipped'(걸려 했으나 못 건다: why)
        rect: {x, y, z(판 가운데), nx, nz, yawDeg, w, h, uv:[u0,v0,u1,v1], box:{w, y0, y1}, cover(상자를 덮는 비율), rest:'lead'|'glass', bx, bz(뒤판 가운데)} */
+  /* 한 창의 상자(box.w × y0..y1)를 빛(lancet) 수만큼 세로로 나눠, 칸마다 자기 그림 조각(uv)을 준다(실제 다중 창처럼).
+     칸마다 'cover'(비율 유지·넘치는 쪽 자름)이고, 자르는 쪽 위치를 칸 번호로 옮긴다 → 그림 한 장이 모든 빛에 걸쳐 펼쳐진다.
+     같은 질감·같은 uv 오프셋만 쓴다(질감 복제 없음). flip 이면 좌우를 뒤집는다(이웃 창과 같은 그림이 똑같이 안 보이게). */
+  function lancetStrips(a, px, y0, y1, flip) {
+    var n = Math.max(1, Math.min(8, Math.round(a.lights || 1))), bw = a.w, bh = y1 - y0, lw = bw / n, La = lw / bh, asp = px[0] / px[1], out = [], rx = a.nz, rz = -a.nx;
+    for (var i = 0; i < n; i++) {
+      var t = n > 1 ? i / (n - 1) : 0.5, u = [0, 0, 1, 1];
+      if (asp > La) { var kw = La / asp, u0 = (1 - kw) * t; u = [u0, 0, u0 + kw, 1]; }
+      else { var kv = asp / La, v1 = n > 1 ? 1 - (1 - kv) * t : 1; u = [0, v1 - kv, 1, v1]; }
+      if (flip) u = [u[2], u[1], u[0], u[3]];
+      var off = -bw / 2 + lw * (i + 0.5);
+      out.push({ x: a.x + a.nx * FRONT + rx * off, y: (y0 + y1) / 2, z: a.z + a.nz * FRONT + rz * off, nx: a.nx, nz: a.nz, w: lw, h: bh, uv: u });
+    }
+    return out;
+  }
   function plan(table, anchors, o) {
     o = o || {};
     var by = {}, used = {}, out = [];
@@ -63,13 +79,33 @@
       var cy = al === 'top' ? y1 - h / 2 : (al === 'bottom' ? y0 + h / 2 : (y0 + y1) / 2);
       var cover = (w * h) / (bw * bh), rest = r.rest || (cover >= 0.75 ? 'lead' : 'glass');
       res.status = 'placed';
+      res.lancets = lancetStrips(a, px, y0, y1, false).map(function (q) { q.texture = r.texture; return q; });
       res.rect = { x: a.x + a.nx * FRONT, y: cy, z: a.z + a.nz * FRONT, nx: a.nx, nz: a.nz, yawDeg: Math.atan2(a.nx, a.nz) * 180 / Math.PI,
         w: w, h: h, uv: uv, box: { w: bw, y0: y0, y1: y1 }, cover: cover, rest: rest, bx: a.x + a.nx * BACK, bz: a.z + a.nz * BACK, texture: r.texture, px: px };
     });
+    // 그림이 없는 유리 창(표에 행이 없거나 못 건 창)도 절차적 색 칸(팔각·사각 격자)을 드러내지 않는다:
+    // 가까운 이웃 창의 그림(작은 그림만 = 아틀라스 재사용)을 좌우 번갈아 뒤집어 빌려 쓰고, 그리기에서 어둡고 흐리게 한다.
+    var fillers = out.fillers = [];
+    if (o.filler !== false) {
+      var donors = out.filter(function (p) { return p.status === 'placed' && Math.max(p.rect.px[0], p.rect.px[1]) <= ATLAS_MAX; });
+      var seq = 0;
+      (anchors || []).forEach(function (a) {
+        var door = a.kind === 'door';
+        if (a.kind && a.kind !== 'glass' && !door) return;
+        if (door && !(a.apex - a.spring > 0.3)) return;      // 문: 아래 문짝은 그대로, 위 아치 부채꼴 유리(spring~apex)만 덮는다
+        if (used[a.key] || !donors.length) return;
+        var ds = donors.map(function (d) { var da = by[d.anchor]; return { d: d, k: (da.x - a.x) * (da.x - a.x) + (da.z - a.z) * (da.z - a.z) + 4 * (da.y - a.y) * (da.y - a.y) }; }).sort(function (x, y) { return x.k - y.k || (x.d.dev_id < y.d.dev_id ? -1 : 1); });
+        var d = ds[seq % Math.min(2, ds.length)].d, flip = (seq % 2) === 1;
+        seq++;
+        var strips = lancetStrips(a, d.rect.px, door ? a.spring : a.sill, a.apex, flip).map(function (q) { q.texture = d.rect.texture; q.filler = true; return q; });
+        fillers.push({ dev_id: 'FILL-' + a.key, anchor: a.key, status: 'filler', donor: d.dev_id, texture: d.rect.texture, lancets: strips });
+        used[a.key] = 'FILL';
+      });
+    }
     return out;
   }
   function summary(pl) {
-    var s = { total: pl.length, placed: 0, qa: 0, skipped: 0, confirmed: 0, probable: 0, assumed: 0, hold: 0 };
+    var s = { total: pl.length, filler: (pl.fillers || []).length, placed: 0, qa: 0, skipped: 0, confirmed: 0, probable: 0, assumed: 0, hold: 0 };
     pl.forEach(function (p) {
       s[p.status]++;
       if (p.status === 'placed') { if (p.certainty === 'assumed') s.assumed++; else if (p.certainty === 'probable') s.probable++; else s.confirmed++; }
@@ -167,16 +203,17 @@
       g.computeBoundingSphere();
       return g;
     }
-    function glassMesh(list, map, uvOf, name) {
+    function glassMesh(list, map, uvOf, name, fo) {
       var S = root.ChurchGlassView.shaders;
       var mat = new T.ShaderMaterial({
-        uniforms: { uMapA: { value: map }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: 0 }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
+        uniforms: { uMapA: { value: map }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: fo ? fo.bias : 0 }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
           uDecode: { value: caps.isWebGL2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 0 }, uGain: { value: 1 } },
         vertexShader: S.vs, fragmentShader: S.fs, extensions: { derivatives: true },
         fog: false, lights: false, toneMapped: false, transparent: true, depthWrite: true,
         blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.SrcAlphaFactor, blendDst: T.OneMinusSrcAlphaFactor,
         blendSrcAlpha: T.ZeroFactor, blendDstAlpha: T.OneMinusSrcAlphaFactor
       });
+      mat.userData.dim = fo ? fo.dim : 1;
       var m = new T.Mesh(quads(list, uvOf, function (q) { return q; }), mat);
       m.name = name; m.renderOrder = 5.5; m.frustumCulled = list.length < 2;
       m.userData.noAO = true; m.userData.devGlass = list.map(function (q) { return q.dev_id + '@' + q.anchor; });
@@ -200,17 +237,11 @@
       var ids = []; want.forEach(function (p) { if (ids.indexOf(p.rect.texture) < 0) ids.push(p.rect.texture); });
       return Promise.all(ids.map(function (id) { return loadImg(pack.images[id].src).then(function (im) { return { id: id, im: im, w: im.naturalWidth || im.width, h: im.naturalHeight || im.height }; }); })).then(function (imgs) {
         if (tok.dead) return;
-        var list = want.map(function (p) { var q = p.rect; q.dev_id = p.dev_id; q.anchor = p.anchor; return q; });
+        var list = [], fills = [];
+        want.forEach(function (p) { p.lancets.forEach(function (q) { q.dev_id = p.dev_id; q.anchor = p.anchor; list.push(q); }); });
+        (inst.planned.fillers || []).forEach(function (f) { f.lancets.forEach(function (q) { q.dev_id = f.dev_id; q.anchor = f.anchor; fills.push(q); }); });
         var small = imgs.filter(function (i) { return Math.max(i.w, i.h) <= ATLAS_MAX; }), big = imgs.filter(function (i) { return Math.max(i.w, i.h) > ATLAS_MAX; });
-        // 뒤판(납틀색): 그림이 덮지 못한 곳이 '임시 그림은 여기까지'로 보이게. rest:'glass' 인 창은 뒤판 없이 기존 절차적 유리가 보인다.
-        var leads = list.filter(function (q) { return q.rest === 'lead'; });
-        if (leads.length) {
-          var lm = new T.MeshBasicMaterial({ color: LEAD, fog: false });
-          var lmesh = new T.Mesh(quads(leads, null, function (q) { return { x: q.bx, y: (q.box.y0 + q.box.y1) / 2, z: q.bz, w: q.box.w, h: q.box.y1 - q.box.y0 }; }), lm);
-          lmesh.name = 'devglass-lead'; lmesh.frustumCulled = false; lmesh.userData.noAO = true; lmesh.castShadow = false; lmesh.receiveShadow = false; lmesh.visible = false;
-          inst.meshes.push(lmesh); inst.mats.push(lm); inst.lead = lmesh; stats.meshes++;
-          world.group.add(lmesh);
-        }
+        // 뒤판(납틀색)은 없다: 이제 칸(lancet)이 개구부 상자를 빈틈없이 덮는다(절차적 유리가 비치지 않음).
         if (small.length) {
           var A = packAtlas(small, 2048), cv = document.createElement('canvas'); cv.width = A.w; cv.height = A.h;
           var g = cv.getContext('2d');
@@ -221,6 +252,11 @@
             var r = A.at[q.texture], u = q.uv;
             return [(r.x + u[0] * r.w) / A.w, 1 - (r.y + (1 - u[1]) * r.h) / A.h, (r.x + u[2] * r.w) / A.w, 1 - (r.y + (1 - u[3]) * r.h) / A.h];
           }, 'devglass-atlas');
+          var fa = fills.filter(function (q) { return sm[q.texture]; });
+          if (fa.length) glassMesh(fa, ax, function (q) {
+            var r = A.at[q.texture], u = q.uv;
+            return [(r.x + u[0] * r.w) / A.w, 1 - (r.y + (1 - u[1]) * r.h) / A.h, (r.x + u[2] * r.w) / A.w, 1 - (r.y + (1 - u[3]) * r.h) / A.h];
+          }, 'devglass-filler', { dim: FILL_DIM, bias: FILL_BIAS });
           inst.atlas = { w: A.w, h: A.h, n: small.length };
         }
         big.forEach(function (i) {
@@ -228,8 +264,8 @@
         });
         inst.state = 'fading'; inst.fade = 0; inst.ms = Math.round(((root.performance && performance.now()) || 0) - t0);
         var s = inst.summary;
-        post({ e: 'devGlass', church: world.id, set: t.set || '', placed: s.placed, total: s.total, probable: s.probable, assumed: s.assumed, on: 1 });
-        badge('개발용 임시 시안 · 실제 작품 아님 · ' + s.placed + '/' + s.total);
+        post({ e: 'devGlass', church: world.id, set: t.set || '', placed: s.placed, total: s.total, probable: s.probable, assumed: s.assumed, filler: s.filler, on: 1 });
+        badge('개발용 임시 시안 · 실제 작품 아님 · ' + s.placed + '/' + s.total + (s.filler ? ' · 이웃 그림 보충 ' + s.filler : ''));
         if (root.console) console.log('[church] devglass ' + world.id + ' ' + JSON.stringify(s) + ' meshes ' + inst.meshes.length + ' ' + inst.ms + 'ms');
       });
     }).catch(function (e) {
@@ -248,12 +284,12 @@
       for (var i = 0; i < inst.mats.length; i++) {
         var m = inst.mats[i];
         if (!m.uniforms) continue;
-        m.uniforms.uFade.value = f; m.uniforms.uK.value = k; m.uniforms.uSelfTone.value = self;
+        m.uniforms.uFade.value = f; m.uniforms.uK.value = k * (m.userData && m.userData.dim || 1); m.uniforms.uSelfTone.value = self;
         if (m.uniforms.uGain) m.uniforms.uGain.value = env && env.photoK ? env.photoK : 1;   // 진본 사진 창과 같은 밝기(looks.js photoK)
         m.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
         var r = 0.012 * night; m.uniforms.uRefl.value.set(r, r * 0.7, r * 0.45);
       }
-      if (inst.lead) inst.lead.visible = f >= 0.5;
+      
     };
     inst.clear = function () {
       if (tok.dead) return;

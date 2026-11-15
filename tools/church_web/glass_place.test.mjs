@@ -159,16 +159,13 @@ test('photo plates draw after light shafts and before flames/markers/name tags; 
   assert.ok(src.includes('transparent: true, depthWrite: true'), 'transparent queue (sorted by renderOrder), still writes depth');
 });
 
-test('Milan: the plate sits in front of the stand-in medallions and asks for a close camera in the narrow ambulatory', () => {
+test('Milan: the plate sits in front of the glass cells and asks for a close camera in the narrow ambulatory', () => {
   const mi = church('milan').glassSlots[0];
   assert.ok(mi.camMax > 1.5 && mi.camMax < 3.5, 'camMax ' + mi.camMax);
   const src = fs.readFileSync(path.join(assets, 'ch_milan.js'), 'utf8');
-  // cellTop(메달리온) 깊이: 팔각 기본값(dz || 0.012)과 그 안 사각형(..., 0.022) 중 앞쪽. 둘은 서로 다른 평면(z-fighting 금지)
-  const oct = +/dd = gd - \(dz \|\| ([\d.]+)\)/.exec(src)[1], sq = +/GROUND\[\(li \+ rj \+ 1\) % 2\], ([\d.]+)\)/.exec(src)[1];
-  assert.ok(sq >= oct + 0.008, `inner square ${sq} must be ≥0.8cm in front of octagon ${oct}`);
-  const top = Math.max(oct, sq);
+  // 메달리온(팔각)은 없앴다(glass_coverage.test.mjs). 사진 판은 유리 칸(gd) 앞쪽에 선다.
   const plate = +/PF\(F, 0, sill \+ phH \/ 2, gd - ([\d.]+)\)/.exec(src)[1];
-  assert.ok(plate >= top + 0.008, `plate ${plate} must be at least 0.8cm in front of medallions ${top}`);
+  assert.ok(plate >= 0.02, `plate ${plate} must sit in front of the glass cells`);
   // 다른 성당의 자리는 카메라를 당기지 않는다
   for (const id of ['stpeter']) for (const s of church(id).glassSlots) assert.equal(s.camMax, 0, id);
   const main = fs.readFileSync(path.join(assets, 'main.js'), 'utf8');

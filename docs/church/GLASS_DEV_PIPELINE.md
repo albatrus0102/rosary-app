@@ -114,3 +114,9 @@ bash tools/check_release_apk.sh build/app/outputs/flutter-apk/app-arm64-v8a-rele
 | 해제: 밀라노 ↔ QA Gallery 6회 출입, 질감·재질·지오메트리 dispose 수 = 생성 수 | 같은 파일(가짜 렌더러) + `milan55_shots.mjs --leak 3`(실제 WebGL) |
 | 경당 걷기·충돌, 정문 문·창과 벽기둥, 14처 판 자리 | 같은 파일 |
 | 화면(뒤집힘·늘어남·삐져나옴·z-fighting·밝기) | `milan55_shots.mjs` 캡처를 눈으로 |
+
+## 빈 칸 없는 유리(밀라노 "이상한 도형" 수정)
+- 원인: 그림 판이 비율 그대로(contain) 가운데 한 줄만 덮고, 나머지(옆 빛·그림 없는 창 31개·문 위 부채꼴)는 `ch_milan.js` 의 절차적 유리가 비쳤다. 후진·경당 창(`medal`)은 파랑/빨강 바둑판 + 팔각 메달리온이었다.
+- 고침: `dev/devglass.js` 의 `lancetStrips` — 창을 빛(lights) 수만큼 나눠 칸마다 그림 한 조각(cover, uv 오프셋만 다름; 질감 복제 없음). 그림 없는 유리 창과 문 위 부채꼴은 가까운 이웃 창의 작은 그림을 좌우 번갈아 뒤집어 빌리고(`devglass-filler`, 어둡게 ×0.62·흐리게 밉 +1.6, 아틀라스 재사용) 그린다. 뒤판은 없앴다(draw call: 아틀라스 1 + 빌린 그림 1 + 큰 그림 3).
+- 릴리스(dev 그림 없음)에서도 `ch_milan.js` 가 팔각·바둑판을 더는 그리지 않는다(보석색 칸만).
+- 시험: `tools/church_web/glass_coverage.test.mjs`.
