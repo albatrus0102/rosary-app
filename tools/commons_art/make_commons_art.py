@@ -95,3 +95,41 @@ def apse(preview=None, tw=1344, th=672):
     res = Image.fromarray(np.clip(out + 0.5, 0, 255).astype(np.uint8))
     if preview: res.save(os.path.join(preview, 'apse_tex.jpg'), quality=88)
     return save_webp(res, 'stpaul', 'apse_mosaic', 230, 80)
+
+
+# ---------------------------------------------------------------- 피렌체 벽 그림 3점
+def florence(preview=None):
+    # 호크우드(08_B: 이미 반듯하게 편 편집본) — 그려진 틀 끝까지 자름. 틀 2.32 × 3.69m
+    im = load('08_hawkwood_B.jpg'); save_webp(warp_quad(im, [(5, 10), (1243, 10), (1243, 1992), (5, 1992)], 760, 1208), 'florence', 'hawkwood', 200)
+    # 톨렌티노(09_A: 위가 좁은 사다리꼴 원근) — 네 귀를 잡아 폄 + 살짝 밝게
+    im = load('09_tolentino_A.jpg'); save_webp(tone(warp_quad(im, [(37, 15), (1232, 15), (1289, 1975), (5, 1980)], 760, 1208), gain=1.06), 'florence', 'tolentino', 200)
+    # 단테(10_B: 밝기 보정본) — 사진의 회색 틀 안쪽만. 틀 1.74 × 1.4m
+    im = load('10_dante_B.jpg'); save_webp(warp_quad(im, [(15, 14), (1487, 14), (1480, 1190), (22, 1190)], 1024, 824), 'florence', 'dante', 200)
+
+
+# ---------------------------------------------------------------- 성 바오로 무덤(06_A): 창살 정면 벽 + 유리 바닥 밑 석관 자리
+def tomb(preview=None):
+    im = load('06_st_paul_tomb_A.jpg')
+    save_webp(im.crop((0, 105, 2000, 1010)).resize((1024, 464), Image.LANCZOS), 'stpaul', 'tomb_front', 110)
+    save_webp(warp_quad(im, [(175, 1235), (1840, 1235), (1995, 1606), (25, 1606)], 640, 368), 'stpaul', 'tomb_floor', 70)
+
+
+# ---------------------------------------------------------------- 성 베드로: 피에타(01_A) · 성 베드로 청동상(03_A)
+def vignette(im, strength=0.55, power=2.2):
+    a = np.asarray(im, np.float64); h, w = a.shape[:2]
+    y, x = np.mgrid[0:h, 0:w]; d = np.maximum(np.abs(x / (w - 1) * 2 - 1), np.abs(y / (h - 1) * 2 - 1)) ** power * 0 + (np.abs(x / (w - 1) * 2 - 1) ** (power * 2) + np.abs(y / (h - 1) * 2 - 1) ** (power * 2))
+    return Image.fromarray(np.clip(a * (1 - strength * np.clip(d, 0, 1))[..., None], 0, 255).astype(np.uint8))
+
+
+def stpeter(preview=None):
+    im = load('01_pieta_A.jpg'); c = im.crop((330, 40, 1830, 1333))            # 조각과 받침 전체(1500 × 1293)
+    save_webp(vignette(tone(c.resize((1024, 883), Image.LANCZOS), gain=1.08)), 'stpeter', 'pieta', 200)
+    im = load('03_st_peter_bronze_A.jpg'); c = im.crop((120, 170, 1213, 1790))  # 후광 위에서 발밑 받침 윗면까지(1093 × 1620) — 뒤의 붉은 모자이크 벽 포함
+    save_webp(c.resize((704, 1043), Image.LANCZOS), 'stpeter', 'peter_bronze', 200)
+
+
+ALL = {'florence': florence, 'apse': apse, 'tomb': tomb, 'stpeter': stpeter}
+if __name__ == '__main__':
+    a = sys.argv[1:]; pv = None
+    if '--preview' in a: i = a.index('--preview'); pv = a[i + 1]; del a[i:i + 2]; os.makedirs(pv, exist_ok=True)
+    for k in (a or ALL): ALL[k](pv)
