@@ -78,7 +78,7 @@
       colliders: [], zones: [], lights: [], glows: [], flames: [], beams: [], hourHooks: [], updateHooks: [],
       cameraBounds: null, sky: { outside: false }, thumb: null, candleStands: [], lamps: [],
       walls: [], windows: [], roses: [], glassSlots: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {},
-      lampSlots: [], batches: B_
+      lampSlots: [], batches: B_, planes: []
     };
 
     // ---- 질감/사진 ----
@@ -239,8 +239,58 @@
       m.rotation.set(o.rx || 0, o.ry || 0, o.rz || 0, 'YXZ');
       m.receiveShadow = true;
       ctx.root.add(m); stats.meshes++;
+      // 같은 질감·같은 재질 값의 판은 _prepare 에서 한 메시로 합친다(mergePlanes). 키 = 질감(또는 표면 이름)·광택·색·면.
+      if (!o.mat && (o.tex || typeof o.surf === 'string') && !o.override) S_.planes.push({ m: m, key: (o.tex ? 'tex:' + o.tex.uuid : 'surf:' + o.surf) + '|' + o.gloss + '|' + o.color + '|' + o.side, snap: matSnap(m) });
       return m;
     };
+    // (2026-11-15, PERF_SCALE.md §2) 판 합치기: 성 베드로 글귀 띠 21장처럼 같은 질감을 쓰는 판이 저마다 draw call(그리고 반사·SSAO 법선 패스에서 또 한 번씩)을 썼다.
+    // 만든 뒤 빌더가 손댄 판(재질 값·보이기·그림자·자식·이름·창 대역)은 합치지 않는다. 반복(repeat)은 UV 에 구워 넣어 화면은 같다.
+    function matSnap(m) {
+      var t = m.material;
+      return [t.uuid, t.alphaTest, t.metalness, t.roughness, t.emissive ? t.emissive.getHex() : -1, t.emissiveIntensity, t.opacity, t.transparent, t.color ? t.color.getHex() : -1, t.side, t.clearcoat, t.envMapIntensity, t.map ? t.map.uuid : '', t.normalMap ? t.normalMap.uuid : '', t.depthWrite, t.polygonOffset].join(',');
+    }
+    function mergePlanes() {
+      if (/[?&]planemerge=0/.test((root.location && root.location.search) || '')) return;
+      var used = {}, by = {};
+      ctx.root.traverse(function (o) { if (o.isMesh && o.material) used[o.material.uuid] = (used[o.material.uuid] || 0) + 1; });
+      var fb = {};
+      S_.glassSlots.forEach(function (s) { (s.fallback || []).forEach(function (m) { fb[m.uuid] = 1; }); });
+      S_.planes.forEach(function (p) {
+        var m = p.m;
+        if (m.parent !== ctx.root || !m.visible || m.children.length || m.name || fb[m.uuid] || m.castShadow || m.renderOrder || used[m.material.uuid] !== 1 || matSnap(m) !== p.snap || Object.keys(m.userData).length) return;
+        (by[p.key] = by[p.key] || []).push(m);
+      });
+      Object.keys(by).forEach(function (k) {
+        var list = by[k];
+        if (list.length < 2) return;
+        var n = list.length, pos = new Float32Array(n * 12), nor = new Float32Array(n * 12), uv = new Float32Array(n * 8), idx = [], v = new T.Vector3(), nm = new T.Matrix3();
+        list.forEach(function (m, i) {
+          m.updateMatrix();
+          nm.getNormalMatrix(m.matrix);
+          var g = m.geometry, P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv, rep = m.material.map ? m.material.map.repeat : { x: 1, y: 1 };
+          for (var j = 0; j < 4; j++) {
+            v.fromBufferAttribute(P, j).applyMatrix4(m.matrix); pos[i * 12 + j * 3] = v.x; pos[i * 12 + j * 3 + 1] = v.y; pos[i * 12 + j * 3 + 2] = v.z;
+            v.fromBufferAttribute(N, j).applyMatrix3(nm).normalize(); nor[i * 12 + j * 3] = v.x; nor[i * 12 + j * 3 + 1] = v.y; nor[i * 12 + j * 3 + 2] = v.z;
+            uv[i * 8 + j * 2] = U.getX(j) * rep.x; uv[i * 8 + j * 2 + 1] = U.getY(j) * rep.y;
+          }
+          var I = g.index.array;
+          for (j = 0; j < I.length; j++) idx.push(I[j] + i * 4);
+        });
+        var geo = new T.BufferGeometry();
+        geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('normal', new T.BufferAttribute(nor, 3)); geo.setAttribute('uv', new T.BufferAttribute(uv, 2));
+        geo.setIndex(idx); geo.computeBoundingSphere();
+        var mat = list[0].material;
+        ['map', 'normalMap', 'roughnessMap', 'emissiveMap'].forEach(function (key) { if (mat[key]) mat[key].repeat.set(1, 1); });
+        var mm = new T.Mesh(geo, mat);
+        mm.receiveShadow = true; mm.name = 'planes';
+        list.forEach(function (m) {
+          ctx.root.remove(m); m.geometry.dispose();
+          if (m.material !== mat) { ['map', 'normalMap', 'roughnessMap'].forEach(function (key) { var t = m.material[key]; if (t && t !== mat[key] && t.dispose) t.dispose(); }); m.material.dispose(); }
+        });
+        ctx.root.add(mm);
+        stats.meshes -= n - 1; stats.mergedPlanes = (stats.mergedPlanes || 0) + n;
+      });
+    }
     ctx.floor = function (o) {
       var w = o.x1 - o.x0, d = o.z1 - o.z0, y = num(o.y, 0);
       var m = ctx.plane({ x: (o.x0 + o.x1) / 2, y: y, z: (o.z0 + o.z1) / 2, rx: -PI / 2, w: w, h: d, tex: o.tex, surf: o.surf, color: o.color, tile: o.tile, gloss: o.gloss, mat: o.mat });
@@ -1394,6 +1444,7 @@
         mats.decal.map = tt; mats.decal.needsUpdate = true;
         items.push({ name: 'aodecal', batch: decalB, material: mats.decal, cast: false, receive: false, decal: true });
       }
+      try { mergePlanes(); } catch (e) { if (root.console) console.warn('[church] mergePlanes', e); }
       S_.items = items;
       return items;
     };
