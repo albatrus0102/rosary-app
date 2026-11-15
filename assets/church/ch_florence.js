@@ -856,7 +856,8 @@
       });
 
       // ============================================================ 왼쪽 측랑 벽 그림(기마상 2점 + 단테) — 진본 사진(art_florence.js)
-      // 위키미디어 공용의 자유 이용 사진(docs/church/licenses/florence.md)을 이 성당에 들어올 때만 읽는다.
+      // 위키미디어 공용의 자유 이용 사진(docs/church/licenses/florence.md)을 이 성당에 들어올 때만 읽는다. (C-15: 60KB 이하 저해상도 판 → 틀 네 귀를 잡아
+      // 원근을 편 760×1208·1024×824 판, 한 점 200KB 이하 — tools/commons_art/make_commons_art.py)
       // 읽기 전·실패 때는 어두운 빈 화면(틀만)이다. 도형으로 그린 사람·말 그림은 쓰지 않는다(우스꽝스럽고 불경해 보인다: REVERENCE.md).
       var ART = [];
       function paintFrame(z, w, h, y, key) {
@@ -871,7 +872,7 @@
       // 4칸 = 단테와 신곡(미켈리노 1465, 가로형). 기마상은 틀 포함 실제 5.15 × 8.2m → 2.32 × 3.69. 3·4칸 창(z 11.4, 2.5)을 가리지 않는다.
       paintFrame(17.85, 2.32, 3.69, 1.75, 'tolentino');
       paintFrame(13.7, 2.32, 3.69, 1.75, 'hawkwood');
-      paintFrame(5.55, 1.7, 1.4, 2.6, 'dante');
+      paintFrame(5.55, 1.74, 1.4, 2.6, 'dante');   // 그림 비율 1.243(가로 232 × 세로 290cm 판의 사진, 회색 틀 안쪽)
       (function () {
         if (typeof document === 'undefined' || !document.head || !document.head.appendChild) return;
         function apply() {
