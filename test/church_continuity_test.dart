@@ -1,6 +1,4 @@
 // 성당의 연속성(접기/펼치기·다른 앱에 다녀오기)과 HUD 접기·고정 조이스틱.
-import 'dart:ui' show AppLifecycleState;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/app_services.dart';

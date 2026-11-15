@@ -786,7 +786,6 @@ void main() {
           ),
         ),
       );
-      await tester.pump(); // 저장해 둔 자리 확인(없음) 뒤 입구가 나온다
       // 마지막 성당 카드가 먼저 보이면 '다른 성당 고르기'로 목록을 연다.
       final pick = find.byKey(const ValueKey('entry-pick'));
       if (pick.evaluate().isNotEmpty) {

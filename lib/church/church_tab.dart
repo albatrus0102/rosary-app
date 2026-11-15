@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../app/settings.dart';
@@ -7,7 +5,6 @@ import '../app/track.dart';
 import 'church_catalog.dart';
 import 'church_entry_card.dart';
 import 'church_host.dart';
-import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
 import 'church_screen.dart';
 import 'church_select_screen.dart';
@@ -67,9 +64,6 @@ class _ChurchTabState extends State<ChurchTab> {
   bool _visible = true;
   bool _depsReady = false;
 
-  /// 저장해 둔 '방금 있던 자리'를 확인했는가. 확인하는 동안에는 입구 대신 짧은 로딩만 보인다.
-  bool _resumeChecked = false;
-
   String get _screenId => _inChurch != null
       ? 'church'
       : (_browsing ? 'church_select' : 'church_entry');
@@ -97,33 +91,29 @@ class _ChurchTabState extends State<ChurchTab> {
   @override
   void initState() {
     super.initState();
-    Track.screen('church_entry');
-    unawaited(_autoReenter());
-  }
-
-  /// 성당 안에 있다가 앱이 백그라운드에서 정리된 뒤 돌아왔다(다른 앱에 다녀옴·Activity 재생성):
-  /// 저장분([ChurchResumeState], 30분 안)이 있으면 입장 단추 없이 같은 성당으로 바로 들어간다.
-  /// 자리·좌석·카메라는 [ChurchScreen]이 같은 저장분으로 되살린다. 성당을 스스로 나갔으면 저장분이 없다.
-  Future<void> _autoReenter() async {
-    final saved = await ChurchResumeState.load();
-    if (!mounted) return;
-    final info = saved == null ? null : ChurchCatalog.byId[saved.churchId];
-    final fresh =
-        saved != null &&
-        info != null &&
-        saved.isFreshFor(info.id, DateTime.now()) &&
-        _available.contains(info.id);
-    if (fresh && _inChurch == null && !_browsing && _selectedId == null) {
-      widget.settings.churchId = info.id;
-      Track.screen('church');
-      setState(() {
-        _resumeChecked = true;
-        _inChurch = info.id;
-      });
-      _notifyInChurch(true);
+    final resume = _resumeChurch();
+    if (resume == null) {
+      Track.screen('church_entry');
       return;
     }
-    setState(() => _resumeChecked = true);
+    // 성당 안에 있다가 앱이 백그라운드에서 정리된 뒤 돌아왔다(다른 앱에 다녀옴·Activity 재생성):
+    // 입장 단추 없이 같은 성당으로 바로 들어간다. 자리·좌석·카메라는 [ChurchScreen]이 같은 저장분으로
+    // 되살린다(불러오는 동안에는 장면의 짧은 로딩 표시만 보인다).
+    widget.settings.churchId = resume.id;
+    _inChurch = resume.id;
+    Track.screen('church');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _inChurch != null) _notifyInChurch(true);
+    });
+  }
+
+  /// 저장해 둔 '방금 있던 자리'([ChurchResumeState], 30분 안)의 성당. 성당을 스스로 나갔으면 저장분이 없다.
+  ChurchInfo? _resumeChurch() {
+    final saved = widget.settings.churchResume;
+    if (saved == null) return null;
+    final info = ChurchCatalog.byId[saved.churchId];
+    if (info == null || !_available.contains(info.id)) return null;
+    return saved.isFreshFor(info.id, DateTime.now()) ? info : null;
   }
 
   void _pick() {
@@ -181,14 +171,6 @@ class _ChurchTabState extends State<ChurchTab> {
     if (id == null) {
       // 보이지 않는 동안에는 선택 화면(접속 인원 조회 등)을 만들지 않는다.
       if (!_visible) return const SizedBox.shrink();
-      if (!_resumeChecked && !_browsing) {
-        return Center(
-          child: Semantics(
-            label: '불러오는 중',
-            child: const CircularProgressIndicator(),
-          ),
-        );
-      }
       if (!_browsing) {
         final available = _available;
         final last = ChurchEntryCard.lastChurch(widget.settings, available);

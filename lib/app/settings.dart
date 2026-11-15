@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../church/avatar/avatar_config.dart';
 import '../church/church_catalog.dart';
 import '../church/church_diagnostics.dart';
+import '../church/church_resume_state.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../rosary3d/rosary_model.dart';
@@ -634,6 +635,11 @@ class AppSettings extends ChangeNotifier {
 
   /// 성당 성능 표시(진단: fps·프레임 ms·해상도·화질 단계). 기본 꺼짐.
   bool get churchPerfHud => _churchPerfHud;
+
+  /// 성당 안에서 마지막으로 있던 자리(성당 화면이 보이지 않게 될 때 저장된다). 없거나 깨졌으면 null.
+  /// 앱이 백그라운드에서 정리된 뒤 다시 열렸을 때 같은 성당으로 바로 들어가는 데 쓴다.
+  ChurchResumeState? get churchResume =>
+      ChurchResumeState.decode(_prefs.getString(ChurchResumeState.prefsKey));
 
   /// 성당 화면 위쪽 메뉴(이름판·도구 줄)를 접어 두었는가. 접으면 이름 한 줄과 작은 단추만 남는다.
   bool get churchHudCollapsed => _churchHudCollapsed;

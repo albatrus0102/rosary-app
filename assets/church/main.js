@@ -553,11 +553,11 @@
     if (SP) { App.spotYaw = SP.yaw; ctl.yaw += wrap(SP.yaw + CG.SPOT.side - ctl.yaw) * (1 - Math.exp(-dt * 2.2)); }
     if (seated && !SP && !ctl.dragging && App.t - ctl.lastDragT > 1.2) {
       // 묵주 패널이 아래를 덮는 동안(App.inset)은 비스듬히 옆에서: 앉았는지 무릎 꿇었는지 보인다
-      ctl.yaw += wrap((me.seat ? App.logic.seatInfo(me.seat).yaw : 0) + (App.inset ? 0.95 : 0) - ctl.yaw) * (1 - Math.exp(-dt * 1.8));
+      ctl.yaw += wrap((me.seat ? App.logic.seatInfo(me.seat).yaw : 0) + (App.inset ? 0.55 : 0) - ctl.yaw) * (1 - Math.exp(-dt * 1.8));
     }
     // 자동 걷기 중에는 카메라가 천천히 아바타 뒤로 돌아 가는 길이 보이게 한다(직접 돌린 뒤 1.5초는 그대로 둔다)
     if (App.walkSt && !seated && !ctl.dragging && App.t - ctl.lastDragT > 1.5) ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 1.6));
-    var baseD = 7.2 * (1 - sf) + 4.4 * sf, D = baseD * ctl.zoom;
+    var baseD = (7.2 * (1 - sf) + 4.4 * sf) * (App.inset ? 1 + 0.3 * sf : 1), D = baseD * ctl.zoom;   // 묵주 패널 중에는 조금 물러나 앉은·무릎 꿇은 몸 전체가 보이게
     var pitch = ctl.pitch * (1 - 0.3 * sf);
     if (App.spotF > 0) { CG.spotBlend(pitch, D, baseD, App.spotF, spotO); pitch = spotO.pitch; D = spotO.D; } else spotO.fwd = spotO.up = 0;
     var fy = me.y + 1.0 + sf * (0.45 - 0.2);
