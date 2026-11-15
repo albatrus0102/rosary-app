@@ -127,8 +127,10 @@
       if (root.ChurchGlassPlace) App.place = root.ChurchGlassPlace.create(App, { post: post });
       if (root.ChurchWayCross) App.cross = root.ChurchWayCross.create(App, { post: post });
       App.liturgy = root.ChurchLiturgy || null;
+      // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다. rafOn 을 resize() 보다 먼저 켠다: 예전에는 resize() 안의 kick() 이
+      // 고리를 하나 더 띄워 매 vsync 에 장면을 두 번 그렸다(PERF_SCALE.md §1, 2026-11-15 측정: 프레임당 렌더 2회).
+      App.rafOn = true;
       resize();
-      App.rafOn = true;   // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다
       loadWorld(church);
       App.last = performance.now();
       var go = function () { App.last = performance.now(); requestAnimationFrame(loop); };
@@ -574,6 +576,9 @@
 
   function loop(now) {
     if (App.paused) { App.rafOn = false; return; }   // 보이지 않는 동안: 다음 프레임을 청하지 않는다(resume 이 kick 으로 다시 깨운다)
+    // 같은 vsync(같은 rAF 시각)에 고리가 두 번 들어오면 뒤의 것은 버린다(그 고리는 여기서 끝난다): 어디서 kick·rAF 가 겹쳐도 한 프레임 한 번만 그린다.
+    if (now === App.lastNow) return;
+    App.lastNow = now;
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
     App.frameCount = (App.frameCount || 0) + 1;
     // 앉아서 가만히 기도하는 동안은 한 프레임 걸러 그린다(약 30fps; 성능 표시·시험 프레임 제한 중에는 끔).
