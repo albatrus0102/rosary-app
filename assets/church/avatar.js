@@ -1030,7 +1030,13 @@
       this.body.add(m); this.rosary = m;
     }
   };
-  Avatar.prototype.playEmote = function (e) { this.emote = e | 0; this.emoteT = 0; };
+  // 불경 방지(reverence.js): 인사(손 흔들기)는 입구 가까이에서 걸을 때만 — 그 밖에서는 고개 숙임. 모르는 번호는 재생하지 않는다.
+  Avatar.prototype.playEmote = function (e) {
+    var RV = root.ChurchReverence;
+    e = RV && RV.filterEmote ? RV.filterEmote(e, this) : ((e | 0) >= 0 && (e | 0) <= 2 ? e | 0 : -1);
+    if (e < 0) return;
+    this.emote = e; this.emoteT = 0;
+  };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
   Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; };
   var KNEEL_DUR = 0.7, KNEEL_THIGH = 0.12, KNEEL_KNEE_R = 0.075, KNEEL_DEFAULT = { fwd: 1.22, y: 0.145, rail: true };

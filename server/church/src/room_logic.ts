@@ -832,7 +832,10 @@ export class RoomLogic {
       this.send(peer.connId, { t: 'error', code: 'bad_msg' });
       return;
     }
-    this.broadcastNear(peer, { t: 'emote', id: peer.id, e: m.e });
+    // 불경 방지(docs/church/REVERENCE.md): 앉아 있거나 기도 중에는 인사(손 흔들기, 0)를 고개 숙임(2)으로 바꾼다.
+    // 자리(입구 가까이·제단 근처) 규칙은 받는 쪽(assets/church/reverence.js)이 한 번 더 거른다.
+    const e = m.e === 0 && peer.st !== 'w' ? 2 : m.e;
+    this.broadcastNear(peer, { t: 'emote', id: peer.id, e });
   }
 
   /**

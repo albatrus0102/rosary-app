@@ -796,5 +796,19 @@
     "evidence": "docs/church/interiors/danggogae.md(절차 본보기) · 사용자 요청 2026-11-15",
     "status": "todo",
     "note": "사용자 요청(2026-11-15). 사진(제대 쪽·입구 쪽·좌우 벽) 받으면 정확도↑."
+  },
+  {
+    "id": "T-80",
+    "title": "성상을 실제 모양(3D 스캔본)으로 교체 — 피에타·성모상·성 베드로 청동상 등 대표 성상부터",
+    "category": "신규 요청",
+    "release": "R3",
+    "priority": "P1",
+    "effort": "L",
+    "risk": "스캔본 라이선스(비상업 전용 다수) 확인 필요, 성상당 APK 수백 KB, 장난감 풍 아바타와의 어울림 확인",
+    "depends": "–",
+    "value": "도형을 겹친 듯한 성상을 실제 조각 모양으로(사용자 지적 2026-11-15)",
+    "evidence": "사용자 요청 2026-11-15 · tools/avatar_glb(GLB 불러오기 경로 재사용)",
+    "status": "todo",
+    "note": "원작은 PD, 스캔본 CC0/CC BY 만. 수만 면으로 줄이고 원거리 LOD. 유료 AI 3D 도구는 쓰지 않음."
   }
 ]

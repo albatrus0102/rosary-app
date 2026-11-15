@@ -849,6 +849,12 @@ test('이모트: 범위 검증, 쿨다운 없음, 본인 포함 브로드캐스�
   h.send(a, { t: 'emote', e: -1 });
   h.send(a, { t: 'emote', e: 'a' });
   assert.equal(h.msgs(a, 'error').length, 3);
+  // 앉아 있으면 인사(0)는 고개 숙임(2)으로 나간다(불경 방지)
+  h.walkTo(a, -3.2, -9.65 + 1.9 * 3 + 1);
+  h.send(a, { t: 'sit', seat: 'L03-0' });
+  h.clear();
+  h.send(a, { t: 'emote', e: 0 });
+  assert.deepEqual(h.msgs(b, 'emote'), [{ t: 'emote', id: h.uuid(1), e: 2 }]);
 });
 
 test('메시지 속도 제한: 초당 40개 초과 → error rate 후 무시', () => {

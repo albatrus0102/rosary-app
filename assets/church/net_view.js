@@ -48,6 +48,8 @@
     // 위 pushSample 의 시프트 루틴을 4칸 단위로 다시 정의(정확한 버전)
     pushSample = function (rec, x, z, r, now) {
       var s = rec.s;
+      // 불경 방지(reverence.js): 남이 보낸 좌표가 제단 출입 금지 구역 안이면 구역 앞 가장자리로 내린다(수신 측 클램프)
+      if (logic && logic.reverence && !rec.seat) { var cq = { x: x, z: z }; if (logic.reverence.clamp(cq)) { x = cq.x; z = cq.z; } }
       if (rec.n >= 3) { for (var i = 0; i < 8; i++) s[i] = s[i + 4]; rec.n = 2; }
       var o = rec.n * 4;
       s[o] = now; s[o + 1] = x; s[o + 2] = z; s[o + 3] = r;
