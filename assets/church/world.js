@@ -358,8 +358,12 @@
       cam.updateProjectionMatrix();
       dirLight.updateMatrixWorld(); target.updateMatrixWorld();
       dirLight.shadow.needsUpdate = true;
-      api.shadowDirty = true;   // render.js: 그림자 맵은 이때만 다시 그린다(해가 움직일 때, 5초마다·시간 바꿀 때)
+      // render.js: 그림자 맵은 이때만 다시 그린다. 예전에는 5초마다(applyEnv) 무조건 다시 그려 걷는 중 5초마다 한 프레임이 튀었다(2048² 맵 + 모든 그림자 물체).
+      // 이제 해 방향이 0.35° 넘게 움직였을 때만(실시간 시계로 약 1.5분마다) 또는 시간·단계를 바꿀 때만 다시 그린다. 맵은 그린 때의 행렬로 계속 읽으므로 어긋나지 않는다.
+      var dd = sd[0] * shDir[0] + sd[1] * shDir[1] + sd[2] * shDir[2];
+      if (shForce || dd < SHADOW_COS) { shDir[0] = sd[0]; shDir[1] = sd[1]; shDir[2] = sd[2]; shForce = false; api.shadowDirty = true; }
     }
+    var shDir = [0, 0, 0], shForce = true, SHADOW_COS = Math.cos(0.35 * PI / 180);
     var envTex = null;
     var lkC = new T.Color();
     // 룩 적용: 시간대 값에 곱하고 섞는다. 감상 모드(사진 창)에서는 적용하지 않는다(그때 env.grade 는 null).
@@ -424,7 +428,7 @@
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9 },
       reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
-      setHour: function (h) { curHour = ((h % 24) + 24) % 24; applyEnv(); },
+      setHour: function (h) { curHour = ((h % 24) + 24) % 24; shForce = true; applyEnv(); },
       // PMREM 환경 텍스처 연결
       setEnvironment: function (tex) { envTex = tex; scene.environment = tex; },
       // 'high' | 'mid' | 'low' 전환: 그림자(high·mid)·바닥 반사(high)·코팅(high·mid)·먼지(high·mid) on/off
