@@ -147,3 +147,22 @@ test('리그: 뒤가 벽이면 카메라를 어깨 위로 올리고 앞을 본�
   tt = 1; for (let i = 0; i < 120; i++) rig.solve(I, DT, O);
   assert.ok(O.lift < 0.05 && Math.abs(O.pitch - 0.45) < 0.03, '풀리면 원래 각도');
 });
+
+test('리그: 벽·구석에 등을 대고 서도(뒤로 1.3m 도 못 물러남) 90% 이상에서 카메라가 2m 이상 떨어진 시점을 찾는다', () => {
+  for (const id of ['milan', 'stpeter']) {
+    const env = setup(id), B = env.c.layout.bounds, O = {};
+    let n = 0, ok = 0;
+    for (let px = B.x0 + 0.7; px < B.x1; px += 1.7) for (let pz = B.z0 + 0.7; pz < B.z1; pz += 1.7) {
+      if (env.L.moveCircle({ x: px, z: pz }, 0, 0)) continue;
+      const fy = (env.L.floorY(px, pz) || 0) + 1.0;
+      for (let k = 0; k < 8; k++) {
+        const yaw = k * Math.PI / 4, ch = Math.cos(0.45) * 7.2, cv = Math.sin(0.45) * 7.2;
+        if (7.2 * env.guard.clipWide(px, fy, pz, px + Math.sin(yaw) * ch, fy + cv, pz + Math.cos(yaw) * ch, Guard.RIG.probe, 0.3) >= 1.3) continue;
+        const rig = Guard.createRig();
+        for (let i = 0; i < 90; i++) rig.solve({ mx: px, fy, mz: pz, yaw, pitch: 0.45, D: 7.2, cb: env.cb, guard: env.guard, auto: true }, DT, O);
+        n++; if (O.dist >= 2) ok++;
+      }
+    }
+    assert.ok(n > 30 && ok >= n * 0.9, `${id}: 구석 ${n}곳 중 ${ok}곳만 2m 이상`);
+  }
+});
