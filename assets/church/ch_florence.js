@@ -925,7 +925,8 @@
         var lk = A.ctl && A.ctl.look > 0 ? A.ctl.look : 0;
         var yieldK = (lk > 0 && !isThumb && window.__florenceTilt === undefined) ? Math.max(0, 1 - lk / 1.0) : 1;
         tiltNow += (target - tiltNow) * Math.min(1, dt * 3);
-        A.camera.rotateX(tiltNow * yieldK);
+        // 기도 자리 시점(main.js spotF) 동안은 돔 보정 기울기를 양보한다(목표물이 화면 아래로 밀려 내려갔다)
+        A.camera.rotateX(tiltNow * yieldK * (1 - (A.spotF || 0)));
       });
     }
   };

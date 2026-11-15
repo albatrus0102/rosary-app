@@ -65,7 +65,7 @@
     for (t = 0; t < nt; t++) span(t, function (c, tt) { list[fill[c]++] = tt; });
     var stamp = new Uint32Array(nt), gen = 0;
     var fy0 = o.yLow === undefined ? 0 : o.yLow - 1.05;
-    var thin = classifyThin(T9, nt, o.thinMax === undefined ? 2.6 : o.thinMax, fy0 + 0.35, fy0 + 2.8);
+    var thin = classifyThin(T9, nt, o.thinMax === undefined ? 4.4 : o.thinMax, fy0 + 0.35, fy0 + 2.8);
     var nThin = 0; for (t = 0; t < nt; t++) nThin += thin[t];
     var out = { thin: 1 };   // 마지막 clip/clipWide 에서 처음 닿은 '가는' 면의 비율(0..1, 없으면 1)
 
