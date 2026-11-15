@@ -212,11 +212,14 @@ void main() {
       );
       await _settle(tester);
       expect(h.net.candles, [(5, 3)]);
-      expect(h.scene.lastArgs('lightCandle'), {
-        'slot': 5,
-        'until': 0,
-        'intention': 3,
-      });
+      final lit = h.scene.lastArgs('lightCandle')!;
+      expect(lit['slot'], 5);
+      expect(lit['intention'], 3);
+      // 켠 초는 하루(24시간) 탄다: until = 켠 시각 + 24h(로컬 즉시 표시, 서버가 확정)
+      final until = lit['until'] as int;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      expect(until, greaterThan(now + const Duration(hours: 23).inMilliseconds));
+      expect(until, lessThanOrEqualTo(now + const Duration(hours: 24, minutes: 1).inMilliseconds));
     });
 
     testWidgets('no sheet when the candle stand is not actually near', (
