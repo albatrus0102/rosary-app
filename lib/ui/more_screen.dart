@@ -10,6 +10,7 @@ import '../app/theme.dart';
 import '../auth/account_screen.dart';
 import '../auth/legal_screen.dart';
 import '../auth/legal_texts.dart';
+import '../church/dev_glass.dart';
 import '../domain/stations_series.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_licenses_screen.dart';
@@ -113,6 +114,8 @@ class MoreScreen extends StatelessWidget {
                       trailing: const Icon(Icons.chevron_right),
                       onTap: onOpenSettings,
                     ),
+                    // 개발용 APK(ROSARIUM_DEV_GLASS)에서만 보이는 항목. 일반 빌드에서는 그려지지 않는다.
+                    if (DevGlass.enabled) const DevGlassMoreTile(),
                     if (services != null && services.backendConfigured)
                       ListenableBuilder(
                         listenable: services.auth.state,

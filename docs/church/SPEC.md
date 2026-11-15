@@ -592,3 +592,23 @@ ChurchAPI.setPerfHud({on})            // 기본 꺼짐. ?perfhud=1 로도 켠다
 - '10초 기록': 평균·1초 창 최저·1% low fps, 프레임 중앙·90%, 단계(바뀌었으면 → 표시), 해상도, 성당 id, 기기 요약(Android 버전·모델명·Chrome 주 버전). 개인 정보 없음, 분석 전송 없음.
 - Flutter: 설정 '성당' 절의 '성능 표시(진단)' 스위치 → `AppSettings.churchPerfHud`(키 `church_perf_hud`) → `ChurchDiagnostics.perfHud` → 열려 있는 장면 컨트롤러가 `setPerfHud` 를 보낸다(성당 화면 코드와 독립).
 
+
+## 35. 개발용 임시 유리와 밀라노 건축 확장 (E-4, 2026-11-15)
+
+자세한 것은 `GLASS_DEV_PIPELINE.md`(체계·빌드·릴리스 차단), `MILAN_55_RESULT.md`(55행 결과, 자동 생성), `MILAN_GLASS_RESEARCH.md`(실제 창 조사).
+
+### 35.1 개발용 임시 유리
+- 시안(AI 창작 그림, 실제 작품 아님)은 `assets/church/dev/` 에만 있다. 이 폴더는 `pubspec.yaml` 에 없어 **일반 APK 에 들어가지 않는다**. 개발용 APK(`tools/build_dev_apk.sh`, `--dart-define=ROSARIUM_DEV_GLASS=true`)만 넣는다.
+- 장면 주소의 `devglass=1`(Flutter 가 개발용 빌드에서만 붙인다)이 있을 때만 `index.html` 이 `dev/devglass_boot.js` 를 읽는다. 로더 `dev/devglass.js` 는 `ChurchWorld.create` 를 감싸서 붙는다(`world.js`·`main.js`·`kit.js`·`glass_place.js` 는 dev 모듈을 모른다).
+- 빌더 계약: 개구부마다 `ctx._.glassAnchors` 에 `{key, kind, x, y, z, nx, nz, yaw, w, h, sill, spring, apex, lights, photoH}`. 대응표 `dev/devglass_<성당>.js` 의 행이 `anchor`(key)로 자리를 정한다. 판은 그림 비율 그대로(contain), 유리 평면 3cm 앞.
+- 이벤트(웹 → Flutter): `{"e":"devGlass","church":"milan","set":"milan55","placed":42,"total":55,"probable":7,"assumed":0,"on":1}`. `SceneEvent` 가 아니다 — `DevGlass.handleRaw` 가 받아 '개발용 임시 시안 · 실제 작품 아님 · 42/55' 배지만 켠다. 일반 빌드에서는 무시한다.
+- 시안 판은 `glassNear`/`glassTap`·창 정보 시트·감상 모드와 연결하지 않는다.
+- QA Gallery: 성당 id `qa_milan55`(`dev/ch_qa_glass.js`, `viewing:true`). 개발용 빌드의 '더보기 > QA Gallery' 로만 들어간다. 서버·카탈로그·`layouts.json` 에 없다.
+
+### 35.2 밀라노 건축(플래그와 무관)
+- 개구부 78개(유리 73 + 문 5)에 key: `aisle{S|N}_b1..8`, `trWest{S|N}`, `trEnd{S|N}_{west|east}`, `trEast{S|N}`, `chap{S|N}_{w|c|e|upper}`, `apse_{south|center|north}`, `cfDoor_*`, `cfLower_*`, `cfUpper_*`(`n2|n1|c|s1|s2`), `clere{S|N}_bNN`, `tiburio_NNN`. 좌표계는 입구 +z, 제대 −z, +x = 남.
+- 정문 안쪽 벽: 문 5 · 하단 창 5(반원 머리) · 상단 창 3(첨두)을 랑 중심선(x = 0, ±6.77, ±11.28)에. 벽기둥은 기둥줄 그대로.
+- 익랑 끝: 아래 = 경당 입구 아치, 위 = 큰 첨두창. 그 뒤에 반육각형 끝 경당(남 성 요한 보노, 북 나무의 성모; 창 3개씩). 치수 표는 `ch_milan.js` 의 `CHAP`(추정 설계 ±20%).
+- `layout.bounds` x ±20.4 → ±23.52(경당까지). 서버 `layouts.json` 도 같이 바뀐다(서버는 위치를 이 경계로 자른다 → 서버를 다시 배포해야 다른 사람에게 경당 안 위치가 그대로 보인다).
+- `layout.crossWay.plaques`: 14처 판을 벽기둥 앞면 14곳으로 고정. `way_cross.js` 는 레이아웃이 14곳을 직접 정하면 자동 후보가 모자라도 그 자리를 쓴다.
+- 회랑 직선 벽은 맹벽 그대로(실제 P16~18·P22~24 는 성구실 창).

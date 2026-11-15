@@ -35,6 +35,10 @@ jobs:
           --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
           --dart-define=CHURCH_SERVER_URL=${{ secrets.CHURCH_SERVER_URL }}
 
+      - name: 개발용 임시 유리(시안)가 일반 APK 에 없는지 검사
+        # docs/church/GLASS_DEV_PIPELINE.md §3: 시안 파일·문자열·개발용 Dart 코드가 하나라도 있으면 실패한다.
+        run: bash tools/check_release_apk.sh build/app/outputs/flutter-apk/app-*-release.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: rosary-app-apk

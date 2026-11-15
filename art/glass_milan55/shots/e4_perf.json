@@ -1,0 +1,106 @@
+{
+ "measured": "2026-11-15",
+ "size": "960x540",
+ "quality": "mid",
+ "hour": 11,
+ "base": {
+  "vertices": 176040,
+  "meshes": 25
+ },
+ "after": {
+  "vertices": 185091,
+  "meshes": 25
+ },
+ "views": [
+  {
+   "view": "nave",
+   "base": {
+    "calls": 62,
+    "tris": 101995
+   },
+   "off": {
+    "calls": 62,
+    "tris": 105044
+   },
+   "on": {
+    "calls": 64,
+    "tris": 105162
+   }
+  },
+  {
+   "view": "crossing",
+   "base": {
+    "calls": 58,
+    "tris": 101845
+   },
+   "off": {
+    "calls": 58,
+    "tris": 104894
+   },
+   "on": {
+    "calls": 60,
+    "tris": 105012
+   }
+  },
+  {
+   "view": "aisleS",
+   "base": {
+    "calls": 43,
+    "tris": 100349
+   },
+   "off": {
+    "calls": 43,
+    "tris": 103398
+   },
+   "on": {
+    "calls": 48,
+    "tris": 103522
+   }
+  },
+  {
+   "view": "transeptS",
+   "base": {
+    "calls": 47,
+    "tris": 101801
+   },
+   "off": {
+    "calls": 47,
+    "tris": 104850
+   },
+   "on": {
+    "calls": 49,
+    "tris": 104968
+   }
+  },
+  {
+   "view": "counterfacade",
+   "base": {
+    "calls": 42,
+    "tris": 100347
+   },
+   "off": {
+    "calls": 42,
+    "tris": 103396
+   },
+   "on": {
+    "calls": 45,
+    "tris": 103516
+   }
+  },
+  {
+   "view": "apse",
+   "base": {
+    "calls": 37,
+    "tris": 77457
+   },
+   "off": {
+    "calls": 38,
+    "tris": 84168
+   },
+   "on": {
+    "calls": 40,
+    "tris": 84286
+   }
+  }
+ ]
+}

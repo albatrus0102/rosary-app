@@ -60,6 +60,8 @@
 <script src="ch_stpaul.js"></script>
 <script src="ch_stpeter.js"></script>
 <!-- BUILDERS:END -->
+<!-- 개발용 임시 유리(E-4, GLASS_DEV_PIPELINE.md): URL 에 devglass=1 이 있을 때만 dev/ 를 읽는다. dev/ 는 일반(배포) APK 에 없다(없으면 그냥 건너뛴다). -->
+<script>if(/[?&]devglass=1(&|$)/.test(location.search))document.write('<script src="dev/devglass_boot.js"><\/script>');</script>
 <script src="main.js"></script>
 <script>
 (function () {

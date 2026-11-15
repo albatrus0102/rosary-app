@@ -58,3 +58,5 @@ art/stations_series/
 
 # Claude Code agent worktrees
 .claude/worktrees/
+# 개발용 임시 유리의 부하 시험용 리샘플 팩(tools/glass_bundle/devglass_pack.py --resample; 원본 팩 gpack_dev_*.js 는 커밋한다)
+assets/church/dev/gpack_devrs_*.js
