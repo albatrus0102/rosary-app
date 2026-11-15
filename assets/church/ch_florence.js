@@ -15,8 +15,9 @@
     seatGroups: [
       { g: 'NL', rows: 12, perRow: 3, origin: { x: -1.3, z: 0.0 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.4] },
       { g: 'NR', rows: 12, perRow: 3, origin: { x: 1.3, z: 0.0 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.4] },
-      { g: 'OL', rows: 3, perRow: 3, origin: { x: -5.8, z: -13.4 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.3] },
-      { g: 'OR', rows: 3, perRow: 3, origin: { x: 5.8, z: -13.4 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.3] }
+      // OL·OR: 바깥쪽 여백을 줄여(0.05m) 줄 사이 통로가 신랑 쪽(십자형 교차부 기둥 옆)에서 열린다 — 제대 뒤로 돌아 들어가지 않는다(REVERENCE.md)
+      { g: 'OL', rows: 3, perRow: 3, origin: { x: -5.8, z: -13.4 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.05] },
+      { g: 'OR', rows: 3, perRow: 3, origin: { x: 5.8, z: -13.4 }, dx: 1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.6, 0.05] }
     ],
     candles: {
       stands: [
