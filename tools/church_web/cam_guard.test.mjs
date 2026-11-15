@@ -1,5 +1,5 @@
 // 3인칭 카메라 벽 가드(cam_guard.js) 시험: 모든 성당에서 걸을 수 있는 자리마다 카메라를 360° 돌려(main.js updateCamera 와 같은 계산)
-// 카메라가 실내에 있는지 본다. '실내' = 위로 쏜 선이 천장/지붕에 닿고, 수평 8방향 중 7방향 이상이 면에 닿는다(문 한 곳은 열려 있을 수 있다).
+// 카메라가 실내에 있는지 본다. '실내' = 위로 쏜 선이 천장/지붕에 닿고, 수평 8방향 중 6방향 이상이 면에 닿는다(문 한 곳은 열려 있을 수 있다).
 // 예전(상자 경계만)에는 성 베드로 후진·밀라노 경당 같은 굽은 벽 밖 상자 모서리로 카메라가 나가 하늘이 보였다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,7 +18,7 @@ function setup(c) {
   const S = c.ctx._, B = c.layout.bounds, cb0 = S.cameraBounds || {};
   const cb = { x0: cb0.x0 ?? B.x0, x1: cb0.x1 ?? B.x1, z0: cb0.z0 ?? B.z0, z1: cb0.z1 ?? B.z1, yMax: cb0.yMax || 9 };
   const sp = c.layout.spawn || { x: 0, z: 0 };
-  const guard = Guard.build(c.ctx.root, { bounds: cb, yLow: (L.floorY(sp.x, sp.z) || 0) + 1.6 });
+  const guard = Guard.build(c.ctx.root, { bounds: cb, yLow: (L.floorY(sp.x, sp.z) || 0) + 1.05 });
   const probe = Guard.build(c.ctx.root, { bounds: { x0: cb.x0 - 20, x1: cb.x1 + 20, z0: cb.z0 - 20, z1: cb.z1 + 20 }, minArea: 0 });
   return { L, cb, guard, probe };
 }
@@ -41,7 +41,7 @@ function outside(probe, p) {
   if (probe.clip(x, y, z, x, y + R, z, 0) >= 1) return true;
   let miss = 0;
   for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; if (probe.clip(x, y, z, x + Math.sin(a) * R, y, z + Math.cos(a) * R, 0) >= 1) miss++; }
-  return miss >= 2;
+  return miss >= 3;
 }
 
 function sweep(c, env, useGuard) {

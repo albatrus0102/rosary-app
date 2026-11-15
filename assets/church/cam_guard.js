@@ -1,22 +1,22 @@
 // 3인칭 카메라 벽 가드: 성당 메시(벽·천장·기둥·창)의 삼각형을 한 번 모아 xz 격자에 넣고, 매 프레임
 // 아바타 머리 → 카메라 선분을 그 삼각형들에 쏘아 처음 닿는 곳 바로 앞으로 카메라를 당긴다.
 // 상자 경계(cameraBounds)만으로는 후진·경당처럼 굽은 벽 밖(상자 모서리)에 카메라가 나가 하늘·외벽이 보였다.
-// 빼는 것: 투명(깊이 안 쓰는) 재질(빛줄기·반사막·데칼), 점·선·스프라이트·인스턴스(촛불), 낮은 물체(maxY < yLow: 의자·바닥).
+// 빼는 것: 가산 혼합(빛줄기), 점·선·스프라이트·인스턴스(촛불), 숨긴 메시, 아주 작은 면(<0.005㎡), 낮은 물체(maxY < yLow: 의자·바닥).
 // 매 프레임 할당 없음(형식 배열 + 도장 배열).
 (function (root) {
   'use strict';
 
   function build(obj, o) {
     o = o || {};
-    var cell = o.cell || 1.5, minArea = o.minArea === undefined ? 0.02 : o.minArea;
+    var cell = o.cell || 1.5, minArea = o.minArea === undefined ? 0.005 : o.minArea;
     var yLow = o.yLow === undefined ? -1e9 : o.yLow, b = o.bounds || null, pad = 3;
     var bx0 = b ? b.x0 - pad : -1e9, bx1 = b ? b.x1 + pad : 1e9, bz0 = b ? b.z0 - pad : -1e9, bz1 = b ? b.z1 + pad : 1e9;
     var tris = [];
     obj.updateMatrixWorld(true);
-    obj.traverse(function (m) {
+    obj.traverseVisible(function (m) {
       if (!m.isMesh || m.isInstancedMesh || m.isSkinnedMesh || (m.userData && m.userData.noCam)) return;
       var mat = Array.isArray(m.material) ? m.material[0] : m.material;
-      if (!mat || (mat.transparent && !mat.depthWrite) || mat.blending === 2 /* Additive */) return;
+      if (!mat || mat.blending === 2 /* Additive: 빛줄기·먼지 */) return;   // 투명 유리 판은 막는다(창 밖으로 못 나가게)
       var g = m.geometry, pa = g && g.attributes && g.attributes.position;
       if (!pa) return;
       var e = m.matrixWorld.elements, ix = g.index ? g.index.array : null, n = ix ? ix.length : pa.count;

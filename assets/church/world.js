@@ -452,7 +452,7 @@
         if (!root.ChurchCamGuard) return null;
         var sp = layout.spawn || { x: 0, z: 0 }, fy0 = 0;
         try { fy0 = logic.floorY(sp.x, sp.z) || 0; } catch (e) { /* ignore */ }
-        try { return root.ChurchCamGuard.build(ctx.root, { bounds: cb, yLow: fy0 + 1.6 }); } catch (e) { return null; }
+        try { return root.ChurchCamGuard.build(ctx.root, { bounds: cb, yLow: fy0 + 1.05 }); } catch (e) { return null; }
       })(),
       reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
