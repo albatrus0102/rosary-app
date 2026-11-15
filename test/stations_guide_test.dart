@@ -93,7 +93,6 @@ void main() {
   testWidgets('안내 모드: 시작 기도 → 1처 … 14처 → 마침, 깊은 절·이동 콜백', (t) async {
     _phone(t);
     final sem = t.ensureSemantics();
-    addTearDown(sem.dispose);
     final moved = <int>[];
     bool? done;
     await t.pumpWidget(
@@ -154,6 +153,7 @@ void main() {
     await t.tap(next);
     await t.pumpAndSettle();
     expect(done, isTrue);
+    sem.dispose();
   });
 
   for (final (name, theme) in [
