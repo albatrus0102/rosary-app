@@ -10,6 +10,7 @@ import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
 import '../app/window_class.dart';
+import '../church/church_entry_art.dart';
 import '../church/church_scene_controller.dart';
 import '../church/church_theme.dart';
 import '../glass/glass_catalog.dart';
@@ -133,11 +134,13 @@ class _AppShellState extends State<AppShell> {
   bool get _churchChrome =>
       _index == _church && _segment == GlassSegment.church && _inChurch;
 
-  /// 내비게이션(바/레일)의 테마. 성당 안에서는 장면 위 HUD 와 같은 어두운 금색([ChurchTheme])으로
-  /// 바뀌어 밝은 내비게이션이 장면 아래에 따로 놀지 않게 하고, 다른 탭으로 가면 앱 테마로 돌아온다
-  /// (M3 short4 로 부드럽게, '동작 줄이기'면 즉시).
+  /// 내비게이션(바/레일)의 테마. 밝은 테마에서도 내비게이션은 어두운 갈색·금색
+  /// ([AppTheme.chromeOf])이고, 성당 안에서는 장면 위 HUD 와 같은 어두운 금색([ChurchTheme])으로
+  /// 바뀌어 장면과 한 세계가 된다. 다른 탭으로 가면 돌아온다(M3 short4 로 부드럽게, '동작 줄이기'면 즉시).
+  ///
+  /// 시스템 내비게이션 바(제스처 손잡이·버튼)가 어두운 바 위에서 보이도록 그 영역의 아이콘은 밝게 둔다.
   Widget _navTheme(BuildContext context, Widget child) {
-    var data = Theme.of(context);
+    var data = AppTheme.chromeOf(context);
     if (_churchChrome) {
       // Theme.of 와 같은 방식으로 글꼴 기하를 입혀 두 테마 사이를 매끄럽게 보간할 수 있게 한다.
       final church = ChurchTheme.of(context);
@@ -155,7 +158,10 @@ class _AppShellState extends State<AppShell> {
     return AnimatedTheme(
       data: data,
       duration: AppMotion.of(context, Durations.short4),
-      child: child,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: AppTheme.systemOverlayStyle(Brightness.dark),
+        child: child,
+      ),
     );
   }
 
@@ -299,29 +305,51 @@ class _AppShellState extends State<AppShell> {
 
   Widget _buildWide(BuildContext context, WindowClass wc, Widget body) {
     final extended = wc == WindowClass.expanded;
+    // 밝은 테마에서 상태 바 아이콘(시계 등)은 어둡다. 어두운 레일이 상태 바 밑까지 올라가면 시계가
+    // 보이지 않으므로, 성당 밖에서는 레일을 상태 바 아래에서 시작한다(성당 안은 장면도 어둡다).
+    final underStatusBar =
+        _churchChrome || Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Row(
         children: [
-          _navTheme(
-            context,
-            _RailSurface(
-              child: SafeArea(
-                right: false,
-                child: NavigationRail(
-                  extended: extended,
-                  labelType: extended
-                      ? NavigationRailLabelType.none
-                      : NavigationRailLabelType.all,
-                  selectedIndex: _index,
-                  onDestinationSelected: _select,
-                  destinations: [
-                    for (final d in _destinations)
-                      NavigationRailDestination(
-                        icon: Icon(d.icon),
-                        selectedIcon: Icon(d.selectedIcon),
-                        label: Text(d.label),
+          Padding(
+            padding: EdgeInsets.only(
+              top: underStatusBar ? 0 : MediaQuery.paddingOf(context).top,
+            ),
+            child: _navTheme(
+              context,
+              _RailSurface(
+                child: SafeArea(
+                  top: underStatusBar,
+                  right: false,
+                  // 장식은 화면 아래 끝까지 닿고, 목적지만 아래 안전 영역을 피한다.
+                  bottom: false,
+                  child: Stack(
+                    children: [
+                      // 레일 아래 장식(아치·촛불·백합). 목적지를 가리지 않는 높이만큼만 그린다.
+                      Positioned.fill(
+                        child: _RailDecor(destinations: _destinations.length),
                       ),
-                  ],
+                      NavigationRail(
+                        // 바탕은 [_RailSurface]가 칠한다(장식 그림이 비쳐 보이게).
+                        backgroundColor: Colors.transparent,
+                        extended: extended,
+                        labelType: extended
+                            ? NavigationRailLabelType.none
+                            : NavigationRailLabelType.all,
+                        selectedIndex: _index,
+                        onDestinationSelected: _select,
+                        destinations: [
+                          for (final d in _destinations)
+                            NavigationRailDestination(
+                              icon: Icon(d.icon),
+                              selectedIcon: Icon(d.selectedIcon),
+                              label: Text(d.label),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -335,20 +363,93 @@ class _AppShellState extends State<AppShell> {
   static const _destinations = [
     _Dest('성당', Icons.church_outlined, Icons.church),
     _Dest('오늘', Icons.self_improvement_outlined, Icons.self_improvement),
-    _Dest('기록', Icons.insights_outlined, Icons.insights),
+    _Dest('기록', Icons.calendar_month_outlined, Icons.calendar_month),
     _Dest('더보기', Icons.more_horiz, Icons.more_horiz),
   ];
 }
 
-/// 레일 뒤 바탕(테마의 surface). 레일 위아래의 안전 영역까지 같은 색으로 채운다.
+/// 레일 뒤 바탕(레일 테마의 표면, 하단 바와 같은 surfaceContainer). 레일 위아래의 안전 영역까지
+/// 같은 색으로 채운다.
 class _RailSurface extends StatelessWidget {
   const _RailSurface({required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) =>
-      ColoredBox(color: Theme.of(context).colorScheme.surface, child: child);
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ColoredBox(
+      color:
+          theme.navigationRailTheme.backgroundColor ??
+          theme.colorScheme.surfaceContainer,
+      child: child,
+    );
+  }
+}
+
+/// 레일 아래 장식 그림([ChurchEntryArt.railDecor]). 레일 목적지 아래 남는 높이에만 그리고
+/// 위쪽은 레일 바탕으로 옅어진다. 남는 높이가 작으면(폰 가로) 그리지 않는다.
+class _RailDecor extends StatelessWidget {
+  const _RailDecor({required this.destinations});
+
+  final int destinations;
+
+  /// 장식 그림의 최대 폭(펼친 레일에서 그림이 지나치게 커지지 않게).
+  static const double _maxWidth = 136;
+
+  /// 그림의 세로/가로 비(기본 자산 137x802 기준. 다른 비율의 그림은 잘려 맞춰진다).
+  static const double _aspect = 5.6;
+
+  static const List<Color> _fade = [Color(0x00FFFFFF), Color(0xFFFFFFFF)];
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 목적지 하나의 높이: 레일 최소 높이 72dp(라벨 포함) 정도 + 위 여백.
+        final used = destinations * 72.0 + AppSpace.md;
+        final room = constraints.maxHeight - used;
+        if (room < 160) return const SizedBox.shrink();
+        final width = constraints.maxWidth < _maxWidth
+            ? constraints.maxWidth
+            : _maxWidth;
+        final natural = width * _aspect;
+        final height = natural < room ? natural : room;
+        Widget decor = ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (rect) => const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: _fade,
+            stops: [0, 0.35],
+          ).createShader(rect),
+          child: const ChurchEntryDecor(
+            asset: ChurchEntryArt.railDecor,
+            alignment: Alignment.bottomLeft,
+          ),
+        );
+        if (width < constraints.maxWidth) {
+          // 펼친 레일: 그림 오른쪽도 레일 바탕으로 옅어지게 한다.
+          decor = ShaderMask(
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (rect) => const LinearGradient(
+              begin: Alignment.centerRight,
+              end: Alignment.centerLeft,
+              colors: _fade,
+              stops: [0, 0.4],
+            ).createShader(rect),
+            child: decor,
+          );
+        }
+        return Align(
+          alignment: Alignment.bottomLeft,
+          child: RepaintBoundary(
+            child: SizedBox(width: width, height: height, child: decor),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _Dest {

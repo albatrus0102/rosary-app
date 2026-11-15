@@ -41,7 +41,7 @@ class _RosaryAppState extends State<RosaryApp> {
     final services = _services;
     // DynamicColorBuilder는 항상 트리에 두어(설정을 켜고 꺼도 내비게이터 상태가
     // 유지되도록) 기기 색을 비동기로 한 번만 읽는다. 지원하지 않는 기기에서는
-    // 두 구성이 null이라 시드(테라코타) 구성으로 돌아간다.
+    // 두 구성이 null이라 앱 고유(상아색·갈색·금색) 구성으로 돌아간다.
     return AppServicesScope(
       services: services,
       child: DynamicColorBuilder(
@@ -55,6 +55,8 @@ class _RosaryAppState extends State<RosaryApp> {
               themeMode: ThemeMode.system,
               theme: AppTheme.light(
                 dynamicScheme: dynamicOn ? lightDynamic?.harmonized() : null,
+                // 내비게이션(레일·하단 바)은 밝은 테마에서도 어두운 구성을 쓴다.
+                chromeScheme: dynamicOn ? darkDynamic?.harmonized() : null,
                 font: settings.prayerFont,
               ),
               darkTheme: AppTheme.dark(

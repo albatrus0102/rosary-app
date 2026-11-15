@@ -3,9 +3,10 @@
 //
 // 사용: node tools/church_web/church_openings.mjs florence          # 개구부 표(구역별)
 //       node tools/church_web/church_openings.mjs florence --json   # 개구부 전체(JSON: world 좌표·법선·크기·형태·현재 유리)
-//       node tools/church_web/church_openings.mjs florence --md     # 문서용 마크다운 표
+//       node tools/church_web/church_openings.mjs florence --md     # 문서용 마크다운 표(같은 치수의 창은 한 줄로 접음; 전부는 --md-full)
 //       node tools/church_web/church_openings.mjs --all             # 성당별 요약(개구부 수·구역별 수·좌표계)
 //       node tools/church_web/church_openings.mjs --ids             # 다룰 수 있는 성당 id
+//       node tools/church_web/church_openings.mjs --check           # data/glass_windows/<id>.json 의 개구부 key·좌표가 지금 빌더와 맞는지 검사
 //   성당 id: stpeter, lateran, maggiore, stpaul, florence, myeongdong, basic  (밀라노는 milan_openings.mjs)
 //
 // 재는 방법(성당마다 창을 짓는 방식이 달라 세 갈래를 모두 모은다):
@@ -58,17 +59,19 @@ const near = (a, b, e = 0.7) => Math.abs(a - b) < e;
 // 유리 색 묶음을 '색유리(그림 자리) / 무색·옅은 유리 / 설화석고' 로 가른다(현재 모델이 그 창을 무엇으로 그리고 있는지).
 function paletteKind(colors) {
   if (!colors || !colors.length) return 'stained';              // 키트 기본값 JEWEL
-  let sat = 0, lum = 0, warm = 0, n = 0;
+  let n = 0, pale = 0, amber = 0;
   for (const c of colors) {
     if (typeof c !== 'number') continue;
     const r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-    sat += mx ? (mx - mn) / mx : 0; lum += (r + g + b) / 765; warm += (r - b) / 255; n++;
+    if (mx < 70) continue;                                      // 납틀·뒷판(거의 검정)은 유리 색이 아니다
+    const sat = mx ? (mx - mn) / mx : 0, lum = (r + g + b) / 765;
+    n++;
+    if (sat < 0.22 && lum > 0.6) pale++;                        // 무색에 가까운 옅은 유리
+    else if (r >= g && g >= b && lum > 0.55) amber++;           // 크림~호박색(설화석고·옅은 호박 유리)
   }
   if (!n) return 'stained';
-  sat /= n; lum /= n; warm /= n;
-  if (sat > 0.45) return 'stained';
-  if (lum > 0.72 && warm > 0.12) return 'warm';                 // 따뜻한 옅은 색(설화석고·호박색 유리)
-  return 'pale';                                                // 무색에 가까운 옅은 유리
+  if (pale + amber < n) return 'stained';                       // 파랑·빨강·초록 등 다른 색상이 섞여 있다 = 색유리
+  return amber > pale ? 'warm' : 'pale';
 }
 const KIND_KO = { stained: '절차적 색유리', warm: '절차적 옅은 호박색(설화석고풍)', pale: '절차적 무색·옅은 유리' };
 
@@ -98,7 +101,8 @@ export function measureRaw(id, opts = {}) {
 }
 
 // 손 지은 유리 삼각형 → 평면별·맞닿은 것끼리 묶음(개구부)
-function clusterTris(tris, gap = 0.3) {
+function clusterTris(tris, o = {}) {
+  const gap = o.gap === undefined ? 0.3 : o.gap, planeTol = o.planeTol === undefined ? 0.12 : o.planeTol, dotMin = o.dot === undefined ? 0.99 : o.dot;
   const items = [];
   for (const t of tris) {
     const v = t.v, ax = v[0], ay = v[1], az = v[2], ux = v[3] - ax, uy = v[4] - ay, uz = v[5] - az, wx = v[6] - ax, wy = v[7] - ay, wz = v[8] - az;
@@ -110,7 +114,8 @@ function clusterTris(tris, gap = 0.3) {
     items.push({ v, nx, ny, nz, d: nx * cx + ny * cy + nz * cz, col: t.col, area: l / 2,
       bb: [Math.min(v[0], v[3], v[6]), Math.min(v[1], v[4], v[7]), Math.min(v[2], v[5], v[8]), Math.max(v[0], v[3], v[6]), Math.max(v[1], v[4], v[7]), Math.max(v[2], v[5], v[8])] });
   }
-  // union-find: 법선이 거의 같고(각 8° 이내) 평면 거리 0.12m 이내, 상자가 gap 이내로 맞닿은 것
+  // union-find: 법선이 거의 같고(기본 각 8° 이내) 평면 거리 planeTol(기본 0.12m) 이내, 상자가 gap 이내로 맞닿은 것
+  // (성 베드로의 궁륭 채광창처럼 곡면을 따라 줄줄이 놓인 유리는 어댑터가 planeTol 을 넓혀 한 창으로 묶는다)
   const par = items.map((_, i) => i), find = (i) => (par[i] === i ? i : (par[i] = find(par[i])));
   const cell = 2.0, grid = new Map();
   items.forEach((it, i) => {
@@ -122,8 +127,8 @@ function clusterTris(tris, gap = 0.3) {
       const arr = grid.get((a.cell[0] + dx) + ',' + (a.cell[1] + dy) + ',' + (a.cell[2] + dz)); if (!arr) continue;
       for (const j of arr) {
         if (j <= i) continue; const c = items[j];
-        if (a.nx * c.nx + a.ny * c.ny + a.nz * c.nz < 0.99) continue;
-        if (Math.abs(a.d - c.d) > 0.12) continue;
+        if (a.nx * c.nx + a.ny * c.ny + a.nz * c.nz < dotMin) continue;
+        if (Math.abs(a.d - c.d) > planeTol) continue;
         if (a.bb[0] - c.bb[3] > gap || c.bb[0] - a.bb[3] > gap || a.bb[1] - c.bb[4] > gap || c.bb[1] - a.bb[4] > gap || a.bb[2] - c.bb[5] > gap || c.bb[2] - a.bb[5] > gap) continue;
         par[find(i)] = find(j);
       }
@@ -180,8 +185,29 @@ export function measure(id, opts = {}) {
     out.push({ src: 'kit.rose', shape: 'circle', pattern: 'rose' + (rs.petals || 12), x: rs.x, y: rs.y, z: rs.z, nx: F.nx, nz: F.nz, w: rs.r * 2, h: rs.r * 2, sill: rs.y - rs.r, spring: rs.y, apex: rs.y + rs.r, rise: rs.r,
       colors: rs.colors || null, photo: rs.photo ? rs.photo.win : null, photoSlot: rs.photo ? rs.photo.slot + '[' + rs.photo.index + ']' : null, beam: !!rs.beam });
   }
-  const custom = clusterTris(raw.tris, opts.gap || 0.3);
-  for (const c of custom) { c.shape = shapeOfCustom(c); out.push(c); }
+  const ad = ADAPTERS[id] || {};
+  const custom = clusterTris(raw.tris, ad.cluster || {});
+  for (const c of custom) {
+    c.shape = shapeOfCustom(c);
+    // 키트 장미창 뒤에 빌더가 덧댄 납틀·살(같은 자리의 손 지은 유리)은 같은 창이므로 따로 세지 않는다
+    if (out.some((k) => k.src !== 'custom' && Math.hypot(k.x - c.x, k.y - c.y, k.z - c.z) < 0.35 && Math.abs(k.w - c.w) < 0.4)) continue;
+    out.push(c);
+  }
+  if (ad.mergeBy) {                      // 어댑터가 '같은 창'이라고 한 조각들을 하나로(상자 합집합)
+    const groups = new Map(), keep = [];
+    for (const o of out) { const k = ad.mergeBy(o); if (k === null || k === undefined) keep.push(o); else { if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); } }
+    for (const g of groups.values()) {
+      const m = { ...g[0] }, n = g.length;
+      m.sill = Math.min(...g.map((o) => o.sill)); m.apex = Math.max(...g.map((o) => o.apex)); m.w = Math.max(...g.map((o) => o.w)); m.h = m.apex - m.sill;
+      m.x = g.reduce((a, o) => a + o.x, 0) / n; m.z = g.reduce((a, o) => a + o.z, 0) / n; m.y = (m.sill + m.apex) / 2;
+      let nx = g.reduce((a, o) => a + o.nx, 0), nz = g.reduce((a, o) => a + o.nz, 0); const l = Math.hypot(nx, nz) || 1; m.nx = nx / l; m.nz = nz / l;
+      m.spring = Math.min(...g.map((o) => o.spring)); m.rise = m.apex - m.spring; m.tris = g.reduce((a, o) => a + (o.tris || 0), 0); m.parts = n;
+      m.area = g.reduce((a, o) => a + (o.area || 0), 0); m.fill = m.area / Math.max(1e-6, m.w * m.h); m.shape = n > 1 ? 'round' : m.shape;
+      const cs = []; g.forEach((o) => (o.colors || []).forEach((c) => { if (!cs.includes(c)) cs.push(c); })); m.colors = cs;
+      keep.push(m);
+    }
+    out.length = 0; keep.forEach((o) => out.push(o));
+  }
   // 사진 자리(ctx.glassSlot): 가까운 개구부에 붙이고, 없으면 따로 적는다
   const slots = (S.glassSlots || []).map((s) => ({ win: s.win, slot: s.slot, index: s.index, shape: s.shape, x: r3(s.x), y: r3(s.y), z: r3(s.z), nx: r3(s.nx), nz: r3(s.nz), w: r3(s.w), h: r3(s.h) }));
   for (const s of slots) {
@@ -190,12 +216,10 @@ export function measure(id, opts = {}) {
     if (best && !best.photo) { best.photo = s.win; best.photoSlot = s.slot + '[' + (s.index || 0) + ']'; }
     else if (!best) out.push({ src: 'glassSlot', shape: s.shape || 'rect', x: s.x, y: s.y, z: s.z, nx: s.nx, nz: s.nz, w: s.w, h: s.h, sill: s.y - s.h / 2, spring: s.y, apex: s.y + s.h / 2, rise: 0, colors: null, photo: s.win, photoSlot: s.slot + '[' + (s.index || 0) + ']' });
   }
-  const ad = ADAPTERS[id] || {};
   const res = [];
   for (const o of out) {
-    if (ad.skip && ad.skip(o)) continue;
     const pk = paletteKind(o.colors);
-    const e = {
+    res.push({
       key: null, zone: 'other', src: o.src, shape: o.shape, top: o.top || null, pattern: o.pattern || null,
       x: r3(o.x), y: r3(o.y), z: r3(o.z), nx: r3(o.nx), nz: r3(o.nz), yawDeg: o.horiz ? null : yawOf(o.nx, o.nz),
       w: r3(o.w), h: r3(o.h), sill: r3(o.sill), spring: r3(o.spring), apex: r3(o.apex), rise: r3(o.rise), aspect: r3(o.w / o.h),
@@ -203,15 +227,28 @@ export function measure(id, opts = {}) {
       palette: pk, colors: (o.colors || []).slice(0, 6).map(hex), photo: o.photo || null, photoSlot: o.photoSlot || null,
       glassNow: o.photo ? '사진 슬롯 ' + o.photo + ' (' + o.photoSlot + ')' : KIND_KO[pk] + (o.pattern ? ' · ' + o.pattern : ''),
       tris: o.tris || null, fill: o.fill ? r2(o.fill) : null
-    };
-    const nm = ad.name ? ad.name(e) : null;
-    if (nm) { e.zone = nm.zone; e.key = nm.key; if (nm.note) e.note = nm.note; }
-    res.push(e);
+    });
   }
+  // 어댑터 규칙으로 구역·key 를 붙인다. 규칙 = {zone, test(e), side?(e) → 접두 꼬리표, key(e, i, n) | prefix, sort?(a, b), kind?, note?}
+  // 같은 규칙·같은 side 안에서는 기본으로 입구(+z) → 제대(-z) 순서로 번호(1부터)를 매긴다.
+  for (const rule of ad.rules || []) {
+    const hit = res.filter((e) => !e.key && rule.test(e));
+    const groups = {};
+    for (const e of hit) { const sd = rule.side ? rule.side(e) : ''; (groups[sd] = groups[sd] || []).push(e); }
+    for (const [sd, g] of Object.entries(groups)) {
+      g.sort(rule.sort || ((a, b2) => b2.z - a.z || a.x - b2.x));
+      g.forEach((e, i) => {
+        e.zone = rule.zone; e.key = rule.key ? rule.key(e, i, g.length, sd) : rule.prefix + sd + (g.length > 1 || rule.always ? '_' + (rule.tag || 'b') + (i + 1) : '');
+        if (rule.kind) e.kind = rule.kind; if (rule.note) e.note = typeof rule.note === 'function' ? rule.note(e, i) : rule.note;
+        if (rule.glassNow) e.glassNow = rule.glassNow;
+      });
+    }
+  }
+  for (const e of res) if (!e.kind) e.kind = 'window';
   // key 중복·미지정 정리: 미지정은 other_<n>, 중복은 _2, _3 …
   const seen = {}; let oi = 0;
-  const order = ad.zones || [];
-  res.sort((a, b2) => (order.indexOf(a.zone) < 0 ? 99 : order.indexOf(a.zone)) - (order.indexOf(b2.zone) < 0 ? 99 : order.indexOf(b2.zone)) || String(a.key).localeCompare(String(b2.key)) || b2.z - a.z || a.x - b2.x || a.y - b2.y);
+  const order = (ad.rules || []).map((r) => r.zone);
+  res.sort((a, b2) => (order.indexOf(a.zone) < 0 ? 99 : order.indexOf(a.zone)) - (order.indexOf(b2.zone) < 0 ? 99 : order.indexOf(b2.zone)) || String(a.key).localeCompare(String(b2.key), 'en', { numeric: true }) || b2.z - a.z || a.x - b2.x || a.y - b2.y);
   for (const e of res) {
     if (!e.key) e.key = 'other_' + String(++oi).padStart(2, '0');
     if (seen[e.key]) { seen[e.key]++; e.key = e.key + '_' + seen[e.key]; e.dupKey = true; } else seen[e.key] = 1;
@@ -224,6 +261,130 @@ export function measure(id, opts = {}) {
 // 여기 적는 수치는 각 빌더의 상수(파일 머리말·주석)에서 옮긴 것이다.
 const sideNS = (x, plusIs) => (x > 0.5 ? plusIs : (x < -0.5 ? (plusIs === 'S' ? 'N' : 'S') : 'C'));
 export const ADAPTERS = {};
+const Lr = (e) => (e.x > 0.5 ? 'R' : (e.x < -0.5 ? 'L' : 'C'));            // 제대를 볼 때 왼쪽(-x) / 오른쪽(+x)
+const NS = (plus) => (e) => (e.x > 0.5 ? plus : (e.x < -0.5 ? (plus === 'S' ? 'N' : 'S') : 'C'));
+const compass8 = (deg) => ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'][((Math.round(deg / 45) % 8) + 8) % 8];
+
+// ---- 피렌체 두오모 (ch_florence.js): 제대 = 동(-z), 입구 = 서(+z), +x = 남, -x = 북. 팔각(돔) 중심 (0, -12.93). 45%.
+ADAPTERS.florence = {
+  axes: { altar: '-z (동)', entrance: '+z (서)', plusX: '남', minusX: '북',
+    summary: '입구 +z(서) → 제대 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: ch_florence.js 머리말 "제대(동쪽) -z", 651행 "북쪽(−x) 트리부나 바닥의 자오선".' },
+  consts: { domeCenter: [0, -12.93], naveBayZ: [29.2, 20.3, 11.4, 2.5] },
+  rules: [
+    { zone: 'facade', test: (e) => e.z > 33 && e.shape === 'circle', key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : (e.x > 0 ? 'S' : 'N')) },
+    { zone: 'aisle', test: (e) => near(Math.abs(e.x), 9.3, 0.6) && e.src === 'kit.window', side: NS('S'), prefix: 'aisle', always: true },
+    { zone: 'nave_oculus', test: (e) => near(Math.abs(e.x), 4.5, 0.6) && e.shape === 'circle' && e.y < 18, side: NS('S'), prefix: 'naveOc', always: true },
+    { zone: 'drum', test: (e) => e.y > 20 && e.shape === 'circle', key: (e) => 'drum_' + compass8(Math.atan2(-e.x, -(e.z + 12.93)) * 180 / Math.PI) },
+    // 트리부나 경당 창: 트리부나 = E(동, 성 자노비) / S(남) / N(북). 번호는 팔각 쪽에서 그 트리부나 안을 볼 때 왼쪽 → 오른쪽 1…5
+    { zone: 'tribune_chapel', test: (e) => e.src === 'kit.window' && e.w < 0.9 && e.sill < 3,
+      side: (e) => (e.x > 12 ? 'S' : (e.x < -12 ? 'N' : 'E')),
+      sort: (a, b2) => (a.x > 12 ? a.z - b2.z : (a.x < -12 ? b2.z - a.z : a.x - b2.x)),
+      key: (e, i, n, sd) => 'trib' + sd + '_c' + (i + 1) }
+  ]
+};
+
+// ---- 명동대성당 (ch_myeongdong.js): 입구 = 북북서(+z), 제대 = 남남동(-z). +x = 서남서(제대를 볼 때 오른쪽), -x = 동북동(왼쪽). 100%.
+ADAPTERS.myeongdong = {
+  axes: { altar: '-z (남남동)', entrance: '+z (북북서)', plusX: '서남서(오른쪽 R)', minusX: '동북동(왼쪽 L)',
+    summary: '입구 +z(북북서) → 제대 -z(남남동). 제대를 볼 때 오른쪽 R = +x = 서남서, 왼쪽 L = -x = 동북동. 근거: interiors/myeongdong.md §2(서울신문: 입구 북북서) · 210행 "+x(서남서)".' },
+  consts: { naveBayZ: [21.5, 16.5, 11.5, 6.5, 1.5, -3.5], chancelBayZ: [-17.5, -22.5], transeptZ: [-5.3, -15.7] },
+  rules: [
+    { zone: 'facade', test: (e) => e.z > 31 && e.shape === 'circle', key: () => 'facade_rose' },
+    { zone: 'facade', test: (e) => e.z > 31 && e.shape !== 'circle', side: Lr, prefix: 'facadeSide' },
+    { zone: 'apse', test: (e) => e.z < -27 && e.sill > 5, key: (e) => 'apse_' + (Math.abs(e.x) < 0.5 ? 'C' : (e.x < 0 ? 'L' : 'R') + (Math.abs(e.x) < 3.8 ? '1' : '2')) },
+    { zone: 'transept_end', test: (e) => Math.abs(e.x) > 13.5, side: Lr, prefix: 'trEnd' },
+    { zone: 'transept_upper', test: (e) => near(Math.abs(e.x), 11.25, 0.5) && e.sill > 9, key: (e) => 'trUp' + Lr(e) + (e.z > -10 ? '_front' : '_back') },
+    { zone: 'transept_upper', test: (e) => near(Math.abs(e.x), 6.75, 0.5) && e.sill > 9, key: (e) => 'trIn' + Lr(e) + (e.z > -10 ? '_front' : '_back') },
+    { zone: 'aisle', test: (e) => near(Math.abs(e.x), 9.695, 0.5) && e.z > -5, side: Lr, prefix: 'aisle', tag: 'n', always: true },
+    { zone: 'aisle_chancel', test: (e) => near(Math.abs(e.x), 9.695, 0.5) && e.z < -5, side: Lr, prefix: 'aisle', tag: 's', always: true },
+    { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 4.745, 0.5) && e.z > 25, side: Lr, prefix: 'clere', key: (e) => 'clere' + Lr(e) + '_n0' },
+    { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 4.745, 0.5) && e.z > -5, side: Lr, prefix: 'clere', tag: 'n', always: true },
+    { zone: 'clerestory_chancel', test: (e) => near(Math.abs(e.x), 4.745, 0.5) && e.z < -5, side: Lr, prefix: 'clere', tag: 's', always: true }
+  ]
+};
+
+// ---- 성 베드로 (ch_stpeter.js): 입구 = 동(+z), 제대·후진 = 서(-z). +x = 북(제대를 볼 때 오른쪽), -x = 남. 돔 중심 (0, -9). 37%.
+ADAPTERS.stpeter = {
+  axes: { altar: '-z (서)', entrance: '+z (동)', plusX: '북', minusX: '남',
+    summary: '입구 +z(동) → 후진 -z(서). 제대를 볼 때 오른쪽 +x = 북, 왼쪽 -x = 남. 근거: interiors/stpeter.md 28·147행.' },
+  consts: { domeCenter: [0, -9] },
+  // 궁륭 채광창(barrel() 의 lun)은 곡면을 따라 5줄로 놓여 있어 평면 묶음으로는 5조각이 된다 → 같은 창의 줄을 하나로 합친다. 가운데 문의 바깥빛(사각 + 반원)도 하나로.
+  mergeBy: (o) => {
+    if (o.src !== 'custom') return null;
+    if (o.z > 34.9 && o.sill < 5) return 'door';
+    if (o.sill > 12.5 && o.apex < 15.7 && o.h < 1.1) {
+      if (Math.abs(o.x) >= 8) return 't' + Math.round(o.x) + (o.z > -9 ? 'f' : 'b');
+      return (o.z > 0 ? 'n' : 'a') + (o.x > 0 ? '+' : '-') + Math.round(o.z);
+    }
+    return null;
+  },
+  rules: [
+    { zone: 'gloria', test: (e) => !!e.photo || (e.z < -33 && e.shape === 'ellipse'), key: () => 'gloria' },
+    { zone: 'door_light', kind: 'not_window', test: (e) => e.z > 34 && e.sill < 1, key: () => 'entrance_door_light', note: '가운데 문의 바깥빛 면(창 아님)' },
+    { zone: 'facade', test: (e) => e.z > 34 && e.sill > 5, key: () => 'facade_upper' },
+    { zone: 'aisle_skylight', test: (e) => e.shape === 'horizontal', side: NS('N'), prefix: 'aisleSky', always: true, glassNow: '절차적 밝은 면(작은 돔 천창)' },
+    { zone: 'chapel_light', kind: 'not_window', test: (e) => Math.abs(e.x) > 13 && e.sill < 3 && e.z > 0, side: NS('N'), prefix: 'chapelLight', always: true, note: '측랑 경당 벽 안 빛 면("창 대신", ch_stpeter.js 517행)' },
+    { zone: 'lantern', test: (e) => e.sill > 35, key: (e) => 'lantern_' + compass8(Math.atan2(e.x, -(e.z + 9)) * 180 / Math.PI + 180) },
+    { zone: 'drum', test: (e) => e.sill > 20 && e.sill < 35, sort: (a, b2) => Math.atan2(a.x, a.z + 9) - Math.atan2(b2.x, b2.z + 9), key: (e, i) => 'drum_' + String(i + 1).padStart(2, '0') },
+    { zone: 'nave_lunette', test: (e) => e.sill > 11 && e.sill < 20 && e.z > 0 && Math.abs(e.x) < 8, side: NS('N'), prefix: 'naveLun', always: true },
+    { zone: 'transept_lunette', test: (e) => e.sill > 11 && e.sill < 20 && Math.abs(e.x) >= 8, side: NS('N'), prefix: 'trLun', always: true, sort: (a, b2) => b2.z - a.z || Math.abs(a.x) - Math.abs(b2.x) },
+    { zone: 'apse_lunette', test: (e) => e.sill > 11 && e.sill < 20 && e.z < -12 && Math.abs(e.x) < 8, side: NS('N'), prefix: 'apseLun', always: true }
+  ]
+};
+
+// ---- 산타 마리아 마조레 (ch_maggiore.js): 정면 = 남동(+z), 후진 = 북서(-z). +x = 북동(제대를 볼 때 오른쪽, 시스티나 경당 쪽), -x = 남서(왼쪽, 파올리나 경당 쪽). 80%.
+ADAPTERS.maggiore = {
+  axes: { altar: '-z (북서)', entrance: '+z (남동)', plusX: '북동(오른쪽 R)', minusX: '남서(왼쪽 L)',
+    summary: '입구 +z(남동) → 후진 -z(북서). 제대를 볼 때 오른쪽 R = +x = 북동, 왼쪽 L = -x = 남서. 근거: interiors/maggiore.md 180행.' },
+  rules: [
+    { zone: 'facade', test: (e) => e.z > 34 && e.sill > 8, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : Lr(e)) },
+    { zone: 'facade_aisle', test: (e) => e.z > 34 && e.sill < 8, side: Lr, prefix: 'facadeAisle' },
+    { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 6.75, 0.5), side: Lr, prefix: 'clere', always: true },
+    { zone: 'aisle', test: (e) => near(Math.abs(e.x), 12.48, 0.5), side: Lr, prefix: 'aisle', always: true },
+    { zone: 'apse', test: (e) => e.z < -29, sort: (a, b2) => a.x - b2.x, prefix: 'apse', always: true, tag: 'w' }
+  ]
+};
+
+// ---- 라테라노 (ch_lateran.js): 입구 = 동(+z), 후진 = 서(-z). +x = 북(오른쪽, 오르간), -x = 남(왼쪽, 성체 제대). 53%.
+ADAPTERS.lateran = {
+  axes: { altar: '-z (서)', entrance: '+z (동)', plusX: '북', minusX: '남',
+    summary: '입구 +z(동) → 후진 -z(서). 제대를 볼 때 오른쪽 +x = 북(오르간 쪽 익랑), 왼쪽 -x = 남(성체 제대 쪽 익랑). 근거: interiors/lateran.md 28·132행, ch_lateran.js 356행.' },
+  rules: [
+    { zone: 'facade', test: (e) => e.z > 34, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : NS('N')(e)) },
+    { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 5.57, 0.3) && e.z > -3, side: NS('N'), prefix: 'clere', always: true },
+    { zone: 'transept', test: (e) => near(e.z, -5.9, 0.4), key: (e) => 'trFront' + NS('N')(e) + (Math.abs(e.x) > 11 ? '_outer' : '_inner') },
+    { zone: 'transept', test: (e) => near(e.z, -15.94, 0.4), key: (e) => 'trBack' + NS('N')(e) + (Math.abs(e.x) > 11 ? '_outer' : '_inner') },
+    { zone: 'transept', test: (e) => Math.abs(e.x) > 18, side: NS('N'), prefix: 'trEnd', always: true },
+    { zone: 'choir', test: (e) => near(Math.abs(e.x), 5.27, 0.3) && e.z < -17, side: NS('N'), prefix: 'choir', always: true },
+    { zone: 'apse', test: (e) => e.z < -30, sort: (a, b2) => a.x - b2.x, prefix: 'apse', always: true, tag: 'w' }
+  ]
+};
+
+// ---- 성 밖 성 바오로 (ch_stpaul.js): 입구 = 서(+z), 후진 = 동(-z). +x = 남(제대를 볼 때 오른쪽), -x = 북. 53%.
+ADAPTERS.stpaul = {
+  axes: { altar: '-z (동)', entrance: '+z (서)', plusX: '남', minusX: '북',
+    summary: '입구 +z(서, 테베레 강 쪽) → 후진 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: 실제 대성전은 후진이 동쪽(interiors/stpaul.md), 모델 축은 입구 +z 공통 규약.' },
+  rules: [
+    { zone: 'facade', test: (e) => e.z > 33, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : NS('S')(e)) },
+    { zone: 'aisle', test: (e) => near(Math.abs(e.x), 17.5, 0.4) && e.z > -15, side: NS('S'), prefix: 'aisle', always: true },
+    { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 6.6, 0.4), side: NS('S'), prefix: 'clere', always: true },
+    { zone: 'transept_end', test: (e) => Math.abs(e.x) > 18.5, side: NS('S'), prefix: 'trEnd', always: true },
+    { zone: 'transept_back', test: (e) => e.z < -28, sort: (a, b2) => a.x - b2.x, prefix: 'trBack', always: true, tag: 'w' }
+  ]
+};
+
+// ---- 우리 본당 (ch_basic.js): 가상의 본당(실제 건물 없음). 입구 +z, 제대 -z. 방위는 정해져 있지 않다 → 좌(L, -x)/우(R, +x)만 쓴다. 100%.
+ADAPTERS.basic = {
+  axes: { altar: '-z', entrance: '+z', plusX: '오른쪽 R(방위 없음)', minusX: '왼쪽 L(방위 없음)',
+    summary: '입구 +z → 제대 -z. 가상의 본당이라 방위가 없다(제대를 볼 때 오른쪽 R = +x, 왼쪽 L = -x).' },
+  rules: [
+    { zone: 'entrance', test: (e) => e.z > 19 && e.shape === 'circle', key: () => 'entrance_rose' },
+    { zone: 'entrance', test: (e) => e.z > 19 && e.shape !== 'circle', key: () => 'entrance_transom' },
+    { zone: 'sanctuary', test: (e) => e.z < -19, key: () => 'apse_rose' },
+    { zone: 'side', test: (e) => near(Math.abs(e.x), 12, 0.5), side: Lr, prefix: 'side', always: true }
+  ]
+};
+
 
 function printTable(rows, cols) {
   const head = '| ' + cols.map((c) => c[0]).join(' | ') + ' |\n|' + cols.map(() => '---').join('|') + '|\n';
@@ -234,39 +395,64 @@ export const OPEN_COLS = [
   ['key', (o) => '`' + o.key + '`'], ['구역', (o) => o.zone], ['x', (o) => o.x], ['y(중심)', (o) => o.y], ['z', (o) => o.z], ['yaw°', (o) => o.yawDeg],
   ['폭×높이', (o) => o.w + '×' + o.h], ['창턱', (o) => o.sill], ['형태', (o) => SHAPE_KO[o.shape] || o.shape], ['가로/세로', (o) => o.aspect], ['실제 환산(m)', (o) => o.realW + '×' + o.realH], ['지금 유리', (o) => o.glassNow + (o.note ? ' · ' + o.note : '')]
 ];
-/** 같은 구역·같은 치수의 연속 개구부를 한 줄로 접는다(문서 표가 길어지지 않게). key 는 첫…끝. */
+/** 같은 구역·같은 치수·같은 쪽(key 머리)인 개구부를 한 줄로 접는다(문서 표가 길어지지 않게). 전체는 --md-full / --json. */
 export function foldRows(openings) {
-  const out = [];
+  const out = [], idx = {};
   for (const o of openings) {
-    const last = out[out.length - 1];
-    const same = last && last.zone === o.zone && last.w === o.w && last.h === o.h && last.sill === o.sill && last.shape === o.shape && last.glassNowBase === o.glassNow.replace(/\[\d+\]/, '[i]') && last.grp === o.key.replace(/\d+$/, '');
-    if (same) { last.items.push(o); continue; }
-    out.push({ zone: o.zone, w: o.w, h: o.h, sill: o.sill, shape: o.shape, glassNowBase: o.glassNow.replace(/\[\d+\]/, '[i]'), grp: o.key.replace(/\d+$/, ''), items: [o] });
+    const grp = o.key.replace(/(_[a-z]?\d+|_[A-Z]{1,2}|_(front|back|inner|outer|center))$/, ''), base = o.glassNow.replace(/\[\d+\]/, '[i]').replace(/alabaster_stpaul_\d/, 'alabaster_stpaul_1·2');
+    const k = [o.zone, grp, o.w, o.h, o.sill, o.shape, base].join('|');
+    if (idx[k] === undefined) { idx[k] = out.length; out.push({ zone: o.zone, base, items: [] }); }
+    out[idx[k]].items.push(o);
   }
   return out;
 }
+const uniq = (a) => [...new Set(a)];
+export const FOLD_COLS = [
+  ['key', (g) => (g.items.length === 1 ? '`' + g.items[0].key + '`' : '`' + g.items[0].key + '` … `' + g.items[g.items.length - 1].key + '`')], ['수', (g) => g.items.length], ['구역', (g) => g.zone],
+  ['x', (g) => uniq(g.items.map((o) => o.x)).join(', ')], ['y(중심)', (g) => uniq(g.items.map((o) => o.y)).join(', ')], ['z', (g) => uniq(g.items.map((o) => o.z)).join(', ')], ['yaw°', (g) => uniq(g.items.map((o) => o.yawDeg)).join(', ')],
+  ['폭×높이', (g) => g.items[0].w + '×' + g.items[0].h], ['창턱', (g) => g.items[0].sill], ['형태', (g) => SHAPE_KO[g.items[0].shape] || g.items[0].shape], ['가로/세로', (g) => g.items[0].aspect], ['실제 환산(m)', (g) => g.items[0].realW + '×' + g.items[0].realH],
+  ['지금 유리', (g) => g.base + (g.items[0].note ? ' · ' + g.items[0].note : '')]
+];
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const a = process.argv.slice(2), ids = Object.keys(ADAPTERS);
   if (a.includes('--ids')) { console.log(ids.join(' ')); process.exit(0); }
+  if (a.includes('--check')) {
+    // 계획 데이터(data/glass_windows/<id>.json)가 지금 빌더와 어긋났는지 본다: 개구부 수·key·좌표(±2cm)·실제 창이 가리키는 key
+    const dir = path.resolve(here, '../../data/glass_windows'); let bad = 0;
+    for (const cid of ids) {
+      const f = path.join(dir, cid + '.json');
+      if (!fs.existsSync(f)) { console.log(cid.padEnd(11) + ' (데이터 없음)'); continue; }
+      const d = JSON.parse(fs.readFileSync(f, 'utf8')), m = measure(cid), by = Object.fromEntries(m.openings.map((o) => [o.key, o])), errs = [];
+      if (d.model.openings.length !== m.openings.length) errs.push(`개구부 수 ${d.model.openings.length} → ${m.openings.length}`);
+      for (const o of d.model.openings) { const n = by[o.key]; if (!n) errs.push('사라진 key ' + o.key); else if (Math.abs(n.x - o.x) > 0.02 || Math.abs(n.y - o.y) > 0.02 || Math.abs(n.z - o.z) > 0.02 || Math.abs(n.w - o.w) > 0.02 || Math.abs(n.h - o.h) > 0.02) errs.push('옮겨진/크기 바뀐 ' + o.key); }
+      for (const w of d.real_windows) for (const k of w.opening_keys || []) if (!by[k]) errs.push(w.id + ' → 없는 key ' + k);
+      const fixed = {}; d.real_windows.forEach((w) => { if ((w.opening_keys || []).length === 1 && w.cls === 'a') (fixed[w.opening_keys[0]] = fixed[w.opening_keys[0]] || []).push(w.id); });
+      Object.entries(fixed).forEach(([k, v]) => { if (v.length > 1) errs.push('중복 anchor ' + k + ' ← ' + v.join(',')); });
+      console.log(cid.padEnd(11) + (errs.length ? ' 불일치 ' + errs.length + '건: ' + errs.slice(0, 6).join(' · ') : ` 일치 (개구부 ${m.openings.length}, 실제 창 행 ${d.real_windows.length})`));
+      bad += errs.length;
+    }
+    process.exit(bad ? 1 : 0);
+  }
   const id = a.find((s) => !s.startsWith('--'));
   if (a.includes('--all') || !id) {
     for (const cid of ids) {
       const m = measure(cid), by = {};
       m.openings.forEach((o) => { by[o.zone] = (by[o.zone] || 0) + 1; });
       const ph = m.openings.filter((o) => o.photo).length;
-      console.log(`${cid.padEnd(11)} scale ${String(m.layout.scalePercent).padStart(3)}%  개구부 ${String(m.openings.length).padStart(3)} (사진 슬롯 ${ph}, 절차적 ${m.openings.length - ph})  빛줄기 ${m.beams}  ${Object.entries(by).map(([k, v]) => k + ' ' + v).join(' · ')}`);
+      console.log(`${cid.padEnd(11)} scale ${String(m.layout.scalePercent).padStart(3)}%  개구부 ${String(m.openings.length).padStart(3)} (사진 슬롯 ${ph}, 절차적 ${m.openings.length - ph})  직접 등록 빛줄기 ${m.beams}  ${Object.entries(by).map(([k, v]) => k + ' ' + v).join(' · ')}`);
       if (m.axes) console.log('            축: ' + m.axes.summary);
     }
     process.exit(0);
   }
   const m = measure(id);
   if (a.includes('--json')) console.log(JSON.stringify(m, null, 1));
-  else if (a.includes('--md')) console.log(printTable(m.openings, OPEN_COLS));
+  else if (a.includes('--md-full')) console.log(printTable(m.openings, OPEN_COLS));
+  else if (a.includes('--md')) console.log(printTable(foldRows(m.openings), FOLD_COLS));
   else {
     const by = {};
     m.openings.forEach((o) => { (by[o.zone] = by[o.zone] || []).push(o); });
-    console.log(`${id} (scalePercent ${m.layout.scalePercent}): 개구부 ${m.openings.length}개, 사진 창 자리 ${m.glassSlots.length}, 빛줄기 ${m.beams}, 손 지은 유리 삼각형 ${m.customTris}, 유리 배치 물체 ${m.glassObjects}`);
+    console.log(`${id} (scalePercent ${m.layout.scalePercent}): 개구부 ${m.openings.length}개, 사진 창 자리 ${m.glassSlots.length}, 직접 등록 빛줄기 ${m.beams}, 손 지은 유리 삼각형 ${m.customTris}, 유리 배치 물체 ${m.glassObjects}`);
     if (m.axes) console.log('축: ' + m.axes.summary);
     for (const z of Object.keys(by)) {
       console.log(`\n[${z}] ${by[z].length}개`);

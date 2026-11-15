@@ -387,7 +387,7 @@ void main() {
       expect(find.byType(StatsScreen), findsOneWidget);
       expect(_screens(), [
         // '/' 라우트(앱 셸의 첫 탭=성당 보기)는 성당 화면이 스스로 기록한다(옵저버는 세지 않는다).
-        'church_select',
+        'church_entry',
         'more',
         'stats',
         'home',

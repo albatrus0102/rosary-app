@@ -1,0 +1,2714 @@
+{
+ "schema": "rosarium.glass_windows.plan/1",
+ "church": "florence",
+ "name_ko": "피렌체 대성당",
+ "generated": "2026-11-15",
+ "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "release_approved": false,
+ "classes": {
+  "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
+  "b": "벽은 있으나 창이 없거나 형태가 달라 뚫어야/고쳐야 함",
+  "c": "건축 부분 자체가 모델에 없음",
+  "d": "위치 미확정 → QA 갤러리 전용",
+  "e": "실제로 그림 유리가 아님(무색/설화석고/맹창)"
+ },
+ "coordinate_system": {
+  "units": "앱 m (= 실제 m × 0.45)",
+  "scalePercent": 45,
+  "altar": "-z (동)",
+  "entrance": "+z (서)",
+  "plusX": "남",
+  "minusX": "북",
+  "summary": "입구 +z(서) → 제대 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: ch_florence.js 머리말 \"제대(동쪽) -z\", 651행 \"북쪽(−x) 트리부나 바닥의 자오선\".",
+  "bounds": {
+   "x0": -20.2,
+   "x1": 20.2,
+   "z0": -33.5,
+   "z1": 33.5
+  },
+  "spawn": {
+   "x": 0,
+   "z": 31.3,
+   "r": 0
+  },
+  "plate_convention": "x,y,z = 유리 평면 가운데(y 는 개구부 중심), yawDeg = atan2(nx, nz) (판 +Z 가 실내를 봄), u 는 실내에서 볼 때 왼→오"
+ },
+ "model": {
+  "tool": "node tools/church_web/church_openings.mjs florence --json",
+  "opening_count": 42,
+  "window_count": 42,
+  "photo_slot_count": 3,
+  "by_zone": {
+   "facade": 3,
+   "aisle": 8,
+   "nave_oculus": 8,
+   "drum": 8,
+   "tribune_chapel": 15
+  },
+  "openings": [
+   {
+    "key": "facade_center",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "circle",
+    "x": 0,
+    "y": 15,
+    "z": 34.4,
+    "yawDeg": 180,
+    "w": 3,
+    "h": 3,
+    "sill": 13.5,
+    "aspect": 1,
+    "real_m": [
+     6.67,
+     6.67
+    ],
+    "glass_now": "사진 슬롯 oculus_florence_ghiberti_1 (facade_center[0])",
+    "photo": "oculus_florence_ghiberti_1"
+   },
+   {
+    "key": "facade_N",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "circle",
+    "x": -6.7,
+    "y": 8.3,
+    "z": 34.4,
+    "yawDeg": 180,
+    "w": 2,
+    "h": 2,
+    "sill": 7.3,
+    "aspect": 1,
+    "real_m": [
+     4.44,
+     4.44
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "facade_S",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "circle",
+    "x": 6.7,
+    "y": 8.3,
+    "z": 34.4,
+    "yawDeg": 180,
+    "w": 2,
+    "h": 2,
+    "sill": 7.3,
+    "aspect": 1,
+    "real_m": [
+     4.44,
+     4.44
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "aisleN_b1",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.3,
+    "y": 5.418,
+    "z": 29.2,
+    "yawDeg": 90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleN_b2",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.3,
+    "y": 5.418,
+    "z": 20.3,
+    "yawDeg": 90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleN_b3",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.3,
+    "y": 5.418,
+    "z": 11.4,
+    "yawDeg": 90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleN_b4",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.3,
+    "y": 5.418,
+    "z": 2.5,
+    "yawDeg": 90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleS_b1",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.3,
+    "y": 5.418,
+    "z": 29.2,
+    "yawDeg": -90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleS_b2",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.3,
+    "y": 5.418,
+    "z": 20.3,
+    "yawDeg": -90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleS_b3",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.3,
+    "y": 5.418,
+    "z": 11.4,
+    "yawDeg": -90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleS_b4",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.3,
+    "y": 5.418,
+    "z": 2.5,
+    "yawDeg": -90,
+    "w": 1.3,
+    "h": 4.836,
+    "sill": 3,
+    "aspect": 0.269,
+    "real_m": [
+     2.89,
+     10.75
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "naveOcN_b1",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": -4.5,
+    "y": 15.15,
+    "z": 29.2,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcN_b2",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": -4.5,
+    "y": 15.15,
+    "z": 20.3,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcN_b3",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": -4.5,
+    "y": 15.15,
+    "z": 11.4,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcN_b4",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": -4.5,
+    "y": 15.15,
+    "z": 2.5,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcS_b1",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": 4.5,
+    "y": 15.15,
+    "z": 29.2,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcS_b2",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": 4.5,
+    "y": 15.15,
+    "z": 20.3,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcS_b3",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": 4.5,
+    "y": 15.15,
+    "z": 11.4,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "naveOcS_b4",
+    "zone": "nave_oculus",
+    "kind": "window",
+    "shape": "circle",
+    "x": 4.5,
+    "y": 15.15,
+    "z": 2.5,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 1.9,
+    "sill": 14.2,
+    "aspect": 1,
+    "real_m": [
+     4.22,
+     4.22
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "drum_E",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": 0,
+    "y": 21.6,
+    "z": -23.13,
+    "yawDeg": 0,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "사진 슬롯 oculus_florence_donatello (drum_e[0])",
+    "photo": "oculus_florence_donatello"
+   },
+   {
+    "key": "drum_N",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": -10.2,
+    "y": 21.6,
+    "z": -12.93,
+    "yawDeg": 90,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "drum_NE",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": -7.212,
+    "y": 21.6,
+    "z": -20.142,
+    "yawDeg": 45,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "사진 슬롯 oculus_florence_ghiberti_2 (drum_ne[0])",
+    "photo": "oculus_florence_ghiberti_2"
+   },
+   {
+    "key": "drum_NW",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": -7.212,
+    "y": 21.6,
+    "z": -5.718,
+    "yawDeg": 135,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "drum_S",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": 10.2,
+    "y": 21.6,
+    "z": -12.93,
+    "yawDeg": -90,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "drum_SE",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": 7.212,
+    "y": 21.6,
+    "z": -20.142,
+    "yawDeg": -45,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "drum_SW",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": 7.212,
+    "y": 21.6,
+    "z": -5.718,
+    "yawDeg": -135,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "drum_W",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "circle",
+    "x": 0,
+    "y": 21.6,
+    "z": -2.73,
+    "yawDeg": 180,
+    "w": 1.6,
+    "h": 1.6,
+    "sill": 20.8,
+    "aspect": 1,
+    "real_m": [
+     3.56,
+     3.56
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "tribE_c1",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -6.102,
+    "y": 3.052,
+    "z": -28.563,
+    "yawDeg": 72,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_c2",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -3.772,
+    "y": 3.052,
+    "z": -31.771,
+    "yawDeg": 36,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_c3",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 0,
+    "y": 3.052,
+    "z": -32.996,
+    "yawDeg": 0,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_c4",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 3.772,
+    "y": 3.052,
+    "z": -31.771,
+    "yawDeg": -36,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_c5",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 6.102,
+    "y": 3.052,
+    "z": -28.563,
+    "yawDeg": -72,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_c1",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -15.633,
+    "y": 3.052,
+    "z": -6.828,
+    "yawDeg": 162,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_c2",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -18.841,
+    "y": 3.052,
+    "z": -9.158,
+    "yawDeg": 126,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_c3",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -20.066,
+    "y": 3.052,
+    "z": -12.93,
+    "yawDeg": 90,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_c4",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -18.841,
+    "y": 3.052,
+    "z": -16.702,
+    "yawDeg": 54,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_c5",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -15.633,
+    "y": 3.052,
+    "z": -19.032,
+    "yawDeg": 18,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_c1",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 15.633,
+    "y": 3.052,
+    "z": -19.032,
+    "yawDeg": -18,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_c2",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 18.841,
+    "y": 3.052,
+    "z": -16.702,
+    "yawDeg": -54,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_c3",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 20.066,
+    "y": 3.052,
+    "z": -12.93,
+    "yawDeg": -90,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_c4",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 18.841,
+    "y": 3.052,
+    "z": -9.158,
+    "yawDeg": -126,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_c5",
+    "zone": "tribune_chapel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 15.633,
+    "y": 3.052,
+    "z": -6.828,
+    "yawDeg": -162,
+    "w": 0.7,
+    "h": 2.804,
+    "sill": 1.65,
+    "aspect": 0.25,
+    "real_m": [
+     1.56,
+     6.23
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   }
+  ]
+ },
+ "real_windows": [
+  {
+   "id": "FL-F1",
+   "zone": "facade",
+   "position_ko": "정면 안쪽 벽 중앙 오큘러스(시계 위)",
+   "subject_ko": "성모 승천",
+   "subject_orig": "Assunzione della Vergine",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Niccolò di Piero Tedesco",
+   "date": "1404–1405",
+   "shape": "oculus",
+   "picture": true,
+   "confidence": "high",
+   "sources": [
+    "https://duomo.firenze.it/it/scopri/cattedrale-di-santa-maria-del-fiore/9064/lorenzo-ghiberti-assunzione-della-vergine (검색 결과로만 확인, 본문 직접 확인 못 함)",
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663943 (측면 오큘러스 기록 안의 기베르티 인용: \"nell’occhio di mezzo, l’assunzione di Nostra Donna\")"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "facade_center"
+   ],
+   "match_note": "이미 진본 사진(G-29, oculus_florence_ghiberti_1)이 걸려 있다",
+   "free_photos": [
+    {
+     "file": "Ghiberti, assunzione di maria.jpg",
+     "license": "Public domain",
+     "px": "1249×1231",
+     "part": "창 전체(번들됨)"
+    },
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26070280394).jpg",
+     "license": "CC BY 2.0",
+     "px": "4608×3456",
+     "part": "창 전체 + 벽(현장 사진)"
+    },
+    {
+     "file": "Firenze Cattedrale di Santa Maria del Fiore Interno Navata Contrafacciata Finestra 1.jpg",
+     "license": "CC BY 4.0",
+     "px": "4871×3774",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic(이미 적용)",
+   "release_approved": false
+  },
+  {
+   "id": "FL-F2",
+   "zone": "facade",
+   "position_ko": "정면 안쪽 벽 측랑 끝 오큘러스(좌우 중 하나)",
+   "subject_ko": "옥좌의 성 라우렌시오와 천사들",
+   "subject_orig": "San Lorenzo in trono e angeli",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Niccolò di Piero Tedesco",
+   "date": "1412–1415",
+   "shape": "oculus(12패널)",
+   "picture": true,
+   "confidence": "high(존재·작가) / low(좌우)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663943"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "facade_N",
+    "facade_S"
+   ],
+   "side_unconfirmed": true,
+   "match_note": "FL-F3 와 한 쌍. 어느 쪽이 북/남인지 ICCD 기록에서 확인하지 못함 → 좌우 확정 전에는 QA 갤러리에도 함께",
+   "free_photos": [
+    {
+     "file": "Ghiberti, san lorenzo tra angeli.jpg",
+     "license": "Public domain",
+     "px": "1261×1235",
+     "part": "창 전체"
+    },
+    {
+     "file": "Smf, vetrata san lorenzo, cartone di l. ghiberti.JPG",
+     "license": "CC BY 2.5",
+     "px": "1711×1506",
+     "part": "창 전체(현장, 약간 사선)"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "release_approved": false
+  },
+  {
+   "id": "FL-F3",
+   "zone": "facade",
+   "position_ko": "정면 안쪽 벽 측랑 끝 오큘러스(좌우 중 하나)",
+   "subject_ko": "옥좌의 성 스테파노와 천사들",
+   "subject_orig": "Santo Stefano in trono e angeli",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Niccolò di Piero Tedesco",
+   "date": "1412–1415",
+   "shape": "oculus",
+   "picture": true,
+   "confidence": "high(존재·작가) / low(좌우)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663980"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "facade_N",
+    "facade_S"
+   ],
+   "side_unconfirmed": true,
+   "match_note": "FL-F2 와 한 쌍",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-A",
+   "release_approved": false
+  },
+  {
+   "id": "FL-A1",
+   "zone": "aisle",
+   "position_ko": "남 측랑(제대를 볼 때 오른쪽) 첫째 창 — ICCD \"la prima della navata destra\"",
+   "subject_ko": "성인들(이련창, 3~4단, 단마다 성인 2명)",
+   "subject_orig": "Santi",
+   "designer": "Agnolo Gaddi(귀속)",
+   "maker": "Leonardo di Simone",
+   "date": "1394–1395",
+   "shape": "bifora(첨두 이련창)",
+   "size_real_m": [
+    1.9,
+    8
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가) / medium(칸: it.wikipedia 는 3·4번째 칸이라고 함. \"첫째/둘째\"가 입구 쪽부터인지는 미확인)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663991",
+    "https://it.wikipedia.org/wiki/Cattedrale_di_Santa_Maria_del_Fiore (terza·quarta campata, Agnolo Gaddi 1394)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "aisleS_b3",
+    "aisleS_b4"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "같은 쪽 측랑의 3·4번째 칸 두 창 중 하나(순서 미확정)",
+   "free_photos": [
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26582591412).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "측랑 이련창 하나 전체(아래에서 올려 찍음, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Santa Maria del Fiore colour glass (1623723568).jpg",
+     "license": "CC BY 2.0",
+     "px": "960×1280",
+     "part": "측랑 이련창 하나 전체(정면에 가까움, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26583111622).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "부분(인물 2명, 명문 …94)"
+    }
+   ],
+   "sa_only_photos": [
+    {
+     "file": "Maestri vetrai fiorentini, su dis. attr. ad agnolo gaddi, vetrate con santi nella navata del duomo di firenze, 1395-1396, 01~04.jpg",
+     "license": "CC BY-SA 4.0",
+     "px": "약 1900×6200",
+     "part": "네 창 각각 전체(Sailko)"
+    }
+   ],
+   "placeholder": "authentic_lowres(자유 라이선스 2장 — 창 특정 못 함) 또는 ai_sheet:florence-B",
+   "size_app_m": [
+    0.86,
+    3.6
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-A2",
+   "zone": "aisle",
+   "position_ko": "남 측랑 둘째 창 — ICCD \"la seconda … del fianco destro\", 1394 연기·서명",
+   "subject_ko": "성인들(이련창, 3~4단, 단마다 성인 2명)",
+   "subject_orig": "Santi",
+   "designer": "Agnolo Gaddi(귀속)",
+   "maker": "Leonardo di Simone",
+   "date": "1394",
+   "shape": "bifora(첨두 이련창)",
+   "size_real_m": null,
+   "picture": true,
+   "confidence": "high(존재·작가) / medium(칸: it.wikipedia 는 3·4번째 칸이라고 함. \"첫째/둘째\"가 입구 쪽부터인지는 미확인)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663989",
+    "https://it.wikipedia.org/wiki/Cattedrale_di_Santa_Maria_del_Fiore (terza·quarta campata, Agnolo Gaddi 1394)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "aisleS_b3",
+    "aisleS_b4"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "같은 쪽 측랑의 3·4번째 칸 두 창 중 하나(순서 미확정)",
+   "free_photos": [
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26582591412).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "측랑 이련창 하나 전체(아래에서 올려 찍음, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Santa Maria del Fiore colour glass (1623723568).jpg",
+     "license": "CC BY 2.0",
+     "px": "960×1280",
+     "part": "측랑 이련창 하나 전체(정면에 가까움, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26583111622).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "부분(인물 2명, 명문 …94)"
+    }
+   ],
+   "sa_only_photos": [
+    {
+     "file": "Maestri vetrai fiorentini, su dis. attr. ad agnolo gaddi, vetrate con santi nella navata del duomo di firenze, 1395-1396, 01~04.jpg",
+     "license": "CC BY-SA 4.0",
+     "px": "약 1900×6200",
+     "part": "네 창 각각 전체(Sailko)"
+    }
+   ],
+   "placeholder": "authentic_lowres(자유 라이선스 2장 — 창 특정 못 함) 또는 ai_sheet:florence-B",
+   "release_approved": false
+  },
+  {
+   "id": "FL-A3",
+   "zone": "aisle",
+   "position_ko": "북 측랑(왼쪽) 창 — ICCD 문맥상 \"la prima della navata sinistra\"",
+   "subject_ko": "성인들(이련창, 3~4단, 단마다 성인 2명)",
+   "subject_orig": "Santi",
+   "designer": "Agnolo Gaddi(귀속)",
+   "maker": "Leonardo di Simone",
+   "date": "1395–1396",
+   "shape": "bifora(첨두 이련창)",
+   "size_real_m": [
+    1.9,
+    9
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가) / medium(칸: it.wikipedia 는 3·4번째 칸이라고 함. \"첫째/둘째\"가 입구 쪽부터인지는 미확인)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663940",
+    "https://it.wikipedia.org/wiki/Cattedrale_di_Santa_Maria_del_Fiore (terza·quarta campata, Agnolo Gaddi 1394)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "aisleN_b3",
+    "aisleN_b4"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "같은 쪽 측랑의 3·4번째 칸 두 창 중 하나(순서 미확정)",
+   "free_photos": [
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26582591412).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "측랑 이련창 하나 전체(아래에서 올려 찍음, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Santa Maria del Fiore colour glass (1623723568).jpg",
+     "license": "CC BY 2.0",
+     "px": "960×1280",
+     "part": "측랑 이련창 하나 전체(정면에 가까움, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26583111622).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "부분(인물 2명, 명문 …94)"
+    }
+   ],
+   "sa_only_photos": [
+    {
+     "file": "Maestri vetrai fiorentini, su dis. attr. ad agnolo gaddi, vetrate con santi nella navata del duomo di firenze, 1395-1396, 01~04.jpg",
+     "license": "CC BY-SA 4.0",
+     "px": "약 1900×6200",
+     "part": "네 창 각각 전체(Sailko)"
+    }
+   ],
+   "placeholder": "authentic_lowres(자유 라이선스 2장 — 창 특정 못 함) 또는 ai_sheet:florence-B",
+   "size_app_m": [
+    0.86,
+    4.05
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-A4",
+   "zone": "aisle",
+   "position_ko": "북 측랑 둘째 창 — ICCD \"la seconda finestra della navata sinistra … Antonio da Pisa\", 서명 ME FECIT",
+   "subject_ko": "성인들(이련창, 3~4단, 단마다 성인 2명)",
+   "subject_orig": "Santi",
+   "designer": "Agnolo Gaddi(귀속)",
+   "maker": "Antonio da Pisa",
+   "date": "1394–1395",
+   "shape": "bifora(첨두 이련창)",
+   "size_real_m": [
+    1.9,
+    9
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가) / medium(칸: it.wikipedia 는 3·4번째 칸이라고 함. \"첫째/둘째\"가 입구 쪽부터인지는 미확인)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663949",
+    "https://it.wikipedia.org/wiki/Cattedrale_di_Santa_Maria_del_Fiore (terza·quarta campata, Agnolo Gaddi 1394)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "aisleN_b3",
+    "aisleN_b4"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "같은 쪽 측랑의 3·4번째 칸 두 창 중 하나(순서 미확정)",
+   "free_photos": [
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26582591412).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "측랑 이련창 하나 전체(아래에서 올려 찍음, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Santa Maria del Fiore colour glass (1623723568).jpg",
+     "license": "CC BY 2.0",
+     "px": "960×1280",
+     "part": "측랑 이련창 하나 전체(정면에 가까움, 어느 창인지 미확인)"
+    },
+    {
+     "file": "Cattedrale di Santa Maria del Fiore (Duomo), Florence (26583111622).jpg",
+     "license": "CC BY 2.0",
+     "px": "3456×4608",
+     "part": "부분(인물 2명, 명문 …94)"
+    }
+   ],
+   "sa_only_photos": [
+    {
+     "file": "Maestri vetrai fiorentini, su dis. attr. ad agnolo gaddi, vetrate con santi nella navata del duomo di firenze, 1395-1396, 01~04.jpg",
+     "license": "CC BY-SA 4.0",
+     "px": "약 1900×6200",
+     "part": "네 창 각각 전체(Sailko)"
+    }
+   ],
+   "placeholder": "authentic_lowres(자유 라이선스 2장 — 창 특정 못 함) 또는 ai_sheet:florence-B",
+   "size_app_m": [
+    0.86,
+    4.05
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D1",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 동쪽 면 — ICCD \"nell’occhio della cupola sopra la cappella di S. Zanobi\"",
+   "subject_ko": "성모 대관",
+   "subject_orig": "Incoronazione di Maria Vergine",
+   "designer": "Donatello",
+   "maker": "Domenico di Piero da Pisa (+ Angelo Lippi)",
+   "date": "1433–1437",
+   "shape": "oculus",
+   "size_real_m": [
+    3.8,
+    3.8
+   ],
+   "picture": true,
+   "confidence": "high",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663979"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_E"
+   ],
+   "match_note": "이미 진본 사진(oculus_florence_donatello). 위치 근거를 문헌 → ICCD 로 올릴 수 있다",
+   "free_photos": [
+    {
+     "file": "Donatello, incoronazione della vergine.jpg",
+     "license": "Public domain",
+     "px": "2409×2391",
+     "part": "창 전체(번들됨)"
+    },
+    {
+     "file": "Donatello stained glass window - Coronation of Mary. Florence cathedral 1433-37.jpg",
+     "license": "CC0",
+     "px": "1350×1465",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic(이미 적용)",
+   "size_app_m": [
+    1.71,
+    1.71
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D2",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 — 여덟 면 중 동(성모 대관)·서(무도상)를 뺀 여섯 면 가운데 하나. 어느 면인지 확인 못 함",
+   "subject_ko": "주님 승천",
+   "subject_orig": "Ascensione di Cristo",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1443–1444",
+   "shape": "oculus",
+   "size_real_m": [
+    4.68,
+    4.68
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가·지름) / none(면 위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663978"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_NE",
+    "drum_N",
+    "drum_NW",
+    "drum_SW",
+    "drum_S",
+    "drum_SE"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "개구부 6개 ↔ 창 6개(개수 일치). 면 순서가 확인될 때까지는 \"순서 추정\" 표시 + QA 갤러리에 함께 전시. 임의로 확정하지 않는다",
+   "free_photos": [
+    {
+     "file": "Ghiberti, ascensione.jpg",
+     "license": "Public domain",
+     "px": "1249×1235",
+     "part": "창 전체(번들됨, 지금 drum_NE 에 걸려 있음 — 면 미확인)"
+    },
+    {
+     "file": "Lorenzo Ghiberti e Bernardo di Francesco, ascensione, 1443.JPG",
+     "license": "CC BY 3.0",
+     "px": "1744×1696",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "size_app_m": [
+    2.11,
+    2.11
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D3",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 — 여덟 면 중 동(성모 대관)·서(무도상)를 뺀 여섯 면 가운데 하나. 어느 면인지 확인 못 함",
+   "subject_ko": "겟세마니의 기도",
+   "subject_orig": "Orazione di Cristo nell'orto",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1443–1444",
+   "shape": "oculus",
+   "size_real_m": [
+    4.8,
+    4.8
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가·지름) / none(면 위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663986"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_NE",
+    "drum_N",
+    "drum_NW",
+    "drum_SW",
+    "drum_S",
+    "drum_SE"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "개구부 6개 ↔ 창 6개(개수 일치). 면 순서가 확인될 때까지는 \"순서 추정\" 표시 + QA 갤러리에 함께 전시. 임의로 확정하지 않는다",
+   "free_photos": [
+    {
+     "file": "Ghiberti, orazione nell'orto.jpg",
+     "license": "Public domain",
+     "px": "1233×1231",
+     "part": "창 전체"
+    },
+    {
+     "file": "Lorenzo Ghiberti e Bernardo di Francesco, orazione nell'orto, 1443.JPG",
+     "license": "CC BY 3.0",
+     "px": "1823×1804",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "size_app_m": [
+    2.16,
+    2.16
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D4",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 — 여덟 면 중 동(성모 대관)·서(무도상)를 뺀 여섯 면 가운데 하나. 어느 면인지 확인 못 함",
+   "subject_ko": "주님 성전 봉헌",
+   "subject_orig": "Presentazione di Gesù al tempio",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1443–1445",
+   "shape": "oculus",
+   "size_real_m": [
+    4.73,
+    4.73
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가·지름) / none(면 위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663975"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_NE",
+    "drum_N",
+    "drum_NW",
+    "drum_SW",
+    "drum_S",
+    "drum_SE"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "개구부 6개 ↔ 창 6개(개수 일치). 면 순서가 확인될 때까지는 \"순서 추정\" 표시 + QA 갤러리에 함께 전시. 임의로 확정하지 않는다",
+   "free_photos": [
+    {
+     "file": "Ghiberti, presentazione al tempio.jpg",
+     "license": "Public domain",
+     "px": "1241×1227",
+     "part": "창 전체"
+    },
+    {
+     "file": "Lorenzo Ghiberti e Bernardo di Francesco, presentazione al tempio, 1443.JPG",
+     "license": "CC BY 3.0",
+     "px": "1840×1785",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "size_app_m": [
+    2.13,
+    2.13
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D5",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 — 여덟 면 중 동(성모 대관)·서(무도상)를 뺀 여섯 면 가운데 하나. 어느 면인지 확인 못 함",
+   "subject_ko": "주님 성탄",
+   "subject_orig": "Natività di Gesù",
+   "designer": "Paolo Uccello",
+   "maker": "Angelo Lippi",
+   "date": "1443–1444",
+   "shape": "oculus",
+   "size_real_m": [
+    4.73,
+    4.73
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가·지름) / none(면 위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663982"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_NE",
+    "drum_N",
+    "drum_NW",
+    "drum_SW",
+    "drum_S",
+    "drum_SE"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "개구부 6개 ↔ 창 6개(개수 일치). 면 순서가 확인될 때까지는 \"순서 추정\" 표시 + QA 갤러리에 함께 전시. 임의로 확정하지 않는다",
+   "free_photos": [
+    {
+     "file": "Paolo uccello, vetrata della natività.jpg",
+     "license": "Public domain",
+     "px": "870×852",
+     "part": "창 전체"
+    },
+    {
+     "file": "Paolo Uccello e angelo lippi, natività, 1443.JPG",
+     "license": "CC BY 3.0",
+     "px": "1831×1812",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "size_app_m": [
+    2.13,
+    2.13
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D6",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 — 여덟 면 중 동(성모 대관)·서(무도상)를 뺀 여섯 면 가운데 하나. 어느 면인지 확인 못 함",
+   "subject_ko": "주님 부활",
+   "subject_orig": "Resurrezione di Cristo",
+   "designer": "Paolo Uccello",
+   "maker": "Bernardo di Francesco",
+   "date": "1443–1444",
+   "shape": "oculus",
+   "size_real_m": [
+    4.68,
+    4.68
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가·지름) / none(면 위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663983"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_NE",
+    "drum_N",
+    "drum_NW",
+    "drum_SW",
+    "drum_S",
+    "drum_SE"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "개구부 6개 ↔ 창 6개(개수 일치). 면 순서가 확인될 때까지는 \"순서 추정\" 표시 + QA 갤러리에 함께 전시. 임의로 확정하지 않는다",
+   "free_photos": [
+    {
+     "file": "Paolo uccello, vetrata della resurrezione.jpg",
+     "license": "Public domain",
+     "px": "895×850",
+     "part": "창 전체"
+    },
+    {
+     "file": "Paolo Uccello (cartone) e Bernardo di Francesco (esecuzione), resurrezione, 1443.JPG",
+     "license": "CC BY 3.0",
+     "px": "1900×1849",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "size_app_m": [
+    2.11,
+    2.11
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D7",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 — 여덟 면 중 동(성모 대관)·서(무도상)를 뺀 여섯 면 가운데 하나. 어느 면인지 확인 못 함",
+   "subject_ko": "십자가에서 내려지심",
+   "subject_orig": "Deposizione di Cristo dalla croce",
+   "designer": "Andrea del Castagno",
+   "maker": "(미상)",
+   "date": "1444",
+   "shape": "oculus",
+   "size_real_m": [
+    4.8,
+    4.8
+   ],
+   "picture": true,
+   "confidence": "high(존재·작가·지름) / none(면 위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663984"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "drum_NE",
+    "drum_N",
+    "drum_NW",
+    "drum_SW",
+    "drum_S",
+    "drum_SE"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "개구부 6개 ↔ 창 6개(개수 일치). 면 순서가 확인될 때까지는 \"순서 추정\" 표시 + QA 갤러리에 함께 전시. 임의로 확정하지 않는다",
+   "free_photos": [
+    {
+     "file": "Andrea del castagno, deposizione.jpg",
+     "license": "Public domain",
+     "px": "882×880",
+     "part": "창 전체"
+    },
+    {
+     "file": "Andrea del Castagno, deposizione, 1444.JPG",
+     "license": "CC BY 3.0",
+     "px": "1731×1684",
+     "part": "창 전체"
+    }
+   ],
+   "placeholder": "authentic_lowres",
+   "size_app_m": [
+    2.16,
+    2.16
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-D8",
+   "zone": "drum",
+   "position_ko": "쿠폴라 드럼 서쪽 면",
+   "subject_ko": "도상 없음(무도상 유리)",
+   "subject_orig": "non istoriata",
+   "date": "—",
+   "shape": "oculus",
+   "picture": false,
+   "confidence": "medium (it.wikipedia: \"La vetrata ovest del tamburo … è la sola rimasta non istoriata\". 우첼로의 「주님 탄생 예고」는 1828년 소실 — ICCD 13663983 은 \"l’Annunciazione, perduta\")",
+   "sources": [
+    "https://it.wikipedia.org/wiki/Cattedrale_di_Santa_Maria_del_Fiore",
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663983"
+   ],
+   "cls": "e",
+   "opening_keys": [
+    "drum_W"
+   ],
+   "match_note": "모델은 색유리 장미창 → 실제는 그림 없음. 무색/옅은 유리로 바꾸는 것이 맞다",
+   "free_photos": [],
+   "placeholder": "procedural_plain",
+   "release_approved": false
+  },
+  {
+   "id": "FL-C01",
+   "zone": "tribune_chapel",
+   "position_ko": "남 트리부나(ICCD \"Tribuna di S. Antonio\"; 남쪽이라는 것은 문헌 지식 — 직접 확인 못 함) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 토마스 사도와 성인들",
+   "subject_orig": "San Tommaso apostolo / Santi",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1441–1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663963"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribS_c1",
+    "tribS_c2",
+    "tribS_c3",
+    "tribS_c4",
+    "tribS_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C02",
+   "zone": "tribune_chapel",
+   "position_ko": "남 트리부나(ICCD \"Tribuna di S. Antonio\"; 남쪽이라는 것은 문헌 지식 — 직접 확인 못 함) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 마태오 복음사가·성 라디슬라오·헝가리의 성녀 엘리사벳",
+   "subject_orig": "San Matteo Evangelista / San Ladislao / Sant'Elisabetta d'Ungheria",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1441–1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663966"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribS_c1",
+    "tribS_c2",
+    "tribS_c3",
+    "tribS_c4",
+    "tribS_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C03",
+   "zone": "tribune_chapel",
+   "position_ko": "남 트리부나(ICCD \"Tribuna di S. Antonio\"; 남쪽이라는 것은 문헌 지식 — 직접 확인 못 함) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 안토니오 아빠스·성 블라시오(?)·주교 성인 (가운데 경당)",
+   "subject_orig": "Sant'Antonio Abate / San Biagio (?) / Santo vescovo",
+   "designer": "(미상)",
+   "maker": "Guido di Niccolò da Pelago",
+   "date": "1442–1443",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663971"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribS_c1",
+    "tribS_c2",
+    "tribS_c3",
+    "tribS_c4",
+    "tribS_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C04",
+   "zone": "tribune_chapel",
+   "position_ko": "남 트리부나(ICCD \"Tribuna di S. Antonio\"; 남쪽이라는 것은 문헌 지식 — 직접 확인 못 함) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "세례자 성 요한·성 타대오·성 시몬",
+   "subject_orig": "San Giovanni Battista / San Taddeo / San Simone",
+   "designer": "(미상)",
+   "maker": "Bernardo di Francesco",
+   "date": "1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663970"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribS_c1",
+    "tribS_c2",
+    "tribS_c3",
+    "tribS_c4",
+    "tribS_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C05",
+   "zone": "tribune_chapel",
+   "position_ko": "남 트리부나(ICCD \"Tribuna di S. Antonio\"; 남쪽이라는 것은 문헌 지식 — 직접 확인 못 함) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 바르나바·성 미니아토·성녀 레파라타",
+   "subject_orig": "San Barnaba apostolo / San Miniato / Santa Reparata",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1441–1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663974"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribS_c1",
+    "tribS_c2",
+    "tribS_c3",
+    "tribS_c4",
+    "tribS_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C06",
+   "zone": "tribune_chapel",
+   "position_ko": "동 트리부나(성 자노비) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 자노비·성 에우제니오·성 크레센시오 (가운데 경당, 19세기 말 재제작)",
+   "subject_orig": "San Zanobi / Sant'Eugenio / San Crescenzio",
+   "designer": "—",
+   "maker": "Ulisse De Matteis",
+   "date": "1890–1906",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663954"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribE_c1",
+    "tribE_c2",
+    "tribE_c3",
+    "tribE_c4",
+    "tribE_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C07",
+   "zone": "tribune_chapel",
+   "position_ko": "동 트리부나(성 자노비) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 베드로 사도·성 프로체소·성 마르티니아노",
+   "subject_orig": "San Pietro apostolo / San Processo / San Martiniano",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Angelo di Lippo",
+   "date": "1439–1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663952"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribE_c1",
+    "tribE_c2",
+    "tribE_c3",
+    "tribE_c4",
+    "tribE_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C08",
+   "zone": "tribune_chapel",
+   "position_ko": "동 트리부나(성 자노비) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 바오로 사도·성 대 그레고리오·성 알베르토 교황(?)",
+   "subject_orig": "San Paolo apostolo / San Gregorio Magno / Sant'Alberto papa (?)",
+   "designer": "(미상)",
+   "maker": "Lorenzo d'Antonio",
+   "date": "1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663958"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribE_c1",
+    "tribE_c2",
+    "tribE_c3",
+    "tribE_c4",
+    "tribE_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C09",
+   "zone": "tribune_chapel",
+   "position_ko": "동 트리부나(성 자노비) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성모자·성 소 야고보·성 필립보",
+   "subject_orig": "Madonna con Bambino / San Giacomo il Minore / San Filippo",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Domenico di Piero da Pisa",
+   "date": "1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663964"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribE_c1",
+    "tribE_c2",
+    "tribE_c3",
+    "tribE_c4",
+    "tribE_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C10",
+   "zone": "tribune_chapel",
+   "position_ko": "동 또는 북 트리부나(미확정) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 바르톨로메오 사도와 성인들",
+   "subject_orig": "San Bartolomeo apostolo / Santi",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Domenico di Piero da Pisa",
+   "date": "1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663948"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribE_c1",
+    "tribE_c2",
+    "tribE_c3",
+    "tribE_c4",
+    "tribE_c5",
+    "tribN_c1",
+    "tribN_c2",
+    "tribN_c3",
+    "tribN_c4",
+    "tribN_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C11",
+   "zone": "tribune_chapel",
+   "position_ko": "북 트리부나(십자가; 소거법) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 스테파노와 성인들 (19세기 말 재제작)",
+   "subject_orig": "Santo Stefano / Santi",
+   "designer": "—",
+   "maker": "Ulisse De Matteis",
+   "date": "1890–1906",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663944"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribN_c1",
+    "tribN_c2",
+    "tribN_c3",
+    "tribN_c4",
+    "tribN_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C12",
+   "zone": "tribune_chapel",
+   "position_ko": "북 트리부나(십자가; 소거법) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 대 야고보와 예언자들",
+   "subject_orig": "San Giacomo Maggiore / Profeti",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Bernardo di Francesco",
+   "date": "1442–1443",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663945"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribN_c1",
+    "tribN_c2",
+    "tribN_c3",
+    "tribN_c4",
+    "tribN_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C13",
+   "zone": "tribune_chapel",
+   "position_ko": "북 트리부나(십자가; 소거법) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 마태오 복음사가(문맥상 성 마티아 경당; 아랫부분만 그림)",
+   "subject_orig": "San Matteo evangelista",
+   "designer": "(미상)",
+   "maker": "Domenico di Piero da Pisa",
+   "date": "1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663946"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribN_c1",
+    "tribN_c2",
+    "tribN_c3",
+    "tribN_c4",
+    "tribN_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    1.35
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C14",
+   "zone": "tribune_chapel",
+   "position_ko": "북 트리부나(십자가; 소거법) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 안드레아 사도(아랫부분만 그림, 위는 원래 흰 유리)",
+   "subject_orig": "Sant'Andrea apostolo",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Guido di Niccolò Guidi",
+   "date": "1442–1443",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663955"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribN_c1",
+    "tribN_c2",
+    "tribN_c3",
+    "tribN_c4",
+    "tribN_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    1.35
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-C15",
+   "zone": "tribune_chapel",
+   "position_ko": "북 트리부나(십자가; 소거법) 경당의 창(아래 단). 경당 다섯 중 몇 번째인지는 미확정",
+   "subject_ko": "성 요한 복음사가·성 고스마·성 다미아노",
+   "subject_orig": "San Giovanni evangelista / San Cosma / San Damiano",
+   "designer": "Lorenzo Ghiberti",
+   "maker": "Biagio di Angiolo",
+   "date": "1441–1443",
+   "shape": "bifora cuspidata(첨두 이련창, 2단)",
+   "size_real_m": [
+    1.8,
+    6.3
+   ],
+   "picture": true,
+   "confidence": "high(존재·주제·작가·크기) / medium(트리부나) / none(경당 순서)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663959"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "tribN_c1",
+    "tribN_c2",
+    "tribN_c3",
+    "tribN_c4",
+    "tribN_c5"
+   ],
+   "order_unconfirmed": true,
+   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-C",
+   "size_app_m": [
+    0.81,
+    2.84
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U01",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Guido di Niccolò Guidi",
+   "date": "1439–1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663941"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U02",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들(Elmodam, Addi …)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Guido di Niccolò Guidi",
+   "date": "1439–1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663942"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U03",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들(Giuseppe, Giovanni …)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Bernardo di Francesco",
+   "date": "1439–1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663947"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U04",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들(성 안드레아 경당 위)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Bernardo di Francesco",
+   "date": "1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663950"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U05",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Bernardo di Francesco; Alessandro Agolanti",
+   "date": "1439–1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663951"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U06",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 동(성 자노비)",
+   "subject_ko": "예언자들(Matatias …)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Domenico di Piero da Pisa",
+   "date": "1439",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663953"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U07",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 동(성 자노비)",
+   "subject_ko": "예언자들(가운데 창 8A, 성 자노비 경당 위)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Bernardo di Francesco",
+   "date": "1434–1438",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663957"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U08",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "주교 성인들·예언자들(19세기 말 재제작)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Ulisse De Matteis",
+   "date": "1890–1906",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663960"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U09",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 동(성 자노비)",
+   "subject_ko": "예언자들",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Domenico di Piero da Pisa",
+   "date": "1439–1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663961"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U10",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들·구약의 임금들",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Bernardo di Francesco",
+   "date": "1439–1440",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663965"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U11",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 남(S. Antonio)",
+   "subject_ko": "구약의 임금들",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Bernardo di Francesco",
+   "date": "1439",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663968"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U12",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 동(성 자노비)",
+   "subject_ko": "성조들(요셉, 유다)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Bernardo di Francesco",
+   "date": "1434–1438",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663969"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U13",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들(?)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Lorenzo Ghiberti; Bernardo di Francesco",
+   "date": "1439–1440",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663973"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U14",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "구약의 임금·예언자(?)",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Guido di Niccolò da Pelago",
+   "date": "1439–1442",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663976"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  },
+  {
+   "id": "FL-U15",
+   "zone": "tribune_upper",
+   "position_ko": "트리부나 벽의 윗창(경당 아치 위, \"sopra la cappella\"). 트리부나: 미확정",
+   "subject_ko": "예언자들",
+   "subject_orig": "Profeti / Re / Patriarchi",
+   "designer": "Guido di Niccolò da Pelago",
+   "date": "1439–1441",
+   "shape": "bifora cuspidata(첨두 이련창, 2단, 14~16패널)",
+   "size_real_m": [
+    1.9,
+    6.1
+   ],
+   "picture": true,
+   "confidence": "high(존재·크기) / low(위치)",
+   "sources": [
+    "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663987"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "free_photos": [],
+   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "size_app_m": [
+    0.86,
+    2.75
+   ],
+   "release_approved": false
+  }
+ ],
+ "real_counts": {
+  "picture_windows": 44,
+  "note": "ICCD 43건(측면 오큘러스 2·측랑 4·드럼 7·경당 15·윗창 15) + 정면 중앙 「성모 승천」 = 44. it.wikipedia \"44 vetrate a fronte di 55 finestre\" 와 일치. 서쪽 드럼 창(FL-D8)은 그림 없음(e)으로 따로 적었다",
+  "by_class": {
+   "a": 29,
+   "b": 15,
+   "c": 0,
+   "d": 0,
+   "e": 1
+  }
+ },
+ "model_openings_without_real_picture_window": [
+  {
+   "keys": [
+    "naveOcN_b1",
+    "naveOcN_b2",
+    "naveOcN_b3",
+    "naveOcN_b4",
+    "naveOcS_b1",
+    "naveOcS_b2",
+    "naveOcS_b3",
+    "naveOcS_b4"
+   ],
+   "cls": "e",
+   "note": "신랑 둥근 고창 8개: ICCD 44건에 들어 있지 않다(그림 유리 아님으로 판단, 유리 종류는 직접 확인 못 함). 모델은 색유리 장미창 → 무색/옅은 유리 후보"
+  },
+  {
+   "keys": [
+    "aisleN_b1",
+    "aisleN_b2",
+    "aisleS_b1",
+    "aisleS_b2"
+   ],
+   "cls": "e",
+   "note": "측랑 1·2번째 칸 창 4개: 그림 유리는 3·4번째 칸에만 있다(it.wikipedia). 1·2칸의 실제 상태(맹창/무색)는 직접 확인 못 함"
+  },
+  {
+   "keys": [
+    "drum_W"
+   ],
+   "cls": "e",
+   "note": "드럼 서쪽 면: 실제는 무도상"
+  }
+ ],
+ "sourcing": {
+  "free_license_windows": 11,
+  "detail": "드럼 7(PD; 3점은 이미 번들) + 정면 2(성모 승천 PD, 성 라우렌시오 PD) + 측랑 이련창 2장(CC BY 2.0, 어느 창인지 미확인)",
+  "sa_only": "측랑 4창 각각의 전체 사진(Sailko, CC BY-SA 4.0) · 정면/드럼의 다른 각도",
+  "none": "정면 성 스테파노 1 · 트리부나 30(경당 15 + 윗창 15)"
+ },
+ "work_items": [
+  {
+   "what": "드럼 오큘러스 5곳에 PD 사진 추가(성탄·부활·십자가에서 내려지심·겟세마니·성전 봉헌) + 서쪽 면을 무색으로",
+   "effort": "작음(키트 rose 의 photo 인자만)",
+   "risk": "면 위치 6곳이 미확정 → \"순서 추정\" 표시 필요"
+  },
+  {
+   "what": "정면 측랑 끝 오큘러스 2곳(성 라우렌시오 = PD 사진, 성 스테파노 = 시안)",
+   "effort": "작음",
+   "risk": "좌우 미확정"
+  },
+  {
+   "what": "측랑 3·4칸 4곳(이련창). 모델 창은 1.3×4.84m 단창 → 실제 1.9×9.0m(앱 0.86×4.05m) 이련창. 비율 0.27 → 0.21",
+   "effort": "작음~중간(개구부 치수 맞춤)",
+   "risk": "낮음"
+  },
+  {
+   "what": "트리부나 경당 15곳(시안)",
+   "effort": "작음",
+   "risk": "순서 미확정"
+  },
+  {
+   "what": "트리부나 윗창 15곳을 새로 뚫음(경당 아치 위 벽, 0.86×2.75m)",
+   "effort": "중간(tribune() 의 archedWall 에 구멍 + 스플레이, 15곳)",
+   "risk": "창턱 높이 근거 부족. 다른 에이전트의 ch_florence.js 작업과 충돌 가능"
+  },
+  {
+   "what": "신랑 고창 8·측랑 1·2칸 4·드럼 서쪽 1 을 색유리 → 무색/옅은 유리로(선택)",
+   "effort": "작음",
+   "risk": "낮음(실내가 밝아짐 → 룩 재확인)"
+  }
+ ],
+ "rights": [
+  "원작은 15세기(PD). 19세기 말 재제작 3점(De Matteis, 1890–1906)도 PD. 사진은 Commons 의 PD/CC BY 만 쓰고 CC BY-SA 는 사용자 결정",
+  "이탈리아 문화유산법(D.Lgs. 42/2004 art. 107–108): 국가·교회 소유 문화재의 영리적 복제는 관리 기관(Opera di Santa Maria del Fiore) 허가·수수료 대상이 될 수 있다 — 배포판에 진본 사진을 넣기 전에 확인 필요"
+ ],
+ "unverified": [
+  "드럼 6면의 창 배치",
+  "정면 측면 오큘러스의 좌우",
+  "측랑 \"첫째/둘째\"와 3·4칸의 대응",
+  "트리부나 15경당의 순서·봉헌 성인 배치(ICCD 의 번호 1~15 A/B 체계를 끝까지 풀지 못함)",
+  "남 트리부나 = \"Tribuna di S. Antonio\" 라는 대응",
+  "신랑 고창·측랑 1·2칸의 실제 유리",
+  "duomofirenze.it \"Dome, stained glass windows, choir\" 페이지(봇 확인 화면만 열림)",
+  "it.wikipedia 에 독립 문서 \"Vetrate di Santa Maria del Fiore\" 는 없음(404)"
+ ],
+ "sources": [
+  "ICCD 일반 목록(sigecweb.beniculturali.it) 13663940–13663991 가운데 vetrata 43건을 PDF 로 받아 직접 읽음",
+  "https://it.wikipedia.org/wiki/Cattedrale_di_Santa_Maria_del_Fiore",
+  "https://en.wikipedia.org/wiki/Florence_Cathedral",
+  "Commons Category:Stained-glass windows in Santa Maria del Fiore (Florence) — 파일 47건의 라이선스를 API 로 확인"
+ ]
+}

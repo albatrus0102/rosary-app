@@ -382,7 +382,7 @@ class AppSettings extends ChangeNotifier {
   /// 중단한 기도가 있으면 그 상태, 없으면 null.
   SavedPrayer? get savedPrayer => _savedPrayer;
 
-  /// 기기 배경화면 색(Material You 동적 색상)을 쓸지 여부. 기본은 끔(앱 고유 테라코타).
+  /// 기기 배경화면 색(Material You 동적 색상)을 쓸지 여부. 기본은 끔(앱 고유 상아색·갈색·금색).
   bool get useDynamicColor => _useDynamicColor;
 
   /// 기도 화면에서 볼륨 키(↑ 다음, ↓ 이전)로 넘기기(P-02). 기본은 끔.

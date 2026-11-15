@@ -1,0 +1,1508 @@
+{
+ "schema": "rosarium.glass_windows.plan/1",
+ "church": "stpeter",
+ "name_ko": "성 베드로 대성전",
+ "generated": "2026-11-15",
+ "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "release_approved": false,
+ "classes": {
+  "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
+  "b": "벽은 있으나 창이 없거나 형태가 달라 뚫어야/고쳐야 함",
+  "c": "건축 부분 자체가 모델에 없음",
+  "d": "위치 미확정 → QA 갤러리 전용",
+  "e": "실제로 그림 유리가 아님(무색/설화석고/맹창)"
+ },
+ "coordinate_system": {
+  "units": "앱 m (= 실제 m × 0.37)",
+  "scalePercent": 37,
+  "altar": "-z (서)",
+  "entrance": "+z (동)",
+  "plusX": "북",
+  "minusX": "남",
+  "summary": "입구 +z(동) → 후진 -z(서). 제대를 볼 때 오른쪽 +x = 북, 왼쪽 -x = 남. 근거: interiors/stpeter.md 28·147행.",
+  "bounds": {
+   "x0": -25.5,
+   "x1": 25.5,
+   "z0": -34.5,
+   "z1": 34.5
+  },
+  "spawn": {
+   "x": 0,
+   "z": 32.3,
+   "r": 0
+  },
+  "plate_convention": "x,y,z = 유리 평면 가운데(y 는 개구부 중심), yawDeg = atan2(nx, nz) (판 +Z 가 실내를 봄), u 는 실내에서 볼 때 왼→오"
+ },
+ "model": {
+  "tool": "node tools/church_web/church_openings.mjs stpeter --json",
+  "opening_count": 67,
+  "window_count": 60,
+  "photo_slot_count": 1,
+  "by_zone": {
+   "gloria": 1,
+   "door_light": 1,
+   "facade": 1,
+   "aisle_skylight": 14,
+   "chapel_light": 6,
+   "lantern": 8,
+   "drum": 16,
+   "nave_lunette": 8,
+   "transept_lunette": 8,
+   "apse_lunette": 4
+  },
+  "openings": [
+   {
+    "key": "gloria",
+    "zone": "gloria",
+    "kind": "window",
+    "shape": "ellipse",
+    "x": 0,
+    "y": 8,
+    "z": -34.251,
+    "yawDeg": 0,
+    "w": 1.726,
+    "h": 2.5,
+    "sill": 6.75,
+    "aspect": 0.69,
+    "real_m": [
+     4.66,
+     6.76
+    ],
+    "glass_now": "사진 슬롯 dove_stpeter (gloria[0])",
+    "photo": "dove_stpeter"
+   },
+   {
+    "key": "entrance_door_light",
+    "zone": "door_light",
+    "kind": "not_window",
+    "shape": "round",
+    "x": 0,
+    "y": 2.876,
+    "z": 34.95,
+    "yawDeg": 180,
+    "w": 2.6,
+    "h": 5.248,
+    "sill": 0.252,
+    "aspect": 0.495,
+    "real_m": [
+     7.03,
+     14.18
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null,
+    "note": "가운데 문의 바깥빛 면(창 아님)"
+   },
+   {
+    "key": "facade_upper",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "round",
+    "x": 0,
+    "y": 14.563,
+    "z": 34.862,
+    "yawDeg": 180,
+    "w": 3,
+    "h": 2.725,
+    "sill": 13.2,
+    "aspect": 1.101,
+    "real_m": [
+     8.11,
+     7.36
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b1",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 9.05,
+    "z": 32.175,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 31.725,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b2",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 9.05,
+    "z": 27.525,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 27.075,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b3",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 9.05,
+    "z": 22.875,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 22.425,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b4",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 9.05,
+    "z": 18.225,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 17.775,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b5",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 13.575,
+    "z": 13.575,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 13.125,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b6",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 9.05,
+    "z": 8.925,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 8.475,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyN_b7",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": 8.975,
+    "y": 9.05,
+    "z": 4.275,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 3.825,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b1",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 9.05,
+    "z": 32.175,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 31.725,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b2",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 9.05,
+    "z": 27.525,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 27.075,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b3",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 9.05,
+    "z": 22.875,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 22.425,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b4",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 9.05,
+    "z": 18.225,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 17.775,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b5",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 13.575,
+    "z": 13.575,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 13.125,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b6",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 9.05,
+    "z": 8.925,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 8.475,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "aisleSkyS_b7",
+    "zone": "aisle_skylight",
+    "kind": "window",
+    "shape": "horizontal",
+    "x": -8.975,
+    "y": 9.05,
+    "z": 4.275,
+    "yawDeg": null,
+    "w": 0.9,
+    "h": 0.9,
+    "sill": 3.825,
+    "aspect": 1,
+    "real_m": [
+     2.43,
+     2.43
+    ],
+    "glass_now": "절차적 밝은 면(작은 돔 천창)",
+    "photo": null
+   },
+   {
+    "key": "chapelLightN_b1",
+    "zone": "chapel_light",
+    "kind": "not_window",
+    "shape": "rect",
+    "x": 13.83,
+    "y": 3.2,
+    "z": 30.15,
+    "yawDeg": -90,
+    "w": 1,
+    "h": 2.4,
+    "sill": 2,
+    "aspect": 0.417,
+    "real_m": [
+     2.7,
+     6.49
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍)",
+    "photo": null,
+    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
+   },
+   {
+    "key": "chapelLightN_b2",
+    "zone": "chapel_light",
+    "kind": "not_window",
+    "shape": "rect",
+    "x": 13.83,
+    "y": 3.2,
+    "z": 21.5,
+    "yawDeg": -90,
+    "w": 1,
+    "h": 2.4,
+    "sill": 2,
+    "aspect": 0.417,
+    "real_m": [
+     2.7,
+     6.49
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍)",
+    "photo": null,
+    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
+   },
+   {
+    "key": "chapelLightN_b3",
+    "zone": "chapel_light",
+    "kind": "not_window",
+    "shape": "rect",
+    "x": 13.83,
+    "y": 3.2,
+    "z": 12.85,
+    "yawDeg": -90,
+    "w": 1,
+    "h": 2.4,
+    "sill": 2,
+    "aspect": 0.417,
+    "real_m": [
+     2.7,
+     6.49
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍)",
+    "photo": null,
+    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
+   },
+   {
+    "key": "chapelLightS_b1",
+    "zone": "chapel_light",
+    "kind": "not_window",
+    "shape": "rect",
+    "x": -13.83,
+    "y": 3.2,
+    "z": 30.15,
+    "yawDeg": 90,
+    "w": 1,
+    "h": 2.4,
+    "sill": 2,
+    "aspect": 0.417,
+    "real_m": [
+     2.7,
+     6.49
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍)",
+    "photo": null,
+    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
+   },
+   {
+    "key": "chapelLightS_b2",
+    "zone": "chapel_light",
+    "kind": "not_window",
+    "shape": "rect",
+    "x": -13.83,
+    "y": 3.2,
+    "z": 21.5,
+    "yawDeg": 90,
+    "w": 1,
+    "h": 2.4,
+    "sill": 2,
+    "aspect": 0.417,
+    "real_m": [
+     2.7,
+     6.49
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍)",
+    "photo": null,
+    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
+   },
+   {
+    "key": "chapelLightS_b3",
+    "zone": "chapel_light",
+    "kind": "not_window",
+    "shape": "rect",
+    "x": -13.83,
+    "y": 3.2,
+    "z": 12.85,
+    "yawDeg": 90,
+    "w": 1,
+    "h": 2.4,
+    "sill": 2,
+    "aspect": 0.417,
+    "real_m": [
+     2.7,
+     6.49
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍)",
+    "photo": null,
+    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
+   },
+   {
+    "key": "lantern_NE",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": -0.601,
+    "y": 39.223,
+    "z": -7.55,
+    "yawDeg": 157.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_NE_2",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": -1.45,
+    "y": 39.223,
+    "z": -8.399,
+    "yawDeg": 112.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_NW",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": -1.45,
+    "y": 39.223,
+    "z": -9.601,
+    "yawDeg": 67.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_NW_2",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": -0.601,
+    "y": 39.223,
+    "z": -10.45,
+    "yawDeg": 22.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_SE",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": 0.601,
+    "y": 39.223,
+    "z": -7.55,
+    "yawDeg": -157.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_SE_2",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": 1.45,
+    "y": 39.223,
+    "z": -8.399,
+    "yawDeg": -112.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_SW",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": 1.45,
+    "y": 39.223,
+    "z": -9.601,
+    "yawDeg": -67.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "lantern_SW_2",
+    "zone": "lantern",
+    "kind": "window",
+    "shape": "rect",
+    "x": 0.601,
+    "y": 39.223,
+    "z": -10.45,
+    "yawDeg": -22.5,
+    "w": 1.015,
+    "h": 1.9,
+    "sill": 38.273,
+    "aspect": 0.534,
+    "real_m": [
+     2.74,
+     5.14
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_01",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -1.613,
+    "y": 23.8,
+    "z": -17.108,
+    "yawDeg": 11.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_02",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -4.593,
+    "y": 23.8,
+    "z": -15.874,
+    "yawDeg": 33.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_03",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -6.874,
+    "y": 23.8,
+    "z": -13.593,
+    "yawDeg": 56.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_04",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -8.108,
+    "y": 23.8,
+    "z": -10.613,
+    "yawDeg": 78.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_05",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -8.108,
+    "y": 23.8,
+    "z": -7.387,
+    "yawDeg": 101.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_06",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -6.874,
+    "y": 23.8,
+    "z": -4.407,
+    "yawDeg": 123.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_07",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -4.593,
+    "y": 23.8,
+    "z": -2.126,
+    "yawDeg": 146.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_08",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": -1.613,
+    "y": 23.8,
+    "z": -0.892,
+    "yawDeg": 168.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_09",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 1.613,
+    "y": 23.8,
+    "z": -0.892,
+    "yawDeg": -168.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_10",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 4.593,
+    "y": 23.8,
+    "z": -2.126,
+    "yawDeg": -146.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_11",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 6.874,
+    "y": 23.8,
+    "z": -4.407,
+    "yawDeg": -123.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_12",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 8.108,
+    "y": 23.8,
+    "z": -7.387,
+    "yawDeg": -101.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_13",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 8.108,
+    "y": 23.8,
+    "z": -10.613,
+    "yawDeg": -78.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_14",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 6.874,
+    "y": 23.8,
+    "z": -13.593,
+    "yawDeg": -56.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_15",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 4.593,
+    "y": 23.8,
+    "z": -15.874,
+    "yawDeg": -33.75,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "drum_16",
+    "zone": "drum",
+    "kind": "window",
+    "shape": "rect",
+    "x": 1.613,
+    "y": 23.8,
+    "z": -17.108,
+    "yawDeg": -11.25,
+    "w": 1.73,
+    "h": 3.8,
+    "sill": 21.9,
+    "aspect": 0.455,
+    "real_m": [
+     4.68,
+     10.27
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunN_b1",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.497,
+    "y": 14.122,
+    "z": 30.151,
+    "yawDeg": -89.2,
+    "w": 2.404,
+    "h": 2.464,
+    "sill": 12.89,
+    "aspect": 0.976,
+    "real_m": [
+     6.5,
+     6.66
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunN_b2",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.377,
+    "y": 14.12,
+    "z": 21.501,
+    "yawDeg": -89.2,
+    "w": 2.404,
+    "h": 2.462,
+    "sill": 12.889,
+    "aspect": 0.977,
+    "real_m": [
+     6.5,
+     6.65
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunN_b3",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.257,
+    "y": 14.118,
+    "z": 12.851,
+    "yawDeg": -89.2,
+    "w": 2.404,
+    "h": 2.46,
+    "sill": 12.888,
+    "aspect": 0.977,
+    "real_m": [
+     6.5,
+     6.65
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunN_b4",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.137,
+    "y": 14.115,
+    "z": 4.201,
+    "yawDeg": -89.2,
+    "w": 2.404,
+    "h": 2.457,
+    "sill": 12.887,
+    "aspect": 0.978,
+    "real_m": [
+     6.5,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunS_b1",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.496,
+    "y": 14.122,
+    "z": 30.151,
+    "yawDeg": 89.2,
+    "w": 2.404,
+    "h": 2.464,
+    "sill": 12.89,
+    "aspect": 0.976,
+    "real_m": [
+     6.5,
+     6.66
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunS_b2",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.376,
+    "y": 14.12,
+    "z": 21.501,
+    "yawDeg": 89.2,
+    "w": 2.404,
+    "h": 2.462,
+    "sill": 12.889,
+    "aspect": 0.977,
+    "real_m": [
+     6.5,
+     6.65
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunS_b3",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.257,
+    "y": 14.118,
+    "z": 12.851,
+    "yawDeg": 89.2,
+    "w": 2.404,
+    "h": 2.46,
+    "sill": 12.888,
+    "aspect": 0.977,
+    "real_m": [
+     6.5,
+     6.65
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "naveLunS_b4",
+    "zone": "nave_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.137,
+    "y": 14.115,
+    "z": 4.201,
+    "yawDeg": 89.2,
+    "w": 2.404,
+    "h": 2.457,
+    "sill": 12.887,
+    "aspect": 0.978,
+    "real_m": [
+     6.5,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunN_b1",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 13,
+    "y": 14.114,
+    "z": -4.895,
+    "yawDeg": 180,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunN_b2",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.3,
+    "y": 14.114,
+    "z": -4.895,
+    "yawDeg": 180,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunN_b3",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 13,
+    "y": 14.114,
+    "z": -13.105,
+    "yawDeg": 0,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunN_b4",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.3,
+    "y": 14.114,
+    "z": -13.105,
+    "yawDeg": 0,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunS_b1",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -13,
+    "y": 14.114,
+    "z": -4.895,
+    "yawDeg": 180,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunS_b2",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.3,
+    "y": 14.114,
+    "z": -4.895,
+    "yawDeg": 180,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunS_b3",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -13,
+    "y": 14.114,
+    "z": -13.105,
+    "yawDeg": 0,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "trLunS_b4",
+    "zone": "transept_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.3,
+    "y": 14.114,
+    "z": -13.105,
+    "yawDeg": 0,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "apseLunN_b1",
+    "zone": "apse_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.105,
+    "y": 14.114,
+    "z": -18.6,
+    "yawDeg": -90,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "apseLunN_b2",
+    "zone": "apse_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.105,
+    "y": 14.114,
+    "z": -26.5,
+    "yawDeg": -90,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "apseLunS_b1",
+    "zone": "apse_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.105,
+    "y": 14.114,
+    "z": -18.6,
+    "yawDeg": 90,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   },
+   {
+    "key": "apseLunS_b2",
+    "zone": "apse_lunette",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.105,
+    "y": 14.114,
+    "z": -26.5,
+    "yawDeg": 90,
+    "w": 2.2,
+    "h": 2.456,
+    "sill": 12.887,
+    "aspect": 0.896,
+    "real_m": [
+     5.95,
+     6.64
+    ],
+    "glass_now": "절차적 무색·옅은 유리",
+    "photo": null
+   }
+  ]
+ },
+ "real_windows": [
+  {
+   "id": "SP-G1",
+   "zone": "apse",
+   "position_ko": "후진 중앙, 사도좌(카테드라 페트리) 글로리아 한가운데 타원 창",
+   "subject_ko": "성령의 비둘기(12구획)",
+   "designer": "Gian Lorenzo Bernini(구성)",
+   "date": "1657–1666",
+   "shape": "타원",
+   "picture": true,
+   "confidence": "high",
+   "sources": [
+    "docs/church/GLASS_CATALOG.md dove_stpeter",
+    "https://commons.wikimedia.org/wiki/File:Holy_Spirit_stained-glass_window_(Cathedra_Petri).jpg"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "gloria"
+   ],
+   "match_note": "이미 진본 사진(CC0)이 걸려 있다. 재료 표기는 출처마다 다르다(채색 유리 / 설화석고)",
+   "free_photos": [
+    {
+     "file": "Holy Spirit stained-glass window (Cathedra Petri).jpg",
+     "license": "CC0",
+     "px": "5097×7625",
+     "part": "창 전체(번들됨)"
+    }
+   ],
+   "placeholder": "authentic(이미 적용)",
+   "release_approved": false
+  },
+  {
+   "id": "SP-X",
+   "count": 59,
+   "zone": "전체",
+   "position_ko": "드럼 16 · 랜턴 8 · 궁륭 채광창 20 · 입구 위 큰 창 1 · 측랑 작은 돔 천창 14",
+   "subject_ko": "그림 없음(무색 유리, 격자 납틀)",
+   "shape": "사각·반원",
+   "picture": false,
+   "confidence": "medium(그림 유리 기록을 찾지 못함; 창 하나하나를 확인한 것은 아님)",
+   "sources": [
+    "docs/church/interiors/stpeter.md",
+    "웹 검색(그림 유리 언급 없음)"
+   ],
+   "cls": "e",
+   "opening_keys": [],
+   "match_note": "모델도 옅은 무색 유리(GLASS_PALE)다 → 그림을 걸 계획 없음",
+   "free_photos": [],
+   "placeholder": "procedural_plain(현행 유지) / 선택: 무색 격자 유리 흐린 텍스처",
+   "release_approved": false
+  }
+ ],
+ "real_counts": {
+  "picture_windows": 1,
+  "by_class": {
+   "a": 1,
+   "b": 0,
+   "c": 0,
+   "d": 0,
+   "e": 59
+  }
+ },
+ "model_openings_without_real_picture_window": [
+  {
+   "keys": [
+    "entrance_door_light",
+    "chapelLightN_b1",
+    "chapelLightN_b2",
+    "chapelLightN_b3",
+    "chapelLightS_b1",
+    "chapelLightS_b2",
+    "chapelLightS_b3"
+   ],
+   "cls": "e",
+   "note": "창이 아닌 빛 면(문 바깥빛 1, 경당 벽 빛 6)"
+  }
+ ],
+ "sourcing": {
+  "free_license_windows": 1,
+  "detail": "성령의 비둘기(CC0, 이미 번들)",
+  "none": "해당 없음"
+ },
+ "work_items": [
+  {
+   "what": "추가 작업 없음(그림 창은 글로리아 1점뿐, 이미 진본)",
+   "effort": "없음",
+   "risk": "—"
+  },
+  {
+   "what": "선택: 드럼 16창·궁륭 채광창에 무색 격자 유리의 흐린 텍스처(절차적 생성)",
+   "effort": "작음",
+   "risk": "시각 이득이 작다"
+  }
+ ],
+ "rights": [
+  "바티칸 시국: 대성전 안 촬영물의 상업적 이용은 Fabbrica di San Pietro 허가 사항. 지금 쓰는 사진은 Commons CC0 이지만 \"문화재 이미지 이용 규정\"은 사진 라이선스와 별개 → 배포 전 확인 권장"
+ ],
+ "unverified": [
+  "경당·성구실 등 부속 공간의 창(모델에 없음)",
+  "글로리아 창의 재료(유리/설화석고)"
+ ],
+ "sources": [
+  "docs/church/interiors/stpeter.md",
+  "docs/church/GLASS_CATALOG.md"
+ ]
+}

@@ -211,32 +211,35 @@ void main() {
         ),
       );
       await tester.pump();
-      Color navPrimary() =>
+      // 내비게이션은 밝은 테마에서도 어두운 갈색(AppDecor.chrome)이고, 성당 안에서는 성당 테마다.
+      Color navSurface() =>
           Theme.of(tester.element(find.byType(NavigationBar)))
               .colorScheme
-              .primary;
-      // 입장 카드(성당 밖): 앱 테마.
-      expect(navPrimary(), app.colorScheme.primary);
+              .surface;
+      final chrome = AppTheme.seedScheme(Brightness.dark).surface;
+      expect(chrome, isNot(ChurchTheme.scheme.surface));
+      // 입장 카드(성당 밖): 앱의 내비게이션 테마.
+      expect(navSurface(), chrome);
       await tester.tap(find.byKey(const ValueKey('entry-enter')));
       await tester.pump();
       scene.emit(const SceneReady());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(navPrimary(), ChurchTheme.scheme.primary);
+      expect(navSurface(), ChurchTheme.scheme.surface);
       // 다른 탭으로 가면 앱 테마로 돌아온다.
       await tester.tap(find.text('오늘'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(navPrimary(), app.colorScheme.primary);
+      expect(navSurface(), chrome);
       await tester.tap(find.text('성당'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(navPrimary(), ChurchTheme.scheme.primary);
+      expect(navSurface(), ChurchTheme.scheme.surface);
       // 성당에서 나오면(성당 바꾸기) 다시 앱 테마.
       await tester.tap(find.byTooltip('성당 바꾸기'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(navPrimary(), app.colorScheme.primary);
+      expect(navSurface(), chrome);
       await tester.pump(const Duration(seconds: 7));
     });
   });

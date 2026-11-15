@@ -344,7 +344,7 @@ void main() {
       tester,
     ) async {
       setView(tester, const Size(400, 800));
-      // 처음 방문(아직 성당에 들어간 적 없음): 바로 선택 목록이 열린다.
+      // 처음 방문(아직 성당에 들어간 적 없음): 입구에서 '모든 성당 보기'로 선택 목록을 연다.
       final settings = await loadSettings(avatarChosen: false);
       final net = FakeChurchNet();
       final scene = FakeChurchSceneController();
@@ -358,6 +358,10 @@ void main() {
           ),
         ),
       );
+      expect(find.text('처음 오셨나요?'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const ValueKey('entry-pick')));
+      await tester.tap(find.byKey(const ValueKey('entry-pick')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('entry-card')), findsNothing);
       await _reveal(tester, _card('stpeter'));
       await tester.tap(_card('stpeter'));
@@ -405,6 +409,9 @@ void main() {
           ),
         ),
       );
+      await tester.ensureVisible(find.byKey(const ValueKey('entry-pick')));
+      await tester.tap(find.byKey(const ValueKey('entry-pick')));
+      await tester.pumpAndSettle();
       await _reveal(tester, _card('stpeter'));
       await tester.tap(_card('stpeter'));
       await tester.pumpAndSettle();
@@ -454,9 +461,14 @@ void main() {
     ) async {
       await pumpTab(tester, last: 'myeongdong');
       expect(find.byKey(const ValueKey('entry-card')), findsOneWidget);
-      expect(find.text('명동대성당'), findsOneWidget);
-      expect(find.textContaining('서울'), findsOneWidget);
-      expect(find.byType(Image), findsOneWidget); // 썸네일
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('entry-name'))).data,
+        '명동대성당',
+      );
+      expect(find.text('마지막으로 다녀온 성당'), findsOneWidget);
+      expect(find.text('서울, 대한민국 · 대성당'), findsOneWidget);
+      // 대표 그림 + 캐러셀 썸네일(들어갈 수 있는 성당마다 하나).
+      expect(find.byType(Image), findsNWidgets(4));
       final enter = find.byKey(const ValueKey('entry-enter'));
       final pick = find.byKey(const ValueKey('entry-pick'));
       expect(find.text('다른 성당 고르기'), findsOneWidget);

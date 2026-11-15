@@ -3,13 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/settings.dart';
+import '../app/theme.dart';
 import '../app/track.dart';
+import '../app/window_class.dart';
+import '../church/church_entry_art.dart';
 import '../church/church_host.dart';
 import '../church/church_scene_controller.dart';
 import '../church/church_tab.dart';
 import 'glass_catalog.dart';
 import 'glass_gallery.dart';
 import 'glass_view_screen.dart';
+import '../ui/widgets/ornament.dart';
 
 /// 성당 탭의 두 보기: 성당(메인, 기본) | 창(스테인드글라스 갤러리, 보조).
 enum GlassSegment { church, window }
@@ -257,61 +261,151 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final isWindow = segment == GlassSegment.window;
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 보기가 바뀌어도 머리줄 높이가 같도록 하트 버튼 높이(48)를 최소로 둔다.
-            ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 48),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(
-                        isWindow ? '스테인드글라스' : '가상 성당',
-                        style: theme.textTheme.titleLarge,
+    final size = MediaQuery.sizeOf(context);
+    final wide = windowClassOfWidth(size.width).isWide;
+    final margin = windowClassOfWidth(size.width).margin;
+    // 낮은 화면(폰 가로)이나 아주 큰 글자에서는 장식선·부제를 접어 본문 자리를 남긴다.
+    final roomy =
+        size.height >= 520 && MediaQuery.textScalerOf(context).scale(10) <= 15;
+    return Stack(
+      children: [
+        // 오른쪽 위 배경 장식(스테인드글라스·빛 번짐). 머리말 높이만큼만 그리고 왼쪽·아래로 옅어진다.
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.topRight,
+            child: FractionallySizedBox(
+              widthFactor: wide ? 0.62 : 0.8,
+              heightFactor: 1,
+              child: _HeaderBackdrop(
+                opacity: scheme.brightness == Brightness.dark
+                    ? 0.4
+                    : (wide ? 1 : 0.9),
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              margin,
+              AppSpace.xs,
+              AppSpace.xs,
+              AppSpace.xs,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (roomy) const OrnamentLine.cross(),
+                // 보기가 바뀌어도 머리줄 높이가 같도록 하트 버튼 높이(48)를 최소로 둔다.
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(
+                            isWindow ? '스테인드글라스' : '가상 성당',
+                            style: wide
+                                ? theme.textTheme.headlineLarge
+                                : theme.textTheme.headlineMedium,
+                          ),
+                        ),
+                      ),
+                      // 내 컬렉션(즐겨찾기)은 창 보기에서만(G2, 자리만 둔다).
+                      if (isWindow)
+                        IconButton(
+                          key: const ValueKey('glass-favorites'),
+                          tooltip: '내 컬렉션',
+                          onPressed: onFavorites,
+                          icon: const Icon(Icons.favorite_border),
+                        ),
+                    ],
+                  ),
+                ),
+                if (roomy) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(right: AppSpace.xs),
+                    // 두 부제를 겹쳐 두어(하나만 보인다) 보기를 바꿔도 전환 줄이 움직이지 않게 한다.
+                    child: DefaultTextStyle.merge(
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      child: IndexedStack(
+                        index: isWindow ? 1 : 0,
+                        children: const [
+                          Text('세계의 아름다운 성당을 걷고, 기도하는 공간'),
+                          Text('성당의 창을 가까이에서 바라보는 곳'),
+                        ],
                       ),
                     ),
                   ),
-                  // 내 컬렉션(즐겨찾기)은 창 보기에서만(G2, 자리만 둔다).
-                  if (isWindow)
-                    IconButton(
-                      key: const ValueKey('glass-favorites'),
-                      tooltip: '내 컬렉션',
-                      onPressed: onFavorites,
-                      icon: const Icon(Icons.favorite_border),
-                    ),
+                  const SizedBox(height: 12),
                 ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: SegmentedButton<GlassSegment>(
-                key: const ValueKey('glass-segment'),
-                showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(
-                    value: GlassSegment.church,
-                    label: Text('성당'),
-                    icon: Icon(Icons.church_outlined),
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpace.xs),
+                  child: SegmentedButton<GlassSegment>(
+                    key: const ValueKey('glass-segment'),
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(
+                        value: GlassSegment.church,
+                        label: Text('성당'),
+                        icon: Icon(Icons.church_outlined),
+                      ),
+                      ButtonSegment(
+                        value: GlassSegment.window,
+                        label: Text('창'),
+                        icon: Icon(Icons.window_outlined),
+                      ),
+                    ],
+                    selected: {segment},
+                    onSelectionChanged: (s) => onSegment(s.first),
                   ),
-                  ButtonSegment(
-                    value: GlassSegment.window,
-                    label: Text('창'),
-                    icon: Icon(Icons.window_outlined),
-                  ),
-                ],
-                selected: {segment},
-                onSelectionChanged: (s) => onSegment(s.first),
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 머리말 배경 장식([ChurchEntryArt.background]). 글자를 가리지 않게 왼쪽과 아래로 옅어진다
+/// (페이드는 여기서 그리므로 그림 파일은 가장자리 처리 없이 바꿔도 된다).
+class _HeaderBackdrop extends StatelessWidget {
+  const _HeaderBackdrop({required this.opacity});
+
+  final double opacity;
+
+  static const List<Color> _fade = [Color(0x00FFFFFF), Color(0xFFFFFFFF)];
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) => const LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: _fade,
+          stops: [0.02, 0.7],
+        ).createShader(rect),
+        child: ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (rect) => const LinearGradient(
+            colors: _fade,
+            stops: [0, 0.6],
+          ).createShader(rect),
+          child: ChurchEntryDecor(
+            asset: ChurchEntryArt.background,
+            alignment: Alignment.topRight,
+            opacity: opacity,
+          ),
         ),
       ),
     );

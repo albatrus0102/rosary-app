@@ -465,12 +465,13 @@ void main() {
       Analytics.debugReset();
     });
 
-    testWidgets('처음(아바타 미선택)에는 성당 고르기가 바로 열린다', (tester) async {
+    testWidgets("처음(아바타 미선택)에도 입구가 먼저 보인다('처음 오셨나요?')", (tester) async {
       await _startAnalytics();
       await pumpShell(tester, avatarChosen: false);
       expect(find.byKey(const ValueKey('glass-segment')), findsOneWidget);
-      expect(find.byKey(const ValueKey('entry-enter')), findsNothing);
-      expect(_screens(), ['church_select']);
+      expect(find.byKey(const ValueKey('entry-enter')), findsOneWidget);
+      expect(find.text('처음 오셨나요?'), findsOneWidget);
+      expect(_screens(), ['church_entry']);
       Analytics.debugReset();
     });
 
@@ -533,11 +534,14 @@ void main() {
     testWidgets('성당 고르기: 카드 → 상세 시트의 [입장] 1번 → (처음이면 아바타 설정) → 성당 화면', (
       tester,
     ) async {
-      // 처음 방문: 선택 목록이 바로 열린다.
+      // 처음 방문: 입구에서 '모든 성당 보기'로 선택 목록을 연다.
       final (settings, net, scene) = await pumpShell(
         tester,
         avatarChosen: false,
       );
+      await tester.ensureVisible(find.byKey(const ValueKey('entry-pick')));
+      await tester.tap(find.byKey(const ValueKey('entry-pick')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('entry-card')), findsNothing);
       final card = find.byKey(const ValueKey('church-card-stpeter'));
       await tester.scrollUntilVisible(

@@ -700,7 +700,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('입장'));
+      await tester.tap(find.byKey(const ValueKey('entry-enter')));
       await tester.pump();
       scene.emit(const SceneReady());
       await tester.pump();

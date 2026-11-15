@@ -1,0 +1,1614 @@
+{
+ "schema": "rosarium.glass_windows.plan/1",
+ "church": "stpaul",
+ "name_ko": "성 밖 성 바오로 대성전",
+ "generated": "2026-11-15",
+ "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "release_approved": false,
+ "classes": {
+  "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
+  "b": "벽은 있으나 창이 없거나 형태가 달라 뚫어야/고쳐야 함",
+  "c": "건축 부분 자체가 모델에 없음",
+  "d": "위치 미확정 → QA 갤러리 전용",
+  "e": "실제로 그림 유리가 아님(무색/설화석고/맹창)"
+ },
+ "coordinate_system": {
+  "units": "앱 m (= 실제 m × 0.53)",
+  "scalePercent": 53,
+  "altar": "-z (동)",
+  "entrance": "+z (서)",
+  "plusX": "남",
+  "minusX": "북",
+  "summary": "입구 +z(서, 테베레 강 쪽) → 후진 -z(동). 제대를 볼 때 오른쪽 +x = 남, 왼쪽 -x = 북. 근거: 실제 대성전은 후진이 동쪽(interiors/stpaul.md), 모델 축은 입구 +z 공통 규약.",
+  "bounds": {
+   "x0": -18.8,
+   "x1": 18.8,
+   "z0": -35.4,
+   "z1": 34.2
+  },
+  "spawn": {
+   "x": 0,
+   "z": 27,
+   "r": 0
+  },
+  "plate_convention": "x,y,z = 유리 평면 가운데(y 는 개구부 중심), yawDeg = atan2(nx, nz) (판 +Z 가 실내를 봄), u 는 실내에서 볼 때 왼→오"
+ },
+ "model": {
+  "tool": "node tools/church_web/church_openings.mjs stpaul --json",
+  "opening_count": 75,
+  "window_count": 75,
+  "photo_slot_count": 64,
+  "by_zone": {
+   "facade": 3,
+   "aisle": 22,
+   "clerestory": 42,
+   "transept_end": 4,
+   "transept_back": 4
+  },
+  "openings": [
+   {
+    "key": "facade_center",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "round",
+    "x": 0,
+    "y": 11.15,
+    "z": 33.8,
+    "yawDeg": 180,
+    "w": 2.2,
+    "h": 4.3,
+    "sill": 9,
+    "aspect": 0.512,
+    "real_m": [
+     4.15,
+     8.11
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "facade_N",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "round",
+    "x": -9.25,
+    "y": 10.1,
+    "z": 33.8,
+    "yawDeg": 180,
+    "w": 1.8,
+    "h": 3.6,
+    "sill": 8.3,
+    "aspect": 0.5,
+    "real_m": [
+     3.4,
+     6.79
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "facade_S",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "round",
+    "x": 9.25,
+    "y": 10.1,
+    "z": 33.8,
+    "yawDeg": 180,
+    "w": 1.8,
+    "h": 3.6,
+    "sill": 8.3,
+    "aspect": 0.5,
+    "real_m": [
+     3.4,
+     6.79
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "aisleN_b1",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 32.332,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[10])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleN_b2",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 27.661,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[9])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleN_b3",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 22.989,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[8])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleN_b4",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 18.318,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[7])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleN_b5",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 13.646,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[6])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleN_b6",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 8.975,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[5])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleN_b7",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": 4.304,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[4])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleN_b8",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": -0.368,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[3])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleN_b9",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": -5.039,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[2])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleN_b10",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": -9.711,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[1])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleN_b11",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": -17.5,
+    "y": 3.975,
+    "z": -14.382,
+    "yawDeg": 90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[0])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleS_b1",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 32.332,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[10])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleS_b2",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 27.661,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[9])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleS_b3",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 22.989,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[8])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleS_b4",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 18.318,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[7])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleS_b5",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 13.646,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[6])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleS_b6",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 8.975,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[5])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleS_b7",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": 4.304,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[4])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleS_b8",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": -0.368,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[3])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleS_b9",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": -5.039,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[2])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "aisleS_b10",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": -9.711,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.949,
+    "sill": 2.5,
+    "aspect": 0.509,
+    "real_m": [
+     2.83,
+     5.56
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (aisle[1])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "aisleS_b11",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "round",
+    "x": 17.5,
+    "y": 3.975,
+    "z": -14.382,
+    "yawDeg": -90,
+    "w": 1.5,
+    "h": 2.879,
+    "sill": 2.535,
+    "aspect": 0.521,
+    "real_m": [
+     2.83,
+     5.43
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (aisle[0])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b1",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 32.332,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[20])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b2",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 29.996,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[19])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b3",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 27.661,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[18])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b4",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 25.325,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[17])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b5",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 22.989,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[16])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b6",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 20.654,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[15])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b7",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 18.318,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[14])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b8",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 15.982,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[13])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b9",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 13.646,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[12])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b10",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 11.311,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[11])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b11",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 8.975,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[10])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b12",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 6.639,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[9])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b13",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 4.304,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[8])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b14",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": 1.968,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[7])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b15",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -0.368,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[6])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b16",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -2.704,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[5])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b17",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -5.039,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[4])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b18",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -7.375,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[3])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b19",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -9.711,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[2])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereN_b20",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -12.046,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[1])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereN_b21",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -6.6,
+    "y": 11.33,
+    "z": -14.382,
+    "yawDeg": 90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[0])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b1",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 32.332,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[20])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b2",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 29.996,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[19])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b3",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 27.661,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[18])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b4",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 25.325,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[17])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b5",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 22.989,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[16])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b6",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 20.654,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[15])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b7",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 18.318,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[14])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b8",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 15.982,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[13])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b9",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 13.646,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[12])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b10",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 11.311,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[11])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b11",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 8.975,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[10])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b12",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 6.639,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[9])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b13",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 4.304,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[8])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b14",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": 1.968,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[7])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b15",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -0.368,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[6])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b16",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -2.704,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[5])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b17",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -5.039,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[4])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b18",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -7.375,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[3])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b19",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -9.711,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[2])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "clereS_b20",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -12.046,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.534,
+    "sill": 10.063,
+    "aspect": 0.521,
+    "real_m": [
+     2.49,
+     4.78
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_1 (clerestory[1])",
+    "photo": "alabaster_stpaul_1"
+   },
+   {
+    "key": "clereS_b21",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 6.6,
+    "y": 11.33,
+    "z": -14.382,
+    "yawDeg": -90,
+    "w": 1.32,
+    "h": 2.595,
+    "sill": 10.032,
+    "aspect": 0.509,
+    "real_m": [
+     2.49,
+     4.9
+    ],
+    "glass_now": "사진 슬롯 alabaster_stpaul_2 (clerestory[0])",
+    "photo": "alabaster_stpaul_2"
+   },
+   {
+    "key": "trEndN_b1",
+    "zone": "transept_end",
+    "kind": "window",
+    "shape": "round",
+    "x": -19.1,
+    "y": 11.25,
+    "z": -18.9,
+    "yawDeg": 90,
+    "w": 1.6,
+    "h": 4.1,
+    "sill": 9.2,
+    "aspect": 0.39,
+    "real_m": [
+     3.02,
+     7.74
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trEndN_b2",
+    "zone": "transept_end",
+    "kind": "window",
+    "shape": "round",
+    "x": -19.1,
+    "y": 11.25,
+    "z": -25.5,
+    "yawDeg": 90,
+    "w": 1.6,
+    "h": 4.1,
+    "sill": 9.2,
+    "aspect": 0.39,
+    "real_m": [
+     3.02,
+     7.74
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trEndS_b1",
+    "zone": "transept_end",
+    "kind": "window",
+    "shape": "round",
+    "x": 19.1,
+    "y": 11.25,
+    "z": -18.9,
+    "yawDeg": -90,
+    "w": 1.6,
+    "h": 4.1,
+    "sill": 9.2,
+    "aspect": 0.39,
+    "real_m": [
+     3.02,
+     7.74
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trEndS_b2",
+    "zone": "transept_end",
+    "kind": "window",
+    "shape": "round",
+    "x": 19.1,
+    "y": 11.25,
+    "z": -25.5,
+    "yawDeg": -90,
+    "w": 1.6,
+    "h": 4.1,
+    "sill": 9.2,
+    "aspect": 0.39,
+    "real_m": [
+     3.02,
+     7.74
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trBack_w1",
+    "zone": "transept_back",
+    "kind": "window",
+    "shape": "round",
+    "x": -14,
+    "y": 11.4,
+    "z": -28.85,
+    "yawDeg": 0,
+    "w": 1.2,
+    "h": 4,
+    "sill": 9.4,
+    "aspect": 0.3,
+    "real_m": [
+     2.26,
+     7.55
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trBack_w2",
+    "zone": "transept_back",
+    "kind": "window",
+    "shape": "round",
+    "x": -9.5,
+    "y": 11.4,
+    "z": -28.85,
+    "yawDeg": 0,
+    "w": 1.2,
+    "h": 4,
+    "sill": 9.4,
+    "aspect": 0.3,
+    "real_m": [
+     2.26,
+     7.55
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trBack_w3",
+    "zone": "transept_back",
+    "kind": "window",
+    "shape": "round",
+    "x": 9.5,
+    "y": 11.4,
+    "z": -28.85,
+    "yawDeg": 0,
+    "w": 1.2,
+    "h": 4,
+    "sill": 9.4,
+    "aspect": 0.3,
+    "real_m": [
+     2.26,
+     7.55
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   },
+   {
+    "key": "trBack_w4",
+    "zone": "transept_back",
+    "kind": "window",
+    "shape": "round",
+    "x": 14,
+    "y": 11.4,
+    "z": -28.85,
+    "yawDeg": 0,
+    "w": 1.2,
+    "h": 4,
+    "sill": 9.4,
+    "aspect": 0.3,
+    "real_m": [
+     2.26,
+     7.55
+    ],
+    "glass_now": "절차적 옅은 호박색(설화석고풍) · lancet",
+    "photo": null
+   }
+  ]
+ },
+ "real_windows": [
+  {
+   "id": "PA-X",
+   "count": 75,
+   "zone": "전체",
+   "position_ko": "측랑 22 · 신랑 고창 42 · 익랑 8 · 정면 3 (모델 기준 개수)",
+   "subject_ko": "그림 없음(설화석고 석판 창)",
+   "date": "1891년 폭발로 옛 스테인드글라스 소실 뒤 교체",
+   "shape": "반원 아치",
+   "picture": false,
+   "confidence": "high(재료) / low(개수)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Basilica_of_Saint_Paul_Outside_the_Walls (\"they are actually translucent alabaster\"; \"On 23 April 1891, an explosion … destroyed the basilica's stained glass windows\")"
+   ],
+   "cls": "e",
+   "opening_keys": [],
+   "match_note": "측랑 22 + 고창 42 = 64곳에는 이미 같은 대성전의 설화석고 창 사진 2장(CC BY 4.0)이 번갈아 걸려 있다. 익랑 8·정면 3 은 절차적 호박색",
+   "free_photos": [
+    {
+     "file": "alabaster_stpaul_1 / alabaster_stpaul_2 (카탈로그)",
+     "license": "CC BY 4.0",
+     "px": "3168×4752",
+     "part": "창 하나 전체(번들됨)"
+    }
+   ],
+   "placeholder": "authentic 반복(현행) / 익랑·정면 11곳도 같은 사진으로 확장",
+   "release_approved": false
+  }
+ ],
+ "real_counts": {
+  "picture_windows": 0,
+  "by_class": {
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "d": 0,
+   "e": 75
+  }
+ },
+ "model_openings_without_real_picture_window": [],
+ "sourcing": {
+  "free_license_windows": 2,
+  "detail": "설화석고 창 사진 2장(CC BY 4.0, 이미 번들) — 그림 창이 아니라 재질 사진",
+  "none": "해당 없음"
+ },
+ "work_items": [
+  {
+   "what": "선택: 익랑 끝 4·익랑 뒷벽 4·정면 3 에도 설화석고 사진(비율 맞춤) — GLASS_PLACEMENTS.md 가 \"이번에 손대지 않았다\"고 남긴 11곳",
+   "effort": "작음~중간(개구부 비율 0.44/0.30/0.5 → 사진 0.51~0.52)",
+   "risk": "반복 사진이 75곳으로 늘어남"
+  }
+ ],
+ "rights": [
+  "교황청 직할 대성전: 촬영물 상업 이용 허가 사항. 현재 사진은 CC BY 4.0(저작자 표시 필요)"
+ ],
+ "unverified": [
+  "실제 창의 개수",
+  "정면 안쪽 벽 창의 재료"
+ ],
+ "sources": [
+  "https://en.wikipedia.org/wiki/Basilica_of_Saint_Paul_Outside_the_Walls",
+  "docs/church/GLASS_PLACEMENTS.md"
+ ]
+}

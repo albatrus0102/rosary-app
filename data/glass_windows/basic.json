@@ -1,0 +1,361 @@
+{
+ "schema": "rosarium.glass_windows.plan/1",
+ "church": "basic",
+ "name_ko": "우리 본당",
+ "generated": "2026-11-15",
+ "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "release_approved": false,
+ "classes": {
+  "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
+  "b": "벽은 있으나 창이 없거나 형태가 달라 뚫어야/고쳐야 함",
+  "c": "건축 부분 자체가 모델에 없음",
+  "d": "위치 미확정 → QA 갤러리 전용",
+  "e": "실제로 그림 유리가 아님(무색/설화석고/맹창)"
+ },
+ "coordinate_system": {
+  "units": "앱 m (= 실제 m × 1)",
+  "scalePercent": 100,
+  "altar": "-z",
+  "entrance": "+z",
+  "plusX": "오른쪽 R(방위 없음)",
+  "minusX": "왼쪽 L(방위 없음)",
+  "summary": "입구 +z → 제대 -z. 가상의 본당이라 방위가 없다(제대를 볼 때 오른쪽 R = +x, 왼쪽 L = -x).",
+  "bounds": {
+   "x0": -12,
+   "x1": 12,
+   "z0": -20,
+   "z1": 20
+  },
+  "spawn": {
+   "x": 0,
+   "z": 17,
+   "r": 0
+  },
+  "plate_convention": "x,y,z = 유리 평면 가운데(y 는 개구부 중심), yawDeg = atan2(nx, nz) (판 +Z 가 실내를 봄), u 는 실내에서 볼 때 왼→오"
+ },
+ "model": {
+  "tool": "node tools/church_web/church_openings.mjs basic --json",
+  "opening_count": 13,
+  "window_count": 13,
+  "photo_slot_count": 0,
+  "by_zone": {
+   "entrance": 2,
+   "sanctuary": 1,
+   "side": 10
+  },
+  "openings": [
+   {
+    "key": "entrance_rose",
+    "zone": "entrance",
+    "kind": "window",
+    "shape": "circle",
+    "x": 0,
+    "y": 8.4,
+    "z": 19.48,
+    "yawDeg": 180,
+    "w": 2.6,
+    "h": 2.6,
+    "sill": 7.1,
+    "aspect": 1,
+    "real_m": [
+     2.6,
+     2.6
+    ],
+    "glass_now": "절차적 색유리 · rose10",
+    "photo": null
+   },
+   {
+    "key": "entrance_transom",
+    "zone": "entrance",
+    "kind": "window",
+    "shape": "round",
+    "x": 0,
+    "y": 5.85,
+    "z": 19.5,
+    "yawDeg": 180,
+    "w": 3.6,
+    "h": 1.9,
+    "sill": 4.9,
+    "aspect": 1.895,
+    "real_m": [
+     3.6,
+     1.9
+    ],
+    "glass_now": "절차적 색유리 · solid",
+    "photo": null
+   },
+   {
+    "key": "apse_rose",
+    "zone": "sanctuary",
+    "kind": "window",
+    "shape": "circle",
+    "x": 0,
+    "y": 8.3,
+    "z": -19.98,
+    "yawDeg": 0,
+    "w": 3,
+    "h": 3,
+    "sill": 6.8,
+    "aspect": 1,
+    "real_m": [
+     3,
+     3
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "sideL_b1",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -12,
+    "y": 4.634,
+    "z": 14,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideL_b2",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -12,
+    "y": 4.634,
+    "z": 7,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideL_b3",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -12,
+    "y": 4.634,
+    "z": 0,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideL_b4",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -12,
+    "y": 4.634,
+    "z": -7,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideL_b5",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -12,
+    "y": 4.634,
+    "z": -14,
+    "yawDeg": 90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideR_b1",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 12,
+    "y": 4.634,
+    "z": 14,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideR_b2",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 12,
+    "y": 4.634,
+    "z": 7,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideR_b3",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 12,
+    "y": 4.634,
+    "z": 0,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideR_b4",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 12,
+    "y": 4.634,
+    "z": -7,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "sideR_b5",
+    "zone": "side",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 12,
+    "y": 4.634,
+    "z": -14,
+    "yawDeg": -90,
+    "w": 1.9,
+    "h": 3.268,
+    "sill": 3,
+    "aspect": 0.581,
+    "real_m": [
+     1.9,
+     3.27
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   }
+  ]
+ },
+ "real_windows": [
+  {
+   "id": "BA-N",
+   "count": 13,
+   "zone": "전체",
+   "position_ko": "가상의 본당 — 실제 건물 없음",
+   "subject_ko": "(해당 없음)",
+   "picture": false,
+   "confidence": "n/a",
+   "sources": [
+    "docs/church/SPEC.md §1~7",
+    "assets/church/ch_basic.js"
+   ],
+   "cls": "d",
+   "opening_keys": [],
+   "match_note": "실제 대응이 없으므로 \"진본\"이 있을 수 없다. 한국 현대 본당 풍 창작 시안(임시가 아니라 창작물)으로 채울지 사용자 결정",
+   "free_photos": [],
+   "placeholder": "ai_sheet:basic-A (창작)",
+   "release_approved": false
+  }
+ ],
+ "real_counts": {
+  "picture_windows": 0,
+  "note": "가상",
+  "by_class": {
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "d": 13,
+   "e": 0
+  }
+ },
+ "model_openings_without_real_picture_window": [],
+ "sourcing": {
+  "free_license_windows": 0,
+  "detail": "실제 창이 없다. 카탈로그의 reference 창(샤르트르 등)은 \"다른 성당 창\"이라 성당 안에 걸지 않는 규칙",
+  "none": "창작 시안 13"
+ },
+ "work_items": [
+  {
+   "what": "측면 첨두창 10(1.9×3.27m) + 제대 벽 장미창 1(지름 3.0m) + 입구 장미창 1(지름 2.6m) + 입구 문 위 반원 창 1(3.6×1.9m)에 창작 시안",
+   "effort": "작음",
+   "risk": "없음(권리는 생성물 약관만)"
+  }
+ ],
+ "rights": [
+  "실제 작품이 아니므로 원작 권리 없음. 생성 이미지의 이용 약관과 \"실존 작가 화풍 모사 금지\"만 지키면 된다"
+ ],
+ "unverified": [],
+ "sources": [
+  "assets/church/ch_basic.js"
+ ]
+}

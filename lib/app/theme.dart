@@ -72,21 +72,80 @@ abstract final class AppMotion {
       MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;
 }
 
-/// 밝고 따뜻한 Material 3 테마: 테라코타 시드 하나에서 모든 역할을 만들고(tonalSpot),
-/// 3차(tertiary)만 골드 시드로 둔다.
+/// 장식용 색·내비게이션 색 구성(M3 색 역할에 없는 것만 여기 둔다).
 ///
-/// 2026-11 재감사: 예전에는 secondary를 올리브 시드로 덮어써서 secondaryContainer를 쓰는 M3
-/// 기본 컴포넌트(내비게이션 바 표시기, 세그먼트 버튼 선택, tonal 버튼, 필터 칩, 선택된 목록 항목,
-/// 슬라이더 비활성 트랙)가 전부 연두색이 되어 테라코타 primary와 어긋났다. M3 tonalSpot은
-/// secondary를 primary와 같은 색상(hue)의 저채도 톤으로 만들도록 설계되어 있으므로 덮어쓰지 않는다.
+/// - [gold]: 장식선(금색 십자 장식선, 선택된 카드·세그먼트·주 버튼의 가는 금색 테두리)의 색.
+///   밝은 표면에서 3:1 이상이 되도록 고른 값이라 선택 표시(비텍스트)에도 쓸 수 있다.
+/// - [chrome]: 내비게이션(레일·하단 바)의 색 구성. 밝은 테마에서도 내비게이션은 어두운 갈색이라
+///   어두운 구성을 쓴다(어두운 테마에서는 자기 구성과 같다).
+@immutable
+class AppDecor extends ThemeExtension<AppDecor> {
+  const AppDecor({required this.gold, required this.chrome});
+
+  final Color gold;
+  final ColorScheme chrome;
+
+  /// [context] 테마의 장식 값. 확장이 없는 테마(시험용 등)면 색 구성에서 만든다.
+  static AppDecor of(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.extension<AppDecor>() ??
+        AppDecor(gold: theme.colorScheme.tertiary, chrome: theme.colorScheme);
+  }
+
+  @override
+  AppDecor copyWith({Color? gold, ColorScheme? chrome}) =>
+      AppDecor(gold: gold ?? this.gold, chrome: chrome ?? this.chrome);
+
+  @override
+  AppDecor lerp(AppDecor? other, double t) {
+    if (other == null) return this;
+    return AppDecor(
+      gold: Color.lerp(gold, other.gold, t) ?? gold,
+      chrome: ColorScheme.lerp(chrome, other.chrome, t),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is AppDecor && other.gold == gold && other.chrome == chrome;
+
+  @override
+  int get hashCode => Object.hash(gold, chrome);
+}
+
+/// 앱 전체 Material 3 테마: **따뜻한 상아색 종이 + 짙은 갈색 + 금색**(2026-11 사용자 시안).
+///
+/// 밝게는 상아색 표면에 짙은 갈색 primary 와 금색 tertiary, 어둡게는 짙은 갈색·먹색 표면에
+/// 금색 primary(성당 안 전용 [ChurchTheme]의 촛불 금색과 같은 값이라 자연스럽게 이어진다)다.
+/// M3 를 버리는 것이 아니라 **색 구성(ColorScheme)만 손으로 정한 같은 M3 테마**이며, 모든 화면은
+/// 색 역할만 쓰므로 여기 한 곳을 바꾸면 전 화면이 따라온다. 대비는 `test/theme_contrast_test.dart`.
+///
+/// ## 색 역할표
+///
+/// | 역할 | 밝게 | 어둡게 |
+/// |---|---|---|
+/// | `surface` | #FBF2E8 상아색 종이 | #1E130D 짙은 갈색 먹 |
+/// | `surfaceContainerLowest…Highest` | #FFFCF8 → #E8DBCA | #160C07 → #403229 |
+/// | `onSurface` / `onSurfaceVariant` | #2B1B11 / #5B4634 | #F4E6D5 / #D8C3AB |
+/// | `primary` / `onPrimary` | #5F3419 짙은 갈색 / #FFFFFF | #E7C46C 촛불 금색 / #3B2C00 |
+/// | `primaryContainer` / `on…` | #F6DCC0 / #3D1C05 | #564209 / #FFE29B |
+/// | `secondary` / `onSecondary` | #6E543E / #FFFFFF | #DFC29C / #3F2D12 |
+/// | `secondaryContainer` / `on…` | #EFD9BE / #33200F | #543E23 / #FBDEB6 |
+/// | `tertiary` / `onTertiary` | #765300 금색(글자용) / #FFFFFF | #F1B36E 불꽃 호박색 / #482A00 |
+/// | `tertiaryContainer` / `on…` | #FBDF9F / #2F2100 | #663E08 / #FFDDB7 |
+/// | `outline` / `outlineVariant` | #8A7159 / #DCC3A1 | #A89378 / #5C482F |
+/// | 장식 금색([AppDecor.gold]) | #AE7A13 | #E7C46C |
+///
+/// 이전(테라코타 시드 `fromSeed`)과 달리 고정값이다: 시드에서 만든 표면은 분홍빛이 돌아 시안의
+/// 상아색 종이와 달랐다. 기기 색(Material You)을 켜면 여전히 기기 구성을 쓴다.
 abstract final class AppTheme {
   /// 번들 고딕 글꼴 이름(pubspec.yaml의 family).
   static const String sansFamily = 'Pretendard';
 
-  /// 브랜드 시드(테라코타). 두 모드의 모든 색 역할이 여기서 나온다.
-  static const Color seedColor = Color(0xFFC2613E);
+  /// 브랜드 색(짙은 갈색). 밝은 구성의 primary 다.
+  static const Color seedColor = Color(0xFF5F3419);
 
-  /// 3차(tertiary) 역할의 시드(골드).
+  /// 금색(장식·강조)의 기준 색.
   static const Color tertiarySeedColor = Color(0xFFC9A04A);
 
   /// 카드 모서리(M3 medium). 성당 화면 등 외부에서 참조하므로 유지한다.
@@ -95,41 +154,105 @@ abstract final class AppTheme {
   /// 화면 하단 '기도 시작' 같은 주 행동 버튼의 높이(M3 큰 버튼, 8dp 격자).
   static const double largeButtonHeight = 56;
 
-  /// 시드에서 만든 M3 색 구성(tonalSpot). 테라코타 시드의 primary/secondary/neutral에
-  /// 골드(tertiary) 시드의 같은 톤 역할을 얹는다.
-  ///
-  /// 문서화된 유일한 덮어쓰기: tertiary 4개 역할. 골드 시드도 tonalSpot의
-  /// primary 톤 쌍(40/100, 90/10 등)을 그대로 가져오므로 대비 관계가 유지된다.
+  /// 앱 고유 색 구성(위 역할표).
   static ColorScheme seedScheme(Brightness brightness) =>
       brightness == Brightness.dark ? _seedDark : _seedLight;
 
-  // 시드 구성은 입력이 상수라 한 번만 계산한다(ColorScheme.fromSeed ×2는 싸지 않다).
-  static final ColorScheme _seedLight = _computeSeedScheme(Brightness.light);
-  static final ColorScheme _seedDark = _computeSeedScheme(Brightness.dark);
+  static const ColorScheme _seedLight = ColorScheme(
+    brightness: Brightness.light,
+    primary: Color(0xFF5F3419),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: Color(0xFFF6DCC0),
+    onPrimaryContainer: Color(0xFF3D1C05),
+    secondary: Color(0xFF6E543E),
+    onSecondary: Color(0xFFFFFFFF),
+    secondaryContainer: Color(0xFFEFD9BE),
+    onSecondaryContainer: Color(0xFF33200F),
+    tertiary: Color(0xFF765300),
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0xFFFBDF9F),
+    onTertiaryContainer: Color(0xFF2F2100),
+    error: Color(0xFFBA1A1A),
+    onError: Color(0xFFFFFFFF),
+    errorContainer: Color(0xFFFFDAD6),
+    onErrorContainer: Color(0xFF410002),
+    surface: Color(0xFFFBF2E8),
+    onSurface: Color(0xFF2B1B11),
+    onSurfaceVariant: Color(0xFF5B4634),
+    surfaceDim: Color(0xFFDED0BE),
+    surfaceBright: Color(0xFFFFF9F2),
+    surfaceContainerLowest: Color(0xFFFFFCF8),
+    surfaceContainerLow: Color(0xFFF7EDE1),
+    surfaceContainer: Color(0xFFF3E8DA),
+    surfaceContainerHigh: Color(0xFFEEE2D3),
+    surfaceContainerHighest: Color(0xFFE8DBCA),
+    outline: Color(0xFF8A7159),
+    outlineVariant: Color(0xFFDCC3A1),
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    inverseSurface: Color(0xFF3A2E27),
+    onInverseSurface: Color(0xFFFCEEE2),
+    inversePrimary: Color(0xFFEAC261),
+    surfaceTint: Color(0xFF5F3419),
+  );
 
-  static ColorScheme _computeSeedScheme(Brightness brightness) {
-    ColorScheme from(Color seed) => ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: brightness,
-      dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-    );
-    final base = from(seedColor);
-    final gold = from(tertiarySeedColor);
-    return base.copyWith(
-      tertiary: gold.primary,
-      onTertiary: gold.onPrimary,
-      tertiaryContainer: gold.primaryContainer,
-      onTertiaryContainer: gold.onPrimaryContainer,
-    );
-  }
+  static const ColorScheme _seedDark = ColorScheme(
+    brightness: Brightness.dark,
+    primary: Color(0xFFE7C46C),
+    onPrimary: Color(0xFF3B2C00),
+    primaryContainer: Color(0xFF564209),
+    onPrimaryContainer: Color(0xFFFFE29B),
+    secondary: Color(0xFFDFC29C),
+    onSecondary: Color(0xFF3F2D12),
+    secondaryContainer: Color(0xFF543E23),
+    onSecondaryContainer: Color(0xFFFBDEB6),
+    tertiary: Color(0xFFF1B36E),
+    onTertiary: Color(0xFF482A00),
+    tertiaryContainer: Color(0xFF663E08),
+    onTertiaryContainer: Color(0xFFFFDDB7),
+    error: Color(0xFFFFB4AB),
+    onError: Color(0xFF690005),
+    errorContainer: Color(0xFF93000A),
+    onErrorContainer: Color(0xFFFFDAD6),
+    surface: Color(0xFF1E130D),
+    onSurface: Color(0xFFF4E6D5),
+    onSurfaceVariant: Color(0xFFD8C3AB),
+    surfaceDim: Color(0xFF1E130D),
+    surfaceBright: Color(0xFF4A3A32),
+    surfaceContainerLowest: Color(0xFF160C07),
+    surfaceContainerLow: Color(0xFF241913),
+    surfaceContainer: Color(0xFF2B1F19),
+    surfaceContainerHigh: Color(0xFF342720),
+    surfaceContainerHighest: Color(0xFF403229),
+    outline: Color(0xFFA89378),
+    outlineVariant: Color(0xFF5C482F),
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    inverseSurface: Color(0xFFF5E6D5),
+    onInverseSurface: Color(0xFF362922),
+    inversePrimary: Color(0xFF765300),
+    surfaceTint: Color(0xFFE7C46C),
+  );
+
+  /// 장식 금색(밝게/어둡게). [AppDecor.gold].
+  static const Color _goldLight = Color(0xFFAE7A13);
+  static const Color _goldDark = Color(0xFFE7C46C);
 
   /// 밝은/어두운 테마. [dynamicScheme]이 있으면(기기 배경화면 색, Material You)
   /// 시드 구성 대신 그 구성을 쓴다. 호출자가 미리 `harmonized()`를 적용해 넘긴다.
   /// [font]가 고딕이면 앱 전체 글꼴이 Pretendard, 시스템이면 기기 글꼴이다.
+  ///
+  /// [chromeScheme]은 밝은 테마의 내비게이션(레일·하단 바)이 쓸 어두운 구성이다. 없으면 앱 고유
+  /// 어두운 구성(기기 색을 쓸 때는 기기의 어두운 구성을 넘긴다).
   static ThemeData light({
     ColorScheme? dynamicScheme,
+    ColorScheme? chromeScheme,
     PrayerFont font = PrayerFont.gothic,
-  }) => _build(dynamicScheme ?? seedScheme(Brightness.light), font);
+  }) => _build(
+    dynamicScheme ?? seedScheme(Brightness.light),
+    font,
+    chromeScheme ?? seedScheme(Brightness.dark),
+  );
 
   static ThemeData dark({
     ColorScheme? dynamicScheme,
@@ -142,6 +265,27 @@ abstract final class AppTheme {
     ColorScheme scheme, [
     PrayerFont font = PrayerFont.gothic,
   ]) => _build(scheme, font);
+
+  /// [context] 테마의 내비게이션(레일·하단 바)용 테마: 밝은 테마에서도 어두운 갈색 구성
+  /// ([AppDecor.chrome])을 쓰는 같은 M3 테마. 어두운 테마에서는 앱 테마 그대로다.
+  static ThemeData chromeOf(BuildContext context) {
+    final theme = Theme.of(context);
+    final chrome = AppDecor.of(context).chrome;
+    if (chrome == theme.colorScheme) return theme;
+    final family = theme.textTheme.bodyMedium?.fontFamily;
+    return _build(
+      chrome,
+      family == sansFamily ? PrayerFont.gothic : PrayerFont.system,
+    );
+  }
+
+  /// 화면의 주 행동(입장하기 등) 큰 버튼: 56dp + 가는 금색 테두리([AppDecor.gold]).
+  static ButtonStyle heroButtonStyle(BuildContext context) =>
+      FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(largeButtonHeight),
+        textStyle: Theme.of(context).textTheme.titleMedium,
+        side: BorderSide(color: AppDecor.of(context).gold),
+      );
 
   /// [font]에 해당하는 글꼴 이름. 시스템이면 null(기기 기본 글꼴).
   static String? familyOf(PrayerFont font) =>
@@ -193,10 +337,23 @@ abstract final class AppTheme {
     ColorScheme scheme, [
     PrayerFont font = PrayerFont.gothic,
   ]) {
-    return Typography.dense2021.apply(
+    final base = Typography.dense2021.apply(
       fontFamily: familyOf(font),
       displayColor: scheme.onSurface,
       bodyColor: scheme.onSurface,
+    );
+    // 제목(display·headline·titleLarge)만 굵고 촘촘하게: 시안의 붓글씨 제목 느낌을 새 글꼴 없이
+    // 굵기·자간으로 낸다. 크기·행간은 M3 타입 스케일 그대로다.
+    TextStyle? heavy(TextStyle? s, FontWeight w, double spacing) =>
+        s?.copyWith(fontWeight: w, letterSpacing: spacing);
+    return base.copyWith(
+      displayLarge: heavy(base.displayLarge, FontWeight.w700, -1),
+      displayMedium: heavy(base.displayMedium, FontWeight.w700, -0.75),
+      displaySmall: heavy(base.displaySmall, FontWeight.w700, -0.5),
+      headlineLarge: heavy(base.headlineLarge, FontWeight.w700, -0.5),
+      headlineMedium: heavy(base.headlineMedium, FontWeight.w700, -0.5),
+      headlineSmall: heavy(base.headlineSmall, FontWeight.w700, -0.25),
+      titleLarge: heavy(base.titleLarge, FontWeight.w600, -0.25),
     );
   }
 
@@ -206,26 +363,48 @@ abstract final class AppTheme {
   /// 새 [ThemeData]를 만들면 내용이 같아도 `==`가 false라(상태별 콜백 객체가 매번 새로 생김)
   /// MaterialApp의 AnimatedTheme이 200ms 동안 매 프레임 `ThemeData.lerp` + 앱 전체 리빌드를
   /// 돌린다. 같은 색 구성에는 같은 인스턴스를 돌려주어 그 일을 없앤다.
-  static final Map<(ColorScheme, PrayerFont), ThemeData> _themeCache = {};
+  static final Map<(ColorScheme, PrayerFont, ColorScheme?), ThemeData>
+  _themeCache = {};
 
-  static ThemeData _build(ColorScheme scheme, PrayerFont font) {
-    final key = (scheme, font);
+  static ThemeData _build(
+    ColorScheme scheme,
+    PrayerFont font, [
+    ColorScheme? chrome,
+  ]) {
+    // 어두운 구성은 내비게이션도 자기 구성을 쓴다.
+    final nav = scheme.brightness == Brightness.dark ? null : chrome;
+    final key = (scheme, font, nav);
     final cached = _themeCache[key];
     if (cached != null) return cached;
     // 기기 색(배경화면)이나 글꼴이 바뀔 때만 새 항목이 생긴다. 쌓이지 않게 조금만 둔다.
     if (_themeCache.length >= 12) _themeCache.clear();
-    return _themeCache[key] = _buildUncached(scheme, font);
+    return _themeCache[key] = _buildUncached(scheme, font, nav);
   }
 
-  static ThemeData _buildUncached(ColorScheme scheme, PrayerFont font) {
+  static ThemeData _buildUncached(
+    ColorScheme scheme,
+    PrayerFont font,
+    ColorScheme? chrome,
+  ) {
     final text = textTheme(scheme, font);
     final overlay = systemOverlayStyle(scheme.brightness);
+    final dark = scheme.brightness == Brightness.dark;
+    // 장식 금색: 앱 고유 구성이면 정해 둔 금색, 그 밖(기기 색·화면 한정 구성)이면 그 구성의 강조색.
+    final gold = identical(scheme, _seedLight)
+        ? _goldLight
+        : identical(scheme, _seedDark)
+        ? _goldDark
+        : (dark ? scheme.primary : scheme.tertiary);
+    final decor = AppDecor(gold: gold, chrome: chrome ?? scheme);
+    // 내비게이션 표시기: 가는 금색 테두리의 알약.
+    final indicator = StadiumBorder(side: BorderSide(color: gold));
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       fontFamily: familyOf(font),
       textTheme: text,
+      extensions: [decor],
       // 키보드/마우스 상태 레이어(M3: hover 8%, focus 10%, pressed 10%).
       hoverColor: scheme.onSurface.withValues(alpha: 0.08),
       focusColor: scheme.onSurface.withValues(alpha: 0.10),
@@ -297,8 +476,25 @@ abstract final class AppTheme {
               : null,
         ),
       ),
-      segmentedButtonTheme: const SegmentedButtonThemeData(
-        selectedIcon: Icon(Icons.check),
+      // 세그먼트: 선택된 쪽은 primary 채움(밝게: 짙은 갈색, 어둡게: 금색).
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        selectedIcon: const Icon(Icons.check),
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) =>
+                states.contains(WidgetState.selected) &&
+                    !states.contains(WidgetState.disabled)
+                ? scheme.primary
+                : null,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? null
+                : states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : scheme.onSurface,
+          ),
+        ),
       ),
       // M3(2024) 슬라이더·진행 표시줄: 핸들형 thumb, 트랙 간격, 끝 점.
       // year2023 플래그는 SDK에서 deprecated이지만 기본값이 아직 true라서(3.47)
@@ -316,9 +512,12 @@ abstract final class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStatePropertyAll(text.labelMedium),
+        indicatorShape: indicator,
       ),
       navigationRailTheme: NavigationRailThemeData(
-        indicatorShape: AppShape.full,
+        // 하단 바와 같은 표면(surfaceContainer)을 써서 두 내비게이션이 한 모습이 되게 한다.
+        backgroundColor: scheme.surfaceContainer,
+        indicatorShape: indicator,
         selectedLabelTextStyle: text.labelMedium?.copyWith(
           color: scheme.onSurface,
         ),

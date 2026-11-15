@@ -1,0 +1,1544 @@
+{
+ "schema": "rosarium.glass_windows.plan/1",
+ "church": "myeongdong",
+ "name_ko": "명동대성당",
+ "generated": "2026-11-15",
+ "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "release_approved": false,
+ "classes": {
+  "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
+  "b": "벽은 있으나 창이 없거나 형태가 달라 뚫어야/고쳐야 함",
+  "c": "건축 부분 자체가 모델에 없음",
+  "d": "위치 미확정 → QA 갤러리 전용",
+  "e": "실제로 그림 유리가 아님(무색/설화석고/맹창)"
+ },
+ "coordinate_system": {
+  "units": "앱 m (= 실제 m × 1)",
+  "scalePercent": 100,
+  "altar": "-z (남남동)",
+  "entrance": "+z (북북서)",
+  "plusX": "서남서(오른쪽 R)",
+  "minusX": "동북동(왼쪽 L)",
+  "summary": "입구 +z(북북서) → 제대 -z(남남동). 제대를 볼 때 오른쪽 R = +x = 서남서, 왼쪽 L = -x = 동북동. 근거: interiors/myeongdong.md §2(서울신문: 입구 북북서) · 210행 \"+x(서남서)\".",
+  "bounds": {
+   "x0": -13.5,
+   "x1": 13.5,
+   "z0": -25,
+   "z1": 31.5
+  },
+  "spawn": {
+   "x": 0,
+   "z": 27.5,
+   "r": 0
+  },
+  "plate_convention": "x,y,z = 유리 평면 가운데(y 는 개구부 중심), yawDeg = atan2(nx, nz) (판 +Z 가 실내를 봄), u 는 실내에서 볼 때 왼→오"
+ },
+ "model": {
+  "tool": "node tools/church_web/church_openings.mjs myeongdong --json",
+  "opening_count": 52,
+  "window_count": 52,
+  "photo_slot_count": 0,
+  "by_zone": {
+   "facade": 3,
+   "apse": 5,
+   "transept_end": 2,
+   "transept_upper": 8,
+   "aisle": 12,
+   "aisle_chancel": 4,
+   "clerestory": 14,
+   "clerestory_chancel": 4
+  },
+  "openings": [
+   {
+    "key": "facade_rose",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "circle",
+    "x": 0,
+    "y": 13.2,
+    "z": 31.8,
+    "yawDeg": 180,
+    "w": 2.88,
+    "h": 2.88,
+    "sill": 11.76,
+    "aspect": 1,
+    "real_m": [
+     2.88,
+     2.88
+    ],
+    "glass_now": "절차적 색유리 · rose12",
+    "photo": null
+   },
+   {
+    "key": "facadeSideL",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -6.75,
+    "y": 6.44,
+    "z": 31.695,
+    "yawDeg": 180,
+    "w": 1.16,
+    "h": 2.08,
+    "sill": 5.4,
+    "aspect": 0.558,
+    "real_m": [
+     1.16,
+     2.08
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "facadeSideR",
+    "zone": "facade",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 6.75,
+    "y": 6.44,
+    "z": 31.695,
+    "yawDeg": 180,
+    "w": 1.16,
+    "h": 2.08,
+    "sill": 5.4,
+    "aspect": 0.558,
+    "real_m": [
+     1.16,
+     2.08
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "apse_C",
+    "zone": "apse",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 0,
+    "y": 10.64,
+    "z": -31.97,
+    "yawDeg": 0,
+    "w": 1.46,
+    "h": 7.68,
+    "sill": 6.8,
+    "aspect": 0.19,
+    "real_m": [
+     1.46,
+     7.68
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "apse_L1",
+    "zone": "apse",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -2.92,
+    "y": 10.19,
+    "z": -31.024,
+    "yawDeg": 35.92,
+    "w": 1.26,
+    "h": 6.78,
+    "sill": 6.8,
+    "aspect": 0.186,
+    "real_m": [
+     1.26,
+     6.78
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "apse_L2",
+    "zone": "apse",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -4.727,
+    "y": 10.19,
+    "z": -28.538,
+    "yawDeg": 72.02,
+    "w": 1.26,
+    "h": 6.78,
+    "sill": 6.8,
+    "aspect": 0.186,
+    "real_m": [
+     1.26,
+     6.78
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "apse_R1",
+    "zone": "apse",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 2.92,
+    "y": 10.19,
+    "z": -31.024,
+    "yawDeg": -35.92,
+    "w": 1.26,
+    "h": 6.78,
+    "sill": 6.8,
+    "aspect": 0.186,
+    "real_m": [
+     1.26,
+     6.78
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "apse_R2",
+    "zone": "apse",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 4.727,
+    "y": 10.19,
+    "z": -28.538,
+    "yawDeg": -72.02,
+    "w": 1.26,
+    "h": 6.78,
+    "sill": 6.8,
+    "aspect": 0.186,
+    "real_m": [
+     1.26,
+     6.78
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trEndL",
+    "zone": "transept_end",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -14.194,
+    "y": 10.015,
+    "z": -10.5,
+    "yawDeg": 90,
+    "w": 3.66,
+    "h": 9.03,
+    "sill": 5.5,
+    "aspect": 0.405,
+    "real_m": [
+     3.66,
+     9.03
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trEndR",
+    "zone": "transept_end",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 14.194,
+    "y": 10.015,
+    "z": -10.5,
+    "yawDeg": -90,
+    "w": 3.66,
+    "h": 9.03,
+    "sill": 5.5,
+    "aspect": 0.405,
+    "real_m": [
+     3.66,
+     9.03
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trInL_back",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -6.75,
+    "y": 12.19,
+    "z": -15.695,
+    "yawDeg": 0,
+    "w": 1.16,
+    "h": 4.38,
+    "sill": 10,
+    "aspect": 0.265,
+    "real_m": [
+     1.16,
+     4.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trInL_front",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -6.75,
+    "y": 12.19,
+    "z": -5.305,
+    "yawDeg": 180,
+    "w": 1.16,
+    "h": 4.38,
+    "sill": 10,
+    "aspect": 0.265,
+    "real_m": [
+     1.16,
+     4.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trInR_back",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 6.75,
+    "y": 12.19,
+    "z": -15.695,
+    "yawDeg": 0,
+    "w": 1.16,
+    "h": 4.38,
+    "sill": 10,
+    "aspect": 0.265,
+    "real_m": [
+     1.16,
+     4.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trInR_front",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 6.75,
+    "y": 12.19,
+    "z": -5.305,
+    "yawDeg": 180,
+    "w": 1.16,
+    "h": 4.38,
+    "sill": 10,
+    "aspect": 0.265,
+    "real_m": [
+     1.16,
+     4.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trUpL_back",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -11.25,
+    "y": 13.99,
+    "z": -15.695,
+    "yawDeg": 0,
+    "w": 1.36,
+    "h": 3.98,
+    "sill": 12,
+    "aspect": 0.342,
+    "real_m": [
+     1.36,
+     3.98
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trUpL_front",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -11.25,
+    "y": 13.99,
+    "z": -5.305,
+    "yawDeg": 180,
+    "w": 1.36,
+    "h": 3.98,
+    "sill": 12,
+    "aspect": 0.342,
+    "real_m": [
+     1.36,
+     3.98
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trUpR_back",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 11.25,
+    "y": 13.99,
+    "z": -15.695,
+    "yawDeg": 0,
+    "w": 1.36,
+    "h": 3.98,
+    "sill": 12,
+    "aspect": 0.342,
+    "real_m": [
+     1.36,
+     3.98
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "trUpR_front",
+    "zone": "transept_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 11.25,
+    "y": 13.99,
+    "z": -5.305,
+    "yawDeg": 180,
+    "w": 1.36,
+    "h": 3.98,
+    "sill": 12,
+    "aspect": 0.342,
+    "real_m": [
+     1.36,
+     3.98
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_n1",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": 21.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_n2",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": 16.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_n3",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": 11.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_n4",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": 6.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_n5",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": 1.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_n6",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": -3.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_n1",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": 21.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_n2",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": 16.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_n3",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": 11.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_n4",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": 6.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_n5",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": 1.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_n6",
+    "zone": "aisle",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": -3.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_s1",
+    "zone": "aisle_chancel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": -17.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleL_s2",
+    "zone": "aisle_chancel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -9.695,
+    "y": 4.69,
+    "z": -22.5,
+    "yawDeg": 90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_s1",
+    "zone": "aisle_chancel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": -17.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "aisleR_s2",
+    "zone": "aisle_chancel",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 9.695,
+    "y": 4.69,
+    "z": -22.5,
+    "yawDeg": -90,
+    "w": 1.36,
+    "h": 3.38,
+    "sill": 3,
+    "aspect": 0.402,
+    "real_m": [
+     1.36,
+     3.38
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n0",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": 27.75,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n1",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": 21.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n2",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": 16.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n3",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": 11.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n4",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": 6.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n5",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": 1.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_n6",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": -3.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n0",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": 27.75,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n1",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": 21.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n2",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": 16.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n3",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": 11.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n4",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": 6.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n5",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": 1.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_n6",
+    "zone": "clerestory",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": -3.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_s1",
+    "zone": "clerestory_chancel",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": -17.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereL_s2",
+    "zone": "clerestory_chancel",
+    "kind": "window",
+    "shape": "round",
+    "x": -4.745,
+    "y": 14.136,
+    "z": -22.5,
+    "yawDeg": 90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_s1",
+    "zone": "clerestory_chancel",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": -17.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   },
+   {
+    "key": "clereR_s2",
+    "zone": "clerestory_chancel",
+    "kind": "window",
+    "shape": "round",
+    "x": 4.745,
+    "y": 14.136,
+    "z": -22.5,
+    "yawDeg": -90,
+    "w": 1.53,
+    "h": 4.271,
+    "sill": 12,
+    "aspect": 0.358,
+    "real_m": [
+     1.53,
+     4.27
+    ],
+    "glass_now": "절차적 색유리",
+    "photo": null
+   }
+  ]
+ },
+ "real_windows": [
+  {
+   "id": "MD-A1",
+   "zone": "apse",
+   "position_ko": "후진(제대 뒤) 다섯 긴 창 중 맨 왼쪽",
+   "subject_ko": "묵주기도 15단(환희·고통·영광의 신비) — 창 하나에 세 장면",
+   "subject_orig": "Rosaire, 15 mystères",
+   "designer": "제스타 공방(GESTA Frères 서명; 툴루즈 제작은 추정)",
+   "date": "1898년 축성 무렵",
+   "shape": "첨두 랜싯(원형 장면 3)",
+   "picture": true,
+   "confidence": "high(다섯 창·15단) / none(어느 창에 어느 신비)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
+    "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "apse_L2"
+   ],
+   "scene_order_unconfirmed": true,
+   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "free_photos": [],
+   "reference_photos": [
+    "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
+    "Myeongdong Cathedral in Seoul.jpg (CC BY 4.0, 원경)"
+   ],
+   "placeholder": "ai_sheet:myeongdong-A",
+   "release_approved": false
+  },
+  {
+   "id": "MD-A2",
+   "zone": "apse",
+   "position_ko": "후진(제대 뒤) 다섯 긴 창 중 왼쪽에서 둘째",
+   "subject_ko": "묵주기도 15단(환희·고통·영광의 신비) — 창 하나에 세 장면",
+   "subject_orig": "Rosaire, 15 mystères",
+   "designer": "제스타 공방(GESTA Frères 서명; 툴루즈 제작은 추정)",
+   "date": "1898년 축성 무렵",
+   "shape": "첨두 랜싯(원형 장면 3)",
+   "picture": true,
+   "confidence": "high(다섯 창·15단) / none(어느 창에 어느 신비)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
+    "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "apse_L1"
+   ],
+   "scene_order_unconfirmed": true,
+   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "free_photos": [],
+   "reference_photos": [
+    "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
+    "Myeongdong Cathedral in Seoul.jpg (CC BY 4.0, 원경)"
+   ],
+   "placeholder": "ai_sheet:myeongdong-A",
+   "release_approved": false
+  },
+  {
+   "id": "MD-A3",
+   "zone": "apse",
+   "position_ko": "후진(제대 뒤) 다섯 긴 창 중 가운데",
+   "subject_ko": "묵주기도 15단(환희·고통·영광의 신비) — 창 하나에 세 장면",
+   "subject_orig": "Rosaire, 15 mystères",
+   "designer": "제스타 공방(GESTA Frères 서명; 툴루즈 제작은 추정)",
+   "date": "1898년 축성 무렵",
+   "shape": "첨두 랜싯(원형 장면 3)",
+   "picture": true,
+   "confidence": "high(다섯 창·15단) / none(어느 창에 어느 신비)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
+    "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "apse_C"
+   ],
+   "scene_order_unconfirmed": true,
+   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "free_photos": [],
+   "reference_photos": [
+    "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
+    "Myeongdong Cathedral in Seoul.jpg (CC BY 4.0, 원경)"
+   ],
+   "placeholder": "ai_sheet:myeongdong-A",
+   "release_approved": false
+  },
+  {
+   "id": "MD-A4",
+   "zone": "apse",
+   "position_ko": "후진(제대 뒤) 다섯 긴 창 중 오른쪽에서 둘째",
+   "subject_ko": "묵주기도 15단(환희·고통·영광의 신비) — 창 하나에 세 장면",
+   "subject_orig": "Rosaire, 15 mystères",
+   "designer": "제스타 공방(GESTA Frères 서명; 툴루즈 제작은 추정)",
+   "date": "1898년 축성 무렵",
+   "shape": "첨두 랜싯(원형 장면 3)",
+   "picture": true,
+   "confidence": "high(다섯 창·15단) / none(어느 창에 어느 신비)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
+    "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "apse_R1"
+   ],
+   "scene_order_unconfirmed": true,
+   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "free_photos": [],
+   "reference_photos": [
+    "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
+    "Myeongdong Cathedral in Seoul.jpg (CC BY 4.0, 원경)"
+   ],
+   "placeholder": "ai_sheet:myeongdong-A",
+   "release_approved": false
+  },
+  {
+   "id": "MD-A5",
+   "zone": "apse",
+   "position_ko": "후진(제대 뒤) 다섯 긴 창 중 맨 오른쪽",
+   "subject_ko": "묵주기도 15단(환희·고통·영광의 신비) — 창 하나에 세 장면",
+   "subject_orig": "Rosaire, 15 mystères",
+   "designer": "제스타 공방(GESTA Frères 서명; 툴루즈 제작은 추정)",
+   "date": "1898년 축성 무렵",
+   "shape": "첨두 랜싯(원형 장면 3)",
+   "picture": true,
+   "confidence": "high(다섯 창·15단) / none(어느 창에 어느 신비)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
+    "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "apse_R2"
+   ],
+   "scene_order_unconfirmed": true,
+   "match_note": "모델도 후진 5창(1.26×6.78m, 가운데 1.46×7.68m)이고 지금도 \"원형 장면 3개\" 절차적 유리(medal)다. 신비의 배열(어느 창이 환희/고통/영광인지)은 확인 못 함 → 시안에는 창 번호만 적고 장면 이름을 확정하지 않는다",
+   "free_photos": [],
+   "reference_photos": [
+    "20241221 명동성당.jpg (CC BY 4.0, 신랑 원경 — 창이 작게 보임)",
+    "Myeongdong Cathedral in Seoul.jpg (CC BY 4.0, 원경)"
+   ],
+   "placeholder": "ai_sheet:myeongdong-A",
+   "release_approved": false
+  },
+  {
+   "id": "MD-T1",
+   "zone": "transept_end",
+   "position_ko": "왼쪽 익랑 끝 벽 큰 창(제대 왼쪽, 79위 복자화 위)",
+   "subject_ko": "예수 성탄과 동방 박사들의 경배",
+   "designer": "제스타 공방(추정)",
+   "date": "1898년 무렵",
+   "shape": "첨두 큰 창",
+   "picture": true,
+   "confidence": "medium(좌우는 개인 글 한 곳; 뉴시스는 \"트란셉트 양쪽에 각각\")",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "trEndL"
+   ],
+   "match_note": "모델 3.66×9.03m",
+   "free_photos": [],
+   "placeholder": "ai_sheet:myeongdong-B",
+   "release_approved": false
+  },
+  {
+   "id": "MD-T2",
+   "zone": "transept_end",
+   "position_ko": "오른쪽 익랑 끝 벽 큰 창(주제대 오른편)",
+   "subject_ko": "예수님과 열두 사도",
+   "designer": "제스타 공방(추정)",
+   "date": "1898년 무렵",
+   "shape": "첨두 큰 창",
+   "picture": true,
+   "confidence": "medium(같은 근거)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://en.wikipedia.org/wiki/Myeongdong_Cathedral"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "trEndR"
+   ],
+   "match_note": "모델 3.66×9.03m",
+   "free_photos": [],
+   "placeholder": "ai_sheet:myeongdong-B",
+   "release_approved": false
+  },
+  {
+   "id": "MD-E1",
+   "zone": "entrance",
+   "position_ko": "입구 위쪽(가운데 문 위 첨두 반월창 — korea.net 사진 \"Korea Myeongdong Cathedral 06.jpg\" 에서 요한 바오로 2세 부조 옆 문 위)",
+   "subject_ko": "「제44차 세계 성체대회 기념」(추상 색면 + 성체)",
+   "designer": "이남규(1931–1993)",
+   "date": "1989",
+   "shape": "첨두 반월(팀파눔)",
+   "picture": true,
+   "confidence": "medium(작품·작가·연도: 뉴시스 / 위치: 사진 판독)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://commons.wikimedia.org/wiki/File:Korea_Myeongdong_Cathedral_06.jpg (CC BY-SA 2.0, 썸네일로 확인)",
+    "https://www.munhwa.com/article/11334240 (이남규 1931–1993)"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 가운데 문 위에는 유리가 없다(정면에는 장미창 1 + 측랑 끝 작은 첨두창 2). 문 위 팀파눔을 유리로 바꿔야 함",
+   "rights_block": "저작권 존속(한국 사후 70년 → 2063년 말). 시안은 원작을 흉내 내지 않는 중립 무늬로만",
+   "free_photos": [],
+   "placeholder": "procedural_tint(권리 때문에 그림 시안 보류)",
+   "release_approved": false
+  },
+  {
+   "id": "MD-N",
+   "count": 12,
+   "zone": "aisle",
+   "position_ko": "양쪽 측랑 벽 \"신자석 창\"(칸마다)",
+   "subject_ko": "무늬창(꽃 모양 장식, 인물 없음)",
+   "designer": "제스타 공방(추정)",
+   "date": "1898년 무렵",
+   "shape": "첨두(쌍창 + 위 원창으로 보임)",
+   "picture": true,
+   "ornamental": true,
+   "confidence": "medium(존재: 뉴시스 \"양측 회랑을 따라 유리화 신자석 창\" · 개인 글 \"꽃 모양\" / 개수·분할: 미확인)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "https://commons.wikimedia.org/wiki/File:Western_Aisle_of_Myeongdong_Cathedral.jpg (CC BY-SA 4.0, 썸네일)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "aisleL_n1",
+    "aisleL_n2",
+    "aisleL_n3",
+    "aisleL_n4",
+    "aisleL_n5",
+    "aisleL_n6",
+    "aisleR_n1",
+    "aisleR_n2",
+    "aisleR_n3",
+    "aisleR_n4",
+    "aisleR_n5",
+    "aisleR_n6"
+   ],
+   "match_note": "모델 측랑 창 6칸×2(1.36×3.38m, 절차적 twin 양식). 실제 개수는 모델 칸 수로만 셌다",
+   "free_photos": [],
+   "placeholder": "ai_sheet:myeongdong-C (무늬 2~3종 반복)",
+   "release_approved": false
+  },
+  {
+   "id": "MD-CL",
+   "count": 14,
+   "zone": "clerestory",
+   "position_ko": "고측창(\"광창\"), 칸마다",
+   "subject_ko": "무늬 색유리(주제 미확인)",
+   "date": "1898년 무렵",
+   "shape": "첨두",
+   "picture": true,
+   "ornamental": true,
+   "confidence": "low(존재: 뉴시스·서울신문 / 무늬·개수 미확인)",
+   "sources": [
+    "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)"
+   ],
+   "cls": "a",
+   "opening_keys": [
+    "clereL_n0",
+    "clereL_n1",
+    "clereL_n2",
+    "clereL_n3",
+    "clereL_n4",
+    "clereL_n5",
+    "clereL_n6",
+    "clereR_n0",
+    "clereR_n1",
+    "clereR_n2",
+    "clereR_n3",
+    "clereR_n4",
+    "clereR_n5",
+    "clereR_n6"
+   ],
+   "match_note": "모델 고측창(1.53×4.27m). 높이 12m 위라 멀리서만 보인다",
+   "free_photos": [],
+   "placeholder": "ai_sheet:myeongdong-C 또는 procedural_tint",
+   "release_approved": false
+  },
+  {
+   "id": "MD-S1",
+   "count": 2,
+   "zone": "aisle_end",
+   "position_ko": "측랑 제대 쪽 끝 벽의 작은 장미창(서쪽 측랑은 사진으로 확인, 동쪽은 대칭 추정)",
+   "subject_ko": "장미 무늬(인물 없음)",
+   "shape": "작은 원형 장미창",
+   "picture": true,
+   "ornamental": true,
+   "confidence": "medium(서쪽: Commons 사진 판독) / low(동쪽)",
+   "sources": [
+    "https://commons.wikimedia.org/wiki/File:Western_Aisle_of_Myeongdong_Cathedral.jpg"
+   ],
+   "cls": "b",
+   "opening_keys": [],
+   "match_note": "모델의 측랑 끝 벽(z ≈ -25)에는 창이 없다",
+   "free_photos": [],
+   "placeholder": "ai_sheet:myeongdong-C",
+   "release_approved": false
+  },
+  {
+   "id": "MD-R1",
+   "zone": "facade",
+   "position_ko": "\"성가대석 아래·중앙문 위 장미창\"(개인 글) — 종탑이 정면 중앙이라 실제 위치·존재를 확인 못 함. MD-E1(문 위 반월창)을 가리킨 말일 수 있다",
+   "subject_ko": "장미 무늬",
+   "shape": "원형?",
+   "picture": true,
+   "confidence": "low",
+   "sources": [
+    "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+    "docs/church/interiors/myeongdong.md 266행"
+   ],
+   "cls": "d",
+   "opening_keys": [],
+   "match_note": "모델의 정면 장미창(facade_rose, 지름 2.88m, 높이 13.2m)은 \"제안값\"이다 — 실제 대응 미확정",
+   "free_photos": [],
+   "placeholder": "QA 갤러리",
+   "release_approved": false
+  }
+ ],
+ "real_counts": {
+  "picture_windows": "도상 창 8(후진 5 + 익랑 2 + 이남규 1) + 무늬 색유리(측랑·고측창·측랑 끝 장미, 개수 미확인)",
+  "by_class": {
+   "a": 33,
+   "b": 3,
+   "c": 0,
+   "d": 1,
+   "e": 0
+  }
+ },
+ "model_openings_without_real_picture_window": [
+  {
+   "keys": [
+    "facade_rose"
+   ],
+   "cls": "d",
+   "note": "정면 장미창: 실제 대응 미확정(MD-R1)"
+  },
+  {
+   "keys": [
+    "facadeSideL",
+    "facadeSideR"
+   ],
+   "cls": "d",
+   "note": "정면 측랑 끝 작은 첨두창 2: 실제 확인 못 함"
+  },
+  {
+   "keys": [
+    "trUpL_front",
+    "trUpL_back",
+    "trUpR_front",
+    "trUpR_back",
+    "trInL_front",
+    "trInL_back",
+    "trInR_front",
+    "trInR_back"
+   ],
+   "cls": "d",
+   "note": "익랑 윗벽 창 8: 실제 확인 못 함(고측창의 연장으로 보이나 근거 없음)"
+  },
+  {
+   "keys": [
+    "aisleL_s1",
+    "aisleL_s2",
+    "aisleR_s1",
+    "aisleR_s2",
+    "clereL_s1",
+    "clereL_s2",
+    "clereR_s1",
+    "clereR_s2"
+   ],
+   "cls": "d",
+   "note": "성단 칸의 측랑 창 4·고측창 4: 실제 확인 못 함"
+  }
+ ],
+ "sourcing": {
+  "free_license_windows": 0,
+  "detail": "Commons 에 명동 스테인드글라스 범주가 없다. 실내 원경 2장(CC BY 4.0)은 창이 작게 찍힌 참고용",
+  "sa_only": "korea.net 3장(CC BY-SA 2.0; 그중 06 이 이남규 창), Ethan Doyle White 3장(CC BY-SA 4.0) — 모두 창의 일부·원경",
+  "none": "전부 시안 필요"
+ },
+ "work_items": [
+  {
+   "what": "후진 5창·익랑 끝 2창에 시안(지금 개구부 그대로)",
+   "effort": "작음",
+   "risk": "신비 배열 미확정, 좌우는 단일 출처"
+  },
+  {
+   "what": "측랑 12·고측창 14 에 무늬 시안(2~3종 반복) 또는 절차적 무늬 유지",
+   "effort": "작음",
+   "risk": "반복 표시 필요"
+  },
+  {
+   "what": "가운데 문 위 팀파눔을 유리로(이남규 창 자리)",
+   "effort": "작음~중간(정면 벽 수정)",
+   "risk": "저작권(그림 시안 금지), 정면 구성 미확인"
+  },
+  {
+   "what": "측랑 끝 벽에 작은 장미창 2",
+   "effort": "작음",
+   "risk": "동쪽은 추정"
+  },
+  {
+   "what": "정면 장미창·측면 작은 창·익랑 윗창·성단 칸 창(18개)은 실제 확인 전까지 절차적 유리 유지",
+   "effort": "없음",
+   "risk": "—"
+  }
+ ],
+ "rights": [
+  "1898년 제스타 공방 창은 PD(작가 사후 70년 경과; 다만 1981/82년 이남규 보수분의 창작성 여부는 불명)",
+  "이남규 1989년 창: 저작권 존속(2063년까지) → 복제·모사 금지, 시안도 흉내 금지",
+  "서울대교구·명동대성당: 실내 촬영물의 상업적 이용은 교구 허락 사항일 수 있다(사적 제258호). 진본 사진을 쓰려면 교구 홍보국·문화재 담당 문의가 안전",
+  "위키미디어 사진 다수가 CC BY-SA → 사용자 결정"
+ ],
+ "unverified": [
+  "15단의 창별 배열",
+  "익랑 두 창의 좌우(개인 글 1곳)",
+  "측랑·고측창의 실제 개수·분할·무늬",
+  "정면 장미창의 존재·위치",
+  "나무위키 \"명동성당/시설물\"(403)",
+  "KCI 논문 본문(초록만 확인)",
+  "공식 사이트 mdsd.or.kr 의 유리화 안내(찾지 못함)"
+ ],
+ "sources": [
+  "https://v.daum.net/v/QSx6Z6RuHg?f=p (뉴시스 2025-04-15)",
+  "https://m.cafe.daum.net/taereung-church/EARm/90 (개인 글)",
+  "https://en.wikipedia.org/wiki/Myeongdong_Cathedral",
+  "https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002191367 (정수경 2016, 초록)",
+  "Commons Category:Interior of Myeongdong Cathedral (15건 라이선스 확인, 5건 썸네일 확인)"
+ ]
+}

@@ -123,10 +123,69 @@ void main() {
     }
   });
 
-  test('시드 구성은 시드 색 계열(테라코타)을 유지한다', () {
+  test('앱 고유 구성은 갈색·금색 계열을 유지한다', () {
     final light = AppTheme.seedScheme(Brightness.light);
     final hsl = HSLColor.fromColor(light.primary);
-    // 테라코타(주황~적갈) 계열: 색상각 0~40도.
+    // 짙은 갈색(주황~적갈) 계열: 색상각 0~40도, 어두운 톤.
     expect(hsl.hue, inInclusiveRange(0, 40));
+    expect(hsl.lightness, lessThan(0.35));
+    // 금색(노랑~주황) 계열 강조색.
+    for (final b in Brightness.values) {
+      final gold = AppTheme.seedScheme(b);
+      final hue = HSLColor.fromColor(
+        b == Brightness.dark ? gold.primary : gold.tertiary,
+      ).hue;
+      expect(hue, inInclusiveRange(30, 55), reason: '$b');
+    }
   });
+
+  // 내비게이션(레일·하단 바)은 밝은 테마에서도 어두운 구성(AppDecor.chrome)을 쓴다.
+  group('내비게이션(어두운 갈색) 구성', () {
+    final chrome = AppTheme.light().extension<AppDecor>()!.chrome;
+    test('밝은 테마의 내비게이션은 어두운 구성이다', () {
+      expect(chrome.brightness, Brightness.dark);
+      expect(AppTheme.dark().extension<AppDecor>()!.chrome, chrome);
+    });
+    for (final (label, fg, bg, min) in <_Pair>[
+      (
+        '라벨(onSurface)/레일 바탕(surfaceContainer)',
+        (s) => s.onSurface,
+        (s) => s.surfaceContainer,
+        4.5,
+      ),
+      (
+        '아이콘(onSurfaceVariant)/레일 바탕',
+        (s) => s.onSurfaceVariant,
+        (s) => s.surfaceContainer,
+        4.5,
+      ),
+      (
+        '선택 아이콘(onSecondaryContainer)/표시기(secondaryContainer)',
+        (s) => s.onSecondaryContainer,
+        (s) => s.secondaryContainer,
+        4.5,
+      ),
+    ]) {
+      test('$label >= $min:1', () {
+        expect(
+          contrast(fg(chrome), bg(chrome)),
+          greaterThanOrEqualTo(min),
+        );
+      });
+    }
+  });
+
+  // 장식 금색: 선택 표시(고른 카드 테두리)·세그먼트 윤곽으로도 쓰므로 표면 위에서 3:1 이상.
+  for (final b in Brightness.values) {
+    test('장식 금색/표면 >= 3:1 (${b.name})', () {
+      final theme = b == Brightness.dark ? AppTheme.dark() : AppTheme.light();
+      final gold = theme.extension<AppDecor>()!.gold;
+      for (final bg in [
+        theme.colorScheme.surface,
+        theme.colorScheme.surfaceContainerLow,
+      ]) {
+        expect(contrast(gold, bg), greaterThanOrEqualTo(3.0));
+      }
+    });
+  }
 }
