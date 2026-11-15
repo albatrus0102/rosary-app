@@ -465,7 +465,7 @@ class ChurchPrayerCard extends StatelessWidget {
       ),
       const PopupMenuItem(
         value: _CardMenu.fullScreen,
-        child: Text('전체 화면으로 기도'),
+        child: Text('묵주기도 화면으로'),
       ),
       const PopupMenuItem(value: _CardMenu.end, child: Text('끝내기')),
     ],

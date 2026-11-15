@@ -559,7 +559,7 @@ void main() {
       // 전체 화면 기도는 카드의 ⋮ 메뉴 안에 있다.
       await tester.tap(find.byKey(const ValueKey('prayer-menu')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('전체 화면으로 기도'));
+      await tester.tap(find.text('묵주기도 화면으로'));
       // PrayerScreen에는 끝나지 않는 애니메이션이 있어 pumpAndSettle을 쓸 수 없다.
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));

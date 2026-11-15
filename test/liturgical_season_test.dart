@@ -33,7 +33,7 @@ void main() {
     expect(firstSundayOfAdvent(2033), DateTime(2033, 11, 27));
     expect(christTheKing(2026), DateTime(2026, 11, 22));
     expect(baptismOfTheLord(2026), DateTime(2026, 1, 11));
-    expect(baptismOfTheLord(2024), DateTime(2024, 1, 7));
+    expect(baptismOfTheLord(2024), DateTime(2024, 1, 8)); // 한국: 공현 1/7 → 세례 월요일
     expect(baptismOfTheLord(2030), DateTime(2030, 1, 13));
     expect(pentecostSunday(2026), DateTime(2026, 5, 24));
   });
@@ -41,7 +41,8 @@ void main() {
   test('2026년 한 해의 시기 경계', () {
     expect(day(2026, 1, 1).season, LiturgicalSeason.christmas);
     expect(day(2026, 1, 1).feast, LiturgicalFeast.maryMotherOfGod);
-    expect(day(2026, 1, 6).feast, LiturgicalFeast.epiphany);
+    expect(day(2026, 1, 4).feast, LiturgicalFeast.epiphany); // 한국: 1/2~8 사이 주일
+    expect(day(2026, 1, 6).feast, isNull);
     expect(day(2026, 1, 11).season, LiturgicalSeason.christmas);
     expect(day(2026, 1, 11).feast, LiturgicalFeast.baptismOfTheLord);
     expect(day(2026, 1, 12).season, LiturgicalSeason.ordinary);
@@ -72,7 +73,8 @@ void main() {
     // 부활 시기
     expect(day(2026, 4, 5).season, LiturgicalSeason.easter);
     expect(day(2026, 4, 12).week, 2);
-    expect(day(2026, 5, 14).feast, LiturgicalFeast.ascension);
+    expect(day(2026, 5, 14).feast, isNull);
+    expect(day(2026, 5, 17).feast, LiturgicalFeast.ascension); // 한국: 부활 제7주일
     final pen = day(2026, 5, 24);
     expect(pen.season, LiturgicalSeason.easter);
     expect(pen.feast, LiturgicalFeast.pentecost);
@@ -81,7 +83,10 @@ void main() {
     expect(day(2026, 5, 25).season, LiturgicalSeason.ordinary);
     expect(day(2026, 5, 25).color, LiturgicalColor.green);
     expect(day(2026, 5, 31).feast, LiturgicalFeast.trinity);
-    expect(day(2026, 6, 4).feast, LiturgicalFeast.corpusChristi);
+    expect(
+      day(2026, 6, 7).feast,
+      LiturgicalFeast.corpusChristi,
+    ); // 한국: 삼위일체 다음 주일
     expect(day(2026, 6, 12).feast, LiturgicalFeast.sacredHeart);
     expect(day(2026, 8, 15).feast, LiturgicalFeast.assumption);
     expect(day(2026, 8, 15).color, LiturgicalColor.white);
@@ -190,17 +195,17 @@ void main() {
     }
   });
 
-  test('위령 성월: 11월의 연중 평일은 자색 기조 + 추모 장식, 대림이 오면 끝', () {
+  test('위령 성월: 11월의 연중 평일은 녹색(전례 색 그대로) + 추모 장식, 대림이 오면 끝', () {
     final w = day(2026, 11, 14);
     expect(w.season, LiturgicalSeason.ordinary);
     expect(w.color, LiturgicalColor.green);
     expect(w.devotion, MonthDevotion.souls);
     expect(w.isMemorialMonth, isTrue);
-    expect(w.decorColor, LiturgicalColor.violet);
+    expect(w.decorColor, LiturgicalColor.green);
     expect(w.chipLabel, '연중 시기 · 위령 성월');
     expect(w.toSceneArgs(), {
       'season': 'ordinary',
-      'color': 'violet',
+      'color': 'green',
       'memorial': true,
     });
     // 모든 성인: 백색 그대로 + 추모 장식
@@ -285,7 +290,7 @@ void main() {
       final s = LiturgyPreview.souls.resolve(now);
       expect(
         (s.season, s.decorColor, s.isMemorialMonth),
-        (LiturgicalSeason.ordinary, LiturgicalColor.violet, true),
+        (LiturgicalSeason.ordinary, LiturgicalColor.green, true),
       );
     }
   });

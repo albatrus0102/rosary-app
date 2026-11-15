@@ -647,7 +647,7 @@ void main() {
         await _chooseRosaryAndSit(tester, h);
         await tester.tap(find.byKey(const ValueKey('prayer-menu')));
         await _settle(tester);
-        await tester.tap(find.text('전체 화면으로 기도'));
+        await tester.tap(find.text('묵주기도 화면으로'));
         await _settle(tester);
         expect(find.text('full-screen-prayer'), findsOneWidget);
         expect(sharedSet, _today);

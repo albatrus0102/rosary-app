@@ -56,7 +56,7 @@ LiturgicalSeason? seasonOfTitle(String t) {
     return LiturgicalSeason.triduum;
   }
   if (RegExp('사순|재의|성주간|성지 주일').hasMatch(t)) return LiturgicalSeason.lent;
-  if (RegExp('부활|승천|성령 강림').hasMatch(t)) return LiturgicalSeason.easter;
+  if (RegExp('부활|주님 승천|성령 강림').hasMatch(t)) return LiturgicalSeason.easter;
   if (t.contains('대림') || RegExp(r'^12월 (1[7-9]|2[0-4])일').hasMatch(t)) {
     return LiturgicalSeason.advent;
   }
@@ -118,7 +118,7 @@ void main() {
         expect(l.decorColor, l.color, reason: '$date');
       }
     }
-    expect(compared, greaterThan(300));
+    expect(compared, greaterThan(280)); // 2026년: 288일(나머지는 성인 기념일·축일)
   });
 
   test('한국 이동 축일 2024~2030(GCatholic 한국 전례력)', () {

@@ -338,7 +338,7 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('prayer-menu')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('전체 화면으로 기도'));
+      await tester.tap(find.text('묵주기도 화면으로'));
       await tester.pumpAndSettle();
       expect(find.text('FULL'), findsOneWidget);
       expect(scene.count('pause'), 2);

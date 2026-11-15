@@ -26,6 +26,7 @@ Future<ChurchPrayerPick?> showChurchPrayerChoiceSheet(
   required AppSettings settings,
   MysterySet? resumeSet,
   DateTime? now,
+  bool inChurch = true,
 }) {
   return showModalBottomSheet<ChurchPrayerPick>(
     context: context,
@@ -38,6 +39,7 @@ Future<ChurchPrayerPick?> showChurchPrayerChoiceSheet(
         settings: settings,
         resumeSet: resumeSet,
         now: now,
+        inChurch: inChurch,
       ),
     ),
   );
@@ -49,7 +51,11 @@ class ChurchPrayerChoiceSheet extends StatefulWidget {
     required this.settings,
     this.resumeSet,
     this.now,
+    this.inChurch = true,
   });
+
+  /// 성당 밖(오늘 탭 '기도 시작' 등)에서 열면 false: 같은 모양·문구로, 설명만 성당 밖에 맞춘다.
+  final bool inChurch;
 
   final AppSettings settings;
 
@@ -74,6 +80,9 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
       widget.resumeSet ?? widget.settings.savedPrayer?.mysterySet;
   late MysterySet _set = _resume ?? widget.settings.mysterySet;
   bool _changing = false;
+
+  String get _briefLine =>
+      widget.inChurch ? '제대 앞에서 고개 숙여 기도해요' : '조용히 마음을 모아 잠시 기도해요';
 
   String get _mysteryLine {
     final name = _set.koreanName;
@@ -110,14 +119,14 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
           _ChoiceTile(
             key: const ValueKey('pray-brief'),
             selected: last == ChurchPrayerChoice.brief,
-            semanticsLabel: '잠시 기도하기, 제대 앞에서 고개 숙여 기도해요',
+            semanticsLabel: '잠시 기도하기, $_briefLine',
             leading: Icon(
               Icons.self_improvement_outlined,
               size: 32,
               color: scheme.onSurfaceVariant,
             ),
             title: '잠시 기도하기',
-            subtitle: '제대 앞에서 고개 숙여 기도해요',
+            subtitle: _briefLine,
             onTap: () =>
                 Navigator.of(context)
                     .pop(const ChurchPrayerPick(ChurchPrayerChoice.brief)),
@@ -129,7 +138,9 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
             semanticsLabel: '묵주기도 하기, $_mysteryLine',
             leading: _RosaryThumb(style: widget.settings.rosaryStyle),
             title: '묵주기도 하기',
-            subtitle: '$_mysteryLine\n가까운 자리에 앉아 묵주를 들고 바쳐요',
+            subtitle: widget.inChurch
+                ? '$_mysteryLine\n가까운 자리에 앉아 묵주를 들고 바쳐요'
+                : '$_mysteryLine\n묵주알을 한 알씩 넘기며 바쳐요',
             onTap: () =>
                 Navigator.of(context)
                     .pop(ChurchPrayerPick(ChurchPrayerChoice.rosary, _set)),

@@ -293,7 +293,7 @@ class _ChurchRosaryPanelState extends State<ChurchRosaryPanel> {
                   value: 0,
                   child: Text(_c.paused ? '이어 기도' : '잠깐 쉬기'),
                 ),
-                const PopupMenuItem(value: 1, child: Text('묵주 화면으로 크게')),
+                const PopupMenuItem(value: 1, child: Text('묵주기도 화면으로')),
                 const PopupMenuItem(value: 2, child: Text('끝내기')),
               ],
             )

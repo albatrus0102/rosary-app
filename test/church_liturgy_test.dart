@@ -33,7 +33,7 @@ void main() {
     );
     expect(ChurchLiturgy.current().toSceneArgs(), {
       'season': 'ordinary',
-      'color': 'violet',
+      'color': 'green',
       'memorial': true,
     });
   });
@@ -134,7 +134,7 @@ void main() {
     expect(h.scene.count('setLiturgy'), 1);
     expect(h.scene.lastArgs('setLiturgy'), {
       'season': 'ordinary',
-      'color': 'violet',
+      'color': 'green',
       'memorial': true,
     });
     // init 다음에 보낸다

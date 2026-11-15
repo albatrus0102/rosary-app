@@ -421,7 +421,7 @@ void main() {
       await _sit(tester, h);
       await tester.tap(find.text('다음'));
       await tester.pump();
-      await _menu(tester, '전체 화면으로 기도');
+      await _menu(tester, '묵주기도 화면으로');
       await tester.pumpAndSettle();
       expect(find.text('FULL-PRAYER'), findsOneWidget);
       expect(seen!.index, 1);
@@ -449,7 +449,7 @@ void main() {
         },
       );
       await _sit(tester, h);
-      await _menu(tester, '전체 화면으로 기도');
+      await _menu(tester, '묵주기도 화면으로');
       await tester.pumpAndSettle();
       await tester.tap(find.text('BACK'));
       await tester.pumpAndSettle();
