@@ -182,6 +182,9 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 | 파일 | 출처 URL | 작가 · 사진 | 라이선스 | 쓰는 곳 · 변경 |
 |---|---|---|---|---|
 | assets/church/art_maggiore.js (원본 art/images_src/maggiore/salus_populi_romani.webp, 49KB) | https://commons.wikimedia.org/wiki/File:Salus_Populi_Romani_after_restoration.jpg | 〈로마 백성의 구원(Salus Populi Romani)〉 작가 미상, 7~13세기 · 사진 LossRom(Commons) | 원작 Public domain · 사진 CC0 1.0 (PD-Art) | 성 마리아 마조레 대성전 파올리나 경당 제단 · 여백을 잘라 내고 크기를 줄임 · 상세 `licenses/maggiore.md` · 권리 확인: 확인(Commons 표기 기준) |
+| assets/church/art_florence.js — 톨렌티노(원본 art/images_src/florence/tolentino.webp, 60KB) | https://commons.wikimedia.org/wiki/File:Andrea_del_castagno,_momumento_a_niccol%C3%B2_da_tolentino.jpg | 안드레아 델 카스타뇨 〈니콜로 다 톨렌티노 기마 기념상〉 1456 · 사진 Web Gallery of Art | 원작 Public domain · 사진 PD-Art | 피렌체 대성당 북 측랑 2칸 · 틀 비율로 잘라 크기를 줄임 · 상세 `licenses/florence.md` · 권리 확인: 확인(Commons 표기 기준) |
+| assets/church/art_florence.js — 호크우드(원본 art/images_src/florence/hawkwood.webp, 53KB) | https://commons.wikimedia.org/wiki/File:Paolo_uccello,_Monumento_equestre_di_John_Hawkwood,_1436,_01-edit.jpg | 파올로 우첼로 〈존 호크우드 기마 기념상〉 1436 · 사진 Sailko | 원작 Public domain · 사진 **CC BY 3.0**(저작자 표시: Sailko) | 피렌체 대성당 북 측랑 3칸 · 틀 비율로 잘라 크기를 줄임 · 상세 `licenses/florence.md` |
+| assets/church/art_florence.js — 단테(원본 art/images_src/florence/dante.webp, 42KB) | https://commons.wikimedia.org/wiki/File:Dante_Domenico_di_Michelino_Duomo_Florence.jpg | 도메니코 디 미켈리노 〈단테와 신곡〉 1465 · 사진 Jastrow | 원작 Public domain · 사진 Public domain(촬영자 공개) | 피렌체 대성당 북 측랑 4칸 · 틀 비율로 잘라 크기를 줄임 · 상세 `licenses/florence.md` |
 
 ## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
 

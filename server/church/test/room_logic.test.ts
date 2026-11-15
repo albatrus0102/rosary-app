@@ -13,6 +13,7 @@ import {
   parseRoomName,
   type Message,
   type StoredCandle,
+  CANDLE_TTL_MS,
 } from '../src/room_logic';
 import { seatPosition, seatIds, totalCandleSlots, type Layout } from '../src/layout';
 import { BASIC_FALLBACK } from '../src/layouts_fallback';
@@ -687,7 +688,7 @@ function nearCandle(h: Harness, c: string): void {
   h.walkTo(c, 10.5, 0);
 }
 
-test('촛불: 켜기(until 0), 모두에게 전송, 이미 켜진 슬롯은 무시, 만료 없음, 범위·거리', () => {
+test('촛불: 켜기(until = 켠 시각 + 24시간), 모두에게 전송, 이미 켜진 슬롯은 무시, 하루 뒤 꺼짐, 범위·거리', () => {
   const h = new Harness();
   const a = h.join(1);
   const b = h.join(2);
@@ -699,23 +700,31 @@ test('촛불: 켜기(until 0), 모두에게 전송, 이미 켜진 슬롯은 무�
   nearCandle(h, b);
   h.clear();
   h.send(a, { t: 'candle', slot: 5, intention: 3 });
-  const lit = { t: 'candle', slot: 5, until: 0, intention: 3 };
+  const litAt = h.t;
+  assert.equal(CANDLE_TTL_MS, 24 * 3600 * 1000);
+  const lit = { t: 'candle', slot: 5, until: litAt + CANDLE_TTL_MS, intention: 3 };
   assert.deepEqual(h.msgs(a), [lit]);
   assert.deepEqual(h.msgs(b), [lit]);
   assert.equal(h.saved.length, 1);
-  assert.deepEqual({ ...h.saved[0] }, { slot: 5, until: 0, intention: 3, seq: 1 });
+  assert.deepEqual({ ...h.saved[0] }, { slot: 5, until: litAt + CANDLE_TTL_MS, intention: 3, seq: 1, at: litAt });
   // 같은 슬롯 중복(스탠드에 빈 슬롯 있음): 기존 유지, 요청자에게만 현재 상태
   h.clear();
   h.send(b, { t: 'candle', slot: 5, intention: 6 });
   assert.deepEqual(h.msgs(b), [lit]);
   assert.equal(h.msgs(a).length, 0);
   assert.equal(h.saved.length, 1);
-  // 시간이 아무리 지나도 꺼지지 않는다
-  h.t += 365 * 24 * 3600 * 1000;
+  // 하루가 다 되기 직전까지는 켜져 있다
+  h.t = litAt + CANDLE_TTL_MS - 1000;
   h.logic.tick();
-  assert.deepEqual(h.logic.activeCandles(), [{ slot: 5, until: 0, intention: 3 }]);
+  assert.deepEqual(h.logic.activeCandles(), [{ slot: 5, until: litAt + CANDLE_TTL_MS, intention: 3 }]);
   const c = h.join(3);
-  assert.deepEqual(h.msgs(c, 'welcome')[0].candles, [{ slot: 5, until: 0, intention: 3 }]);
+  assert.deepEqual(h.msgs(c, 'welcome')[0].candles, [{ slot: 5, until: litAt + CANDLE_TTL_MS, intention: 3 }]);
+  // 하루가 지나면 꺼지고, 그 자리에 다시 켤 수 있다
+  h.t = litAt + CANDLE_TTL_MS + 1;
+  assert.deepEqual(h.logic.activeCandles(), []);
+  h.clear();
+  h.send(b, { t: 'candle', slot: 5, intention: 6 });
+  assert.deepEqual(h.msgs(a), [{ t: 'candle', slot: 5, until: h.t + CANDLE_TTL_MS, intention: 6 }]);
   // 한 사람이 여러 개 켤 수 있다(개수 제한 없음)
   h.clear();
   for (let slot = 10; slot < 40; slot++) {
@@ -743,33 +752,36 @@ test('촛불: 켜기(until 0), 모두에게 전송, 이미 켜진 슬롯은 무�
   assert.equal(h.msgs(a, 'candle').length, 1);
 });
 
-test('촛불: 스탠드가 꽉 차면 가장 오래된 초를 조용히 교체(해당 슬롯으로 브로드캐스트)', () => {
+test('촛불: 대가 가득 차면 새 초는 켜지지 않고(남의 초를 끄지 않는다) 요청자에게 candle_full', () => {
   const h = new Harness(SYNTH); // 첫 스탠드(-4,20): 슬롯 0..2
   const a = h.join(1);
   const b = h.join(2);
   h.walkTo(a, -4, 20);
   h.walkTo(b, -4, 20);
-  // 켠 순서: 1, 0, 2 → 가장 오래된 것은 슬롯 1
+  const at: number[] = [];
   for (const slot of [1, 0, 2]) {
     h.t += 100;
+    at[slot] = h.t;
     h.send(a, { t: 'candle', slot, intention: slot });
   }
   assert.equal(h.logic.activeCandles().length, 3);
+  const saved = h.saved.length;
   h.clear();
   h.t += 100;
-  h.send(b, { t: 'candle', slot: 2, intention: 7 }); // 꽉 참 → 슬롯 1 교체
-  const expected = { t: 'candle', slot: 1, until: 0, intention: 7 };
-  assert.deepEqual(h.msgs(a), [expected]);
-  assert.deepEqual(h.msgs(b), [expected]);
-  assert.equal(h.msgs(a, 'error').length, 0);
-  assert.equal(h.saved.at(-1)!.slot, 1);
-  // 다음으로 오래된 것은 슬롯 0
+  h.send(b, { t: 'candle', slot: 2, intention: 7 });
+  assert.equal(h.msgs(a).length, 0);
+  assert.deepEqual(h.msgs(b), [
+    { t: 'candle', slot: 2, until: at[2] + CANDLE_TTL_MS, intention: 2 },
+    { t: 'error', code: 'candle_full' },
+  ]);
+  assert.equal(h.saved.length, saved);
+  assert.deepEqual(h.logic.activeCandles().map((c) => c.intention), [0, 1, 2]);
+  // 가장 먼저 켠 초(슬롯 1)가 다 타면 그 자리만 빈다
+  h.t = at[1] + CANDLE_TTL_MS;
+  assert.deepEqual(h.logic.activeCandles().map((c) => c.slot), [0, 2]);
   h.clear();
-  h.t += 100;
   h.send(b, { t: 'candle', slot: 1, intention: 5 });
-  assert.deepEqual(h.msgs(a), [{ t: 'candle', slot: 0, until: 0, intention: 5 }]);
-  // 두 번째 스탠드(96개)는 영향 없음
-  assert.equal(h.logic.activeCandles().length, 3);
+  assert.deepEqual(h.msgs(a), [{ t: 'candle', slot: 1, until: h.t + CANDLE_TTL_MS, intention: 5 }]);
 });
 
 test('촛불: 저장소 보존 — 가짜 저장소에서 복원', async () => {
@@ -806,27 +818,19 @@ test('촛불: 저장소 보존 — 가짜 저장소에서 복원', async () => {
   // "재시작": 새 RoomLogic 에 저장소 내용을 복원
   const logic2 = new RoomLogic({ layout: BASIC, now: () => h.t, send: () => {} });
   logic2.restoreCandles(await store.load());
-  assert.deepEqual(logic2.activeCandles(), [
-    { slot: 3, until: 0, intention: 1 },
-    { slot: 4, until: 0, intention: 2 },
-  ]);
-  // 복원된 seq 를 이어받아 "가장 오래된" 판정이 유지된다(슬롯 3 이 더 오래됨).
-  const small: Layout = { ...BASIC, candles: { stands: [{ x: 10.5, z: 0, slots: 2, reach: 1.8 }] } };
-  const out: Message[] = [];
-  const logic3 = new RoomLogic({ layout: small, now: () => h.t, send: (_c, m) => out.push(m) });
-  logic3.restoreCandles([
-    { slot: 0, until: 0, intention: 1, seq: 7 },
-    { slot: 1, until: 0, intention: 2, seq: 5 },
-  ]);
-  logic3.onConnect('b');
-  logic3.handleMessage('b', JSON.stringify({ t: 'hello', id: h.uuid(2), v: 1, avatar: { skin: 0, style: 0, hair: 0, outfit: 0, name: 0 } }));
-  for (let i = 0; i < 40; i++) {
-    h.t += 500;
-    logic3.handleMessage('b', JSON.stringify({ t: 'pos', x: 10.5, z: 0, r: 0 }));
-  }
-  out.length = 0;
-  logic3.handleMessage('b', JSON.stringify({ t: 'candle', slot: 0, intention: 6 }));
-  assert.deepEqual(out, [{ t: 'candle', slot: 1, until: 0, intention: 6 }]); // seq 5 (슬롯 1)가 가장 오래됨
+  const got = logic2.activeCandles();
+  assert.deepEqual(got.map((c) => [c.slot, c.intention]), [[3, 1], [4, 2]]);
+  // 켠 시각 기준 만료가 재시작(하이버네이션) 뒤에도 이어진다
+  const at3 = (kv.get('c:3') as StoredCandle).at!;
+  assert.equal(got[0].until, at3 + CANDLE_TTL_MS);
+  h.t = at3 + CANDLE_TTL_MS + 50; // 슬롯 3 만 다 탔다(슬롯 4 는 100ms 뒤에 켰다)
+  const logic2b = new RoomLogic({ layout: BASIC, now: () => h.t, send: () => {} });
+  logic2b.restoreCandles(await store.load());
+  assert.deepEqual(logic2b.activeCandles().map((c) => c.slot), [4]);
+  // 켠 시각이 없는 옛 행은 복원 시각에 켠 것으로 본다
+  const logic3 = new RoomLogic({ layout: BASIC, now: () => h.t, send: () => {} });
+  logic3.restoreCandles([{ slot: 0, until: 0, intention: 1, seq: 7 }]);
+  assert.deepEqual(logic3.activeCandles(), [{ slot: 0, until: h.t + CANDLE_TTL_MS, intention: 1 }]);
   // 깨진 레코드는 무시
   const logic4 = new RoomLogic({ layout: BASIC, now: () => h.t, send: () => {} });
   logic4.restoreCandles([{ slot: 999, until: 0, intention: 0, seq: 1 }, { slot: 1, until: 0, intention: 99, seq: 2 }, null as never]);
@@ -1161,7 +1165,7 @@ test('AOI: seated/praying/emote 는 가까운 사람 + 본인에게만, 촛불�
   h.clear();
   h.send(c, { t: 'candle', slot: 7, intention: 2 });
   for (const p of [actor, near, far, c]) {
-    assert.deepEqual(h.msgs(p, 'candle'), [{ t: 'candle', slot: 7, until: 0, intention: 2 }]);
+    assert.deepEqual(h.msgs(p, 'candle'), [{ t: 'candle', slot: 7, until: h.t + CANDLE_TTL_MS, intention: 2 }]);
   }
 });
 

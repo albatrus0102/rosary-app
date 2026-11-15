@@ -855,53 +855,36 @@
         }
       });
 
-      // ============================================================ 왼쪽 측랑 벽 그림(기마상 2점 + 단테)
-      function paintFrame(z, w, h, y, drawFn) {
-        var x = -XW + 0.03, t = ctx.tex.custom(256, Math.round(256 * h / w), drawFn);
-        ctx.plane({ x: x, y: y + h / 2, z: z, ry: PI / 2, w: w, h: h, mat: ctx.mats.lambert({ tex: t }) });
+      // ============================================================ 왼쪽 측랑 벽 그림(기마상 2점 + 단테) — 진본 사진(art_florence.js)
+      // 위키미디어 공용의 자유 이용 사진(docs/church/licenses/florence.md)을 이 성당에 들어올 때만 읽는다.
+      // 읽기 전·실패 때는 어두운 빈 화면(틀만)이다. 도형으로 그린 사람·말 그림은 쓰지 않는다(우스꽝스럽고 불경해 보인다: REVERENCE.md).
+      var ART = [];
+      function paintFrame(z, w, h, y, key) {
+        var x = -XW + 0.03, mat = ctx.mats.lambert({ color: 0x2b2723 });
+        ctx.plane({ x: x, y: y + h / 2, z: z, ry: PI / 2, w: w, h: h, mat: mat });
         sbx({ x: -XW + 0.06, y: y - 0.12, z: z, w: 0.14, h: 0.14, d: w + 0.4, color: ST_L }); sbx({ x: -XW + 0.06, y: y + h, z: z, w: 0.14, h: 0.16, d: w + 0.4, color: ST_L });
         sbx({ x: -XW + 0.06, y: y - 0.1, z: z - w / 2 - 0.1, w: 0.14, h: h + 0.3, d: 0.2, color: ST_L }); sbx({ x: -XW + 0.06, y: y - 0.1, z: z + w / 2 + 0.1, w: 0.14, h: h + 0.3, d: 0.2, color: ST_L });
-      }
-      // 기마 기념 벽화 자리 표시: 단색조 색면(배경 + 석관 모양 대좌 + 말 탄 사람의 큰 덩어리). 원작의 세부는 흉내 내지 않는다.
-      function horse(g, w, h, tone, dark, bg) {
-        g.fillStyle = bg; g.fillRect(0, 0, w, h);
-        var gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(255,255,255,0.10)'); gr.addColorStop(1, 'rgba(0,0,0,0.20)'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
-        // 대좌: 돌림띠 · 석관 · 명문 판 · 까치발
-        g.fillStyle = tone; g.fillRect(w * 0.12, h * 0.6, w * 0.76, h * 0.03);
-        g.fillStyle = dark; g.fillRect(w * 0.17, h * 0.63, w * 0.66, h * 0.17);
-        g.fillStyle = tone; g.fillRect(w * 0.23, h * 0.66, w * 0.54, h * 0.11); g.fillRect(w * 0.1, h * 0.8, w * 0.8, h * 0.028);
-        g.fillStyle = dark; for (var i = 0; i < 3; i++) g.fillRect(w * 0.28, h * (0.685 + i * 0.027), w * 0.44, h * 0.008);
-        [0.2, 0.5, 0.8].forEach(function (c) { g.beginPath(); g.moveTo(w * (c - 0.06), h * 0.828); g.lineTo(w * (c + 0.06), h * 0.828); g.lineTo(w * (c + 0.02), h * 0.93); g.lineTo(w * (c - 0.02), h * 0.93); g.fill(); });
-        // 말(왼쪽을 봄): 몸통 · 목 · 머리 · 다리 넷 · 꼬리
-        g.fillStyle = tone;
-        g.beginPath(); g.ellipse(w * 0.53, h * 0.37, w * 0.25, h * 0.072, 0, 0, PI * 2); g.fill();
-        g.beginPath(); g.moveTo(w * 0.36, h * 0.39); g.lineTo(w * 0.2, h * 0.235); g.lineTo(w * 0.3, h * 0.2); g.lineTo(w * 0.46, h * 0.31); g.fill();
-        g.beginPath(); g.ellipse(w * 0.2, h * 0.24, w * 0.085, h * 0.03, -0.95, 0, PI * 2); g.fill();
-        [[0.33, 0.37, 0.27, 0.5, 0.3, 0.595], [0.4, 0.4, 0.42, 0.5, 0.4, 0.6], [0.68, 0.4, 0.72, 0.5, 0.67, 0.6], [0.75, 0.38, 0.8, 0.5, 0.77, 0.6]].forEach(function (L) {
-          g.strokeStyle = tone; g.lineWidth = w * 0.05; g.lineCap = 'round'; g.beginPath(); g.moveTo(w * L[0], h * L[1]); g.lineTo(w * L[2], h * L[3]); g.lineTo(w * L[4], h * L[5]); g.stroke();
-        });
-        g.lineWidth = w * 0.045; g.beginPath(); g.moveTo(w * 0.77, h * 0.34); g.quadraticCurveTo(w * 0.9, h * 0.36, w * 0.86, h * 0.5); g.stroke();
-        // 탄 사람: 몸 · 머리 · 다리 · 지휘봉
-        g.fillStyle = dark;
-        g.beginPath(); g.moveTo(w * 0.46, h * 0.33); g.lineTo(w * 0.47, h * 0.2); g.lineTo(w * 0.58, h * 0.2); g.lineTo(w * 0.6, h * 0.33); g.fill();
-        disc(g, w * 0.52, h * 0.165, w * 0.05, dark); g.fillRect(w * 0.455, h * 0.135, w * 0.13, h * 0.016);
-        g.strokeStyle = dark; g.lineWidth = w * 0.045; g.beginPath(); g.moveTo(w * 0.52, h * 0.32); g.lineTo(w * 0.47, h * 0.45); g.stroke();
-        g.lineWidth = w * 0.018; g.beginPath(); g.moveTo(w * 0.5, h * 0.26); g.lineTo(w * 0.36, h * 0.18); g.stroke();
-        g.strokeStyle = 'rgba(60,50,35,0.55)'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+        ART.push({ key: key, mat: mat });
       }
       // 자리(F6, Opera del Duomo 목록): 2칸 = 니콜로 다 톨렌티노(카스타뇨 1456) · 3칸 = 존 호크우드(우첼로 1436) — 두 기마상은 2·3칸 경계(z 15.85) 양옆에 나란히,
       // 4칸 = 단테와 신곡(미켈리노 1465, 가로형). 기마상은 틀 포함 실제 5.15 × 8.2m → 2.32 × 3.69. 3·4칸 창(z 11.4, 2.5)을 가리지 않는다.
-      // 그림은 절차적 색면(원작 도상을 흉내 내지 않는 자리 표시)이다: 기마상 = 녹토(terra verde) 단색조, 단테 = 붉은 옷 인물과 도시·산.
-      paintFrame(17.85, 2.32, 3.69, 1.75, function (g, w, h) { horse(g, w, h, '#b9b3a2', '#a39c8a', '#5d6a55'); });
-      paintFrame(13.7, 2.32, 3.69, 1.75, function (g, w, h) { horse(g, w, h, '#55704f', '#48603f', '#8a3f34'); });
-      paintFrame(5.55, 1.7, 1.4, 2.6, function (g, w, h) {
-        g.fillStyle = '#c9b88e'; g.fillRect(0, 0, w, h); g.fillStyle = '#7a9a6a'; g.fillRect(0, h * 0.62, w, h * 0.38);
-        g.fillStyle = '#8a6e5a'; for (var i = 0; i < 5; i++) g.fillRect(w * 0.62 + i * 16, h * 0.34 - (i % 3) * 12, 13, h * 0.3);
-        g.fillStyle = '#6f7f8f'; g.beginPath(); g.moveTo(w * 0.02, h * 0.62); g.lineTo(w * 0.2, h * 0.16); g.lineTo(w * 0.38, h * 0.62); g.fill();
-        g.fillStyle = '#b84a3a'; g.beginPath(); g.moveTo(w * 0.42, h * 0.9); g.lineTo(w * 0.58, h * 0.9); g.lineTo(w * 0.55, h * 0.4); g.lineTo(w * 0.45, h * 0.4); g.fill();
-        disc(g, w / 2, h * 0.33, 11, '#e8c8a0'); g.fillStyle = '#b84a3a'; g.fillRect(w * 0.455, h * 0.22, w * 0.09, 9);
-        g.strokeStyle = 'rgba(70,60,40,0.6)'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
-      });
+      paintFrame(17.85, 2.32, 3.69, 1.75, 'tolentino');
+      paintFrame(13.7, 2.32, 3.69, 1.75, 'hawkwood');
+      paintFrame(5.55, 1.7, 1.4, 2.6, 'dante');
+      (function () {
+        if (typeof document === 'undefined' || !document.head || !document.head.appendChild) return;
+        function apply() {
+          var A = window.ChurchArt && window.ChurchArt.florence; if (!A) return;
+          ART.forEach(function (it) {
+            var a = A[it.key]; if (!a) return;
+            var im = new Image();
+            im.onload = function () { var tx = new T.Texture(im); tx.encoding = T.sRGBEncoding; tx.anisotropy = 8; tx.needsUpdate = true; it.mat.map = tx; it.mat.color.setHex(0xffffff); it.mat.needsUpdate = true; };
+            im.src = a.src;
+          });
+        }
+        if (window.ChurchArt && window.ChurchArt.florence) { apply(); return; }
+        var sc = document.createElement('script'); sc.src = 'art_florence.js'; sc.async = true; sc.onload = apply; document.head.appendChild(sc);
+      })();
 
       // ============================================================ 좌석 · 촛불대 · 등
       ctx.renderSeats(layout, 'bench', { surf: HAS_SURF ? 'fl_wood' : undefined, wood: 0x4a3223, seat: 0x5a3d2a, back: 0x3e2a1c });

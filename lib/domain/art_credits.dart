@@ -141,4 +141,25 @@ const List<ArtCredit> churchArtCredits = [
         '여백을 잘라 내고 크기를 줄임.',
     license: 'Public domain(원작) · CC0 1.0(사진)',
   ),
+  ArtCredit(
+    use: '피렌체 대성당 · 북 측랑 벽 그림',
+    credit: '안드레아 델 카스타뇨 〈니콜로 다 톨렌티노 기마 기념상〉(1456). '
+        '사진: Wikimedia Commons "Andrea del castagno, momumento a niccolò da tolentino.jpg" (Web Gallery of Art). '
+        '틀에 맞게 잘라 크기를 줄임.',
+    license: 'Public domain',
+  ),
+  ArtCredit(
+    use: '피렌체 대성당 · 북 측랑 벽 그림',
+    credit: '파올로 우첼로 〈존 호크우드 기마 기념상〉(1436). '
+        '사진: Sailko, Wikimedia Commons "Paolo uccello, Monumento equestre di John Hawkwood, 1436, 01-edit.jpg". '
+        '틀에 맞게 잘라 크기를 줄임.',
+    license: 'Public domain(원작) · CC BY 3.0(사진)',
+  ),
+  ArtCredit(
+    use: '피렌체 대성당 · 북 측랑 벽 그림',
+    credit: '도메니코 디 미켈리노 〈단테와 신곡〉(1465). '
+        '사진: Jastrow, Wikimedia Commons "Dante Domenico di Michelino Duomo Florence.jpg". '
+        '틀에 맞게 잘라 크기를 줄임.',
+    license: 'Public domain',
+  ),
 ];

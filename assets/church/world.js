@@ -268,11 +268,13 @@
     var cups = new T.InstancedMesh(cupGeo, cupMat, Math.max(1, nSlots));
     var m4 = new T.Matrix4(), zeroM = new T.Matrix4().makeScale(0, 0, 0), tc = new T.Color();
     var INTENT_COL = [0xfff0d8, 0xffd6e0, 0xd9ecff, 0xe6deff, 0xffe9a8, 0xd8f2d0, 0xffd2b0, 0xf0e0c8];
-    var slotY0 = [];
+    var slotY0 = [], floats = [], tv = new T.Vector3(), CANDLE_CHECK = 0;
     for (i = 0; i < nSlots; i++) {
       var floorH = logic.floorY(slots[i].x, slots[i].z);
       slotY0[i] = floorH + slots[i].y;
-      m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z); cups.setMatrixAt(i, m4);
+      m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z);
+      if (slots[i].float) { m4.scale(tv.set(1.5, 0.4, 1.5)); floats.push(i); }   // 물 위에 뜬 초: 납작한 받침(원반)
+      cups.setMatrixAt(i, m4);
       candles.setMatrixAt(i, zeroM); candles.setColorAt(i, tc.setHex(0xffffff));
     }
     cups.instanceMatrix.needsUpdate = true;
@@ -287,14 +289,16 @@
       if (s < 0 || s >= nSlots) return;
       if (!lit[s]) litCount++;
       lit[s] = { intention: c.intention | 0, until: c.until || 0 };
-      m4.makeTranslation(slots[s].x, slotY0[s] + 0.05, slots[s].z);
+      var fl0 = slots[s].float;   // 뜬 초는 짧은 초(높이 0.12)
+      m4.makeTranslation(slots[s].x, slotY0[s] + (fl0 ? 0.02 : 0.05), slots[s].z);
+      if (fl0) m4.scale(tv.set(1, 0.6, 1));
       candles.setMatrixAt(s, m4);
       candles.setColorAt(s, tc.setHex(INTENT_COL[(c.intention | 0) % 8]));
       candles.instanceMatrix.needsUpdate = true; candles.instanceColor.needsUpdate = true;
       if (!flames[s]) {
         var f = new T.Sprite(flameMat);
         f.scale.set(0.1, 0.16, 1); f.renderOrder = 6;
-        f.position.set(slots[s].x, slotY0[s] + 0.3, slots[s].z);
+        f.position.set(slots[s].x, slotY0[s] + (fl0 ? 0.2 : 0.3), slots[s].z);
         world.add(f); flames[s] = { sp: f, ph: Math.random() * 6.28 };
       }
       flames[s].sp.visible = true;
@@ -538,6 +542,25 @@
       },
       setSkyCenter: function (p) { sky.position.copy(p); sun.position.set(p.x + env.sunDir[0] * 250, p.y + env.sunDir[1] * 250, p.z + env.sunDir[2] * 250); moonSp.position.set(p.x + 60, p.y + 150, p.z + 200); stars.position.copy(p); clouds.position.set(p.x, 0, p.z); },
       update: function (dt, t, focus, camera) {
+        // 다 탄 초(until 이 지난 초)는 스스로 꺼진다. 5초에 한 번만 본다.
+        if (t - CANDLE_CHECK > 5 || t < CANDLE_CHECK) {
+          CANDLE_CHECK = t;
+          var nowMs = Date.now();
+          for (var ls in lit) if (lit[ls].until > 0 && lit[ls].until <= nowMs) unlightSlot(+ls);
+        }
+        // 물 위에 뜬 초: 아주 천천히 까딱이며 제자리에서 맴돈다(인스턴스 행렬 몇 개만 갱신)
+        if (floats.length) {
+          for (var fi = 0; fi < floats.length; fi++) {
+            var fs = floats[fi], fph = fs * 1.7, fS = slots[fs];
+            var fx2 = fS.x + 0.012 * Math.sin(t * 0.31 + fph), fz2 = fS.z + 0.012 * Math.cos(t * 0.27 + fph * 1.3), fy2 = slotY0[fs] + 0.004 * Math.sin(t * 0.9 + fph);
+            m4.makeTranslation(fx2, fy2, fz2).scale(tv.set(1.5, 0.4, 1.5)); cups.setMatrixAt(fs, m4);
+            if (lit[fs]) {
+              m4.makeTranslation(fx2, fy2 + 0.02, fz2).scale(tv.set(1, 0.6, 1)); candles.setMatrixAt(fs, m4);
+              if (flames[fs]) { flames[fs].sp.position.x = fx2; flames[fs].sp.position.z = fz2; }
+            }
+          }
+          cups.instanceMatrix.needsUpdate = true; candles.instanceMatrix.needsUpdate = true;
+        }
         clock += dt;
         envTimer += dt;
         curHour += dt / 3600;

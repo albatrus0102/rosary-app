@@ -158,7 +158,7 @@ async function main() {
   }
   b.send({ t: 'candle', slot: 5, intention: 3 });
   const candleA = await a.waitFor((m) => m.t === 'candle' && m.slot === 5);
-  check('A가 candle 수신 (until 0 = 만료 없음)', candleA && candleA.intention === 3 && candleA.until === 0, JSON.stringify(candleA));
+  check('A가 candle 수신 (until = 하루 뒤)', candleA && candleA.intention === 3 && candleA.until > Date.now() + 23 * 3600e3, JSON.stringify(candleA));
 
   // 이모트 (본인에게도 에코)
   b.send({ t: 'emote', e: 1 });
@@ -182,7 +182,7 @@ async function main() {
   await c.connect();
   c.send({ t: 'hello', id: c.id, v: 1, avatar: avatarA });
   const wc = await c.waitFor((m) => m.t === 'welcome');
-  check('C welcome에 촛불 포함', wc && wc.n === 3 && wc.candles.some((x) => x.slot === 5 && x.until === 0), JSON.stringify(wc));
+  check('C welcome에 촛불 포함', wc && wc.n === 3 && wc.candles.some((x) => x.slot === 5 && x.until > 0), JSON.stringify(wc));
   c.close();
   const lc = await a.waitFor((m) => m.t === 'leave' && m.n === 2);
   check('C 퇴장 → leave n=2', !!lc, JSON.stringify(a.msgs.filter((m) => m.t === 'leave')));

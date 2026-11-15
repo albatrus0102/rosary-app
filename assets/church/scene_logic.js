@@ -110,6 +110,25 @@
     var stands = (layout.candles && layout.candles.stands) || [];
     for (var si = 0; si < stands.length; si++) {
       var S = stands[si];
+      if (S.ring) {
+        // 원형 배치(물 위에 띄우는 초 등): ring = [{ r: 반지름, n: 칸 수, a0: 시작 각(rad, 선택) }, ...] 안쪽 겹부터. 칸 수의 합 = slots.
+        // 각도 0 = face 방향(서는 쪽), 시계 반대 방향으로 돈다. 높이는 모두 y0.
+        var rf = S.face || [-1, 0], rl = Math.sqrt(rf[0] * rf[0] + rf[1] * rf[1]) || 1, rfx = rf[0] / rl, rfz = rf[1] / rl;
+        var ry0 = S.y0 === undefined ? 0.8 : S.y0, left = S.slots;
+        for (var ri = 0; ri < S.ring.length && left > 0; ri++) {
+          var RG = S.ring[ri], rn = Math.min(RG.n, left);
+          for (var rk = 0; rk < rn; rk++) {
+            var ang = (RG.a0 || 0) + rk * 2 * Math.PI / RG.n, ca = Math.cos(ang), sa = Math.sin(ang);
+            out.push({
+              slot: out.length, stand: si, row: ri, col: rk,
+              x: S.x + RG.r * (rfx * ca + rfz * sa), z: S.z + RG.r * (rfz * ca - rfx * sa),
+              y: ry0, reach: S.reach || C.CANDLE_REACH, float: !!S.float
+            });
+          }
+          left -= rn;
+        }
+        continue;
+      }
       var cols = S.cols || 8, pitch = S.pitch || 0.7, step = S.step || 0.35, y0 = S.y0 === undefined ? 0.8 : S.y0, ystep = S.ystep || 0.35;
       var face = S.face || [-1, 0];
       var fl = Math.sqrt(face[0] * face[0] + face[1] * face[1]) || 1;

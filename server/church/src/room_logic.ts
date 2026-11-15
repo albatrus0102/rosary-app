@@ -136,9 +136,12 @@ export interface PeerView {
   ro?: 1;
 }
 
+/** 봉헌초가 타는 시간: 켠 뒤 하루(24시간). 서버·앱(lib/church/church_candle_store.dart)·SPEC 이 같은 값을 쓴다. */
+export const CANDLE_TTL_MS = 24 * 60 * 60 * 1000;
+
 export interface Candle {
   slot: number;
-  /** 0 = 만료 없음 */
+  /** 꺼지는 시각(epoch ms) = 켠 시각 + CANDLE_TTL_MS */
   until: number;
   intention: number;
 }
@@ -146,6 +149,8 @@ export interface Candle {
 /** 저장소에 보존되는 촛불(seq: 켠 순서, 가장 작은 것이 가장 오래됨). */
 export interface StoredCandle extends Candle {
   seq: number;
+  /** 켠 시각(epoch ms). 만료는 이 값 기준이라 Durable Object 가 잠들었다 깨어나도 이어진다. */
+  at?: number;
 }
 
 /** 하이버네이션 후 복원/연결 attachment용으로 내보내는 피어 상태. */
@@ -385,21 +390,30 @@ export class RoomLogic {
   seatOwner(seat: string): string | null {
     return this.seats.get(seat) ?? null;
   }
-  /** 켜져 있는 촛불 전부(슬롯 순). until 은 항상 0(만료 없음). */
-  activeCandles(): Candle[] {
+  /** 켜져 있는 촛불 전부(슬롯 순). until = 켠 시각 + CANDLE_TTL_MS. 다 탄 초는 여기서 치운다. */
+  activeCandles(now = this.clock()): Candle[] {
+    this.pruneCandles(now);
     return [...this.candles.values()]
       .sort((a, b) => a.slot - b.slot)
-      .map((c) => ({ slot: c.slot, until: 0, intention: c.intention }));
+      .map((c) => ({ slot: c.slot, until: c.until, intention: c.intention }));
   }
 
-  /** 저장소에서 읽은 촛불을 복원한다(브로드캐스트·저장 없음). 레이아웃 밖의 슬롯은 버린다. */
-  restoreCandles(list: StoredCandle[]): void {
+  /** 만료된 초를 메모리에서 지운다(저장소의 행은 같은 슬롯에 새 초가 켜질 때 덮어쓴다 — 복원 때도 만료분은 버린다). */
+  private pruneCandles(now: number): void {
+    for (const [slot, c] of this.candles) if (c.until <= now) this.candles.delete(slot);
+  }
+
+  /** 저장소에서 읽은 촛불을 복원한다(브로드캐스트·저장 없음). 레이아웃 밖의 슬롯·다 탄 초는 버린다.
+   *  켠 시각(at)이 없는 옛 행(만료 없던 때)은 복원 시각에 켠 것으로 본다. */
+  restoreCandles(list: StoredCandle[], now = this.clock()): void {
     const total = totalCandleSlots(this.layout);
     for (const c of list) {
       if (!c || !isInt(c.slot, 0, total - 1) || !isInt(c.intention, 0, 7)) continue;
       const seq = isFiniteNum(c.seq) ? c.seq : 0;
-      this.candles.set(c.slot, { slot: c.slot, until: 0, intention: c.intention, seq });
+      const at = isFiniteNum(c.at) && c.at > 0 ? Math.min(c.at, now) : now;
       if (seq > this.candleSeq) this.candleSeq = seq;
+      if (at + CANDLE_TTL_MS <= now) continue;
+      this.candles.set(c.slot, { slot: c.slot, until: at + CANDLE_TTL_MS, intention: c.intention, seq, at });
     }
   }
 
@@ -798,32 +812,26 @@ export class RoomLogic {
     if (Math.hypot(peer.x - stand.x, peer.z - stand.z) > stand.reach + CANDLE_REACH_SLACK) {
       return; // 해당 촛불대에서 너무 멀면 조용히 무시
     }
-    let target = m.slot;
+    const now = this.clock();
+    this.pruneCandles(now);
     const lit = this.candles.get(m.slot);
     if (lit) {
-      // 이 스탠드에 빈 슬롯이 남아 있으면 요청은 무시(요청자에게 현재 상태만 알림).
-      // 꽉 찼으면 가장 오래된 초를 조용히 교체한다.
-      let oldest: StoredCandle | null = null;
+      // 이미 켜진 자리: 남의 초를 끄거나 바꾸지 않는다. 요청자에게 현재 상태만 알리고,
+      // 이 대가 가득 찼으면 candle_full 도 함께 보낸다(앱이 '자리가 모두 찼어요' 안내).
       let count = 0;
-      for (let s = base; s < base + stand.slots; s++) {
-        const c = this.candles.get(s);
-        if (!c) continue;
-        count++;
-        if (oldest === null || c.seq < oldest.seq) oldest = c;
-      }
-      if (count < stand.slots || oldest === null) {
-        this.send(peer.connId, { t: 'candle', slot: lit.slot, until: 0, intention: lit.intention });
-        return;
-      }
-      target = oldest.slot;
+      for (let s = base; s < base + stand.slots; s++) if (this.candles.has(s)) count++;
+      this.send(peer.connId, { t: 'candle', slot: lit.slot, until: lit.until, intention: lit.intention });
+      if (count >= stand.slots) this.send(peer.connId, { t: 'error', code: 'candle_full' });
+      return;
     }
-    const c: StoredCandle = { slot: target, until: 0, intention: m.intention, seq: ++this.candleSeq };
+    const target = m.slot;
+    const c: StoredCandle = { slot: target, until: now + CANDLE_TTL_MS, intention: m.intention, seq: ++this.candleSeq, at: now };
     this.candles.set(target, c);
-    const day = kstDay(this.clock());
+    const day = kstDay(now);
     if (this.lit.day !== day) this.lit = { day, count: 0 };
     this.lit.count++;
     this.persistCandleFn?.(c);
-    const out = { t: 'candle', slot: target, until: 0, intention: c.intention };
+    const out = { t: 'candle', slot: target, until: c.until, intention: c.intention };
     for (const p of this.peersByConn.values()) this.send(p.connId, out); // 촛불은 모두에게
   }
 
