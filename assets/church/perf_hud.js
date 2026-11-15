@@ -85,7 +85,7 @@
   function gpuName() {
     try {
       var gl = H.App.R.renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
-      return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)).replace(/\s+/g, ' ').slice(0, 60);
+      return String((ext && gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || '?').replace(/\s+/g, ' ').slice(0, 60);
     } catch (e) { return '?'; }
   }
   // GPU 시간(EXT_disjoint_timer_query_webgl2): 실기기에서만 대개 있다. 결과는 몇 프레임 뒤에 읽는다.
