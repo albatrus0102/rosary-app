@@ -69,20 +69,29 @@
     // 읽는 순서만 시야 안의 창을 먼저(VIS_BOOST)
     out.load.sort(function (a, b) { return vis_(b) * out.score[b] - vis_(a) * out.score[a]; });
     function vis_(id) { for (var k = 0; k < cand.length; k++) if (cand[k].g.id === id) return cand[k].v ? VIS_BOOST : 1; return 1; }
-    // 원하지 않는 상주 질감: 상한 안이면 남겨 둔다(되돌아올 때 다시 읽지 않게 = LRU 캐시), 넘치면 점수 낮고 오래된 것부터 해제
-    var res = [], rn = 0, rmb = 0;
+    // 원하지 않는 상주 질감: 상한 안이면 남겨 둔다(되돌아올 때 다시 읽지 않게 = LRU 캐시).
+    // 새로 읽을 자리가 모자랄 때만, 그리고 상한이 줄었을 때만 점수 낮고 오래된 것부터 해제한다.
+    // 읽는 중인 것은 아직 후보(점수 > 남기 문턱)면 끝까지 읽게 둔다(걷는 동안 읽기-취소가 되풀이되지 않게).
+    var cnt = 0, used = 0, spare = [];
     for (i = 0; i < groups.length; i++) {
       g = groups[i];
       if (g.near !== 'ready' && g.near !== 'loading') continue;
-      rn++; rmb += g.mb || 3;
-      if (!wantSet[g.id]) res.push(g);
+      cnt++; used += g.mb || 3;
+      if (wantSet[g.id]) continue;
+      if (g.near === 'loading' && (out.score[g.id] || 0) > cell * STAY) continue;
+      spare.push(g);
     }
-    // 새로 읽을 것까지 더한 뒤의 수·MB 기준
-    for (i = 0; i < out.load.length; i++) { rn++; rmb += 3; }
-    res.sort(function (a, b) { return (out.score[a.id] - out.score[b.id]) || ((a.used || 0) - (b.used || 0)); });
-    for (i = 0; i < res.length && (rn > bud.near || rmb > bud.nearMb); i++) {
-      out.evict.push(res[i].id); rn--; rmb -= res[i].mb || 3;
+    spare.sort(function (a, b) { return ((out.score[a.id] || 0) - (out.score[b.id] || 0)) || ((a.used || 0) - (b.used || 0)); });
+    var si = 0;
+    function evictOne() { if (si >= spare.length) return false; var v = spare[si++]; out.evict.push(v.id); cnt--; used -= v.mb || 3; return true; }
+    while ((cnt > bud.near || used > bud.nearMb) && evictOne()) { /* 상한이 줄었다 */ }
+    var keep = [];
+    for (i = 0; i < out.load.length; i++) {
+      while ((cnt + 1 > bud.near || used + 3 > bud.nearMb) && evictOne()) { /* 자리 만들기 */ }
+      if (cnt + 1 > bud.near || used + 3 > bud.nearMb) break;
+      keep.push(out.load[i]); cnt++; used += 3;
     }
+    out.load = keep;
     return out;
   }
 

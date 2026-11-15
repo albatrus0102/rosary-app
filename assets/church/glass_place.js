@@ -25,7 +25,7 @@
     var groups = [], slots = [], token = 0, pending = 0, nearCur = null, nearT = 0, lastNearId, planT = 0;
     var stats = { created: 0, disposed: 0, resident: 0, texMb: 0, loads: 0, errors: 0, farMb: 0, uploads: 0, evicted: 0, decodeMs: 0, uploadMsMax: 0 };
     var far = null;                 // {state, tex, mesh, mat, rects, mb, fade, slotOf}
-    var decoding = 0, upQ = [], church = null;
+    var decoding = 0, upQ = [], church = null, lastEvict = null;
     var vDir = new T.Vector3(), vTo = new T.Vector3(), ray = new T.Raycaster(), vN = new T.Vector2();
 
     function count() {
@@ -291,6 +291,7 @@
         focal: hpx / (2 * Math.tan(fov / 2)), cell: far && far.state !== 'error' ? GS.budget(tier()).cell : 0 };
       var bud = GS.budget(tier());
       var r = GS.plan(groups, view, bud);
+      if (r.evict.length) lastEvict = { evict: r.evict.slice(), want: r.want.slice(), res: groups.filter(function (g) { return g.near === 'ready' || g.near === 'loading'; }).map(function (g) { return g.win + ':' + g.near + ':' + Math.round(g.mb * 10) / 10; }) };
       var now = performance.now();
       r.want.forEach(function (id) { var g = byId(id); if (g && g.near === 'ready') g.used = now; });
       r.evict.forEach(function (id) {
@@ -410,7 +411,7 @@
       // 시험용: 지금 카메라로 스트리밍 판단을 바로 한 번 한다(헤드리스 도구가 프레임을 몰아 돌릴 때)
       plan: function () { if (App.camera) plan(App.camera); },
       debug: function () {
-        return { pending: pending, decoding: decoding, upQ: upQ.length, near: lastNearId || null, stats: JSON.parse(JSON.stringify(stats)), slots: slots.length, legacy: LEGACY, stress: STRESS,
+        return { pending: pending, decoding: decoding, upQ: upQ.length, lastEvict: lastEvict, near: lastNearId || null, stats: JSON.parse(JSON.stringify(stats)), slots: slots.length, legacy: LEGACY, stress: STRESS,
           far: far ? { state: far.state, mb: Math.round(far.mb * 10) / 10, n: Object.keys(far.rects).length, ms: far.ms || 0 } : null,
           groups: groups.map(function (g) { return { win: g.win, state: g.state, near: g.near, slots: g.slots.length, ms: g.ms || 0, mb: Math.round(g.mb * 10) / 10 }; }) };
       },
