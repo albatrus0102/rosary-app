@@ -35,6 +35,7 @@ sealed class SceneEvent {
             seat: seat is String ? seat : null,
             candle: candle is num ? candle.toInt() : null,
             station: station is String ? station : null,
+            shrine: j['shrine'] == true,
           );
         case 'seated':
           final seat = j['seat'];
@@ -63,6 +64,10 @@ sealed class SceneEvent {
             altar: n(j['altar']),
             font: n(j['font']),
             cross: n(j['cross']),
+            shrine: n(j['shrine']),
+            shrineLabel: j['shrineLabel'] is String
+                ? j['shrineLabel'] as String
+                : null,
           );
         case 'walkStart':
           final kind = j['kind'];
@@ -211,20 +216,24 @@ class SceneReady extends SceneEvent {
 /// 가까이 있는 것. [seat]은 앉을 수 있는 빈 좌석, [candle]은 촛불 슬롯,
 /// [station]은 서 있는 스테이션('altar' 제대 앞, 'font' 성수대)이다.
 class SceneNear extends SceneEvent {
-  const SceneNear({this.seat, this.candle, this.station});
+  const SceneNear({this.seat, this.candle, this.station, this.shrine = false});
   final String? seat;
   final int? candle;
   final String? station;
+
+  /// [station]이 'altar'이고 그 자리가 성모상 앞(shrine.js)이면 true: 묵주기도를 서서 한다.
+  final bool shrine;
 
   @override
   bool operator ==(Object other) =>
       other is SceneNear &&
       other.seat == seat &&
       other.candle == candle &&
-      other.station == station;
+      other.station == station &&
+      other.shrine == shrine;
 
   @override
-  int get hashCode => Object.hash(seat, candle, station);
+  int get hashCode => Object.hash(seat, candle, station, shrine);
 }
 
 /// 성당을 불러온 뒤 한 번: 갈 수 있는 스테이션 개수(성수대는 없는 성당이 있다).
@@ -235,7 +244,15 @@ class SceneStations extends SceneEvent {
     this.altar = 0,
     this.font = 0,
     this.cross = 0,
+    this.shrine = 0,
+    this.shrineLabel,
   });
+
+  /// 성모상 앞(기도 자리)이 있으면 1. '가기' 시트에 성모상 줄이 나온다.
+  final int shrine;
+
+  /// '가기' 시트의 성모상 줄 이름(없으면 '성모상').
+  final String? shrineLabel;
   final int candle;
   final int altar;
   final int font;
@@ -592,8 +609,11 @@ abstract class ChurchSceneController {
   bool _joyBusy = false;
   Future<void> sit({String? seat}) => _call('sit', {'seat': ?seat});
   Future<void> stand() => _call('stand', const {});
-  Future<void> setPraying({required bool on, required int ms}) =>
-      _call('setPraying', {'on': on, 'ms': ms});
+  Future<void> setPraying({
+    required bool on,
+    required int ms,
+    bool stand = false,
+  }) => _call('setPraying', {'on': on, 'ms': ms, if (stand) 'stand': true});
 
   /// 내 아바타가 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 든다.
   Future<void> setRosary({required bool on}) => _call('setRosary', {'on': on});
@@ -775,7 +795,7 @@ class WebViewChurchSceneController extends ChurchSceneController {
         'FlutterChurch',
         onMessageReceived: (m) {
           if (ChurchDiagnostics.handleRaw(m.message)) return;
-          if (DevGlass.handleRaw(m.message)) return;   // 개발용 임시 유리 표시(일반 빌드에서는 무시)
+          if (DevGlass.handleRaw(m.message)) return; // 개발용 임시 유리 표시(일반 빌드에서는 무시)
           final e = SceneEvent.parse(m.message);
           if (e == null) return;
           if (e is SceneReady) _readyTimer?.cancel();

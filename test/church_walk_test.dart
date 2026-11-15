@@ -48,6 +48,45 @@ void main() {
       expect(h.scene.walkKinds, isEmpty, reason: '고르기 전에는 걷지 않는다');
     });
 
+    testWidgets(
+      'a church with a Mary shrine gets the 성모상 row → walkTo shrine',
+      (tester) async {
+        final h = await pumpChurch(tester, size: const Size(360, 640));
+        await tester.tap(_goButton);
+        await _settle(tester);
+        expect(find.byKey(const ValueKey('go-shrine')), findsNothing);
+        await tester.tapAt(const Offset(5, 300));
+        await _settle(tester);
+        h.scene.emit(const SceneStations(candle: 2, altar: 1, shrine: 1));
+        await tester.pump();
+        await tester.tap(_goButton);
+        await _settle(tester);
+        expect(find.text('성모상'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('go-shrine')));
+        await _settle(tester);
+        expect(h.scene.walkKinds, ['shrine']);
+      },
+    );
+
+    testWidgets('shrineLabel renames the 성모상 row (Maggiore icon)', (
+      tester,
+    ) async {
+      final h = await pumpChurch(tester, size: const Size(360, 640));
+      h.scene.emit(
+        const SceneStations(
+          candle: 1,
+          altar: 1,
+          shrine: 1,
+          shrineLabel: '로마 백성의 구원 성화',
+        ),
+      );
+      await tester.pump();
+      await tester.tap(_goButton);
+      await _settle(tester);
+      expect(find.text('로마 백성의 구원 성화'), findsOneWidget);
+      expect(find.text('성모상'), findsNothing);
+    });
+
     testWidgets('a church with a font gets the 성수대 row', (tester) async {
       final h = await pumpChurch(tester, size: const Size(360, 640));
       h.scene.emit(const SceneStations(candle: 1, altar: 1, font: 1));
@@ -530,6 +569,7 @@ void main() {
       expect(ChurchGoTarget.values.map((t) => t.kind), [
         'candle',
         'altar',
+        'shrine',
         'seat',
         'entrance',
         'font',

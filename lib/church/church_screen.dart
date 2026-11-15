@@ -223,6 +223,9 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 시트에서 고른 신비: 다음에 만드는 기도 세션에 쓴다(없으면 오늘의 신비).
   MysterySet? _rosarySet;
 
+  /// 성모상 앞에서 서서 하는 묵주기도(좌석 없음). 서버는 앉은 사람의 기도만 받으므로 다른 사람에게는 보이지 않는다.
+  bool _standPray = false;
+
   /// 내 아바타가 묵주를 들고 있는가(장면에 알린 값). 묵주기도 중이거나 그 자리로 가는 중.
   bool _rosaryHeld = false;
 
@@ -914,9 +917,10 @@ class _ChurchScreenState extends State<ChurchScreen>
   void _sendPraying(bool on) {
     final p = _prayer;
     if (p == null) return;
-    unawaited(_scene.setPraying(on: on, ms: p.ms));
+    unawaited(_scene.setPraying(on: on, ms: p.ms, stand: _standPray));
     // 성당의 기도 카드는 묵주기도다: 기도하는 동안 묵주를 들고, 쉬거나 마치면 내려놓는다.
     _setRosary(on);
+    if (_standPray) return; // 서서 하는 기도는 서버(좌석 전제)에 알리지 않는다.
     _net.sendPraying(on, p.ms, kneel: on && _kneel, rosary: on);
   }
 
@@ -1157,6 +1161,8 @@ class _ChurchScreenState extends State<ChurchScreen>
         _themed,
         hasFont: _stations.font > 0,
         hasCross: _stations.cross >= StationsOfCrossWalk.count,
+        hasShrine: _stations.shrine > 0,
+        shrineLabel: _stations.shrineLabel,
       );
     } finally {
       _sheetOpen = false;
@@ -1313,12 +1319,14 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   /// 묵주기도 하기: 묵주를 들고 가까운 빈 자리로 걸어가 앉는다. 앉으면 묵주기도 카드가 열린다.
+  /// 성모상 앞이면 자리로 가지 않고 서서 한다([_startStandingRosary]).
   ///
-  /// 서서 카드를 열지 않는 까닭: 서버는 앉아 있을 때만 기도 상태를 받아 주고(다른 사람에게 보이지
+  /// 제대 앞에서는 서서 카드를 열지 않는 까닭: 서버는 앉아 있을 때만 기도 상태를 받아 주고(다른 사람에게 보이지
   /// 않는다), 기도 카드(자세 선택·일어나기·이어 하기)도 좌석을 전제로 하며, 제대 앞에 오래 서 있으면
   /// 다른 사람의 자리를 막는다.
   void _startRosary(MysterySet? set) {
     if (_mySeat != null || _pendingSeat != null) return;
+    final standing = _near.station == 'altar' && _near.shrine;
     // 고른 신비가 하던 세션과 다르면(또는 이미 마쳤으면) 세션을 새로 만든다. 같으면 이어 한다.
     final p = _prayer;
     if (p != null && (p.finished || (set != null && p.mysterySet != set))) {
@@ -1327,14 +1335,30 @@ class _ChurchScreenState extends State<ChurchScreen>
       p.dispose();
     }
     _rosarySet = set;
+    unawaited(_scene.setJoystick(0, 0));
+    if (standing) {
+      _startStandingRosary();
+      return;
+    }
     _rosaryWalk = true;
     _setRosary(true);
-    unawaited(_scene.setJoystick(0, 0));
     if (_near.seat != null) {
       _onSit();
     } else {
       unawaited(_scene.walkTo(ChurchGoTarget.seat.kind));
     }
+  }
+
+  /// 성모상 앞에서 서서 하는 묵주기도: 자리로 가지 않고 선 채 손을 모으고 기도 카드를 연다.
+  void _startStandingRosary() {
+    _standPray = true;
+    final p = _prayer ??= _createPrayer();
+    p.start();
+    _wasFinished = p.finished;
+    _prayerActive = true;
+    _sendPraying(!p.finished);
+    if (!_hidden) _setWakelock(true);
+    setState(() {});
   }
 
   void _onSit() {
@@ -1393,6 +1417,11 @@ class _ChurchScreenState extends State<ChurchScreen>
     bool saveProgress = true,
   }) {
     final wasSeated = _mySeat != null || _pendingSeat != null;
+    final wasStanding = _standPray;
+    _standPray = false;
+    if (wasStanding && tellScene) {
+      unawaited(_scene.setPraying(on: false, ms: 0));
+    }
     _mySeat = null;
     _pendingSeat = null;
     _prayerActive = false;
@@ -1825,6 +1854,7 @@ class _ChurchScreenState extends State<ChurchScreen>
                               onTogglePause: _togglePause,
                               onStand: _stopFromCard,
                               onPosture: _setPosture,
+                              standing: _standPray,
                               onEnd: _endPrayer,
                               onFullScreen: _openFullScreenPrayer,
                               onInset: (f) => unawaited(_scene.setViewInset(f)),
@@ -1835,6 +1865,7 @@ class _ChurchScreenState extends State<ChurchScreen>
                               onTogglePause: _togglePause,
                               onStand: _stopFromCard,
                               onPosture: _setPosture,
+                              standing: _standPray,
                               onEnd: _endPrayer,
                               onFullScreen: _openFullScreenPrayer,
                             ),

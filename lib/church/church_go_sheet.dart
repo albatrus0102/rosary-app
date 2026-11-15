@@ -6,6 +6,9 @@ import '../app/theme.dart';
 enum ChurchGoTarget {
   candle('candle', '촛불 봉헌대', Icons.local_fire_department_outlined),
   altar('altar', '제대 앞', Icons.church_outlined),
+
+  /// 성모상 앞 기도 자리(shrine.js). 성모상 앞에 서서 성모상을 바라본다.
+  shrine('shrine', '성모상', Icons.favorite_border),
   seat('seat', '가까운 빈 자리', Icons.event_seat_outlined),
   entrance('entrance', '입구', Icons.door_front_door_outlined),
   font('font', '성수대', Icons.water_drop_outlined),
@@ -28,6 +31,8 @@ Future<ChurchGoTarget?> showChurchGoSheet(
   BuildContext context, {
   bool hasFont = false,
   bool hasCross = false,
+  bool hasShrine = false,
+  String? shrineLabel,
 }) {
   return showModalBottomSheet<ChurchGoTarget>(
     context: context,
@@ -37,16 +42,31 @@ Future<ChurchGoTarget?> showChurchGoSheet(
     // 시스템 내비게이션 바(3버튼·제스처 막대)에 줄이 가려지지 않게 한다.
     builder: (context) => SafeArea(
       top: false,
-      child: ChurchGoSheet(hasFont: hasFont, hasCross: hasCross),
+      child: ChurchGoSheet(
+        hasFont: hasFont,
+        hasCross: hasCross,
+        hasShrine: hasShrine,
+        shrineLabel: shrineLabel,
+      ),
     ),
   );
 }
 
 class ChurchGoSheet extends StatelessWidget {
-  const ChurchGoSheet({super.key, this.hasFont = false, this.hasCross = false});
+  const ChurchGoSheet({
+    super.key,
+    this.hasFont = false,
+    this.hasCross = false,
+    this.hasShrine = false,
+    this.shrineLabel,
+  });
 
   final bool hasFont;
   final bool hasCross;
+
+  /// 성모상 앞 기도 자리가 있는 성당이면 '성모상' 줄이 나온다([shrineLabel]로 이름을 바꿀 수 있다).
+  final bool hasShrine;
+  final String? shrineLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +74,8 @@ class ChurchGoSheet extends StatelessWidget {
     final targets = [
       for (final t in ChurchGoTarget.values)
         if ((t != ChurchGoTarget.font || hasFont) &&
-            (t != ChurchGoTarget.cross || hasCross))
+            (t != ChurchGoTarget.cross || hasCross) &&
+            (t != ChurchGoTarget.shrine || hasShrine))
           t,
     ];
     return Column(
@@ -79,7 +100,11 @@ class ChurchGoSheet extends StatelessWidget {
                     minTileHeight: 56,
                     shape: RoundedRectangleBorder(borderRadius: AppShape.large),
                     leading: Icon(t.icon),
-                    title: Text(t.label),
+                    title: Text(
+                      t == ChurchGoTarget.shrine
+                          ? (shrineLabel ?? t.label)
+                          : t.label,
+                    ),
                     subtitle: t.subtitle == null ? null : Text(t.subtitle!),
                     onTap: () => Navigator.of(context).pop(t),
                   ),

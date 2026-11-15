@@ -168,7 +168,11 @@ class ChurchPrayerCard extends StatelessWidget {
     this.onPosture,
     required this.onEnd,
     required this.onFullScreen,
+    this.standing = false,
   });
+
+  /// 성모상 앞에서 서서 하는 기도: 자세 선택 대신 '서서' 표시를 둔다.
+  final bool standing;
 
   final ChurchPrayerController controller;
   final AppSettings settings;
@@ -353,7 +357,20 @@ class ChurchPrayerCard extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: onPosture == null
+                              child: standing
+                                  ? const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Chip(
+                                        key: ValueKey('prayer-posture-stand'),
+                                        avatar: Icon(
+                                          Icons.accessibility_new,
+                                          size: 18,
+                                        ),
+                                        label: Text('서서'),
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                    )
+                                  : onPosture == null
                                   ? const SizedBox.shrink()
                                   : Align(
                                       alignment: Alignment.centerLeft,

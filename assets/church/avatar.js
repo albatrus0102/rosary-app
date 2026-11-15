@@ -1012,7 +1012,7 @@
   Avatar.prototype.seatLift = 0.45;
   Avatar.prototype.setWalk = function (v) { this.walkTarget = v; };
   Avatar.prototype.setSeated = function (b) { this.sitTarget = b ? 1 : 0; };
-  Avatar.prototype.setPray = function (b) { this.prayTarget = b ? 1 : 0; };
+  Avatar.prototype.setPray = function (b, standing) { this.prayTarget = b ? 1 : 0; this.prayStand = b && standing ? 1 : 0; };   // standing: 서서 손을 모은다(앉지 않아도 기도 팔)
   // 무릎 꿇기(앉아 있을 때만 보인다). spot = ChurchLogic.kneelSpot(seatId): {fwd 좌석 중심에서 무릎까지 앞으로(m), y 무릎 받침 높이, rail 앞에 손 얹을 등받이}.
   // 몸 전체가 뿌리(좌석 중심)에서 앞으로 fwd 만큼 나가 무릎틀 위에 무릎을 꿇는다. 전환은 KNEEL_DUR 초(부드러운 보간).
   Avatar.prototype.setKneel = function (b, spot) {
@@ -1122,7 +1122,7 @@
     this.rosaryAmt += (this.rosaryTarget - this.rosaryAmt) * Math.min(1, dt * ROSARY.FADE);
     var kl = this.kneelLin, kt = this.kneelTarget;
     if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / KNEEL_DUR; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
-    var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * sa, ka = this.kneelAmt * sa;
+    var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * Math.max(sa, this.prayStand || 0), ka = this.kneelAmt * sa;
     // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 4.0*walkAmt m/s)
     var A = (0.09 + 0.27 * w) * sm(w * 6);
     if (w > 0.01) {
@@ -1298,7 +1298,7 @@
         var rr = pa * ka * this.kneelRail;
         ro.position.set(_v.x, _v.y - ROSARY.RAIL_DY * rr, _v.z + ROSARY.RAIL_DZ * rr);
         // 서 있을 때는 고리가 몸 옆면과 나란하게(다리에 파묻히지 않게), 앉아 손을 모으면 정면을 보게 돌린다. 걸을 때는 조금 흔들린다.
-        ro.rotation.set(0.22 * w * Math.sin(ph), (1 - sa) * PI / 2, 0.03 * Math.sin(t * 1.3 + this.off));
+        ro.rotation.set(0.22 * w * Math.sin(ph), (1 - Math.max(sa, pa)) * PI / 2, 0.03 * Math.sin(t * 1.3 + this.off));
         ro.scale.setScalar(ra > 0.98 ? 1 : ra);
         ro.visible = true;
       }

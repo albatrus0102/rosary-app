@@ -78,12 +78,12 @@ test('shrine danggogae: 입구 홀 오른쪽 성모상 앞 둥근 연못(지름 
   assert.equal(Shrine.POND.R * 2, 1.5);
 });
 
-test('shrine statues: 입체 성모상 — 자리마다 깊이·색 묶음(statue3d_<img>.js ≤ 200KB), 성 베드로·마조레는 성화 그대로', () => {
+test('shrine statues: 입체 성모상 — 자리마다 깊이·색 묶음(statue3d_<img>.js ≤ 200KB), 마조레만 성화 사진 그대로', () => {
   const fs = require('node:fs'), path = require('node:path');
   const dir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../assets/church');
   const want = { danggogae: 'plain_white', basic: 'immaculate_blue', lateran: 'immaculate_blue', stpaul: 'immaculate_blue', milan: 'immaculate_blue', florence: 'immaculate_blue', myeongdong: 'hanbok_rosary' };
   for (const [id, key] of Object.entries(want)) assert.equal(Places[id].img, key, id);
-  assert.equal(Places.maggiore.img, undefined); assert.equal(Places.stpeter.img, undefined);
+  assert.equal(Places.maggiore.img, undefined); assert.equal(Places.stpeter.img, 'immaculate_blue');   // 성 베드로: 제대 위 입체 성모상(그림 제단화는 배경만) / 마조레: 성화 사진
   for (const key of new Set(Object.values(want))) {
     const src = fs.readFileSync(path.join(dir, 'statue3d_' + key + '.js'), 'utf8');
     assert.ok(src.length <= 200 * 1024, key + ' ' + src.length);
@@ -122,4 +122,25 @@ test('shrine statueMesh: 변위 격자 — 실루엣 밖 정점 제거·가장�
   }
   assert.ok(maxOut < 0.6, 'ring snapped to silhouette (cells) ' + maxOut.toFixed(2));
   m.uv.forEach((u) => assert.ok(u >= -0.01 && u <= 1.01));
+});
+
+// 모든 성당의 성모 자리: 실제 성상(입체 성모상 묶음) 또는 실제 성화 사진이 있고(절차 그림 자리표시 아님), '가기' 메뉴에 성모상 줄이 있다.
+for (const id of READY) test(`shrine ${id}: 실제 성모상(또는 성화 사진) + 가기 '성모상' 도착지(성상을 바라봄)`, () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const dir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../assets/church');
+  const p = Places[id];
+  if (p.img) {
+    assert.ok(fs.existsSync(path.join(dir, 'statue3d_' + p.img + '.js')), 'statue3d bundle for ' + id);
+    if (p.kind === 'existing') assert.ok(p.altar_h > 0.5 && p.altar_d < 0, 'altar_d/altar_h');   // 제대 위 성모상(성 베드로)
+  } else {
+    assert.equal(p.icon, true, id + ': img 도 icon 도 없음 = 성상이 없다');
+    assert.ok(/salus/.test(fs.readFileSync(path.join(dir, 'art_maggiore.js'), 'utf8').slice(0, 400000)), '성화 사진 묶음');
+    assert.ok(p.go_ko && p.go_ko !== '성모상', '성상이 아니라 성화이므로 가기 줄 이름이 다르다');
+  }
+  const c = by[id], L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }), S = Stations.create(L);
+  const tg = S.station('shrine', undefined, c.layout.spawn);
+  assert.ok(tg && tg.shrine, 'station(shrine)');
+  assert.ok(S.findPath(c.layout.spawn, tg), 'walkable');
+  const want = Math.atan2(-(p.x - tg.x), -(p.z - tg.z)), dy = Math.atan2(Math.sin(tg.yaw - want), Math.cos(tg.yaw - want));
+  assert.ok(Math.abs(dy) < 0.01, 'faces the statue');
 });

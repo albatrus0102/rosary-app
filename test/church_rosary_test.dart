@@ -527,6 +527,39 @@ void main() {
       },
     );
 
+    testWidgets('at the Mary shrine: 묵주기도 is prayed standing (no seat, 서서)', (
+      tester,
+    ) async {
+      final h = await pumpChurch(tester, size: const Size(360, 800));
+      h.scene.emit(const SceneNear(station: 'altar', shrine: true));
+      await _settle(tester);
+      await tester.tap(find.text('기도하기'));
+      await _settle(tester);
+      await tester.tap(find.byKey(_rosary));
+      await _settle(tester);
+      // 자리로 걸어가지도 앉지도 않는다.
+      expect(h.scene.count('walkTo'), 0);
+      expect(h.scene.count('sit'), 0);
+      expect(h.net.sits, isEmpty);
+      // 서서 손을 모으고 묵주를 든다. 서버(좌석 전제)에는 알리지 않는다.
+      expect(h.scene.lastArgs('setPraying'), containsPair('stand', true));
+      expect(h.scene.lastArgs('setPraying'), containsPair('on', true));
+      expect(_rosaryCalls(h), [true]);
+      expect(find.byType(ChurchPrayerCard), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('prayer-posture-stand')),
+        findsOneWidget,
+      );
+      expect(find.text('서서'), findsOneWidget);
+      expect(find.byKey(const ValueKey('prayer-posture')), findsNothing);
+      // 일어나기: 손을 풀고 묵주를 내려놓는다.
+      await tester.tap(find.byKey(const ValueKey('prayer-stand')));
+      await _settle(tester);
+      expect(h.scene.lastArgs('setPraying'), containsPair('on', false));
+      expect(_rosaryCalls(h), [true, false]);
+      expect(find.byType(ChurchPrayerCard), findsNothing);
+    });
+
     testWidgets('already next to a seat: sits at once (no walk)', (
       tester,
     ) async {

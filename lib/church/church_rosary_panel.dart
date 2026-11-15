@@ -31,7 +31,11 @@ class ChurchRosaryPanel extends StatefulWidget {
     this.onInset,
     this.scene,
     this.feedback,
+    this.standing = false,
   });
+
+  /// 성모상 앞에서 서서 하는 기도: 자세 선택 대신 '서서' 표시를 둔다(좌석이 없어 앉기·무릎 꿇기는 없다).
+  final bool standing;
 
   final ChurchPrayerController controller;
   final AppSettings settings;
@@ -428,7 +432,17 @@ class _ChurchRosaryPanelState extends State<ChurchRosaryPanel> {
     return Row(
       children: [
         Expanded(
-          child: widget.onPosture == null
+          child: widget.standing
+              ? const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Chip(
+                    key: ValueKey('prayer-posture-stand'),
+                    avatar: Icon(Icons.accessibility_new, size: 18),
+                    label: Text('서서'),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                )
+              : widget.onPosture == null
               ? const SizedBox.shrink()
               : Align(
                   alignment: Alignment.centerLeft,

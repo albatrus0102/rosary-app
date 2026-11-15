@@ -253,8 +253,10 @@
           for (k8 = 0; k8 < 8; k8++) { var b0 = k8 * PI / 4, b1 = b0 + PI / 4; tr = tr.concat(W3(0, f1 + 0.17, d), W3(Math.cos(b0) * rr, f1 + 0.17 + Math.sin(b0) * rr, d), W3(Math.cos(b1) * rr, f1 + 0.17 + Math.sin(b1) * rr, d)); }
           solid.addTris(tr, col, hint);
         }
-        solid.addQuad(W3(-0.4, f0, 0.176), W3(0.4, f0, 0.176), W3(0.14, f1, 0.176), W3(-0.14, f1, 0.176), o.pic2 === undefined ? 0xf1e6cf : o.pic2, hint);
-        oct(0.27, 0.172, 0xd8b13f); oct(0.15, 0.18, 0xf3dcc4);
+        if (!o.noFigure) {   // noFigure: 그림 속 인물(크림 삼각형·후광)을 그리지 않는다(제대 위에 입체 성모상이 선다: shrine.js)
+          solid.addQuad(W3(-0.4, f0, 0.176), W3(0.4, f0, 0.176), W3(0.14, f1, 0.176), W3(-0.14, f1, 0.176), o.pic2 === undefined ? 0xf1e6cf : o.pic2, hint);
+          oct(0.27, 0.172, 0xd8b13f); oct(0.15, 0.18, 0xf3dcc4);
+        }
         [-1, 1].forEach(function (k) {
           var c = onWall(x, z, n, k * (fw / 2 + 0.24), 0.22), q = onWall(x, z, n, k * (w / 2 - 0.25), 0.42);
           ctx.cyl({ x: c[0], y: 1.2, z: c[1], r: 0.15, rTop: 0.13, h: fh + 0.35, seg: 8, color: o.colc || RED, mat: 'gloss' });
@@ -1147,7 +1149,7 @@
         monument(xp, -1.35, nPier, YEL); monument(xp, -16.65, nPier, GREEN);
         // 제대: 동쪽 모서리 경당은 바깥벽 가운데, 서쪽 모서리 경당은 서쪽 끝벽 가운데
         sideAltar(xo, 4.85, nIn, 2.2, s > 0 ? 0x5b7fb5 : 0xb5524a, { colc: s > 0 ? GREEN : RED });       // 구원의 성모 제대 / 성 대 그레고리오 제대
-        sideAltar(xm, -25.75, [0, 1], 2.2, s > 0 ? 0x7a6a9a : 0x5b7fb5, { colc: s > 0 ? RED : YEL });    // 성 미카엘 제대 / 기둥의 성모 제대
+        sideAltar(xm, -25.75, [0, 1], 2.2, s > 0 ? 0x7a6a9a : 0x5b7fb5, { colc: s > 0 ? RED : YEL, noFigure: s < 0 });    // 성 미카엘 제대 / 기둥의 성모 제대
       });
       VC('ambulatory');
       // ---------------------------------------------------------------- 베드로의 의자(카테드라 페트리) + 글로리아

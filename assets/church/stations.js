@@ -299,7 +299,8 @@
           if (idx >= 0) { var ii = idx % g.nx, jj = (idx - ii) / g.nx; best = { x: cx(g, ii), z: cz(g, jj) }; }
         }
         if (!best) continue;
-        out.push({ index: si, x: best.x, z: best.z, yaw: yawToward(best.x, best.z, S.x, S.z), reach: rr, stand: { x: S.x, z: S.z }, shrine: !!S.shrine, label: S.label });
+        var sh = S.shrine && layout.shrine && layout.shrine.stand === si ? layout.shrine : null;   // 성모상 앞: 성상을 바라보고 선다
+        out.push({ index: si, x: best.x, z: best.z, yaw: sh ? yawToward(best.x, best.z, sh.x, sh.z) : yawToward(best.x, best.z, S.x, S.z), reach: rr, stand: { x: S.x, z: S.z }, shrine: !!S.shrine, label: S.label });
       }
       return out;
     }
@@ -347,6 +348,7 @@
         var st = S.stations();
         if (kind === 'altar') return st.altar;
         if (kind === 'entrance') return st.entrance;
+        if (kind === 'shrine') { for (var sq = 0; sq < st.candle.length; sq++) if (st.candle[sq].shrine) return st.candle[sq]; return null; }   // 성모상 앞(가기 메뉴 '성모상')
         var list = kind === 'candle' ? st.candle : (kind === 'font' ? st.font : null);
         if (!list || !list.length) return null;
         if (index !== undefined && index !== null && list[index | 0]) return list[index | 0];

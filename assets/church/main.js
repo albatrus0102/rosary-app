@@ -51,12 +51,16 @@
   root.addEventListener('resize', resize);
   root.addEventListener('orientationchange', function () { setTimeout(resize, 150); });
 
+  // '가기' 메뉴의 성모상 줄 이름(shrine_places.go_ko, 기본 '성모상').
+  function shrineGoLabel(id) { var P = root.ChurchShrinePlaces, p = P && P[id]; return (p && p.go_ko) || '성모상'; }
+  var nearShrineNow = false;   // nearStation 이 고른 곳이 성모상 앞인가(제대 앞과 같은 'altar' 칩이지만 묵주기도를 서서 한다)
   function setNear(seat, candle, station) {
     if (station === undefined) station = null;
-    if (seat === App.near.seat && candle === App.near.candle && station === App.near.station) return;
-    App.near.seat = seat; App.near.candle = candle; App.near.station = station;
+    var shr = station === 'altar' && nearShrineNow;
+    if (seat === App.near.seat && candle === App.near.candle && station === App.near.station && shr === !!App.near.shrine) return;
+    App.near.seat = seat; App.near.candle = candle; App.near.station = station; App.near.shrine = shr;
     if (App.world) App.world.setHighlight(seat, candle);
-    post({ e: 'near', seat: seat, candle: candle, station: station });
+    post({ e: 'near', seat: seat, candle: candle, station: station, shrine: shr });
   }
 
   function isTaken(id) { return App.net.isTaken(id) || App.crowd.isTaken(id); }
@@ -98,7 +102,7 @@
     // 십자가의 길 14처 판: 자리는 바로 유도하고(cross 개수), 그림은 비동기로 싣는다(?cross=0 이면 끔)
     if (App.cross && !qs.thumb && qs.cross !== '0') App.cross.load(w);
     if (App.liturgy && !qs.thumb) App.liturgy.attach(w);   // 전례 시기 장식: 지금 시기대로 짓는다
-    post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1, cross: App.cross ? App.cross.count() : 0 });
+    post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1, cross: App.cross ? App.cross.count() : 0, shrine: stn.candle.some(function (c) { return c.shrine; }) ? 1 : 0, shrineLabel: shrineGoLabel(w.id) });
     if (console && console.log) console.log('[church] world ' + w.id + ' stats', JSON.stringify(w.stats));
   }
 
@@ -302,7 +306,12 @@
       if (me.mode === 'seated') beginStand();
       else if (me.mode === 'sitting') me.pendingStand = true;
     },
-    setPraying: function (o) { if (App.meAv && App.me.mode !== 'walk') App.meAv.setPray(!!o.on); },
+    setPraying: function (o) {
+      if (!App.meAv) return;
+      if (App.me.mode !== 'walk') { App.meAv.setPray(!!o.on); return; }
+      // 서서 하는 기도(성모상 앞 묵주기도): 걷기 모드에서도 손을 모은다. 그동안 이동 입력은 받지 않는다.
+      App.standPray = !!(o.on && o.stand); App.meAv.setPray(App.standPray, true);
+    },
     // 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 손에 든다. 다른 사람의 묵주는 peerPraying 의 r.
     setRosary: function (o) { App.rosary = !!(o && o.on); if (App.meAv) App.meAv.setRosary(App.rosary); },
     // 아래 패널 비율(0..0.6). 켜져 있는 동안 앉아도 '자리 시점'(아바타를 화면 아래로 두는 시점)을 쓰지 않아 아바타가 패널 위에 보인다.
@@ -390,7 +399,7 @@
     if (kind === 'seat') {
       if (o.seat && !isTaken(o.seat)) tg = S.seatStation(o.seat);
       if (!tg) tg = S.nearestFreeSeat(me, isTaken);
-    } else if (kind === 'candle' || kind === 'altar' || kind === 'entrance' || kind === 'font') {
+    } else if (kind === 'candle' || kind === 'altar' || kind === 'entrance' || kind === 'font' || kind === 'shrine') {
       tg = S.station(kind, o.index, me);
     } else if (kind === 'cross') {
       tg = App.cross ? App.cross.station(o.index) : null;   // 십자가의 길 n처 판 앞(index 0..13)
@@ -435,14 +444,15 @@
     var S = App.stations;
     if (!S) return null;
     var st = S.stations(), best = null, bd = 1e9, cur = App.near.station;
-    var list = [['altar', st.altar]];
+    var list = [['altar', st.altar, false]];
     st.font.forEach(function (f) { list.push(['font', f]); });
-    st.candle.forEach(function (c) { if (c.shrine) list.push(['altar', c]); });   // 성모상 앞(shrine.js): 제대 앞과 같은 '기도하기' 칩
+    st.candle.forEach(function (c) { if (c.shrine) list.push(['altar', c, true]); });   // 성모상 앞(shrine.js): 제대 앞과 같은 '기도하기' 칩
     for (var i = 0; i < list.length; i++) {
       var k = list[i][0], s = list[i][1], d = Math.hypot(me.x - s.x, me.z - s.z);
       var lim = cur === k ? 2.0 : 1.3;
-      if (d <= lim && d < bd) { bd = d; best = k; }
+      if (d <= lim && d < bd) { bd = d; best = k; nearShrineNow = !!list[i][2]; }
     }
+    if (!best) nearShrineNow = false;
     return best;
   }
 
@@ -451,6 +461,7 @@
     var mode = me.mode;
     if (mode === 'walk') {
       App.ctl.getMove(joy);
+      if (App.standPray) { joy.x = joy.y = 0; }
       var walked = null;   // 이번 프레임에 도착한 자동 걷기
       var W = App.walkSt;
       if (W && joy.x * joy.x + joy.y * joy.y > 0.04) { cancelWalk('input'); W = null; }   // 스틱·키보드는 자동 걷기를 끊는다
@@ -469,7 +480,7 @@
       if (walked) {
         vel.vx = vel.vz = vel.speed = 0; App.turn = { yaw: walked.yaw, t: 0.8 };
         // 기도 자리(제대 앞·성모 기도 자리·봉헌초·14처 판)에 닿으면 '자리 시점'으로 부드럽게 옮긴다(끌면 바로 수동)
-        if (walked.kind === 'altar' || walked.kind === 'candle' || walked.kind === 'cross') App.spot = { yaw: walked.yaw, t0: App.t, seat: false };
+        if (walked.kind === 'altar' || walked.kind === 'shrine' || walked.kind === 'candle' || walked.kind === 'cross') App.spot = { yaw: walked.yaw, t0: App.t, seat: false };
       }
       var k = Math.min(1, dt * 12);
       me.vx += (vel.vx - me.vx) * k; me.vz += (vel.vz - me.vz) * k;

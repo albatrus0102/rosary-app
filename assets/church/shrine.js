@@ -126,6 +126,11 @@
       var plain = p.kind === 'plain' || p.kind === 'pond';
       if (!(p.img && imageStatue(ctx, p, f, y + 0.91))) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
     }
+    if (p.kind === 'existing' && p.img && p.altar_h) {   // 제대 위 성모상(성 베드로): 뒤 제단화 앞, 제대 윗면에 받침 + 입체 성모상
+      var ad = p.altar_d || -0.9, sp = { x: p.x + f[0] * ad, z: p.z + f[1] * ad, img: p.img };
+      B(ad, 0, p.altar_h, 0.5, 0.62, 0.08, STONE, 'gloss');
+      if (!imageStatue(ctx, sp, f, y + p.altar_h + 0.08)) ctx.statue({ x: sp.x, z: sp.z, y: y + p.altar_h + 0.08, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: 'mary', halo: true });
+    }
     if (p.kind === 'pond') {
       // 둥근 연못: 낮은 돌 테두리(20조각, kit 묶음에 합쳐진다) + 어두운 바닥 + 물 표면(짙은 청록, 불투명 광택 — 실시간 반사·투명 없음)
       var cx = p.x + f[0] * POND.D, cz = p.z + f[1] * POND.D, N = 20, rm = POND.R + POND.RIM / 2, GR = 0xb9b2a6;
