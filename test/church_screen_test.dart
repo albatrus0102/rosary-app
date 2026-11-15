@@ -525,13 +525,26 @@ void main() {
       );
       expect(churchCandleBurn, const Duration(hours: 24));
       await ChurchCandleStore.add('basic', c(4, t0), now: t0);
-      await ChurchCandleStore.add('basic', c(2, t0.add(const Duration(hours: 5))), now: t0);
+      await ChurchCandleStore.add(
+        'basic',
+        c(2, t0.add(const Duration(hours: 5))),
+        now: t0,
+      );
       await ChurchCandleStore.add('danggogae', c(7, t0), now: t0);
       final later = t0.add(const Duration(hours: 23, minutes: 59));
-      expect((await ChurchCandleStore.load('basic', now: later)).map((e) => e.slot), [2, 4]);
-      expect((await ChurchCandleStore.load('danggogae', now: later)).single.slot, 7);
+      expect(
+        (await ChurchCandleStore.load('basic', now: later)).map((e) => e.slot),
+        [2, 4],
+      );
+      expect(
+        (await ChurchCandleStore.load('danggogae', now: later)).single.slot,
+        7,
+      );
       final next = t0.add(const Duration(hours: 24, minutes: 1));
-      expect((await ChurchCandleStore.load('basic', now: next)).map((e) => e.slot), [2]);
+      expect(
+        (await ChurchCandleStore.load('basic', now: next)).map((e) => e.slot),
+        [2],
+      );
       expect(await ChurchCandleStore.load('danggogae', now: next), isEmpty);
       expect(await ChurchCandleStore.load('milan', now: next), isEmpty);
     });

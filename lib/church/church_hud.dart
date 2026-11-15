@@ -745,7 +745,7 @@ class ChurchMoveZone extends StatefulWidget {
   });
 
   /// 손잡이와 화면 가장자리 사이 여백.
-  static const double margin = AppSpace.md;
+  static const double margin = AppSpace.sm;
 
   /// 손잡이가 차지하는 폭(여백 포함): 같은 줄의 다른 HUD 가 이만큼 비켜 선다.
   static const double reserve = 132 + margin + AppSpace.xs;

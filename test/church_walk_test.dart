@@ -221,8 +221,16 @@ void main() {
       // 켠 초는 하루(24시간) 탄다: until = 켠 시각 + 24h(로컬 즉시 표시, 서버가 확정)
       final until = lit['until'] as int;
       final now = DateTime.now().millisecondsSinceEpoch;
-      expect(until, greaterThan(now + const Duration(hours: 23).inMilliseconds));
-      expect(until, lessThanOrEqualTo(now + const Duration(hours: 24, minutes: 1).inMilliseconds));
+      expect(
+        until,
+        greaterThan(now + const Duration(hours: 23).inMilliseconds),
+      );
+      expect(
+        until,
+        lessThanOrEqualTo(
+          now + const Duration(hours: 24, minutes: 1).inMilliseconds,
+        ),
+      );
     });
 
     testWidgets('no sheet when the candle stand is not actually near', (

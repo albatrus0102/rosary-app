@@ -52,9 +52,8 @@ Future<_Shell> _pumpShell(
       child: MaterialApp(
         theme: ThemeData(splashFactory: InkRipple.splashFactory),
         builder: (context, c) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(textScale)),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
           child: c!,
         ),
         home: AppShell(
@@ -76,7 +75,10 @@ Future<_Shell> _pumpShell(
   return (settings: settings, net: net, scene: scene);
 }
 
-Future<void> _enter(WidgetTester tester, FakeChurchSceneController scene) async {
+Future<void> _enter(
+  WidgetTester tester,
+  FakeChurchSceneController scene,
+) async {
   await tester.ensureVisible(find.byKey(const ValueKey('entry-enter')));
   await tester.pump();
   await tester.tap(find.byKey(const ValueKey('entry-enter')));
@@ -254,9 +256,7 @@ void main() {
       expect(find.byType(ChurchScreen), findsNothing);
     });
 
-    testWidgets('렌더 프로세스가 정리됐으면 장면을 새로 만들어 같은 자리로 되살린다', (
-      tester,
-    ) async {
+    testWidgets('렌더 프로세스가 정리됐으면 장면을 새로 만들어 같은 자리로 되살린다', (tester) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings();
       final net = FakeChurchNet();
@@ -328,9 +328,7 @@ void main() {
       expect(scene.count('resume'), 1);
     });
 
-    testWidgets('인증 관문: 복귀 때 잠깐 대기(splash)해도 본문 상태를 버리지 않는다', (
-      tester,
-    ) async {
+    testWidgets('인증 관문: 복귀 때 잠깐 대기(splash)해도 본문 상태를 버리지 않는다', (tester) async {
       final auth = FakeAuthService(
         initial: const AuthState.signedIn(userId: 'u1', email: 'a@b.co'),
       );
@@ -382,7 +380,7 @@ void main() {
       expect(chip.overlaps(button), isFalse);
       expect(chip.top, button.top, reason: '이름과 단추가 한 줄');
       // 접힌 HUD 는 화면 위쪽 한 줄(48dp)만 차지한다.
-      expect(button.bottom, lessThanOrEqualTo(4 + 48 + 0.5));
+      expect(button.bottom, lessThanOrEqualTo(8 + 48 + 0.5));
 
       await tester.tap(find.byKey(const ValueKey('hud-expand')));
       await tester.pump();
@@ -468,9 +466,7 @@ void main() {
             expect(sit.overlaps(menu), isFalse);
             // 접는/펼치는 단추는 48dp 이상.
             final toggle = tester.getSize(
-              find.byKey(
-                ValueKey(collapsed ? 'hud-expand' : 'hud-collapse'),
-              ),
+              find.byKey(ValueKey(collapsed ? 'hud-expand' : 'hud-collapse')),
             );
             expect(toggle.width, greaterThanOrEqualTo(48));
             expect(toggle.height, greaterThanOrEqualTo(48));
