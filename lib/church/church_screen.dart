@@ -1465,6 +1465,7 @@ class _ChurchScreenState extends State<ChurchScreen>
                 settings: _settings,
                 mysterySet: p.mysterySet,
                 session: p.session,
+                returnToChurch: true,
               ),
         ),
       ),

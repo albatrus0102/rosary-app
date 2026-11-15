@@ -48,7 +48,12 @@ class PrayerScreen extends StatefulWidget {
     this.onOpenStats,
     this.rosaryScene,
     this.rosaryFeedback,
+    this.returnToChurch = false,
   });
+
+  /// 사이버 성당에서 연 전체 화면 기도. 같은 세션이 성당 패널에서 이어지므로, 머리줄에
+  /// '성당으로' 단추를 두고 뒤로 가기(시스템·제스처 포함)가 기도를 끝내지 않고 바로 성당으로 돌아간다.
+  final bool returnToChurch;
 
   /// 묵주 화면(T-81) 3D 장면. 테스트용 주입, 없으면 화면이 만든다.
   final RosaryScene? rosaryScene;
@@ -765,7 +770,7 @@ class _PrayerScreenState extends State<PrayerScreen>
         final finished = _session.isFinished;
         final rosary = _rosaryMode && !finished;
         final page = PopScope(
-          canPop: finished,
+          canPop: finished || widget.returnToChurch,
           onPopInvokedWithResult: (didPop, _) {
             if (!didPop) _confirmExit();
           },
@@ -784,6 +789,7 @@ class _PrayerScreenState extends State<PrayerScreen>
                           _clampChrome(
                             _PrayerHeader(
                               title: widget.mysterySet.koreanName,
+                              returnToChurch: widget.returnToChurch,
                               onBack: () => Navigator.of(context).maybePop(),
                             ),
                           ),
@@ -952,7 +958,7 @@ class _PrayerScreenState extends State<PrayerScreen>
                 key: const ValueKey('finished-close'),
                 style: FilledButton.styleFrom(minimumSize: const Size(64, 56)),
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('닫기'),
+                child: Text(widget.returnToChurch ? '성당으로' : '닫기'),
               ),
               const SizedBox(height: 12),
               TextButton(
@@ -996,6 +1002,7 @@ class _PrayerScreenState extends State<PrayerScreen>
     final header = _PrayerHeader(
       title: _appBarTitle(step),
       subtitle: _subtitle(step),
+      returnToChurch: widget.returnToChurch,
       onBack: () => Navigator.of(context).maybePop(),
       onTextSize: () => _showTextSizeSheet(context),
       menuBuilder: (context) => [
@@ -1146,7 +1153,11 @@ class _PrayerHeader extends StatelessWidget {
     this.onMenu,
     this.menuFocusNode,
     this.extra,
+    this.returnToChurch = false,
   });
+
+  /// 성당에서 연 화면: 뒤로 단추 대신 아이콘+글자 '성당으로'.
+  final bool returnToChurch;
 
   /// 글자 크기 앞에 놓는 추가 단추(묵주 화면의 ◎ 전체 보기).
   final Widget? extra;
@@ -1174,10 +1185,27 @@ class _PrayerHeader extends StatelessWidget {
       child: Row(
         children: [
           // AppBar와 같은 BackButton(48dp). 누르면 Navigator.maybePop → PopScope.
-          BackButton(
-            key: const ValueKey('prayer-header-back'),
-            onPressed: onBack,
-          ),
+          if (returnToChurch)
+            Semantics(
+              button: true,
+              label: '성당으로 돌아가기, 기도는 이어집니다',
+              excludeSemantics: true,
+              child: TextButton.icon(
+                key: const ValueKey('prayer-header-church'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(48, 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+                onPressed: onBack,
+                icon: const Icon(Icons.church_outlined),
+                label: const Text('성당으로'),
+              ),
+            )
+          else
+            BackButton(
+              key: const ValueKey('prayer-header-back'),
+              onPressed: onBack,
+            ),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
