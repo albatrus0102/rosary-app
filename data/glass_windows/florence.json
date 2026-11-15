@@ -3,7 +3,7 @@
  "church": "florence",
  "name_ko": "피렌체 대성당",
  "generated": "2026-11-15",
- "status": "PLAN_ONLY — 조사·계획 데이터. 씬 코드는 수정하지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
+ "status": "조사 데이터 + 모델 개구부(I-3 구조 수정 반영: 트리부나 팔각 배열·윗창 15개 개통). 그림은 아직 걸지 않았다. 앱 번들(pubspec assets)에 포함되지 않는 경로다.",
  "release_approved": false,
  "classes": {
   "a": "모델에 대응 개구부가 있어 바로 걸 수 있음",
@@ -35,15 +35,16 @@
  },
  "model": {
   "tool": "node tools/church_web/church_openings.mjs florence --json",
-  "opening_count": 42,
-  "window_count": 42,
+  "opening_count": 57,
+  "window_count": 57,
   "photo_slot_count": 3,
   "by_zone": {
    "facade": 3,
    "aisle": 8,
    "nave_oculus": 8,
    "drum": 8,
-   "tribune_chapel": 15
+   "tribune_chapel": 15,
+   "tribune_upper": 15
   },
   "openings": [
    {
@@ -591,17 +592,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -6.102,
-    "y": 3.052,
-    "z": -28.563,
-    "yawDeg": 72,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": -5.8,
+    "y": 4.488,
+    "z": -27.33,
+    "yawDeg": 90,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -611,17 +612,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -3.772,
-    "y": 3.052,
-    "z": -31.771,
-    "yawDeg": 36,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": -4.101,
+    "y": 4.488,
+    "z": -31.431,
+    "yawDeg": 45,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -632,16 +633,16 @@
     "kind": "window",
     "shape": "pointed",
     "x": 0,
-    "y": 3.052,
-    "z": -32.996,
+    "y": 4.488,
+    "z": -33.13,
     "yawDeg": 0,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -651,17 +652,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 3.772,
-    "y": 3.052,
-    "z": -31.771,
-    "yawDeg": -36,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": 4.101,
+    "y": 4.488,
+    "z": -31.431,
+    "yawDeg": -45,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -671,17 +672,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 6.102,
-    "y": 3.052,
-    "z": -28.563,
-    "yawDeg": -72,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": 5.8,
+    "y": 4.488,
+    "z": -27.33,
+    "yawDeg": -90,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -691,17 +692,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -15.633,
-    "y": 3.052,
-    "z": -6.828,
-    "yawDeg": 162,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": -14.4,
+    "y": 4.488,
+    "z": -7.13,
+    "yawDeg": 180,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -711,17 +712,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -18.841,
-    "y": 3.052,
-    "z": -9.158,
-    "yawDeg": 126,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": -18.501,
+    "y": 4.488,
+    "z": -8.829,
+    "yawDeg": 135,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -731,17 +732,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -20.066,
-    "y": 3.052,
+    "x": -20.2,
+    "y": 4.488,
     "z": -12.93,
     "yawDeg": 90,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -751,17 +752,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -18.841,
-    "y": 3.052,
-    "z": -16.702,
-    "yawDeg": 54,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": -18.501,
+    "y": 4.488,
+    "z": -17.031,
+    "yawDeg": 45,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -771,17 +772,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": -15.633,
-    "y": 3.052,
-    "z": -19.032,
-    "yawDeg": 18,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": -14.4,
+    "y": 4.488,
+    "z": -18.73,
+    "yawDeg": 0,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -791,17 +792,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 15.633,
-    "y": 3.052,
-    "z": -19.032,
-    "yawDeg": -18,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": 14.4,
+    "y": 4.488,
+    "z": -18.73,
+    "yawDeg": 0,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -811,17 +812,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 18.841,
-    "y": 3.052,
-    "z": -16.702,
-    "yawDeg": -54,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": 18.501,
+    "y": 4.488,
+    "z": -17.031,
+    "yawDeg": -45,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -831,17 +832,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 20.066,
-    "y": 3.052,
+    "x": 20.2,
+    "y": 4.488,
     "z": -12.93,
     "yawDeg": -90,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -851,17 +852,17 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 18.841,
-    "y": 3.052,
-    "z": -9.158,
-    "yawDeg": -126,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": 18.501,
+    "y": 4.488,
+    "z": -8.829,
+    "yawDeg": -135,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -871,17 +872,317 @@
     "zone": "tribune_chapel",
     "kind": "window",
     "shape": "pointed",
-    "x": 15.633,
-    "y": 3.052,
-    "z": -6.828,
-    "yawDeg": -162,
-    "w": 0.7,
-    "h": 2.804,
-    "sill": 1.65,
-    "aspect": 0.25,
+    "x": 14.4,
+    "y": 4.488,
+    "z": -7.13,
+    "yawDeg": 180,
+    "w": 0.8,
+    "h": 2.776,
+    "sill": 3.1,
+    "aspect": 0.288,
     "real_m": [
-     1.56,
-     6.23
+     1.78,
+     6.17
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_u1",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -4.2,
+    "y": 9.935,
+    "z": -27.33,
+    "yawDeg": 90,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_u2",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -2.97,
+    "y": 9.935,
+    "z": -30.3,
+    "yawDeg": 45,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_u3",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 0,
+    "y": 9.935,
+    "z": -31.53,
+    "yawDeg": 0,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_u4",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 2.97,
+    "y": 9.935,
+    "z": -30.3,
+    "yawDeg": -45,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribE_u5",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 4.2,
+    "y": 9.935,
+    "z": -27.33,
+    "yawDeg": -90,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_u1",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -14.4,
+    "y": 9.935,
+    "z": -8.73,
+    "yawDeg": 180,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_u2",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -17.37,
+    "y": 9.935,
+    "z": -9.96,
+    "yawDeg": 135,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_u3",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -18.6,
+    "y": 9.935,
+    "z": -12.93,
+    "yawDeg": 90,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_u4",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -17.37,
+    "y": 9.935,
+    "z": -15.9,
+    "yawDeg": 45,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribN_u5",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": -14.4,
+    "y": 9.935,
+    "z": -17.13,
+    "yawDeg": 0,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_u1",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 14.4,
+    "y": 9.935,
+    "z": -17.13,
+    "yawDeg": 0,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_u2",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 17.37,
+    "y": 9.935,
+    "z": -15.9,
+    "yawDeg": -45,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_u3",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 18.6,
+    "y": 9.935,
+    "z": -12.93,
+    "yawDeg": -90,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_u4",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 17.37,
+    "y": 9.935,
+    "z": -9.96,
+    "yawDeg": -135,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
+    ],
+    "glass_now": "절차적 색유리 · lancet",
+    "photo": null
+   },
+   {
+    "key": "tribS_u5",
+    "zone": "tribune_upper",
+    "kind": "window",
+    "shape": "pointed",
+    "x": 14.4,
+    "y": 9.935,
+    "z": -8.73,
+    "yawDeg": 180,
+    "w": 0.86,
+    "h": 2.669,
+    "sill": 8.6,
+    "aspect": 0.322,
+    "real_m": [
+     1.91,
+     5.93
     ],
     "glass_now": "절차적 색유리 · lancet",
     "photo": null
@@ -1641,7 +1942,7 @@
     "tribS_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1678,7 +1979,7 @@
     "tribS_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1715,7 +2016,7 @@
     "tribS_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1752,7 +2053,7 @@
     "tribS_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1789,7 +2090,7 @@
     "tribS_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1826,7 +2127,7 @@
     "tribE_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1863,7 +2164,7 @@
     "tribE_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1900,7 +2201,7 @@
     "tribE_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1937,7 +2238,7 @@
     "tribE_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -1979,7 +2280,7 @@
     "tribN_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -2016,7 +2317,7 @@
     "tribN_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -2053,7 +2354,7 @@
     "tribN_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -2090,7 +2391,7 @@
     "tribN_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -2127,7 +2428,7 @@
     "tribN_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -2164,7 +2465,7 @@
     "tribN_c5"
    ],
    "order_unconfirmed": true,
-   "match_note": "모델의 경당 창은 0.7×2.8m(실제 환산 1.56×6.23m)로 실제 1.8×6.3m 와 비슷하다. 트리부나 안의 순서가 확인될 때까지 \"순서 추정\"",
+   "match_note": "I-3: 트리부나를 정팔각 배열(경당이 0°·±45°·±90° 변)로 고쳐 창 자리가 바뀌었다. 창 0.8×2.78m(실제 환산 1.78×6.17m ↔ 실제 1.8×6.3m), 창턱 3.1m(6.9m)",
    "free_photos": [],
    "placeholder": "ai_sheet:florence-C",
    "size_app_m": [
@@ -2191,14 +2492,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663941"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2220,14 +2537,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663942"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2249,14 +2582,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663947"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2278,14 +2627,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663950"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2307,14 +2672,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663951"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2336,14 +2717,20 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663953"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2365,14 +2752,16 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663957"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u3"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 문맥으로 확인(가운데 창)",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2394,14 +2783,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663960"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2423,14 +2828,20 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663961"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2452,14 +2863,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663965"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2481,14 +2908,20 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663968"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2510,14 +2943,20 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663969"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2539,14 +2978,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663973"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2568,14 +3023,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663976"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   },
@@ -2597,14 +3068,30 @@
    "sources": [
     "https://sigecweb.beniculturali.it/sigec/item/print/ICCD13663987"
    ],
-   "cls": "b",
-   "opening_keys": [],
-   "match_note": "모델의 트리부나에는 경당 아치(꼭대기 5.6m) 위로 벽이 있으나 창이 없다. 앱 치수 0.86×2.75m. 창턱 높이는 실측 자료를 못 찾음",
+   "cls": "a",
+   "opening_keys": [
+    "tribE_u1",
+    "tribE_u2",
+    "tribE_u3",
+    "tribE_u4",
+    "tribE_u5",
+    "tribS_u1",
+    "tribS_u2",
+    "tribS_u3",
+    "tribS_u4",
+    "tribS_u5",
+    "tribN_u1",
+    "tribN_u2",
+    "tribN_u3",
+    "tribN_u4",
+    "tribN_u5"
+   ],
+   "match_note": "I-3 에서 뚫음: 경당 아치(정점 6.3m) 위 벽에 0.86×2.67m 첨두 창, 창턱 8.6m(실제 환산 19.1m — 스그릴리 1733 단면에서 잰 18.8m), 꼭대기 11.27m(25.0m). 어느 창이 어느 자리인지는 순서 추정",
    "free_photos": [],
-   "placeholder": "ai_sheet:florence-D (뚫은 뒤)",
+   "placeholder": "ai_sheet:florence-D 또는 절차적 색조 패널(개발용)",
    "size_app_m": [
     0.86,
-    2.75
+    2.67
    ],
    "release_approved": false
   }
@@ -2613,8 +3100,8 @@
   "picture_windows": 44,
   "note": "ICCD 43건(측면 오큘러스 2·측랑 4·드럼 7·경당 15·윗창 15) + 정면 중앙 「성모 승천」 = 44. it.wikipedia \"44 vetrate a fronte di 55 finestre\" 와 일치. 서쪽 드럼 창(FL-D8)은 그림 없음(e)으로 따로 적었다",
   "by_class": {
-   "a": 29,
-   "b": 15,
+   "a": 44,
+   "b": 0,
    "c": 0,
    "d": 0,
    "e": 1
@@ -2683,7 +3170,8 @@
   {
    "what": "트리부나 윗창 15곳을 새로 뚫음(경당 아치 위 벽, 0.86×2.75m)",
    "effort": "중간(tribune() 의 archedWall 에 구멍 + 스플레이, 15곳)",
-   "risk": "창턱 높이 근거 부족. 다른 에이전트의 ch_florence.js 작업과 충돌 가능"
+   "risk": "창턱 높이 근거 부족. 다른 에이전트의 ch_florence.js 작업과 충돌 가능",
+   "done": "I-3(2026-11-15): tribune() 에 윗창 15개 개통 — key tribE/S/N_u1…u5"
   },
   {
    "what": "신랑 고창 8·측랑 1·2칸 4·드럼 서쪽 1 을 색유리 → 무색/옅은 유리로(선택)",

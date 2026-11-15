@@ -276,10 +276,15 @@ ADAPTERS.florence = {
     { zone: 'nave_oculus', test: (e) => near(Math.abs(e.x), 4.5, 0.6) && e.shape === 'circle' && e.y < 18, side: NS('S'), prefix: 'naveOc', always: true },
     { zone: 'drum', test: (e) => e.y > 20 && e.shape === 'circle', key: (e) => 'drum_' + compass8(Math.atan2(-e.x, -(e.z + 12.93)) * 180 / Math.PI) },
     // 트리부나 경당 창: 트리부나 = E(동, 성 자노비) / S(남) / N(북). 번호는 팔각 쪽에서 그 트리부나 안을 볼 때 왼쪽 → 오른쪽 1…5
-    { zone: 'tribune_chapel', test: (e) => e.src === 'kit.window' && e.w < 0.9 && e.sill < 3,
+    { zone: 'tribune_chapel', test: (e) => e.src === 'kit.window' && e.w < 0.9 && e.sill < 5,
       side: (e) => (e.x > 12 ? 'S' : (e.x < -12 ? 'N' : 'E')),
       sort: (a, b2) => (a.x > 12 ? a.z - b2.z : (a.x < -12 ? b2.z - a.z : a.x - b2.x)),
-      key: (e, i, n, sd) => 'trib' + sd + '_c' + (i + 1) }
+      key: (e, i, n, sd) => 'trib' + sd + '_c' + (i + 1) },
+    // 트리부나 윗창(경당 아치 위, 예언자 창; I-3 에서 뚫음): 번호는 바로 아래 경당과 같다(u1 은 c1 위)
+    { zone: 'tribune_upper', test: (e) => e.src === 'kit.window' && e.w < 0.9 && e.sill > 7,
+      side: (e) => (e.x > 12 ? 'S' : (e.x < -12 ? 'N' : 'E')),
+      sort: (a, b2) => (a.x > 12 ? a.z - b2.z : (a.x < -12 ? b2.z - a.z : a.x - b2.x)),
+      key: (e, i, n, sd) => 'trib' + sd + '_u' + (i + 1) }
   ]
 };
 
