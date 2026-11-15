@@ -382,6 +382,8 @@ node tools/church_web/church_openings.mjs --check            # data/glass_window
 
 ## 5. 라테라노 대성전 (`lateran`, 53%)
 
+> **2026-11-15 구조 수정(I-2) 뒤**: 익랑이 줄어(x ±18.3 → ±16.4, 뒷벽 z −15.94 → −14.9) 익랑 창 12개의 좌표가 바뀌었다(key·개수 33 은 그대로, 후진 4창 색유리도 그대로). 아래 표의 익랑 좌표는 수정 전 값이다 — 지금 값은 `data/glass_windows/lateran.json` / `church_openings.mjs lateran`.
+
 ### 5.1 좌표계·축척
 
 | 항목 | 값 | 근거 |
@@ -437,6 +439,8 @@ node tools/church_web/church_openings.mjs --check            # data/glass_window
 ---
 
 ## 6. 성 밖 성 바오로 대성전 (`stpaul`, 53%)
+
+> **2026-11-15 구조 수정(I-2) 뒤**: 신랑 고창이 한쪽 21 → 10(`clereN_b1…b10`, `clereS_b1…b10`; 사이 칸은 프레스코 판), 익랑 끝 창이 4 → 6 이 되어 개구부 75 → **55**, 사진 슬롯 64 → **42**. 아래 표는 수정 전 값이다 — 지금 값은 `data/glass_windows/stpaul.json` / `church_openings.mjs stpaul`.
 
 ### 6.1 좌표계·축척
 
