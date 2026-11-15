@@ -544,13 +544,13 @@
     cyv = Math.min(cb.yMax, Math.max(0.7, cyv));
     // 벽 가드: 상자 경계로는 굽은 후진·경당·좁은 측랑에서 카메라가 벽 밖으로 나갔다. 머리→카메라 선분이 처음 닿는 면 앞으로.
     var gd = App.world.camGuard, gt;
-    if (gd) { gt = gd.clip(mx, fy, mz, cx, cyv, cz, 0.35); if (gt < 1) { cx = mx + (cx - mx) * gt; cyv = fy + (cyv - fy) * gt; cz = mz + (cz - mz) * gt; } }
+    if (gd) { gt = gd.clipWide(mx, fy, mz, cx, cyv, cz, 0.35, 0.3); if (gt < 1) { cx = mx + (cx - mx) * gt; cyv = fy + (cyv - fy) * gt; cz = mz + (cz - mz) * gt; } }
     if (!App.camInit) { App.camPos.set(cx, cyv, cz); App.camLook.set(mx, fy, mz); App.camInit = true; }
     var kp = 1 - Math.exp(-dt * 7), kl = 1 - Math.exp(-dt * 11);
     App.camPos.x += (cx - App.camPos.x) * kp; App.camPos.y += (cyv - App.camPos.y) * kp; App.camPos.z += (cz - App.camPos.z) * kp;
     // 부드럽게 따라가는 중간 위치도 벽을 가로지를 수 있다(굽은 벽 모서리): 실제 위치도 한 번 더 막는다(당길 때는 즉시)
     if (gd) {
-      gt = gd.clip(mx, fy, mz, App.camPos.x, App.camPos.y, App.camPos.z, 0.35);
+      gt = gd.clipWide(mx, fy, mz, App.camPos.x, App.camPos.y, App.camPos.z, 0.35, 0.3);
       if (gt < 1) { App.camPos.x = mx + (App.camPos.x - mx) * gt; App.camPos.y = fy + (App.camPos.y - fy) * gt; App.camPos.z = mz + (App.camPos.z - mz) * gt; }
     }
     App.camLook.x += (mx - App.camLook.x) * kl; App.camLook.y += (fy - App.camLook.y) * kl; App.camLook.z += (mz - App.camLook.z) * kl;

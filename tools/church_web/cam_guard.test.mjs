@@ -32,16 +32,15 @@ function camAt(env, me, yaw, pitch, zoom, useGuard) {
   reach = Math.max(0.3, Math.min(1, reach));
   const ch = Math.cos(pitch) * D * reach, cv = Math.sin(pitch) * D * reach;
   let cx = Math.max(cb.x0, Math.min(cb.x1, me.x + dx * ch)), cz = Math.max(cb.z0, Math.min(cb.z1, me.z + dz * ch)), cy = Math.min(cb.yMax, Math.max(0.7, fy + cv));
-  if (useGuard) { const t = guard.clip(me.x, fy, me.z, cx, cy, cz, 0.35); if (t < 1) { cx = me.x + (cx - me.x) * t; cy = fy + (cy - fy) * t; cz = me.z + (cz - me.z) * t; } }
+  if (useGuard) { const t = guard.clipWide(me.x, fy, me.z, cx, cy, cz, 0.35, 0.3); if (t < 1) { cx = me.x + (cx - me.x) * t; cy = fy + (cy - fy) * t; cz = me.z + (cz - me.z) * t; } }
   return [cx, cy, cz];
 }
 
 function outside(probe, p) {
-  const [x, y, z] = p, R = 150;
-  if (probe.clip(x, y, z, x, y + R, z, 0) >= 1) return true;
+  const [x, y, z] = p, R = 150, up = probe.clip(x, y, z, x, y + R, z, 0) >= 1;
   let miss = 0;
   for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; if (probe.clip(x, y, z, x + Math.sin(a) * R, y, z + Math.cos(a) * R, 0) >= 1) miss++; }
-  return miss >= 3;
+  return miss >= 3 || (up && miss >= 1);
 }
 
 function sweep(c, env, useGuard) {

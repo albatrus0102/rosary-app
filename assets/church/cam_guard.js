@@ -102,7 +102,15 @@
       if (best >= 1) return 1;
       return Math.max(0, best - (margin === undefined ? 0.3 : margin) / len);
     }
-    return { clip: clip, triangles: nt, cells: NX * NZ };
+    // 벽 조각 사이 틈(기둥·벽 모서리가 덜 맞물린 곳)으로 빠져나가지 않게 카메라 끝을 좌우 ±w 로 벌린 선 2개를 더 쏜다
+    function clipWide(ax, ay, az, bx, by, bz, margin, w) {
+      var t = clip(ax, ay, az, bx, by, bz, margin), dx = bx - ax, dz = bz - az, h = Math.sqrt(dx * dx + dz * dz);
+      if (h < 1e-3) return t;
+      var ox = -dz / h * (w || 0.3), oz = dx / h * (w || 0.3);
+      t = Math.min(t, clip(ax, ay, az, bx + ox, by, bz + oz, margin), clip(ax, ay, az, bx - ox, by, bz - oz, margin));
+      return t;
+    }
+    return { clip: clip, clipWide: clipWide, triangles: nt, cells: NX * NZ };
   }
 
   var api = { build: build };
