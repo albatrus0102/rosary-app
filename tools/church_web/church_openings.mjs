@@ -353,8 +353,8 @@ ADAPTERS.lateran = {
     { zone: 'facade', test: (e) => e.z > 34, key: (e) => 'facade_' + (Math.abs(e.x) < 0.5 ? 'center' : NS('N')(e)) },
     { zone: 'clerestory', test: (e) => near(Math.abs(e.x), 5.57, 0.3) && e.z > -3, side: NS('N'), prefix: 'clere', always: true },
     { zone: 'transept', test: (e) => near(e.z, -5.9, 0.4), key: (e) => 'trFront' + NS('N')(e) + (Math.abs(e.x) > 11 ? '_outer' : '_inner') },
-    { zone: 'transept', test: (e) => near(e.z, -15.94, 0.4), key: (e) => 'trBack' + NS('N')(e) + (Math.abs(e.x) > 11 ? '_outer' : '_inner') },
-    { zone: 'transept', test: (e) => Math.abs(e.x) > 18, side: NS('N'), prefix: 'trEnd', always: true },
+    { zone: 'transept', test: (e) => near(e.z, -14.9, 0.4), key: (e) => 'trBack' + NS('N')(e) + (Math.abs(e.x) > 11 ? '_outer' : '_inner') },
+    { zone: 'transept', test: (e) => Math.abs(e.x) > 16, side: NS('N'), prefix: 'trEnd', always: true },   // 익랑 끝벽 x ±16.9 (H-1 B3: XT 18.3 → 16.4)
     { zone: 'choir', test: (e) => near(Math.abs(e.x), 5.27, 0.3) && e.z < -17, side: NS('N'), prefix: 'choir', always: true },
     { zone: 'apse', test: (e) => e.z < -30, sort: (a, b2) => a.x - b2.x, prefix: 'apse', always: true, tag: 'w' }
   ]
