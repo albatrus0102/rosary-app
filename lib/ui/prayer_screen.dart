@@ -22,6 +22,7 @@ import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
 import '../rosary3d/rosary_feedback.dart';
 import '../rosary3d/rosary_gallery_screen.dart';
+import '../rosary3d/rosary_model.dart';
 import '../rosary3d/rosary_prayer_view.dart';
 import '../rosary3d/rosary_scene.dart';
 import '../stats/prayer_stats_store.dart';
@@ -123,7 +124,13 @@ class _PrayerScreenState extends State<PrayerScreen>
   bool get _responderAudioActive =>
       _settings.prayerMode == PrayerMode.leader && _settings.leaderAudioEnabled;
 
-  late final bool _speaksResponder;
+  bool _speaksResponder = false;
+
+  /// 음성 인도 설정(모드·켜짐)이 바뀌면 화면 안에서 목소리를 다시 꾸린다(묵주 화면의 음성 칩).
+  (PrayerMode, bool)? _voiceKey;
+
+  /// 음성 제목 → 앞단 음성 잇기의 차례 번호(스텝이 또 바뀌면 이전 것은 버린다).
+  int _titleGen = 0;
 
   /// 묵주 화면(손안의 묵주)으로 그리는지. 화면을 여는 순간의 설정으로 정한다.
   late final bool _rosaryMode;
@@ -192,6 +199,7 @@ class _PrayerScreenState extends State<PrayerScreen>
     WidgetsBinding.instance.addObserver(this);
 
     _speaksResponder = _responderAudioActive;
+    _voiceKey = (_settings.prayerMode, _settings.leaderAudioEnabled);
     if (_leaderAudioActive || _speaksResponder) {
       _setUpLeaderVoice();
     }
@@ -248,18 +256,42 @@ class _PrayerScreenState extends State<PrayerScreen>
     scene.setStep(now, animate: !MediaQuery.disableAnimationsOf(context));
     final fb = _fb;
     if (fb == null) return;
-    // 앞단·뒷단 음성이 나오는 중이면 제목 안내는 겹치지 않게 건너뛴다.
+    // 후창 모드(앱이 앞단을 들려줌)에서는 제목 안내를 _onSessionChanged 가 앞단 앞에 잇는다(겹치지 않게).
     playRosaryStepCue(
       fb,
       _session,
       _settings,
       before,
       now,
-      voiceBusy: _voice != null,
+      voiceBusy: _voice != null && !_speaksResponder,
     );
   }
 
+  /// 묵주 화면에서 음성 인도(끔·선창·후창)를 바꾸면 목소리를 다시 꾸린다. 진행 위치는 그대로.
+  void _maybeReconfigureVoice() {
+    final key = (_settings.prayerMode, _settings.leaderAudioEnabled);
+    if (key == _voiceKey) return;
+    _voiceKey = key;
+    _cancelResponder();
+    final old = _voice;
+    if (old != null) {
+      old.isSpeaking.removeListener(_onSpeakingChanged);
+      _session.removeListener(_onSessionChanged);
+      if (_ownsVoice) {
+        unawaited(old.dispose());
+      } else {
+        unawaited(old.stop());
+      }
+      _voice = null;
+      _ownsVoice = false;
+    }
+    _speaksResponder = _responderAudioActive;
+    if (_leaderAudioActive || _speaksResponder) _setUpLeaderVoice();
+    if (mounted) setState(() {});
+  }
+
   void _onRosarySettings() {
+    _maybeReconfigureVoice();
     final scene = _scene;
     if (scene == null) return;
     scene
@@ -274,6 +306,7 @@ class _PrayerScreenState extends State<PrayerScreen>
     scene.setFullView(!scene.fullView);
   }
 
+  /// 기도 중 묵주 바꾸기(⋮ · 묵주 길게 누르기): 갤러리에서 고르면 진행 위치는 그대로, 3D 묵주만 바뀐다.
   void _openGallery() {
     unawaited(
       Navigator.of(context).push(
@@ -303,6 +336,27 @@ class _PrayerScreenState extends State<PrayerScreen>
     if (_speaksResponder) {
       // 뒷단을 듣는 중에 이전/지도 등으로 스텝이 바뀌면 재생을 멈추고 넘기지 않는다.
       _cancelResponder();
+      return;
+    }
+    final fb = _fb;
+    final idx = _session.index;
+    if (_rosaryMode && _settings.rosaryVoiceTitle && fb != null) {
+      // 음성 제목('성모송 열 번째입니다') → 앞단 음성 순서로 잇는다.
+      final gen = ++_titleGen;
+      unawaited(voice.stop());
+      unawaited(
+        fb
+            .announce(rosaryVoiceTitle(_session.current))
+            .then((_) async {
+              if (gen != _titleGen || _disposed || _session.index != idx) {
+                return;
+              }
+              await voice.speakStep(_session.current);
+            })
+            .catchError((Object e) {
+              debugPrint('leader voice failed: $e');
+            }),
+      );
       return;
     }
     unawaited(
@@ -949,7 +1003,7 @@ class _PrayerScreenState extends State<PrayerScreen>
         if (_rosaryMode)
           const PopupMenuItem(
             value: _PrayerMenu.gallery,
-            child: Text('묵주 고르기'),
+            child: Text('묵주 바꾸기'),
           ),
         CheckedPopupMenuItem(
           value: _PrayerMenu.shortPrayers,
@@ -988,6 +1042,7 @@ class _PrayerScreenState extends State<PrayerScreen>
           actions: actions,
           onNext: _advance,
           onBack: _session.back,
+          onChangeRosary: _openGallery,
         ),
       );
     }

@@ -322,7 +322,13 @@
     setStep: function (o) { S.target = L.stepPos(o.step | 0); S.drag = 0; S.dragging = false; if (o.animate === false) { S.p = S.target; S.pv = 0; } kick(); },
     setDrag: function (o) { S.drag = Math.max(-1.1, Math.min(1.1, +o.offset || 0)); S.dragging = !!o.active; kick(); },
     setView: function (o) { S.view = o.view === 'a' ? 'a' : 'c'; S.tTarget = S.view === 'a' ? 1 : 0; kick(); },
-    setRosary: function (o) { if (!R || R.def.id !== o.id) build(o.id); },
+    // 기도 중 묵주 바꾸기: 짧게 어두워졌다 새 묵주로 밝아진다(진행 위치는 그대로)
+    setRosary: function (o) {
+      if (R && R.def.id === o.id) return;
+      if (!R || S.reduce) { build(o.id); return; }
+      canvasEl.style.transition = 'opacity 160ms ease'; canvasEl.style.opacity = '0';
+      setTimeout(function () { build(o.id); canvasEl.style.opacity = '1'; }, 170);
+    },
     setTheme: function (o) { S.theme = o.theme; if (R) backdrop.material = mats.backdrop(S.theme); S.dirty = true; kick(); },
     setHand: function (o) { S.hand = o.hand; S.dirty = true; kick(); },
     setQuality: function (o) { if (o.quality === S.quality) return; S.quality = o.quality; applyQuality(); if (R) build(R.def.id); },

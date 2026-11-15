@@ -277,6 +277,11 @@ String rosaryVoiceTitle(RosaryStep s) {
     return n == 1 ? '성모송 첫 번째입니다' : '성모송 ${ord[n - 1]} 번째입니다';
   }
   if (s.kind == StepKind.ourFather && s.decade != null) {
+    // 신비 선포: '환희의 신비 제3단입니다'
+    final head = (s.heading ?? '').split('\n').first;
+    if (head.isNotEmpty) {
+      return '${head.replaceFirstMapped(RegExp(r'(\d)단$'), (m) => '제${m[1]}단')}입니다';
+    }
     return '${s.decade}단, 주님의 기도입니다';
   }
   return '${s.title}입니다';

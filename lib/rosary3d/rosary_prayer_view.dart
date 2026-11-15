@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../domain/prayer_data.dart';
+import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
 import 'rosary_model.dart';
@@ -49,7 +50,11 @@ class RosaryPrayerView extends StatefulWidget {
     required this.actions,
     required this.onNext,
     required this.onBack,
+    this.onChangeRosary,
   });
+
+  /// 묵주 영역을 길게 누르면: 묵주 바꾸기(갤러리).
+  final VoidCallback? onChangeRosary;
 
   final RosarySession session;
   final AppSettings settings;
@@ -148,6 +153,7 @@ class _RosaryPrayerViewState extends State<RosaryPrayerView> {
             onVerticalDragStart: _onDragStart,
             onVerticalDragUpdate: _onDragUpdate,
             onVerticalDragEnd: _onDragEnd,
+            onLongPress: widget.onChangeRosary,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -409,33 +415,104 @@ class _FeedbackRow extends StatelessWidget {
     final f = settings.rosaryFeedback;
     return SizedBox(
       height: 48,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ActionChip(
-            key: const ValueKey('rosary-feedback'),
-            avatar: Icon(switch (f) {
-              RosaryFeedback.both => Icons.vibration,
-              RosaryFeedback.vibrate => Icons.vibration,
-              RosaryFeedback.sound => Icons.music_note_outlined,
-              RosaryFeedback.off => Icons.notifications_off_outlined,
-            }, size: 18),
-            label: Text(label(f)),
-            tooltip: '진동·소리 바꾸기',
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              settings.rosaryFeedback = RosaryFeedback
-                  .values[(f.index + 1) % RosaryFeedback.values.length];
-            },
-          ),
-          const SizedBox(width: 8),
-          FilterChip(
-            key: const ValueKey('rosary-voice-title'),
-            label: const Text('음성 제목'),
-            selected: settings.rosaryVoiceTitle,
-            onSelected: (v) => settings.rosaryVoiceTitle = v,
-          ),
-        ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ActionChip(
+              key: const ValueKey('rosary-feedback'),
+              avatar: Icon(switch (f) {
+                RosaryFeedback.both => Icons.vibration,
+                RosaryFeedback.vibrate => Icons.vibration,
+                RosaryFeedback.sound => Icons.music_note_outlined,
+                RosaryFeedback.off => Icons.notifications_off_outlined,
+              }, size: 18),
+              label: Text(label(f)),
+              tooltip: '진동·소리 바꾸기',
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                settings.rosaryFeedback = RosaryFeedback
+                    .values[(f.index + 1) % RosaryFeedback.values.length];
+              },
+            ),
+            const SizedBox(width: 8),
+            FilterChip(
+              key: const ValueKey('rosary-voice-title'),
+              label: const Text('음성 제목'),
+              tooltip: '다음 알로 넘어갈 때 기도 제목을 소리로 알려 줍니다',
+              selected: settings.rosaryVoiceTitle,
+              onSelected: (v) => settings.rosaryVoiceTitle = v,
+            ),
+            const SizedBox(width: 8),
+            _VoiceModeChip(settings: settings),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 음성 인도: 끔 · 선창(내가 앞단, 앱이 뒷단) · 후창(앱이 앞단, 내가 뒷단). 홈·설정의 기도 모드·상대 목소리와 같은 값.
+enum RosaryVoiceMode { off, leader, responder }
+
+RosaryVoiceMode rosaryVoiceModeOf(AppSettings s) =>
+    !s.leaderAudioEnabled || s.prayerMode == PrayerMode.solo
+    ? RosaryVoiceMode.off
+    : (s.prayerMode == PrayerMode.leader
+          ? RosaryVoiceMode.leader
+          : RosaryVoiceMode.responder);
+
+void setRosaryVoiceMode(AppSettings s, RosaryVoiceMode m) {
+  switch (m) {
+    case RosaryVoiceMode.off:
+      s.leaderAudioEnabled = false;
+    case RosaryVoiceMode.leader:
+      s.prayerMode = PrayerMode.leader;
+      s.leaderAudioEnabled = true;
+    case RosaryVoiceMode.responder:
+      s.prayerMode = PrayerMode.responder;
+      s.leaderAudioEnabled = true;
+  }
+}
+
+class _VoiceModeChip extends StatelessWidget {
+  const _VoiceModeChip({required this.settings});
+  final AppSettings settings;
+
+  static String label(RosaryVoiceMode m) => switch (m) {
+    RosaryVoiceMode.off => '음성 끔',
+    RosaryVoiceMode.leader => '내가 선창',
+    RosaryVoiceMode.responder => '내가 후창',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final m = rosaryVoiceModeOf(settings);
+    return PopupMenuButton<RosaryVoiceMode>(
+      key: const ValueKey('rosary-voice-mode'),
+      tooltip: '음성 인도 고르기',
+      initialValue: m,
+      onSelected: (v) => setRosaryVoiceMode(settings, v),
+      itemBuilder: (context) => const [
+        PopupMenuItem(value: RosaryVoiceMode.off, child: Text('음성 끄기')),
+        PopupMenuItem(
+          value: RosaryVoiceMode.leader,
+          child: Text('선창 — 내가 앞단, 앱이 뒷단'),
+        ),
+        PopupMenuItem(
+          value: RosaryVoiceMode.responder,
+          child: Text('후창 — 앱이 앞단, 내가 뒷단'),
+        ),
+      ],
+      child: Chip(
+        avatar: Icon(
+          m == RosaryVoiceMode.off
+              ? Icons.voice_over_off_outlined
+              : Icons.record_voice_over_outlined,
+          size: 18,
+        ),
+        label: Text(label(m)),
       ),
     );
   }

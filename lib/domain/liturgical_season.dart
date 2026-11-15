@@ -1,7 +1,8 @@
 /// 전례력: 날짜 → 전례 시기·전례 색·주요 대축일(docs/church/LITURGICAL_DECOR.md).
 ///
-/// 기준: **로마 보편 전례력**. 한국 교회가 주일로 옮겨 지내는 날(주님 공현·주님 승천·
-/// 성체 성혈)도 로마 기준 날짜(1월 6일, 부활 후 40일째 목요일, 삼위일체 다음 목요일)로 둔다.
+/// 기준: **한국천주교주교회의 전례력**(로마 보편 전례력 + 한국 교회 규정).
+/// 한국 교회는 주님 공현을 1월 2~8일 사이 주일, 주님 승천을 부활 제7주일, 성체 성혈을
+/// 삼위일체 다음 주일로 옮겨 지낸다(주교회의 2026년 전례력으로 확인: docs/church/CATHOLIC_NORMS_AUDIT.md).
 /// 날짜 경계는 한국 표준시(KST) 자정이다([kstDate]).
 library;
 
@@ -37,6 +38,9 @@ enum LiturgicalFeast {
   maryMotherOfGod('천주의 성모 마리아 대축일', LiturgicalColor.white),
   epiphany('주님 공현 대축일', LiturgicalColor.white),
   baptismOfTheLord('주님 세례 축일', LiturgicalColor.white),
+  presentation('주님 봉헌 축일', LiturgicalColor.white),
+  joseph('복되신 동정 마리아의 배필 성 요셉 대축일', LiturgicalColor.white),
+  annunciation('주님 탄생 예고 대축일', LiturgicalColor.white),
   ashWednesday('재의 수요일', LiturgicalColor.violet),
   palmSunday('주님 수난 성지 주일', LiturgicalColor.red),
   holyThursday('주님 만찬 성목요일', LiturgicalColor.white),
@@ -48,13 +52,19 @@ enum LiturgicalFeast {
   trinity('지극히 거룩하신 삼위일체 대축일', LiturgicalColor.white),
   corpusChristi('성체 성혈 대축일', LiturgicalColor.white),
   sacredHeart('예수 성심 대축일', LiturgicalColor.white),
+  johnBaptistBirth('성 요한 세례자 탄생 대축일', LiturgicalColor.white),
+  peterAndPaul('성 베드로와 성 바오로 사도 대축일', LiturgicalColor.red),
+  transfiguration('주님의 거룩한 변모 축일', LiturgicalColor.white),
   assumption('성모 승천 대축일', LiturgicalColor.white),
+  exaltationOfCross('성 십자가 현양 축일', LiturgicalColor.red),
   koreanMartyrs('한국 순교 성인 대축일', LiturgicalColor.red),
   allSaints('모든 성인 대축일', LiturgicalColor.white),
   allSouls('위령의 날', LiturgicalColor.violet),
+  lateranDedication('라테라노 대성전 봉헌 축일', LiturgicalColor.white),
   christTheKing('그리스도 왕 대축일', LiturgicalColor.white),
-  immaculateConception('원죄 없이 잉태되신 성모 마리아 대축일', LiturgicalColor.white),
-  christmas('주님 성탄 대축일', LiturgicalColor.white);
+  immaculateConception('원죄 없이 잉태되신 복되신 동정 마리아 대축일', LiturgicalColor.white),
+  christmas('주님 성탄 대축일', LiturgicalColor.white),
+  holyFamily('예수, 마리아, 요셉의 성가정 축일', LiturgicalColor.white);
 
   const LiturgicalFeast(this.labelKo, this.color);
   final String labelKo;
@@ -138,10 +148,17 @@ DateTime firstSundayOfAdvent(int year) {
   return DateTime(d.year, d.month, d.day);
 }
 
-/// 주님 세례 축일: 주님 공현(1월 6일) 다음 주일(1월 7일~13일). 성탄 시기의 마지막 날.
-DateTime baptismOfTheLord(int year) {
-  final d = _sundayOnOrAfter(_d(year, 1, 7));
+/// 주님 공현 대축일(한국): 1월 2일~8일 사이의 주일.
+DateTime epiphanySunday(int year) {
+  final d = _sundayOnOrAfter(_d(year, 1, 2));
   return DateTime(d.year, d.month, d.day);
+}
+
+/// 주님 세례 축일(한국): 주님 공현 대축일 다음 주일. 공현이 1월 7일·8일이면 다음 날(월요일).
+/// 성탄 시기의 마지막 날(1월 8일~13일).
+DateTime baptismOfTheLord(int year) {
+  final e = epiphanySunday(year);
+  return DateTime(e.year, e.month, e.day + (e.day >= 7 ? 1 : 7));
 }
 
 /// 성령 강림 대축일(부활 후 50일째). 부활 시기의 마지막 날.
@@ -192,12 +209,10 @@ class LiturgicalDay {
   bool get isMemorialMonth =>
       devotion == MonthDevotion.souls && season == LiturgicalSeason.ordinary;
 
-  /// 성당 장식의 색. 위령 성월의 녹색 평일·주일은 한국 교회 관행대로 자색 기조로 꾸민다
-  /// (모든 성인·그리스도 왕 같은 대축일의 백색은 그대로).
-  LiturgicalColor get decorColor =>
-      isMemorialMonth && color == LiturgicalColor.green
-      ? LiturgicalColor.violet
-      : color;
+  /// 성당 장식(제대 앞 보·독서대 보)의 색 = 그날의 전례 색.
+  /// 위령 성월에도 연중 평일·주일의 전례 색은 녹색이다(주교회의 전례력 [녹], 『로마 미사 경본 총지침』 346항).
+  /// 위령 성월은 색을 바꾸지 않고 추모 촛불 장식([isMemorialMonth])만 더한다.
+  LiturgicalColor get decorColor => color;
 
   /// 상태 칩 부제: 대축일이면 그 이름, 아니면 시기 이름(연중 시기에는 성월을 덧붙인다).
   String get chipLabel {
@@ -291,7 +306,7 @@ class LiturgicalDay {
     DateTime advent1,
     DateTime baptism,
   ) {
-    // 부활 대축일 기준 이동 축일
+    // 부활 대축일 기준 이동 축일(주님 승천·성체 성혈은 한국 교회 규정대로 주일)
     switch (se) {
       case -46:
         return LiturgicalFeast.ashWednesday;
@@ -305,32 +320,70 @@ class LiturgicalDay {
         return LiturgicalFeast.holySaturday;
       case 0:
         return LiturgicalFeast.easter;
-      case 39:
+      case 42:
         return LiturgicalFeast.ascension;
       case 49:
         return LiturgicalFeast.pentecost;
       case 56:
         return LiturgicalFeast.trinity;
-      case 60:
+      case 63:
         return LiturgicalFeast.corpusChristi;
       case 68:
         return LiturgicalFeast.sacredHeart;
     }
     if (d == _plus(advent1, -7)) return LiturgicalFeast.christTheKing;
     if (d == baptism) return LiturgicalFeast.baptismOfTheLord;
+    final ep = epiphanySunday(y);
+    if (d == _d(y, ep.month, ep.day)) return LiturgicalFeast.epiphany;
+    final easter = _plus(d, -se);
+    if (d == _josephDate(y, easter)) return LiturgicalFeast.joseph;
+    if (d == _annunciationDate(y, easter)) return LiturgicalFeast.annunciation;
+    // 6월 24일이 예수 성심 대축일과 겹치면 하루 앞당긴다(위 switch 가 성심을 먼저 준다).
+    final jb = _d(y, 6, 24);
+    final jbDay = jb == _plus(easter, 68) ? _d(y, 6, 23) : jb;
+    if (d == jbDay) return LiturgicalFeast.johnBaptistBirth;
     final m = d.month, day = d.day;
     if (m == 1 && day == 1) return LiturgicalFeast.maryMotherOfGod;
-    if (m == 1 && day == 6) return LiturgicalFeast.epiphany;
+    if (m == 2 && day == 2) return LiturgicalFeast.presentation;
+    if (m == 6 && day == 29) return LiturgicalFeast.peterAndPaul;
+    if (m == 8 && day == 6) return LiturgicalFeast.transfiguration;
     if (m == 8 && day == 15) return LiturgicalFeast.assumption;
+    if (m == 9 && day == 14) return LiturgicalFeast.exaltationOfCross;
     if (m == 9 && day == 20) return LiturgicalFeast.koreanMartyrs;
     if (m == 11 && day == 1) return LiturgicalFeast.allSaints;
     if (m == 11 && day == 2) return LiturgicalFeast.allSouls;
+    if (m == 11 && day == 9) return LiturgicalFeast.lateranDedication;
     if (m == 12 && day == 25) return LiturgicalFeast.christmas;
+    // 성가정: 성탄 팔일 축제 안의 주일, 없으면(성탄이 주일) 12월 30일.
+    if (m == 12 && day > 25) {
+      final sun = _sundayOnOrAfter(_d(y, 12, 26));
+      final hf = sun.year == y ? sun : _d(y, 12, 30);
+      if (d == hf) return LiturgicalFeast.holyFamily;
+    }
     // 12월 8일이 대림 주일이면 다음 날(월요일)로 옮긴다.
     final dec8 = _d(y, 12, 8);
     final ic = dec8.weekday == DateTime.sunday ? _d(y, 12, 9) : dec8;
     if (d == ic) return LiturgicalFeast.immaculateConception;
     return null;
+  }
+
+  /// 성 요셉 대축일(3월 19일): 사순 주일이면 다음 날(월), 성주간에 들면 성지 주일 전 토요일.
+  static DateTime _josephDate(int y, DateTime easter) {
+    final j = _d(y, 3, 19);
+    final palm = _plus(easter, -7);
+    if (!j.isBefore(palm)) return _plus(palm, -1);
+    return j.weekday == DateTime.sunday ? _plus(j, 1) : j;
+  }
+
+  /// 주님 탄생 예고 대축일(3월 25일): 사순 주일이면 다음 날(월),
+  /// 성주간·부활 팔일 축제에 들면 부활 제2주일 다음 월요일.
+  static DateTime _annunciationDate(int y, DateTime easter) {
+    final a = _d(y, 3, 25);
+    final palm = _plus(easter, -7);
+    if (!a.isBefore(palm) && !a.isAfter(_plus(easter, 7))) {
+      return _plus(easter, 8);
+    }
+    return a.weekday == DateTime.sunday ? _plus(a, 1) : a;
   }
 
   @override
@@ -368,17 +421,17 @@ enum LiturgyPreview {
       LiturgyPreview.easter => e,
       // 성령 강림 뒤 연중 평일(부활 후 80일째: 대축일·성월과 겹치지 않는 7월 무렵)
       LiturgyPreview.ordinary => _ordinarySample(e),
-      // 11월 둘째 주 평일(위령 성월, 자색 기조)
+      // 11월 둘째 주(위령 성월: 녹색 + 추모 장식)
       LiturgyPreview.souls => DateTime(y, 11, 10),
     });
   }
 
   static DateTime _ordinarySample(DateTime e) {
     var d = DateTime(e.year, e.month, e.day + 80);
-    // 성월이 없는 달(7·8월)의 평일로 맞춘다.
+    // 성월이 없는 달(7·8월)의, 축일이 아닌 평일로 맞춘다.
     while (MonthDevotion.ofMonth(d.month) != null ||
         d.weekday == DateTime.sunday ||
-        (d.month == 8 && d.day == 15)) {
+        LiturgicalDay.of(d).feast != null) {
       d = DateTime(d.year, d.month, d.day + 1);
     }
     return d;

@@ -19,7 +19,8 @@ abstract class RosaryFeedbackSink {
     required double volume,
   });
 
-  void announce(String text);
+  /// 음성 제목 안내. 말을 마치면 끝나는 Future(앞단 음성을 그 뒤에 잇기 위해).
+  Future<void> announce(String text);
 
   Future<void> dispose();
 }
@@ -116,18 +117,26 @@ class DeviceRosaryFeedback implements RosaryFeedbackSink {
     }
   }
 
+  bool _ttsReady = false;
+
   @override
-  void announce(String text) {
-    unawaited(() async {
-      try {
-        final tts = _tts ??= FlutterTts();
+  Future<void> announce(String text) async {
+    try {
+      final tts = _tts ??= FlutterTts();
+      if (!_ttsReady) {
+        _ttsReady = true;
         await tts.setLanguage('ko-KR');
-        await tts.stop();
-        await tts.speak(text);
-      } catch (e) {
-        debugPrint('voice title failed: $e');
+        await tts.setSpeechRate(0.5);
+        // speak() 가 말을 마칠 때 끝나게 한다(앞단 음성과 겹치지 않게 잇는다).
+        await tts.awaitSpeakCompletion(true);
       }
-    }());
+      await tts.stop();
+      await tts
+          .speak(text)
+          .timeout(const Duration(seconds: 8), onTimeout: () => null);
+    } catch (e) {
+      debugPrint('voice title failed: $e');
+    }
   }
 
   @override
@@ -153,7 +162,7 @@ class RecordingRosaryFeedback implements RosaryFeedbackSink {
   }) => played.add((cue, vibrate, sound));
 
   @override
-  void announce(String text) => announced.add(text);
+  Future<void> announce(String text) async => announced.add(text);
 
   @override
   Future<void> dispose() async {}
@@ -188,6 +197,6 @@ void playRosaryStepCue(
     volume: s.chimeVolume,
   );
   if (s.rosaryVoiceTitle && !voiceBusy) {
-    sink.announce(rosaryVoiceTitle(session.current));
+    unawaited(sink.announce(rosaryVoiceTitle(session.current)));
   }
 }
