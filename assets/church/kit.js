@@ -1130,8 +1130,9 @@
       var t = tex.carpet({ color: c, border: b }).clone(); t.needsUpdate = true; t.wrapS = t.wrapT = T.RepeatWrapping;
       var along = l >= w; var len = along ? l : w, wid = along ? w : l;
       t.repeat.set(1, Math.max(1, len / (wid * 2)));
-      var m = new T.MeshStandardMaterial({ map: t, roughness: 0.95, color: 0xffffff });
-      S_.physMats.push({ m: m, envK: 0.2, cc: 0, em: 0 });
+      var m = new T.MeshStandardMaterial({ map: t, roughness: 0.95, color: 0xffffff, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.05 });
+      // 밤·어두운 룩에서 카펫이 완전한 검정으로 뭉개지지 않게 자체 밝기를 조금(낮 0.05 → 밤 0.2, 질감 색 그대로) 준다(world.js applyEnv 가 갱신)
+      S_.physMats.push({ m: m, envK: 0.2, cc: 0, em: 0, lift: [0.05, 0.2] });
       var mesh = new T.Mesh(new T.PlaneGeometry(wid, len), m);
       mesh.rotation.x = -PI / 2; if (!along) mesh.rotation.z = PI / 2;
       mesh.position.set((o.x0 + o.x1) / 2, y + 0.012, (o.z0 + o.z1) / 2); mesh.receiveShadow = true;

@@ -9,24 +9,31 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const assets = path.resolve(here, '../../assets/church');
 const read = (f) => fs.readFileSync(path.join(assets, f), 'utf8');
 
-function loadLooks() {
-  const sb = {}; sb.window = sb; vm.createContext(sb);
+function loadLooks(search) {
+  const sb = {}; sb.window = sb; if (search) sb.location = { search }; vm.createContext(sb);
   vm.runInContext(read('looks.js'), sb);
   return sb.ChurchLooks;
 }
 
-test('looks: stpeter is active, every other church has a draft, default equals the previous final pass values', () => {
+test('looks: every church has an active look, unknown ids fall back to the default that equals the previous final pass values', () => {
   const L = loadLooks();
   const ids = fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f) && f !== 'ch_glass.js').map((f) => f.slice(3, -3));
-  assert.deepEqual(Object.keys(L.LOOKS), ['stpeter']);   // 화면으로 검증한 것만 기본 적용
+  assert.deepEqual(Object.keys(L.LOOKS).sort(), ids.concat([]).sort());   // 8개 성당 모두 화면 검증 뒤 기본 적용
   for (const id of ids) assert.ok(L.LOOKS[id] || L.DRAFTS[id], 'look or draft for ' + id);
-  assert.equal(L.get('milan').id, 'default');
+  assert.equal(L.get('milan').id, 'milan');
   const d = L.get('nowhere');
   assert.equal(d.id, 'default');
   // 예전(G-04) 걷기 프로필 값: 채도 0.94, 난색 0.03, 비네트 0.16, 대비 없음, 블룸 0.92/0.3/0.55, 배율 1
   assert.deepEqual([d.sat, d.warm, d.vig, d.con, d.bloomT, d.bloomS, d.bloomR], [0.94, 0.03, 0.16, 0, 0.92, 0.3, 0.55]);
   for (const k of ['keyK', 'ambK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'reflK', 'dustK']) assert.equal(d[k], 1, k);
   assert.equal(d.dust, 90);
+});
+
+test('looks: ?looks=off removes every look (A/B baseline), ?looks=<id> keeps only that church', () => {
+  assert.deepEqual(Object.keys(loadLooks('?looks=off').LOOKS), []);
+  assert.equal(loadLooks('?looks=off').get('stpeter').id, 'default');
+  assert.deepEqual(Object.keys(loadLooks('?looks=stpeter,milan').LOOKS).sort(), ['milan', 'stpeter']);
+  assert.ok(Object.keys(loadLooks('').LOOKS).length >= 8);
 });
 
 test('looks: values stay in safe ranges and night blends linearly', () => {

@@ -386,7 +386,7 @@
       if (opts.renderer) opts.renderer.setClearColor(env.hor);
       ctx.mats.glass.color.copy(env.glass).multiplyScalar(env.gk);
       cloudMat.color.copy(env.cloud);
-      for (var pm = 0; pm < S.physMats.length; pm++) { var p = S.physMats[pm]; p.m.envMapIntensity = p.envK * env.envK; }
+      for (var pm = 0; pm < S.physMats.length; pm++) { var p = S.physMats[pm]; p.m.envMapIntensity = p.envK * env.envK; if (p.lift) p.m.emissiveIntensity = p.lift[0] + (p.lift[1] - p.lift[0]) * env.night; }
       cupMat.envMapIntensity = env.envK;
       var pos = skyGeo.attributes.position, sd = env.sunDir, sunGlow = _ca.set(0xffb070);
       for (var v = 0; v < pos.count; v++) {

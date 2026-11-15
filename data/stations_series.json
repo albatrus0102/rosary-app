@@ -617,6 +617,300 @@
     }
    ],
    "bundle_width": 440
+  },
+  {
+   "id": "tiepolo",
+   "title": "조반니 도메니코 티에폴로 〈Via Crucis〉 동판화",
+   "short": "티에폴로 동판화",
+   "artist": "조반니 도메니코 티에폴로",
+   "artist_latin": "Giovanni Domenico Tiepolo",
+   "year": "1749",
+   "artist_death": 1804,
+   "place": "암스테르담 국립미술관(Rijksmuseum) 소장 동판화(베네치아 산 폴로 성당 유화 연작을 작가가 직접 새김)",
+   "medium": "에칭·인그레이빙",
+   "photographer": "Rijksmuseum",
+   "license": "CC0",
+   "license_label": "CC0 1.0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "source": "https://commons.wikimedia.org/wiki/File:Ecce_Homo_Stazione_I_Gesu_condannato_a_morte_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-500.jpg",
+   "changes": "아래 글귀와 여백을 잘라 내고 크기를 줄임",
+   "rights": "확인",
+   "rights_note": "TODO",
+   "aspect": 0.8,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/tiepolo",
+   "pack": "cross_pack_tiepolo.js",
+   "prepare": "plain",
+   "fetch_width": 960,
+   "commons_license": "CC-zero",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Ecce_Homo_Stazione_I_Gesu_condannato_a_morte_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-500.jpg",
+     "commons": "Ecce_Homo_Stazione_I_Gesu_condannato_a_morte_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-500.jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Kruisdraging_van_Christus_Stazione_II_Riceve_la_croce_sù_le_spalle_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-501.jpg",
+     "commons": "Kruisdraging_van_Christus_Stazione_II_Riceve_la_croce_sù_le_spalle_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-501.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_bezwijkt_onder_kruis_bij_kruisdraging_Stazione_III_Cade_sotto_la_croce_la_prima_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_crucis_(serietitel),_RP-P-1950-502.jpg",
+     "commons": "Christus_bezwijkt_onder_kruis_bij_kruisdraging_Stazione_III_Cade_sotto_la_croce_la_prima_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_crucis_(serietitel),_RP-P-1950-502.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_ontmoet_zijn_moeder_tijdens_kruisdraging_Stazione_IV_Incontra_la_sua_SS.ma_Madre_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-503.jpg",
+     "commons": "Christus_ontmoet_zijn_moeder_tijdens_kruisdraging_Stazione_IV_Incontra_la_sua_SS.ma_Madre_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-503.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Simon_van_Cyrene_helpt_Christus_met_dragen_kruis_Stazione_V_Viene_aiutato_dal_Cireneo_a_portar_la_Croce_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-504.jpg",
+     "commons": "Simon_van_Cyrene_helpt_Christus_met_dragen_kruis_Stazione_V_Viene_aiutato_dal_Cireneo_a_portar_la_Croce_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-504.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_ontmoet_Veronica_met_zweetdoek_tijdens_kruisdraging_Stazione_VI_Gesù_asciugato_da_Sta._Veronica_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-505.jpg",
+     "commons": "Christus_ontmoet_Veronica_met_zweetdoek_tijdens_kruisdraging_Stazione_VI_Gesù_asciugato_da_Sta._Veronica_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-505.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_bezwijkt_voor_tweede_keer_bij_kruisdraging_Stazione_VII_Cade_sotto_la_croce_la_seconda_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-506.jpg",
+     "commons": "Christus_bezwijkt_voor_tweede_keer_bij_kruisdraging_Stazione_VII_Cade_sotto_la_croce_la_seconda_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-506.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_troost_huilende_vrouwen_tijdens_kruisdraging_Stazione_VIII_Consola_le_donne_piangenti_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-507.jpg",
+     "commons": "Christus_troost_huilende_vrouwen_tijdens_kruisdraging_Stazione_VIII_Consola_le_donne_piangenti_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-507.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_bezwijkt_voor_derde_keer_bij_kruisdraging_Stazione_IX_Cade_sotto_la_Croce_la_terza_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-508.jpg",
+     "commons": "Christus_bezwijkt_voor_derde_keer_bij_kruisdraging_Stazione_IX_Cade_sotto_la_Croce_la_terza_volta_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-508.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_wordt_ontkleed_op_Calvarieberg_Stazione_X_Gesù_spogliato_ed_abbeverato_con_fele_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-509.jpg",
+     "commons": "Christus_wordt_ontkleed_op_Calvarieberg_Stazione_X_Gesù_spogliato_ed_abbeverato_con_fele_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-509.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_wordt_aan_het_kruis_genageld_Stazione_XI_Gesù_inchiodato_in_Croce_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-510.jpg",
+     "commons": "Christus_wordt_aan_het_kruis_genageld_Stazione_XI_Gesù_inchiodato_in_Croce_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-510.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Christus_aan_het_kruis_en_Maria_ondersteund_door_Johannes_tussen_omstanders_op_Calvarieberg_Stazione_XII_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-511.jpg",
+     "commons": "Christus_aan_het_kruis_en_Maria_ondersteund_door_Johannes_tussen_omstanders_op_Calvarieberg_Stazione_XII_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-511.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Bewening_van_Christus_dode_lichaam_na_kruisafneming_Stazione_XIII_Morto_Gesù_vien_deposto_dalla_Croce_in_seno_alla_sua_SSa._Madre_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-512.jpg",
+     "commons": "Bewening_van_Christus_dode_lichaam_na_kruisafneming_Stazione_XIII_Morto_Gesù_vien_deposto_dalla_Croce_in_seno_alla_sua_SSa._Madre_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-512.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Graflegging_van_Christus_Stazione_ultima_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-513.jpg",
+     "commons": "Graflegging_van_Christus_Stazione_ultima_(titel_op_object)_Kruiswegstaties_(serietitel)_Via_Crucis_(serietitel),_RP-P-1950-513.jpg"
+    }
+   ]
+  },
+  {
+   "id": "fugel_munich",
+   "title": "게프하르트 푸겔 〈뮌헨 성 요셉 성당 십자가의 길〉",
+   "short": "푸겔 뮌헨 연작",
+   "artist": "게프하르트 푸겔",
+   "artist_latin": "Gebhard Fugel",
+   "year": "1904–08",
+   "artist_death": 1939,
+   "place": "뮌헨 성 요셉 성당(독일; 원작은 1944년 소실) — 1908년경 그림엽서",
+   "medium": "프레스코(그림엽서 복제)",
+   "photographer": "1908년경 그림엽서 스캔(Commons 올린 이의 스캔)",
+   "license": "PD",
+   "license_label": "Public domain",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "source": "https://commons.wikimedia.org/wiki/Category:The_14_Stations_of_the_Holy_Cross_(postcard_booklet)",
+   "changes": "엽서 여백을 잘라 내고 크기를 줄임",
+   "rights": "확인",
+   "rights_note": "TODO",
+   "aspect": 1.7,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/fugel_munich",
+   "pack": "cross_pack_fugel_munich.js",
+   "prepare": "plain",
+   "fetch_width": 960,
+   "commons_license": "PD-old-auto-1923",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_01.jpg",
+     "commons": "Fugel_Kreuzweg_01.jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_02.jpg",
+     "commons": "Fugel_Kreuzweg_02.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_03.jpg",
+     "commons": "Fugel_Kreuzweg_03.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_04.jpg",
+     "commons": "Fugel_Kreuzweg_04.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_05.jpg",
+     "commons": "Fugel_Kreuzweg_05.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_06.jpg",
+     "commons": "Fugel_Kreuzweg_06.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_07.jpg",
+     "commons": "Fugel_Kreuzweg_07.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_08.jpg",
+     "commons": "Fugel_Kreuzweg_08.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_09.jpg",
+     "commons": "Fugel_Kreuzweg_09.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_10.jpg",
+     "commons": "Fugel_Kreuzweg_10.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_11.jpg",
+     "commons": "Fugel_Kreuzweg_11.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_12.jpg",
+     "commons": "Fugel_Kreuzweg_12.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_13.jpg",
+     "commons": "Fugel_Kreuzweg_13.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Fugel_Kreuzweg_14.jpg",
+     "commons": "Fugel_Kreuzweg_14.jpg"
+    }
+   ]
+  },
+  {
+   "id": "fahnroth",
+   "title": "요제프 판로트 〈노이루핀 예수 성심 성당 십자가의 길〉",
+   "short": "판로트 연작",
+   "artist": "요제프 판로트",
+   "artist_latin": "Joseph Fahnroth",
+   "year": "1886",
+   "artist_death": 1895,
+   "place": "노이루핀 예수 성심 성당(독일)",
+   "medium": "유화",
+   "photographer": "미확인(Commons 출처 herz-jesu-neuruppin.de)",
+   "license": "PD",
+   "license_label": "Public domain (PD-Art)",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "source": "https://commons.wikimedia.org/wiki/Category:Joseph_Fahnroth",
+   "changes": "크기를 줄임",
+   "rights": "확인",
+   "rights_note": "TODO",
+   "aspect": 0.75,
+   "fit": "contain",
+   "asset_dir": "assets/images/stations/fahnroth",
+   "pack": "cross_pack_fahnroth.js",
+   "prepare": "plain",
+   "fetch_width": 960,
+   "commons_license": "PD-old-100",
+   "files": [
+    {
+     "n": 1,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_-_Kreuzweg_Neuruppin_01.jpg",
+     "commons": "Joseph_Fahnroth_-_Kreuzweg_Neuruppin_01.jpg"
+    },
+    {
+     "n": 2,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_02.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_02.jpg"
+    },
+    {
+     "n": 3,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_03.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_03.jpg"
+    },
+    {
+     "n": 4,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_04.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_04.jpg"
+    },
+    {
+     "n": 5,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_05.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_05.jpg"
+    },
+    {
+     "n": 6,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_06.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_06.jpg"
+    },
+    {
+     "n": 7,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_07.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_07.jpg"
+    },
+    {
+     "n": 8,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_08.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_08.jpg"
+    },
+    {
+     "n": 9,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_09.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_09.jpg"
+    },
+    {
+     "n": 10,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_10.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_10.jpg"
+    },
+    {
+     "n": 11,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_11.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_11.jpg"
+    },
+    {
+     "n": 12,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_12.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_12.jpg"
+    },
+    {
+     "n": 13,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_13.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_13.jpg"
+    },
+    {
+     "n": 14,
+     "url": "https://commons.wikimedia.org/wiki/File:Joseph_Fahnroth_–_Kreuzweg_Neuruppin_14.jpg",
+     "commons": "Joseph_Fahnroth_–_Kreuzweg_Neuruppin_14.jpg"
+    }
+   ]
   }
  ],
  "not_used": [

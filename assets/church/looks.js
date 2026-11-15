@@ -29,15 +29,13 @@
       sat: 0.98, warm: 0.07, vig: 0.36, con: 0.32, bloomT: 0.74, bloomS: 0.5, bloomR: 0.62,
       night: { expK: 0.95, ambK: 0.7, lampK: 2.2, candleK: 1.6, con: 0.22, bloomT: 0.7, bloomS: 0.6, vig: 0.38 }
     },
-  };
-  // 초안(아직 적용하지 않음): 성당마다 화면을 보고 검증한 뒤 LOOKS 로 옮긴다(LOOK_DEV_HANDOFF.md). 개발 중 ?looks=all 이면 적용해 볼 수 있다.
-  var DRAFTS = {
+    // 아래 7개는 2026-11 화면 검증(낮 11시·밤 22시 × 신랑·제대, 360x800, 전/후 비교: docs/church/LOOK_DEV.md §6) 후 기본 적용.
     // 라테라노: 흰 대리석·금 천장. 성 베드로보다 차분하게(약한 난색, 중간 대비)
-    lateran: { keyK: 0.9, keyTint: 0xffdcae, keyTintK: 0.3, ambK: 0.7, expK: 0.88, lampK: 1.4, sat: 0.97, warm: 0.05, vig: 0.26, con: 0.18, bloomT: 0.84, bloomS: 0.4, night: { lampK: 1.7 } },
+    lateran: { beamK: 0.7, keyK: 0.9, keyTint: 0xffdcae, keyTintK: 0.3, ambK: 0.7, expK: 0.88, lampK: 1.4, sat: 0.97, warm: 0.05, vig: 0.26, con: 0.18, bloomT: 0.84, bloomS: 0.4, night: { lampK: 1.7 } },
     // 마조레: 금 격자 천장·모자이크. 금빛을 살려 따뜻하게
-    maggiore: { keyK: 0.9, keyTint: 0xffcf96, keyTintK: 0.35, ambK: 0.65, ambTint: 0xffe2b8, ambTintK: 0.3, expK: 0.87, lampK: 1.5, sat: 0.98, warm: 0.06, vig: 0.28, con: 0.2, bloomT: 0.82, bloomS: 0.42, night: { lampK: 1.8 } },
+    maggiore: { beamK: 0.7, keyK: 0.9, keyTint: 0xffcf96, keyTintK: 0.35, ambK: 0.65, ambTint: 0xffe2b8, ambTintK: 0.3, expK: 0.87, lampK: 1.5, sat: 0.98, warm: 0.06, vig: 0.28, con: 0.2, bloomT: 0.82, bloomS: 0.42, night: { lampK: 1.8 } },
     // 성 바오로: 넓고 밝은 회랑·설화석고 창. 서늘한 돌빛 유지, 대비만 조금
-    stpaul: { keyK: 0.95, ambK: 0.8, expK: 0.92, sat: 0.95, warm: 0.02, vig: 0.24, con: 0.15, bloomT: 0.86, bloomS: 0.36 },
+    stpaul: { beamK: 0.7, keyK: 0.95, ambK: 0.8, expK: 0.92, sat: 0.95, warm: 0.02, vig: 0.24, con: 0.15, bloomT: 0.86, bloomS: 0.36 },
     // 밀라노: 어두운 고딕 석재와 보석색 창. 앰비언트를 깊게, 창빛·촛불이 도드라지게
     milan: { keyK: 0.85, ambK: 0.5, ambTint: 0xb9c3e0, ambTintK: 0.25, expK: 0.85, beamK: 1.15, lampK: 1.6, candleK: 1.5, fogTint: 0x2a2a3a, fogTintK: 0.3, dust: 120, dustK: 1.2, dustNight: 0.2,
       sat: 1.04, warm: 0.0, vig: 0.36, con: 0.28, bloomT: 0.75, bloomS: 0.5, bloomR: 0.6, night: { lampK: 2.0, bloomT: 0.68 } },
@@ -49,7 +47,15 @@
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
     basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
   };
-  try { if (/[?&]looks=all/.test(root.location.search)) for (var dk in DRAFTS) LOOKS[dk] = DRAFTS[dk]; } catch (e) { /* ignore */ }
+  // 개발용: ?looks=off 이면 모든 룩을 끈다(전/후 비교·회귀 기준 화면). ?looks=stpeter 처럼 id 를 주면 그 성당 룩만 남긴다.
+  var DRAFTS = {};   // 새 성당 룩 초안은 여기에 넣고 ?looks=all 로 확인한 뒤 LOOKS 로 옮긴다
+  try {
+    var qm = /[?&]looks=([a-z,]+)/.exec(root.location.search);
+    if (qm) {
+      if (qm[1] === 'all') { for (var dk in DRAFTS) LOOKS[dk] = DRAFTS[dk]; }
+      else { var keep = qm[1].split(','); for (var lk in LOOKS) if (keep.indexOf(lk) < 0) delete LOOKS[lk]; }   // 'off' 는 어떤 id 도 아니므로 전부 지워진다
+    }
+  } catch (e) { /* ignore */ }
   var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS'];
 
   function get(id) {

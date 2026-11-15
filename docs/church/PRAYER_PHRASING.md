@@ -1,5 +1,7 @@
 # 기도문 띄어 읽기(호흡 단위) 조사
 
+> 2026-11-15 재확인: 본문 대조(3절)를 주교회의 전자 본문으로 다시 했고 결론은 같다(전부 일치). 글자·줄 단위 대조표와 십자가의 길 대조는 `PRAYER_VERIFICATION.md`. 5절의 사도신경 분할은 소유자가 확정했다(뒷단은 '성령을 믿으며'부터).
+
 조사일: 2026-11-12. 대상: 선창 큐 26개(`tools/leader_voice/cues.json`)와 후창 큐 5개(`tools/leader_voice/responder_cues.json`).
 기계 판독용 결과는 `tools/leader_voice/phrasing.json`에 있다. 이 문서는 조사 결과만 담으며, 기도문 본문은 고치지 않았다.
 
