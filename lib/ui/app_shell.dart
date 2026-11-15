@@ -219,6 +219,8 @@ class _AppShellState extends State<AppShell> {
     final wc = windowClassOf(context);
     final services = AppServicesScope.maybeOf(context);
     final body = IndexedStack(
+      // 접기/펼치기로 하단 바 ↔ 레일이 바뀌어도 본문(성당·오늘·기록·더보기)의 상태를 그대로 둔다.
+      key: _bodyKey,
       index: _index,
       children: [
         // 성당 탭: 성당 보기(메인)도 창 갤러리도 계속 둔다(성당 안에 있던 자리 그대로 돌아온다).
@@ -276,86 +278,86 @@ class _AppShellState extends State<AppShell> {
         if (_segment != GlassSegment.church) return;
         _backToExit(context);
       },
-      child: wc.isWide
-          ? _buildWide(context, wc, body)
-          : _buildCompact(context, body),
-    );
-  }
-
-  Widget _buildCompact(BuildContext context, Widget body) {
-    return Scaffold(
-      body: body,
-      bottomNavigationBar: _navTheme(
-        context,
-        NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: _select,
-          destinations: [
-            for (final d in _destinations)
-              NavigationDestination(
-                icon: Icon(d.icon),
-                selectedIcon: Icon(d.selectedIcon),
-                label: d.label,
-              ),
+      // 좁은 화면(하단 바)과 넓은 화면(레일)이 같은 뼈대(Scaffold > Row > Expanded > 본문)를 쓴다.
+      // 폴더블을 접거나 펼쳐 폭이 600dp 를 넘나들어도 본문은 같은 자리에 남아 다시 만들어지지 않는다
+      // (다시 만들어지면 성당이 입장 전 화면으로 돌아가고 WebView 가 새로 로드된다).
+      child: Scaffold(
+        body: Row(
+          children: [
+            if (wc.isWide) _buildRail(context, wc),
+            Expanded(key: const ValueKey('shell-body'), child: body),
           ],
         ),
+        bottomNavigationBar: wc.isWide
+            ? null
+            : _navTheme(
+                context,
+                NavigationBar(
+                  selectedIndex: _index,
+                  onDestinationSelected: _select,
+                  destinations: [
+                    for (final d in _destinations)
+                      NavigationDestination(
+                        icon: Icon(d.icon),
+                        selectedIcon: Icon(d.selectedIcon),
+                        label: d.label,
+                      ),
+                  ],
+                ),
+              ),
       ),
     );
   }
 
-  Widget _buildWide(BuildContext context, WindowClass wc, Widget body) {
+  /// 본문(탭 묶음)의 자리표. 내비게이션 모양이 바뀌어도 같은 State 를 잇는다.
+  final GlobalKey _bodyKey = GlobalKey(debugLabel: 'shell-body');
+
+  Widget _buildRail(BuildContext context, WindowClass wc) {
     final extended = wc == WindowClass.expanded;
     // 밝은 테마에서 상태 바 아이콘(시계 등)은 어둡다. 어두운 레일이 상태 바 밑까지 올라가면 시계가
     // 보이지 않으므로, 성당 밖에서는 레일을 상태 바 아래에서 시작한다(성당 안은 장면도 어둡다).
     final underStatusBar =
         _churchChrome || Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      body: Row(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-              top: underStatusBar ? 0 : MediaQuery.paddingOf(context).top,
-            ),
-            child: _navTheme(
-              context,
-              _RailSurface(
-                child: SafeArea(
-                  top: underStatusBar,
-                  right: false,
-                  // 장식은 화면 아래 끝까지 닿고, 목적지만 아래 안전 영역을 피한다.
-                  bottom: false,
-                  child: Stack(
-                    children: [
-                      // 레일 아래 장식(아치·촛불·백합). 목적지를 가리지 않는 높이만큼만 그린다.
-                      Positioned.fill(
-                        child: _RailDecor(destinations: _destinations.length),
-                      ),
-                      NavigationRail(
-                        // 바탕은 [_RailSurface]가 칠한다(장식 그림이 비쳐 보이게).
-                        backgroundColor: Colors.transparent,
-                        extended: extended,
-                        labelType: extended
-                            ? NavigationRailLabelType.none
-                            : NavigationRailLabelType.all,
-                        selectedIndex: _index,
-                        onDestinationSelected: _select,
-                        destinations: [
-                          for (final d in _destinations)
-                            NavigationRailDestination(
-                              icon: Icon(d.icon),
-                              selectedIcon: Icon(d.selectedIcon),
-                              label: Text(d.label),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
+    return Padding(
+      padding: EdgeInsets.only(
+        top: underStatusBar ? 0 : MediaQuery.paddingOf(context).top,
+      ),
+      child: _navTheme(
+        context,
+        _RailSurface(
+          child: SafeArea(
+            top: underStatusBar,
+            right: false,
+            // 장식은 화면 아래 끝까지 닿고, 목적지만 아래 안전 영역을 피한다.
+            bottom: false,
+            child: Stack(
+              children: [
+                // 레일 아래 장식(아치·촛불·백합). 목적지를 가리지 않는 높이만큼만 그린다.
+                Positioned.fill(
+                  child: _RailDecor(destinations: _destinations.length),
                 ),
-              ),
+                NavigationRail(
+                  // 바탕은 [_RailSurface]가 칠한다(장식 그림이 비쳐 보이게).
+                  backgroundColor: Colors.transparent,
+                  extended: extended,
+                  labelType: extended
+                      ? NavigationRailLabelType.none
+                      : NavigationRailLabelType.all,
+                  selectedIndex: _index,
+                  onDestinationSelected: _select,
+                  destinations: [
+                    for (final d in _destinations)
+                      NavigationRailDestination(
+                        icon: Icon(d.icon),
+                        selectedIcon: Icon(d.selectedIcon),
+                        label: Text(d.label),
+                      ),
+                  ],
+                ),
+              ],
             ),
           ),
-          Expanded(child: body),
-        ],
+        ),
       ),
     );
   }

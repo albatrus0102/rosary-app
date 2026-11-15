@@ -45,14 +45,21 @@
   // 브라우저가 아니면(시험) false → kit 도형 성상을 쓴다.
   var STATUE = { H: 1.42, BACK: -0.14, LOD_FAR: 9, LOD_STEP: 3 };
   // 깊이 격자(dw×dh, 미터, 0 = 실루엣 밖) → 앞면 메시 자료. step 칸 간격으로 표본, 실루엣 1칸 바깥까지 넣는다.
-  function statueMesh(d, dw, dh, W, H, step) {
+  // sd(선택): 윤곽까지 부호 거리(칸, 바깥 +). 바깥 고리 정점을 윤곽 위로 옮긴다 → 가장자리가 격자 계단 대신 실제 윤곽을 따른다.
+  function statueMesh(d, dw, dh, W, H, step, sd) {
     var nx = Math.floor((dw - 1) / step) + 1, ny = Math.floor((dh - 1) / step) + 1, id = new Int32Array(nx * ny), pos = [], uv = [], idx = [], n = 0;
     function at(i, j) { return i < 0 || j < 0 || i >= dw || j >= dh ? 0 : d[j * dw + i]; }
+    function sdf(i, j) { i = Math.max(0, Math.min(dw - 1, i)); j = Math.max(0, Math.min(dh - 1, j)); return sd[j * dw + i]; }
     for (var j = 0; j < ny; j++) for (var i = 0; i < nx; i++) {
       var pi = Math.min(i * step, dw - 1), pj = Math.min(j * step, dh - 1), on = false;
       for (var b = -step; b <= step && !on; b++) for (var a = -step; a <= step; a++) if (at(pi + a, pj + b) > 0) { on = true; break; }
       if (!on) { id[j * nx + i] = -1; continue; }
-      var u = pi / (dw - 1), v = 1 - pj / (dh - 1);
+      var fi = pi, fj = pj;
+      if (sd && at(pi, pj) <= 0) {
+        var gx = sdf(pi + 1, pj) - sdf(pi - 1, pj), gy = sdf(pi, pj + 1) - sdf(pi, pj - 1), gl = Math.hypot(gx, gy), s = sdf(pi, pj);
+        if (gl > 1e-4 && s > 0) { s = Math.min(s, step * 1.5); fi -= gx / gl * s; fj -= gy / gl * s; }
+      }
+      var u = fi / (dw - 1), v = 1 - fj / (dh - 1);
       pos.push((u - 0.5) * W, v * H, at(pi, pj)); uv.push(u, v); id[j * nx + i] = n++;
     }
     for (j = 0; j < ny - 1; j++) for (i = 0; i < nx - 1; i++) {
@@ -80,10 +87,10 @@
       var left = 2;
       img(a.depth, function (im) {
         var cv = document.createElement('canvas'); cv.width = a.dw; cv.height = a.dh;
-        var c2 = cv.getContext('2d'); c2.drawImage(im, 0, 0); var px = c2.getImageData(0, 0, a.dw, a.dh).data, d = new Float32Array(a.dw * a.dh);
-        for (var i = 0; i < d.length; i++) d[i] = (px[i * 4] * 256 + px[i * 4 + 1]) / 65535 * a.zmax;
+        var c2 = cv.getContext('2d'); c2.drawImage(im, 0, 0); var px = c2.getImageData(0, 0, a.dw, a.dh).data, d = new Float32Array(a.dw * a.dh), sd = new Float32Array(d.length);
+        for (var i = 0; i < d.length; i++) { d[i] = (px[i * 4] * 256 + px[i * 4 + 1]) / 65535 * a.zmax; sd[i] = (px[i * 4 + 2] - 128) / 60; }
         [[1, 0], [STATUE.LOD_STEP, STATUE.LOD_FAR]].forEach(function (L) {
-          var m = statueMesh(d, a.dw, a.dh, STATUE.H * a.w / a.h, STATUE.H, L[0]), g = new T.BufferGeometry();
+          var m = statueMesh(d, a.dw, a.dh, STATUE.H * a.w / a.h, STATUE.H, L[0], sd), g = new T.BufferGeometry();
           g.setAttribute('position', new T.Float32BufferAttribute(m.pos, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(m.uv, 2)); g.setIndex(m.idx);
           g.computeVertexNormals();
           var mesh = new T.Mesh(g, mat); mesh.name = 'shrine_statue_lod' + L[0]; mesh.userData.noCam = true; mesh.userData.noAO = true;

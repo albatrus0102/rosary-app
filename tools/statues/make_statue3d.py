@@ -4,7 +4,8 @@
   python3 tools/statues/make_statue3d.py [--preview DIR]
 
 출력: assets/church/statue3d_<key>.js  (shrine.js 가 그 성당에 들어올 때만 읽는다)
-  { w,h,src: 색 webp(512×1024, 알파, 가장자리 색 번짐 + 약한 디라이팅), dw,dh,depth: 깊이 PNG(R=상위·G=하위 8bit, 16bit), zmax(m) }
+  { w,h,src: 색 webp(512×1024, 알파, 가장자리 색 번짐 + 약한 디라이팅), dw,dh,depth: 깊이 PNG(R=상위·G=하위 8bit = 16bit 깊이,
+    B = 윤곽까지 부호 거리), zmax(m) }
 깊이 = 실루엣 부풀림 + 그림 밝기의 대역 통과(옷 주름·얼굴·손의 요철). 외부 모델 없이 그림만으로 만든다.
  1) 부풀림: 실루엣 안에서 ∇²h = -2 (가장자리 h=0)를 풀고 sqrt(h) → 폭 w 인 띠의 단면이 반지름 w/2 반원(머리·팔·몸통이
     폭에 따라 저절로 둥글어진다). 몸통처럼 넓은 곳은 tanh 로 눌러 앞뒤 두께를 실제 성상 비율(앞쪽 반 ≈ 0.12–0.15m)로.
@@ -82,7 +83,16 @@ def build(key, preview=None):
     zmax = float(dsm.max()) * 1.001
     q = np.round(dsm / zmax * 65535).astype(np.int64)
     q[msm & (q == 0)] = 1
+    # 실루엣까지의 부호 거리(격자 칸 단위, 바깥 +) — 원본 해상도에서 재서 정점 자리로 표본. shrine.js 가 바깥 고리 정점을
+    # 이 거리만큼 기울기 반대로 옮겨 메시 가장자리를 실제 윤곽에 붙인다(격자 계단 → 옆에서 볼 때 톱니가 생기던 것).
+    fa = np.asarray(src, np.float64)[..., 3] / 255 > 0.5
+    sd = ndimage.distance_transform_edt(~fa) - ndimage.distance_transform_edt(fa)
+    sd = ndimage.gaussian_filter(sd, 1.0)
+    gy, gx = np.mgrid[0:DH, 0:DW].astype(np.float64)
+    cell = (src.width - 1) / (DW - 1)
+    sdg = ndimage.map_coordinates(sd, [gy * (src.height - 1) / (DH - 1), gx * cell], order=1) / cell
     dimg = np.zeros((DH, DW, 3), np.uint8); dimg[..., 0] = q >> 8; dimg[..., 1] = q & 255
+    dimg[..., 2] = np.clip(np.round(128 + sdg * 60), 0, 255)
     buf = io.BytesIO(); Image.fromarray(dimg, 'RGB').save(buf, 'PNG', optimize=True); dpng = buf.getvalue()
     # --- 3) 색: 디라이팅 + 가장자리 색 번짐(512×1024) ---
     cim = src.resize((512, 1024), Image.LANCZOS)
@@ -101,7 +111,7 @@ def build(key, preview=None):
     cwebp = cbuf.getvalue()
     js = ('/* statue3d_' + key + '.js — 생성 파일(tools/statues/make_statue3d.py). ' + note + '.\n'
           '   AI 생성 성모상 그림(ChatGPT, 사용자 제공, art/statues/' + name + '.png; 출처 docs/church/ASSET_LICENSES.md \'AI 생성 성모상\')에서\n'
-          '   만든 색(512×1024 webp, 디라이팅·가장자리 번짐) + 깊이(' + str(DW) + '×' + str(DH) + ' PNG, R·G = 16bit, 0 = 실루엣 밖). shrine.js 가 변위 메시로 세운다. */\n'
+          '   만든 색(512×1024 webp, 디라이팅·가장자리 번짐) + 깊이(' + str(DW) + '×' + str(DH) + ' PNG, R·G = 16bit 깊이·0 = 실루엣 밖, B = 윤곽까지 부호 거리 128±60/칸). shrine.js 가 변위 메시로 세운다. */\n'
           '((window.ChurchArt = window.ChurchArt || {}).statues3d = window.ChurchArt.statues3d || {}).' + key +
           ' = { w: 512, h: 1024, dw: ' + str(DW) + ', dh: ' + str(DH) + ', zmax: ' + ('%.4f' % zmax) + ', H: ' + str(H_M) +
           ',\n  src: "data:image/webp;base64,' + base64.b64encode(cwebp).decode() + '",\n  depth: "data:image/png;base64,' + base64.b64encode(dpng).decode() + '" };\n')
