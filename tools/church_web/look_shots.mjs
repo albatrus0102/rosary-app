@@ -17,7 +17,7 @@ export const VIEWS = {
     entrance: { x: 0, z: 31, yaw: 0, pitch: 8 },
     nave: { x: 0, z: 12, yaw: 0, pitch: 6 },
     altar: { x: 0, z: -3.2, yaw: 0, pitch: 4, look: 14 },
-    aisle: { x: 9, z: 2, yaw: 0, pitch: 6 },
+    aisle: { x: 9.2, z: 4.4, yaw: -90, pitch: 6 },   // I-5: 측랑 4번 칸에서 큰 아치 너머 모서리 경당(그레고리오)·회랑이 보이는 구도(예전 x9,z2 는 돔 피어 벽을 마주 봤다)
     window: { x: 6.2, z: 17.2, yaw: -90, pitch: 8, look: 10 },
   },
   // 당고개(지하 성당 + 입구 홀): 입구 홀 스폰, 신랑, 제대 앞, 옆벽 한지 빛 창·14처
