@@ -353,7 +353,7 @@
       });
     }
     function disposeReflectors() {
-      reflectors.forEach(function (r) { world.remove(r); if (r.dispose) r.dispose(); if (r.getRenderTarget) { var rt = r.getRenderTarget(); if (rt) rt.dispose(); } });
+      reflectors.forEach(function (r) { world.remove(r); if (r.dispose) r.dispose(); if (r.getRenderTarget) { var rt = r.getRenderTarget(); if (rt) rt.dispose(); } if (r.geometry) r.geometry.dispose(); });
       reflectors.length = 0;
     }
 
@@ -578,14 +578,22 @@
       },
       dispose: function () {
         disposeReflectors();
+        var texs = new Set();
+        function texOf(m) {
+          for (var k in m) { var t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t !== envTex) texs.add(t); }
+          if (m.uniforms) for (var u in m.uniforms) { var v = m.uniforms[u] && m.uniforms[u].value; if (v && v.isTexture && !v.isRenderTargetTexture && v !== envTex) texs.add(v); }
+        }
         [world, sky, sun, moonSp, stars, clouds, hemi, dirLight, target, candleLight, bLight].forEach(function (o) {
           if (!o) return;
           scene.remove(o);
           if (o.traverse) o.traverse(function (n) {
             if (n.geometry && n.geometry.dispose) n.geometry.dispose();
-            if (n.material) { var ms = Array.isArray(n.material) ? n.material : [n.material]; ms.forEach(function (m) { ['map', 'normalMap', 'roughnessMap', 'emissiveMap'].forEach(function (k) { if (m[k] && m[k].dispose && m[k] !== glowTex) m[k].dispose(); }); m.dispose && m.dispose(); }); }
+            if (n.material) { var ms = Array.isArray(n.material) ? n.material : [n.material]; ms.forEach(function (m) { texOf(m); m.dispose && m.dispose(); }); }
           });
         });
+        // 재질이 쓰던 질감을 한 번씩 놓는다(예전에는 map 등 4종만, 빛 번짐 질감(glowTex)은 빼고 놓아 성당을 바꿀 때마다 질감이 쌓였다: PERF_SCALE.md §4 누수)
+        texs.forEach(function (t) { t.dispose(); });
+        if (glowTex && glowTex.dispose) glowTex.dispose();
         if (dirLight.shadow && dirLight.shadow.map) dirLight.shadow.map.dispose();
       }
     };

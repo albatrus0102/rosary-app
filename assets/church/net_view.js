@@ -205,8 +205,12 @@
       isTaken: function (id) { return taken[id] !== undefined; },
       set: function (flag, force) {
         if (flag === on && !force) return;
-        // 정리
-        sit.concat(walkers).forEach(function (n) { scene.remove(n.av.root); });
+        // 정리: 장면에서 빼고 아바타마다 만든 지오메트리·뼈 질감을 놓는다(예전에는 빼기만 해서 성당을 바꿀 때마다 GPU 버퍼가 쌓였다: PERF_SCALE.md §4 누수).
+        // 재질·이름표 질감은 avatar.js 캐시가 함께 쓰므로 놓지 않는다(이름 수만큼으로 묶여 있다).
+        sit.concat(walkers).forEach(function (n) {
+          scene.remove(n.av.root);
+          n.av.root.traverse(function (o) { if (o.geometry && o.geometry.dispose) o.geometry.dispose(); if (o.isSkinnedMesh && o.skeleton && o.skeleton.dispose) o.skeleton.dispose(); });
+        });
         sit = []; walkers = []; taken = {};
         on = flag;
         if (!on || !logic) return;
