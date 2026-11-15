@@ -309,6 +309,9 @@ void main() {
       final auto = StationsSeriesCatalog.forChurch('milan');
       await t.pumpWidget(_app(StationsOfCrossScreen(series: auto)));
       await t.pumpAndSettle();
+      // 맨 위 '바치는 법' 카드만큼 목록이 내려갔다: 1처 줄이 보이게 조금 올린다.
+      await t.drag(find.byType(CustomScrollView), const Offset(0, -220));
+      await t.pumpAndSettle();
       expect(assetOf(t, 1), auto.imageAsset(1));
       // 칩 하나(지금 연작 이름)를 누르면 연작 선택 시트가 열린다: 연작마다 칩 하나 + '자동'
       final button = find.byKey(const ValueKey('stations-series-button'));
@@ -365,6 +368,9 @@ void main() {
         StationsSeriesChoice.prefsKey: 'fahnroth',
       });
       await t.pumpWidget(_app(const StationsOfCrossScreen()));
+      await t.pumpAndSettle();
+      // 맨 위 '바치는 법' 카드만큼 목록이 내려갔다: 1처 줄이 보이게 조금 올린다.
+      await t.drag(find.byType(CustomScrollView), const Offset(0, -220));
       await t.pumpAndSettle();
       expect(
         assetOf(t, 1),
@@ -467,6 +473,9 @@ void main() {
       _phone(t);
       final s = StationsSeriesCatalog.forChurch('milan');
       await t.pumpWidget(_app(StationsOfCrossScreen(series: s)));
+      await t.pumpAndSettle();
+      // 맨 위 '바치는 법' 카드만큼 목록이 내려갔다: 1처 줄이 보이게 조금 올린다.
+      await t.drag(find.byType(CustomScrollView), const Offset(0, -220));
       await t.pumpAndSettle();
       final first = t.widget<Image>(
         find.descendant(
