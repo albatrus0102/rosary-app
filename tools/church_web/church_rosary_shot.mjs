@@ -19,13 +19,13 @@ await C.evaluate((ch) => ChurchAPI.init({ church: ch, avatar: { skin: 1, style: 
 await C.waitForFunction(() => window.__church && window.__church.world, null, { timeout: 180000 });
 const seat = await C.evaluate(() => { const L = __church.logic, s = L.seats[Math.floor(L.seats.length * 0.3)], id = s.id || s; const sp = L.standPos(id); __church.me.x = sp.x; __church.me.z = sp.z; return id; });
 await C.waitForFunction(() => __church.near && __church.near.seat, null, { timeout: 120000 });
-await C.evaluate(() => { ChurchAPI.setViewInset({ bottom: 0.47 }); ChurchAPI.setRosary({ on: true }); ChurchAPI.sit({}); });
+await C.evaluate(() => { ChurchAPI.setViewInset({ bottom: 0.43 }); ChurchAPI.setRosary({ on: true }); ChurchAPI.sit({}); });
 await C.waitForFunction(() => window.__ev.some((e) => e.e === 'seated'), null, { timeout: 150000 });
 await C.evaluate(() => { ChurchAPI.setPraying({ on: true, ms: 0 }); ChurchAPI.setPrayerPosture({ posture: 'kneel' }); });
 await R.waitForFunction(() => window.RosaryAPI);
 await R.evaluate(() => RosaryAPI.init({ rosary: 'gold', step: 10, compact: true, theme: 'navy' }));
 await R.waitForFunction(() => __rosary.R && __rosary.settled(), null, { timeout: 120000 });
-await p.waitForTimeout(6000);
+await p.waitForTimeout(9000);
 const mem = { church: await C.evaluate(() => performance.memory && performance.memory.usedJSHeapSize), rosary: await R.evaluate(() => performance.memory && performance.memory.usedJSHeapSize) };
 await C.evaluate(() => { try { ChurchAPI.pause({}); } catch (e) {} });
 await p.screenshot({ path: out, type: 'jpeg', quality: 80, timeout: 180000 });

@@ -39,7 +39,8 @@
   // 아래 패널(성당 묵주 패널)이 덮는 비율만큼 그림을 위로 옮긴다(투영 오프셋: 가운데가 남은 영역의 가운데로).
   function applyInset(w, h) {
     var b = App.inset || 0;
-    if (b > 0) App.camera.setViewOffset(w, h, 0, h * b * 0.5, w, h); else App.camera.clearViewOffset();
+    // 0.72: 아바타(카메라가 보는 머리 높이)가 패널 위 남은 영역의 가운데보다 조금 위에 오게
+    if (b > 0) App.camera.setViewOffset(w, h, 0, h * b * 0.72, w, h); else App.camera.clearViewOffset();
   }
   // 그리기 고리 다시 돌리기(감상 모드는 멈춰 있을 때 rAF 를 쉰다)
   function kick() {
@@ -551,7 +552,8 @@
     if (App.spotF < 0.002) App.spotF = 0;
     if (SP) { App.spotYaw = SP.yaw; ctl.yaw += wrap(SP.yaw + CG.SPOT.side - ctl.yaw) * (1 - Math.exp(-dt * 2.2)); }
     if (seated && !SP && !ctl.dragging && App.t - ctl.lastDragT > 1.2) {
-      ctl.yaw += wrap((me.seat ? App.logic.seatInfo(me.seat).yaw : 0) - ctl.yaw) * (1 - Math.exp(-dt * 1.8));
+      // 묵주 패널이 아래를 덮는 동안(App.inset)은 비스듬히 옆에서: 앉았는지 무릎 꿇었는지 보인다
+      ctl.yaw += wrap((me.seat ? App.logic.seatInfo(me.seat).yaw : 0) + (App.inset ? 0.95 : 0) - ctl.yaw) * (1 - Math.exp(-dt * 1.8));
     }
     // 자동 걷기 중에는 카메라가 천천히 아바타 뒤로 돌아 가는 길이 보이게 한다(직접 돌린 뒤 1.5초는 그대로 둔다)
     if (App.walkSt && !seated && !ctl.dragging && App.t - ctl.lastDragT > 1.5) ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 1.6));
