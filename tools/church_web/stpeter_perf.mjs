@@ -15,10 +15,10 @@ export const VIEWS = {
   altar: { x: 0, z: -13.8, yaw: 0, pitch: 5 },
   aisle: { x: 9, z: 20, yaw: 0, pitch: 6 },
   aisleEnd: { x: 9, z: 7.5, yaw: 0, pitch: 6 },
-  ambEast: { x: 13.8, z: 6.2, yaw: 0, pitch: 6, isNew: true },          // 그레고리오 경당 → 동쪽 통로 → 익랑
-  ambCorner: { x: 12.2, z: 6.6, yaw: 35, pitch: 6, isNew: true },       // 모서리 경당에서 측랑·신랑 쪽
+  ambEast: { x: 13.8, z: -2.0, yaw: 180, pitch: 6, isNew: true },       // 익랑 → 동쪽 통로 → 그레고리오 경당(카메라는 익랑 안)
+  ambCorner: { x: 9.2, z: 4.4, yaw: -90, pitch: 6, isNew: true },       // 측랑 4번 칸에서 큰 아치로 모서리 경당 쪽
   transept: { x: 16.5, z: -9, yaw: 90, pitch: 6, isNew: true },         // 익랑 팔에서 교차부 쪽
-  ambWest: { x: 13.8, z: -15, yaw: 0, pitch: 6, isNew: true },          // 서쪽 통로 → 성 미카엘 경당
+  ambWest: { x: 13.8, z: -16.2, yaw: 0, pitch: 6, isNew: true },        // 익랑 → 서쪽 통로 → 성 미카엘 경당(카메라는 익랑 안)
   ambWestIn: { x: 13.8, z: -22.8, yaw: 90, pitch: 6, isNew: true },     // 서쪽 모서리 경당 → 후진 팔
   sacrament: { x: 12.2, z: 12.85, yaw: -90, pitch: 4, isNew: true },    // 성체 경당 안
   choir: { x: -12.2, z: 12.85, yaw: 90, pitch: 4, isNew: true },        // 성가대 경당 안
@@ -63,6 +63,7 @@ export async function measureViews(root, o = {}) {
     }, frames);
     if (shotDir) await page.screenshot({ path: path.join(shotDir, vn + '.jpg'), type: 'jpeg', quality: 80 });
     out.push({ view: vn, ...r });
+    console.log(`${vn.padEnd(10)} med ${String(r.med).padStart(7)}ms  calls ${String(r.calls).padStart(4)}  tris ${String(r.tris).padStart(7)}  texGL ${r.texGL}  geos ${r.geos}`);
   }
   await browser.close();
   return { views: out, stats, errors };
@@ -78,7 +79,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const r = await measureViews(root, o);
   console.log('stats', JSON.stringify(r.stats));
-  for (const v of r.views) console.log(`${v.view.padEnd(10)} med ${String(v.med).padStart(7)}ms  calls ${String(v.calls).padStart(4)}  tris ${String(v.tris).padStart(7)}  texGL ${v.texGL}  geos ${v.geos}`);
   if (r.errors.length) console.log('ERRORS:\n' + r.errors.slice(0, 5).join('\n'));
   if (json) fs.writeFileSync(json, JSON.stringify(r, null, 1));
 }

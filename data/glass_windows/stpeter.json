@@ -35,7 +35,7 @@
  },
  "model": {
   "tool": "node tools/church_web/church_openings.mjs stpeter --json",
-  "opening_count": 67,
+  "opening_count": 65,
   "window_count": 60,
   "photo_slot_count": 1,
   "by_zone": {
@@ -43,7 +43,7 @@
    "door_light": 1,
    "facade": 1,
    "aisle_skylight": 14,
-   "chapel_light": 6,
+   "chapel_light": 4,
    "lantern": 8,
    "drum": 16,
    "nave_lunette": 8,
@@ -435,27 +435,6 @@
     "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
    },
    {
-    "key": "chapelLightN_b3",
-    "zone": "chapel_light",
-    "kind": "not_window",
-    "shape": "rect",
-    "x": 13.83,
-    "y": 3.2,
-    "z": 12.85,
-    "yawDeg": -90,
-    "w": 1,
-    "h": 2.4,
-    "sill": 2,
-    "aspect": 0.417,
-    "real_m": [
-     2.7,
-     6.49
-    ],
-    "glass_now": "절차적 옅은 호박색(설화석고풍)",
-    "photo": null,
-    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
-   },
-   {
     "key": "chapelLightS_b1",
     "zone": "chapel_light",
     "kind": "not_window",
@@ -484,27 +463,6 @@
     "x": -13.83,
     "y": 3.2,
     "z": 21.5,
-    "yawDeg": 90,
-    "w": 1,
-    "h": 2.4,
-    "sill": 2,
-    "aspect": 0.417,
-    "real_m": [
-     2.7,
-     6.49
-    ],
-    "glass_now": "절차적 옅은 호박색(설화석고풍)",
-    "photo": null,
-    "note": "측랑 경당 벽 안 빛 면(\"창 대신\", ch_stpeter.js 517행)"
-   },
-   {
-    "key": "chapelLightS_b3",
-    "zone": "chapel_light",
-    "kind": "not_window",
-    "shape": "rect",
-    "x": -13.83,
-    "y": 3.2,
-    "z": 12.85,
     "yawDeg": 90,
     "w": 1,
     "h": 2.4,
