@@ -9,7 +9,7 @@
         단이 없거나 단이 성당 폭 전체(익랑·넓은 단)면 제대 바로 앞(+0.35m)부터.
       - 폭: 단이 있으면 단 폭(+0.3m), 아니면 축 좌우 6m. 단, 촛불대·성모상·좌석 같은 '신자 자리'는 1m 이상 비켜 둔다.
       - 깊이: 경계 끝(앱스·주교좌·감실 뒤까지).
-      성당별 보정은 reverence_places.js (ChurchReverencePlaces[id] = {front, halfW, extra:[{x0,x1,z0,z1}]}).
+      성당별 보정은 reverence_places.js (ChurchReverencePlaces[id] = {front, halfW, depth, extra:[{x0,x1,z0,z1}]}).
       금지 구역은 충돌체로 들어가므로 걷기(조이스틱)·누르기 이동(경로 탐색)·자리 복원이 모두 막힌다.
       다른 사람이 보낸 좌표는 clamp() 로 구역 앞 가장자리로 내린다(net_view.js, 수신 측).
    2) 동작: '인사'(손 흔들기, e=0)는 입구 가까이(8m)에서 걷는 중일 때만. 그 밖(신랑·제대 앞·앉음·기도·묵주기도)에서는
@@ -63,6 +63,7 @@
   function publicPoints(layout, logic) {
     var pts = [];
     (logic.seats || []).forEach(function (s) { pts.push([s.x, s.z]); var st = logic.standPos(s.id); if (st) pts.push([st.x, st.z]); });
+    (logic.bands || []).forEach(function (b) { pts.push(b.start); pts.push(b.end); });   // 신자석 줄 끝(여백 포함): 줄에 드나드는 통로
     var stands = (layout.candles && layout.candles.stands) || [];
     stands.forEach(function (S) { pts.push([S.x, S.z]); });
     (logic.slots || []).forEach(function (s) { pts.push([s.x, s.z]); });
@@ -152,11 +153,11 @@
     if (typeof P.halfW === 'number') halfW = P.halfW;
     var pub = publicPoints(layout, logic).map(function (p) { return { u: U(p[0], p[1]), v: Math.abs(V(p[0], p[1])) }; })
       .filter(function (p) { return p.u > front - K.PUBLIC_GAP; }).sort(function (a, b) { return a.u - b.u; });
-    var far = 1e9, lastCentral = -1e9;
+    var far = typeof P.depth === 'number' ? front + P.depth : 1e9, lastCentral = -1e9;
     for (var i = 0; i < pub.length; i++) {
       var pp = pub[i];
       if (pp.v >= halfW + K.PUBLIC_GAP) continue;
-      if (pp.v < K.CENTRAL) { if (far > 1e8) far = pp.u - K.PUBLIC_GAP; lastCentral = Math.max(lastCentral, pp.u); continue; }
+      if (pp.v < K.CENTRAL) { if (pp.u < front + K.PUBLIC_GAP) continue; if (far > 1e8) far = pp.u - K.PUBLIC_GAP; if (pp.u > far) lastCentral = Math.max(lastCentral, pp.u); continue; }
       if (pp.u < far + K.PUBLIC_GAP) halfW = Math.max(K.MIN_HALF_W, pp.v - K.PUBLIC_GAP);
     }
     var segs = [[front, far]];
