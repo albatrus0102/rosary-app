@@ -59,7 +59,10 @@ for (const mode of o.modes) {
       }
     }
     }, { pathMode: o.path, k });
-    await page.waitForTimeout(400);
+    // 지점 간격(약 5~6m)을 걷는 속도(4m/s)로 가는 만큼 실제 시간을 둔다: 그동안 팩 읽기·디코드가 진행되고 다음 지점의 첫 프레임에서 업로드된다
+    await page.waitForTimeout(1500);
+    await page.evaluate(() => { const A = __church, gl = A.renderer.getContext(), px = new Uint8Array(4), W = window.__w; for (let f = 0; f < 3; f++) { const t = performance.now(); __step(1, 50); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); W.ms.push(performance.now() - t); } });
+    await page.waitForTimeout(1000);
   }
   const walk = await page.evaluate(() => {
     const A = __church, W = window.__w, ms = W.ms.slice(), calls = W.calls, tris = W.tris;
