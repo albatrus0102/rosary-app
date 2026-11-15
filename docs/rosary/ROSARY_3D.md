@@ -1,0 +1,57 @@
+# 실물 묵주 중심 3D 기도 화면(T-81) — 기술 결정·구조·수치
+
+요구서: [ROSARY_3D_REQUEST.md](ROSARY_3D_REQUEST.md). 1차 시제품 2026-11-15.
+
+## 기술 결정(10줄)
+1. 3D 는 **기존 three.js r149 + WebView** 재사용. Flutter 패키지(flutter_scene·model_viewer 등)는 PBR 투과(transmission)·클리어코트·무지갯빛(iridescence)·인스턴싱을 r149 만큼 못 하거나 실험 단계라 이점이 없다.
+2. 묵주 전용 경량 페이지 `assets/rosary3d/index.html` — 성당 페이지와 따로(기도 화면에서 성당 장면을 띄우지 않음). three.min.js·three_extras.js(RoomEnvironment)는 `../church/` 를 상대 경로로 써서 **번들 중복 0**.
+3. 역할 분리: Flutter = 상태·제스처·햅틱·소리·접근성, WebView = 그리기만(IgnorePointer). 진행은 기존 `RosarySession` 그대로, 3D 는 `rosaryStepPos(step)` 하나로 위치만 받는다.
+4. 텍스처는 **외부 이미지 없이 캔버스 절차 생성**(나뭇결·진주 미세 요철·벨벳·금속 결). 환경광은 HDRI 대신 RoomEnvironment 를 PMREM 으로 굽는다(외부 다운로드 없음).
+5. 십자가·코르푸스·메달은 Lathe/Extrude/Shape 코드 모델링. 효과음은 `tools/rosary3d/make_sounds.mjs` 로 합성한 WAV(각 ≤30KB).
+6. 기본 기도 화면 = 묵주(새). 설정 '기도 화면 모양'에서 기도문 중심(기존)으로 되돌릴 수 있다(회귀 안전망). 기존 위젯 테스트는 `test/flutter_test_config.dart` 가 기존 화면으로 검증.
+
+## 구조
+| 파일 | 역할 |
+|---|---|
+| `assets/rosary3d/layout.js` | 순수 계산: 62 노드(십자가·59알·메달×2), 스텝→위치, C안 원호·A안 바닥 배치 |
+| `assets/rosary3d/defs.js` | 묵주 정의(JSON 형식) |
+| `assets/rosary3d/materials.js` | PBR 재질·절차 텍스처(묵주마다 한 번 생성, 모든 알이 공유) |
+| `assets/rosary3d/models.js` | 알·마개·고리·끈·매듭, 십자가 3종, 코르푸스, 메달 3종 |
+| `assets/rosary3d/view.js` | 렌더러·조명·VSM 부드러운 그림자, 인스턴싱, 스프링, C↔A 전환, `RosaryAPI` |
+| `lib/rosary3d/rosary_model.dart` | 스텝→위치(Dart), 묵주 목록, 신호 표(`rosaryCueFor`), 당기기 판정(`BeadPull`) |
+| `lib/rosary3d/rosary_scene.dart` | WebView 다리(준비 전 상태는 init 으로 한꺼번에, 끌기 값은 마지막 것만) |
+| `lib/rosary3d/rosary_prayer_view.dart` | C안 화면(신비 80·진행 32·제목 72·3D·기도문 48·알림 48·이전/다음 76) |
+| `lib/rosary3d/rosary_feedback.dart` | 차등 진동(안드로이드 `rosarium/vibrate` 채널, 없으면 HapticFeedback)·효과음·음성 제목 |
+| `lib/rosary3d/rosary_gallery_screen.dart` | 갤러리(돌리기·확대·분류·즐겨찾기·사용 중) |
+
+## 묵주 정의 형식(`defs.js`, 단위: 작은 알 지름 = 1)
+```
+{ id, name, category,
+  bead:  { shape: ellipsoid|sphere|faceted, small, big, aspect, irregular, material, caps? },
+  link:  { type: cord|eyepin|chain, material, gap, width, knot? },
+  cross: { type: woodLatin|budded|filigree, material, trim?, corpus, height, width, depth },
+  medal: { type: oval|filigreeOval|round, material, height } }
+```
+1차 3종: 올리브 원목(타원·불균일 알, 꼰 끈+매듭, 원목 십자가+앤티크 은 코르푸스·끝 마개·상감), 아이보리 진주(구·꽃잎 금 마개, 금 고리, 꽃봉오리형 금 십자가+빛살), 청색 수정(80면 파셋·굴절, 은 타원 체인, 은 투각 십자가+알갱이).
+
+## 진행 ↔ 묵주 매핑
+십자가(성호경·사도신경) → 큰 알(주님의 기도) → 작은 알 3 → **영광송은 4.5(체인 위)** → 큰 알(1단 주님의 기도·신비) → 메달 → 단마다 작은 알 10, **영광송·구원의 기도는 10번째 알 +0.35·+0.65(체인 위)** → 다음 큰 알 … → 마침 = 메달(61). 알을 더하거나 옮기지 않는다.
+
+## 조작·감각
+- 아래로 당기면 다음, 위로 당기면 이전. 표시 이동은 ±1 알 안(0.6 알 이후 고무줄), 0.32 알 이상 또는 빠른 튕김이면 한 칸, 아니면 탄성 복귀. 넘긴 뒤 260ms 안의 새 넘김은 무시. 마지막 스텝은 당겨서 끝나지 않는다(단추로 마침).
+- 신호: 성모송 25ms+접촉음, 주님의 기도(서두) 80ms+낮은 단음, **10번째를 바친 뒤 넘길 때** 짧은 진동 2회+높이 다른 종 2회, 영광송 50ms, 다음 신비 320ms+은은한 종, 5단 완료 300ms×3+잔잔한 종, 뒤로·기타 12ms 틱. 설정: 둘 다/진동만/소리만/모두 끔, 진동 세기, 완료 알림만, 음성 제목('성모송 열 번째입니다' — 앞단·뒷단 음성이 켜져 있으면 겹치지 않게 쉼).
+- ◎: A안 전체 보기(카메라가 물러나며 묵주가 바닥에 펼쳐짐, 현재 알은 들어 올리고 은은한 스폿, 지난 알은 어둡고 차분하게 — 체크·회색 원 없음). 다시 누르면 현재 알로 돌아온다. 진행 상태는 그대로.
+- 기도문 접기/펼치기(설정에 기억 = 입문자 '항상 표시'), 바탕(네이비·검정 집중·아이보리), 엄지 쪽 위치, 화면 꺼짐 방지(기존 wakelock), 볼륨 키(기존 설정), TalkBack(3D 영역 증가/감소 동작), 애니메이션 감소 시 즉시 이동.
+
+## 성능(헤드리스 Chromium swiftshader, 360×800 DPR2, `node tools/church_web/rosary3d_shots.mjs`)
+| | C안 | A안 |
+|---|---|---|
+| 그리기 호출 | 4~7 | 10~18 |
+| 삼각형 | 2.2만~3.3만 | 18만~37만 |
+| CPU 프레임 | 3~8ms | 3~10ms |
+| 묵주 생성(텍스처 포함) | 0.2~0.6s | |
+- 정지하면 렌더 루프가 멈춘다(스프링·전환이 끝나면 휴면). C안은 보이는 알만 인스턴스에 담는다(count 축소). 재질·형상은 묵주당 한 벌, 묵주를 바꾸면 이전 것을 모두 정리(메모리에 묵주 하나).
+- 저사양(quality low): 픽셀 비율 1.25, 그림자 맵 512, 텍스처 256.
+
+## 남은 것(로드맵)
+T-82 재질 14종 확대 · T-83 볼륨 키 네이티브 보강 · T-84 폴더블·태블릿 2단 · T-85 실기기 성능·발열(저사양 자동 품질 연결) · T-86 갤러리 확장·성당 아바타 묵주 연동. 기타: 기도 화면에서 갤러리를 열면 WebView 가 잠시 두 개(돌아오면 하나), 수정 알의 몸빛은 r149 가 내부 반사를 못 그려 옅은 emissive 로 보정.
