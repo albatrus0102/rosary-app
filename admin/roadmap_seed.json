@@ -2446,6 +2446,21 @@
       "status": "dropped",
       "owner_note": "보류. 품질 향상 결과와 T-70 판정을 본 뒤 재검토.",
       "sort_order": 163
+    },
+    {
+      "id": "T-79",
+      "title": "새 성당: 여의도성당(서울대교구) 추가 — 조사·설계·구현",
+      "category": "신규 요청",
+      "release": "R3",
+      "priority": "P2",
+      "effort": "L",
+      "risk": "현대 건축·내부 작품 권리(건축가·작가 생존) — 작품 흉내 금지, 본당·서울대교구 동의 필요. 내부 사진 확보 정도에 따라 정확도 달라짐",
+      "depends": "–",
+      "value": "사용자 요청 성당. 당고개와 같은 절차(조사→설계서→구현)",
+      "evidence": "docs/church/interiors/danggogae.md(절차 본보기) · 사용자 요청 2026-11-15",
+      "status": "todo",
+      "owner_note": "사용자 요청(2026-11-15). 사진(제대 쪽·입구 쪽·좌우 벽) 받으면 정확도↑.",
+      "sort_order": 164
     }
   ],
   "decisions": [
