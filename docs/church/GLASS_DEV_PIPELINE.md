@@ -62,7 +62,7 @@ assets/church/dev/                           ← pubspec.yaml 의 assets 에 없
 | ③ 실행 | 웹이 걸지 않는다 | `index.html` 은 `devglass=1` 일 때만 `dev/devglass_boot.js` 를 읽는다(없으면 그냥 건너뜀). 로더는 플래그 + 그 성당의 표 + 팩이 있어야 붙고, 행의 `release_approved !== true` 이면 플래그가 있어야만 건다. 걸리면 화면에 **'개발용 임시 시안 · 실제 작품 아님 · n/N'** |
 | 검사 | 실수로 들어가면 실패 | `tools/church_web/devglass.test.mjs`(pubspec·번들 폴더·페이지 훅·코어가 dev 를 모름), `test/dev_glass_test.dart`(일반 빌드의 자산 목록·플래그), `tools/check_release_apk.sh <apk>`(APK 안의 파일·문자열·Dart 표시; CI `build-apk.yml` 이 빌드 뒤에 돌린다) |
 
-2026-11-15 확인: 일반 APK(arm64) 29,366,670 bytes — 시안 파일 0·문자열 0·Dart 표시 0. 개발용 APK 31,498,828 bytes(+2.13MB).
+2026-11-15 확인: 일반 APK(arm64) 29,366,682 bytes — 시안 파일 0·문자열 0·Dart 표시 0. 개발용 APK 31,498,940 bytes(+2.13MB). 개발용 APK 를 일반 검사에 넣으면 실패한다(검사가 실제로 잡는지 확인).
 
 ## 4. 개발용 APK
 
