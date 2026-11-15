@@ -132,6 +132,11 @@ abstract final class ChurchTheme {
           side: hairline,
         ),
       ),
+      // 세그먼트(기도 자세 등)는 M3 기본(선택 = secondaryContainer) 그대로 둔다. 앱 테마의
+      // 'primary 채움 + 금색 윤곽'은 밝은 종이 위용이라 장면 위에서는 금색 덩어리가 된다.
+      segmentedButtonTheme: const SegmentedButtonThemeData(
+        selectedIcon: Icon(Icons.check),
+      ),
       // 목록의 선 아이콘은 금색(HUD 아이콘과 같은 규칙).
       listTileTheme: base.listTileTheme.copyWith(iconColor: scheme.primary),
       tooltipTheme: base.tooltipTheme.copyWith(

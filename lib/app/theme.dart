@@ -476,7 +476,7 @@ abstract final class AppTheme {
               : null,
         ),
       ),
-      // 세그먼트: 선택된 쪽은 primary 채움(밝게: 짙은 갈색, 어둡게: 금색).
+      // 세그먼트: 선택된 쪽은 primary 채움(밝게: 짙은 갈색, 어둡게: 금색) + 가는 금색 윤곽.
       segmentedButtonTheme: SegmentedButtonThemeData(
         selectedIcon: const Icon(Icons.check),
         style: ButtonStyle(
@@ -493,6 +493,12 @@ abstract final class AppTheme {
                 : states.contains(WidgetState.selected)
                 ? scheme.onPrimary
                 : scheme.onSurface,
+          ),
+          // 윤곽은 가는 금색 선(비활성일 때는 M3 기본).
+          side: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? null
+                : BorderSide(color: gold),
           ),
         ),
       ),

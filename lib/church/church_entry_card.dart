@@ -617,11 +617,14 @@ class _CarouselItem extends StatelessWidget {
     final scheme = theme.colorScheme;
     final gold = AppDecor.of(context).gold;
     return Semantics(
+      // 카드 하나가 한 덩어리로 읽힌다: '이름, 도시, 버튼, 선택됨'.
+      container: true,
       button: true,
       selected: selected,
       label: '${info.nameKo}, $_city',
       child: Card(
         key: ValueKey('entry-thumb-${info.id}'),
+        semanticContainer: false,
         margin: EdgeInsets.zero,
         elevation: 0,
         color: Colors.transparent,
