@@ -16,7 +16,7 @@
 })(typeof window !== 'undefined' ? window : this, function (root) {
   'use strict';
   var FRONT = 0.03, BACK = 0.018;          // 유리 평면에서 실내 쪽으로: 그림 판 3cm, 뒤판 1.8cm (메달리온 유리 1.2cm 보다 앞)
-  var FADE = 0.25, NIGHT_K = 0.05, ATLAS_MAX = 512, GUT = 4, LEAD = 0x14100d;
+  var FADE = 0.25, NIGHT_K = 0.08, ATLAS_MAX = 512, GUT = 4, LEAD = 0x14100d;
   var tables = {}, packs = {};
   var stats = { created: 0, disposed: 0, meshes: 0, attaches: 0, clears: 0, errors: 0 };
   var cur = null;                          // 지금 붙어 있는 인스턴스(성당 하나)
@@ -171,7 +171,7 @@
       var S = root.ChurchGlassView.shaders;
       var mat = new T.ShaderMaterial({
         uniforms: { uMapA: { value: map }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: 0 }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
-          uDecode: { value: caps.isWebGL2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 0 } },
+          uDecode: { value: caps.isWebGL2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 0 }, uGain: { value: 1 } },
         vertexShader: S.vs, fragmentShader: S.fs, extensions: { derivatives: true },
         fog: false, lights: false, toneMapped: false, transparent: true, depthWrite: true,
         blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.SrcAlphaFactor, blendDst: T.OneMinusSrcAlphaFactor,
@@ -249,6 +249,7 @@
         var m = inst.mats[i];
         if (!m.uniforms) continue;
         m.uniforms.uFade.value = f; m.uniforms.uK.value = k; m.uniforms.uSelfTone.value = self;
+        if (m.uniforms.uGain) m.uniforms.uGain.value = env && env.photoK ? env.photoK : 1;   // 진본 사진 창과 같은 밝기(looks.js photoK)
         m.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
         var r = 0.012 * night; m.uniforms.uRefl.value.set(r, r * 0.7, r * 0.45);
       }

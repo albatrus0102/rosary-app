@@ -390,7 +390,7 @@
     var lkC = new T.Color();
     // 룩 적용: 시간대 값에 곱하고 섞는다. 감상 모드(사진 창)에서는 적용하지 않는다(그때 env.grade 는 null).
     function applyLook() {
-      env.grade = null; env.dustK = 1; env.dustNight = 0;
+      env.grade = null; env.dustK = 1; env.dustNight = 0; env.glassK = 1; env.photoK = 1; env.photoWin = null;
       if (!look || api.viewMode) return;
       var L = root.ChurchLooks.blend(look, env.night, lookV);
       env.di *= L.keyK; if (L.keyTintK) env.dc.lerp(lkC.setHex(look.keyTint), L.keyTintK);
@@ -398,6 +398,7 @@
       env.exp *= L.expK; env.envK *= L.envK; env.lamp *= L.lampK; env.candle *= L.candleK; env.beam *= L.beamK;
       if (L.fogTintK) env.fog.lerp(lkC.setHex(look.fogTint), L.fogTintK);
       env.grade = L; env.dustK = L.dustK; env.dustNight = L.dustNight;
+      env.glassK = L.glassK; env.photoK = L.photoK; env.photoWin = look.photoWin || null;   // 유리 밝기(looks.js 한 곳)
     }
 
     function applyEnv() {
@@ -410,7 +411,7 @@
       fitShadow();
       sceneFog.color.copy(env.fog);
       if (opts.renderer) opts.renderer.setClearColor(env.hor);
-      ctx.mats.glass.color.copy(env.glass).multiplyScalar(env.gk);
+      ctx.mats.glass.color.copy(env.glass).multiplyScalar(env.gk * (env.glassK || 1));
       cloudMat.color.copy(env.cloud);
       for (var pm = 0; pm < S.physMats.length; pm++) { var p = S.physMats[pm]; p.m.envMapIntensity = p.envK * env.envK; if (p.lift) p.m.emissiveIntensity = p.lift[0] + (p.lift[1] - p.lift[0]) * env.night; }
       cupMat.envMapIntensity = env.envK;

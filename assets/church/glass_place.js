@@ -15,7 +15,7 @@
 (function (root) {
   'use strict';
   var T = root.THREE, GM = root.ChurchGlassMath, GS = root.ChurchGlassStream;
-  var FADE = 0.25, NEAR_EVERY = 0.25, NIGHT_K = 0.05, PLAN_EVERY = 0.25;
+  var FADE = 0.25, NEAR_EVERY = 0.25, NIGHT_K = 0.08, PLAN_EVERY = 0.25;
   var QS = (root.location && root.location.search) || '';
   var LEGACY = /[?&]gstream=0/.test(QS) || !GS;
   var STRESS0 = (function () { var m = /[?&]gstress=(\d+)/.exec(QS); return m ? Math.min(400, +m[1]) : 0; })();
@@ -40,7 +40,7 @@
       var S = root.ChurchGlassView.shaders;
       return new T.ShaderMaterial({
         uniforms: { uMapA: { value: tex }, uMapB: { value: null }, uMix: { value: 0 }, uBias: { value: 0 }, uK: { value: 1 }, uTint: { value: new T.Vector3(1, 1, 1) }, uRefl: { value: new T.Vector3(0, 0, 0) },
-          uDecode: { value: caps().isWebGL2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 0 } },
+          uDecode: { value: caps().isWebGL2 ? 0 : 1 }, uSelfTone: { value: 0 }, uDebug: { value: 0 }, uFade: { value: 0 }, uGain: { value: 1 } },
         vertexShader: S.vs, fragmentShader: S.fs, extensions: { derivatives: true },
         fog: false, lights: false, toneMapped: false, transparent: true, depthWrite: true,
         blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.SrcAlphaFactor, blendDst: T.OneMinusSrcAlphaFactor,
@@ -326,9 +326,10 @@
       return best;
     }
 
-    function tuneMat(mat, k, self, night) {
-      var u = mat.uniforms;
+    function tuneMat(mat, k, self, night, win) {
+      var u = mat.uniforms, env = App.world && App.world.env, pw = env && env.photoWin && win ? env.photoWin[win] : 0;
       u.uK.value = k; u.uSelfTone.value = self;
+      if (u.uGain) u.uGain.value = (env && env.photoK ? env.photoK : 1) * (pw || 1);   // looks.js photoK · photoWin
       // 후처리가 없을 때(low)는 캔버스에 바로 그린다: 알파 0 표시가 캔버스 알파로 남지 않게 보통 알파 합성으로 바꾼다
       mat.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
       var r = 0.012 * night; u.uRefl.value.set(r, r * 0.7, r * 0.45);
@@ -349,7 +350,7 @@
         if (g.mat) {
           if (g.near === 'ready' && g.fade < FADE) { g.fade += dt; if (g.fade >= FADE) { settle(g); farShow(g, false); } }
           g.mat.uniforms.uFade.value = Math.min(1, g.fade / FADE);
-          tuneMat(g.mat, k, self, night);
+          tuneMat(g.mat, k, self, night, g.win);
         }
         g.state = groupState(g);
       }

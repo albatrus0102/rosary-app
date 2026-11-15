@@ -12,20 +12,25 @@
      dust      먼지 입자 수(high·mid, 0 이면 없음)  dustK     먼지 밝기 배율(빛줄기 세기에 곱)  dustNight 밤 먼지 밝기(촛불빛)
      sat warm vig con   최종 패스: 채도·난색 이동·비네트·S 곡선 대비(0..1)
      bloomT bloomS bloomR   블룸 임계·세기·반경(걷기 프로필)
-     midBloomS  보통(mid) 단계의 블룸 세기 배율       reflK  바닥 반사 세기 배율(만들 때 한 번) */
+     midBloomS  보통(mid) 단계의 블룸 세기 배율       reflK  바닥 반사 세기 배율(만들 때 한 번)
+     glassK    절차적 색유리 밝기 배율(HDR: 1 넘으면 톤매핑·블룸으로 빛난다)
+     photoK    사진 창·개발용 시안 밝기 이득(채도 유지형: c·k/(1+(k-1)·max(c)) → 밝은 곳은 1 에서 멈춰 하얗게 타지 않는다)
+     photoWin  창 id 별 photoK 추가 배율(예: 성 베드로 비둘기 창). 유리 밝기는 이 세 값(+ night)만 고치면 된다. */
 (function (root) {
   'use strict';
   var DEFAULT = {
     keyK: 1, keyTint: 0xffffff, keyTintK: 0, ambK: 1, ambTint: 0xffffff, ambTintK: 0, expK: 1, envK: 1, lampK: 1, candleK: 1, beamK: 1,
     fogTint: 0xffffff, fogTintK: 0, dust: 90, dustK: 1, dustNight: 0,
     sat: 0.94, warm: 0.03, vig: 0.16, con: 0, bloomT: 0.92, bloomS: 0.3, bloomR: 0.55, midBloomS: 0.8, reflK: 1,
-    night: {}
+    glassK: 1.8, photoK: 2.4, photoWin: {},
+    night: { glassK: 1.3, photoK: 1.7 }   // 밤: 바깥 빛이 없으니 낮보다 약하게(실내등 대비 은은하게)
   };
   var LOOKS = {
     // 성 베드로: 따뜻한 금빛 키, 낮은 앰비언트, 강한 대비, 청동·금의 번짐, 비네트. 낮의 하얗게 뜬 화면을 누른다.
     stpeter: {
       keyK: 0.9, keyTint: 0xffc887, keyTintK: 0.5, ambK: 0.45, ambTint: 0xffd9a8, ambTintK: 0.4, expK: 0.78, envK: 0.55, lampK: 2.0, candleK: 1.4, beamK: 0.45,
       fogTint: 0xb08a5c, fogTintK: 0.5, dust: 140, dustK: 1.5, dustNight: 0.25, reflK: 0.55,
+      photoWin: { dove_stpeter: 1.6 },   // 후진 '성령의 비둘기' 창: 실제로 후진에서 가장 밝게 빛나는 창(2.4×1.6)
       sat: 0.98, warm: 0.07, vig: 0.36, con: 0.32, bloomT: 0.74, bloomS: 0.5, bloomR: 0.62,
       night: { expK: 0.95, ambK: 0.7, lampK: 2.2, candleK: 1.6, con: 0.22, bloomT: 0.7, bloomS: 0.6, vig: 0.38 }
     },
@@ -60,13 +65,14 @@
       else { var keep = qm[1].split(','); for (var lk in LOOKS) if (keep.indexOf(lk) < 0) delete LOOKS[lk]; }   // 'off' 는 어떤 id 도 아니므로 전부 지워진다
     }
   } catch (e) { /* ignore */ }
-  var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS'];
+  var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS', 'glassK', 'photoK'];
 
   function get(id) {
     var src = LOOKS[id] || {}, out = {}, k;
     for (k in DEFAULT) out[k] = DEFAULT[k];
     for (k in src) if (k !== 'night') out[k] = src[k];
     out.night = {};
+    for (k in DEFAULT.night) out.night[k] = DEFAULT.night[k];
     var n = src.night || {};
     for (k in n) out.night[k] = n[k];
     out.id = LOOKS[id] ? id : 'default';

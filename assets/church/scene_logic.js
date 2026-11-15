@@ -148,10 +148,12 @@
     var R = C.RADIUS;
     var walk = { minX: b.x0 + R, maxX: b.x1 - R, minZ: b.z0 + R, maxZ: b.z1 - R };
 
+    var keep = [];   // 출입 금지 구역(reverence.js): setColliders 로 다시 지어도 남는다
     function rebuild(list) {
       colliders.length = 0;
       for (var q = 0; q < bands.length; q++) colliders.push({ k: 0, x0: bands[q].x0, x1: bands[q].x1, z0: bands[q].z0, z1: bands[q].z1 });
       for (q = 0; q < list.length; q++) colliders.push(normCollider(list[q]));
+      for (q = 0; q < keep.length; q++) colliders.push(keep[q]);
     }
     rebuild(extra.colliders || []);
 
@@ -161,6 +163,8 @@
       seatInfo: function (id) { return byId[id] || null; },
       setColliders: function (list) { rebuild(list || []); },
       setZones: function (z) { zones = (z || []).slice(); },
+      layoutZones: function () { return zones; },
+      addKeepOut: function (c) { var n = normCollider(c); n.keep = true; keep.push(n); colliders.push(n); return n; },
       floorY: function (x, z) {
         var y = 0;
         for (var q = 0; q < zones.length; q++) {
@@ -283,7 +287,16 @@
         return out;
       }
     };
+    // 불경 방지(reverence.js): 제단 출입 금지 구역을 충돌체로 넣는다. extra.reverence === false 면 끔(진단용).
+    var RV = reverenceModule();
+    if (RV && extra.reverence !== false) RV.apply(L, extra.reverencePlaces);
     return L;
+  }
+
+  function reverenceModule() {
+    if (typeof ChurchReverence !== 'undefined') return ChurchReverence;   // eslint-disable-line no-undef
+    if (typeof module === 'object' && module.exports && typeof require === 'function') { try { return require('./reverence.js'); } catch (e) { return null; } }
+    return null;
   }
 
   return { C: C, PEW: PEW, pewAhead: pewAhead, create: create, seatsOf: seatsOf, rowBands: rowBands, candleSlots: candleSlots, seatId: seatId, fwd: fwd };

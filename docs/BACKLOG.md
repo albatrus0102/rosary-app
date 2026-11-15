@@ -61,5 +61,6 @@
 - 서버(Cloudflare)·Supabase 배포와 실서버 통신 검증(접속자 시트, 무릎 꿇기 전파 `k`, 상태 복원 재접속)
 - 실기기 검증표(U-33): 소리·성능·TalkBack·저사양 3D
 
-## 다음 세션 1순위(2026-11-15 사용자 요청)
+## 성모 기도 자리 — 구현됨(2026-11-15; 자리 재확인·추가: maggiore·stpeter·florence)
+- **구현됨(6곳: basic·myeongdong·lateran·stpaul·milan·danggogae)**: `assets/church/shrine.js` + 자리 표 `assets/church/shrine_places.js`(빌더 변경 없음). 봉헌초 받침은 `layout.candles.stands` 맨 끝 스탠드(슬롯 14, 기존 번호 유지), 서는 자리는 candle 스테이션(이름표 '성모상 앞') + 제대 앞과 같은 '기도하기' 칩(잠시 기도/묵주기도). 시험 `tools/church_web/shrine.test.mjs`. **남은 것**: florence·maggiore(파올리나 경당 제대 앞)·stpeter 는 구조 확정(병합) 뒤 표의 `pending` 을 자리로 바꾸고 `export_layouts.mjs` 재실행; 명동은 기존 성모상(후진, 걷기 경계 밖) 대신 왼쪽 익랑 벽 — 실제 자리 재확인; Flutter 쪽 전용 칩(앉기/무릎 꿇기/손 모으기)·'성모상 앞' 가기 시트 항목은 아직 없음(제대 앞 칩 재사용). 아래는 원래 요청.
 - **성당마다 '성모 기도 자리'**: 성모상(또는 그 성당의 대표 성상·성화) + 작은 봉헌초 받침(기존 봉헌초 기능 연결) + 무릎 꿇기 자리 + '묵주기도' 바로 시작을 한 곳에. 실제 그런 자리가 있는 곳은 그 위치(마조레 파올리나 경당 '로마 백성의 구원' 앞, 명동 성모상 자리 등). 참고: 다른 앱의 성인 경당(성상+봉헌초+무릎 자리) 스크린샷.

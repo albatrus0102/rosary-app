@@ -17,7 +17,7 @@
   var GLASS_VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
   var SRGB_GLSL = 'vec3 s2l(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }\n';
   var GLASS_FS = 'uniform sampler2D uMapA; uniform sampler2D uMapB; uniform float uMix; uniform float uBias; uniform float uK; uniform vec3 uTint; uniform vec3 uRefl;\n' +
-    'uniform float uDecode; uniform float uSelfTone; uniform float uDebug; uniform float uFade; varying vec2 vUv;\n' + SRGB_GLSL +
+    'uniform float uDecode; uniform float uSelfTone; uniform float uDebug; uniform float uFade; uniform float uGain; varying vec2 vUv;\n' + SRGB_GLSL +
     'vec3 glassTM(vec3 c){ float p = max(c.r, max(c.g, c.b)); if (p <= 1.0) return c; float w = 1.0 - 1.0 / (1.0 + 0.6 * (p - 1.0)); return mix(c / p, vec3(1.0), w); }\n' +
     'void main(){\n' +
     ' vec4 a = texture2D(uMapA, vUv, uBias);\n' +
@@ -27,6 +27,8 @@
     ' float cov = clamp((a.a - 0.5) / fw + 0.5, 0.0, 1.0) * uFade;\n' +
     ' if (cov < 0.004) discard;\n' +
     ' vec3 c = a.rgb * uK * uTint + uRefl;\n' +
+    // 밝기 이득(걷는 성당의 사진 창, looks.js photoK): 어두운 곳은 ×uGain, 가장 밝은 채널이 1 인 곳은 그대로 → 색상 유지, 하얗게 안 탄다
+    ' if (uGain > 1.0) { float pk = clamp(max(c.r, max(c.g, c.b)), 0.0, 1.0); c *= uGain / (1.0 + (uGain - 1.0) * pk); }\n' +
     ' if (uDebug > 0.5) c = vec3(1.0);\n' +
     ' if (uSelfTone > 0.5) c = glassTM(c);\n' +
     ' gl_FragColor = vec4(c, cov);\n' +

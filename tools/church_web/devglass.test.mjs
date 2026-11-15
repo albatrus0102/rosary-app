@@ -441,7 +441,7 @@ test('transept chapels: walkable inside the bounds, closed by walls, three lance
   }
   // 좌석·촛불대·스폰은 그대로
   assert.equal(L.seats.length, 120);
-  same(lay.candles.stands.map((s) => [s.x, s.z]), [[-11.7, 10.09], [11.7, 10.09]]);
+  same(lay.candles.stands.filter((s) => !s.shrine).map((s) => [s.x, s.z]), [[-11.7, 10.09], [11.7, 10.09]]);
 });
 
 test('way of the cross: 14 plaques on pilaster faces, none on a window, door or chapel arch', () => {

@@ -25,6 +25,8 @@ export const VIEWS = {
   lateran: [{ tag: 'nave', x: 0, z: 2, yaw: 0, pitch: 4, hour: 11 }, { tag: 'aisle', x: 7.8, z: 10, yaw: 35, pitch: 6, hour: 16 }],
   stpeter: [{ tag: 'nave', x: 0, z: 20, yaw: 0, pitch: 4, hour: 11 }, { tag: 'side', x: 8, z: 10, yaw: 60, pitch: 6, hour: 16 }],
   // 당고개: 한지 빛 판·창살·빛 번짐이 벽 앞에 겹겹이 놓인다(성당 안에서 제대 쪽, 오른쪽 벽 창·14처 정면)
+  // 밀라노: 익랑 끝 경당 창(팔각 메달리온 속 작은 사각형이 팔각과 같은 평면이던 곳, 2026-11-15 사용자 보고)
+  milan: [{ tag: 'chapel', x: 20.6, z: -10.2, yaw: -90, pitch: 6, hour: 11 }],
   danggogae: [{ tag: 'nave', x: 0, z: 3, yaw: 0, pitch: 5, hour: 11 }, { tag: 'side', x: 4.6, z: -1.2, yaw: -90, pitch: 2, hour: 11 }],
 };
 const DEFAULT_VIEW = [{ tag: 'nave', x: undefined, z: undefined, yaw: undefined, pitch: 4, hour: 11 }];

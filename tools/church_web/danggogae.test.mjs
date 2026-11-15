@@ -64,7 +64,7 @@ test('danggogae: 스테이션 — 제대 앞(0, -7.6) 축 유도, 봉헌초(4.9,
   assert.equal(st.altar.how, 'axis');
   assert.ok(near(st.altar.x, 0) && near(st.altar.z, -7.6), JSON.stringify(st.altar));
   assert.ok(st.altar.z < lay.spawn.z - 15);
-  assert.equal(st.candle.length, 1);
+  assert.equal(st.candle.length, 2);   // 봉헌초 대 + 성모 기도 자리(shrine.js, 맨 끝)
   assert.ok(near(st.candle[0].x, 4.9, 0.01) && near(st.candle[0].z, 13.5, 0.01), JSON.stringify(st.candle[0]));
   assert.ok(S.free(st.candle[0].x, st.candle[0].z) && S.isReachable(st.candle[0].x, st.candle[0].z));
   assert.notEqual(L.nearestCandleSlot(st.candle[0].x, st.candle[0].z, null), null);

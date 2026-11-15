@@ -673,9 +673,11 @@
         if (win.door) S.addTris(vv, col, PF(F, 0, sill + h * 0.5, -3), { vary: 0.06 });
         else { GL.addTris(vv, C(col), PF(F, 0, sill + h * 0.5, -3), { vary: 0.1 }); if (RF) RF.addTris(vv, 0xffffff, PF(F, 0, sill + h * 0.5, -3), { vary: 0 }); }
       }
-      function cellTop(poly, col) {
-        var vv = [];
-        for (var q = 1; q < poly.length - 1; q++) { var a0 = PF(F, poly[0][0], poly[0][1], gd - 0.012), b0 = PF(F, poly[q][0], poly[q][1], gd - 0.012), c0 = PF(F, poly[q + 1][0], poly[q + 1][1], gd - 0.012); vv.push(a0[0], a0[1], a0[2], b0[0], b0[1], b0[2], c0[0], c0[1], c0[2]); }
+      // dz: 바탕(gd)보다 앞으로 뺄 거리. 팔각 메달리온 1.2cm, 그 안의 작은 사각형 2.2cm — 예전에는 둘 다 1.2cm(같은 평면)라
+      // 사각형이 팔각 면과 z-fighting 으로 줄무늬 깜박임을 냈다(사용자 보고, 밀라노 큰 창).
+      function cellTop(poly, col, dz) {
+        var vv = [], dd = gd - (dz || 0.012);
+        for (var q = 1; q < poly.length - 1; q++) { var a0 = PF(F, poly[0][0], poly[0][1], dd), b0 = PF(F, poly[q][0], poly[q][1], dd), c0 = PF(F, poly[q + 1][0], poly[q + 1][1], dd); vv.push(a0[0], a0[1], a0[2], b0[0], b0[1], b0[2], c0[0], c0[1], c0[2]); }
         GL.addTris(vv, C(col), PF(F, 0, sill + h * 0.5, -3), { vary: 0.08 }); if (RF) RF.addTris(vv, 0xffffff, PF(F, 0, sill + h * 0.5, -3), { vary: 0 });
       }
       var beamCols = [];
@@ -693,7 +695,7 @@
           var mu = (u0 + u1) / 2, mv = (v0 + v1) / 2, rx = (u1 - u0) * 0.36, ry2 = (v1 - v0) * 0.36, oct = [];
           for (var q = 0; q < 8; q++) { var aq = q * PI / 4 + PI / 8; oct.push([mu + Math.cos(aq) * rx * 1.08, mv + Math.sin(aq) * ry2 * 1.08]); }
           cellTop(oct, ACCENT[Math.floor(wr() * ACCENT.length)]);
-          cellTop([[mu - rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv + ry2 * 0.28], [mu - rx * 0.28, mv + ry2 * 0.28]], GROUND[(li + rj + 1) % 2]);
+          cellTop([[mu - rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv - ry2 * 0.28], [mu + rx * 0.28, mv + ry2 * 0.28], [mu - rx * 0.28, mv + ry2 * 0.28]], GROUND[(li + rj + 1) % 2], 0.022);
         }
       }
       // 아치부 부채꼴 칸
@@ -708,7 +710,7 @@
       for (rj = 1; rj < rows; rj += 2) { if (sill + h * rj / rows > sill + phH + 0.1) mullion(F, 0, sill + h * rj / rows - 0.03, sill + h * rj / rows + 0.03, dg - 0.02, 2 * a, tone(base, 1.04)); }
       if (ph) {
         mullion(F, 0, sill + phH - 0.05, sill + phH + 0.05, dg - 0.02, 2 * a, stoneC);   // 사진 위 가로대
-        // 판은 메달리온(cellTop, gd - 0.012)보다 1.8cm 앞: 같은 깊이면 대역 메달리온이 사진 위로 비친다.
+        // 판은 메달리온(cellTop, gd - 0.012/0.022)보다 1.8/0.8cm 앞: 같은 깊이면 대역 메달리온이 사진 위로 비친다.
         // camMax: 이 창은 성가대석 뒤 좁은 회랑(폭 약 4m)에서만 보인다. 보통 카메라 거리(7.2m)면 카메라가 성가대석 안쪽에 놓여
         // 등받이 벽이 창을 가리므로, 이 창을 보고 있는 동안은 카메라를 아바타 뒤 2.3m 까지 당긴다(main.js, glass_place.camReach).
         var pc = PF(F, 0, sill + phH / 2, gd - 0.03);

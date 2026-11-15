@@ -1028,6 +1028,7 @@
     // ---- 제대·성소 가구 ----
     ctx.altar = function (o) {
       var x = o.x, z = o.z, y = num(o.y, 0), w = num(o.w, 2.6), d = num(o.d, 1.1), h = num(o.h, 1.0), ry = num(o.ry, 0), style = o.style || 'table';
+      (S_.sacred || (S_.sacred = [])).push({ k: 'altar', x: x, z: z, w: w, d: d, ry: ry });   // 불경 방지 시험(reverence.test.mjs)이 제단 금지 구역 안인지 본다
       var color = o.color === undefined ? 0xf4efe6 : o.color;
       var ms = o.surf || (ctx.hasPhoto('marble_white') ? 'marble_white' : null);
       var ca = Math.cos(ry), sa = Math.sin(ry);
@@ -1107,6 +1108,7 @@
     };
     ctx.tabernacle = function (o) {
       var x = o.x, z = o.z, y = num(o.y, 0), ry = num(o.ry, 0);
+      (S_.sacred || (S_.sacred = [])).push({ k: 'tabernacle', x: x, z: z, w: 1.2, d: 1.1, ry: ry });
       ctx.box({ x: x, y: y, z: z, w: 1.0, h: 1.1, d: 0.9, color: 0xe8e0d0, ry: ry, mat: 'gloss' });
       ctx.box({ x: x, y: y + 1.1, z: z, w: 0.62, h: 0.55, d: 0.5, color: 0xd9b45a, ry: ry });
       ctx.cone({ x: x, y: y + 1.65, z: z, r: 0.38, h: 0.3, seg: 10, color: 0xe6c260 });
