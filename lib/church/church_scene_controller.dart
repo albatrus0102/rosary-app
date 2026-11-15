@@ -8,6 +8,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'church_diagnostics.dart';
+import 'dev_glass.dart';
 
 export 'church_diagnostics.dart';
 
@@ -734,6 +735,7 @@ class WebViewChurchSceneController extends ChurchSceneController {
         'FlutterChurch',
         onMessageReceived: (m) {
           if (ChurchDiagnostics.handleRaw(m.message)) return;
+          if (DevGlass.handleRaw(m.message)) return;   // 개발용 임시 유리 표시(일반 빌드에서는 무시)
           final e = SceneEvent.parse(m.message);
           if (e == null) return;
           if (e is SceneReady) _readyTimer?.cancel();
@@ -773,11 +775,16 @@ class WebViewChurchSceneController extends ChurchSceneController {
   void _load0() {
     _readyTimer?.cancel();
     _readyTimer = Timer(readyTimeout, _fail);
+    // 개발용 빌드(ROSARIUM_DEV_GLASS)에서만 같은 자산을 `?devglass=1` 로 연다(일반 빌드는 dev == null).
+    final dev = DevGlass.sceneUri(assetPath);
     unawaited(
-      _controller.loadFlutterAsset(assetPath).catchError((Object e) {
-        debugPrint('church asset load failed: $e');
-        _fail();
-      }),
+      (dev != null
+              ? _controller.loadRequest(dev)
+              : _controller.loadFlutterAsset(assetPath))
+          .catchError((Object e) {
+            debugPrint('church asset load failed: $e');
+            _fail();
+          }),
     );
   }
 

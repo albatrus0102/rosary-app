@@ -31,6 +31,7 @@ import 'church_presence_sheet.dart';
 import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
 import 'church_theme.dart';
+import 'dev_glass.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
 import 'net/church_net_factory.dart';
@@ -1526,6 +1527,8 @@ class _ChurchScreenState extends State<ChurchScreen>
                 onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
               ),
             ),
+          // 개발용 임시 유리 표시(개발용 APK 에서만; 일반 빌드에서는 DevGlass.enabled 가 컴파일 상수 false).
+          if (DevGlass.enabled) const Positioned.fill(child: DevGlassBadge()),
           if (!_sceneReleased)
             Positioned.fill(
               child: _LoadOverlay(
