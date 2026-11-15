@@ -53,9 +53,10 @@
         if (!vis && inView(g.slots[j], view.cam)) vis = true;
       }
       var held = g.near === 'ready' || g.near === 'loading';
-      var sc = px * (vis ? VIS_BOOST : 1);
+      // 고를 때는 거리 기준 크기만 쓴다(시야를 넣으면 고개를 돌릴 때마다 상한 경계의 창이 바뀌어 읽기·해제가 생긴다). 이미 있는 것은 조금 우대(깜빡 교체 방지).
+      var sc = px * (held ? 1.15 : 1);
       out.score[g.id] = sc;
-      if (px > cell * ENTER || (held && px > cell * STAY)) cand.push({ g: g, s: sc });
+      if (px > cell * ENTER || (held && px > cell * STAY)) cand.push({ g: g, s: sc, v: vis });
     }
     cand.sort(function (a, b) { return b.s - a.s || (a.g.id < b.g.id ? -1 : 1); });
     var n = 0, mb = 0, wantSet = {};
@@ -65,6 +66,9 @@
       n++; mb += m; wantSet[c.g.id] = 1; out.want.push(c.g.id);
       if (c.g.near === 'none') out.load.push(c.g.id);
     }
+    // 읽는 순서만 시야 안의 창을 먼저(VIS_BOOST)
+    out.load.sort(function (a, b) { return vis_(b) * out.score[b] - vis_(a) * out.score[a]; });
+    function vis_(id) { for (var k = 0; k < cand.length; k++) if (cand[k].g.id === id) return cand[k].v ? VIS_BOOST : 1; return 1; }
     // 원하지 않는 상주 질감: 상한 안이면 남겨 둔다(되돌아올 때 다시 읽지 않게 = LRU 캐시), 넘치면 점수 낮고 오래된 것부터 해제
     var res = [], rn = 0, rmb = 0;
     for (i = 0; i < groups.length; i++) {
