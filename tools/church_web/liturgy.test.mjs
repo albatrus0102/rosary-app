@@ -35,7 +35,12 @@ const mk = (c) => { const L = Logic.create(c.layout, { colliders: c.colliders, z
 const cross = (c, L, S) => WayCross.derive({ layout: c.layout, logic: L, stations: S, walls: c.walls, windows: c.windows, roses: c.roses, glassSlots: c.glassSlots });
 
 test('normalize: 모르는 값은 안전한 기본값으로', () => {
-  eq(Liturgy.normalize(null), { season: 'none', color: 'green', week: 0, feast: '', memorial: false });
+  eq(Liturgy.normalize(null), { season: 'none', color: 'green', week: 0, feast: '', memorial: false, emptyTab: false });
+  // 빈 감실(성삼일 침묵)은 성삼일에만
+  assert.equal(Liturgy.normalize({ season: 'lent', emptyTab: true }).emptyTab, false);
+  assert.equal(Liturgy.normalize({ season: 'triduum', color: 'red', emptyTab: true }).emptyTab, true);
+  assert.ok(Liturgy.plan('basic', { season: 'triduum', color: 'red', emptyTab: true }).items.some((i) => i.kind === 'tabopen'));
+  assert.ok(!Liturgy.plan('basic', { season: 'triduum', color: 'red', emptyTab: true }).items.some((i) => i.kind === 'tabveil'));
   assert.equal(Liturgy.normalize({ season: 'xmas' }).season, 'none');
   assert.equal(Liturgy.normalize({ season: 'lent', color: 'pink' }).color, 'violet');
   assert.equal(Liturgy.normalize({ season: 'easter' }).color, 'white');
