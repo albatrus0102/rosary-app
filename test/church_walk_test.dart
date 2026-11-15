@@ -6,6 +6,7 @@ import 'package:rosary_app/church/church_go_sheet.dart';
 import 'package:rosary_app/church/church_hud.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
+import 'package:rosary_app/church/church_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'church_screen_fakes.dart';
@@ -157,13 +158,15 @@ void main() {
         final h = await pumpChurch(tester, size: const Size(360, 640));
         h.scene.emit(const SceneWalkStart('candle'));
         await tester.pump();
-        await tester.tapAt(const Offset(100, 400)); // 왼쪽 절반 짧은 탭
+        // 손잡이(왼쪽 아래 원) 위의 짧은 탭
+        final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
+        await tester.tapAt(stick);
         await tester.pump();
         expect(h.scene.count('cancelWalk'), 1, reason: '닿는 순간 걷기가 멈춘다');
         expect(find.byKey(const ValueKey('walk-chip')), findsNothing);
-        expect(h.scene.lastArgs('tapAt'), {'x': 100.0, 'y': 400.0});
+        expect(h.scene.lastArgs('tapAt'), {'x': stick.dx, 'y': stick.dy});
         // 끌면(조이스틱) 탭이 아니다.
-        final g = await tester.startGesture(const Offset(100, 300));
+        final g = await tester.startGesture(stick);
         await g.moveBy(const Offset(0, -60));
         await g.up();
         await tester.pump();
@@ -418,28 +421,21 @@ void main() {
       await tester.pump(const Duration(seconds: 7));
     });
 
-    testWidgets('joystick ring is neutral (white/grey), not gold or brown', (
+    testWidgets('joystick ring uses the church theme (dark fill, gold rim)', (
       tester,
     ) async {
       await pumpChurch(tester, size: const Size(360, 800));
-      final g = await tester.startGesture(const Offset(80, 500));
-      await tester.pump();
       final ring = tester.widget<Container>(
         find.byKey(const ValueKey('joystick-ring')),
       );
       final deco = ring.decoration! as BoxDecoration;
       final fill = deco.color!;
       final border = (deco.border! as Border).top;
-      for (final c in [fill, border.color]) {
-        expect(
-          (c.r - c.g).abs() + (c.g - c.b).abs(),
-          lessThan(0.02),
-          reason: '$c',
-        );
-      }
+      expect(fill.withValues(alpha: 1), ChurchTheme.scheme.surface);
+      expect(border.color.withValues(alpha: 1), ChurchTheme.scheme.primary);
       expect(fill.a, lessThanOrEqualTo(0.2), reason: '바닥이 비쳐 보이게');
+      expect(border.color.a, lessThan(1), reason: '반투명 테두리');
       expect(border.width, lessThanOrEqualTo(2));
-      await g.up();
       await tester.pump(const Duration(seconds: 7));
     });
   });

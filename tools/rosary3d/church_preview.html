@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>성당 묵주 패널 미리보기</title>
+<!-- tools/church_web/church_rosary_shot.mjs 전용: 성당 장면(실제 assets/church, 아래 38% 만큼 위로) + 묵주 패널(Flutter ChurchRosaryPanel 흉내, 3D 는 실제 assets/rosary3d). -->
+<style>
+ @font-face{font-family:P;src:url(../../assets/fonts/Pretendard-Regular.otf)} @font-face{font-family:P;font-weight:700;src:url(../../assets/fonts/Pretendard-Bold.otf)}
+ body{margin:0;width:360px;height:800px;overflow:hidden;font-family:P,sans-serif;background:#000;position:relative}
+ #church{position:absolute;left:0;top:0;width:360px;height:720px;border:0}
+ .nav{position:absolute;left:0;right:0;bottom:0;height:80px;background:#17120d;color:#cdbb98;display:flex;justify-content:space-around;align-items:center;font-size:13px}
+ .panel{position:absolute;left:12px;right:12px;bottom:92px;height:290px;background:#1f1a14;border:1px solid #6b5631;border-radius:16px;color:#efe3cc;box-sizing:border-box;padding:0 8px 8px 14px}
+ .hd{height:40px;display:flex;align-items:center;font-size:14px}.hd .a{flex:1;color:#e2c27d}.hd .t{color:#b9a98c;margin-right:10px}
+ .row{display:flex;height:132px;gap:10px}#rosary{width:104px;height:132px;border:0;border-radius:12px}
+ .info{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+ .ti{font-size:22px;font-weight:700}.ti span{color:#e2c27d}.ln{font-size:14px;color:#b9a98c}.tg{font-size:14px;color:#e2c27d}
+ .btns{display:flex;gap:8px}.btns div{height:46px;border-radius:23px;display:flex;align-items:center;justify-content:center;font-size:16px}
+ .pv{width:62px;border:1px solid #8a7550;color:#e2c27d}.nx{flex:1;background:#e8cd8a;color:#2a1e08;font-weight:700}
+ .bt{display:flex;margin-top:8px;align-items:center;gap:8px}.seg{display:flex;border:1px solid #8a7550;border-radius:20px;overflow:hidden;font-size:14px}
+ .seg div{padding:10px 12px;color:#e2c27d}.seg .on{background:#4a3c25}.st{margin-left:auto;background:#4a3c25;border-radius:22px;padding:12px 18px;font-size:15px}
+</style></head><body>
+<iframe id="church" src="../../assets/church/index.html"></iframe>
+<div class="panel"><div class="hd"><div class="a">묵주기도 중</div><div class="t">⏱ 03:12</div><div>⋮</div></div>
+<div class="row"><iframe id="rosary" src="../../assets/rosary3d/index.html"></iframe>
+<div class="info"><div class="ti">성모송 <span>3/10</span></div><div class="ln">환희의 신비 · 1단</div><div class="tg">⌃ 기도문 펼치기</div>
+<div class="btns"><div class="pv">이전</div><div class="nx">다음</div></div></div></div>
+<div class="bt"><div class="seg"><div>앉아서</div><div class="on">무릎 꿇고</div></div><div class="st">일어나기</div></div></div>
+<div class="nav"><div>성당</div><div>오늘</div><div>기록</div><div>더보기</div></div>
+</body></html>

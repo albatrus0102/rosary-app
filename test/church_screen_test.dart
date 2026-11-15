@@ -145,22 +145,23 @@ void main() {
       expect(find.text('내 아바타'), findsWidgets);
     });
 
-    testWidgets('floating joystick appears where the left half is touched', (
+    testWidgets('fixed joystick sits bottom-left and only its circle moves', (
       tester,
     ) async {
       final h = await pumpChurch(tester); // 400x800
       final zone = find.byKey(const ValueKey('move-zone'));
-      // 이동 영역은 왼쪽 절반이다.
-      expect(tester.getTopLeft(zone), Offset.zero);
-      expect(tester.getSize(zone).width, 200);
-      expect(find.byKey(const ValueKey('joystick-ring')), findsNothing);
+      // 고정 손잡이: 왼쪽 아래 구석의 원(지름 120~140dp).
+      final rect = tester.getRect(zone);
+      expect(rect.width, inInclusiveRange(120, 140));
+      expect(rect.height, rect.width);
+      expect(rect.left, 16);
+      expect(rect.bottom, 800 - 16);
+      final ring = find.byKey(const ValueKey('joystick-ring'));
+      expect(ring, findsOneWidget);
       expect(find.byKey(const ValueKey('move-hint')), findsOneWidget);
 
-      final g = await tester.startGesture(const Offset(80, 500));
+      final g = await tester.startGesture(rect.center);
       await tester.pump();
-      // 닿은 자리에 스틱이 생긴다(고정된 오른쪽 스틱이 아니다).
-      final ring = find.byKey(const ValueKey('joystick-ring'));
-      expect(tester.getCenter(ring), const Offset(80, 500));
       expect(find.byKey(const ValueKey('move-hint')), findsNothing);
       await g.moveBy(const Offset(0, -40));
       await tester.pump(const Duration(milliseconds: 50));
@@ -171,19 +172,26 @@ void main() {
       await g.up();
       await tester.pump();
       expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
-      expect(ring, findsNothing);
+      // 손을 떼면 손잡이가 가운데로 돌아온다(사라지지 않는다).
+      expect(
+        tester.getCenter(find.byKey(const ValueKey('joystick-knob'))),
+        rect.center,
+      );
     });
 
-    testWidgets('right half touches never move the joystick', (tester) async {
+    testWidgets('touches outside the joystick never move it', (tester) async {
       final h = await pumpChurch(tester);
       final before = h.scene.count('setJoystick');
-      final g = await tester.startGesture(const Offset(300, 500));
-      await g.moveBy(const Offset(0, -60));
-      await tester.pump(const Duration(milliseconds: 50));
-      await g.up();
-      await tester.pump();
+      // 오른쪽 절반, 그리고 예전에는 이동 영역이던 왼쪽 절반의 손잡이 밖.
+      for (final at in const [Offset(300, 500), Offset(80, 400)]) {
+        final g = await tester.startGesture(at);
+        await g.moveBy(const Offset(0, -60));
+        await tester.pump(const Duration(milliseconds: 50));
+        await g.up();
+        await tester.pump();
+      }
       expect(h.scene.count('setJoystick'), before);
-      expect(find.byKey(const ValueKey('joystick-ring')), findsNothing);
+      expect(h.scene.count('tapAt'), 0);
     });
 
     testWidgets('HUD buttons stay tappable above the move zone', (

@@ -78,20 +78,48 @@ test('shrine danggogae: 입구 홀 오른쪽 성모상 앞 둥근 연못(지름 
   assert.equal(Shrine.POND.R * 2, 1.5);
 });
 
-test('shrine statues: 그림 성모상 — 자리마다 그림 묶음이 있고(≤ 110KB js), 성 베드로·마조레는 성화 그대로', async () => {
-  const fs = await import('node:fs'), path = await import('node:path'), url = await import('node:url');
-  const { STATUES } = await import('./build_art_statues.mjs');
-  const dir = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '../../assets/church');
+test('shrine statues: 입체 성모상 — 자리마다 깊이·색 묶음(statue3d_<img>.js ≤ 200KB), 성 베드로·마조레는 성화 그대로', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const dir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../assets/church');
   const want = { danggogae: 'plain_white', basic: 'immaculate_blue', lateran: 'immaculate_blue', stpaul: 'immaculate_blue', milan: 'immaculate_blue', florence: 'immaculate_blue', myeongdong: 'hanbok_rosary' };
   for (const [id, key] of Object.entries(want)) assert.equal(Places[id].img, key, id);
   assert.equal(Places.maggiore.img, undefined); assert.equal(Places.stpeter.img, undefined);
-  for (const key of Object.keys(STATUES)) {
-    const f = path.join(dir, 'art_statue_' + key + '.js'), src = fs.readFileSync(f, 'utf8');
-    assert.ok(src.length <= 110 * 1024, key + ' ' + src.length);
-    const sb = { window: {} }; new Function('window', src)(sb.window);
-    const a = sb.window.ChurchArt.statues[key];
-    assert.equal(a.w, 512); assert.equal(a.h, 1024); assert.ok(a.src.startsWith('data:image/webp;base64,'));
+  for (const key of new Set(Object.values(want))) {
+    const src = fs.readFileSync(path.join(dir, 'statue3d_' + key + '.js'), 'utf8');
+    assert.ok(src.length <= 200 * 1024, key + ' ' + src.length);
+    const win = {}; new Function('window', src)(win);
+    const a = win.ChurchArt.statues3d[key];
+    assert.equal(a.w, 512); assert.equal(a.h, 1024); assert.ok(a.src.startsWith('data:image/webp;base64,') && a.depth.startsWith('data:image/png;base64,'));
+    assert.ok(a.dw * 2 === a.dh && a.dw >= 96 && a.dw <= 128, 'depth grid');
+    assert.ok(a.zmax > 0.08 && a.zmax < 0.25, 'front relief depth (m) ' + a.zmax);
   }
-  // 굽은 판: 호 60~90°, 성상 높이 1.3~1.5m. 브라우저가 아니면(시험) kit 도형 성상으로 물러난다 → 빌드가 깨지지 않는다
-  assert.ok(Shrine.STATUE.ARC >= Math.PI / 3 && Shrine.STATUE.ARC <= Math.PI / 2 && Shrine.STATUE.H >= 1.3 && Shrine.STATUE.H <= 1.5);
+  assert.ok(Shrine.STATUE.H >= 1.3 && Shrine.STATUE.H <= 1.5);
+  assert.ok(Shrine.STATUE.BACK > -0.245 && Shrine.STATUE.BACK + 0.25 < 0.28, '벽감 뒤판 앞, 앞면이 받침 위');
+});
+
+test('shrine statueMesh: 변위 격자 — 실루엣 밖 정점 제거·가장자리 1칸, 앞면 감김, 삼각형 예산(≤ 30k / 원거리 ≤ 5k)', () => {
+  // 타원 실루엣(112×224)에 반타원 깊이: 그림 성상과 같은 크기의 격자
+  const dw = 112, dh = 224, d = new Float32Array(dw * dh), sd = new Float32Array(dw * dh);
+  for (let j = 0; j < dh; j++) for (let i = 0; i < dw; i++) {
+    const x = (i - 55.5) / 44, y = (j - 111.5) / 104, r = Math.hypot(x, y);
+    d[j * dw + i] = r < 1 ? 0.15 * Math.sqrt(1 - r * r) + 0.002 : 0; sd[j * dw + i] = (r - 1) * 44;
+  }
+  const inside = d.filter((v) => v > 0).length;
+  const m = Shrine.statueMesh(d, dw, dh, 0.71, 1.42, 1, sd), far = Shrine.statueMesh(d, dw, dh, 0.71, 1.42, 3, sd);
+  assert.ok(m.verts > inside && m.verts < inside * 1.1, 'inside + one ring');
+  assert.ok(m.tris <= 30000 && m.tris > inside * 1.8, 'near tris ' + m.tris);
+  assert.ok(far.tris <= 5000 && far.tris > 1500, 'far tris ' + far.tris);
+  let front = 0, maxOut = 0;
+  for (let t = 0; t < m.idx.length; t += 3) {
+    const P = (k) => m.pos.slice(m.idx[t + k] * 3, m.idx[t + k] * 3 + 3), a = P(0), b = P(1), c = P(2);
+    const nz = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+    if (nz > 0) front++;
+  }
+  assert.equal(front, m.tris, 'every triangle faces +z (front)');
+  for (let v = 0; v < m.verts; v++) {   // 바깥 고리 정점은 윤곽(타원) 위로 옮겨졌다
+    const x = m.pos[v * 3] / 0.71 * 111 / 44, y = (1.42 - m.pos[v * 3 + 1]) / 1.42 * 223, r = Math.hypot(x, (y - 111.5) / 104);
+    if (m.pos[v * 3 + 2] === 0) maxOut = Math.max(maxOut, Math.abs(r - 1) * 44);
+  }
+  assert.ok(maxOut < 0.6, 'ring snapped to silhouette (cells) ' + maxOut.toFixed(2));
+  m.uv.forEach((u) => assert.ok(u >= -0.01 && u <= 1.01));
 });

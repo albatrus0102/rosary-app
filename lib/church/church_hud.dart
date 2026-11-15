@@ -63,8 +63,8 @@ abstract final class ChurchHudStyle {
 
   /// 고정 이동 손잡이: 화면 구석에 고정된 HUD 라 성당 테마를 쓴다(어두운 반투명 `surface` 바탕 +
   /// 반투명 금색 `primary` 테두리·손잡이). 그림자는 테마의 `shadow`.
-  static const double stickFillOpacity = 0.28;
-  static const double stickFillHeldOpacity = 0.42;
+  static const double stickFillOpacity = 0.18;
+  static const double stickFillHeldOpacity = 0.32;
   static const double stickRingOpacity = 0.7;
   static const double stickKnobOpacity = 0.6;
   static const double stickShadowOpacity = 0.3;

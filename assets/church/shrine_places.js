@@ -1,7 +1,7 @@
 /* shrine_places.js — 성당별 '성모 기도 자리' 표(순수 자료). shrine.js 가 읽는다.
    x,z = 성상 받침 중심(벽 앞 0.3m), yaw = 성상이 바라보는 방향(도; 0 = +z(입구 쪽), 90 = +x, -90 = -x, 180 = -z), y = 바닥 높이(기본 0).
    kind: 'mary'(받침 + 성모상 + 뒤판) | 'plain'(문양 없는 단순 성상) | 'pond'(단순 성상 + 그 앞 둥근 연못에 초를 띄움) | 'existing'(빌더가 이미 세운 성모상 앞: 봉헌초 받침·무릎틀만).
-   img: 성모상 그림(art_statue_<img>.js — AI 생성, 사용자 제공. shrine.js 가 그 성당에 들어올 때만 읽어 굽은 판에 입힌다). 없으면 kit 도형 성상.
+   img: 성모상 그림 키(statue3d_<img>.js — AI 생성 그림 + 그림에서 만든 깊이, tools/statues/make_statue3d.py. shrine.js 가 그 성당에 들어올 때만 읽어 변위 메시 입체로 세운다). 없으면 kit 도형 성상.
    pending: true 인 성당은 건너뛴다(구조 확정 뒤 배치). 자리를 바꾸면 node tools/church_web/export_layouts.mjs 로 서버 레이아웃을 다시 만든다. */
 (function (root) {
   'use strict';

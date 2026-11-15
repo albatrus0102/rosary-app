@@ -1,0 +1,32 @@
+// 사용: node tools/church_web/church_rosary_shot.mjs [out.jpg] [church] — 성당 안 묵주기도(T-81) 화면을 찍는다: 성당 장면을 아래 패널(38%)만큼
+// 위로 올리고(setViewInset), 아바타는 앉아 무릎 꿇고 묵주를 든다. 패널의 3D 묵주는 실제 assets/rosary3d(compact). JS 힙도 적는다.
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const { chromium } = require('playwright');
+const here = path.dirname(fileURLToPath(import.meta.url));
+const out = process.argv[2] || '/tmp/church_rosary.jpg', church = process.argv[3] || 'stpeter';
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] });
+const p = await b.newPage({ viewport: { width: 360, height: 800 }, deviceScaleFactor: 2 });
+const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+await p.goto('file://' + path.resolve(here, '../rosary3d/church_preview.html'));
+const fr = async (k) => { let f; while (!(f = p.frames().find((x) => x.url().includes(k)))) await p.waitForTimeout(50); return f; };
+const C = await fr('church/index.html'), R = await fr('rosary3d/index.html');
+await C.evaluate(() => { window.__ev = []; window.FlutterChurch = { postMessage: (s) => window.__ev.push(JSON.parse(s)) }; });
+await C.waitForFunction(() => window.ChurchAPI);
+await C.evaluate((ch) => ChurchAPI.init({ church: ch, avatar: { skin: 1, style: 2, hair: 1, outfit: 3, name: 5 }, hour: 10, ambient: false, solo: true, quality: 'high' }), church);
+await C.waitForFunction(() => window.__church && window.__church.world, null, { timeout: 180000 });
+const seat = await C.evaluate(() => { const L = __church.logic, s = L.seats[Math.floor(L.seats.length * 0.3)], id = s.id || s; const sp = L.standPos(id); __church.me.x = sp.x; __church.me.z = sp.z; return id; });
+await C.waitForFunction(() => __church.near && __church.near.seat, null, { timeout: 120000 });
+await C.evaluate(() => { ChurchAPI.setViewInset({ bottom: 0.47 }); ChurchAPI.setRosary({ on: true }); ChurchAPI.sit({}); });
+await C.waitForFunction(() => window.__ev.some((e) => e.e === 'seated'), null, { timeout: 150000 });
+await C.evaluate(() => { ChurchAPI.setPraying({ on: true, ms: 0 }); ChurchAPI.setPrayerPosture({ posture: 'kneel' }); });
+await R.waitForFunction(() => window.RosaryAPI);
+await R.evaluate(() => RosaryAPI.init({ rosary: 'gold', step: 10, compact: true, theme: 'navy' }));
+await R.waitForFunction(() => __rosary.R && __rosary.settled(), null, { timeout: 120000 });
+await p.waitForTimeout(6000);
+const mem = { church: await C.evaluate(() => performance.memory && performance.memory.usedJSHeapSize), rosary: await R.evaluate(() => performance.memory && performance.memory.usedJSHeapSize) };
+await p.screenshot({ path: out, type: 'jpeg', quality: 80 });
+console.log('seat', seat, 'heapMB', Object.fromEntries(Object.entries(mem).map(([k, v]) => [k, +(v / 1048576).toFixed(1)])), 'errors', errs.slice(0, 3));
+await b.close();
