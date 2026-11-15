@@ -1,5 +1,5 @@
 // 성 베드로 구조 수정(I-5) 전후 비용 — 시점별 draw call·삼각형(결정적)과 프레임 시간(상대값). `node --test` 밖.
-// 사용: node tools/church_web/stpeter_perf.mjs [--root <assets/church 사본>] [--views nave,altar,...] [--quality high] [--size 360x800] [--frames 12] [--json out.json]
+// 사용: node tools/church_web/stpeter_perf.mjs [--nocrowd] [--shots <dir>] [--root <assets/church 사본>] [--views nave,altar,...] [--quality high] [--size 360x800] [--frames 12] [--json out.json]
 // 시점: nave·altar 는 perf_compare.mjs 와 같은 자리(PERF_SCALE.md 표와 견줄 수 있다). aisle·aisleEnd 는 측랑,
 //       amb*·sacrament·choir 는 I-5 에서 새로 걸어 들어갈 수 있게 된 회랑·모서리 경당·대경당(수정 전에는 벽 밖이라 재지 않는다).
 import { createRequire } from 'node:module';
@@ -25,7 +25,7 @@ export const VIEWS = {
 };
 
 export async function measureViews(root, o = {}) {
-  const { size = '360x800', frames = 12, quality = 'high', views = Object.keys(VIEWS), shotDir = null } = o;
+  const { size = '360x800', frames = 12, quality = 'high', views = Object.keys(VIEWS), shotDir = null, crowd = true } = o;   // crowd: 혼자 기도 군중(자리·수가 실행마다 달라 draw call ±8%·삼각형 ±6% 흔들린다) — 전후 비교는 --nocrowd 로
   const [W, H] = size.split('x').map(Number);
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const page = await browser.newPage({ viewport: { width: W, height: H } });
@@ -37,7 +37,7 @@ export async function measureViews(root, o = {}) {
     window.requestAnimationFrame = (cb) => { q.push(cb); return q.length; };
     window.__step = (n, dtMs) => { for (let i = 0; i < n; i++) { const cbs = q.splice(0); tNow = (tNow || performance.now()) + dtMs; cbs.forEach((cb) => cb(tNow)); } };
   });
-  await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: 'stpeter', autotier: '0', msaa: '0', quality, solo: '1', hideui: '1' }));
+  await page.goto('file://' + root + '/test.html?' + new URLSearchParams({ church: 'stpeter', autotier: '0', msaa: '0', quality, solo: crowd ? '1' : '0', hideui: '1' }));
   await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 240000, polling: 500 });
   await page.waitForTimeout(1500);
   await page.waitForFunction(() => !window.__church.place || window.__church.place.debug().pending === 0, null, { timeout: 120000, polling: 250 }).catch(() => {});
@@ -75,7 +75,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--root') root = path.resolve(a[++i]); else if (a[i] === '--views') o.views = a[++i].split(',');
     else if (a[i] === '--quality') o.quality = a[++i]; else if (a[i] === '--size') o.size = a[++i];
-    else if (a[i] === '--frames') o.frames = +a[++i]; else if (a[i] === '--json') json = a[++i]; else if (a[i] === '--shots') o.shotDir = a[++i];
+    else if (a[i] === '--frames') o.frames = +a[++i]; else if (a[i] === '--json') json = a[++i]; else if (a[i] === '--shots') o.shotDir = a[++i]; else if (a[i] === '--nocrowd') o.crowd = false;
   }
   const r = await measureViews(root, o);
   console.log('stats', JSON.stringify(r.stats));
