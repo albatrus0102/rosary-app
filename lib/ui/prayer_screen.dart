@@ -22,7 +22,6 @@ import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
 import '../rosary3d/rosary_feedback.dart';
 import '../rosary3d/rosary_gallery_screen.dart';
-import '../rosary3d/rosary_model.dart';
 import '../rosary3d/rosary_prayer_view.dart';
 import '../rosary3d/rosary_scene.dart';
 import '../stats/prayer_stats_store.dart';
@@ -247,29 +246,17 @@ class _PrayerScreenState extends State<PrayerScreen>
     if (now == before) return;
     _fbLast = now;
     scene.setStep(now, animate: !MediaQuery.disableAnimationsOf(context));
-    if ((now - before).abs() != 1) return;
-    final cue = rosaryCueFor(
-      _session.steps[before],
-      _session.steps[now],
-      forward: now > before,
-    );
-    final s = _settings;
-    if (s.rosaryDecadeOnly && !rosaryCueIsMilestone(cue)) return;
-    _fb?.play(
-      cue,
-      vibrate:
-          s.rosaryFeedback == RosaryFeedback.both ||
-          s.rosaryFeedback == RosaryFeedback.vibrate,
-      sound:
-          s.rosaryFeedback == RosaryFeedback.both ||
-          s.rosaryFeedback == RosaryFeedback.sound,
-      strength: s.rosaryVibeStrength,
-      volume: s.chimeVolume,
-    );
+    final fb = _fb;
+    if (fb == null) return;
     // 앞단·뒷단 음성이 나오는 중이면 제목 안내는 겹치지 않게 건너뛴다.
-    if (s.rosaryVoiceTitle && _voice == null) {
-      _fb?.announce(rosaryVoiceTitle(_session.current));
-    }
+    playRosaryStepCue(
+      fb,
+      _session,
+      _settings,
+      before,
+      now,
+      voiceBusy: _voice != null,
+    );
   }
 
   void _onRosarySettings() {

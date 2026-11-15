@@ -498,6 +498,10 @@ abstract class ChurchSceneController {
   /// 3D 화면 위젯.
   Widget buildView(BuildContext context);
 
+  /// 장면(웹 페이지)이 아직 살아 있는가. 앱이 백그라운드에 있는 동안 시스템이 WebView 의 렌더
+  /// 프로세스를 정리하면 빈 화면만 남는다: 돌아왔을 때 이것이 false 면 화면이 장면을 새로 만든다.
+  Future<bool> isAlive() async => true;
+
   /// 오류 상태에서 다시 불러온다.
   Future<void> reload() async {
     _initDone = false;
@@ -525,6 +529,7 @@ abstract class ChurchSceneController {
       // 걷기 입력·탭·걷기 취소는 오래된 값이 의미가 없으니 쌓지 않는다.
       if (method == 'setJoystick' ||
           method == 'tapAt' ||
+          (method == 'setInput' && !args.containsKey('ext')) ||
           method == 'cancelWalk' ||
           method == 'resetView' ||
           method == 'endView') {
@@ -593,6 +598,11 @@ abstract class ChurchSceneController {
   /// 내 아바타가 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 든다.
   Future<void> setRosary({required bool on}) => _call('setRosary', {'on': on});
 
+  /// 화면 아래를 덮는 패널의 높이 비율(0..0.6). 장면을 그만큼 위로 올려 그리고, 앉은 뒤 '자리 시점' 대신
+  /// 아바타를 가운데 두어 패널 위에 아바타(앉음·무릎 꿇음)가 보이게 한다. 0 이면 원래대로.
+  Future<void> setViewInset(double bottom) =>
+      _call('setViewInset', {'bottom': bottom});
+
   /// 기도 자세: 앉아서 | 무릎 꿇고. 앉아 있지 않으면 장면이 무시한다.
   Future<void> setPrayerPosture({required bool kneel}) =>
       _call('setPrayerPosture', {'posture': kneel ? 'kneel' : 'sit'});
@@ -656,7 +666,16 @@ abstract class ChurchSceneController {
   /// 자동 걷기를 멈춘다.
   Future<void> cancelWalk() => _call('cancelWalk', const {});
 
-  /// 왼쪽 절반 터치는 Flutter가 가로채므로, 거기서 일어난 탭을 화면 좌표(논리 픽셀)로 웹에 넘긴다.
+  /// 이동 손잡이는 앱(Flutter)이 그린다고 웹에 알린다: 웹은 화면 어디서든 한 손가락 끌기 = 시점 회전,
+  /// 두 손가락 = 확대/축소로만 쓰고 자기 스틱(왼쪽 절반)을 만들지 않는다.
+  Future<void> setAppStick() => _call('setInput', {'ext': true});
+
+  /// 앱이 대신 처리하는 두 손가락 확대(손가락 하나가 손잡이 위에 있어 웹은 한 손가락만 보는 경우).
+  /// [on]인 동안 웹은 한 손가락 끌기로 시점을 돌리지 않는다. [k]는 손가락 사이 거리의 변화 배율(>1 벌림).
+  Future<void> appPinch({required bool on, double? k}) =>
+      _call('setInput', {'pinch': on, 'k': ?k});
+
+  /// 손잡이 위에서 일어난 탭은 Flutter가 가로채므로, 거기서 일어난 탭을 화면 좌표(논리 픽셀)로 웹에 넘긴다.
   /// 웹이 표식(촛불 봉헌대·제대 앞 등)을 맞히면 그곳으로 걷기 시작한다.
   Future<void> tapAt(double x, double y) => _call('tapAt', {'x': x, 'y': y});
 
@@ -827,6 +846,22 @@ class WebViewChurchSceneController extends ChurchSceneController {
   }
 
   @override
+  Future<bool> isAlive() async {
+    if (isDisposed) return false;
+    // 아직 불러오는 중이거나 이미 오류 화면이면 따로 판단하지 않는다(다시 시도 버튼이 있다).
+    if (loadState.value != SceneLoad.ready) return true;
+    try {
+      final r = await _controller
+          .runJavaScriptReturningResult('window.ChurchAPI?1:0')
+          .timeout(const Duration(seconds: 4));
+      return '$r' == '1' || r == 1 || r == 1.0;
+    } catch (e) {
+      debugPrint('church scene not alive: $e');
+      return false;
+    }
+  }
+
+  @override
   Widget buildView(BuildContext context) =>
       WebViewWidget(controller: _controller);
 
@@ -851,6 +886,12 @@ class FakeChurchSceneController extends ChurchSceneController {
   void emit(SceneEvent e) => dispatch(e);
 
   void failLoad() => setLoadError();
+
+  /// 렌더 프로세스가 정리된 것을 흉내 낸다([isAlive]가 false).
+  bool alive = true;
+
+  @override
+  Future<bool> isAlive() async => alive;
 
   /// 어떤 [SceneEvent]든 웹에서 온 것처럼 흉내 낸다.
   void dispatchForTest(SceneEvent e) => dispatch(e);

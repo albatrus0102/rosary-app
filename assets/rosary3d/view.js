@@ -253,7 +253,8 @@
   function frameCamera() {
     var e = ease(S.t), fovT = Math.tan(T.MathUtils.degToRad(camera.fov / 2)), h = root.innerHeight || 320, w = root.innerWidth || 360;
     // C안: 작은 알 하나가 화면에서 약 96px(영역 높이의 30%를 넘지 않게) 되도록 거리를 잡는다. 십자가 가까이에선 물러난다.
-    var px = Math.min(100, h * 0.3), D = (1 * h) / (2 * fovT * px);
+    // compact(성당 묵주 패널): 낮은 영역에서 알 3~5개가 보이게 현재 알을 영역 높이의 42% 안팎으로
+    var px = S.compact ? Math.min(92, h * 0.42) : Math.min(100, h * 0.3), D = (1 * h) / (2 * fovT * px);
     var wc = Math.max(0, 1 - Math.abs(S.p) / 1.2); D *= 1 + 0.75 * wc * wc;
     var hx = handX();
     camC.set(hx * 0.4, -0.15, C.front + D); tgtC.set(hx * 0.4, 0, C.front - 0.3);
@@ -312,7 +313,7 @@
     init: function (o) {
       o = o || {};
       if (o.quality) S.quality = o.quality; if (o.theme) S.theme = o.theme; if (o.hand) S.hand = o.hand; S.reduce = !!o.reduceMotion;
-      S.gallery = !!o.gallery;
+      S.gallery = !!o.gallery; S.compact = !!o.compact;
       if (!renderer) setup(); else applyQuality();
       S.target = S.p = L.stepPos(o.step || 0);
       S.view = o.view === 'a' ? 'a' : 'c'; S.t = S.tTarget = S.view === 'a' ? 1 : 0;

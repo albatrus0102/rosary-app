@@ -128,6 +128,8 @@ class AppSettings extends ChangeNotifier {
       ChurchQuality.auto,
     );
     _churchPerfHud = _prefs.getBool(_kChurchPerfHud) ?? false;
+    _churchHudCollapsed = _prefs.getBool(_kChurchHudCollapsed) ?? false;
+    _churchStickRight = _prefs.getBool(_kChurchStickRight) ?? false;
     ChurchDiagnostics.perfHud.value = _churchPerfHud;
     _prayerPosture = _enumByName(
       PrayerPosture.values,
@@ -326,6 +328,8 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchAmbient = 'church_ambient';
   static const _kChurchQuality = 'church_quality';
   static const _kChurchPerfHud = 'church_perf_hud';
+  static const _kChurchHudCollapsed = 'church_hud_collapsed';
+  static const _kChurchStickRight = 'church_stick_right';
   static const _kPrayerPosture = 'prayerPosture';
   static const _kChurchPrayerChoice = 'churchPrayerChoice';
   static const _kChurchId = 'church_id';
@@ -385,6 +389,8 @@ class AppSettings extends ChangeNotifier {
   late bool _churchAmbient;
   late ChurchQuality _churchQuality;
   late bool _churchPerfHud;
+  late bool _churchHudCollapsed;
+  late bool _churchStickRight;
   late PrayerPosture _prayerPosture;
   late ChurchPrayerChoice _churchPrayerChoice;
   late String _churchId;
@@ -628,6 +634,26 @@ class AppSettings extends ChangeNotifier {
 
   /// 성당 성능 표시(진단: fps·프레임 ms·해상도·화질 단계). 기본 꺼짐.
   bool get churchPerfHud => _churchPerfHud;
+
+  /// 성당 화면 위쪽 메뉴(이름판·도구 줄)를 접어 두었는가. 접으면 이름 한 줄과 작은 단추만 남는다.
+  bool get churchHudCollapsed => _churchHudCollapsed;
+
+  set churchHudCollapsed(bool v) {
+    if (v == _churchHudCollapsed) return;
+    _churchHudCollapsed = v;
+    _prefs.setBool(_kChurchHudCollapsed, v);
+    notifyListeners();
+  }
+
+  /// 성당의 이동 손잡이(조이스틱)를 오른쪽 아래에 두는가(왼손으로 시점을 돌리는 분). 기본은 왼쪽.
+  bool get churchStickRight => _churchStickRight;
+
+  set churchStickRight(bool v) {
+    if (v == _churchStickRight) return;
+    _churchStickRight = v;
+    _prefs.setBool(_kChurchStickRight, v);
+    notifyListeners();
+  }
 
   set churchPerfHud(bool v) {
     if (v == _churchPerfHud) return;

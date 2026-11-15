@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../app/theme.dart';
 import 'net/church_net.dart';
@@ -60,12 +61,12 @@ abstract final class ChurchHudStyle {
   /// 줄 폭이 고정이다). 전체 문구는 툴팁·스크린리더 라벨이 전한다.
   static const double labelMaxScale = 1.3;
 
-  /// 이동 스틱(문서화한 예외: 테마 색이 아니라 중립 흰색. 바닥의 금색·갈색 표식 고리와 헷갈리지 않게
-  /// 금빛이 도는 `onSurface`도 쓰지 않는다). 그림자는 테마의 `shadow`.
-  static const Color stickColor = Color(0xFFFFFFFF);
-  static const double stickFillOpacity = 0.12;
-  static const double stickRingOpacity = 0.75;
-  static const double stickKnobOpacity = 0.55;
+  /// 고정 이동 손잡이: 화면 구석에 고정된 HUD 라 성당 테마를 쓴다(어두운 반투명 `surface` 바탕 +
+  /// 반투명 금색 `primary` 테두리·손잡이). 그림자는 테마의 `shadow`.
+  static const double stickFillOpacity = 0.28;
+  static const double stickFillHeldOpacity = 0.42;
+  static const double stickRingOpacity = 0.7;
+  static const double stickKnobOpacity = 0.6;
   static const double stickShadowOpacity = 0.3;
 }
 
@@ -85,7 +86,11 @@ class ChurchStatusChip extends StatelessWidget {
     this.subtitle,
     this.onChangeChurch,
     this.onShowPresence,
+    this.compact = false,
   });
+
+  /// 접힌 모습: 성당 이름 한 줄만(상태·부제 줄은 숨긴다. 스크린리더 라벨에는 그대로 들어간다).
+  final bool compact;
 
   final String churchName;
   final NetState state;
@@ -161,7 +166,7 @@ class ChurchStatusChip extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       elevation: ChurchHudStyle.elevation,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 56),
+        constraints: BoxConstraints(minHeight: compact ? 48 : 56),
         child: IntrinsicHeight(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -196,11 +201,11 @@ class ChurchStatusChip extends StatelessWidget {
                               churchName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: text.titleMedium?.copyWith(
-                                color: scheme.onSurface,
-                              ),
+                              style:
+                                  (compact ? text.titleSmall : text.titleMedium)
+                                      ?.copyWith(color: scheme.onSurface),
                             ),
-                            status,
+                            if (!compact) status,
                           ],
                         ),
                       ),
@@ -317,7 +322,11 @@ class ChurchTopActions extends StatelessWidget {
     required this.onEditAvatar,
     required this.onEmote,
     this.onGo,
+    this.onCollapse,
   });
+
+  /// 있으면 줄 끝에 '메뉴 접기' 단추를 둔다(접으면 [ChurchHudMenuButton] 하나만 남는다).
+  final VoidCallback? onCollapse;
 
   final bool ambientOn;
   final VoidCallback onToggleAmbient;
@@ -390,7 +399,59 @@ class ChurchTopActions extends StatelessWidget {
                 ),
                 ChurchGoButton(key: const ValueKey('go-button'), onPressed: go),
               ],
+              if (onCollapse != null)
+                Semantics(
+                  button: true,
+                  label: '메뉴 접기',
+                  excludeSemantics: true,
+                  child: IconButton(
+                    key: const ValueKey('hud-collapse'),
+                    tooltip: '메뉴 접기',
+                    onPressed: onCollapse,
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    color: scheme.onSurfaceVariant,
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 접힌 메뉴: 금색 테두리의 작은 단추 하나(48dp). 누르면 도구 줄(소리·아바타·인사·가기)이 펼쳐진다.
+class ChurchHudMenuButton extends StatelessWidget {
+  const ChurchHudMenuButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      label: '메뉴 펼치기',
+      excludeSemantics: true,
+      child: Tooltip(
+        message: '메뉴 펼치기',
+        child: Material(
+          color: ChurchHudStyle.surface(scheme),
+          shape: CircleBorder(side: ChurchHudStyle.border(scheme)),
+          clipBehavior: Clip.antiAlias,
+          elevation: ChurchHudStyle.elevation,
+          child: InkWell(
+            key: const ValueKey('hud-expand'),
+            onTap: onPressed,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(Icons.menu, size: 24, color: scheme.primary),
+            ),
           ),
         ),
       ),
@@ -660,35 +721,57 @@ class ChurchWalkHint extends StatelessWidget {
   }
 }
 
-/// 왼쪽 절반 이동 영역(Roblox 방식, C-01): 어디든 누르면 그 자리에 스틱이 생기고, 끌면 [-1,1] 값을 낸다.
-/// y > 0 이 앞(위로 끌기). 갱신은 최대 30Hz, 손을 떼면 (0,0)을 한 번 보낸다.
+/// 고정 이동 손잡이(조이스틱). 화면 아래 한쪽 구석([rightSide]면 오른쪽)의 원 안에서만 이동 입력을 받고,
+/// 끌면 [-1,1] 값을 낸다(y > 0 이 앞 = 위로 끌기). 갱신은 최대 30Hz, 손을 떼면 가운데로 돌아가며 (0,0)을 한 번 보낸다.
 ///
-/// 이 위젯은 자기 영역(부모가 정한 크기)의 터치를 모두 가로챈다. 그래서 HUD 버튼은 반드시
-/// 이 위젯보다 위(나중에 그린 쪽)에 둔다. 오른쪽 절반은 웹 장면이 받아 카메라를 돌린다.
+/// 이 위젯은 장면 전체를 덮지만 **원 안의 터치만** 가로챈다. 원 밖의 터치는 아래 웹 장면이 그대로 받아
+/// 한 손가락 끌기 = 시점 회전, 두 손가락 = 확대/축소로 쓴다(HUD 버튼은 이 위젯보다 위에 둔다).
+///
+/// 두 손가락 우선: 손가락 하나가 손잡이 위에 있는 채로 두 번째 손가락이 어디든 닿으면(또는 그 반대)
+/// 웹은 한 손가락밖에 보지 못하므로, 이동 입력을 멈추고 여기서 두 손가락 사이 거리의 변화를
+/// [onPinch]로 알려 확대/축소한다(`on` 시작·끝, `k` 거리 변화 배율).
 class ChurchMoveZone extends StatefulWidget {
   const ChurchMoveZone({
     super.key,
     required this.onChanged,
-    this.size = 120,
+    this.size = 132,
     this.minInterval = const Duration(milliseconds: 33),
     this.hint,
     this.onTap,
     this.onTouchDown,
+    this.onPinch,
+    this.rightSide = false,
+    this.insets = EdgeInsets.zero,
   });
+
+  /// 손잡이와 화면 가장자리 사이 여백.
+  static const double margin = AppSpace.md;
+
+  /// 손잡이가 차지하는 폭(여백 포함): 같은 줄의 다른 HUD 가 이만큼 비켜 선다.
+  static const double reserve = 132 + margin + AppSpace.xs;
 
   final void Function(double x, double y) onChanged;
 
-  /// 거의 끌지 않고 짧게 눌렀다 뗀 '탭'(이 영역 좌표 = 화면 좌표). 웹 장면의 표식을 누르는 데 쓴다.
+  /// 손잡이를 거의 끌지 않고 짧게 눌렀다 뗀 '탭'(화면 좌표). 웹 장면의 표식을 누르는 데 쓴다.
   final ValueChanged<Offset>? onTap;
 
-  /// 이 영역에 손이 닿을 때(자동 걷기를 멈추는 데 쓴다).
+  /// 손잡이에 손이 닿을 때(자동 걷기를 멈추는 데 쓴다).
   final VoidCallback? onTouchDown;
 
-  /// 스틱 바탕의 지름.
+  /// 앱이 대신 처리하는 두 손가락 확대. `on`: 시작(true)/끝(false), `k`: 거리 변화 배율(>1 벌림).
+  final void Function({required bool on, double? k})? onPinch;
+
+  /// 손잡이 지름(120~140dp).
   final double size;
   final Duration minInterval;
 
-  /// 처음 한 번 보이는 안내 문구(스틱을 한 번 쓰면 사라진다).
+  /// 오른쪽 아래에 둔다(설정 '조이스틱 위치').
+  final bool rightSide;
+
+  /// 안전 영역(상태 바·제스처 바·접힌 화면의 여백).
+  final EdgeInsets insets;
+
+  /// 처음 한 번 보이는 안내 문구(손잡이를 한 번 쓰면 사라진다).
   final String? hint;
 
   @override
@@ -696,9 +779,8 @@ class ChurchMoveZone extends StatefulWidget {
 }
 
 class _ChurchMoveZoneState extends State<ChurchMoveZone> {
-  Offset? _origin; // 터치 시작점(영역 좌표). null이면 스틱이 안 보인다.
   Offset _knob = Offset.zero; // -1..1 (화면 좌표: y 아래가 +)
-  int? _pointer;
+  int? _pointer; // 손잡이를 잡은 손가락
   Timer? _pending;
   final Stopwatch _clock = Stopwatch()..start();
   Duration? _lastSent;
@@ -709,14 +791,33 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   double _maxDrag = 0;
   Duration _downTime = Duration.zero;
 
+  /// 지금 화면에 닿아 있는 손가락(HUD 버튼 위의 것은 빼고): 위치와, 손잡이 안에서 시작했는지.
+  final Map<int, ({Offset pos, bool inStick})> _pts = {};
+
+  /// 앱이 처리 중인 두 손가락 확대의 두 손가락과 직전 거리.
+  (int, int)? _pinch;
+  double _pinchDist = 0;
+  double _pinchK = 1;
+  Timer? _pinchTimer;
+
+  Size _area = Size.zero;
+
   double get _radius => widget.size / 2;
 
+  Offset get _center {
+    final m = ChurchMoveZone.margin;
+    final x = widget.rightSide
+        ? _area.width - widget.insets.right - m - _radius
+        : widget.insets.left + m + _radius;
+    return Offset(x, _area.height - widget.insets.bottom - m - _radius);
+  }
+
+  bool _inStick(Offset p) => (p - _center).distance <= _radius;
+
   void _update(Offset local) {
-    final o = _origin;
-    if (o == null) return;
     final drag = (local - _downAt).distance;
     if (drag > _maxDrag) _maxDrag = drag;
-    var v = (local - o) / _radius;
+    var v = (local - _center) / _radius;
     if (v.distance > 1) v = v / v.distance;
     setState(() => _knob = v);
     _emitThrottled();
@@ -750,6 +851,7 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
     widget.onChanged(x, y);
   }
 
+  /// 손잡이를 놓는다: 가운데로 돌아가고 (0,0)을 보낸다.
   void _release() {
     _pending?.cancel();
     _pending = null;
@@ -758,19 +860,94 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
     _sent = false;
     _dirty = false;
     _lastSent = null;
-    if (mounted) {
-      setState(() {
-        _origin = null;
-        _knob = Offset.zero;
-      });
-    }
+    if (mounted) setState(() => _knob = Offset.zero);
     if (wasSent) widget.onChanged(0, 0);
+  }
+
+  void _startPinch(int a, int b) {
+    if (_pointer != null) _release();
+    _pinch = (a, b);
+    _pinchDist = (_pts[a]!.pos - _pts[b]!.pos).distance;
+    _pinchK = 1;
+    widget.onPinch?.call(on: true);
+  }
+
+  void _flushPinch() {
+    _pinchTimer?.cancel();
+    _pinchTimer = null;
+    final k = _pinchK;
+    _pinchK = 1;
+    if ((k - 1).abs() > 0.001) widget.onPinch?.call(on: true, k: k);
+  }
+
+  void _endPinch() {
+    if (_pinch == null) return;
+    _flushPinch();
+    _pinch = null;
+    widget.onPinch?.call(on: false);
+  }
+
+  void _down(PointerDownEvent e) {
+    final inStick = _inStick(e.localPosition);
+    _pts[e.pointer] = (pos: e.localPosition, inStick: inStick);
+    if (_pts.length == 1) {
+      if (!inStick) return;
+      _pointer = e.pointer;
+      _downAt = e.localPosition;
+      _maxDrag = 0;
+      _downTime = _clock.elapsed;
+      widget.onTouchDown?.call();
+      setState(() => _used = true);
+      _update(e.localPosition);
+      return;
+    }
+    // 두 번째 손가락: 둘 중 하나라도 손잡이 위(웹이 못 보는 손가락)면 확대를 앱이 맡는다.
+    // 둘 다 손잡이 밖이면 웹 장면이 스스로 핀치를 처리한다.
+    if (_pinch != null) return;
+    final ids = _pts.keys.take(2).toList();
+    if (_pts[ids[0]]!.inStick || _pts[ids[1]]!.inStick) {
+      _startPinch(ids[0], ids[1]);
+    }
+  }
+
+  void _move(PointerMoveEvent e) {
+    final p = _pts[e.pointer];
+    if (p == null) return;
+    _pts[e.pointer] = (pos: e.localPosition, inStick: p.inStick);
+    final pinch = _pinch;
+    if (pinch != null) {
+      if (e.pointer != pinch.$1 && e.pointer != pinch.$2) return;
+      final d = (_pts[pinch.$1]!.pos - _pts[pinch.$2]!.pos).distance;
+      if (_pinchDist > 0 && d > 0) _pinchK *= d / _pinchDist;
+      _pinchDist = d;
+      _pinchTimer ??= Timer(widget.minInterval, _flushPinch);
+      return;
+    }
+    if (e.pointer == _pointer) _update(e.localPosition);
+  }
+
+  void _up(PointerEvent e, {required bool cancelled}) {
+    if (_pts.remove(e.pointer) == null) return;
+    final pinch = _pinch;
+    if (pinch != null && (e.pointer == pinch.$1 || e.pointer == pinch.$2)) {
+      _endPinch();
+      return;
+    }
+    if (e.pointer != _pointer) return;
+    final isTap =
+        !cancelled &&
+        _maxDrag < 12 &&
+        _clock.elapsed - _downTime < const Duration(milliseconds: 450);
+    _release();
+    if (isTap) widget.onTap?.call(e.localPosition);
   }
 
   @override
   void dispose() {
     _pending?.cancel();
+    _pinchTimer?.cancel();
     if (_pointer != null && _sent) widget.onChanged(0, 0);
+    if (_pinch != null) widget.onPinch?.call(on: false);
     super.dispose();
   }
 
@@ -778,92 +955,78 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final knobSize = widget.size * 0.42;
-    final o = _origin;
-    return Semantics(
-      label: '이동: 화면 왼쪽을 누른 채 끌기',
-      child: Listener(
-        key: const ValueKey('move-zone'),
-        behavior: HitTestBehavior.opaque,
-        onPointerDown: (e) {
-          if (_pointer != null) return;
-          _pointer = e.pointer;
-          _used = true;
-          _downAt = e.localPosition;
-          _maxDrag = 0;
-          _downTime = _clock.elapsed;
-          widget.onTouchDown?.call();
-          setState(() {
-            _origin = e.localPosition;
-            _knob = Offset.zero;
-          });
-        },
-        onPointerMove: (e) {
-          if (e.pointer == _pointer) _update(e.localPosition);
-        },
-        onPointerUp: (e) {
-          if (e.pointer != _pointer) return;
-          final isTap =
-              _maxDrag < 12 &&
-              _clock.elapsed - _downTime < const Duration(milliseconds: 450);
-          _release();
-          if (isTap) widget.onTap?.call(e.localPosition);
-        },
-        onPointerCancel: (e) {
-          if (e.pointer == _pointer) _release();
-        },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (o != null)
+    final m = ChurchMoveZone.margin;
+    final bottom = widget.insets.bottom + m;
+    final held = _pointer != null;
+    return LayoutBuilder(
+      builder: (context, c) {
+        _area = c.biggest;
+        return Listener(
+          // 모든 손가락을 지켜보되(두 손가락 판정), 원 밖의 터치는 아래 웹 장면으로 지나가게 둔다.
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: _down,
+          onPointerMove: _move,
+          onPointerUp: (e) => _up(e, cancelled: false),
+          onPointerCancel: (e) => _up(e, cancelled: true),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
               Positioned(
-                left: o.dx - _radius,
-                top: o.dy - _radius,
-                child: IgnorePointer(
-                  child: Container(
-                    key: const ValueKey('joystick-ring'),
-                    width: widget.size,
-                    height: widget.size,
-                    // 바닥의 금색·갈색 표식 고리와 헷갈리지 않게 중립색(흰색 반투명 + 옅은 그림자)으로 그린다.
-                    // 밝은 대리석 위에서도 어두운 의자 위에서도 보이도록 바깥에 어두운 그림자를 둔다.
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: ChurchHudStyle.stickColor.withValues(
-                        alpha: ChurchHudStyle.stickFillOpacity,
-                      ),
-                      border: Border.all(
-                        color: ChurchHudStyle.stickColor.withValues(
-                          alpha: ChurchHudStyle.stickRingOpacity,
+                left: widget.rightSide ? null : widget.insets.left + m,
+                right: widget.rightSide ? widget.insets.right + m : null,
+                bottom: bottom,
+                child: Semantics(
+                  label: '이동 손잡이: 누른 채 끌면 걸어요',
+                  child: _CircleHit(
+                    key: const ValueKey('move-zone'),
+                    child: Container(
+                      key: const ValueKey('joystick-ring'),
+                      width: widget.size,
+                      height: widget.size,
+                      // 성당 테마: 어두운 반투명 바탕 + 반투명 금색 테두리. 밝은 대리석 위에서도 보이게 옅은 그림자를 둔다.
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: scheme.surface.withValues(
+                          alpha: held
+                              ? ChurchHudStyle.stickFillHeldOpacity
+                              : ChurchHudStyle.stickFillOpacity,
                         ),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: scheme.shadow.withValues(
-                            alpha: ChurchHudStyle.stickShadowOpacity,
+                        border: Border.all(
+                          color: scheme.primary.withValues(
+                            alpha: ChurchHudStyle.stickRingOpacity,
                           ),
-                          blurRadius: 4,
+                          width: 1.5,
                         ),
-                      ],
-                    ),
-                    child: Transform.translate(
-                      offset: _knob * (_radius - knobSize / 2),
-                      child: Center(
-                        child: Container(
-                          width: knobSize,
-                          height: knobSize,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: ChurchHudStyle.stickColor.withValues(
-                              alpha: ChurchHudStyle.stickKnobOpacity,
+                        boxShadow: [
+                          BoxShadow(
+                            color: scheme.shadow.withValues(
+                              alpha: ChurchHudStyle.stickShadowOpacity,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: scheme.shadow.withValues(
-                                  alpha: ChurchHudStyle.stickShadowOpacity,
-                                ),
-                                blurRadius: 4,
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: Transform.translate(
+                        offset: _knob * (_radius - knobSize / 2),
+                        child: Center(
+                          child: Container(
+                            key: const ValueKey('joystick-knob'),
+                            width: knobSize,
+                            height: knobSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: scheme.primary.withValues(
+                                alpha: ChurchHudStyle.stickKnobOpacity,
                               ),
-                            ],
+                              boxShadow: [
+                                BoxShadow(
+                                  color: scheme.shadow.withValues(
+                                    alpha: ChurchHudStyle.stickShadowOpacity,
+                                  ),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -871,24 +1034,44 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                   ),
                 ),
               ),
-            if (widget.hint != null && !_used)
-              Positioned(
-                left: 16,
-                bottom: 24,
-                child: IgnorePointer(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 140),
-                    child: _HudNote(
-                      key: const ValueKey('move-hint'),
-                      message: widget.hint!,
+              if (widget.hint != null && !_used)
+                Positioned(
+                  left: widget.rightSide ? null : widget.insets.left + m,
+                  right: widget.rightSide ? widget.insets.right + m : null,
+                  bottom: bottom + widget.size + AppSpace.xs,
+                  child: IgnorePointer(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 140),
+                      child: _HudNote(
+                        key: const ValueKey('move-hint'),
+                        message: widget.hint!,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
+  }
+}
+
+/// 원 안의 터치만 받는 자리(모서리의 터치는 아래 장면으로 지나간다).
+class _CircleHit extends SingleChildRenderObjectWidget {
+  const _CircleHit({super.key, super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderCircleHit();
+}
+
+class _RenderCircleHit extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    final r = size.shortestSide / 2;
+    if ((position - size.center(Offset.zero)).distance > r) return false;
+    result.add(BoxHitTestEntry(this, position));
+    return true;
   }
 }
 

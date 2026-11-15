@@ -12,7 +12,8 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); if (i < 0) return d; const v = args[i + 1]; args.splice(i, 2); return v; };
 const dist = +opt('--dist', '1.5'), hour = opt('--hour', '11'), quality = opt('--quality', 'high');
 const out = args[0] || '/tmp/statue_shots', ids = args.slice(1).length ? args.slice(1) : ['basic', 'danggogae', 'myeongdong'];
-const ANG = [['front', 0], ['left45', -45], ['right60', 60]];
+const ANG = (process.env.ANG || 'front:0,left45:-45,right60:60').split(',').map((s) => [s.split(':')[0], +s.split(':')[1]]);
+const EVAL = process.env.STATUE_EVAL || '';   // 디버그: 찍기 전 실행할 JS(예: 성상 재질 바꾸기)
 fs.mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
 let bad = 0;
@@ -26,6 +27,7 @@ for (const id of ids) {
   await page.waitForFunction(() => window.__church && window.__church.done, null, { timeout: 600000 });
   const ok = await page.waitForFunction(() => { const s = window.__church.scene.getObjectByName('shrine_statue'); return s && s.visible; }, null, { timeout: 30000 }).then(() => true, () => false);
   const info = await page.evaluate(() => { const s = window.__church.scene.getObjectByName('shrine_statue'); return s ? s.levels.map((l) => l.object.geometry.index.count / 3) : null; });
+  if (EVAL) await page.evaluate(EVAL);
   for (const [name, a] of ANG) {
     await page.evaluate(({ p, a, dist }) => {
       const C = window.__church, T = window.THREE, y = p.yaw * Math.PI / 180, r = y + a * Math.PI / 180;

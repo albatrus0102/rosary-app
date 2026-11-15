@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -28,6 +29,7 @@ import 'church_host.dart';
 import 'church_hud.dart';
 import 'church_liturgy.dart';
 import 'church_prayer_card.dart';
+import 'church_rosary_panel.dart';
 import 'church_prayer_choice_sheet.dart';
 import 'church_presence_sheet.dart';
 import 'church_resume_state.dart';
@@ -189,6 +191,22 @@ class _ChurchScreenState extends State<ChurchScreen>
   bool _hintSeen = true; // 불러오기 전에는 보이지 않는다
   bool _hintLoaded = false;
   bool _hintVisible = false;
+
+  /// 위쪽 메뉴(이름판·도구 줄)를 접었는가. 접힘 상태는 기억한다([AppSettings.churchHudCollapsed]).
+  late bool _hudCollapsed = _settings.churchHudCollapsed;
+
+  void _setHudCollapsed(bool v) {
+    if (_hudCollapsed == v) return;
+    _settings.churchHudCollapsed = v;
+    Track.setting('church_hud_collapsed');
+    setState(() => _hudCollapsed = v);
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      v ? '메뉴를 접었습니다' : '메뉴를 펼쳤습니다',
+      Directionality.of(context),
+    );
+  }
+
   Timer? _hintTimer;
 
   String? _pendingSeat;
@@ -223,6 +241,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   // 분석(church_exit): 들어온 시각과 앉아 있던 시간.
   DateTime? _enteredAt;
+
   /// 켜진 초: 슬롯 → 꺼지는 시각(epoch ms). 가득 찼는지 안내할 때 쓴다.
   final Map<int, int> _candleUntil = {};
   DateTime? _satSince;
@@ -333,6 +352,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       _recreateScene();
     } else {
       unawaited(_scene.resume());
+      unawaited(_reviveIfDead(_scene));
     }
     if (_netSuspended) {
       _netSuspended = false;
@@ -378,6 +398,20 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_ownsScene) _scene.dispose();
     _sceneReady = false;
     _inited = false;
+    if (mounted) setState(() {});
+  }
+
+  /// 돌아왔는데 장면이 죽어 있다(백그라운드에서 WebView 렌더 프로세스가 정리됨): 장면을 새로 만들어
+  /// 방금 있던 자리로 되살린다(짧은 로딩 표시만 보인다).
+  Future<void> _reviveIfDead(ChurchSceneController scene) async {
+    if (!_canRecreateScene) return;
+    final alive = await scene.isAlive();
+    if (alive || _disposed || _hidden || _sceneReleased) return;
+    if (!identical(scene, _scene)) return;
+    _sceneSub?.cancel();
+    _sceneSub = null;
+    if (_ownsScene) scene.dispose();
+    _recreateScene();
     if (mounted) setState(() {});
   }
 
@@ -630,6 +664,8 @@ class _ChurchScreenState extends State<ChurchScreen>
         church: widget.churchId,
       ),
     );
+    // 이동 손잡이는 앱이 그린다: 웹은 화면 전체를 시점 회전·확대에 쓴다.
+    unawaited(_scene.setAppStick());
     // 전례 시기 장식(SPEC §33): 오늘(KST) 시기대로. 자정·미리 보기 변경은 _onLiturgy 가 다시 보낸다.
     unawaited(_scene.setLiturgy(_liturgy.sceneArgs));
     // 새로 만든 장면이면 입구가 아니라 방금 있던 자리에서 시작한다. 좌석은 앱이 아는 상태가 우선
@@ -669,8 +705,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 그 슬롯의 초가 아직 타고 있나(꺼지는 시각이 지나지 않음).
   bool _candleLit(int slot) {
     final until = _candleUntil[slot];
-    return until != null &&
-        until > DateTime.now().millisecondsSinceEpoch;
+    return until != null && until > DateTime.now().millisecondsSinceEpoch;
   }
 
   // --- 웹 장면 이벤트 ---
@@ -1558,7 +1593,18 @@ class _ChurchScreenState extends State<ChurchScreen>
     final seatedOrPending = _mySeat != null || _pendingSeat != null;
     final cardOn = _prayerActive && _prayer != null;
     final walking = !seatedOrPending && !cardOn;
-    final halfWidth = MediaQuery.sizeOf(context).width / 2;
+    final stickRight = _settings.churchStickRight;
+    // 손잡이 반대쪽 아래에 상황 버튼·안내를 둔다(손잡이와 겹치지 않게 손잡이 쪽은 비운다).
+    final actionAlign = stickRight
+        ? Alignment.centerLeft
+        : Alignment.centerRight;
+    final actionInset = walking
+        ? EdgeInsets.only(
+            left: stickRight ? 0 : ChurchMoveZone.reserve - AppSpace.sm,
+            right: stickRight ? ChurchMoveZone.reserve - AppSpace.sm : 0,
+          )
+        : EdgeInsets.zero;
+    final collapsed = _hudCollapsed;
     final glassWin = _glassWindow;
     final statusChip = ListenableBuilder(
       listenable: Listenable.merge([_net.state, _net.count]),
@@ -1569,6 +1615,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         subtitle: _liturgy.chipLabel,
         onChangeChurch: widget.onChangeChurch,
         onShowPresence: _openPresence,
+        compact: collapsed,
       ),
     );
     // 도구 줄: 소리·아바타·인사 (+ 걸어 다닐 수 있으면 '가기').
@@ -1578,6 +1625,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       onEditAvatar: _openAvatarEditor,
       onEmote: _emote,
       onGo: walking ? _onGo : null,
+      onCollapse: () => _setHudCollapsed(true),
     );
     return Scaffold(
       key: _hudKey,
@@ -1593,22 +1641,22 @@ class _ChurchScreenState extends State<ChurchScreen>
                 child: _scene.buildView(context),
               ),
             ),
-          // 왼쪽 절반: 떠다니는 이동 스틱(C-01). 오른쪽 절반은 아래 웹 장면이 받아 카메라를 돌린다.
-          // HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
+          // 고정 이동 손잡이(아래 구석의 원 안만 이동 입력). 그 밖의 화면은 아래 웹 장면이 받아
+          // 한 손가락 = 시점 회전, 두 손가락 = 확대/축소. HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
           if (walking)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: halfWidth,
+            Positioned.fill(
               child: ChurchMoveZone(
-                hint: '왼쪽 화면을 누르고 끌면 걸어요',
+                hint: '손잡이를 누르고 끌면 걸어요',
+                rightSide: stickRight,
+                insets: MediaQuery.paddingOf(context),
                 onChanged: (x, y) => unawaited(_scene.setJoystick(x, y)),
-                // 왼쪽 절반을 건드리면 자동 걷기가 끊기고, 짧은 탭은 웹 표식 누르기로 넘긴다.
+                // 손잡이를 건드리면 자동 걷기가 끊기고, 짧은 탭은 웹 표식 누르기로 넘긴다.
                 onTouchDown: () {
                   if (_walkKind != null) _cancelWalk();
                 },
                 onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
+                onPinch: ({required bool on, double? k}) =>
+                    unawaited(_scene.appPinch(on: on, k: k)),
               ),
             ),
           // 개발용 임시 유리 표시(개발용 APK 에서만; 일반 빌드에서는 DevGlass.enabled 가 컴파일 상수 false).
@@ -1633,7 +1681,23 @@ class _ChurchScreenState extends State<ChurchScreen>
                 children: [
                   // 첫 줄: 이름판(왼쪽)과 도구 줄(오른쪽). 폰 폭에서는 이름판이 한 줄을 다 쓰고
                   // (긴 성당 이름·부제가 잘리지 않게) 도구 줄은 그 아래 오른쪽에 놓인다.
-                  if (wide)
+                  // 메뉴를 접으면 이름 한 줄과 작은 단추 하나만 남아 장면을 가리지 않는다.
+                  if (collapsed)
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: statusChip,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpace.xs),
+                        ChurchHudMenuButton(
+                          onPressed: () => _setHudCollapsed(false),
+                        ),
+                      ],
+                    )
+                  else if (wide)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1744,32 +1808,45 @@ class _ChurchScreenState extends State<ChurchScreen>
                       constraints: const BoxConstraints(
                         maxWidth: ChurchHudStyle.panelMaxWidth,
                       ),
-                      child: ChurchPrayerCard(
-                        controller: _prayer!,
-                        settings: _settings,
-                        onTogglePause: _togglePause,
-                        onStand: _stopFromCard,
-                        onPosture: _setPosture,
-                        onEnd: _endPrayer,
-                        onFullScreen: _openFullScreenPrayer,
-                      ),
+                      // 묵주 화면(T-81)을 쓰면 3D 묵주 패널(화면 38% 이하, 장면이 그만큼 위로), 아니면 기도문 카드.
+                      child: _settings.prayerView == PrayerView.rosary
+                          ? ChurchRosaryPanel(
+                              controller: _prayer!,
+                              settings: _settings,
+                              onTogglePause: _togglePause,
+                              onStand: _stopFromCard,
+                              onPosture: _setPosture,
+                              onEnd: _endPrayer,
+                              onFullScreen: _openFullScreenPrayer,
+                              onInset: (f) => unawaited(_scene.setViewInset(f)),
+                            )
+                          : ChurchPrayerCard(
+                              controller: _prayer!,
+                              settings: _settings,
+                              onTogglePause: _togglePause,
+                              onStand: _stopFromCard,
+                              onPosture: _setPosture,
+                              onEnd: _endPrayer,
+                              onFullScreen: _openFullScreenPrayer,
+                            ),
                     )
                   else if (!seatedOrPending) ...[
                     // 처음 한 번 뜨는 '가기' 안내: 위쪽(이름표·표식이 뜨는 곳)이 아니라 오른쪽 아래, 상황 버튼 바로 위에 둔다.
                     // 폭은 왼쪽 이동 안내(맨 왼쪽 140px)와 겹치지 않게 제한한다.
                     if (_hintVisible && walking)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
                         child: Align(
-                          alignment: Alignment.centerRight,
-                          child: ChurchWalkHint(),
+                          alignment: actionAlign,
+                          child: const ChurchWalkHint(),
                         ),
                       ),
                     // 오른쪽 아래: 상황 버튼 하나(앉기 / 초 켜기), 없으면 숨는다. 버튼이 없어도 그 높이(64)를 비워 안내가 오르내리지 않게 한다.
-                    ConstrainedBox(
+                    Container(
                       constraints: const BoxConstraints(minHeight: 64),
+                      padding: actionInset,
                       child: Align(
-                        alignment: Alignment.centerRight,
+                        alignment: actionAlign,
                         child: Builder(
                           builder: (context) {
                             final pending =

@@ -15,6 +15,10 @@
       moveZone: true, webX: 0, webY: 0, webActive: false,
       // 탭(거의 안 움직이고 짧게 뗌) -> onTap(clientX, clientY). 이동 영역(왼쪽 절반)에 처음 닿으면 onMoveTouch() (자동 걷기 취소용).
       onTap: null, onMoveTouch: null,
+      // 앱(Flutter)이 고정 이동 손잡이를 그린다(ext): 웹은 스틱을 만들지 않고 화면 전체를 시점 회전·핀치로 쓴다.
+      // extPinch: 손가락 하나가 앱 손잡이 위에 있어 웹이 한 손가락만 보는 핀치 — 그동안 한 손가락 회전을 멈춘다(확대는 pinchBy).
+      ext: false, extPinch: false,
+      pinchBy: function (k) { k = +k; if (k > 0 && isFinite(k)) ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom / k)); ctl.lastDragT = ctl.now; },
       setJoystick: function (x, y) { ctl.joyX = Math.max(-1, Math.min(1, +x || 0)); ctl.joyY = Math.max(-1, Math.min(1, +y || 0)); },
       // 이동 입력(키보드 우선)
       getMove: function (out) {
@@ -106,7 +110,7 @@
     canvas.addEventListener('pointerdown', function (e) {
       if (ctl.viewMode) { vDown(e); return; }
       var role = 'orbit';
-      if (ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX) && count < 2) role = 'move';
+      if (!ctl.ext && ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX) && count < 2) role = 'move';
       pts[e.pointerId] = { x: e.clientX, y: e.clientY, role: role, sx: e.clientX, sy: e.clientY, t0: Date.now(), alone: countAll() === 0, moved: 0 };
       if (role === 'move') {
         if (ctl.onMoveTouch) ctl.onMoveTouch();
@@ -138,7 +142,7 @@
         var d = pd();
         if (lastDist > 0) ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom * (lastDist / d)));
         lastDist = d;
-      } else {
+      } else if (!ctl.extPinch) {
         ctl.yaw -= dx * 0.0065;
         // 아래로 끌면 시점이 올라가고, 맨 아래(수평)에서 더 위로 끌면 천장을 올려다본다(look).
         var dp = dy * 0.004;

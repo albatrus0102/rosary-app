@@ -25,7 +25,8 @@
     'emote', 'setSeatTaken', 'setChurch', 'walkTo', 'cancelWalk', 'tapAt',
     'viewWindow', 'endView', 'setViewLight', 'setViewTier', 'resetView',   // G1 창 감상(SPEC §22)
     'pause', 'resume', 'getState', 'restore',   // 보이지 않는 동안 일시정지·상태 복원
-    'setLiturgy'];   // 전례 시기 장식(SPEC §33)
+    'setLiturgy',   // 전례 시기 장식(SPEC §33)
+    'setViewInset'];   // 아래 패널(성당 묵주 패널)만큼 장면을 위로(T-81)
   var NO_QUEUE = { setJoystick: 1, tapAt: 1, cancelWalk: 1 };   // 오래되면 의미 없는 입력은 쌓지 않는다
   var API = {};
   METHODS.forEach(function (m) {

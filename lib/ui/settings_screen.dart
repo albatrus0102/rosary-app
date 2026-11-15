@@ -550,6 +550,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
+        Padding(
+          key: const ValueKey('settings-church-stick'),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('조이스틱 위치', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpace.xs),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<bool>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(value: false, label: Text('왼쪽')),
+                    ButtonSegment(value: true, label: Text('오른쪽')),
+                  ],
+                  selected: {settings.churchStickRight},
+                  onSelectionChanged: (v) {
+                    settings.churchStickRight = v.first;
+                    Track.setting('church_stick_side');
+                  },
+                ),
+              ),
+              const SizedBox(height: AppSpace.xs),
+              Text(
+                '손잡이를 끌면 걷고, 그 밖의 화면은 한 손가락으로 시점을 돌리고 두 손가락으로 확대해요',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
         SwitchListTile(
           key: const ValueKey('settings-church-perf-hud'),
           secondary: const Icon(Icons.speed),

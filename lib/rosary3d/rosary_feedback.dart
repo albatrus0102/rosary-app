@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../app/settings.dart';
+import '../domain/rosary_session.dart';
 import 'rosary_model.dart';
 
 /// 묵주 화면의 촉각·소리·음성 제목 안내를 내보낸다. 테스트는 [RecordingRosaryFeedback]을 쓴다.
@@ -155,4 +157,37 @@ class RecordingRosaryFeedback implements RosaryFeedbackSink {
 
   @override
   Future<void> dispose() async {}
+}
+
+/// 한 칸 이동의 신호를 설정(알림 방식·세기·완료 알림만·음성 제목)대로 낸다. 기도 화면과 성당 묵주 패널이 같이 쓴다.
+/// [before]→[now] 가 한 칸이 아니면(지도·이어하기 점프) 아무것도 내지 않는다. [voiceBusy]면 음성 제목은 건너뛴다.
+void playRosaryStepCue(
+  RosaryFeedbackSink sink,
+  RosarySession session,
+  AppSettings s,
+  int before,
+  int now, {
+  bool voiceBusy = false,
+}) {
+  if ((now - before).abs() != 1 || session.isFinished) return;
+  final cue = rosaryCueFor(
+    session.steps[before],
+    session.steps[now],
+    forward: now > before,
+  );
+  if (s.rosaryDecadeOnly && !rosaryCueIsMilestone(cue)) return;
+  sink.play(
+    cue,
+    vibrate:
+        s.rosaryFeedback == RosaryFeedback.both ||
+        s.rosaryFeedback == RosaryFeedback.vibrate,
+    sound:
+        s.rosaryFeedback == RosaryFeedback.both ||
+        s.rosaryFeedback == RosaryFeedback.sound,
+    strength: s.rosaryVibeStrength,
+    volume: s.chimeVolume,
+  );
+  if (s.rosaryVoiceTitle && !voiceBusy) {
+    sink.announce(rosaryVoiceTitle(session.current));
+  }
 }

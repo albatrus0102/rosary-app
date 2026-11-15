@@ -21,6 +21,7 @@ class RosaryScene extends ChangeNotifier {
     'quality': 'high',
     'reduceMotion': false,
     'gallery': false,
+    'compact': false,
   };
 
   bool _ready = false;

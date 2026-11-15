@@ -32,8 +32,14 @@
     if (viewing()) { App.view.onResize(); App.camera.updateProjectionMatrix(); kick(); return; }
     // 세로 화면에서는 시야를 넓힌다
     App.camera.fov = w / h < 0.8 ? 62 : 52;
+    applyInset(w, h);
     App.camera.updateProjectionMatrix();
     kick();
+  }
+  // 아래 패널(성당 묵주 패널)이 덮는 비율만큼 그림을 위로 옮긴다(투영 오프셋: 가운데가 남은 영역의 가운데로).
+  function applyInset(w, h) {
+    var b = App.inset || 0;
+    if (b > 0) App.camera.setViewOffset(w, h, 0, h * b * 0.5, w, h); else App.camera.clearViewOffset();
   }
   // 그리기 고리 다시 돌리기(감상 모드는 멈춰 있을 때 rAF 를 쉰다)
   function kick() {
@@ -297,6 +303,12 @@
     setPraying: function (o) { if (App.meAv && App.me.mode !== 'walk') App.meAv.setPray(!!o.on); },
     // 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 손에 든다. 다른 사람의 묵주는 peerPraying 의 r.
     setRosary: function (o) { App.rosary = !!(o && o.on); if (App.meAv) App.meAv.setRosary(App.rosary); },
+    // 아래 패널 비율(0..0.6). 켜져 있는 동안 앉아도 '자리 시점'(아바타를 화면 아래로 두는 시점)을 쓰지 않아 아바타가 패널 위에 보인다.
+    setViewInset: function (o) {
+      App.inset = Math.max(0, Math.min(0.6, +(o && o.bottom) || 0));
+      if (App.inset && App.spot && App.spot.seat) App.spot = null;
+      if (App.camera) { applyInset(root.innerWidth || 360, root.innerHeight || 640); App.camera.updateProjectionMatrix(); kick(); }
+    },
     // 기도 자세 고르기. 앉아 있지 않으면 무시한다(다음에 앉아도 적용하지 않는다: 앉은 뒤 Flutter 가 다시 보낸다).
     setPrayerPosture: function (o) {
       var me = App.me, p = o && o.posture === 'kneel' ? 'kneel' : 'sit';
@@ -335,6 +347,13 @@
     cancelWalk: function () { cancelWalk('api'); },
     // Flutter 가 왼쪽 절반 터치를 가로채므로, 거기서 일어난 탭을 화면 좌표(CSS px)로 넘겨 받는다.
     tapAt: function (o) { tapAt(+o.x, +o.y); },
+    // 앱 입력 연동: {ext} 앱이 고정 이동 손잡이를 그림(웹 스틱 끔), {pinch,k} 앱이 대신 처리하는 두 손가락 확대(controls.js)
+    setInput: function (o) {
+      var c = App.ctl; if (!c || !o) return;
+      if (o.ext !== undefined) { c.ext = !!o.ext; if (c.ext) c.setMoveZone(false); }
+      if (o.pinch !== undefined) c.extPinch = !!o.pinch;
+      if (o.k !== undefined) c.pinchBy(o.k);
+    },
     setSeatTaken: function (o) {
       if (!App.net || !o.seat) return;
       App.net.occ[o.seat] = o.id || '?';
@@ -524,7 +543,7 @@
     var sf = App.sitF;
     ctl.now = App.t;
     // 자리 시점: 앉거나 무릎 꿇으면(좌석 방향) 또는 기도 자리에 도착하면(App.spot). 화면을 끌면 그 자리에서 끝(수동 조작).
-    if (seated && !App.spotSeat) { App.spotSeat = true; if (me.seat) App.spot = { yaw: App.logic.seatInfo(me.seat).yaw, t0: App.t, seat: true }; }
+    if (seated && !App.spotSeat) { App.spotSeat = true; if (me.seat && !App.inset) App.spot = { yaw: App.logic.seatInfo(me.seat).yaw, t0: App.t, seat: true }; }
     else if (!seated && App.spotSeat) { App.spotSeat = false; if (App.spot && App.spot.seat) App.spot = null; }
     var SP = App.spot;
     if (SP && (ctl.dragging || ctl.lastDragT > SP.t0)) SP = App.spot = null;

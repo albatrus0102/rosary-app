@@ -8,7 +8,7 @@
     B = 윤곽까지 부호 거리), zmax(m) }
 깊이 = 실루엣 부풀림 + 그림 밝기의 대역 통과(옷 주름·얼굴·손의 요철). 외부 모델 없이 그림만으로 만든다.
  1) 부풀림: 실루엣 안에서 ∇²h = -2 (가장자리 h=0)를 풀고 sqrt(h) → 폭 w 인 띠의 단면이 반지름 w/2 반원(머리·팔·몸통이
-    폭에 따라 저절로 둥글어진다). 몸통처럼 넓은 곳은 tanh 로 눌러 앞뒤 두께를 실제 성상 비율(앞쪽 반 ≈ 0.12–0.15m)로.
+    폭에 따라 저절로 둥글어진다). 몸통처럼 넓은 곳은 tanh 로 눌러 앞뒤 두께를 실제 성상 비율(앞쪽 반 ≈ 0.15m)로.
  2) 요철: 밝기(HSV 명도 — 푸른 망토가 흰 옷보다 '꺼져' 보이지 않게)의 대역 통과(σ 1.5–10px, 10–40px)를 더한다.
     밝은 곳 = 앞으로, 그늘진 주름 골 = 안으로. 가장자리 8px 안에서는 0 으로 줄여 실루엣이 찢어지지 않게.
  3) 디라이팅: 그림에 구운 큰 음영(σ 40px)을 일부(45%) 나눠 빼 실시간 조명과 겹치지 않게. 잔주름 음영은 남긴다(메시가 못 그리는 세부).
@@ -28,7 +28,7 @@ STATUES = {
 H_M = 1.42                 # 성상 높이(m) — shrine.js STATUE.H 와 같게
 DW, DH = 112, 224          # 깊이 격자(정점 하나 = 픽셀 하나)
 WW, WH = 256, 512          # 깊이 계산 해상도
-FRONT = 0.17               # 넓은 몸통의 앞쪽 반 두께 상한(m, tanh 무릎)
+FRONT = 0.2                # 넓은 몸통의 앞쪽 반 두께 상한(m, tanh 무릎)
 DETAIL = (0.018, 0.022)    # 밝기 대역 통과 두 층의 세기(m / 명도 1.0)
 
 
@@ -68,7 +68,7 @@ def build(key, preview=None):
     # --- 1) 부풀림 ---
     h = poisson_inflate(mask)
     r = np.sqrt(h) * m_per_px                          # 반원 단면 높이(m)
-    base = FRONT * np.tanh(r * 0.7 / FRONT)           # 좁은 곳(머리·팔)은 반원의 0.7배, 넓은 몸통은 FRONT 에 수렴
+    base = FRONT * np.tanh(r * 0.8 / FRONT)           # 좁은 곳(머리·팔)은 반원의 0.8배, 넓은 몸통은 FRONT 에 수렴
     # --- 2) 요철 ---
     g = lambda s: ndimage.gaussian_filter(valf, s)
     b1, b2 = g(1.5) - g(10), g(10) - g(40)
@@ -105,6 +105,12 @@ def build(key, preview=None):
     gain = (np.clip(big, 0.2, 1) / np.mean(big[cm])) ** -0.45
     col = np.clip(c[..., :3] * gain[..., None], 0, 1)
     col = col[cy, cx]                                   # 실루엣 밖 RGB = 가장 가까운 가장자리 색(필터링 시 검은 테 없음, 옆면은 가장자리 색이 늘어남)
+    # 두꺼운 몸(몸통·팔·머리)은 알파를 반 칸쯤 넓혀 실루엣을 메시 가장자리(윤곽에 붙인 정점)가 정하게 한다 — 가파른 옆면에서
+    # 알파 경계가 잘리면 옆에서 볼 때 톱니가 된다. 별 관·손가락 틈처럼 가는 곳은 원래 알파 그대로(메시 격자보다 가늘다).
+    disk = lambda r: (np.hypot(*np.mgrid[-r:r + 1, -r:r + 1]) <= r)
+    thick = ndimage.binary_opening(cm, disk(6))
+    grow = ndimage.binary_dilation(thick, disk(4))
+    ca = np.maximum(ca, ndimage.gaussian_filter(grow.astype(float), 0.7))
     out = np.dstack([col, ca])
     cbuf = io.BytesIO()
     Image.fromarray(np.round(out * 255).astype(np.uint8), 'RGBA').save(cbuf, 'WEBP', quality=80, alpha_quality=90, method=6, exact=True)

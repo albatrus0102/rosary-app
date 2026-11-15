@@ -81,6 +81,11 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   AuthGateStage? _lastStage;
   late GuestStartController _guest;
 
+  /// 본문을 한 번 보였고 아직 살려 두는가. 본문을 보이던 중의 잠깐의 대기(splash: 앱이 다시 앞으로
+  /// 나올 때 세션을 새로 고치거나 게스트로 조용히 다시 이어지는 동안)에는 본문을 버리지 않고 가려만 둔다.
+  /// 버리면 성당이 입장 전 화면으로 돌아가고 기도 화면이 닫힌다. 로그인·동의 화면으로 가면 버린다.
+  bool _childAlive = false;
+
   bool get _configured =>
       widget.backendConfigured ?? BackendConfig.isConfigured;
 
@@ -142,6 +147,13 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
     final previous = _lastStage;
     _lastStage = stage;
     if (previous == null || previous == stage) return;
+    // 본문을 살려 둔 채 잠깐 기다리는 것은 화면 전환이 아니다(쌓인 화면을 그대로 둔다).
+    const transient = {AuthGateStage.child, AuthGateStage.splash};
+    if (_childAlive &&
+        transient.contains(previous) &&
+        transient.contains(stage)) {
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       Navigator.maybeOf(context)?.popUntil((r) => r.isFirst);
@@ -158,10 +170,17 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
       ]),
       builder: (context, _) {
         final stage = _stage();
+        if (stage == AuthGateStage.child) {
+          _childAlive = true;
+        } else if (stage != AuthGateStage.splash) {
+          _childAlive = false;
+        }
+        final showChild = stage == AuthGateStage.child;
         _afterStageChange(stage);
         _maybeStartGuest();
+        final page0 = widget.child;
         final Widget page = switch (stage) {
-          AuthGateStage.child => widget.child,
+          AuthGateStage.child => const SizedBox.shrink(),
           AuthGateStage.splash => const _Splash(),
           AuthGateStage.login => LoginScreen(authService: widget.authService),
           AuthGateStage.consent => ConsentScreen(
@@ -170,11 +189,28 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
           ),
           AuthGateStage.guestError => GuestStartErrorScreen(controller: _guest),
         };
-        return AnimatedSwitcher(
-          duration: AppMotion.of(context, Durations.medium2),
-          switchInCurve: Easing.emphasizedDecelerate,
-          switchOutCurve: Easing.emphasizedAccelerate,
-          child: KeyedSubtree(key: ValueKey(stage), child: page),
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            if (_childAlive)
+              Offstage(
+                key: const ValueKey('auth-gate-child'),
+                offstage: !showChild,
+                child: TickerMode(
+                  enabled: showChild,
+                  child: ExcludeFocus(excluding: !showChild, child: page0),
+                ),
+              ),
+            AnimatedSwitcher(
+              key: const ValueKey('auth-gate-stage'),
+              duration: AppMotion.of(context, Durations.medium2),
+              switchInCurve: Easing.emphasizedDecelerate,
+              switchOutCurve: Easing.emphasizedAccelerate,
+              child: showChild
+                  ? SizedBox.shrink(key: ValueKey(stage))
+                  : KeyedSubtree(key: ValueKey(stage), child: page),
+            ),
+          ],
         );
       },
     );
