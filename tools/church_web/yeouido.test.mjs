@@ -1,6 +1,7 @@
 // 여의도동성당(ch_yeouido.js) 전용 시험: 설계서(docs/church/interiors/yeouido.md §6)의 좌표가 실제 빌더에서 그대로 나오는지.
 //  좌석 162 · 걷기(입구 → 제대 앞·성모상 앞·14처·좌석, 누르기 이동으로 끝까지 걸어감) · 제단 출입 금지 구역 · 후진 바깥·뒷벽 막힘 ·
 //  14처 14곳(1처 = 왼쪽 벽 제대 쪽, 높은 창과 겹치지 않음, 푸겔 연작) · 전례 장식 12상태 · 성능 예산 상한 · 권리 지킴(사진·작품 모사 없음).
+//  2026-11-16 개정(사용자 사진): 높은 드럼 + 기둥 6 + 반원 3단 제단 + 큰 둥근 피어 + 정면 추상 색면 유리 + 성모상 제단 앞 왼쪽.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -56,7 +57,7 @@ test('yeouido: 걷기 — 입구에서 제대 앞·성모상 앞·옆 통로 앞
   assert.ok(free(lay.spawn.x, lay.spawn.z), '스폰');
   const st = S.stations();
   // 입구 → 제대 앞 / 성모상 앞 / 양쪽 옆 통로 제단 쪽 끝 / 맨 앞줄 끝: 누르기 이동으로 끝까지 걸어간다
-  const goals = [[st.altar.x, st.altar.z, '제대 앞'], [st.candle[0].x, st.candle[0].z, '성모상 앞'], [-9.5, -7.5, '왼쪽 제단 옆(정면 큰 창 앞)'], [9.5, -7.5, '오른쪽 제단 옆'], [-9.6, 18.5, '왼쪽 뒤 구석(성가대석 아래)']];
+  const goals = [[st.altar.x, st.altar.z, '제대 앞'], [st.candle[0].x, st.candle[0].z, '성모상 앞'], [-9.5, -7.5, '왼쪽 피어 옆(정면 벽 앞)'], [9.5, -7.5, '오른쪽 피어 옆'], [-9.6, 18.5, '왼쪽 뒤 구석(성가대석 아래)']];
   for (const [x, z, what] of goals) {
     assert.ok(S.isReachable(x, z), what + ' 에 닿지 않는다');
     const r = walkTo(lay.spawn, { x, z });
@@ -65,40 +66,47 @@ test('yeouido: 걷기 — 입구에서 제대 앞·성모상 앞·옆 통로 앞
   }
   // 왼쪽 → 오른쪽 옆 통로: 맨 앞(제단 계단 앞)과 맨 뒤(정문 앞) 두 길로 건넌다
   for (const [from, to] of [[{ x: -9.5, z: -4.5 }, { x: 9.5, z: -4.5 }], [{ x: -9.5, z: 15 }, { x: 9.5, z: 15 }]]) assert.ok(walkTo(from, to).ok, `${from.x},${from.z} → ${to.x},${to.z}`);
-  // 막힌 곳: 뒷벽(입구 문은 닫힘 — 밖으로 나가지 않는다), 후진 바깥 모서리, 정면 벽 뒤, 제대·감실·독서대·성수대
-  for (const [x, z, what] of [[0, 21.2, '뒷벽'], [-7, -12, '왼쪽 후진 바깥'], [7, -12, '오른쪽 후진 바깥'], [-5.2, -14.8, '후진 원 밖'], [0, -8.4, '제대'], [0, -12.7, '감실'], [-3.8, -7.6, '독서대'], [-2.4, 20.45, '성수대']]) assert.ok(!free(x, z), what);
+  // 막힌 곳: 뒷벽(입구 문은 닫힘 — 밖으로 나가지 않는다), 후진 바깥 모서리, 정면 벽 뒤, 제대·감실·독서대·피어·성수대
+  for (const [x, z, what] of [[0, 21.2, '뒷벽'], [-7, -12, '왼쪽 후진 바깥'], [7, -12, '오른쪽 후진 바깥'], [-5.2, -14.8, '후진 원 밖'], [0, -8.9, '제대'], [0, -13.4, '감실'], [-2.75, -8.15, '독서대'], [-7.55, -8.95, '왼쪽 피어'], [7.55, -8.95, '오른쪽 피어'], [-2.4, 20.45, '성수대']]) assert.ok(!free(x, z), what);
   for (const [x, z] of [[-6.5, -11], [6.5, -11], [-5.2, -14.8]]) assert.ok(!S.isReachable(x, z), `${x},${z} 에 닿는다`);
   // 제단 높이 0.6(3단), 신자석 홀은 0
   assert.ok(near(L.floorY(0, -8.0), 0.6)); assert.ok(near(L.floorY(0, -4.0), 0));
   const y = L.floorY(0, -6.0); assert.ok(y > 0.1 && y < 0.6, '계단 단 ' + y);
+  // 반원 제단: 축에서 첫 계단 발치 z −5.35, 옆으로 갈수록 뒤로 물러난다(x 4 에서 위 단 앞 가장자리 약 −7.07)
+  assert.ok(near(L.floorY(0, -5.2), 0) && L.floorY(0, -5.5) > 0.1, '축 위 첫 계단');
+  assert.ok(near(L.floorY(4.2, -6.5), 0) && near(L.floorY(4.2, -7.6), 0.6), 'x 4.2 의 둥근 앞 가장자리');
+  // 계단 끝(구역 밖 ±6.15…피어)에 올라설 틈이 없다: 걸어서 닿는 자리 중 바닥이 0 보다 높은 곳이 없다
+  for (let x = -8; x <= 8; x += 0.1) for (let z = -10; z <= -5; z += 0.1) if (free(x, z) && S.isReachable(x, z)) assert.ok(L.floorY(x, z) < 0.01, `계단 끝 틈 ${x.toFixed(1)},${z.toFixed(1)}`);
   assert.ok(c.colliders.length <= 60, '충돌체 ' + c.colliders.length);
 });
 
 test('yeouido: 제단 출입 금지 구역 — 제단·후진(제대·감실·십자가)은 막고, 제대 앞 자리는 첫 계단 앞', () => {
   assert.ok(rv && rv.zone, '구역');
-  for (const [x, z, what] of [[0, -8.4, '제대'], [0, -12.7, '감실'], [-3.8, -7.6, '독서대'], [3.4, -10.4, '사제석'], [0, -14.8, '후진 끝'], [-6.8, -8, '제단 왼쪽 끝']]) assert.ok(rv.inZone(x, z, 0) || !free(x, z), `${what} (${x},${z}) 가 구역 밖`);
+  for (const [x, z, what] of [[0, -8.9, '제대'], [0, -13.4, '감실'], [-2.75, -8.15, '독서대'], [2.05, -11.25, '사제석'], [0, -14.8, '후진 끝'], [-6.4, -9.2, '제단 왼쪽 끝 계단'], [6.4, -9.2, '제단 오른쪽 끝 계단']]) assert.ok(rv.inZone(x, z, 0) || !free(x, z), `${what} (${x},${z}) 가 구역 밖`);
   const st = S.stations();
   assert.equal(st.altar.how, 'axis');
   assert.ok(near(st.altar.x, 0), JSON.stringify(st.altar));
   assert.ok(st.altar.z > -5.4 && st.altar.z < -3.9, '제대 앞 자리 z ' + st.altar.z + '(첫 계단 -5.4 앞, 맨 앞줄 -3.8 뒤)');
   assert.ok(near(L.floorY(st.altar.x, st.altar.z), 0), '제대 앞 자리는 신자석 바닥 높이');
   assert.ok(!rv.inZone(st.altar.x, st.altar.z, 0.2));
-  // 제단 양옆(정면 큰 창 앞, |x| > 7.5)은 신자가 걷는 곳
-  for (const x of [-9.5, 9.5]) assert.ok(!rv.inZone(x, -8, 0.3), '제단 옆 ' + x);
+  // 피어 바깥(|x| > 9)과 성모상 자리는 신자가 걷는 곳. 구역 폭은 표(reverence_places.js)로 반원 제단 끝까지
+  for (const x of [-9.5, 9.5]) assert.ok(!rv.inZone(x, -8, 0.3), '피어 옆 ' + x);
+  assert.ok(rv.zone.halfW > 6 && rv.zone.halfW < 6.5, 'halfW ' + rv.zone.halfW);
 });
 
-test('yeouido: 스테이션 — 봉헌초 = 오른쪽 벽 입구 쪽 성모상 앞(Meshy 3D 성모상), 성수대 기도 자리는 없다', () => {
+test('yeouido: 스테이션 — 봉헌초 = 제단 앞 왼쪽 피어 앞 성모상(Meshy 3D 성모상, 신랑을 바라봄), 성수대 기도 자리는 없다', () => {
   const st = S.stations();
   assert.equal(st.candle.length, 1);
   const k = st.candle[0];
-  assert.ok(k.shrine && k.x > 8.6 && k.x < 9.6 && near(k.z, 14.5, 0.3), JSON.stringify(k));
+  assert.ok(k.shrine && near(k.x, -7.6, 0.3) && k.z > -6.3 && k.z < -5.2, JSON.stringify(k));
   assert.ok(S.free(k.x, k.z) && S.isReachable(k.x, k.z));
+  assert.ok(!rv.inZone(k.x, k.z, 0.5) && !rv.inZone(k.stand.x, k.stand.z, 0.5), '성모상·봉헌초는 제단 출입 금지 구역 밖');
   assert.notEqual(L.nearestCandleSlot(k.x, k.z, null), null);
   assert.equal(L.slots.length, 14);
   assert.equal(st.font.length, 0);
   const P = require('../../assets/church/shrine_places.js').yeouido;
-  assert.equal(P.kind, 'mary'); assert.equal(P.mesh, 'mary_meshy'); assert.equal(P.yaw, 270);
-  assert.ok(!free(10.7, 14.5), '성상 받침');
+  assert.equal(P.kind, 'mary'); assert.equal(P.mesh, 'mary_meshy'); assert.equal(P.yaw, 0);
+  assert.ok(!free(-7.6, -7.35), '성상 받침');
 });
 
 test('yeouido: 십자가의 길 14곳 — 1처 = 왼쪽 벽 제대 쪽, 14처 = 오른쪽 벽 제대 쪽, 높은 창 아래, 푸겔 연작(우리 본당과 공유)', () => {
@@ -121,7 +129,7 @@ test('yeouido: 십자가의 길 14곳 — 1처 = 왼쪽 벽 제대 쪽, 14처 = 
   assert.equal(CrossData.series.churches.yeouido, 'fugel');
 });
 
-test('yeouido: 창 14(옆벽 6 × 2 + 정면 큰 창 2), 무늬 없는 옅은 빛 유리 — 사진 창·장미창·빛줄기 없음, 작품 모사 없음', () => {
+test('yeouido: 창 14(옆벽 6 × 2 + 정면 색유리 2) — 옆벽은 옅은 빛 유리, 정면은 추상 색면, 사진 창·장미창·빛줄기 없음, 작품 모사 없음', () => {
   assert.equal(c.windows.length, 14);
   for (const s of [-1, 1]) {
     const ws = c.windows.filter((w) => Math.sign(w.x) === s && Math.abs(w.x) > 10);
@@ -131,8 +139,15 @@ test('yeouido: 창 14(옆벽 6 × 2 + 정면 큰 창 2), 무늬 없는 옅은 �
   }
   const front = c.windows.filter((w) => near(w.z, -10));
   assert.equal(front.length, 2);
-  // 유리 색은 모두 옅은 무채색(채도 낮음): 실제 유리화의 색·그림을 옮기지 않는다
-  for (const w of c.windows) for (const col of w.colors) {
+  // 정면 창: 추상 색면(사진의 색 분위기 — 파랑이 가장 많고 흰색·빨강이 섞임). 칸 색은 무작위(구도·그림을 옮기지 않는다), 피어와 드럼 사이
+  for (const w of front) {
+    assert.ok(w.pattern === 'lancet' && w.top === 'flat' && !w.photo && w.beam === false);
+    assert.ok(Math.abs(w.x) - w.w / 2 >= 5.5 - 1e-6 && Math.abs(w.x) + w.w / 2 <= 6.6, '창 x ' + w.x);
+    const blue = w.colors.filter((col) => (col & 255) > ((col >> 16) & 255) + 40).length;
+    assert.ok(blue * 2 >= w.colors.length, '파랑 위주');
+  }
+  // 옆벽 유리는 옅은 무채색(채도 낮음): 실제 창의 색·그림을 모른다
+  for (const w of c.windows.filter((q) => !near(q.z, -10))) for (const col of w.colors) {
     const r = (col >> 16) & 255, g = (col >> 8) & 255, b = col & 255;
     assert.ok(Math.max(r, g, b) - Math.min(r, g, b) < 50 && Math.min(r, g, b) > 180, '옅은 빛 유리 ' + col.toString(16));
   }
@@ -145,7 +160,7 @@ test('yeouido: 창 14(옆벽 6 × 2 + 정면 큰 창 2), 무늬 없는 옅은 �
 
 test('yeouido: 전례 장식 — 상태 12개가 제단 위 자리에 놓이고 스테이션·14처를 바꾸지 않는다', () => {
   const P = Liturgy.PLACES.yeouido;
-  assert.deepEqual([P.altar.x, P.altar.z, P.altar.y], [0, -8.4, 0.6]);
+  assert.deepEqual([P.altar.x, P.altar.z, P.altar.y], [0, -8.9, 0.6]);
   const STATES = {
     advent1: { season: 'advent', color: 'violet', week: 1 }, advent3: { season: 'advent', color: 'rose', week: 3 }, advent4: { season: 'advent', color: 'violet', week: 4 },
     christmas: { season: 'christmas', color: 'white', feast: 'christmas' }, lent: { season: 'lent', color: 'violet' }, laetare: { season: 'lent', color: 'rose', week: 4 },
@@ -166,7 +181,7 @@ test('yeouido: 전례 장식 — 상태 12개가 제단 위 자리에 놓이고 
     assert.equal(r2.plaques.length, 14, n);
   }
   const v = Liturgy.plan('yeouido', STATES.lent).items.find((i) => i.kind === 'veil');
-  assert.deepEqual([v.x, v.y, v.z, v.h], [0, 6.35, -15.43, 2.8], '가림천 = 빌더 십자가 자리');
+  assert.deepEqual([v.x, v.y, v.z, v.h], [0, 5.4, -14.14, 2.2], '가림천 = 드럼의 인물상 자리 표시');
 });
 
 test('yeouido: 성능 예산(고화질 빌드) — 묶음 메시·삼각형·점광원 1·스프라이트 0·반사 바닥 0', () => {

@@ -54,8 +54,8 @@
     danggogae: { keyK: 0, ambK: 0.58, ambTint: 0xffdcae, ambTintK: 1, expK: 0.95, envK: 0.34, lampK: 1.8, candleK: 1.3, beamK: 0, fogTint: 0x6b4a2a, fogTintK: 0.6, dust: 30, dustK: 0, dustNight: 0,
       sat: 0.98, warm: 0.06, vig: 0.3, con: 0.2, bloomT: 0.78, bloomS: 0.46, night: { ambK: 0.853, envK: 1.7, expK: 0.695, lampK: 1.9, fogTintK: 0.9 } },
     // 여의도동: 낮에는 옆벽 위 창과 정면 큰 창의 햇빛, 회녹색 홈 줄 콘크리트 벽과 크림색 후진. 후진 둘레·팔각 천장 간접등이 따뜻하게
-    yeouido: { keyK: 0.9, keyTint: 0xffe2bc, keyTintK: 0.25, ambK: 0.72, ambTint: 0xfff0dc, ambTintK: 0.2, expK: 0.9, envK: 0.8, beamK: 0.6, lampK: 1.6, candleK: 1.4, fogTint: 0x4a463c, fogTintK: 0.2, dust: 80,
-      sat: 0.98, warm: 0.05, vig: 0.26, con: 0.18, bloomT: 0.84, bloomS: 0.4, night: { lampK: 2.0, ambK: 0.85 } },
+    yeouido: { keyK: 0.9, keyTint: 0xffe2bc, keyTintK: 0.3, ambK: 0.72, ambTint: 0xffe6c4, ambTintK: 0.32, expK: 0.82, envK: 0.8, beamK: 0.6, lampK: 1.6, candleK: 1.4, fogTint: 0x4a463c, fogTintK: 0.2, dust: 80,
+      sat: 1.04, warm: 0.12, vig: 0.26, con: 0.22, bloomT: 0.84, bloomS: 0.4, night: { lampK: 2.0, ambK: 0.85 } },
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
     basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
   };
