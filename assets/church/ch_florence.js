@@ -824,7 +824,7 @@
         for (var s = -2; s <= 2; s++) { wbx({ x: s * 1.1, y: 1.6, z: -17.15, w: 0.9, h: 1.6, d: 0.08, color: WOOD_L }); wbx({ x: s * 1.1, y: 3.2, z: -17.15, w: 0.5, h: 0.5, d: 0.1, color: 0x4d3322, rz: 0.785 }); }
         ctx.box({ x: 0, y: 3.85, z: -17.4, w: 5.8, h: 0.16, d: 0.7, color: 0x2f1f14 });
         wbx({ x: 0, y: 0.75, z: -16.95, w: 1.0, h: 0.55, d: 0.6, color: WOOD_L }); wbx({ x: 0, y: 1.3, z: -17.15, w: 1.0, h: 1.0, d: 0.12, color: WOOD_L });
-        ctx.crucifix({ x: 0, y: 4.0, z: -17.2, h: 3.6, ry: 0 });
+        ctx.crucifix({ x: 0, y: 4.0, z: -17.2, h: 3.6, ry: 0, scan: true });   // 실물 스캔 채색 목조 십자고상(scan3d.js — 베네데토 다 마이아노 작품이 아닌 대용)
         colRect(-2.9, -17.95, 2.9, -16.7);
         ctx.addLight({ x: 0, y: 7, z: -14.5, color: 0xffd9a0, intensity: 1.0, distance: 24, kind: 'lamp' });
       })();

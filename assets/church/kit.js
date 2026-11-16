@@ -1136,9 +1136,42 @@
         ctx.addCollider({ x: lx, z: z, r: 0.2 });
       }
     };
+    // ---- 실물 스캔 성상(scan3d.js) ----
+    // ctx.lateDraw(fn, name): 묶음이 이미 메시가 된 뒤(빌드 후 비동기)에 fn 의 절차 생성(ctx.box·cyl·statue·solid.addBeam …)을
+    // 따로 모아 메시로 세운다. 묶음 객체는 그대로 두고 안의 배열만 잠시 바꿔 끼우므로 빌더가 붙잡아 둔 solid 같은 참조도 따라온다.
+    // 표면 질감 묶음·빛 번짐 스프라이트·AO 는 다루지 않는다(스캔 실패 때의 대체 그림용).
+    ctx.lateDraw = function (fn, name) {
+      var keys = ['solid', 'gloss', 'wood', 'metal', 'glow'], saved = {};
+      keys.forEach(function (k) { var b = B_[k]; saved[k] = [b.p, b.n, b.c, b.u, b.vertexCount]; b.p = []; b.n = []; b.c = []; if (b.u) b.u = []; b.vertexCount = 0; });
+      try { fn(); } catch (e) { if (root.console) console.warn('[church] lateDraw', e); }
+      keys.forEach(function (k) {
+        var b = B_[k], nb = new G.Batch(1), sv = saved[k];
+        nb.p = b.p; nb.n = b.n; nb.c = b.c; nb.u = b.u; nb.uvTile = b.uvTile; nb.vertexCount = b.vertexCount;
+        b.p = sv[0]; b.n = sv[1]; b.c = sv[2]; b.u = sv[3]; b.vertexCount = sv[4];
+        if (!nb.p.length) return;
+        var grp = nb.build(mats[k], (name || 'late') + '_' + k, { cast: false, receive: true });
+        if (k === 'glow') grp.children.forEach(function (m) { m.renderOrder = 1; });
+        ctx.root.add(grp); stats.meshes += grp.children.length;
+      });
+    };
+    // ctx.scan(o, fallback): 실물 스캔 성상(o.key — scan3d.js PACKS)을 세운다. 세우면 true(fallback 은 묶음이 늦게 실패할 때만 lateDraw 로),
+    // 못 세우면(node 시험·?scan3d=0) fallback 을 지금 그리고 false.
+    ctx.scan = function (o, fallback) {
+      var S3 = root.ChurchScan3D;
+      if (S3 && S3.place(ctx, o, fallback ? function () { ctx.lateDraw(fallback, 'scan_fallback_' + o.key); } : null)) return true;
+      if (fallback) fallback();
+      return false;
+    };
+    // o.scan: 실물 스캔 십자고상(채색 목조, scan3d_crucifix.js)으로 — 높이 h·발치 y·뒷면 자리는 절차 생성 십자가와 같다.
     ctx.crucifix = function (o) {
       var x = o.x, y = o.y, z = o.z, h = num(o.h, 3.6), ry = num(o.ry, 0), wood = 0x5a3822;
       var ca = Math.cos(ry), sa = Math.sin(ry);
+      if (o.scan) {
+        var placed = ctx.scan({ key: 'crucifix', x: x, y: y, z: z, ry: ry, h: h, backAt: h * 0.03, name: 'scan3d_crucifix' }, function () { ctx.crucifix(Object.assign({}, o, { scan: false, glow: false })); });
+        // 빛 번짐: 스캔은 가로대 높이(0.78h), 십자가 뒤(몸을 덮지 않게). 못 세우면 예전 자리.
+        if (o.glow !== false) { var gk = placed ? -0.02 * h : 0.3; ctx.addGlow({ x: x + sa * gk, y: y + h * (placed ? 0.78 : 0.62), z: z + ca * gk, size: h * 1.1, color: 0xffe2a0, kind: 'always' }); }
+        return;
+      }
       function pt(lx, lz) { return [x + lx * ca + lz * sa, z - lx * sa + lz * ca]; }
       ctx.box({ x: x, y: y, z: z, w: h * 0.08, h: h, d: h * 0.06, color: wood, ry: ry, mat: 'wood' });
       ctx.box({ x: x, y: y + h * 0.62, z: z, w: h * 0.56, h: h * 0.07, d: h * 0.06, color: wood, ry: ry, mat: 'wood' });

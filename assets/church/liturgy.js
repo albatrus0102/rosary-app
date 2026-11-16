@@ -29,7 +29,7 @@
   var PLACES = {
     basic: {
       k: 1.15, altar: { x: 0, z: -17, y: 0.5, w: 2.6, d: 1.1, h: 1.0 },
-      ambo: { x: -4.6, z: -16, y: 0.5 }, tab: { x: 5, z: -18.4, y: 0.5 }, cross: { x: 0, y: 3.4, z: -19.7, h: 3.4 },
+      ambo: { x: -4.6, z: -16, y: 0.5 }, tab: { x: 5, z: -18.4, y: 0.5 }, cross: { x: 0, y: 3.4, z: -19.7, h: 3.4, scan: 1 },
       L: { x: 3.4, z: -16.2, y: 0.5 }, R: { x: -3.05, z: -16.25, y: 0.5 }
     },
     danggogae: {
@@ -50,7 +50,7 @@
     },
     florence: {
       k: 1.05, altar: { x: 0, z: -15.7, y: 0.75, w: 2.6, d: 1.0, h: 1.0 },
-      ambo: { x: 3.0, z: -14.9, y: 0.75 }, cross: { x: 0, y: 4.0, z: -17.2, h: 3.6 },
+      ambo: { x: 3.0, z: -14.9, y: 0.75 }, cross: { x: 0, y: 4.0, z: -17.2, h: 3.6, scan: 1 },
       L: { x: -3.55, z: -12.9, y: 0.3 }, R: { x: 3.55, z: -12.9, y: 0.3 }
     },
     lateran: {
@@ -67,7 +67,7 @@
     },
     myeongdong: {
       k: 1.1, altar: { x: 0, z: -14.2, y: 0.6, w: 2.4, d: 1.0, h: 1.0 },
-      ambo: { x: 1.9, z: -12.2, y: 0.6 }, cross: { x: 3.5, y: 1.15, z: -13.0, h: 4.4 },
+      ambo: { x: 1.9, z: -12.2, y: 0.6 }, cross: { x: 3.5, y: 1.15, z: -13.0, h: 4.4, scan: 1 },
       // 왼쪽 설교대·오른쪽 독서대와 십자가 사이: 표지와 구유는 제대 앞 왼쪽(난간 안), 트리는 설교대 뒤
       L: { x: -1.5, z: -12.45, y: 0.6, s: 0.72 }, R: { x: -1.62, z: -12.45, y: 0.6, s: 0.62 }, T: { x: -2.9, z: -15.3, y: 0.6 }, pots: [[-1.2, -13.4, 0.6], [1.2, -13.4, 0.6]]
     },
@@ -136,7 +136,7 @@
       pots('poinsettia');
     } else if (s.season === 'lent' || s.season === 'triduum') {
       // 십자고상을 가리고(성금요일은 붉은 천), 보라 천을 두른 십자가를 세운다. 꽃은 두지 않는다.
-      if (P.cross) items.push({ kind: 'veil', x: P.cross.x, y: P.cross.y, z: P.cross.z, h: P.cross.h, color: c === 'rose' || c === 'white' ? 'violet' : c });
+      if (P.cross) items.push({ kind: 'veil', x: P.cross.x, y: P.cross.y, z: P.cross.z, h: P.cross.h, scan: !!P.cross.scan, color: c === 'rose' || c === 'white' ? 'violet' : c });
       spot(P.L, 'lentcross', 0.42, { color: c === 'rose' || c === 'white' ? 'violet' : c });
     } else if (s.season === 'easter') {
       spot(P.L, 'paschal', 0.45);
@@ -225,14 +225,15 @@
         box(metal, GOLD, it.x, it.y + 1.42, zf + 0.012, 0.13, 0.03, 0.02);
       },
       // 십자고상 가림천: 십자가 모양대로 감싼다(세로 기둥 + 가로 팔 + 팔 끝에서 드리운 자락). 앞면에 세로 주름.
+      // it.scan: 실물 스캔 십자고상(scan3d_crucifix.js — 가로대가 높고(0.8h) 팔이 넓고(±0.33h) 몸이 앞으로 0.16h 나온다)에 맞춘 비례.
       veil: function (it) {
-        var h = it.h, c = col(it.color), zc = it.z + h * 0.0325, dd = h * 0.145, zf = it.z + h * 0.108;
-        var y0 = it.y + h * 0.12, y1 = it.y + h * 1.04, ya = it.y + h * 0.5, yb = it.y + h * 0.75;
-        box(cloth, c, it.x, y0, zc, h * 0.2, y1 - y0, dd);
-        box(cloth, c, it.x, ya, zc, h * 0.64, yb - ya, dd);
-        [-1, 1].forEach(function (s) { box(cloth, c, it.x + s * h * 0.285, ya - h * 0.11, zc, h * 0.07, h * 0.11, dd * 0.9); });
-        drape(c, it.x, y0, ya, zf, function () { return h * 0.1; }, { n: 4, rows: 2, amp: h * 0.006 });
-        drape(c, it.x, ya, yb, zf, function () { return h * 0.32; }, { n: 10, rows: 1, amp: h * 0.006 });
+        var sc = !!it.scan, h = it.h, c = col(it.color), zc = it.z + h * (sc ? 0.065 : 0.0325), dd = h * (sc ? 0.215 : 0.145), zf = it.z + h * (sc ? 0.175 : 0.108);
+        var y0 = it.y + h * (sc ? 0.1 : 0.12), y1 = it.y + h * (sc ? 1.03 : 1.04), ya = it.y + h * (sc ? 0.66 : 0.5), yb = it.y + h * (sc ? 0.9 : 0.75), aw = h * (sc ? 0.74 : 0.64), ax = h * (sc ? 0.33 : 0.285);
+        box(cloth, c, it.x, y0, zc, h * (sc ? 0.22 : 0.2), y1 - y0, dd);
+        box(cloth, c, it.x, ya, zc, aw, yb - ya, dd);
+        [-1, 1].forEach(function (s) { box(cloth, c, it.x + s * ax, ya - h * 0.11, zc, h * 0.07, h * 0.11, dd * 0.9); });
+        drape(c, it.x, y0, ya, zf, function () { return h * (sc ? 0.11 : 0.1); }, { n: 4, rows: 2, amp: h * 0.006 });
+        drape(c, it.x, ya, yb, zf, function () { return aw / 2; }, { n: 10, rows: 1, amp: h * 0.006 });
         drape(c, it.x, yb, y1, zf, function () { return h * 0.1; }, { n: 4, rows: 1, amp: h * 0.006 });
       },
       // 보라(성금요일: 붉은) 천을 두른 나무 십자가
