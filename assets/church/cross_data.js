@@ -111,7 +111,7 @@
     "title": "게프하르트 푸겔 〈십자가의 길〉"
    },
    "previati": {
-    "file": "cross_pack_previati.js",
+    "file": "dev/cross_pack_previati.js",
     "title": "가에타노 프레비아티 〈십자가의 길〉"
    },
    "oreilly": {

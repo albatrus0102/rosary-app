@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../app/app_services.dart';
 import '../app/leader_voice.dart';
+import '../app/release_gate.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../auth/account_screen.dart';
@@ -196,11 +197,12 @@ class MoreScreen extends StatelessWidget {
                       title: Text('기도문 출처'),
                       subtitle: Text(prayerSourceNote),
                     ),
-                    const ListTile(
-                      leading: Icon(Icons.record_voice_over_outlined),
-                      title: Text('합성 음성 안내'),
-                      subtitle: Text('$aiVoiceDisclosure\n$aiVoiceNotice'),
-                    ),
+                    if (ReleaseGate.aiVoiceClips)
+                      const ListTile(
+                        leading: Icon(Icons.record_voice_over_outlined),
+                        title: Text('합성 음성 안내'),
+                        subtitle: Text('$aiVoiceDisclosure\n$aiVoiceNotice'),
+                      ),
                     ListTile(
                       leading: const Icon(Icons.description_outlined),
                       title: const Text('이용약관'),

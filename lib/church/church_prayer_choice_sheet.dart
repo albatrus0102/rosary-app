@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../ui/widgets/rosary_glyph.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
@@ -300,20 +301,12 @@ class _RosaryThumb extends StatelessWidget {
         shape: const CircleBorder(),
       ),
       child: ClipOval(
-        child: Image.asset(
-          style.fullImage,
-          key: const ValueKey('pray-rosary-image'),
-          width: 48,
-          height: 48,
+        child: RosaryStyleImage(
+          style: style,
+          size: 48,
+          imageKey: const ValueKey('pray-rosary-image'),
           cacheWidth: 144,
           fit: BoxFit.cover,
-          excludeFromSemantics: true,
-          errorBuilder: (context, error, stack) => Icon(
-            Icons.blur_circular,
-            key: const ValueKey('pray-rosary-icon'),
-            size: 28,
-            color: scheme.onSurfaceVariant,
-          ),
         ),
       ),
     );

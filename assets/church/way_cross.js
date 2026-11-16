@@ -262,8 +262,14 @@
       var S = root.ChurchCrossData && root.ChurchCrossData.series;
       return S && S.packs && S.packs[S.default] ? S : { default: 'fugel', churches: {}, packs: { fugel: { file: 'cross_pack.js' } } };
     }
+    // 검수용(출시) 빌드: 바티칸 박물관 소장품 사진(프레비아티)은 숨기고 다른 공공 소유 연작으로 바꾼다.
+    // 주소에 devglass=1 이 있는 개발용 빌드에서만 원래 배정을 쓴다(Flutter 의 ReleaseGate.hiddenStationSeriesIds·
+    // stationSeriesOverrides 와 같아야 한다). 그 팩(dev/cross_pack_previati.js)은 배포 APK 에 없다.
+    var HIDDEN_SERIES = { previati: 'oreilly' };
+    function devBuild() { try { return /[?&]devglass=1(&|$)/.test((root.location && root.location.search) || ''); } catch (e) { return false; } }
     function seriesFor(churchId) {
       var S = conf(), id = S.churches && S.churches[churchId];
+      if (id && HIDDEN_SERIES[id] && !devBuild()) id = HIDDEN_SERIES[id];
       if (!id || !S.packs[id]) id = S.default;
       return { id: id, file: S.packs[id].file, isDefault: id === S.default };
     }

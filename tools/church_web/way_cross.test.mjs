@@ -224,3 +224,14 @@ test('series loader: falls back to the default series when a pack fails; rejects
   const root3 = { ChurchCrossData: { stations: [] } };
   assert.equal(WayCross.packLoader(root3, fakeDoc(root3)).seriesFor('milan').id, 'fugel');
 });
+
+test('series loader: 검수용(출시) 빌드는 프레비아티 대신 oreilly, devglass=1 이면 원래 배정', () => {
+  assert.equal(CrossData.series.churches.stpeter, 'previati');
+  const rel = WayCross.packLoader({ ChurchCrossData: CrossData, console: { warn() {} } }, null);
+  assert.equal(rel.seriesFor('stpeter').id, 'oreilly');
+  assert.equal(rel.seriesFor('lateran').id, 'oreilly');
+  const dev = WayCross.packLoader({ ChurchCrossData: CrossData, location: { search: '?devglass=1&church=stpeter' }, console: { warn() {} } }, null);
+  assert.equal(dev.seriesFor('stpeter').id, 'previati');
+  // 프레비아티 팩은 개발용 폴더에만 있다(배포 번들 밖)
+  assert.equal(CrossData.series.packs.previati.file, 'dev/cross_pack_previati.js');
+});

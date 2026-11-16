@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app/bundled_leader_voice.dart';
+import '../app/release_gate.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/settings.dart';
@@ -719,7 +720,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: SegmentedButton<LeaderVoiceSource>(
                           showSelectedIcon: false,
                           segments: [
+                            // 검수용(출시) 빌드에서는 AI 음성 칸을 뺀다(ReleaseGate.aiVoiceClips).
                             for (final v in LeaderVoiceSource.values)
+                              if (v != LeaderVoiceSource.bundled ||
+                                  ReleaseGate.aiVoiceClips)
                               ButtonSegment(
                                 value: v,
                                 label: Text(
@@ -751,8 +755,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: Text(
-                                '직접 녹음은 후창 모드의 앞단에만 쓰입니다. '
-                                '선창 모드의 뒷단은 AI 음성으로 들려 드려요',
+                                ReleaseGate.aiVoiceClips
+                                    ? '직접 녹음은 후창 모드의 앞단에만 쓰입니다. '
+                                          '선창 모드의 뒷단은 AI 음성으로 들려 드려요'
+                                    : '직접 녹음은 후창 모드의 앞단에만 쓰입니다. '
+                                          '선창 모드의 뒷단은 기기 음성으로 들려 드려요',
                                 style: dim,
                               ),
                             ),
@@ -956,11 +963,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: const Text('기도문 출처'),
           subtitle: const Text(SettingsScreen.prayerSourceNote),
         ),
-        const ListTile(
-          leading: Icon(Icons.record_voice_over_outlined),
-          title: Text('합성 음성 안내'),
-          subtitle: Text(aiVoiceDisclosure),
-        ),
+        if (ReleaseGate.aiVoiceClips)
+          const ListTile(
+            leading: Icon(Icons.record_voice_over_outlined),
+            title: Text('합성 음성 안내'),
+            subtitle: Text(aiVoiceDisclosure),
+          ),
         ListTile(
           leading: const Icon(Icons.description_outlined),
           title: const Text('오픈소스 라이선스'),

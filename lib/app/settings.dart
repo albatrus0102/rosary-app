@@ -10,6 +10,7 @@ import '../domain/prayer_mode.dart';
 import '../domain/prayer_music_tracks.dart';
 import '../rosary3d/rosary_model.dart';
 import 'leader_voice.dart';
+import 'release_gate.dart';
 import 'rosary_style.dart';
 
 /// 기도문 본문 글꼴: 고딕(번들 Pretendard, 기본) 또는 기기 시스템 글꼴.
@@ -492,7 +493,13 @@ class AppSettings extends ChangeNotifier {
   bool get leaderAudioEnabled => _leaderAudioEnabled;
 
   /// 후창 모드의 선창 소스(기본: 자연스러운 음성).
-  LeaderVoiceSource get leaderVoiceSource => _leaderVoiceSource;
+  /// 상대 목소리의 소스. 검수용(출시) 빌드에서는 AI 음성(`bundled`)을 고른 저장값도 기기 음성으로 읽는다
+  /// ([ReleaseGate.aiVoiceClips]). 저장값은 건드리지 않는다.
+  LeaderVoiceSource get leaderVoiceSource =>
+      _leaderVoiceSource == LeaderVoiceSource.bundled &&
+          !ReleaseGate.aiVoiceClips
+      ? LeaderVoiceSource.tts
+      : _leaderVoiceSource;
 
   /// 'AI 음성(고품질)'의 화자(기본: 여성 목소리).
   LeaderVoicePersona get leaderPersona => _leaderPersona;
@@ -548,7 +555,7 @@ class AppSettings extends ChangeNotifier {
   }
 
   set leaderVoiceSource(LeaderVoiceSource v) {
-    if (v == _leaderVoiceSource) return;
+    if (v == leaderVoiceSource) return;
     _leaderVoiceSource = v;
     _prefs.setString(_kLeaderVoiceSource, v.name);
     notifyListeners();

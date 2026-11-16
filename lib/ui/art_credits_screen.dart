@@ -89,7 +89,7 @@ class ArtCreditsScreen extends StatelessWidget {
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
                   child: Column(
-                    children: [for (final c in mysteryArtCredits) tile(c)],
+                    children: [for (final c in visibleMysteryArtCredits) tile(c)],
                   ),
                 ),
                 const SectionHeader('기도 음악(성가)'),

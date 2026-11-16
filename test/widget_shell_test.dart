@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/app_services.dart';
 import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/settings.dart';
@@ -348,7 +349,11 @@ void main() {
     await tester.tap(_nav('더보기'));
     await tester.pumpAndSettle();
     expect(find.text(appUnofficialNotice), findsOneWidget);
-    expect(find.textContaining(aiVoiceNotice), findsOneWidget);
+    // 검수용(출시) 빌드는 AI 음성 안내를 보이지 않는다(ReleaseGate.aiVoiceClips).
+    expect(
+      find.textContaining(aiVoiceNotice),
+      ReleaseGate.aiVoiceClips ? findsOneWidget : findsNothing,
+    );
   });
 
   testWidgets('묵주 그림·설정 열기 버튼은 새 화면을 연다', (tester) async {

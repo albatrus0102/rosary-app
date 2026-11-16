@@ -5,6 +5,10 @@
 // 원본은 `data/stations_series.json`, `stations_series_data.dart`는 생성 파일이다
 // (`python3 tools/stations/build_stations.py`). 그림 파일은 `tools/stations/build_series.py`가 만든다.
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
+import '../app/release_gate.dart';
+
 part 'stations_series_data.dart';
 
 /// 번들에 허용하는 라이선스(이 밖의 것은 생성기가 거부한다).
@@ -103,10 +107,30 @@ class StationsSeries {
 
 /// 연작 목록과 성당 id → 연작 배정.
 abstract final class StationsSeriesCatalog {
-  static const List<StationsSeries> all = _series;
+  /// 지금 빌드에서 보여도 되는 연작. 검수용(출시) 빌드에서는 [ReleaseGate.hiddenStationSeriesIds]를 뺀다.
+  static List<StationsSeries> get all => ReleaseGate.showAll
+      ? _series
+      : [
+          for (final s in _series)
+            if (ReleaseGate.stationSeriesVisible(s.id)) s,
+        ];
 
-  /// 성당 id → 연작 id.
-  static const Map<String, String> assignments = _assignments;
+  /// 숨긴 연작까지 모두(생성 파일 대조·권리 점검 시험용). 화면에는 쓰지 않는다.
+  @visibleForTesting
+  static const List<StationsSeries> allIncludingHidden = _series;
+
+  /// 성당 id → 연작 id(원본 배정). 숨긴 연작은 [forChurch]가 대체 연작으로 바꾼다.
+  static const Map<String, String> sourceAssignments = _assignments;
+
+  /// 성당 id → 지금 빌드에서 쓰는 연작 id.
+  static Map<String, String> get assignments => ReleaseGate.showAll
+      ? _assignments
+      : {
+          for (final e in _assignments.entries)
+            e.key: ReleaseGate.stationSeriesVisible(e.value)
+                ? e.value
+                : (ReleaseGate.stationSeriesOverrides[e.key] ?? _defaultSeriesId),
+        };
 
   /// 그림을 보여 주는 모든 곳에 함께 적는 안내.
   static const String disclosure = _disclosure;
@@ -114,10 +138,13 @@ abstract final class StationsSeriesCatalog {
   /// 기본 연작(배정이 없는 성당·성당 밖).
   static StationsSeries get fallback => byId(_defaultSeriesId);
 
-  static StationsSeries byId(String? id) => all.firstWhere(
-    (s) => s.id == id,
-    orElse: () => all.firstWhere((s) => s.id == _defaultSeriesId),
-  );
+  static StationsSeries byId(String? id) {
+    final visible = all;
+    return visible.firstWhere(
+      (s) => s.id == id,
+      orElse: () => visible.firstWhere((s) => s.id == _defaultSeriesId),
+    );
+  }
 
   /// [churchId] 성당에 거는 연작(모르는 성당이면 기본 연작).
   static StationsSeries forChurch(String? churchId) =>

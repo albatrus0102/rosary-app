@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/leader_audio_store.dart';
 import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/settings.dart';
@@ -154,7 +155,12 @@ void main() {
   ) async {
     SharedPreferences.setMockInitialValues({'prayer_mode': 'responder'});
     final settings = await AppSettings.load();
-    expect(settings.leaderVoiceSource, LeaderVoiceSource.bundled);
+    expect(
+      settings.leaderVoiceSource,
+      ReleaseGate.aiVoiceClips
+          ? LeaderVoiceSource.bundled
+          : LeaderVoiceSource.tts,
+    );
     final voice = FakeLeaderVoice();
 
     await tester.pumpWidget(

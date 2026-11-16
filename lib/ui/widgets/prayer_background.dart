@@ -20,13 +20,15 @@ class PrayerBackground extends StatelessWidget {
     this.enabled = true,
   });
 
-  final MysteryArt art;
+  /// null 이면 그림 없이 child 만 그린다(검수용 빌드에서 숨긴 그림).
+  final MysteryArt? art;
   final Widget child;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    if (!enabled) return child;
+    final art = this.art;
+    if (!enabled || art == null) return child;
     final scheme = Theme.of(context).colorScheme;
     final width = MediaQuery.sizeOf(context).width;
     return Stack(

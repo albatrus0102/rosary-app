@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
+import '../app/release_gate.dart';
 import '../app/settings.dart';
 import '../app/window_class.dart';
 import 'church_catalog.dart';
-import 'dev_glass.dart';
 import 'net/church_loads.dart';
 
 /// 정렬 기준.
@@ -69,13 +69,12 @@ class ChurchSelectScreen extends StatefulWidget {
   };
 
   /// 교회 측 서면 동의를 기다리는 성당(docs/legal/church_permission/). 개발용 빌드에서만 연다.
-  /// 동의를 받으면 [releaseIds]로 옮긴다.
-  static const Set<String> pendingConsentIds = {'danggogae', 'yeouido'};
+  /// 목록의 원본은 [ReleaseGate.pendingConsentChurchIds]. 동의를 받으면 거기서 빼고 [releaseIds]로 옮긴다.
+  static const Set<String> pendingConsentIds =
+      ReleaseGate.pendingConsentChurchIds;
 
   /// 지금 빌드에서 들어갈 수 있는 성당 id. 나머지는 목록에 '준비 중'으로 보인다.
-  static Set<String> get availableIds => DevGlass.enabled
-      ? const {...releaseIds, ...pendingConsentIds}
-      : releaseIds;
+  static Set<String> get availableIds => ReleaseGate.openChurchIds(releaseIds);
 
   final AppSettings settings;
 
@@ -110,7 +109,9 @@ class ChurchSelectScreen extends StatefulWidget {
 
   /// 성당마다 실제와 다른 점을 적은 고지([ChurchInfo.modelNote])가 있으면 그것만 보인다.
   static String _noteFor(ChurchInfo info) {
-    if (info.modelNote.isNotEmpty) return info.modelNote;
+    if (info.modelNote.isNotEmpty) {
+      return ReleaseGate.churchNote(info.id, info.modelNote);
+    }
     if (info.id == ChurchCatalog.defaultId) return '실제 성당이 아닌 가상의 본당입니다';
     return _note;
   }

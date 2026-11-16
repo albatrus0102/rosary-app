@@ -272,3 +272,9 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 
 - 우리 도구가 만든 것이 아니다(생성 스크립트 없음). 2026-10-30 초기 커밋(`3b400b6`, `8a0a9ba`)에 출처 기록 없이 들어왔고, 이미지 생성 AI 풍으로 보이나 도구·작성자·참고 이미지 여부를 확인할 수 없다.
 - 조사 결과·사용자 확인 항목·교체 경로(3D 렌더 프로토타입 `tools/rosary3d/render_stills.mjs`): `docs/legal/ROSARY_IMAGES_PROVENANCE.md`.
+
+## 앱 아이콘(`art/launcher_icon_src.png` → 안드로이드 mipmap·적응형 아이콘, iOS AppIcon)
+
+- 앱 아이콘: 사용자가 ChatGPT로 생성, 2026-11-16. 짙은 갈색 바탕 위 금색 묵주 고리와 십자가. `tools/make_launcher_icon.py` 가 크기별로 만든다(기본 Flutter 로고 = Google 상표를 대체, 법률 검토 M3).
+- 광택 3D 판(가짜 투명 체크무늬 바탕)은 쓰지 않았다.
+- 숨김 항목 전체: `lib/app/release_gate.dart`, `docs/legal/LEGAL_REVIEW_2026-11.md` 「검수용(출시) 빌드에서 숨긴 것」.

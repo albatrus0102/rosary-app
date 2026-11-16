@@ -3,6 +3,7 @@
 // 십자가의 길은 성당마다 다른 연작(대체 성화)을 쓰고, CC BY 연작은 촬영자·라이선스 링크·변경 여부 표기가 의무다
 // (`stations_series.dart`, 원자료 data/stations_series.json).
 
+import '../app/release_gate.dart';
 import 'prayer_music_tracks.dart';
 import 'stations_of_cross.dart';
 import 'stations_series.dart';
@@ -123,8 +124,16 @@ const List<ArtCredit> mysteryArtCredits = [
   ),
 ];
 
+/// 기도 배경 출처 줄 중 지금 빌드에서 보이는 것(검수용 빌드에서는 [ReleaseGate.hiddenMysteryArtCreditUses] 제외).
+List<ArtCredit> get visibleMysteryArtCredits => [
+  for (final c in mysteryArtCredits)
+    if (ReleaseGate.showAll ||
+        !ReleaseGate.hiddenMysteryArtCreditUses.contains(c.use))
+      c,
+];
+
 /// 십자가의 길 그림 연작 전부(성당별 대체 성화). 출처 화면이 연작마다 작가·촬영자·라이선스·변경 여부를 적는다.
-const List<StationsSeries> stationsSeriesCredits = StationsSeriesCatalog.all;
+List<StationsSeries> get stationsSeriesCredits => StationsSeriesCatalog.all;
 
 /// 기본 연작(푸겔): 성당 밖 묵상 시트·고통의 신비 3·4·5단 배경.
 const ArtCredit stationsArtCredit = ArtCredit(

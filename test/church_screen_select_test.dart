@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/church/church_catalog.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
@@ -147,7 +148,13 @@ void main() {
     );
     expect(find.text('설명 준비 중'), findsOneWidget);
     // 실제와 다른 점을 적은 고지가 그대로(앞에 다른 말 없이) 보인다
-    expect(find.text(info.modelNote, skipOffstage: false), findsOneWidget);
+    expect(
+      find.text(
+        ReleaseGate.churchNote(info.id, info.modelNote),
+        skipOffstage: false,
+      ),
+      findsOneWidget,
+    );
     expect(info.modelNote, startsWith('이 3D 성당은 실제 성 베드로 대성전과 같지 않습니다.'));
     expect(find.textContaining(info.kind), findsWidgets);
     expect(h.settings.churchId, 'basic');
@@ -824,7 +831,10 @@ void main() {
       final note = find.textContaining('실제 당고개 순교성지와 같지 않습니다');
       await tester.scrollUntilVisible(note, 200, scrollable: scroll);
       expect(note, findsOneWidget);
-      expect(find.text(info.modelNote), findsOneWidget);
+      expect(
+        find.text(ReleaseGate.churchNote(info.id, info.modelNote)),
+        findsOneWidget,
+      );
       expect(find.textContaining('작가의 작품은 싣지 않았습니다'), findsOneWidget);
       expect(find.textContaining('성지가 만들거나 승인한 모형이 아닙니다'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -881,7 +891,7 @@ void _modelNoteLayoutTests() {
         final scroll = find
             .descendant(of: sheet, matching: find.byType(Scrollable))
             .first;
-        final note = find.text(info.modelNote);
+        final note = find.text(ReleaseGate.churchNote(info.id, info.modelNote));
         await tester.scrollUntilVisible(note, 240, scrollable: scroll);
         // 고지의 맨 끝(승인 여부 문장)까지 내려간다
         await tester.drag(scroll, const Offset(0, -6000));
