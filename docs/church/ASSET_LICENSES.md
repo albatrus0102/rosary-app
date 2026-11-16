@@ -243,7 +243,7 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 
 ## 성상 3D 스캔 — SMK · Virtual Museums of Małopolska · noe-3d.at (2026-11-16 추가, T-80)
 
-`assets/church/scan3d_<키>.js` 5개(합계 ≈ 1.0MB, deflate ≈ 0.65MB) + 불러오기 `scan3d.js`. 실물 조각의 3D 스캔을 줄이고(meshopt) 재질을 바꿔(흰 대리석 / 정점 색) 쓴다. 자세히: `licenses/STATUE_SCANS.md`, 근거: `docs/church/STATUE_SOURCES.md`.
+`assets/church/scan3d_<키>.js` 5개(합계 ≈ 1.3MB, deflate ≈ 0.87MB — T-80 2차에서 얼굴이 살도록 삼각형을 늘림) + 불러오기 `scan3d.js`. 실물 조각의 3D 스캔을 줄이고(meshopt) 재질을 바꿔(흰 대리석 / 정점 색) 쓴다. 자세히: `licenses/STATUE_SCANS.md`, 근거: `docs/church/STATUE_SOURCES.md`.
 
 | 키 | 쓰는 곳 | 만든이 | 라이선스 | 원본 |
 |---|---|---|---|---|

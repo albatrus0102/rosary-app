@@ -232,7 +232,7 @@ const List<ArtCredit> statueScanCredits = [
     credit: '미켈란젤로 〈피에타〉(1498–99)의 석고 주형 3D 스캔 "Michelangelo, Pietà"(KAS115). '
         '스캔: SMK – Statens Museum for Kunst(덴마크 국립미술관, 왕립 석고 주형 컬렉션). '
         '출처: https://open.smk.dk/artwork/image/KAS115. '
-        '변경: 축소·재질 변경(삼각형 400,016 → 36,000, 흰 대리석 재질을 입힘).',
+        '변경: 축소·재질 변경(전체 해상도 스캔 삼각형 1,498,118 → 100,000, 흰 대리석 재질을 입힘).',
     license: 'Public domain (Public Domain Mark 1.0, https://creativecommons.org/publicdomain/mark/1.0/)',
   ),
   ArtCredit(
@@ -240,7 +240,7 @@ const List<ArtCredit> statueScanCredits = [
     credit: '"“Crucified Christ” from St. Jadwiga’s hospital"(채색 목조 십자고상, 비에치 지방 박물관 AH/1273). '
         '스캔: Virtual Museums of Małopolska (Museum of the Biecz Land). '
         '출처: https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a. '
-        '변경: 축소·재질 변경(삼각형 232,154 → 16,000, 질감을 정점 색으로 바꿈).',
+        '변경: 축소·재질 변경(삼각형 232,154 → 24,000, 질감을 정점 색으로 바꿈).',
     license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
   ),
   ArtCredit(
@@ -248,7 +248,7 @@ const List<ArtCredit> statueScanCredits = [
     credit: '"Saint Peter"(17세기 중반 크라쿠프 금박 목조상, 티니에츠 베네딕도회 수도원 박물관 RZ/13/2012). '
         '스캔: Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec). '
         '출처: https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751. '
-        '변경: 축소·재질 변경(삼각형 250,192 → 20,000, 흰 대리석 재질을 입힘).',
+        '변경: 축소·재질 변경(삼각형 250,192 → 36,000, 흰 대리석 재질을 입힘).',
     license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
   ),
   ArtCredit(
@@ -256,7 +256,7 @@ const List<ArtCredit> statueScanCredits = [
     credit: '"Saint Paul the Apostle"(17세기 중반 크라쿠프 금박 목조상, 티니에츠 베네딕도회 수도원 박물관 RZ/12/2012). '
         '스캔: Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec). '
         '출처: https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca. '
-        '변경: 축소·재질 변경(삼각형 249,784 → 20,000, 흰 대리석 재질을 입힘).',
+        '변경: 축소·재질 변경(삼각형 249,784 → 36,000, 흰 대리석 재질을 입힘).',
     license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
   ),
   ArtCredit(
@@ -264,7 +264,7 @@ const List<ArtCredit> statueScanCredits = [
     credit: '"Engel"(마리아 란첸도르프 갈바리아의 천사 석상, 18세기 초, 오스트리아). '
         '스캔: noe-3d.at. '
         '출처: https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b. '
-        '변경: 축소·재질 변경(삼각형 453,628 → 15,000, 흰 대리석 재질을 입힘, 오른쪽 상은 좌우를 뒤집음).',
+        '변경: 축소·재질 변경(삼각형 453,628 → 30,000, 흰 대리석 재질을 입힘, 오른쪽 상은 좌우를 뒤집음).',
     license: 'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)',
   ),
 ];

@@ -63,12 +63,20 @@ for (const key of KEYS) test(`scan3d ${key}: 풀린다 · 예산 · 출처`, asy
   for (let i = 0; i < nor.length; i += 3 * 97) { const l = Math.hypot(nor[i], nor[i + 1], nor[i + 2]); assert.ok(l > 0.95 && l < 1.05, 'unit normal'); }
   for (const ix of [g.near.index.array, g.far.index.array]) for (let i = 0; i < ix.length; i++) assert.ok(ix[i] < M.verts);
   assert.equal(!!g.near.attributes.color, Scan.PACKS[key].kind === 'color');
-  // 삼각형 예산: 주인공(피에타) 근거리 30–40k · 원거리 6–8k, 나머지 근거리 10–20k · 원거리 ≤ 5k
-  if (key === 'pieta') { assert.ok(M.tris >= 30000 && M.tris <= 40000); assert.ok(M.farTris >= 6000 && M.farTris <= 8000); }
-  else { assert.ok(M.tris >= 10000 && M.tris <= 20000, M.tris); assert.ok(M.farTris <= 5000, M.farTris); }
-  assert.ok(M.farTris * 3 <= M.tris);
+  // 삼각형 예산(T-80 2차): 주인공(피에타, 여러 인물 군상) 근거리 80–120k · 원거리 6–10k, 나머지 근거리 20–40k · 원거리 ≤ 5k.
+  // 36k·20k 에서는 얼굴이 뭉개지고 각졌다(얼굴은 몸에 비해 작아 고른 단순화가 먼저 지운다) — 얼굴 구역(scan_packs.json detail)에 몫을 따로 준다.
+  if (key === 'pieta') { assert.ok(M.tris >= 80000 && M.tris <= 120000, M.tris); assert.ok(M.farTris >= 6000 && M.farTris <= 10000, M.farTris); }
+  else { assert.ok(M.tris >= 20000 && M.tris <= 40000, M.tris); assert.ok(M.farTris <= 5000, M.farTris); }
+  assert.ok(M.farTris * 5 <= M.tris);
   const bytes = fs.statSync(path.join(assets, 'scan3d_' + key + '.js')).size;
-  assert.ok(bytes <= (key === 'pieta' ? 340 : 220) * 1024, `${key} ${bytes}B`);
+  assert.ok(bytes <= (key === 'pieta' ? 540 : 230) * 1024, `${key} ${bytes}B`);
+  // 얼굴 구역: 설정의 detail 구 안에 근거리 정점이 넉넉히(얼굴 몫이 살아 있다)
+  const pc = JSON.parse(read('tools/statues/scan_packs.json')).packs.find((p) => p.key === key);
+  assert.ok(pc.detail && pc.detail.length && pc.detailShare >= 0.2, 'detail regions');
+  for (const r of pc.detail) {
+    let n = 0; for (let i = 0; i < pos.length; i += 3) if ((pos[i] - r.c[0]) ** 2 + (pos[i + 1] - r.c[1]) ** 2 + (pos[i + 2] - r.c[2]) ** 2 < r.r * r.r) n++;
+    assert.ok(n >= 2500, `${key} detail ${r.c} verts ${n}`);
+  }
   // 라이선스: CC0 · CC BY · CC BY-NC · 퍼블릭 도메인만(SA·ND 안 됨). 출처는 앱·licenses·ASSET_LICENSES 에 모두 있다.
   const src = M.src;
   assert.ok(src && src.title && src.author && src.url && src.license && src.licenseUrl && src.changes, 'meta.src');
@@ -84,7 +92,7 @@ test('scan3d: 앱 용량 예산(압축 ≤ 3MB) · 대용은 실제 작품 이�
   let raw = 0, gz = 0;
   for (const f of ['scan3d.js'].concat(KEYS.map((k) => 'scan3d_' + k + '.js'))) { const b = fs.readFileSync(path.join(assets, f)); raw += b.length; gz += zlib.gzipSync(b, { level: 9 }).length; }
   assert.ok(gz <= 3 * 1024 * 1024, `gz ${gz}`);
-  assert.ok(raw <= 1.3 * 1024 * 1024, `raw ${raw}`);
+  assert.ok(raw <= 1.4 * 1024 * 1024, `raw ${raw}`);
   for (const k of KEYS) if (k !== 'pieta') assert.doesNotMatch(Scan.PACKS[k].label, /아르놀포|베르니니|미켈란젤로|마이아노/);
   assert.equal(Scan.PACKS.pieta.label, '피에타(미켈란젤로)');
 });
@@ -156,4 +164,30 @@ test('scan3d: 묶음이 늦게 실패하면 LOD 를 빼고 예전 절차 생성�
   assert.ok(fb.every((g) => g.children.length > 0 && g.children.every((m) => m.geometry.attributes.position.count > 0)));
   // 묶음 배열은 원래대로 돌아와 있다(다시 지어도 같은 기하)
   assert.ok(ctx._.batches.solid.p.length > 0);
+});
+
+test('scan3d: 대리석 재질은 무광·스스로 밝히지 않음 + 열쇠 빛(성상 재질에만, 장면 빛 추가 없음) · 피에타 앞 방탄유리 없음', async () => {
+  for (const k of ['marble', 'marbleLit']) {
+    const m = Scan.MAT[k];
+    assert.ok(m.roughness >= 0.6 && m.roughness <= 0.75, k + ' roughness');
+    assert.ok(!m.emissive, k + ' emissive');
+    assert.ok(m.envMapIntensity <= 0.4, k + ' env');
+    assert.ok(m.key && m.key.intensity > 0 && m.key.dir[1] > 0 && m.key.dir[2] > 0 && m.key.dir[0] < 0, k + ' key light: 위·앞·왼쪽');
+  }
+  const { sb, run } = sandbox({ packs: ['pieta'] });
+  const ctx = build(sb, run, 'stpeter'), L = scans(ctx);
+  assert.ok(await until(() => L.every((o) => o.visible)));
+  const mat = L[0].levels[0].object.material;
+  assert.equal(mat.name, 'scan3d_marbleLit');
+  assert.equal(typeof mat.onBeforeCompile, 'function');
+  const sh = { uniforms: {}, vertexShader: '#include <project_vertex>', fragmentShader: '#include <lights_fragment_end>' };
+  mat.onBeforeCompile(sh);
+  assert.ok(sh.uniforms.scanKeyDir && sh.uniforms.scanKeyCol && /vScanKey/.test(sh.vertexShader) && /BRDF_Lambert/.test(sh.fragmentShader));
+  let lights = 0; ctx.root.traverse((o) => { if (o.isLight) lights++; });
+  const { sb: sb0, run: run0 } = sandbox({ head: false }), ctx0 = build(sb0, run0, 'stpeter');
+  let lights0 = 0; ctx0.root.traverse((o) => { if (o.isLight) lights0++; });
+  assert.equal(lights, lights0, '장면 빛 수 그대로');
+  // 방탄유리 반사 막: 스캔을 세우면 피에타 경당 어귀(x ≈ 11.6, z 28.25–32.05)에 없다, 사진 판(스캔 못 세움)이면 있다
+  const pane = (c) => { const p = c._.batches.glassRefl.p; for (let i = 0; i < p.length; i += 3) if (Math.abs(p[i] - 11.61) < 0.05 && p[i + 2] > 28 && p[i + 2] < 32.2) return true; return false; };
+  assert.equal(pane(ctx), false); assert.equal(pane(ctx0), true);
 });
