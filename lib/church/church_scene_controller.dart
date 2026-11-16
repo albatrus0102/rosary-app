@@ -685,7 +685,7 @@ abstract class ChurchSceneController {
     'slot': slot,
     'until': until,
     'intention': intention,
-    if (color != null) 'color': color,
+    'color': ?color,
     // 내가 방금 켠 초: 장면이 켜는 동작(손 뻗기·성호경)과 '내 초' 표시를 한다.
     if (mine) 'mine': true,
   });

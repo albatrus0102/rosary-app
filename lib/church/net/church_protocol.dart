@@ -251,7 +251,7 @@ String candleMessage(int slot, int intention, {int? color}) => jsonEncode({
   't': 'candle',
   'slot': slot,
   'intention': intention,
-  if (color != null) 'color': color,
+  'color': ?color,
 });
 
 String emoteMessage(int e) => jsonEncode({'t': 'emote', 'e': e});
