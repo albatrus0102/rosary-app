@@ -10,7 +10,7 @@
     started: false, quality: 'high', qMode: 'auto', renderer: null, scene: null, camera: null, world: null, logic: null,
     maxFrames: +(qs.frames || 0), frameCount: 0, done: false, me: null, meAv: null, ctl: null, net: null, crowd: null, cfg: { skin: 1, style: 0, hair: 2, outfit: 6, name: 0 },
     near: { seat: null, candle: null, station: null }, stations: null, markers: null, walkSt: null, pendingWalk: null, turn: null, frames: 0, perfT: 0, t: 0, last: 0, posT: 0, wasMoving: false, stepT: 0, fps: 60,
-    camPos: new T.Vector3(), camLook: new T.Vector3(), camInit: false, sitF: 0, spot: null, spotF: 0, spotYaw: 0, spotSeat: false, seeK: 0, seeW: 0, avA: 1, rig: null, camCfg: { auto: true, dist: 1, follow: true }, church: 'basic', solo: false, ambient: false
+    camPos: new T.Vector3(), camLook: new T.Vector3(), camInit: false, sitF: 0, spot: null, spotF: 0, spotYaw: 0, spotSeat: false, spotKind: null, seeK: 0, seeW: 0, seeL: 0, avA: 1, rig: null, camCfg: { auto: true, dist: 1, follow: true }, church: 'basic', solo: false, ambient: false
   };
   root.__church = App;
 
@@ -314,10 +314,9 @@
     },
     // 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 손에 든다. 다른 사람의 묵주는 peerPraying 의 r.
     setRosary: function (o) { App.rosary = !!(o && o.on); if (App.meAv) App.meAv.setRosary(App.rosary); },
-    // 아래 패널 비율(0..0.6). 켜져 있는 동안 앉아도 '자리 시점'(아바타를 화면 아래로 두는 시점)을 쓰지 않아 아바타가 패널 위에 보인다.
+    // 아래 패널 비율(0..0.6). 투영을 위로 옮겨 아바타가 패널 위 남은 영역에 보인다(앉은 시점은 앞옆 45° 그대로, 조금 물러난다).
     setViewInset: function (o) {
       App.inset = Math.max(0, Math.min(0.6, +(o && o.bottom) || 0));
-      if (App.inset && App.spot && App.spot.seat) App.spot = null;
       if (App.camera) { applyInset(root.innerWidth || 360, root.innerHeight || 640); App.camera.updateProjectionMatrix(); kick(); }
     },
     // 기도 자세 고르기. 앉아 있지 않으면 무시한다(다음에 앉아도 적용하지 않는다: 앉은 뒤 Flutter 가 다시 보낸다).
@@ -580,76 +579,101 @@
     if (o.dist !== undefined && CAM_DIST[o.dist]) c.dist = CAM_DIST[o.dist];
     if (o.follow !== undefined) c.follow = !!o.follow;
   }
-  var rigI = { mx: 0, fy: 0, mz: 0, yaw: 0, pitch: 0, D: 0, cb: null, guard: null, auto: true }, rigO = { x: 0, y: 0, z: 0, pitch: 0, dist: 0, lift: 0, fwd: 0, yaw: 0 };
-  var CG = root.ChurchCamGuard || { SPOT: { side: 0 }, spotBlend: function (p, D, b, f, o) { o.pitch = p; o.D = D; o.fwd = o.up = 0; return o; }, avatarAlpha: function () { return 1; } };
+  var rigI = { mx: 0, fy: 0, mz: 0, yaw: 0, pitch: 0, D: 0, cb: null, guard: null, auto: true, minD: 0 }, rigO = { x: 0, y: 0, z: 0, pitch: 0, dist: 0, lift: 0, fwd: 0, yaw: 0, fp: 0 };
+  var CG = root.ChurchCamGuard || { SPOT: { side: 0 }, PRAY: { side: 0 }, spotBlend: function (p, D, b, f, o) { o.pitch = p; o.D = D; o.fwd = o.up = 0; return o; }, avatarAlpha: function () { return 1; } };
+  // 앉기·무릎 꿇기 시점(docs/church/CAMERA.md): 앞옆 45°, 트인 쪽(cam_guard prayYaw)
+  function prayYawFor(seatId) {
+    var si = App.logic.seatInfo(seatId), gd = App.world.camGuard, base = 4.4 * (App.inset ? 1.3 : 1) * App.camCfg.dist;
+    if (!si) return 0;
+    if (!CG.prayYaw) return si.yaw + (CG.PRAY ? CG.PRAY.side : 0);
+    return CG.prayYaw(gd, App.world.cameraBounds, si.x, App.me.y + 1.25, si.z, si.yaw, base * (CG.PRAY.zoom || 1), CG.PRAY.pitch);
+  }
+  function seeEase(cur, on, dt) { var v = cur + ((on ? 1 : 0) - cur) * Math.min(1, dt * (on ? 10 : 4)); return v < 0.003 ? 0 : v; }
   function updateCamera(dt) {
     var me = App.me, ctl = App.ctl, cam = App.camera, cb = App.world.cameraBounds;
     var seated = me.mode === 'seated' || me.mode === 'sitting' ? 1 : 0;
     App.sitF += (seated - App.sitF) * Math.min(1, dt * 2.5);
     var sf = App.sitF;
     ctl.now = App.t;
-    // 자리 시점: 앉거나 무릎 꿇으면(좌석 방향) 또는 기도 자리에 도착하면(App.spot). 화면을 끌면 그 자리에서 끝(수동 조작).
-    if (seated && !App.spotSeat) { App.spotSeat = true; if (me.seat && !App.inset) App.spot = { yaw: App.logic.seatInfo(me.seat).yaw, t0: App.t, seat: true }; }
+    if (!App.camInit && App.rig) App.rig.reset();   // 입장·복원·자리 옮김: 리그 상태(거리·각도·1인칭)를 새로
+    // 자리 시점: 앉거나 무릎 꿇으면 앞옆 45°(App.spot.seat, 묵주 패널이 있어도) 또는 기도 자리에 도착하면(App.spot). 화면을 끌면 그 자리에서 끝(수동 조작).
+    if (seated && !App.spotSeat) { App.spotSeat = true; if (me.seat) App.spot = { yaw: prayYawFor(me.seat), t0: App.t, seat: true }; }
     else if (!seated && App.spotSeat) { App.spotSeat = false; if (App.spot && App.spot.seat) App.spot = null; }
     var SP = App.spot;
     if (SP && (ctl.dragging || ctl.lastDragT > SP.t0)) SP = App.spot = null;
+    if (SP) App.spotKind = SP.seat ? CG.PRAY : CG.SPOT;
     App.spotF += ((SP ? 1 : 0) - App.spotF) * Math.min(1, dt * (SP ? 1.6 : 9));
     if (App.spotF < 0.002) App.spotF = 0;
-    if (SP) { App.spotYaw = SP.yaw; ctl.yaw += wrap(SP.yaw + CG.SPOT.side - ctl.yaw) * (1 - Math.exp(-dt * 2.2)); }
-    if (seated && !SP && !ctl.dragging && App.t - ctl.lastDragT > 1.2) {
-      // 묵주 패널이 아래를 덮는 동안(App.inset)은 비스듬히 옆에서: 앉았는지 무릎 꿇었는지 보인다
-      ctl.yaw += wrap((me.seat ? App.logic.seatInfo(me.seat).yaw : 0) + (App.inset ? 0.55 : 0) - ctl.yaw) * (1 - Math.exp(-dt * 1.8));
-    }
+    if (SP) { App.spotYaw = SP.yaw; ctl.yaw += wrap(SP.yaw + (SP.seat ? 0 : CG.SPOT.side) - ctl.yaw) * (1 - Math.exp(-dt * 2.2)); }
     // 자동 걷기 중에는 카메라가 천천히 아바타 뒤로 돌아 가는 길이 보이게 한다(직접 돌린 뒤 1.5초는 그대로 둔다)
     // ('걸을 때 뒤로 따라가기' 켬일 때만) 조이스틱으로 앞쪽(±70°)으로 걸을 때도 아주 천천히 뒤로 정렬한다. 옆으로 걸을 땐 돌지 않는다(빙빙 돌지 않게).
+    // 앉아 있을 때는 끌어서 돌린 방향을 그대로 둔다(사용자 조작이 이긴다).
     var CC = App.camCfg;
     if (CC.follow && App.walkSt && !seated && !ctl.dragging && App.t - ctl.lastDragT > 1.5) ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 1.2));
     else if (CC.follow && !App.walkSt && !seated && !SP && !ctl.dragging && App.t - ctl.lastDragT > 2.5 && Math.hypot(me.vx, me.vz) > 0.6 && Math.abs(wrap(me.yaw - ctl.yaw)) < 1.2)
       ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 0.5));
     var baseD = (7.2 * (1 - sf) + 4.4 * sf) * (App.inset ? 1 + 0.3 * sf : 1) * CC.dist, D = baseD * ctl.zoom;   // 묵주 패널 중에는 조금 물러나 앉은·무릎 꿇은 몸 전체가 보이게
     var pitch = ctl.pitch * (1 - 0.3 * sf);
-    if (App.spotF > 0) { CG.spotBlend(pitch, D, baseD, App.spotF, spotO); pitch = spotO.pitch; D = spotO.D; } else spotO.fwd = spotO.up = 0;
+    if (App.spotF > 0) { CG.spotBlend(pitch, D, baseD, App.spotF, spotO, App.spotKind); pitch = spotO.pitch; D = spotO.D; } else spotO.fwd = spotO.up = 0;
     var fy = me.y + 1.0 + sf * (0.45 - 0.2);
     var dx = Math.sin(ctl.yaw), dz = Math.cos(ctl.yaw);
     // 무릎 꿇으면 몸이 좌석 앞 무릎틀로 나간다: 카메라가 보는 점도 그만큼 앞으로(아바타가 향한 쪽)
     var ko = App.meAv.kneelOffset(), mx = me.x - Math.sin(me.yaw) * ko, mz = me.z - Math.cos(me.yaw) * ko;
-    // 카메라 리그(cam_guard createRig — 게임 엔진식, docs/church/CAMERA.md): 목표 거리 D 를 지키고, 넓은 벽·천장에만 당긴다.
-    // 막히면 바로(벽 여유 안), 풀리면 0.5초 버틴 뒤 천천히(히스테리시스) · 뒤가 벽이면 어깨 위로 올라 앞을 내려다본다 · 구석이면 옆으로 비킨다.
-    // 기둥·성상처럼 가는 면은 당기지 않는다(classifyThin): 아래 seeThru 디더로 비친다. '자동 줌' 끔이면 거리를 전혀 바꾸지 않고 벽도 디더.
-    var gd = App.world.camGuard, gt;
+    // 카메라 리그(cam_guard createRig — 게임식 cutaway, docs/church/CAMERA.md): 사용자 거리 D 에 가장 가까운 '설 수 있는 자리'(카메라 공간 복셀).
+    // 사이의 벽·기둥은 당기지 않고 잘라낸다(아래 seeThru). 자리가 없으면 올리고(높은 3/4·내려다보기)·낮은 천장이면 내리고·그래도 안 되면 옆으로,
+    // 어디에도 fpD(1.9m) 를 못 얻으면 1인칭(rigO.fp). '자동 줌' 끔이면 거리·각도를 바꾸지 않는다.
+    var gd = App.world.camGuard;
     if (!App.rig) App.rig = CG.createRig ? CG.createRig() : null;
     var capR = App.place ? Math.max(0.3, Math.min(1, App.place.camReach(D))) : 1;   // 좁은 곳의 사진 창을 보는 동안은 카메라를 당긴다(G-29, 밀라노 회랑)
     var cx, cyv, cz;
     if (App.rig) {
       rigI.mx = mx; rigI.fy = fy; rigI.mz = mz; rigI.yaw = ctl.yaw; rigI.pitch = pitch; rigI.D = D * capR; rigI.cb = cb; rigI.guard = gd; rigI.auto = CC.auto;
+      rigI.minD = 2.8 - 0.5 * sf;
       App.rig.solve(rigI, dt, rigO);
       cx = rigO.x; cyv = Math.min(cb.yMax, Math.max(0.7, rigO.y)); cz = rigO.z;
       dx = Math.sin(rigO.yaw); dz = Math.cos(rigO.yaw);
     } else {
       var ch0 = Math.cos(pitch) * D, cv0 = Math.sin(pitch) * D;
-      cx = mx + dx * ch0; cyv = fy + cv0; cz = mz + dz * ch0; rigO.fwd = 0;
+      cx = mx + dx * ch0; cyv = fy + cv0; cz = mz + dz * ch0; rigO.fwd = 0; rigO.fp = 0;
     }
     // 보는 점: 자리 방향(목표물 쪽)으로 fwd 앞·up 위 — 카메라는 side 만큼 비켜 있어 아바타가 화면 아래 한편에 온다
-    // 리그가 어깨 위로 올렸으면(lift) 걷는 앞쪽(rigO.fwd)을 본다 → 아바타는 화면 아래, 앞이 보인다
+    // 리그가 카메라를 올렸으면(lift) 걷는 앞쪽(rigO.fwd)을 본다 → 아바타는 화면 아래, 가는 길이 보인다
     var lx = mx - Math.sin(App.spotYaw) * spotO.fwd - dx * rigO.fwd, ly = fy + spotO.up, lz = mz - Math.cos(App.spotYaw) * spotO.fwd - dz * rigO.fwd;
-    if (!App.camInit) { App.camPos.set(cx, cyv, cz); App.camLook.set(lx, ly, lz); App.camInit = true; }
-    var kp = 1 - Math.exp(-dt * 7), kl = 1 - Math.exp(-dt * 11);
-    App.camPos.x += (cx - App.camPos.x) * kp; App.camPos.y += (cyv - App.camPos.y) * kp; App.camPos.z += (cz - App.camPos.z) * kp;
-    // 부드럽게 따라가는 중간 위치도 벽을 가로지를 수 있다(굽은 벽 모서리): 실제 위치도 한 번 더 막는다(당길 때는 즉시)
-    var occ = false, occW = false;
-    if (gd) {
-      // 안전망: 리그는 벽에서 0.8m(probe) 앞에 서므로 여기 0.08m 여유로는 거의 걸리지 않는다(걸리면 벽 밖이 비치지 않게 즉시)
-      gt = gd.clipWide(mx, fy, mz, App.camPos.x, App.camPos.y, App.camPos.z, 0.08, 0.3);
-      occ = gd.out.thin < 1;   // 머리→카메라 사이에 가는 면(기둥 등)이 있다
-      if (gt < 1) { if (CC.auto) { App.camPos.x = mx + (App.camPos.x - mx) * gt; App.camPos.y = fy + (App.camPos.y - fy) * gt; App.camPos.z = mz + (App.camPos.z - mz) * gt; } else occW = true; }
+    // 1인칭(좁아서 어떤 3인칭 자리도 없을 때만): 눈 높이에서 카메라 방향 앞을 본다. 아바타는 숨긴다(거대한 반투명 얼굴 대신)
+    var fp = rigO.fp || 0;
+    if (fp > 0) {
+      var eyY = me.y + 1.6 - 0.45 * sf, fdx = -dx, fdz = -dz;
+      var ex = me.x + fdx * 0.15, ez = me.z + fdz * 0.15;
+      cx += (ex - cx) * fp; cyv += (eyY - cyv) * fp; cz += (ez - cz) * fp;
+      lx += (ex + fdx * 6 - lx) * fp; ly += (eyY - 0.7 - ly) * fp; lz += (ez + fdz * 6 - lz) * fp;
     }
-    // 가림 디더: 가는 면이 가리는 동안만 카메라→아바타 원뿔 안의 그 면을 지운다(균일값 숫자만 바꾼다)
+    if (!App.camInit || rigO.cut) { App.camPos.set(cx, cyv, cz); App.camLook.set(lx, ly, lz); App.camInit = true; }   // 리그가 시점을 끊었으면(휘돌면 머리에 붙을 때) 따라가지 않고 바로
+    var kp = 1 - Math.exp(-dt * (fp > 0 ? 12 : 7)), kl = 1 - Math.exp(-dt * 11);
+    App.camPos.x += (cx - App.camPos.x) * kp; App.camPos.y += (cyv - App.camPos.y) * kp; App.camPos.z += (cz - App.camPos.z) * kp;
+    // 안전망: 부드럽게 따라가는 중간 위치가 벽·기둥 속이면(굽은 벽 모서리를 돌 때) 목표 자리로 곧장(카메라가 면에 붙어 화면이 벽으로 가득 차지 않게)
+    if (gd && CC.auto && fp < 0.5) {
+      if (gd.space && App.rig && App.rig.ok) {
+        if (!App.rig.ok(App.camPos.x, App.camPos.y, App.camPos.z) && App.rig.ok(cx, cyv, cz)) App.camPos.set(cx, cyv, cz);
+      } else {
+        var gt = gd.clipWide(mx, fy, mz, App.camPos.x, App.camPos.y, App.camPos.z, 0.08, 0.3);
+        if (gt < 1) { App.camPos.x = mx + (App.camPos.x - mx) * gt; App.camPos.y = fy + (App.camPos.y - fy) * gt; App.camPos.z = mz + (App.camPos.z - mz) * gt; }
+      }
+    }
+    // 가림 잘라내기(cutaway): 머리·가슴 → 카메라 선이 면을 지나면 그 면 종류(가는 면 / 넓은 면)를 원뿔 안에서 지운다.
+    // 앉기·무릎 꿇기 중에는 낮은 물체(앞 의자 등받이·무릎틀)도. 바닥은 지우지 않는다. 세기는 짧게 녹아들고(0.1초) 풀리면 0.25초에 돌아온다.
     if (gd && gd.see) {
-      App.seeK += ((occ ? 1 : 0) - App.seeK) * Math.min(1, dt * (occ ? 10 : 4));
-      if (App.seeK < 0.003) App.seeK = 0;
-      App.seeW += ((occW ? 1 : 0) - App.seeW) * Math.min(1, dt * (occW ? 10 : 4));   // 자동 줌 끔: 사이의 벽도 디더
-      if (App.seeW < 0.003) App.seeW = 0;
-      gd.see.set(App.camPos.x, App.camPos.y, App.camPos.z, mx, fy, mz, App.seeK, App.seeW);
+      var occT = false, occW = false;
+      if (fp < 0.5) {
+        var hy = me.y + 1.55 - 0.45 * sf;
+        var t1 = gd.clip(mx, fy, mz, App.camPos.x, App.camPos.y, App.camPos.z, 0), th1 = gd.out.thin;
+        var t2 = gd.clip(mx, hy, mz, App.camPos.x, App.camPos.y, App.camPos.z, 0), th2 = gd.out.thin;
+        occW = t1 < 1 || t2 < 1; occT = occW || th1 < 1 || th2 < 1;
+      }
+      var occL = fp < 0.5 && sf > 0.5;
+      App.seeK = seeEase(App.seeK, occT, dt); App.seeW = seeEase(App.seeW, occW, dt); App.seeL = seeEase(App.seeL || 0, occL, dt);
+      var cdx = App.camPos.x - mx, cdy = App.camPos.y - fy, cdz = App.camPos.z - mz, cdist = Math.sqrt(cdx * cdx + cdy * cdy + cdz * cdz);
+      // 원뿔 끝: 가슴(앉으면 몸 가운데). 반지름은 화면에서 거의 일정하게(거리 × 0.22, 1.0~2.0m)
+      gd.see.set(App.camPos.x, App.camPos.y, App.camPos.z, mx, fy - 0.25 * sf, mz, App.seeK, App.seeW, App.seeL, Math.max(1.0, Math.min(2.0, cdist * 0.22)));
     }
     App.camLook.x += (lx - App.camLook.x) * kl; App.camLook.y += (ly - App.camLook.y) * kl; App.camLook.z += (lz - App.camLook.z) * kl;
     // 천장 올려다보기: ctl.look(라디안)만큼 시선을 위로 든다. 아바타를 보는 시선과 부드럽게 섞는다.
@@ -666,15 +690,17 @@
     }
     cam.position.copy(App.camPos);
     cam.lookAt(lookTarget);
-    // 카메라가 아바타 머리에 가까우면(1.7m 미만) 아바타·이름표를 흐리게 — 최소 0.35(내 캐릭터는 사라지지 않는다).
-    // 벽·기둥 뒤에 가려진 몸은 금색 실루엣(X-ray)으로 보인다(avatar.js setXray, 걷는 동안).
+    // 카메라가 아바타 머리에 가까우면(1.7m 미만, 사용자가 당긴 앉은 시점 정도) 아바타·이름표를 흐리게 — 최소 0.35.
+    // 1인칭이면 아바타를 숨긴다. 잘라내지 못한 가림물(인스턴스 촛대 등) 뒤의 몸은 금색 실루엣(X-ray)으로 보인다(avatar.js setXray, 걷는 동안).
     var av = App.meAv;
     if (av && av.setFade) {
-      var hx = App.camPos.x - mx, hy = App.camPos.y - (me.y + 1.55 - 0.45 * sf), hz = App.camPos.z - mz;
-      var aT = CG.avatarAlpha(Math.sqrt(hx * hx + hy * hy + hz * hz));
+      var hx = App.camPos.x - mx, hy2 = App.camPos.y - (me.y + 1.55 - 0.45 * sf), hz = App.camPos.z - mz;
+      var aT = CG.avatarAlpha(Math.sqrt(hx * hx + hy2 * hy2 + hz * hz));
       App.avA += (aT - App.avA) * Math.min(1, dt * 10);
       av.setFade(App.avA);
-      if (av.setXray) av.setXray(me.mode === 'walk');
+      var hide = fp > 0.15;
+      if (av.root.visible === hide && !qs.thumb) av.root.visible = !hide;
+      if (av.setXray) av.setXray(me.mode === 'walk' && !hide);
     }
   }
 

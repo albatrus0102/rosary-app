@@ -1,4 +1,4 @@
-// 3인칭 카메라 가림 시험(cam_guard.js 가는 장애물 · 가림 디더 · 아바타 근접 흐리기 · 기도 자리 시점).
+// 3인칭 카메라 가림 시험(cam_guard.js 가는 장애물 · 가림 잘라내기(cutaway) · 아바타 근접 흐리기 · 기도 자리 시점).
 // 사용자 제보(피렌체 성모 기도 자리 앞): 뒤 기둥에 카메라가 아바타 등까지 당겨져 화면이 검은 옷으로 가득 찼다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,7 +17,7 @@ function env(id) {
   c.prepare().forEach((it) => c.ctx.root.add(it.batch.build(it.material, it.name, { spatial: true })));
   const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones });
   const sp = c.layout.spawn || { x: 0, z: 0 }, yLow = (L.floorY(sp.x, sp.z) || 0) + 1.05;
-  const e = { c, L, guard: Guard.build(c.ctx.root, { yLow, THREE }), old: Guard.build(c.ctx.root, { yLow, thinPass: false, see: false }) };
+  const e = { c, L, guard: Guard.build(c.ctx.root, { yLow, THREE, space: false, floorTop: Math.max(0, ...c.zones.map((z) => z.y)) }), old: Guard.build(c.ctx.root, { yLow, thinPass: false, see: false, space: false }) };
   envs.set(id, e);
   return e;
 }
@@ -34,7 +34,7 @@ test('가는 장애물: 피렌체 신랑 기둥 뒤에서 카메라 거리를 �
   }
 });
 
-test('넓은 면(벽)은 예전처럼 카메라를 당긴다', () => {
+test('넓은 면(벽)은 clip 이 막힘으로 알린다(리그는 그 너머가 실내면 잘라내고 서고, 바깥이면 앞에 선다)', () => {
   const { guard } = env('florence');
   // 신랑 가운데에서 측랑 바깥벽(x≈8.55) 너머로
   const t = guard.clip(6.5, 1.0, 11.4, 14, 3.0, 11.4, 0.35);
@@ -42,7 +42,7 @@ test('넓은 면(벽)은 예전처럼 카메라를 당긴다', () => {
   assert.equal(guard.out.thin, 1);
 });
 
-test('가림 디더: 가는 면 메시에 seeThru 값을 달고 재질 셰이더를 잇는다(공유 균일값, 원래 onBeforeCompile 보존)', () => {
+test('가림 잘라내기: 메시에 seeThru 칸 값을 달고 재질 셰이더를 잇는다(공유 균일값, 원래 onBeforeCompile 보존, 원뿔 안은 전부 지움)', () => {
   const { c, guard } = env('florence');
   assert.ok(guard.see && guard.see.materials > 0, 'see 균일값');
   let marked = 0, meshes = 0, mat = null;
@@ -56,13 +56,53 @@ test('가림 디더: 가는 면 메시에 seeThru 값을 달고 재질 셰이더
   const sh = { uniforms: {}, vertexShader: 'void main() {\n#include <project_vertex>\n}', fragmentShader: 'void main() {\ngl_FragColor = vec4(1.0);\n}' };
   mat.onBeforeCompile(sh, null);
   assert.match(sh.vertexShader, /attribute float seeThru/);
-  assert.match(sh.fragmentShader, /discard/);
+  assert.match(sh.fragmentShader, /if \(sN < sF \* sSel\) discard/, '세기 1 이면 원뿔 안쪽 전부(디더 망점이 아니라 구멍)');
   assert.equal(sh.uniforms.uSeeK, guard.see.k, '균일값 객체를 나눠 쓴다');
-  assert.match(mat.customProgramCacheKey(), /\|see$/);
-  // 매 프레임 갱신은 숫자만 바꾼다(같은 배열)
-  const a0 = guard.see.a.value;
-  guard.see.set(1, 2, 3, 4, 5, 6, 0.7);
-  assert.equal(guard.see.a.value, a0); assert.equal(guard.see.k.value, 0.7); assert.equal(a0[2], 3);
+  assert.match(mat.customProgramCacheKey(), /\|see2$/);
+  // 매 프레임 갱신은 숫자만 바꾼다(같은 배열) — 재컴파일·할당 없음
+  const a0 = guard.see.a.value, k0 = guard.see.k.value;
+  guard.see.set(1, 2, 3, 4, 5, 6, 0.7, 0.4, 0.2, 1.5);
+  assert.equal(guard.see.a.value, a0); assert.equal(guard.see.k.value, k0); assert.equal(a0[2], 3);
+  assert.deepEqual(Array.from(k0).map((v) => +v.toFixed(2)), [0.7, 0.4, 0.2, 1.5]);
+});
+
+test('잘라내기 칸: 바닥은 절대 지우지 않고(0), 의자 같은 낮은 물체(85)·넓은 면(170)·가는 면(255)으로 나뉜다', () => {
+  for (const id of ['myeongdong', 'stpeter']) {
+    const { c, guard } = env(id);
+    assert.ok(guard.lowTriangles > 1000, `${id}: 낮은 물체 ${guard.lowTriangles}`);
+    const cnt = { 0: 0, 85: 0, 170: 0, 255: 0 };
+    let floorBad = 0, floorN = 0;
+    c.ctx.root.updateMatrixWorld(true);
+    const v = new THREE.Vector3(), n = new THREE.Vector3(), nm = new THREE.Matrix3();
+    c.ctx.root.traverse((m) => {
+      const g = m.isMesh && m.geometry, a = g && g.attributes.seeThru, no = g && g.attributes.normal;
+      if (!a) return;
+      nm.getNormalMatrix(m.matrixWorld);
+      for (let i = 0; i < a.count; i++) {
+        cnt[a.array[i]] = (cnt[a.array[i]] || 0) + 1;
+        if (!no) continue;
+        v.fromBufferAttribute(g.attributes.position, i).applyMatrix4(m.matrixWorld);
+        n.fromBufferAttribute(no, i).applyMatrix3(nm).normalize();
+        if (n.y > 0.9 && v.y < 0.1) { floorN++; if (a.array[i]) floorBad++; }   // 걷는 바닥(위를 보는 면, 바닥 높이)
+      }
+    });
+    assert.ok(cnt[85] > 0 && cnt[170] > 0 && cnt[255] > 0, `${id}: 칸 ${JSON.stringify(cnt)}`);
+    assert.ok(floorN > 100 && floorBad === 0, `${id}: 바닥 정점 ${floorN} 중 ${floorBad} 개가 지울 수 있게 되어 있다`);
+  }
+});
+
+test('기도(앉기·무릎) 시점: 앞옆 45°(뒤에서 135°)에서, 트인 쪽을 고른다', () => {
+  const sp = (ok) => ({ space: { at: (x, y, z) => (ok(x, y, z) ? 3 : 0), covered: () => true, solid: (x, y, z) => (ok(x, y, z) ? 0 : 1) }, clip: () => 1, out: { thin: 1 } });
+  const seatYaw = 0;   // 아바타는 -z 를 본다. 카메라 방위 yaw: 카메라는 (+sin, +cos) 쪽
+  for (const side of [1, -1]) {
+    const g = sp((x) => x * side > -0.5), yaw = Guard.prayYaw(g, null, 0, 1.25, 0, seatYaw, 3.7, Guard.PRAY.pitch);
+    assert.ok(Math.abs(Math.abs(yaw - seatYaw) - Guard.PRAY.side) < 1e-6, `yaw ${yaw}`);
+    assert.ok(Math.sin(yaw) * side > 0, `트인 쪽(${side > 0 ? '+x' : '-x'})을 고르지 않았다(${yaw.toFixed(2)})`);
+    assert.ok(Math.cos(yaw) < -0.5, '앞쪽(아바타가 보는 쪽)에서 비스듬히');
+  }
+  // 시점 섞기: PRAY 는 아바타 자체를 본다(앞으로 비켜 보지 않음)
+  const o = {}; Guard.spotBlend(0.45, 4.4, 4.4, 1, o, Guard.PRAY);
+  assert.equal(o.fwd, 0); assert.ok(Math.abs(o.pitch - Guard.PRAY.pitch) < 1e-9 && Math.abs(o.D - 4.4 * Guard.PRAY.zoom) < 1e-9);
 });
 
 test('여러 성당에서 홀로 선 기둥은 가늘고, 기존 벽 가드 시험은 cam_guard.test 가 지킨다', () => {

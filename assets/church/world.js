@@ -498,12 +498,17 @@
     var api = {
       id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9 },
-      // 3인칭 카메라 벽 가드(cam_guard.js): 머리→카메라 선분이 벽·천장에 닿으면 그 앞으로 당긴다(굽은 후진·경당 포함)
+      // 3인칭 카메라 가드(cam_guard.js): 카메라가 설 수 있는 실내 공간 + 사이 가림물 잘라내기(docs/church/CAMERA.md)
       camGuard: (function () {
         if (!root.ChurchCamGuard) return null;
         var sp = layout.spawn || { x: 0, z: 0 }, fy0 = 0;
         try { fy0 = logic.floorY(sp.x, sp.z) || 0; } catch (e) { /* ignore */ }
-        try { return root.ChurchCamGuard.build(ctx.root, { bounds: cb, yLow: fy0 + 1.05 }); } catch (e) { return null; }
+        // 카메라 공간 복셀(걷는 자리·바닥 높이·카메라 상자 밖 통로) + 가림 잘라내기(seeThru)
+        try {
+          var go = root.ChurchCamGuard.spaceOpts ? root.ChurchCamGuard.spaceOpts(logic, layout, S.zones) : {};
+          go.bounds = cb; go.yLow = fy0 + 1.05;
+          return root.ChurchCamGuard.build(ctx.root, go);
+        } catch (e) { if (root.console) console.warn('[church] camGuard', e); return null; }
       })(),
       reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
