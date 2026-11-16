@@ -109,15 +109,41 @@ class FakeBackupPlatform implements BackupPlatform {
   }
 
   @override
-  Future<PlatformResult<void>> saveDocument(String name, String content) async {
+  Future<PlatformResult<void>> saveDocument(
+    String name,
+    String content, {
+    String mime = jsonMime,
+  }) async {
     if (saveResult != 'ok') return PlatformResult.fail(saveResult);
     saved.add((name, content));
+    mimes[name] = mime;
     return const PlatformResult.ok(null);
   }
 
   @override
-  Future<PlatformResult<void>> shareFile(String name, String content) async {
+  Future<PlatformResult<void>> shareFile(
+    String name,
+    String content, {
+    String mime = jsonMime,
+  }) async {
     shared.add((name, content));
+    mimes[name] = mime;
+    return const PlatformResult.ok(null);
+  }
+
+  /// shareFiles 로 한 번에 보낸 묶음들.
+  final List<List<ShareDoc>> sharedBatches = [];
+
+  /// 저장·공유한 파일의 종류(이름 → mime).
+  final Map<String, String> mimes = {};
+
+  @override
+  Future<PlatformResult<void>> shareFiles(List<ShareDoc> files) async {
+    sharedBatches.add(List.of(files));
+    for (final f in files) {
+      shared.add((f.name, f.content));
+      mimes[f.name] = f.mime;
+    }
     return const PlatformResult.ok(null);
   }
 

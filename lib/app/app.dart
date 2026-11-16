@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import '../analytics/analytics_observer.dart';
 import '../auth/auth_gate.dart';
 import '../backup/backup_ui.dart';
+import '../diag/diag_send_sheet.dart';
+import '../diag/diag_sources.dart';
 import '../ui/app_shell.dart';
 import '../ui/skin_picker.dart';
 import 'app_services.dart';
@@ -32,6 +34,9 @@ class _RosaryAppState extends State<RosaryApp> with WidgetsBindingObserver {
   final AnalyticsObserver _analyticsObserver = AnalyticsObserver(
     rootScreen: () => AppShell.currentScreenId,
   );
+
+  /// 오류 기록의 화면 이동 발자취(기기 안에만, lib/diag).
+  final DiagNavigatorObserver _diagObserver = DiagNavigatorObserver();
 
   late final SkinPreviewObserver _skinObserver = SkinPreviewObserver(
     widget.settings,
@@ -127,14 +132,19 @@ class _RosaryAppState extends State<RosaryApp> with WidgetsBindingObserver {
                       child: child ?? const SizedBox.shrink(),
                     ),
                   ),
-              navigatorObservers: [_analyticsObserver, _skinObserver],
+              navigatorObservers: [
+                _analyticsObserver,
+                _skinObserver,
+                _diagObserver,
+              ],
               home: AuthGate(
                 authService: services.auth,
                 consentStore: services.consent,
                 backendConfigured: services.backendConfigured,
                 child: BackupOfferWatcher(
                   service: services.backup,
-                  child: AppShell(settings: settings),
+                  // 예상하지 못한 오류가 나면 실행마다 한 번 「문제가 생겼어요 · 기록 보내기」.
+                  child: DiagErrorWatcher(child: AppShell(settings: settings)),
                 ),
               ),
             );

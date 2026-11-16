@@ -11,7 +11,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 /**
- * 백업 파일을 공유 시트로 보낼 때만 쓰는 읽기 전용 공급자(androidx 없이).
+ * 백업 파일(과 오류 기록 파일)을 공유 시트로 보낼 때만 쓰는 읽기 전용 공급자(androidx 없이).
  * `cache/backup_share/` 안의 파일 이름 하나만 내주고, 받는 앱에는 그 URI 의 읽기 권한만 준다
  * (매니페스트 exported=false + grantUriPermissions).
  */
@@ -51,7 +51,9 @@ class BackupShareProvider : ContentProvider() {
         return MatrixCursor(cols, 1).apply { addRow(arrayOf<Any>(f.name, f.length())) }
     }
 
-    override fun getType(uri: Uri): String = "application/json"
+    // 오류 기록(.txt)은 글, 백업(.json)은 JSON.
+    override fun getType(uri: Uri): String =
+        if ((uri.lastPathSegment ?: "").endsWith(".txt")) "text/plain" else "application/json"
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? = null
 

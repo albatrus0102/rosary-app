@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../diag/diag_recorder.dart';
 import 'backup_format.dart';
 import 'backup_platform.dart';
 import 'backup_registry.dart';
@@ -335,6 +336,12 @@ class AutoBackup extends ChangeNotifier {
       return AutoOutcome.failed;
     }
     final r = await platform.writeFolderFile(name, text);
+    if (r.ok) {
+      Diag.data('autobackup_ok', {
+        'trigger': trigger.name,
+        'kb': text.length ~/ 1024,
+      });
+    }
     if (!r.ok) {
       await _fail(r.code);
       return AutoOutcome.failed;
@@ -362,6 +369,7 @@ class AutoBackup extends ChangeNotifier {
       final list = await platform.listFolderFiles();
       if (!list.ok) {
         debugPrint('auto backup: list failed (${list.code})');
+        Diag.data('autobackup_prune_fail', {'code': list.code});
         return;
       }
       final names = [for (final f in list.value!) f.name];
@@ -376,12 +384,18 @@ class AutoBackup extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('auto backup: prune failed (${e.runtimeType})');
+      Diag.data('autobackup_prune_fail', {'err': e.runtimeType});
     }
   }
 
   Future<void> _fail(String code) async {
     final safe = code.replaceAll(RegExp(r'[^A-Za-z0-9_:.-]'), '_');
     debugPrint('auto backup failed: $safe');
+    // 독서공방 autobackup_fail 과 같은 사건: 사유 코드(no_folder:never·no_perm:p0·gone·write:…)와 연속 실패 수.
+    Diag.data('autobackup_fail', {
+      'code': safe.length > 40 ? safe.substring(0, 40) : safe,
+      'n': (prefs.getInt(BackupKeys.autoFailN) ?? 0) + 1,
+    });
     try {
       await prefs.setInt(
         BackupKeys.autoFailN,

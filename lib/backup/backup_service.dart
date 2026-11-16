@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/settings.dart';
+import '../diag/diag_recorder.dart';
 import '../stats/prayer_stats_store.dart';
 import '../ui/widgets/stations_series_picker.dart';
 import 'auto_backup.dart';
@@ -207,6 +208,7 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
       BackupFormat.exportFileName(_now()),
       doc.encode(),
     );
+    Diag.data('backup_save', {'code': r.code, 'records': doc.records.length});
     if (r.ok) {
       final ms = _now().millisecondsSinceEpoch;
       await prefs.setInt(BackupKeys.lastBackupAt, ms);
@@ -225,6 +227,7 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
       BackupFormat.exportFileName(_now()),
       doc.encode(),
     );
+    Diag.data('backup_share', {'code': r.code, 'records': doc.records.length});
     if (!r.ok && !r.cancelled) debugPrint('backup share failed: ${r.code}');
     return r;
   }
@@ -241,7 +244,10 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
   /// 파일 내용을 읽어 계획을 만든다(아무것도 바꾸지 않는다).
   ImportPick planFromText(String text) {
     final r = BackupCodec.decode(text);
-    if (!r.ok) return ImportPick.error(r.error!.message);
+    if (!r.ok) {
+      Diag.data('import_fail', {'code': r.error!.name, 'chars': text.length});
+      return ImportPick.error(r.error!.message);
+    }
     return ImportPick.plan(planFor(r.document!));
   }
 
@@ -250,6 +256,7 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
     final r = await platform.openDocument();
     if (r.cancelled) return const ImportPick.cancelled();
     if (!r.ok) {
+      Diag.data('import_fail', {'code': r.code});
       return ImportPick.error(
         r.code == 'too_big'
             ? BackupReadError.tooLarge.message
@@ -268,6 +275,7 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
     // 묶어 둔 금고 쓰기를 먼저 내려 「바로 전 상태」가 사본에 있게 한다.
     await flushVault();
     if (!await vault.safetySnapshot('pre_$reason')) {
+      Diag.data('import_apply', {'reason': reason, 'out': 'no_safety_copy'});
       notifyListeners();
       return ImportOutcome.noSafetyCopy;
     }
@@ -282,6 +290,12 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
     unawaited(StationsSeriesChoice.reload());
     await vault.afterRestore();
     notifyListeners();
+    Diag.data('import_apply', {
+      'reason': reason,
+      'out': prefsOk ? 'applied' : 'partial',
+      'records': plan.newRecords.length,
+      'prefs': plan.changedPrefs.length,
+    });
     return prefsOk ? ImportOutcome.applied : ImportOutcome.partial;
   }
 
@@ -316,12 +330,14 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
         }
       } catch (e) {
         debugPrint('backup: folder candidate failed (${e.runtimeType})');
+        Diag.data('restore_folder_fail', {'err': e.runtimeType});
       }
     }
     return list;
   }
 
   Future<void> dismissRestoreOffer() async {
+    Diag.crumb('restore_offer_dismiss');
     await vault.dismissOffer();
     notifyListeners();
   }
@@ -330,16 +346,22 @@ class BackupService extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<EnableResult> enableAuto({bool repick = false}) async {
     final r = await auto.enable(repick: repick);
+    Diag.data('autobackup_enable', {'repick': repick, 'out': r.name});
     notifyListeners();
     return r;
   }
 
   Future<void> disableAuto() async {
+    Diag.crumb('autobackup_disable');
     await auto.disable();
     notifyListeners();
   }
 
-  Future<AutoOutcome> backupNow() => auto.run(BackupTrigger.force);
+  Future<AutoOutcome> backupNow() async {
+    final r = await auto.run(BackupTrigger.force);
+    Diag.data('autobackup_now', {'out': r.name});
+    return r;
+  }
 
   /// 폴더를 다시 고른 뒤 이 기기가 비어 있으면(새 기기·재설치) 그 폴더의 가장 최근 백업을 계획으로 돌려준다.
   Future<ImportPlan?> folderRestorePlanIfEmpty() async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../app/theme.dart';
+import '../../diag/diag_recorder.dart';
 import 'image_share.dart';
 import 'share_card.dart';
 
@@ -70,6 +71,7 @@ class _ShareSheetState extends State<ShareSheet> {
       final r = story
           ? await widget.channel.shareStory(png, name)
           : await widget.channel.shareImage(png, name);
+      Diag.crumb('share_image', {'story': story, 'out': r.name});
       final msg = switch (r) {
         ShareOutcome.openedSheet when story =>
           '인스타그램 스토리를 바로 열 수 없어 공유 창으로 열었어요.',
@@ -78,7 +80,8 @@ class _ShareSheetState extends State<ShareSheet> {
         _ => null,
       };
       if (msg != null) messenger.showSnackBar(SnackBar(content: Text(msg)));
-    } catch (_) {
+    } catch (e, st) {
+      Diag.caught('share_image', e, st);
       messenger.showSnackBar(
         const SnackBar(content: Text('이미지를 만들지 못했어요. 잠시 뒤 다시 해 주세요.')),
       );

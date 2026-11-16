@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -6,10 +8,18 @@ import 'app/app_bootstrap.dart';
 import 'app/app_services.dart';
 import 'app/licenses.dart';
 import 'app/theme.dart';
+import 'diag/diag_handlers.dart';
+import 'diag/diag_recorder.dart';
+import 'diag/diag_sources.dart';
 import 'glass/glass_catalog.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 오류 기록(더보기 › 문제 알리기 › 오류 기록 보내기): 처리되지 않은 오류를 맨 먼저 잡는다(기존 처리기에 이어 붙는다).
+  // 기기 안에만 쌓고 자동으로 보내지 않는다. 파일 붙이기는 화면을 막지 않고 뒤에서.
+  DiagHandlers.install();
+  DiagLifecycle.install();
+  unawaited(DiagBoot.start());
   // 서비스 준비(저장소·로그인·분석)가 끝나기 전에도 바로 첫 화면을 그린다.
   // 그동안 흰 화면이 길게 보이지 않도록 앱 배경색의 시작 화면을 먼저 보여 준다.
   runApp(const _Launcher());
@@ -47,9 +57,15 @@ class _LauncherState extends State<_Launcher> {
       final services = await bootstrapServices();
       await chrome;
       if (mounted) setState(() => _services = services);
-    } catch (e) {
+    } catch (e, st) {
       // 시작 실패도 빈 화면 대신 알려 준다(내용은 화면에 쓰지 않는다).
       debugPrint('app: bootstrap failed (${e.runtimeType})');
+      DiagRecorder.instance.error(
+        'bootstrap',
+        e,
+        stack: st,
+        unexpectedError: true,
+      );
       if (mounted) setState(() => _error = e);
     }
   }

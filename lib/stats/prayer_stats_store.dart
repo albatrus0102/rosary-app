@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../backup/backup_registry.dart';
+import '../diag/diag_recorder.dart';
 import 'prayer_record.dart';
 import 'prayer_stats_calc.dart';
 
@@ -104,6 +105,7 @@ class PrayerStatsStore extends ChangeNotifier {
   /// 지우기 전에 「일부러 줄였다」 표식을 남긴다(기록 지우기·계정 전환·계정 삭제가 모두 여기를 지난다) —
   /// 기기 안 금고가 이 줄어듦을 사고로 보고 되살리기를 권하지 않게(`lib/backup/backup_vault.dart`).
   Future<void> clear() async {
+    Diag.data('records_clear', {'n': _records.length});
     _records = [];
     _calc = null;
     notifyListeners();
@@ -117,11 +119,13 @@ class PrayerStatsStore extends ChangeNotifier {
         );
       } catch (e) {
         debugPrint('stats clear: intent mark failed (${e.runtimeType})');
+        Diag.data('save_fail', {'what': 'intent_drop', 'err': e.runtimeType});
       }
       try {
         await prefs.remove(prefsKey);
       } catch (e) {
         debugPrint('stats clear: remove failed (${e.runtimeType})');
+        Diag.data('save_fail', {'what': 'records_clear', 'err': e.runtimeType});
       }
     });
     await _writeChain;
@@ -133,9 +137,20 @@ class PrayerStatsStore extends ChangeNotifier {
     final snapshot = jsonEncode([for (final r in _records) r.toJson()]);
     _writeChain = _writeChain.then((_) async {
       try {
-        await prefs.setString(prefsKey, snapshot);
-      } catch (_) {
-        // 저장 실패는 메모리 상태를 해치지 않는다.
+        if (!await prefs.setString(prefsKey, snapshot)) {
+          Diag.dataOnce('records_save', const Duration(hours: 1), 'save_fail', {
+            'what': 'prayer_records',
+            'code': 'false',
+            'n': _records.length,
+          });
+        }
+      } catch (e) {
+        // 저장 실패는 메모리 상태를 해치지 않는다 — 오류 기록에만 남긴다(1시간에 한 번).
+        Diag.dataOnce('records_save', const Duration(hours: 1), 'save_fail', {
+          'what': 'prayer_records',
+          'err': e.runtimeType,
+          'n': _records.length,
+        });
       }
     });
     return _writeChain;

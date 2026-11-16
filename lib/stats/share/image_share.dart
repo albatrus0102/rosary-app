@@ -6,6 +6,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../diag/diag_recorder.dart';
+
 /// 카드를 이미지로 만들어 안드로이드 공유 시트(FileProvider)나 인스타그램 스토리로 보낸다.
 /// 독서공방 `shareImageTo`/`shareImageInstagram`(MainActivity.kt)의 Flutter 판.
 
@@ -69,7 +71,8 @@ class PlatformImageShare implements ImageShareChannel {
       return r == 'sheet' ? ShareOutcome.openedSheet : ShareOutcome.opened;
     } on MissingPluginException {
       return ShareOutcome.unsupported;
-    } catch (_) {
+    } catch (e, st) {
+      Diag.caught('share_channel', e, st);
       return ShareOutcome.failed;
     }
   }

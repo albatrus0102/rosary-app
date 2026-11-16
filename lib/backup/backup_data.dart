@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../diag/diag_recorder.dart';
 import '../stats/prayer_record.dart';
 import 'backup_format.dart';
 import 'backup_registry.dart';
@@ -48,6 +49,12 @@ abstract final class BackupCollector {
       return [for (final item in list) ?PrayerRecord.tryParse(item)];
     } catch (e) {
       debugPrint('backup: stored records unreadable (${e.runtimeType})');
+      Diag.dataOnce(
+        'records_unreadable',
+        const Duration(hours: 1),
+        'records_unreadable',
+        {'err': e.runtimeType, 'chars': raw.length},
+      );
       return const [];
     }
   }
@@ -216,6 +223,7 @@ abstract final class BackupImporter {
         if (!done) ok = false;
       } catch (err) {
         debugPrint('backup import: pref write failed (${err.runtimeType})');
+        Diag.data('import_pref_fail', {'err': err.runtimeType});
         ok = false;
       }
     }
@@ -231,6 +239,7 @@ abstract final class BackupImporter {
         }
       } catch (err) {
         debugPrint('backup import: carry write failed (${err.runtimeType})');
+        Diag.data('import_carry_fail', {'err': err.runtimeType});
         ok = false;
       }
     }

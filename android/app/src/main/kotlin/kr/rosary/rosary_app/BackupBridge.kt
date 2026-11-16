@@ -90,6 +90,7 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             try {
                 result.success(map)
             } catch (e: Exception) {
+                NativeDiag.record("backup:reply", e)
                 Log.w(TAG, "reply failed: ${errName(e)}")
             }
         }
@@ -102,8 +103,10 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             val out = try {
                 work()
             } catch (e: OutOfMemoryError) {
+                NativeDiag.record("backup:io", e)
                 code("too_big")
             } catch (e: Exception) {
+                NativeDiag.record("backup:io", e)
                 Log.w(TAG, "backup io failed: ${errName(e)}")
                 code("io:" + errName(e))
             }
@@ -187,6 +190,7 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             "saveDocument" -> {
                 val name = safeName(call.argument<String>("name") ?: "rosarium-export.json")
                 val content = call.argument<String>("content") ?: ""
+                val mime = safeMime(call.argument<String>("mime"))
                 if (content.isEmpty()) return reply(result, code("empty"))
                 if (pending.containsKey(REQ_CREATE)) return reply(result, code("busy"))
                 try {
@@ -194,13 +198,14 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
                     stage.writeBytes(content.toByteArray(Charsets.UTF_8))
                     stagedSave = stage
                 } catch (e: Exception) {
+                    NativeDiag.record("backup:stage", e)
                     Log.w(TAG, "stage save failed: ${errName(e)}")
                     return reply(result, code("io:" + errName(e)))
                 }
                 startForResult(REQ_CREATE, result) {
                     Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "application/json"
+                        type = mime
                         putExtra(Intent.EXTRA_TITLE, name)
                     }
                 }
@@ -208,15 +213,12 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             "shareFile" -> {
                 val name = safeName(call.argument<String>("name") ?: "rosarium-export.json")
                 val content = call.argument<String>("content") ?: ""
+                val mime = safeMime(call.argument<String>("mime"))
                 if (content.isEmpty()) return reply(result, code("empty"))
                 try {
-                    val dir = File(activity.cacheDir, BackupShareProvider.DIR)
-                    dir.mkdirs()
-                    dir.listFiles()?.forEach { it.delete() } // 지난 공유 파일은 남기지 않는다
-                    File(dir, name).writeBytes(content.toByteArray(Charsets.UTF_8))
-                    val uri = Uri.parse("content://${activity.packageName}${BackupShareProvider.AUTHORITY_SUFFIX}/$name")
+                    val uri = stageShare(listOf(name to content)).first()
                     val send = Intent(Intent.ACTION_SEND).apply {
-                        type = "application/json"
+                        type = mime
                         putExtra(Intent.EXTRA_STREAM, uri)
                         putExtra(Intent.EXTRA_SUBJECT, name)
                         clipData = ClipData.newRawUri(name, uri)
@@ -225,7 +227,36 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
                     activity.startActivity(Intent.createChooser(send, null))
                     reply(result, code("ok"))
                 } catch (e: Exception) {
+                    NativeDiag.record("backup:share", e)
                     Log.w(TAG, "share failed: ${errName(e)}")
+                    reply(result, code("io:" + errName(e)))
+                }
+            }
+            // 여러 파일을 한 번에(오류 기록 + 백업 파일, lib/diag). 받는 앱에는 그 URI 들의 읽기 권한만 준다.
+            "shareFiles" -> {
+                val raw = call.argument<List<Map<String, Any?>>>("files") ?: emptyList()
+                val files = raw.mapNotNull { f ->
+                    val n = f["name"] as? String ?: return@mapNotNull null
+                    val c = f["content"] as? String ?: return@mapNotNull null
+                    if (c.isEmpty()) null else Triple(safeName(n), c, safeMime(f["mime"] as? String))
+                }.distinctBy { it.first }.take(4)
+                if (files.isEmpty()) return reply(result, code("empty"))
+                try {
+                    val uris = ArrayList(stageShare(files.map { it.first to it.second }))
+                    val send = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                        type = if (files.map { it.third }.distinct().size == 1) files[0].third else "*/*"
+                        putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                        putExtra(Intent.EXTRA_SUBJECT, files[0].first)
+                        val clip = ClipData.newRawUri(files[0].first, uris[0])
+                        for (i in 1 until uris.size) clip.addItem(ClipData.Item(uris[i]))
+                        clipData = clip
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    activity.startActivity(Intent.createChooser(send, null))
+                    reply(result, code("ok"))
+                } catch (e: Exception) {
+                    NativeDiag.record("backup:shareFiles", e)
+                    Log.w(TAG, "share files failed: ${errName(e)}")
                     reply(result, code("io:" + errName(e)))
                 }
             }
@@ -243,6 +274,23 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
         }
     }
 
+    /** 공유 폴더(cache/backup_share)를 비우고 파일들을 쓴 뒤 공급자 URI 들을 돌려준다. */
+    private fun stageShare(files: List<Pair<String, String>>): List<Uri> {
+        val dir = File(activity.cacheDir, BackupShareProvider.DIR)
+        dir.mkdirs()
+        dir.listFiles()?.forEach { it.delete() } // 지난 공유 파일은 남기지 않는다
+        return files.map { (name, content) ->
+            File(dir, name).writeBytes(content.toByteArray(Charsets.UTF_8))
+            Uri.parse("content://${activity.packageName}${BackupShareProvider.AUTHORITY_SUFFIX}/$name")
+        }
+    }
+
+    /** 허용하는 파일 종류만(그 밖은 JSON). */
+    private fun safeMime(m: String?): String = when (m) {
+        "text/plain" -> "text/plain"
+        else -> "application/json"
+    }
+
     private fun safeName(name: String): String {
         val n = name.replace(Regex("[^A-Za-z0-9._-]"), "_").take(80)
         return if (n.isBlank()) "rosarium-export.json" else n
@@ -256,6 +304,7 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             activity.startActivityForResult(make(), req)
         } catch (e: Exception) {
             pending.remove(req)
+            NativeDiag.record("backup:picker", e)
             Log.w(TAG, "start picker failed: ${errName(e)}")
             reply(result, code("no_picker"))
         }
@@ -368,6 +417,7 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
         } catch (e: java.io.FileNotFoundException) {
             Triple(null, "gone", null)
         } catch (e: Exception) {
+            NativeDiag.record("backup:probe", e)
             Triple(null, "err:" + errName(e), null)
         }
     }
@@ -444,6 +494,7 @@ class BackupBridge(private val activity: Activity) : MethodChannel.MethodCallHan
             } catch (e2: Exception) {
                 Log.i(TAG, "failed doc cleanup: ${errName(e2)}")
             }
+            NativeDiag.record("backup:write", e)
             Log.w(TAG, "folder write failed: ${errName(e)}")
             code("write:" + errName(e))
         }

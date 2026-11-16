@@ -15,6 +15,34 @@
       if (root.console && o.e !== 'pos' && o.e !== 'perf') console.log('[church->flutter] ' + s);
     }
   }
+  // 오류 기록(로사리움 「오류 기록 보내기」, lib/diag/diag_sources.dart DiagJs): 처리되지 않은 오류·거부된 Promise·
+  // API 메서드 실패를 {e:'jsError'} 로 Flutter 에 넘긴다. 한 페이지에서 30건까지, 같은 문구는 한 번. 파일은 이름만.
+  var errSeen = {}, errN = 0;
+  function jsError(kind, msg, src, line, col, stack) {
+    try {
+      msg = String(msg == null ? '' : msg).slice(0, 300);
+      var key = kind + '|' + msg + '|' + (line | 0);
+      if (errSeen[key] || errN >= 30) return;
+      errSeen[key] = 1; errN++;
+      post({ e: 'jsError', kind: kind, msg: msg, src: String(src || '').split(/[\/\\]/).pop().split('?')[0].slice(0, 60),
+        line: line | 0, col: col | 0, stack: String(stack || '').slice(0, 1500) });
+    } catch (e) { /* 기록이 또 오류를 만들지 않는다 */ }
+  }
+  if (typeof root.addEventListener === 'function') {
+    root.addEventListener('error', function (ev) {
+      var er = ev && ev.error;
+      jsError('error', (ev && ev.message) || (er && er.message), ev && ev.filename, ev && ev.lineno, ev && ev.colno, er && er.stack);
+    });
+    root.addEventListener('unhandledrejection', function (ev) {
+      var r = ev && ev.reason;
+      jsError('rejection', (r && r.message) || r, '', 0, 0, r && r.stack);
+    });
+  }
+  // bridge.js 앞 스크립트의 오류(index.html 첫 스크립트가 모아 둔 것).
+  if (root.__churchErrBuf && root.__churchErrBuf.length) {
+    root.__churchErrBuf.forEach(function (b) { jsError(b[0], b[1], b[2], b[3], b[4], b[5]); });
+  }
+  root.__churchErrBuf = null;
   function arg(a) {
     if (typeof a === 'string') { try { return JSON.parse(a); } catch (e) { return {}; } }
     return a || {};
@@ -36,7 +64,7 @@
     API[m] = function (a) {
       a = arg(a);
       if (app) {
-        try { app.api[m](a); } catch (e) { if (root.console) console.error('[church] ' + m + ' failed', e); }
+        try { app.api[m](a); } catch (e) { if (root.console) console.error('[church] ' + m + ' failed', e); jsError('api', m + ': ' + (e && e.message), '', 0, 0, e && e.stack); }
       } else if (!NO_QUEUE[m] && queue.length < 400) queue.push([m, a]);
     };
   });
@@ -47,11 +75,11 @@
     Object.keys(a.api || {}).forEach(function (m) {
       if (API[m] || m.charAt(0) === '_') return;
       METHODS.push(m);
-      API[m] = function (x) { try { app.api[m](arg(x)); } catch (e) { if (root.console) console.error('[church] ' + m + ' failed', e); } };
+      API[m] = function (x) { try { app.api[m](arg(x)); } catch (e) { if (root.console) console.error('[church] ' + m + ' failed', e); jsError('api', m + ': ' + (e && e.message), '', 0, 0, e && e.stack); } };
     });
     var q = queue; queue = [];
     q.forEach(function (c) { API[c[0]](c[1]); });
   };
   root.ChurchAPI = API;
-  root.ChurchBridge = { post: post };
+  root.ChurchBridge = { post: post, jsError: jsError };
 })(typeof window !== 'undefined' ? window : this);

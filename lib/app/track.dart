@@ -1,4 +1,5 @@
 import '../analytics/analytics.dart';
+import '../diag/diag_recorder.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import 'settings.dart';
@@ -9,6 +10,8 @@ import 'settings.dart';
 /// - 어떤 경우에도 던지지 않는다. 초기화 전에는 `Analytics.instance`가 아무것도 하지 않는다.
 abstract final class Track {
   static void event(String name, [Map<String, Object?> props = const {}]) {
+    // 오류 기록의 발자취(기기 안에만 — 동의·업로드와 무관, 값은 열거형·숫자뿐). 분석과 같은 이름·속성.
+    Diag.crumb(name, props);
     try {
       Analytics.instance.track(name, props);
     } catch (_) {
@@ -17,6 +20,7 @@ abstract final class Track {
   }
 
   static void screen(String id) {
+    Diag.crumb('screen', {'id': id});
     try {
       Analytics.instance.screen(id);
     } catch (_) {}

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../diag/diag_recorder.dart';
 import 'backup_data.dart';
 import 'backup_format.dart';
 import 'backup_registry.dart';
@@ -188,6 +189,7 @@ class BackupVault {
       text = await files.read(slot);
     } catch (e) {
       debugPrint('vault: read $slot failed (${e.runtimeType})');
+      Diag.data('vault_read_fail', {'slot': slot, 'err': e.runtimeType});
       return null;
     }
     if (text == null) return null;
@@ -199,6 +201,7 @@ class BackupVault {
     final doc = r.document;
     if (doc == null) {
       debugPrint('vault: $slot unreadable (${r.error?.name})');
+      Diag.data('vault_unreadable', {'slot': slot, 'code': r.error?.name});
       return null;
     }
     var seq = 0;
@@ -288,6 +291,7 @@ class BackupVault {
     } catch (e) {
       lastError = 'check:${e.runtimeType}';
       debugPrint('vault: launch check failed (${e.runtimeType})');
+      Diag.data('vault_check_fail', {'err': e.runtimeType});
       return null;
     } finally {
       _ready = true;
@@ -415,6 +419,12 @@ class BackupVault {
     } catch (e) {
       lastError = 'write:${e.runtimeType}';
       debugPrint('vault: checkpoint failed (${e.runtimeType})');
+      Diag.dataOnce(
+        'vault_write',
+        const Duration(hours: 1),
+        'vault_write_fail',
+        {'err': e.runtimeType},
+      );
       return VaultWrite.failed;
     }
   }
@@ -433,12 +443,14 @@ class BackupVault {
       final back = await readSlot('pre0');
       if (back == null || back.document.dataHash != doc.dataHash) {
         lastError = 'pre:verify';
+        Diag.data('vault_pre_fail', {'reason': reason, 'code': 'verify'});
         return false;
       }
       return true;
     } catch (e) {
       lastError = 'pre:${e.runtimeType}';
       debugPrint('vault: safety snapshot failed (${e.runtimeType})');
+      Diag.data('vault_pre_fail', {'reason': reason, 'err': e.runtimeType});
       return false;
     }
   }

@@ -7,6 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
+import '../diag/diag_sources.dart';
 import 'church_diagnostics.dart';
 import 'church_rosary_looks.g.dart';
 import 'church_theme.dart';
@@ -904,6 +905,8 @@ class WebViewChurchSceneController extends ChurchSceneController {
         'FlutterChurch',
         onMessageReceived: (m) {
           // 개발용 터치 기록·없는 메서드 알림(일반 빌드에서는 기록하지 않고 버린다)
+          // 웹 장면의 JS 오류 → 오류 기록(lib/diag). 모든 빌드에서 기록한다(기기 안에만).
+          if (DiagJs.handleRaw(m.message)) return;
           if (ChurchTouchTrace.handleRaw(m.message)) return;
           if (ChurchDiagnostics.handleRaw(m.message)) return;
           // 개발용 임시 유리 표시(일반 빌드에서는 무시)

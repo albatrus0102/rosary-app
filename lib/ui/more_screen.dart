@@ -12,6 +12,7 @@ import '../auth/account_screen.dart';
 import '../auth/legal_screen.dart';
 import '../auth/legal_texts.dart';
 import '../church/dev_glass.dart';
+import '../diag/diag_send_sheet.dart';
 import '../domain/stations_series.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_licenses_screen.dart';
@@ -22,7 +23,7 @@ import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 import '../rosary3d/rosary_model.dart';
 
-/// '더보기' 탭: 묵주 스타일, 설정, 계정, 정보(출처·고지·약관·라이선스).
+/// '더보기' 탭: 묵주 스타일, 설정, 계정, 정보(출처·고지·약관·라이선스), 문제 알리기(오류 기록 보내기).
 ///
 /// 이 화면의 항목은 모두 눌러서 여는 **다른 화면**이다. 탭이 아니다.
 class MoreScreen extends StatelessWidget {
@@ -248,6 +249,22 @@ class MoreScreen extends StatelessWidget {
                         applicationName: '로사리움',
                         applicationLegalese: prayerSourceNote,
                       ),
+                    ),
+                  ],
+                ),
+                // 문제 알리기: 오류 기록을 파일로 만들어 사용자가 직접 보낸다(자동 전송 없음, lib/diag).
+                const SectionHeader('문제 알리기'),
+                _Group(
+                  children: [
+                    ListTile(
+                      key: const ValueKey('more-diag-send'),
+                      leading: const Icon(Icons.feedback_outlined),
+                      title: const Text('오류 기록 보내기'),
+                      subtitle: const Text(
+                        '앱이 이상할 때 기록 파일을 만들어 직접 보내요. 자동으로 보내지 않아요.',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(showDiagSendSheet(context)),
                     ),
                   ],
                 ),

@@ -31,6 +31,16 @@ class MainActivity : FlutterActivity() {
     // 묵주 화면의 차등 진동(T-81): timings = [쉼, 울림, 쉼, 울림 …](ms), amplitude 1..255.
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // 오류 기록(lib/diag): 앱을 끝내는 자바 예외를 파일에 남기고, 채널에서 잡은 예외를 Dart 가 가져가게 한다.
+        NativeDiag.installCrashHandler(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "rosarium/diag").setMethodCallHandler { call, result ->
+            if (call.method != "drain") { result.notImplemented(); return@setMethodCallHandler }
+            try {
+                result.success(mapOf("entries" to NativeDiag.drainEntries(), "crash" to NativeDiag.takeCrash(this)))
+            } catch (e: Exception) {
+                result.error("diag", e.javaClass.simpleName, null)
+            }
+        }
         backup = BackupBridge(this).also {
             MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "rosarium/backup").setMethodCallHandler(it)
         }
@@ -56,6 +66,7 @@ class MainActivity : FlutterActivity() {
                 }
                 result.success(null)
             } catch (e: Exception) {
+                NativeDiag.record("vibrate", e)
                 result.error("vibrate", e.message, null)
             }
         }
@@ -95,6 +106,7 @@ class MainActivity : FlutterActivity() {
                 startActivity(chooser)
                 result.success(Environment.DIRECTORY_DOWNLOADS + "/" + name)
             } catch (e: Exception) {
+                NativeDiag.record("devshare", e)
                 result.error("share", e.message, null)
             }
         }
@@ -112,6 +124,7 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             } catch (e: Exception) {
+                NativeDiag.record("share:" + call.method, e)
                 result.error("share", e.message, null)
             }
         }

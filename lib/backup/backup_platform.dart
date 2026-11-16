@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../diag/diag_recorder.dart';
+
 /// 자동 백업 폴더의 상태(네이티브 `folderState`의 사유 코드, 독서공방 autoBackupFolderCode와 같은 뜻).
 enum FolderState {
   /// 고른 폴더에 지금 쓸 수 있다.
@@ -78,6 +80,17 @@ class PlatformResult<T> {
   bool get cancelled => code == 'cancelled';
 }
 
+const String jsonMime = 'application/json';
+const String textMime = 'text/plain';
+
+/// 공유할 파일 하나(이름·내용·종류).
+class ShareDoc {
+  const ShareDoc(this.name, this.content, {this.mime = jsonMime});
+  final String name;
+  final String content;
+  final String mime;
+}
+
 /// 백업에 필요한 안드로이드 기능(저장소 접근 프레임워크 SAF·공유 시트). 실제 구현은
 /// [MethodChannelBackupPlatform], 시험은 가짜를 넣는다.
 abstract class BackupPlatform {
@@ -103,11 +116,22 @@ abstract class BackupPlatform {
   /// 자동 백업을 끌 때 폴더 권한을 놓아준다.
   Future<bool> releaseFolder();
 
-  /// 사용자가 고른 자리(다운로드 등)에 파일로 저장한다.
-  Future<PlatformResult<void>> saveDocument(String name, String content);
+  /// 사용자가 고른 자리(다운로드 등)에 파일로 저장한다. [mime]은 파일 종류(기본 JSON — 백업 파일).
+  Future<PlatformResult<void>> saveDocument(
+    String name,
+    String content, {
+    String mime = jsonMime,
+  });
 
   /// 공유 시트로 보낸다.
-  Future<PlatformResult<void>> shareFile(String name, String content);
+  Future<PlatformResult<void>> shareFile(
+    String name,
+    String content, {
+    String mime = jsonMime,
+  });
+
+  /// 여러 파일을 한 번에 공유 시트로 보낸다(오류 기록 + 백업 파일).
+  Future<PlatformResult<void>> shareFiles(List<ShareDoc> files);
 
   /// 백업 파일을 고르고 그 내용을 읽는다(20MB 상한).
   Future<PlatformResult<String>> openDocument();
@@ -137,9 +161,11 @@ class MethodChannelBackupPlatform implements BackupPlatform {
       return const {'code': 'unsupported'};
     } on PlatformException catch (e) {
       debugPrint('backup channel $method failed: ${e.code}');
+      Diag.data('backup_channel_fail', {'m': method, 'code': e.code});
       return {'code': 'err:${e.code}'};
     } catch (e) {
       debugPrint('backup channel $method failed: ${e.runtimeType}');
+      Diag.data('backup_channel_fail', {'m': method, 'err': e.runtimeType});
       return {'code': 'err:${e.runtimeType}'};
     }
   }
@@ -214,16 +240,45 @@ class MethodChannelBackupPlatform implements BackupPlatform {
       _code(await _call('releaseFolder')) == 'ok';
 
   @override
-  Future<PlatformResult<void>> saveDocument(String name, String content) async {
-    final m = await _call('saveDocument', {'name': name, 'content': content});
+  Future<PlatformResult<void>> saveDocument(
+    String name,
+    String content, {
+    String mime = jsonMime,
+  }) async {
+    final m = await _call('saveDocument', {
+      'name': name,
+      'content': content,
+      'mime': mime,
+    });
     return _code(m) == 'ok'
         ? const PlatformResult.ok(null)
         : PlatformResult.fail(_code(m));
   }
 
   @override
-  Future<PlatformResult<void>> shareFile(String name, String content) async {
-    final m = await _call('shareFile', {'name': name, 'content': content});
+  Future<PlatformResult<void>> shareFile(
+    String name,
+    String content, {
+    String mime = jsonMime,
+  }) async {
+    final m = await _call('shareFile', {
+      'name': name,
+      'content': content,
+      'mime': mime,
+    });
+    return _code(m) == 'ok'
+        ? const PlatformResult.ok(null)
+        : PlatformResult.fail(_code(m));
+  }
+
+  @override
+  Future<PlatformResult<void>> shareFiles(List<ShareDoc> files) async {
+    final m = await _call('shareFiles', {
+      'files': [
+        for (final f in files)
+          {'name': f.name, 'content': f.content, 'mime': f.mime},
+      ],
+    });
     return _code(m) == 'ok'
         ? const PlatformResult.ok(null)
         : PlatformResult.fail(_code(m));
