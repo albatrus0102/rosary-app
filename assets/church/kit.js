@@ -81,7 +81,7 @@
       colliders: [], zones: [], lights: [], glows: [], flames: [], beams: [], hourHooks: [], updateHooks: [],
       cameraBounds: null, sky: { outside: false }, thumb: null, candleStands: [], lamps: [],
       walls: [], windows: [], roses: [], glassSlots: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {},
-      lampSlots: [], batches: B_, planes: []
+      lampSlots: [], batches: B_, planes: [], floorRects: []
     };
 
     // ---- 질감/사진 ----
@@ -307,6 +307,7 @@
       var m = ctx.plane({ x: (o.x0 + o.x1) / 2, y: y, z: (o.z0 + o.z1) / 2, rx: -PI / 2, w: w, h: d, tex: o.tex, surf: o.surf, color: o.color, tile: o.tile, gloss: o.gloss, mat: o.mat });
       if (o.zone && y > 0) ctx.floorZone({ x0: o.x0, x1: o.x1, z0: o.z0, z1: o.z1, y: y });
       var gl = o.gloss === undefined ? ((o.surf || o.tex) ? 0.75 : 0) : (o.gloss === true ? 0.9 : o.gloss);
+      S_.floorRects.push({ x0: Math.min(o.x0, o.x1), x1: Math.max(o.x0, o.x1), z0: Math.min(o.z0, o.z1), z1: Math.max(o.z0, o.z1), y: y });
       var rf = o.reflect === undefined ? gl >= 0.6 : !!o.reflect;
       if (rf && S_.floors.length < 2) S_.floors.push({ x0: o.x0, x1: o.x1, z0: o.z0, z1: o.z1, y: y, strength: typeof o.reflect === 'number' ? o.reflect : 0.35 + 0.3 * gl });
       return m;
@@ -1460,11 +1461,45 @@
     };
 
     // ---- 최종 준비: 벽 생성, 창, AO 굽기 -> 그릴 항목 목록 ----
+    // 바닥판(ctx.floor)과 같은 높이에서 판 안쪽을 위로 보는 배치 삼각형(문·아치 개구부 문지방 윗면, 같은 높이에 겹쳐 깐 상자 윗면 등)은 판에 완전히 덮여 보이지 않아야 하는데,
+    // 깊이가 같아 두 면이 서로 번갈아 비친다(z-fighting, 2026-11-16 사용자 보고 "발 앞의 줄"). 판이 이미 덮는 자리이므로 그 삼각형을 뺀다(화면의 보이는 면은 판 하나만 남는다).
+    // 높이 차 1.5mm 이내일 때만: 완전히 덮이면 빼고, 판 가장자리에 걸치면 1.2cm 가라앉힌다. 정점 수만 줄고 draw call 은 그대로다. ?dropcovered=0 으로 끄고 비교할 수 있다.
+    function dropCoveredTops() {
+      if (/[?&]dropcovered=0/.test((root.location && root.location.search) || '') || !S_.floorRects.length) return;
+      var R = S_.floorRects, dropped = 0, sunk = 0, TOL = 0.0015, E = 0.001;
+      function at(y, x, z) {   // (x, z) 가 같은 높이의 바닥판 어느 하나 안에 있나
+        for (var r = 0; r < R.length; r++) { var f = R[r]; if (Math.abs(f.y - y) <= TOL && x >= f.x0 - E && x <= f.x1 + E && z >= f.z0 - E && z <= f.z1 + E) return true; }
+        return false;
+      }
+      // 0 = 판이 덮지 않는다, 1 = 일부만 덮는다(무게중심은 덮임), 2 = 완전히 덮인다(세 꼭짓점·세 변 중점·무게중심 모두 판 안, 판 여럿의 합집합도 된다)
+      function cover(P, i) {
+        var y = P[i + 1];
+        if (Math.abs(P[i + 4] - y) > TOL || Math.abs(P[i + 7] - y) > TOL) return 0;
+        var ax = P[i], az = P[i + 2], bx = P[i + 3], bz = P[i + 5], cx = P[i + 6], cz = P[i + 8];
+        if (!at(y, (ax + bx + cx) / 3, (az + bz + cz) / 3)) return 0;
+        return at(y, ax, az) && at(y, bx, bz) && at(y, cx, cz) && at(y, (ax + bx) / 2, (az + bz) / 2) && at(y, (bx + cx) / 2, (bz + cz) / 2) && at(y, (cx + ax) / 2, (cz + az) / 2) ? 2 : 1;
+      }
+      function sweep(b) {
+        var P = b.p, N = b.n, C = b.c, U = b.u, w = 0, t, n = P.length / 9;
+        for (t = 0; t < n; t++) {
+          var i = t * 9, cv = N[i + 1] > 0.999 ? cover(P, i) : 0;
+          if (cv === 2) { dropped++; continue; }
+          if (cv === 1) { P[i + 1] -= 0.012; P[i + 4] -= 0.012; P[i + 7] -= 0.012; sunk++; }   // 걸친 면: 판 아래로 1.2cm 가라앉혀(판 위로 못 올라오게) 판이 이긴다
+          if (w !== t) { for (var k = 0; k < 9; k++) { P[w * 9 + k] = P[i + k]; N[w * 9 + k] = N[i + k]; C[w * 9 + k] = C[i + k]; } if (U) for (k = 0; k < 6; k++) U[w * 6 + k] = U[t * 6 + k]; }
+          w++;
+        }
+        if (w !== n) { P.length = w * 9; N.length = w * 9; C.length = w * 9; if (U) U.length = w * 6; b.vertexCount = w * 3; }
+      }
+      Object.keys(B_).forEach(function (k) { if (k !== 'glass' && k !== 'glassRefl' && k !== 'glow') sweep(B_[k]); });
+      Object.keys(S_.surfBatches).forEach(function (k) { sweep(S_.surfBatches[k].batch); });
+      S_.droppedCovered = dropped; S_.sunkCovered = sunk;
+    }
     ctx._prepare = function () {
       matchWindows();
       buildWalls();
       S_.windows.forEach(buildWindow);
       S_.roses.forEach(buildRose);
+      dropCoveredTops();
       var items = [];
       var opts = S_.aoOpts;
       function addItem(name, batch, material, cast, receive, ao) {
