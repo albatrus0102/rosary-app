@@ -395,9 +395,10 @@ void main() {
       expect(y.people, isEmpty);
       expect(y.facts, hasLength(4));
       expect(y.facts.first, contains('1974년 9월 17일'));
-      expect(y.modelNote, contains('실제 치수는 확인 전이며'));
-      expect(y.modelNote, contains('분위기를 재현한 것'));
-      expect(y.modelNote, contains('성화·유리화·조각은 싣지 않았습니다'));
+      expect(y.modelNote, contains('실제 여의도동성당과 같지 않습니다'));
+      expect(y.modelNote, contains('분위기만'));
+      expect(y.modelNote, contains('작가의 작품은 싣지 않고'));
+      expect(y.modelNote, contains('승인한 모형이 아닙니다'));
       expect(y.source, contains('ycatholic.or.kr'));
       // 미사 시간·사제 성함은 싣지 않는다(바뀔 수 있고, 개인 정보)
       for (final t in [y.blurb, ...y.facts, y.modelNote]) {

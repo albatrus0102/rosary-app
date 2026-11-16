@@ -738,10 +738,11 @@ void main() {
           );
           expect(tester.takeException(), isNull);
         }
-        final note = find.textContaining('실제 치수는 확인 전이며 사진을 보고 분위기를 재현한 것입니다');
+        final note = find.textContaining('실제 여의도동성당과 같지 않습니다');
         await tester.scrollUntilVisible(note, 240, scrollable: scroll);
         expect(note, findsOneWidget);
-        expect(find.textContaining('성화·유리화·조각은 싣지 않았습니다'), findsOneWidget);
+        expect(find.textContaining('작가의 작품은 싣지 않고'), findsOneWidget);
+        expect(find.textContaining('승인한 모형이 아닙니다'), findsOneWidget);
         final btn = find.widgetWithText(FilledButton, '입장');
         expect(btn, findsOneWidget);
         expect(tester.getRect(btn).bottom <= 800, isTrue);
