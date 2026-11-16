@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../app/settings.dart';
 import '../app/track.dart';
 import '../app/window_class.dart';
 import '../domain/prayer_data.dart';
+import 'goal_sheet.dart';
+import 'logical_day.dart';
+import 'prayer_goal.dart';
 import 'prayer_stats_store.dart';
+import 'share/image_share.dart';
+import 'share/share_card.dart';
+import 'share/share_sheet.dart';
+import 'stats_data.dart';
 import 'stats_format.dart';
+import 'stats_logic.dart';
+import 'stats_sections.dart';
 import 'stats_widgets.dart';
 
-enum _StatsRange { month, year, all }
-
-/// 기도 기록(통계) 화면: 이번 달 / 올해 / 전체.
+/// 기도 기록(통계) 화면. 위에서부터 기도의 발자취(연속·히트맵) → 기간별 기도(막대) →
+/// 신비별 기도(도넛) → 돌아보기(주·달·해) 카드, 그 아래 달력·최근 기록. 구역마다 카드로 나누기 단추가 있다.
 ///
 /// 하단 '기록' 탭에 넣을 때는 [embedded]를 켠다(뒤로 가기 버튼 없음). 라우트로 열 때는
 /// 기본값 그대로 쓰면 앱바에 뒤로 가기가 생긴다.
@@ -19,6 +28,12 @@ class StatsScreen extends StatefulWidget {
     required this.store,
     this.now,
     this.embedded = false,
+    this.dayStartHour = defaultDayStartHour,
+    this.goal = PrayerGoal.off,
+    this.goalPrompted = true,
+    this.onGoalChanged,
+    this.onGoalPrompted,
+    this.shareChannel,
   });
 
   final PrayerStatsStore store;
@@ -29,22 +44,100 @@ class StatsScreen extends StatefulWidget {
   /// 테스트용 시계 주입.
   final DateTime Function()? now;
 
+  /// 하루의 시작 시각(이 시각 전의 기도는 전날로 센다).
+  final int dayStartHour;
+
+  /// 오늘의 기도 목표(없으면 [PrayerGoal.off]).
+  final PrayerGoal goal;
+
+  /// 목표 안내를 이미 보여 줬는지. false 이면 처음 열 때 한 번만 시트를 띄운다.
+  final bool goalPrompted;
+
+  /// 목표를 바꿨을 때(끄기 포함).
+  final ValueChanged<PrayerGoal>? onGoalChanged;
+
+  /// 목표 안내를 보여 줬을 때(다시 띄우지 않도록 저장).
+  final VoidCallback? onGoalPrompted;
+
+  /// 공유 경로(테스트에서 가짜로 교체).
+  final ImageShareChannel? shareChannel;
+
   @override
   State<StatsScreen> createState() => _StatsScreenState();
+}
+
+/// 설정([AppSettings])과 연결된 통계 화면: 하루 시작 시각·목표가 바뀌면 다시 그린다.
+class SettingsStatsScreen extends StatelessWidget {
+  const SettingsStatsScreen({
+    super.key,
+    required this.store,
+    required this.settings,
+    this.embedded = false,
+  });
+
+  final PrayerStatsStore store;
+  final AppSettings settings;
+  final bool embedded;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, _) => StatsScreen(
+        store: store,
+        embedded: embedded,
+        dayStartHour: settings.dayStartHour,
+        goal: settings.prayerGoal,
+        goalPrompted: settings.goalPrompted,
+        onGoalChanged: (g) => settings.prayerGoal = g,
+        onGoalPrompted: settings.markGoalPrompted,
+      ),
+    );
+  }
 }
 
 class _StatsScreenState extends State<StatsScreen> {
   static const double _maxWidth = 720;
   static const double _maxWideWidth = 1120;
 
-  _StatsRange _range = _StatsRange.month;
+  StatsRange? _range;
+  late PrayerGoal _goal = widget.goal;
 
   DateTime get _now => (widget.now ?? DateTime.now)();
 
   @override
   void initState() {
     super.initState();
-    Track.event('stats_open', {'range': _range.name});
+    Track.event('stats_open', {'range': 'month'});
+    if (!widget.goalPrompted && widget.onGoalChanged != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        widget.onGoalPrompted?.call(); // 건너뛰어도 다시 묻지 않는다
+        await _openGoal(onboarding: true);
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(StatsScreen old) {
+    super.didUpdateWidget(old);
+    if (old.goal != widget.goal) _goal = widget.goal;
+  }
+
+  Future<void> _openGoal({bool onboarding = false}) async {
+    final r = await showGoalSheet(context, current: _goal, onboarding: onboarding);
+    if (r == null || !mounted) return;
+    setState(() => _goal = r);
+    widget.onGoalChanged?.call(r);
+  }
+
+  void _share(ShareCardContent content, String name) {
+    showShareSheet(
+      context,
+      content: content,
+      fileName: name,
+      channel: widget.shareChannel,
+    );
   }
 
   Future<void> _confirmClear() async {
@@ -112,102 +205,66 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Widget _buildContent(BuildContext context, bool wide) {
-    final now = _now;
-    final calc = widget.store.calc;
+    final data = StatsData(
+      records: widget.store.records,
+      now: _now,
+      startHour: widget.dayStartHour,
+      goal: _goal,
+    );
+    final range =
+        _range ?? presetRange(StatsPreset.l30, data.today)!;
 
-    final (DateTime?, DateTime?) range = switch (_range) {
-      _StatsRange.month => PrayerStatsCalc.monthRange(now.year, now.month),
-      _StatsRange.year => PrayerStatsCalc.yearRange(now.year),
-      _StatsRange.all => (null, null),
-    };
-    final (from, to) = range;
-    final rangeName = switch (_range) {
-      _StatsRange.month => '이번 달',
-      _StatsRange.year => '올해',
-      _StatsRange.all => '전체',
-    };
-
-    final selector = SegmentedButton<_StatsRange>(
-      showSelectedIcon: false,
-      segments: const [
-        ButtonSegment(value: _StatsRange.month, label: Text('이번 달')),
-        ButtonSegment(value: _StatsRange.year, label: Text('올해')),
-        ButtonSegment(value: _StatsRange.all, label: Text('전체')),
-      ],
-      selected: {_range},
-      onSelectionChanged: (s) {
-        setState(() => _range = s.first);
-        Track.event('stats_open', {'range': s.first.name});
+    final heat = StreakHeatmapSection(
+      data: data,
+      onGoal: _openGoal,
+      onShare: () => _share(ShareContents.streak(data), 'rosarium_trail'),
+    );
+    final period = PeriodSection(
+      data: data,
+      range: range,
+      onRange: (r) {
+        setState(() => _range = r);
+        Track.event('stats_open', {
+          'range': switch (presetOf(r, data.today, earliest: data.earliest)) {
+            StatsPreset.l7 => 'week',
+            StatsPreset.thisYear => 'year',
+            StatsPreset.all => 'all',
+            StatsPreset.custom => 'custom',
+            _ => 'month',
+          },
+        });
       },
+      onShare: () => _share(ShareContents.period(data, range), 'rosarium_period'),
     );
-
-    final metrics = _MetricGrid(
-      semanticsPrefix: rangeName,
-      tiles: [
-        _Metric(
-          icon: Icons.verified_outlined,
-          label: '묵주기도 완주',
-          value: '${calc.completedCount(from: from, to: to)}회',
-        ),
-        _Metric(
-          icon: Icons.filter_5_outlined,
-          label: '기도한 단',
-          value: '${calc.decades(from: from, to: to)}개',
-        ),
-        _Metric(
-          icon: Icons.favorite_border,
-          label: '성모송',
-          value: '${calc.hailMarys(from: from, to: to)}번',
-        ),
-        _Metric(
-          icon: Icons.schedule,
-          label: '기도 시간',
-          value: formatDurationKo(calc.seconds(from: from, to: to)),
-        ),
-      ],
-    );
-
-    final streakCard = _StreakCard(
-      current: calc.currentStreak(now),
-      longest: calc.longestStreak(),
-    );
-
-    final left = <Widget>[
-      selector,
-      metrics,
-      streakCard,
-      if (_range != _StatsRange.all)
-        _SectionCard(
-          title: '기도한 날',
-          child: MonthCalendar(store: widget.store, now: widget.now),
-        ),
-    ];
-
-    final recent = calc.recent(20);
-    final right = <Widget>[
-      if (_range == _StatsRange.year)
-        _SectionCard(
-          title: '${now.year}년 월별 완주',
-          child: MonthBarChart(
-            values: calc.completedPerMonth(now.year),
-            highlightMonth: now.month,
-          ),
-        ),
-      _SectionCard(
-        title: '$rangeName 신비별 기도',
-        child: MysteryDistributionBar(
-          counts: calc.decadesBySet(from: from, to: to),
-        ),
+    final donut = DonutSection(
+      data: data,
+      range: range,
+      onShare: (slices, kinds) => _share(
+        ShareContents.donut(data, range, slices, kinds: kinds),
+        'rosarium_mystery',
       ),
-      _SectionCard(
-        title: '최근 기록',
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          children: [for (final r in recent) _RecordTile(record: r)],
-        ),
+    );
+    final recap = RecapSection(
+      data: data,
+      onShare: (r) => _share(ShareContents.recap(r), 'rosarium_${r.kind.name}'),
+    );
+    final calendar = StatsSectionCard(
+      title: '기도한 날',
+      child: MonthCalendar(
+        store: widget.store,
+        now: widget.now,
+        startHour: widget.dayStartHour,
       ),
-    ];
-
+    );
+    final recent = StatsSectionCard(
+      title: '최근 기록',
+      child: Column(
+        children: [
+          for (final r in widget.store.calc.recent(20))
+            _RecordTile(record: r),
+        ],
+      ),
+    );
     final clear = Center(
       child: TextButton.icon(
         onPressed: _confirmClear,
@@ -237,9 +294,9 @@ class _StatsScreenState extends State<StatsScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: stack(left)),
+              Expanded(child: stack([heat, period, calendar])),
               const SizedBox(width: 24),
-              Expanded(child: stack(right)),
+              Expanded(child: stack([donut, recap, recent])),
             ],
           ),
           const SizedBox(height: 16),
@@ -247,7 +304,7 @@ class _StatsScreenState extends State<StatsScreen> {
         ],
       );
     }
-    return stack([...left, ...right, clear]);
+    return stack([heat, period, donut, recap, calendar, recent, clear]);
   }
 }
 
@@ -343,193 +400,6 @@ class _Bubble extends StatelessWidget {
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-    this.padding = const EdgeInsets.all(16),
-  });
-
-  final String title;
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Card.filled(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      child: Padding(
-        padding: padding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding:
-                  padding is EdgeInsets &&
-                      (padding as EdgeInsets).horizontal == 0
-                  ? const EdgeInsets.symmetric(horizontal: 16)
-                  : EdgeInsets.zero,
-              child: Semantics(
-                header: true,
-                child: Text(title, style: text.titleMedium),
-              ),
-            ),
-            const SizedBox(height: 12),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Metric {
-  const _Metric({required this.icon, required this.label, required this.value});
-
-  final IconData icon;
-  final String label;
-  final String value;
-}
-
-class _MetricGrid extends StatelessWidget {
-  const _MetricGrid({required this.tiles, required this.semanticsPrefix});
-
-  final List<_Metric> tiles;
-  final String semanticsPrefix;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget row(_Metric a, _Metric b) => IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: _MetricTile(metric: a, prefix: semanticsPrefix),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _MetricTile(metric: b, prefix: semanticsPrefix),
-          ),
-        ],
-      ),
-    );
-    return Column(
-      children: [
-        row(tiles[0], tiles[1]),
-        const SizedBox(height: 12),
-        row(tiles[2], tiles[3]),
-      ],
-    );
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  const _MetricTile({required this.metric, required this.prefix});
-
-  final _Metric metric;
-  final String prefix;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return Semantics(
-      container: true,
-      label: '$prefix ${metric.label} ${metric.value}',
-      excludeSemantics: true,
-      child: Card.filled(
-        color: scheme.surfaceContainerHigh,
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(metric.icon, size: 24, color: scheme.primary),
-              const SizedBox(height: 12),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  metric.value,
-                  maxLines: 1,
-                  style: text.headlineSmall?.copyWith(color: scheme.onSurface),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                metric.label,
-                style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StreakCard extends StatelessWidget {
-  const _StreakCard({required this.current, required this.longest});
-
-  final int current;
-  final int longest;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    Widget cell(String label, int days) => Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: text.labelMedium?.copyWith(color: scheme.onPrimaryContainer),
-          ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '$days일',
-              maxLines: 1,
-              style: text.headlineSmall?.copyWith(
-                color: scheme.onPrimaryContainer,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-    return Semantics(
-      container: true,
-      label: '현재 연속 $current일, 최장 $longest일',
-      excludeSemantics: true,
-      child: Card.filled(
-        color: scheme.primaryContainer,
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(
-                Icons.local_fire_department_rounded,
-                size: 32,
-                color: scheme.onPrimaryContainer,
-              ),
-              const SizedBox(width: 16),
-              cell('현재 연속', current),
-              cell('최장', longest),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _RecordTile extends StatelessWidget {
   const _RecordTile({required this.record});
 
@@ -540,7 +410,7 @@ class _RecordTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final r = record;
     final progress = r.completed
-        ? '완주'
+        ? '끝까지 바침'
         : r.decades >= 1
         ? '${r.decades}단까지'
         : '성모송 ${r.hailMarys}번';

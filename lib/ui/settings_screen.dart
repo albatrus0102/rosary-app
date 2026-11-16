@@ -16,6 +16,7 @@ import '../church/church_liturgy.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_music_tracks.dart';
+import '../stats/goal_sheet.dart';
 import 'leader_record_screen.dart';
 import 'prayer_music_sheet.dart';
 import 'widgets/page_body.dart';
@@ -174,6 +175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildDisplaySection(context),
                   _buildLeaderSection(context),
                   _buildChurchSection(context),
+                  _buildStatsSection(context),
                   _buildAboutSection(context),
                 ],
               ),
@@ -950,6 +952,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // 기도 기록: 하루의 시작 시각 · 오늘의 기도 목표
+  Widget _buildStatsSection(BuildContext context) {
+    final h = settings.dayStartHour;
+    return _Section(
+      title: '기도 기록',
+      children: [
+        ListTile(
+          key: const ValueKey('settings-day-start'),
+          leading: const Icon(Icons.bedtime_outlined),
+          title: const Text('하루의 시작 시각'),
+          subtitle: Text(
+            h == 0
+                ? '자정에 하루가 바뀌어요'
+                : '새벽 $h시 전의 기도는 전날로 세어요',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            final v = await showDialog<int>(
+              context: context,
+              builder: (ctx) => SimpleDialog(
+                title: const Text('하루의 시작 시각'),
+                children: [
+                  RadioGroup<int>(
+                    groupValue: settings.dayStartHour,
+                    onChanged: (x) => Navigator.of(ctx).pop(x),
+                    child: Column(
+                      children: [
+                        for (var i = 0; i <= 7; i++)
+                          RadioListTile<int>(
+                            value: i,
+                            title: Text(i == 0 ? '자정(0시)' : '새벽 $i시'),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+            if (v != null) settings.dayStartHour = v;
+          },
+        ),
+        ListTile(
+          key: const ValueKey('settings-prayer-goal'),
+          leading: const Icon(Icons.flag_outlined),
+          title: const Text('오늘의 기도 목표'),
+          subtitle: Text(settings.prayerGoal.summaryKo),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            final g = await showGoalSheet(context, current: settings.prayerGoal);
+            if (g != null) settings.prayerGoal = g;
+          },
+        ),
+      ],
     );
   }
 

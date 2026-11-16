@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/stats/prayer_stats_store.dart';
-import 'package:rosary_app/stats/stats_screen.dart';
 import 'package:rosary_app/stats/stats_widgets.dart';
 
 final _now = DateTime(2026, 11, 12, 10);
@@ -184,7 +183,7 @@ void main() {
         ),
       );
       expect(find.text('2026년 11월'), findsOneWidget);
-      expect(find.text('이 달 완주 2회'), findsOneWidget);
+      expect(find.text('이 달 끝까지 바친 묵주기도 2번'), findsOneWidget);
       expect(find.text('12'), findsOneWidget);
       // 11월 1일은 일요일: 일요일 시작 달력이므로 첫 칸.
       expect(find.text('일'), findsOneWidget);
@@ -198,7 +197,7 @@ void main() {
       await tester.tap(find.byTooltip('이전 달'));
       await tester.pumpAndSettle();
       expect(find.text('2026년 10월'), findsOneWidget);
-      expect(find.text('이 달 완주 0회'), findsOneWidget);
+      expect(find.text('이 달 끝까지 바친 묵주기도 0번'), findsOneWidget);
 
       await tester.tap(find.byTooltip('다음 달'));
       await tester.pumpAndSettle();
@@ -220,7 +219,7 @@ void main() {
       await tester.tap(find.byTooltip('이전 달'));
       await tester.pumpAndSettle();
       expect(find.text('2025년 12월'), findsOneWidget);
-      expect(find.text('이 달 완주 1회'), findsOneWidget);
+      expect(find.text('이 달 끝까지 바친 묵주기도 1번'), findsOneWidget);
     });
 
     testWidgets('기도한 날과 오늘 의미 라벨', (tester) async {
@@ -253,109 +252,5 @@ void main() {
     expect(find.text('빛 0단'), findsOneWidget);
     expect(find.text('고통 0단'), findsOneWidget);
     expect(find.text('영광 5단'), findsOneWidget);
-  });
-
-  group('StatsScreen', () {
-    testWidgets('이번 달 지표, 올해 전환, 전체 전환', (tester) async {
-      await tester.pumpWidget(_app(StatsScreen(store: _store(), now: _clock)));
-      await tester.pumpAndSettle();
-      expect(find.text('기도 기록'), findsWidgets);
-      expect(find.text('묵주기도 완주'), findsOneWidget);
-      // 이번 달: 완주 2, 단 12, 성모송 56+53+23
-      expect(find.text('2회'), findsOneWidget);
-      expect(find.text('12개'), findsOneWidget);
-      expect(find.text('현재 연속'), findsOneWidget);
-      expect(find.text('최장'), findsOneWidget);
-      expect(find.text('최근 기록'), findsOneWidget);
-      expect(find.text('11월 12일 (목) · 환희의 신비'), findsOneWidget);
-      expect(find.text('2단까지 · 13분'), findsOneWidget);
-
-      await tester.tap(find.text('올해'));
-      await tester.pumpAndSettle();
-      expect(find.text('3회'), findsOneWidget);
-      expect(find.text('2026년 월별 완주'), findsOneWidget);
-      expect(find.byType(MonthBarChart), findsOneWidget);
-
-      await tester.tap(find.text('전체'));
-      await tester.pumpAndSettle();
-      expect(find.text('4회'), findsOneWidget);
-      expect(find.byType(MonthCalendar), findsNothing);
-      expect(find.byType(MonthBarChart), findsNothing);
-    });
-
-    testWidgets('빈 상태', (tester) async {
-      await tester.pumpWidget(
-        _app(StatsScreen(store: PrayerStatsStore.inMemory(), now: _clock)),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('아직 기록이 없어요'), findsOneWidget);
-      expect(find.text('전체 기록 지우기'), findsNothing);
-    });
-
-    testWidgets('전체 기록 지우기: 취소/확인', (tester) async {
-      final store = _store();
-      await tester.pumpWidget(_app(StatsScreen(store: store, now: _clock)));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('전체 기록 지우기'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('전체 기록 지우기'));
-      await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsOneWidget);
-      await tester.tap(find.text('취소'));
-      await tester.pumpAndSettle();
-      expect(store.records, isNotEmpty);
-
-      await tester.ensureVisible(find.text('전체 기록 지우기'));
-      await tester.tap(find.text('전체 기록 지우기'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('지우기'));
-      await tester.pumpAndSettle();
-      expect(store.records, isEmpty);
-      expect(find.text('아직 기록이 없어요'), findsOneWidget);
-    });
-
-    for (final range in ['이번 달', '올해', '전체']) {
-      testWidgets('360x640 글자 1.5배 넘침 없음 ($range)', (tester) async {
-        await _setSize(tester, const Size(360, 640));
-        await tester.pumpWidget(
-          _app(
-            StatsScreen(store: _store(), now: _clock),
-            textScale: 1.5,
-            size: const Size(360, 640),
-          ),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.text(range));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-        // 끝까지 스크롤해 모든 영역을 한 번씩 그린다.
-        await tester.drag(
-          find.byType(Scrollable).first,
-          const Offset(0, -3000),
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      });
-    }
-
-    testWidgets('넓은 화면 1000x800 두 열, 넘침 없음', (tester) async {
-      await _setSize(tester, const Size(1000, 800));
-      await tester.pumpWidget(
-        _app(
-          StatsScreen(store: _store(), now: _clock),
-          size: const Size(1000, 800),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      final calendar = tester.getTopLeft(find.byType(MonthCalendar));
-      final distribution = tester.getTopLeft(
-        find.byType(MysteryDistributionBar),
-      );
-      expect(distribution.dx, greaterThan(calendar.dx + 200));
-      await tester.tap(find.text('올해'));
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-    });
   });
 }

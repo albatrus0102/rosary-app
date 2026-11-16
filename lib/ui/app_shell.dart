@@ -248,9 +248,10 @@ class _AppShellState extends State<AppShell> {
         ),
         // 기록 탭은 보고 있을 때만 만든다(열 때마다 최신 기록을 읽고 stats_open을 센다).
         if (_index == _stats && services != null)
-          StatsScreen(
+          SettingsStatsScreen(
             key: const ValueKey('stats-tab'),
             store: services.stats,
+            settings: widget.settings,
             embedded: true,
           )
         else

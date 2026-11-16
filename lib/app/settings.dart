@@ -9,6 +9,8 @@ import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/prayer_music_tracks.dart';
 import '../rosary3d/rosary_model.dart';
+import '../stats/logical_day.dart';
+import '../stats/prayer_goal.dart';
 import 'leader_voice.dart';
 import 'release_gate.dart';
 import 'rosary_style.dart';
@@ -113,6 +115,12 @@ class AppSettings extends ChangeNotifier {
     _shortPrayers = _prefs.getBool(_kShortPrayers) ?? false;
     _shortPrayersAsked = _prefs.getBool(_kShortPrayersAsked) ?? false;
     _prayerBackground = _prefs.getBool(_kPrayerBackground) ?? true;
+    _dayStartHour = sanitizeDayStartHour(_prefs.getInt(_kDayStartHour));
+    _goal = PrayerGoal.sanitized(
+      decades: _prefs.getInt(_kGoalDecades),
+      minutes: _prefs.getInt(_kGoalMinutes),
+    );
+    _goalPrompted = _prefs.getBool(_kGoalPrompted) ?? false;
     _savedPrayer = _readSavedPrayer();
     final storedAvatar = _prefs.getString(_kChurchAvatar);
     _churchAvatar = AvatarConfig.fromJsonString(storedAvatar);
@@ -386,6 +394,10 @@ class AppSettings extends ChangeNotifier {
   static const _kShortPrayers = 'short_prayers';
   static const _kShortPrayersAsked = 'short_prayers_asked';
   static const _kPrayerBackground = 'prayer_background';
+  static const _kDayStartHour = 'stats_day_start_hour';
+  static const _kGoalDecades = 'stats_goal_decades';
+  static const _kGoalMinutes = 'stats_goal_minutes';
+  static const _kGoalPrompted = 'stats_goal_prompted';
   static const _kResumeSet = 'resume_set';
   static const _kResumeIndex = 'resume_index';
   static const _kResumeAt = 'resume_at';
@@ -426,6 +438,9 @@ class AppSettings extends ChangeNotifier {
   late bool _shortPrayers;
   late bool _shortPrayersAsked;
   late bool _prayerBackground;
+  late int _dayStartHour;
+  late PrayerGoal _goal;
+  late bool _goalPrompted;
   SavedPrayer? _savedPrayer;
 
   SavedPrayer? _readSavedPrayer() {
@@ -628,6 +643,54 @@ class AppSettings extends ChangeNotifier {
     _prayerBackground = v;
     _prefs.setBool(_kPrayerBackground, v);
     notifyListeners();
+  }
+
+  /// 통계의 '하루 시작 시각'(0~7시, 기본 4시). 이 시각 전의 기도는 전날로 센다.
+  int get dayStartHour => _dayStartHour;
+
+  set dayStartHour(int v) {
+    final n = sanitizeDayStartHour(v);
+    if (n == _dayStartHour) return;
+    _dayStartHour = n;
+    _prefs.setInt(_kDayStartHour, n);
+    notifyListeners();
+  }
+
+  /// 오늘의 기도 목표(기본: 없음).
+  PrayerGoal get prayerGoal => _goal;
+
+  set prayerGoal(PrayerGoal v) {
+    final g = PrayerGoal.sanitized(decades: v.decades, minutes: v.minutes);
+    if (g == _goal) return;
+    _goal = g;
+    _prefs.setInt(_kGoalDecades, g.decades);
+    _prefs.setInt(_kGoalMinutes, g.minutes);
+    notifyListeners();
+  }
+
+  /// 목표 안내를 이미 한 번 보여 줬는지.
+  bool get goalPrompted => _goalPrompted;
+
+  void markGoalPrompted() {
+    if (_goalPrompted) return;
+    _goalPrompted = true;
+    _prefs.setBool(_kGoalPrompted, true);
+    notifyListeners();
+  }
+
+  /// 통계 설정 묶음(백업이 이 JSON 을 그대로 담는다).
+  StatsPrefs get statsPrefs => StatsPrefs(
+    dayStartHour: _dayStartHour,
+    goal: _goal,
+    goalPrompted: _goalPrompted,
+  );
+
+  /// [statsPrefs] 로 만든 JSON 을 복원한다(값은 위생 처리된다).
+  void restoreStatsPrefs(Object? json) {
+    final p = StatsPrefs.fromJson(json);
+    dayStartHour = p.dayStartHour;
+    prayerGoal = p.goal;
+    if (p.goalPrompted) markGoalPrompted();
   }
 
   /// 권유 안내를 한 번 보여 줬음을 기록한다(어느 쪽으로 답하든 다시 묻지 않는다).

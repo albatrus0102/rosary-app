@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 통계 이미지 카드 공유용 임시 파일(앱 전용 캐시). 공유할 때마다 이전 것을 지운다(image_share.dart) -->
+    <cache-path name="share" path="share/" />
+</paths>

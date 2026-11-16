@@ -38,6 +38,22 @@
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <!-- 이미지 카드 공유(공유 시트·인스타그램 스토리)용 FileProvider: res/xml/file_paths.xml -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <!-- 인스타그램 스토리 전용 인텐트(com.instagram.share.ADD_TO_STORY)를 쓰려면 Facebook 앱 ID 가
+             필요하다(Meta 정책, 2023-01~). 값이 비어 있으면 앱은 일반 공유 시트로 대신 연다.
+             앱 ID 를 받으면 아래 value 만 채운다(docs/ux/STATS_SHARING.md). -->
+        <meta-data
+            android:name="kr.rosary.rosaryapp.FACEBOOK_APP_ID"
+            android:value="" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
@@ -48,6 +64,12 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <!-- 인스타그램이 설치돼 있는지·이미지 공유를 받는지 확인(공유 시트 맨 앞에 두기) -->
+        <package android:name="com.instagram.android" />
+        <intent>
+            <action android:name="com.instagram.share.ADD_TO_STORY" />
+            <data android:mimeType="image/*" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

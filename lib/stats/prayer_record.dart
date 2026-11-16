@@ -17,6 +17,7 @@ class PrayerRecord {
     this.completed = false,
     this.seconds = 0,
     this.source = sourceApp,
+    this.kind = kindRosary,
   }) : id = id ?? generateId();
 
   /// UUID v4 형식의 무작위 id(`Random.secure`).
@@ -39,6 +40,13 @@ class PrayerRecord {
   static const String sourceApp = 'app';
   static const String sourceChurch = 'church';
 
+  /// 기도 종류: 묵주기도(기본)·십자가의 길·짧은 기도. 아직 묵주기도만 기록되지만 통계의
+  /// '종류별' 보기가 이 값을 읽는다(없는 옛 기록은 묵주기도).
+  static const String kindRosary = 'rosary';
+  static const String kindStations = 'stations';
+  static const String kindShort = 'short';
+  static const List<String> kinds = [kindRosary, kindStations, kindShort];
+
   /// 기도를 마친(기록한) 시각. 로컬 시간.
   final DateTime at;
 
@@ -60,6 +68,9 @@ class PrayerRecord {
   /// 'app' 또는 'church'.
   final String source;
 
+  /// [kinds] 중 하나.
+  final String kind;
+
   /// 아무 진행도 없는 기록인지(통계에서 무시된다).
   bool get hasProgress => decades >= 1 || hailMarys >= 1 || completed;
 
@@ -72,6 +83,7 @@ class PrayerRecord {
     'completed': completed,
     'seconds': seconds,
     'source': source,
+    'kind': kind,
   };
 
   /// JSON에서 기록을 복원한다. 필수 필드(`at`, `set`)가 없거나 형식이 틀리면
@@ -108,6 +120,10 @@ class PrayerRecord {
     final id = idRaw is String && idRaw.isNotEmpty ? idRaw : null;
     final sourceRaw = json['source'];
     final source = sourceRaw == sourceChurch ? sourceChurch : sourceApp;
+    final kindRaw = json['kind'];
+    final kind = kindRaw is String && kinds.contains(kindRaw)
+        ? kindRaw
+        : kindRosary;
 
     return PrayerRecord(
       id: id,
@@ -118,6 +134,7 @@ class PrayerRecord {
       completed: completedRaw == true,
       seconds: seconds.clamp(0, 24 * 3600),
       source: source,
+      kind: kind,
     );
   }
 
@@ -131,11 +148,12 @@ class PrayerRecord {
       other.hailMarys == hailMarys &&
       other.completed == completed &&
       other.seconds == seconds &&
-      other.source == source;
+      other.source == source &&
+      other.kind == kind;
 
   @override
   int get hashCode =>
-      Object.hash(id, at, set, decades, hailMarys, completed, seconds, source);
+      Object.hash(id, at, set, decades, hailMarys, completed, seconds, source, kind);
 
   @override
   String toString() =>

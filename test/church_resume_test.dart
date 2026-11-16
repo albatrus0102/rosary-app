@@ -83,7 +83,8 @@ Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _enterViaShell(
   WidgetTester tester,
 ) async {
   setView(tester, const Size(400, 800));
-  final settings = await loadSettings();
+  final settings = await loadSettings()
+    ..markGoalPrompted(); // 기록 탭의 목표 안내 시트가 탭 조작을 가리지 않게
   settings.churchId = 'basic';
   final services = AppServices.inMemory(settings);
   addTearDown(services.disposeInMemory);

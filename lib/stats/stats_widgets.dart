@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../domain/prayer_data.dart';
+import 'logical_day.dart';
 import 'prayer_stats_store.dart';
+import 'stats_logic.dart';
 import '../app/theme.dart';
 
 DateTime Function() _clock(DateTime Function()? now) => now ?? DateTime.now;
@@ -327,9 +329,13 @@ class MonthCalendar extends StatefulWidget {
     this.now,
     this.initialMonth,
     this.onMonthChanged,
+    this.startHour = defaultDayStartHour,
   });
 
   final PrayerStatsStore store;
+
+  /// 하루의 시작 시각(논리 날짜). 이 시각 전의 기도는 전날 칸에 표시된다.
+  final int startHour;
 
   /// 테스트용 시계 주입.
   final DateTime Function()? now;
@@ -370,11 +376,26 @@ class _MonthCalendarState extends State<MonthCalendar> {
       listenable: widget.store,
       builder: (context, _) {
         final today = _today;
-        final thisMonth = DateTime(today.year, today.month);
+        final lt = logicalDate(today, startHour: widget.startHour);
+        final thisMonth = DateTime(lt.year, lt.month);
         final canNext = _month.isBefore(thisMonth);
-        final calc = widget.store.calc;
-        final prayed = calc.daysWithPrayer(_month.year, _month.month);
-        final completed = calc.completedInMonth(_month.year, _month.month);
+        final agg = dayAggregates(
+          widget.store.records,
+          startHour: widget.startHour,
+        );
+        final prefix = '${_month.year.toString().padLeft(4, '0')}-'
+            '${_month.month.toString().padLeft(2, '0')}-';
+        final prayed = <int>{
+          for (final k in agg.keys)
+            if (k.startsWith(prefix)) int.parse(k.substring(8)),
+        };
+        final completed = [
+          for (final e in agg.entries)
+            if (e.key.startsWith(prefix)) e.value.rosaries,
+        ].fold<int>(0, (a, b) => a + b);
+        final todayLogical = parseDayKey(
+          dayKey(today, startHour: widget.startHour),
+        );
         final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
         final offset = DateTime(_month.year, _month.month).weekday % 7;
         final rows = ((offset + daysInMonth) / 7).ceil();
@@ -387,9 +408,9 @@ class _MonthCalendarState extends State<MonthCalendar> {
           }
           final did = prayed.contains(day);
           final isToday =
-              _month.year == today.year &&
-              _month.month == today.month &&
-              day == today.day;
+              _month.year == todayLogical.year &&
+              _month.month == todayLogical.month &&
+              day == todayLogical.day;
           return Expanded(
             child: Semantics(
               label:
@@ -466,7 +487,7 @@ class _MonthCalendarState extends State<MonthCalendar> {
                           textAlign: TextAlign.center,
                         ),
                         Text(
-                          '이 달 완주 $completed회',
+                          '이 달 끝까지 바친 묵주기도 $completed번',
                           style: text.bodySmall?.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),

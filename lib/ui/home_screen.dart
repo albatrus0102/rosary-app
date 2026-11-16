@@ -142,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openStats(AppServices services) => Navigator.of(context).push(
     MaterialPageRoute<void>(
       settings: const RouteSettings(name: 'stats'),
-      builder: (_) => StatsScreen(store: services.stats),
+      builder: (_) => SettingsStatsScreen(store: services.stats, settings: settings),
     ),
   );
 
