@@ -49,9 +49,9 @@
     bounds: { x0: -HW, x1: HW, z0: ZF - RB, z1: ZB },
     spawn: { x: 0, z: 16.5, r: 0 },   // 정문(뒷벽 가운데) 안쪽, 성가대석 아래: 중앙 통로·제대·드럼의 인물상이 일직선
     seatGroups: [
-      // 중앙 통로(약 2.5m) 좌우 9줄 × 9석 = 162석. 줄 간격 1.9m 는 앱 공통값(실제 줄 수는 더 많다)
-      { g: 'L', rows: 9, perRow: 9, origin: { x: -1.55, z: -3.2 }, dx: -0.7, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.35, 0.3] },
-      { g: 'R', rows: 9, perRow: 9, origin: { x: 1.55, z: -3.2 }, dx: 0.7, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.35, 0.3] }
+      // 중앙 통로(약 2.5m) 좌우 8줄 × 9석 = 144석(맨 앞줄은 제단 계단 앞 통로를 열려고 뺌, 2026-11-16 사용자). 줄 간격 1.9m 는 앱 공통값(실제 줄 수는 더 많다)
+      { g: 'L', rows: 8, perRow: 9, origin: { x: -1.55, z: -1.3 }, dx: -0.7, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.35, 0.3] },
+      { g: 'R', rows: 8, perRow: 9, origin: { x: 1.55, z: -1.3 }, dx: 0.7, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.35, 0.3] }
     ],
     // 봉헌초: 성모상 앞(shrine.js 가 맨 끝 스탠드로 붙인다 — 자리는 shrine_places.js, 제단 앞 왼쪽 피어 앞). 여기 스탠드는 비워 둔다.
     candles: { stands: [] },

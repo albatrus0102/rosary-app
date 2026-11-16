@@ -35,14 +35,14 @@ function walkTo(from, to) {
   return { ok: Math.hypot(me.x - to.x, me.z - to.z) < 0.7, pts, end: me };
 }
 
-test('yeouido: 레이아웃 — 162석, 경계, 입구 스폰(정문 안쪽, 성가대석 아래 앞)', () => {
+test('yeouido: 레이아웃 — 144석, 경계, 입구 스폰(정문 안쪽, 성가대석 아래 앞)', () => {
   assert.equal(lay.id, 'yeouido'); assert.equal(lay.scalePercent, 100);
   assert.deepEqual({ ...B }, { x0: -11, x1: 11, z0: -15.5, z1: 21 });
   assert.deepEqual([lay.spawn.x, lay.spawn.z, lay.spawn.r], [0, 16.5, 0]);
-  assert.equal(L.seats.length, 162);
-  for (const g of ['L', 'R']) assert.equal(L.seats.filter((s) => s.g === g).length, 81);
+  assert.equal(L.seats.length, 144);
+  for (const g of ['L', 'R']) assert.equal(L.seats.filter((s) => s.g === g).length, 72);
   const zs = [...new Set(L.seats.map((s) => +s.z.toFixed(2)))].sort((a, b) => a - b);
-  assert.deepEqual(zs, [-3.2, -1.3, 0.6, 2.5, 4.4, 6.3, 8.2, 10.1, 12.0]);
+  assert.deepEqual(zs, [-1.3, 0.6, 2.5, 4.4, 6.3, 8.2, 10.1, 12.0]);
   for (const s of L.seats) {
     assert.ok(s.x > B.x0 && s.x < B.x1 && s.z > B.z0 && s.z < B.z1, s.id);
     assert.ok(/^[LR]\d\d-\d+$/.test(s.id), s.id);
