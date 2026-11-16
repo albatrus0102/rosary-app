@@ -350,7 +350,10 @@ class WebSocketChurchNet implements ChurchNet {
     int ms, {
     bool kneel = false,
     bool rosary = false,
-  }) => _raw(prayMessage(on, ms, kneel: kneel, rosary: rosary));
+    String? rosaryStyle,
+  }) => _raw(
+    prayMessage(on, ms, kneel: kneel, rosary: rosary, rosaryStyle: rosaryStyle),
+  );
 
   @override
   void lightCandle(int slot, int intention, {int? color}) =>

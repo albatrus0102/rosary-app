@@ -19,6 +19,7 @@ class PeerInfo {
     this.ms = -1,
     this.kneel = false,
     this.rosary = false,
+    this.rosaryStyle,
   });
 
   final String id;
@@ -42,6 +43,9 @@ class PeerInfo {
   /// 묵주를 들고 기도 중(서버 `ro:1`; `r` 은 방향이라 피어 상태에서는 `ro`).
   final bool rosary;
 
+  /// 든 묵주 id(서버 `rs`, T-86). 없으면(옛 서버·옛 클라이언트) 기본 모습으로 보인다.
+  final String? rosaryStyle;
+
   /// 웹 브리지(`setPeers`/`peerJoin`)로 넘기는 JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -54,6 +58,7 @@ class PeerInfo {
     'ms': ms,
     if (kneel) 'k': 1,
     if (rosary) 'ro': 1,
+    if (rosary && rosaryStyle != null) 'rs': rosaryStyle,
   };
 
   @override
@@ -68,11 +73,23 @@ class PeerInfo {
       other.seat == seat &&
       other.ms == ms &&
       other.kneel == kneel &&
-      other.rosary == rosary;
+      other.rosary == rosary &&
+      other.rosaryStyle == rosaryStyle;
 
   @override
-  int get hashCode =>
-      Object.hash(id, avatar, x, z, r, st, seat, ms, kneel, rosary);
+  int get hashCode => Object.hash(
+    id,
+    avatar,
+    x,
+    z,
+    r,
+    st,
+    seat,
+    ms,
+    kneel,
+    rosary,
+    rosaryStyle,
+  );
 
   @override
   String toString() => 'PeerInfo($id, $st, seat: $seat, ms: $ms)';
@@ -232,6 +249,7 @@ class Praying extends ChurchEvent {
     this.ms, {
     this.kneel = false,
     this.rosary = false,
+    this.rosaryStyle,
   });
 
   final String id;
@@ -243,6 +261,9 @@ class Praying extends ChurchEvent {
 
   /// 묵주를 들고 기도 중(서버 `r:1`). 기도 중(`on`)일 때만 뜻이 있다.
   final bool rosary;
+
+  /// 든 묵주 id(서버 `rs`, T-86). 묵주를 들었을 때만 있을 수 있다.
+  final String? rosaryStyle;
 }
 
 class Candle extends ChurchEvent {
@@ -335,7 +356,14 @@ abstract class ChurchNet {
 
   /// [kneel]: 무릎 꿇고 기도(서버 `k:1`). 다른 사람 화면에도 무릎 꿇은 자세로 보인다.
   /// [rosary]: 묵주를 들고 기도(서버 `r:1`). 다른 사람 화면에도 묵주를 든 모습으로 보인다.
-  void sendPraying(bool on, int ms, {bool kneel = false, bool rosary = false});
+  /// [rosaryStyle]: 든 묵주 id(`rs`, T-86) — 다른 사람 화면에 같은 색으로 보인다. 옛 서버는 무시한다.
+  void sendPraying(
+    bool on,
+    int ms, {
+    bool kneel = false,
+    bool rosary = false,
+    String? rosaryStyle,
+  });
   void lightCandle(int slot, int intention, {int? color});
   void emote(int e);
 

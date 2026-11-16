@@ -354,6 +354,7 @@
     this.seat = opts.seat || null; this.kneelSpot = null;
     // 상태(avatar.js 와 같은 이름: 다른 코드가 읽는다)
     this.walkTarget = 0; this.walkAmt = 0; this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
+    this.rosary = null; this.rosaryTarget = 0; this.rosaryAmt = 0; this.rosaryLook = null; this.rosaryParts = null;
     this.kneelTarget = 0; this.kneelLin = 0; this.kneelAmt = 0; this.kneelFwd = 0; this.kneelY = 0; this.kneelRail = 0;
     this.emote = -1; this.emoteT = 0; this.nod = false; this.nodPh = Math.random() * 6; this.off = Math.random() * 6.28;
     this.base = 'stand'; this.trans = null; this.w = {}; this.lod = -1; this.acc = 0; this.cnt = this.id;
@@ -421,6 +422,7 @@
   GP.dispose = function () {
     this._unpool();
     this._teardown();
+    if (this.rosary) { if (this.rosary.parent) this.rosary.parent.remove(this.rosary); this.rosary = null; }   // 지오메트리·재질은 공유라 해제하지 않는다
     if (this.root.parent) this.root.parent.remove(this.root);
   };
 
@@ -453,6 +455,33 @@
     if (this.tag) this.tag.visible = l === 0;
     if (this.shadow) this.shadow.visible = l < 2;
     if (l === 2 && CFG.sharePose) this._pool(); else this._unpool();
+  };
+  // 묵주(SPEC §32, T-86): avatar.js 와 같은 지오메트리·모습별 공유 재질(ChurchAvatar.rosaryParts)을 쓴다. 메시 2개(알 + 자식 끈·십자가), 오른손에서 늘어진다.
+  // look 을 주면 들고 있는 중에도 바로 바뀐다. avatar.js 가 없으면 아무것도 하지 않는다.
+  GP.setRosary = function (b, look) {
+    var A = root.ChurchAvatar;
+    this.rosaryTarget = b ? 1 : 0;
+    if (look && look !== this.rosaryLook) this.rosaryLook = look;
+    if (!A || !A.rosaryParts || this.headless) return;
+    if (b && !this.rosary) {
+      var P = A.rosaryParts(this.rosaryLook), m = new T.Mesh(A.rosaryGeometry(), P.beadMat), tm = new T.Mesh(P.trimGeo, P.trimMat);
+      m.castShadow = m.receiveShadow = tm.castShadow = tm.receiveShadow = false; m.frustumCulled = tm.frustumCulled = false;
+      m.visible = false; m.userData.rosary = true; tm.userData.rosaryTrim = true;
+      m.add(tm); this.body.add(m); this.rosary = m; this.rosaryParts = P;
+    } else if (this.rosary && look) {
+      var Q = A.rosaryParts(look);
+      if (Q !== this.rosaryParts) { this.rosaryParts = Q; this.rosary.material = Q.beadMat; this.rosary.children[0].geometry = Q.trimGeo; this.rosary.children[0].material = Q.trimMat; }
+    }
+  };
+  GP._placeRosary = function (src) {
+    var ro = this.rosary, h = src.RightHand;
+    if (!ro) return;
+    if (this.rosaryAmt < 0.02 || this.lod !== 0 || !h) { ro.visible = false; return; }
+    var e = h.matrixWorld.elements, A = root.ChurchAvatar, palm = A && A.ROSARY ? A.ROSARY.PALM : 0.06;
+    ro.position.set(-e[12], e[13] - palm * this.type.s, -e[14]);   // 포즈 공간 → body(180° 회전) 좌표, 손바닥 아래
+    ro.rotation.set(0, (1 - Math.max(this.sitAmt, this.prayAmt)) * PI / 2, 0);
+    ro.scale.setScalar(this.rosaryAmt > 0.98 ? 1 : this.rosaryAmt);
+    ro.visible = true;
   };
   GP.setWalk = function (v) { this.walkTarget = v; if (v > 0.05 && SIGN_ID[this.emote] !== undefined) this.cancelGesture(); };
   GP.setSeated = function (b) { this.sitTarget = b ? 1 : 0; if (!b && this.emote === 5) this.cancelGesture(); };
@@ -565,6 +594,7 @@
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
     this.sitAmt += (this.sitTarget - this.sitAmt) * Math.min(1, dt * 7);
     this.prayAmt += (this.prayTarget - this.prayAmt) * Math.min(1, dt * 5);
+    this.rosaryAmt += ((this.rosaryTarget || 0) - this.rosaryAmt) * Math.min(1, dt * 8);
     var kl = this.kneelLin, kt = this.kneelTarget;
     if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / CFG.kneel.dur; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
     if (this.emote >= 0) {
@@ -737,6 +767,7 @@
     if (this.headless) return;
     var src = this.pooled ? this.pooled.B : this.B;
     var h = src.Hips, hd = src.Head;
+    if (this.rosary) this._placeRosary(src);
     if (this.shadow) { this.shadow.position.set(-h.matrixWorld.elements[12], 0.03, -h.matrixWorld.elements[14]); }
     if (!this.tag) return;
     var ty = hd ? hd.matrixWorld.elements[13] + CFG.tagLift * this.type.s : 1.9;

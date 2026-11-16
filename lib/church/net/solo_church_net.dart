@@ -45,6 +45,7 @@ class SoloChurchNet implements ChurchNet {
     int ms, {
     bool kneel = false,
     bool rosary = false,
+    String? rosaryStyle,
   }) {}
 
   @override

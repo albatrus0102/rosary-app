@@ -31,6 +31,7 @@ import 'church_host.dart';
 import 'church_hud.dart';
 import 'church_liturgy.dart';
 import 'church_prayer_card.dart';
+import 'church_rosary_looks.g.dart';
 import 'church_rosary_panel.dart';
 import 'church_prayer_choice_sheet.dart';
 import 'church_presence_sheet.dart';
@@ -271,6 +272,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _sceneSub = _scene.events.listen(_onScene);
     _netSub = _net.events.listen(_onNet);
     _net.state.addListener(_onNetState);
+    _lastRosaryId = _settings.rosaryId;
     _settings.addListener(_onSettings);
     _liturgy = ChurchLiturgyBinding(onChanged: _onLiturgy);
     _syncMusicHold();
@@ -691,7 +693,13 @@ class _ChurchScreenState extends State<ChurchScreen>
           : rs.withSeat(_mySeat, kneel: _kneel, rosary: _rosaryHeld);
       if (cold && st.seat != null) _pendingSeat = st.seat;
       if (cold) _rosaryHeld = st.rosary;
-      unawaited(_scene.restore(st.toSceneArgs()));
+      unawaited(
+        _scene.restore({
+          ...st.toSceneArgs(),
+          // 묵주를 들고 있었으면 내 묵주 모습도 함께(장면이 새로 만들어졌으니 모습을 모른다).
+          if (st.rosary) 'look': _rosaryLook.toJson(),
+        }),
+      );
     }
     if (_hidden) unawaited(_scene.pause());
     final w = _lastWelcome;
@@ -928,14 +936,47 @@ class _ChurchScreenState extends State<ChurchScreen>
     // 성당의 기도 카드는 묵주기도다: 기도하는 동안 묵주를 들고, 쉬거나 마치면 내려놓는다.
     _setRosary(on);
     if (_standPray) return; // 서서 하는 기도는 서버(좌석 전제)에 알리지 않는다.
-    _net.sendPraying(on, p.ms, kneel: on && _kneel, rosary: on);
+    _net.sendPraying(
+      on,
+      p.ms,
+      kneel: on && _kneel,
+      rosary: on,
+      rosaryStyle: on ? _settings.rosaryId : null,
+    );
   }
 
   /// 내 아바타가 묵주를 든다/내려놓는다(바뀔 때만 장면에 알린다).
   void _setRosary(bool on) {
     if (on == _rosaryHeld) return;
     _rosaryHeld = on;
-    unawaited(_scene.setRosary(on: on));
+    unawaited(_scene.setRosary(on: on, look: _rosaryLook));
+  }
+
+  /// 내가 쓰는 3D 묵주(설정 `rosaryId`)의 성당 아바타용 모습(T-86).
+  ChurchRosaryLook get _rosaryLook => churchRosaryLookFor(_settings.rosaryId);
+
+  /// 기도 중 묵주를 바꾸면(갤러리 · 묵주 바꾸기) 든 묵주가 바로 바뀌고, 앉아 기도 중이면 다른 사람 화면에도 알린다.
+  String _lastRosaryId = '';
+  void _syncRosaryLook() {
+    final id = _settings.rosaryId;
+    if (id == _lastRosaryId) return;
+    _lastRosaryId = id;
+    if (!_rosaryHeld) return;
+    unawaited(_scene.setRosary(on: true, look: _rosaryLook));
+    final p = _prayer;
+    if (_mySeat != null &&
+        !_standPray &&
+        p != null &&
+        p.running &&
+        !p.finished) {
+      _net.sendPraying(
+        true,
+        p.ms,
+        kneel: _kneel,
+        rosary: true,
+        rosaryStyle: id,
+      );
+    }
   }
 
   /// 묵주기도 하러 가던 걸음을 그만두면(취소·길 없음) 묵주를 내려놓는다.
@@ -956,7 +997,13 @@ class _ChurchScreenState extends State<ChurchScreen>
     unawaited(_scene.setPrayerPosture(kneel: _kneel));
     final p = _prayer;
     if (p != null && p.running && !p.finished) {
-      _net.sendPraying(true, p.ms, kneel: _kneel, rosary: true);
+      _net.sendPraying(
+        true,
+        p.ms,
+        kneel: _kneel,
+        rosary: true,
+        rosaryStyle: _settings.rosaryId,
+      );
     }
   }
 
@@ -1018,6 +1065,7 @@ class _ChurchScreenState extends State<ChurchScreen>
               ms: e.ms,
               kneel: e.kneel,
               rosary: e.rosary,
+              rosaryStyle: e.rosaryStyle,
             ),
           );
         }
@@ -1065,7 +1113,13 @@ class _ChurchScreenState extends State<ChurchScreen>
       _net.requestSit(seat);
       final p = _prayer;
       if (p != null && p.running && !p.finished) {
-        _net.sendPraying(true, p.ms, kneel: _kneel, rosary: true);
+        _net.sendPraying(
+          true,
+          p.ms,
+          kneel: _kneel,
+          rosary: true,
+          rosaryStyle: _settings.rosaryId,
+        );
       }
     }
   }
@@ -1142,6 +1196,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _onSettings() {
     if (_disposed) return;
+    _syncRosaryLook();
     _syncMusicHold();
     final ambient = _ambientOn;
     if (ambient != _lastAmbient) {

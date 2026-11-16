@@ -50,8 +50,13 @@ PeerInfo? parsePeer(Object? v) {
     ms: _int(v['ms']) ?? -1,
     kneel: v['k'] == 1,
     rosary: v['ro'] == 1,
+    rosaryStyle: v['ro'] == 1 ? _rosaryId(v['rs']) : null,
   );
 }
+
+/// 서버가 중계한 든 묵주 id(`rs`). 형식이 맞지 않으면 없는 것으로 본다.
+String? _rosaryId(Object? v) =>
+    v is String && RegExp(r'^[a-z0-9_]{1,16}$').hasMatch(v) ? v : null;
 
 double? _num(Object? v) => v is num && v.isFinite ? v.toDouble() : null;
 int? _int(Object? v) => v is num && v.isFinite ? v.toInt() : null;
@@ -160,6 +165,7 @@ ChurchEvent? _parse(Map<String, dynamic> m) {
         _int(m['ms']) ?? -1,
         kneel: on && m['k'] == 1,
         rosary: on && m['r'] == 1,
+        rosaryStyle: on && m['r'] == 1 ? _rosaryId(m['rs']) : null,
       );
     case 'candle':
       final c = _candle(m);
@@ -234,17 +240,20 @@ String standMessage() => jsonEncode({'t': 'stand'});
 
 /// [kneel]: 무릎 꿇고 기도(`k:1`). 앉아서 기도면 필드를 보내지 않는다(이전 서버와 호환).
 /// [rosary]: 묵주를 들고 기도(`r:1`). 묵주가 없으면 필드를 보내지 않는다.
+/// [rosaryStyle]: 든 묵주 id(`rs`, T-86). 묵주를 들었을 때만, 없으면 보내지 않는다(옛 서버와 호환).
 String prayMessage(
   bool on,
   int ms, {
   bool kneel = false,
   bool rosary = false,
+  String? rosaryStyle,
 }) => jsonEncode({
   't': 'pray',
   'on': on,
   'ms': ms,
   if (on && kneel) 'k': 1,
   if (on && rosary) 'r': 1,
+  if (on && rosary && rosaryStyle != null) 'rs': rosaryStyle,
 });
 
 String candleMessage(int slot, int intention, {int? color}) => jsonEncode({

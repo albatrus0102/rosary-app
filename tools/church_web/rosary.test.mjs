@@ -13,7 +13,7 @@ let now = 1000;
 const ctx = vm.createContext({ console, Math, Date, Float32Array, Float64Array, Uint16Array, Uint8Array, Map, Set, performance: { now: () => now },
   document: { createElement: () => ({ width: 0, height: 0, getContext: () => fake2d }) } });
 ctx.window = ctx;
-for (const f of ['three.min.js', 'palette.js', 'baptismal_names.js', 'geo.js', 'label_fit.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'avatar.js', 'net_view.js']) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
+for (const f of ['three.min.js', 'palette.js', 'baptismal_names.js', 'geo.js', 'label_fit.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'rosary_looks.js', 'avatar.js', 'net_view.js']) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
 const A = ctx.ChurchAvatar, T = ctx.THREE, RO = A.ROSARY;
 const CFG = { g: 0, skin: 1, style: 0, hair: 2, outfit: 6, name: 0, nv: 2 };
 const RAIL = { fwd: 1.22, y: 0.145, rail: true };   // 줄 간격 1.9m 의 무릎틀(scene_logic.kneelSpot)
@@ -31,28 +31,32 @@ function posed(setup, cfg = CFG) {
 }
 const meshes = (av) => { let n = 0; av.root.traverse((o) => { if (o.isMesh && o.visible && o.userData.rosary) n++; }); return n; };
 
-test('묵주 지오메트리: 새 에셋 없이 한 덩어리, 삼각형 1200 이하, 모든 아바타가 공유', () => {
+test('묵주 지오메트리: 새 에셋 없이 알 + 끈·십자가 두 덩어리, 삼각형 합 1200 이하, 모든 아바타가 공유', () => {
   const g = A.rosaryGeometry();
   assert.equal(g, A.rosaryGeometry());
+  const P = A.rosaryParts(null);
+  assert.equal(P, A.rosaryParts(null));
   assert.ok(RO.TRIS > 300 && RO.TRIS <= 1200, `tris ${RO.TRIS}`);
-  assert.equal(g.attributes.position.count, RO.TRIS * 3);
-  assert.ok(g.attributes.color && g.attributes.normal);
-  g.computeBoundingBox();
-  const bb = g.boundingBox;
+  assert.equal(g.attributes.position.count + P.trimGeo.attributes.position.count, RO.TRIS * 3);
+  assert.ok(g.attributes.normal && P.trimGeo.attributes.color && P.trimGeo.attributes.normal);
+  g.computeBoundingBox(); P.trimGeo.computeBoundingBox();
+  const bb = g.boundingBox.clone().union(P.trimGeo.boundingBox);
   // 쥔 곳(원점)에서 아래로만 늘어진다: 길이 = LEN, 폭은 고리 폭
   assert.ok(bb.max.y <= 0.01 && Math.abs(-bb.min.y - RO.LEN) < 0.01, `y ${bb.min.y}..${bb.max.y}`);
   assert.ok(bb.max.x <= RO.HALF_W + 0.01 && bb.min.x >= -RO.HALF_W - 0.01);
   assert.ok(RO.LEN < 0.26);
 });
 
-test('setRosary: 처음 들 때 메시 1개(공유 지오메트리·기존 재질), 내려놓으면 사라지고 다시 들면 재사용', () => {
+test('setRosary: 처음 들 때 메시(알 + 자식 끈·십자가, 공유 지오메트리·재질), 내려놓으면 사라지고 다시 들면 재사용', () => {
   const a = new A.Avatar(CFG, {}), b = new A.Avatar({ ...CFG, g: 1 }, {});
   assert.equal(a.rosary, null);
   a.update(0.016, 1); assert.equal(meshes(a), 0);
   a.setRosary(true); b.setRosary(true);
   assert.equal(a.rosary.geometry, b.rosary.geometry);
   assert.equal(a.rosary.material, b.rosary.material);
-  assert.equal(a.rosary.material.vertexColors, true);
+  assert.equal(a.rosary.children.length, 1);   // 메시는 모두 2개(알 + 끈·십자가)
+  assert.equal(a.rosary.children[0].geometry, b.rosary.children[0].geometry);
+  assert.equal(a.rosary.children[0].material.vertexColors, true);
   assert.equal(a.rosary.castShadow, false);
   for (let i = 0; i < 40; i++) a.update(0.016, 1 + i * 0.016);
   assert.equal(meshes(a), 1); assert.equal(a.rosary.scale.x, 1);

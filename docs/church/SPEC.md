@@ -511,6 +511,7 @@ setPeers/peerJoin 의 peer.ro              // 1 = 묵주. (peer.r 은 방향이�
 welcome/join 의 PeerInfo: {"st":"p","ms":2,"ro":1}
 ```
 - 서버(`room_logic.ts`): `pray.r` 은 선택, **0|1 만**(그 밖의 값은 `bad_msg`). `on:true` 이고 앉아 있을 때만 저장한다(`on:false`·`stand`·연결 끊김이면 0). 0이면 필드를 생략한다(= 묵주 없음, 이전 클라이언트와 호환). `PeerView`·스냅샷(하이버네이션 복원)에서는 `r` 이 방향(yaw)이라 **`ro`** 로 싣는다. `k`(무릎 꿇기)와 함께 쓸 수 있다.
+- **든 묵주의 색(T-86)**: 내 아바타 묵주는 앱에서 고른 3D 묵주(`rosaryId`)의 모습으로 그린다. `ChurchAPI.setRosary({on, look?})` 의 `look` = 알 색·거칠기·금속성·발광·불투명도, 끈/사슬 색, 십자가 색·금속성(`assets/church/rosary_looks.js` ↔ `lib/church/church_rosary_looks.g.dart`; 둘 다 `tools/church_web/build_rosary_looks.mjs` 가 `assets/rosary3d/defs.js` 에서 만든다 — 손으로 고치지 않는다). 들고 있는 중에 다시 보내면 바로 바뀐다(묵주 바꾸기). 메시 2개(알 + 끈·십자가), 모습별 공유 재질. 다른 사람: `pray.rs`(선택, 묵주 id 소문자·숫자·`_` 1~16자, `r:1` 일 때만 저장·중계, 형식 오류는 `bad_msg`), `PeerView.rs`, `peerPraying({..., rs?})`. 없으면(옛 클라이언트·서버) 기본 모습(갈색 알 + 금 십자가)으로 보이고, 모르는 id 도 같다.
 - 지금 앱은 성당의 기도 카드가 곧 묵주기도이므로 기도 중(`on:true`)이면 항상 `r:1` 을 보낸다. 묵주 없는 앉은 기도(묵상 등)를 나중에 만들면 `r` 을 빼면 된다.
 - `ChurchResumeState.rosary`(JSON `rosary:true`): 장면을 새로 만들 때 묵주를 든 채로 복원한다. 앱이 종료됐다가 들어온 경우에는 앉아 있던 때만 되살린다(서서 자리로 가던 중이었다면 내려놓고 그 자리에서 시작).
 

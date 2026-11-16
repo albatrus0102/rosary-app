@@ -8,6 +8,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'church_diagnostics.dart';
+import 'church_rosary_looks.g.dart';
 import 'church_theme.dart';
 import 'dev_glass.dart';
 
@@ -634,7 +635,10 @@ abstract class ChurchSceneController {
   }) => _call('setPraying', {'on': on, 'ms': ms, if (stand) 'stand': true});
 
   /// 내 아바타가 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 든다.
-  Future<void> setRosary({required bool on}) => _call('setRosary', {'on': on});
+  ///
+  /// [look]: 든 묵주의 색·재질(T-86, `rosary_looks.js` 와 같은 표). 들고 있는 중에 다시 보내면 바로 바뀐다(기도 중 묵주 바꾸기).
+  Future<void> setRosary({required bool on, ChurchRosaryLook? look}) =>
+      _call('setRosary', {'on': on, if (look != null) 'look': look.toJson()});
 
   /// 화면 아래를 덮는 패널의 높이 비율(0..0.6). 장면을 그만큼 위로 올려 그리고, 앉은 뒤 '자리 시점' 대신
   /// 아바타를 가운데 두어 패널 위에 아바타(앉음·무릎 꿇음)가 보이게 한다. 0 이면 원래대로.
@@ -664,12 +668,14 @@ abstract class ChurchSceneController {
     required int ms,
     bool kneel = false,
     bool rosary = false,
+    String? rosaryStyle,
   }) => _call('peerPraying', {
     'id': id,
     'on': on,
     'ms': ms,
     if (on && kneel) 'k': 1,
     if (on && rosary) 'r': 1,
+    if (on && rosary && rosaryStyle != null) 'rs': rosaryStyle,
   });
   Future<void> peerEmote(String id, int e) =>
       _call('peerEmote', {'id': id, 'e': e});

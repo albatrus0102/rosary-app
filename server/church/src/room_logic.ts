@@ -121,6 +121,12 @@ export const NAME_MAX = 4095;
 /** 아바타 이름 형식 버전(Flutter `avatarNameVersion`): 2 = 통합 세례명 목록 인덱스. */
 export const NAME_VERSION = 2;
 
+/** 든 묵주 id 형식(앱 3D 묵주 목록 id: 소문자·숫자·밑줄, 1~16자). 목록에 있는지는 서버가 알 필요 없다(모르는 id 는 클라이언트가 기본 모습으로 그린다). */
+export const ROSARY_ID_RE = /^[a-z0-9_]{1,16}$/;
+function isRosaryId(v: unknown): v is string {
+  return typeof v === 'string' && ROSARY_ID_RE.test(v);
+}
+
 export interface PeerView {
   id: string;
   avatar: Avatar;
@@ -134,6 +140,8 @@ export interface PeerView {
   k?: 1;
   /** 묵주를 들고 기도 중이면 1 (st === 'p' 일 때만). 없으면 필드 없음. `r` 은 방향이라 여기서는 `ro`. */
   ro?: 1;
+  /** 든 묵주 id(앱의 3D 묵주 목록 id, T-86). 묵주를 들고 기도 중(ro)일 때만, 옛 클라이언트는 없음 — 없으면 필드도 없다. */
+  rs?: string;
 }
 
 /** 봉헌초가 타는 시간: 켠 뒤 하루(24시간). 서버·앱(lib/church/church_candle_store.dart)·SPEC 이 같은 값을 쓴다. */
@@ -198,6 +206,8 @@ interface Peer {
   k: 0 | 1;
   /** 묵주를 들고 기도: 0 | 1 (st === 'p' 일 때만 1) */
   ro: 0 | 1;
+  /** 든 묵주 id(ro 일 때만, 없으면 ''). */
+  rs: string;
   lastPosAt: number;
   moveBudget: number;
   dirty: boolean;
@@ -467,6 +477,7 @@ export class RoomLogic {
       ms: seat && snap.st === 'p' && isInt(snap.ms, 0, 3) ? snap.ms : -1,
       k: seat && snap.st === 'p' && snap.k === 1 ? 1 : 0,
       ro: seat && snap.st === 'p' && snap.ro === 1 ? 1 : 0,
+      rs: seat && snap.st === 'p' && snap.ro === 1 && isRosaryId(snap.rs) ? snap.rs : '',
       lastPosAt: now,
       moveBudget: MOVE_BUDGET_MAX,
       dirty: false,
@@ -645,6 +656,7 @@ export class RoomLogic {
       ms: -1,
       k: 0,
       ro: 0,
+      rs: '',
       lastPosAt: now,
       moveBudget: MOVE_BUDGET_MAX,
       dirty: false,
@@ -781,6 +793,7 @@ export class RoomLogic {
     peer.ms = -1;
     peer.k = 0;
     peer.ro = 0;
+    peer.rs = '';
     peer.lastPosAt = now;
     peer.moveBudget = MOVE_BUDGET_MAX;
     peer.dirty = true;
@@ -790,12 +803,14 @@ export class RoomLogic {
   private onPray(peer: Peer, m: Message): void {
     // k(선택): 기도 자세. 0 앉아서(기본), 1 무릎 꿇고. 있으면 0|1 이어야 한다.
     // r(선택): 묵주를 들고 기도(묵주기도). 0 없음(기본), 1 묵주. 있으면 0|1 이어야 한다.
+    // rs(선택, T-86): 든 묵주 id(소문자·숫자·_ 1~16자). r 이 1 일 때만 의미가 있고, 없으면 기본 모습으로 보인다(옛 클라이언트).
     if (
       typeof m.on !== 'boolean' ||
       !isInt(m.ms, -1, 3) ||
       (m.on && m.ms < 0) ||
       (m.k !== undefined && !isInt(m.k, 0, 1)) ||
-      (m.r !== undefined && !isInt(m.r, 0, 1))
+      (m.r !== undefined && !isInt(m.r, 0, 1)) ||
+      (m.rs !== undefined && !isRosaryId(m.rs))
     ) {
       this.send(peer.connId, { t: 'error', code: 'bad_msg' });
       return;
@@ -805,10 +820,12 @@ export class RoomLogic {
     peer.ms = m.on ? m.ms : -1;
     peer.k = m.on && m.k === 1 ? 1 : 0;
     peer.ro = m.on && m.r === 1 ? 1 : 0;
+    peer.rs = peer.ro && typeof m.rs === 'string' ? m.rs : '';
     peer.dirty = true;
     const out: Message = { t: 'praying', id: peer.id, on: m.on, ms: m.ms };
     if (peer.k) out.k = 1;
     if (peer.ro) out.r = 1;
+    if (peer.rs) out.rs = peer.rs;
     this.broadcastNear(peer, out);
   }
 
@@ -1020,6 +1037,7 @@ export class RoomLogic {
     };
     if (p.k) v.k = 1;
     if (p.ro) v.ro = 1;
+    if (p.ro && p.rs) v.rs = p.rs;
     return v;
   }
 

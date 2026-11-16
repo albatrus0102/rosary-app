@@ -93,7 +93,7 @@
     App.net.setMySeat(null);
     App.ctl.yaw = me.yaw; App.camInit = false;
     App.meAv.setSeated(false); App.meAv.setPray(false);
-    App.rosary = false; App.meAv.setRosary(false);
+    App.rosary = false; App.meAv.setRosary(false, App.rosaryLook);
     App.near.seat = App.near.candle = undefined; App.near.station = null;
     // 스테이션(촛불 봉헌대·제대 앞·성수대): 걸어서 가는 자리와 표식
     App.stations = root.ChurchStations.create(w.logic);
@@ -265,7 +265,8 @@
       App.meAv.setSeated(false); App.meAv.setPray(false);
       App.near.seat = App.near.candle = undefined; App.near.station = null;
     }
-    App.rosary = !!o.rosary; App.meAv.setRosary(App.rosary);
+    if (o.look && typeof o.look === 'object') App.rosaryLook = o.look;
+    App.rosary = !!o.rosary; App.meAv.setRosary(App.rosary, App.rosaryLook);
     me.y = logic.floorY(me.x, me.z);
     App.meAv.setPose(me.x, me.y, me.z, me.yaw);
     App.camInit = false; App.wasMoving = false;
@@ -313,7 +314,8 @@
       App.standPray = !!(o.on && o.stand); App.meAv.setPray(App.standPray, true);
     },
     // 묵주를 든다/내려놓는다(SPEC §32). 서 있을 때(자리로 걸어가는 동안)도 손에 든다. 다른 사람의 묵주는 peerPraying 의 r.
-    setRosary: function (o) { App.rosary = !!(o && o.on); if (App.meAv) App.meAv.setRosary(App.rosary); },
+    // o.look(선택, T-86): 든 묵주의 색·재질(rosary_looks.js 항목). 들고 있는 중에 다시 보내면(기도 중 묵주 바꾸기) 바로 바뀐다. 없으면 지금 모습 유지.
+    setRosary: function (o) { App.rosary = !!(o && o.on); if (o && o.look && typeof o.look === 'object') App.rosaryLook = o.look; if (App.meAv) App.meAv.setRosary(App.rosary, App.rosaryLook); },
     // 아래 패널 비율(0..0.6). 투영을 위로 옮겨 아바타가 패널 위 남은 영역에 보인다(앉은 시점은 앞옆 45° 그대로, 조금 물러난다).
     setViewInset: function (o) {
       App.inset = Math.max(0, Math.min(0.6, +(o && o.bottom) || 0));
@@ -332,7 +334,7 @@
     peerSnap: function (o) { if (App.net && o.p) App.net.peerSnap(o.p); },
     peerSeat: function (o) { if (App.net) App.net.peerSeat(o.id, o.seat); },
     peerStand: function (o) { if (App.net) App.net.peerStand(o.id); },
-    peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms, o.k ? 1 : 0, o.r ? 1 : 0); },
+    peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms, o.k ? 1 : 0, o.r ? 1 : 0, o.rs); },
     peerEmote: function (o) { if (App.net) App.net.peerEmote(o.id, o.e); },
     setCandles: function (o) { if (App.world) App.world.setCandles(o.candles || []); },
     lightCandle: function (o) {

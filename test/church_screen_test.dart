@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/church/church_candle_store.dart';
 import 'package:rosary_app/church/church_candle_sheet.dart'
     show candleColorNotice;
+import 'package:rosary_app/church/church_rosary_looks.g.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
 import 'package:rosary_app/church/net/church_net.dart';
@@ -958,6 +960,24 @@ void main() {
     expect(s, contains('window.ChurchAPI.setAmbient({'));
     expect(s.contains('\u2028'), isFalse);
     expect(s, contains(r'\"'));
+  });
+
+  test('setRosary message carries the compact look for the held rosary', () {
+    final look = churchRosaryLookFor('crystal');
+    final s = churchApiScript('setRosary', {'on': true, 'look': look.toJson()});
+    expect(s, contains('window.ChurchAPI.setRosary({'));
+    final json = jsonDecode(
+      s.substring(s.indexOf('({') + 1, s.lastIndexOf('})') + 1),
+    ) as Map;
+    expect(json['on'], isTrue);
+    final l = json['look'] as Map;
+    expect(l['id'], 'crystal');
+    expect(l['bead'], look.bead);
+    expect(l['cord'], look.cord);
+    expect(l['cross'], look.cross);
+    expect(l.keys, containsAll(['rough', 'metal', 'emissive', 'emissiveI', 'crossMetal']));
+    // 크기: 한 번 보내는 모습이 작다(수정 기준 400바이트 이내)
+    expect(jsonEncode(l).length, lessThan(400));
   });
 
   test('SceneEvent.parse', () {

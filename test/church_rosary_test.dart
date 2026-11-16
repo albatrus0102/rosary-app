@@ -11,11 +11,13 @@ import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/church/church_prayer_card.dart';
 import 'package:rosary_app/church/church_prayer_choice_sheet.dart';
 import 'package:rosary_app/church/church_resume_state.dart';
+import 'package:rosary_app/church/church_rosary_looks.g.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/net/church_net.dart';
 import 'package:rosary_app/church/net/church_protocol.dart';
 import 'package:rosary_app/domain/prayer_data.dart';
 import 'package:rosary_app/domain/rosary_session.dart';
+import 'package:rosary_app/rosary3d/rosary_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'church_screen_fakes.dart';
@@ -164,6 +166,77 @@ void main() {
       expect(q.rosary, isFalse);
       expect(q.toJson().containsKey('ro'), isFalse);
       expect(p == q, isFalse);
+    });
+
+    test('rs (T-86): the held rosary id rides along only with r:1, optional', () {
+      expect(jsonDecode(prayMessage(true, 2, rosary: true, rosaryStyle: 'gold')), {
+        't': 'pray',
+        'on': true,
+        'ms': 2,
+        'r': 1,
+        'rs': 'gold',
+      });
+      // 묵주가 없으면 rs 도 없다. rs 없이 보내면 옛 서버와 같은 메시지.
+      expect(jsonDecode(prayMessage(true, 2, rosaryStyle: 'gold')), {
+        't': 'pray',
+        'on': true,
+        'ms': 2,
+      });
+      expect(jsonDecode(prayMessage(true, 2, rosary: true)).containsKey('rs'),
+          isFalse);
+      expect(jsonDecode(prayMessage(false, -1, rosary: true, rosaryStyle: 'gold')),
+          {'t': 'pray', 'on': false, 'ms': -1});
+      final a = parseChurchEvent(
+        '{"t":"praying","id":"p1","on":true,"ms":1,"r":1,"rs":"crystal"}',
+      )! as Praying;
+      expect(a.rosaryStyle, 'crystal');
+      for (final raw in [
+        '{"t":"praying","id":"p1","on":true,"ms":1,"r":1}',
+        '{"t":"praying","id":"p1","on":true,"ms":1,"rs":"crystal"}',
+        '{"t":"praying","id":"p1","on":true,"ms":1,"r":1,"rs":"Bad Id"}',
+        '{"t":"praying","id":"p1","on":true,"ms":1,"r":1,"rs":5}',
+        '{"t":"praying","id":"p1","on":false,"ms":-1,"r":1,"rs":"gold"}',
+      ]) {
+        expect((parseChurchEvent(raw)! as Praying).rosaryStyle, isNull, reason: raw);
+      }
+      final p = parsePeer({
+        'id': 'p2',
+        'st': 'p',
+        'seat': 'L01-0',
+        'ms': 0,
+        'ro': 1,
+        'rs': 'pearl',
+      })!;
+      expect(p.rosaryStyle, 'pearl');
+      expect(p.toJson()['rs'], 'pearl');
+      final q = parsePeer({'id': 'p2', 'st': 'p', 'seat': 'L01-0', 'ms': 0, 'ro': 1})!;
+      expect(q.rosaryStyle, isNull);
+      expect(q.toJson().containsKey('rs'), isFalse);
+      expect(p == q, isFalse);
+    });
+
+    test('rosary looks table (generated from defs.js) covers every rosary', () {
+      expect(churchRosaryLookIds.toSet(), {for (final r in rosaryCatalog) r.id});
+      expect(churchRosaryLooks.length, 16);
+      final hex = RegExp(r'^#[0-9a-fA-F]{6}$');
+      for (final id in churchRosaryLookIds) {
+        final l = churchRosaryLookFor(id);
+        expect(l.id, id);
+        final j = l.toJson();
+        for (final k in ['bead', 'cord', 'cross']) {
+          expect(hex.hasMatch(j[k]! as String), isTrue, reason: '$id.$k');
+        }
+        for (final k in ['rough', 'metal', 'crossMetal', 'crossRough']) {
+          expect(j[k]! as double, inInclusiveRange(0, 1), reason: '$id.$k');
+        }
+        expect(j.containsKey('emissive'), l.emissive.isNotEmpty);
+      }
+      // 재질 느낌: 진주는 윤기, 수정은 반투명·발광, 나무는 무광, 금은 금속
+      expect(churchRosaryLookFor('crystal').opacity, lessThan(1));
+      expect(churchRosaryLookFor('crystal').emissiveI, greaterThan(0.3));
+      expect(churchRosaryLookFor('olive').metal, 0);
+      expect(churchRosaryLookFor('gold').metal, greaterThanOrEqualTo(0.8));
+      expect(churchRosaryLookFor('no-such').id, 'olive');
     });
 
     test('scene state / resume state carry the rosary', () {
@@ -745,6 +818,51 @@ void main() {
       },
     );
 
+    testWidgets(
+      '내 묵주(설정)의 모습이 장면에 가고, 기도 중 묵주를 바꾸면 바로 바뀌고 다른 사람에게도 알린다',
+      (tester) async {
+        final h = await pumpChurch(tester, size: const Size(360, 800));
+        h.settings.rosaryId = 'crystal';
+        await tester.pump();
+        h.net.goOnline(1);
+        await _chooseRosaryAndSit(tester, h);
+        // 들 때 모습(look)을 함께 보낸다
+        final first = h.scene.argsOf('setRosary').first;
+        expect(first['on'], isTrue);
+        final look = first['look']! as Map;
+        expect(look['id'], 'crystal');
+        expect(look['bead'], churchRosaryLookFor('crystal').bead);
+        expect(look['opacity'], lessThan(1));
+        expect(h.net.rosaryStyles.last, 'crystal');
+        // 기도 중 갤러리에서 다른 묵주를 고르면(묵주 바꾸기) 든 채로 모습만 바뀐다
+        final before = h.scene.argsOf('setRosary').length;
+        h.settings.rosaryId = 'gold';
+        await tester.pump();
+        final after = h.scene.argsOf('setRosary');
+        expect(after.length, before + 1);
+        expect(after.last['on'], isTrue);
+        expect((after.last['look']! as Map)['id'], 'gold');
+        expect(h.net.rosaryStyles.last, 'gold');
+        expect(h.net.rosaries.last, isTrue);
+        // 같은 묵주를 다시 고르면 아무것도 보내지 않는다
+        h.settings.rosaryId = 'gold';
+        await tester.pump();
+        expect(h.scene.argsOf('setRosary').length, before + 1);
+        // 쉬면 내려놓고, 이어 기도하면 지금(금) 모습으로 다시 든다
+        await tester.tap(find.byKey(const ValueKey('prayer-menu')));
+        await _settle(tester);
+        await tester.tap(find.text('잠깐 쉬기'));
+        await _settle(tester);
+        expect(h.net.rosaryStyles.last, isNull);
+        await tester.tap(find.byKey(const ValueKey('prayer-menu')));
+        await _settle(tester);
+        await tester.tap(find.text('이어 기도'));
+        await _settle(tester);
+        expect((h.scene.argsOf('setRosary').last['look']! as Map)['id'], 'gold');
+        expect(h.net.rosaryStyles.last, 'gold');
+      },
+    );
+
     testWidgets('peers: praying r and welcome ro reach the scene', (
       tester,
     ) async {
@@ -787,6 +905,16 @@ void main() {
         'on': true,
         'ms': 2,
         'k': 1,
+      });
+      // T-86: 든 묵주 id(rs)가 있으면 그대로 장면에 넘긴다
+      h.net.emit(const Praying('p1', true, 2, rosary: true, rosaryStyle: 'pearl'));
+      await tester.pump();
+      expect(h.scene.lastArgs('peerPraying'), {
+        'id': 'p1',
+        'on': true,
+        'ms': 2,
+        'r': 1,
+        'rs': 'pearl',
       });
     });
 

@@ -8,7 +8,7 @@
      세례명(cfg.name)은 통합 목록 인덱스(cfg.nv = 2). nv 없는 옛 설정은 setConfig 의 normalizeCfg 가 옮긴다(g 도 없으면 성별을 유추).
    - 공개 API(변경 없음): new Avatar(cfg, {showTag, self}), root, setConfig, setLod(0|1|2), lod, setWalk, setSeated, setPray, playEmote(0 인사|1 성호|2 절),
      setPose(x,y,z,yaw), snapPose(), update(dt,t), nod/nodPh, seatLift, ChurchAvatar.tagMaterial/HEIGHT.
-     setRosary(bool): 손에 묵주를 든다(SPEC §32). 지오메트리 1개를 모든 아바타가 함께 쓰고(재질은 far 재사용), 든 아바타마다 draw call +1. 원거리(LOD2)에서는 그리지 않는다.
+     setRosary(bool, look?): 손에 묵주를 든다(SPEC §32). look(T-86)은 든 묵주의 색·재질(rosary_looks.js 항목) — 알 지오메트리·모습별 재질은 모든 아바타가 함께 쓰고, 든 아바타마다 draw call +2(알, 끈·십자가). 원거리(LOD2)에서는 그리지 않는다.
    좌표: 앞 = -z, 위 = +y, +x = 아바타의 오른쪽. 휴식 자세(팔이 아래로 늘어진 자세)로 모델링하고 뼈 회전으로 포즈를 만든다. */
 (function (root) {
   'use strict';
@@ -838,12 +838,14 @@
     out.setFromRotationMatrix(_m);
   }
 
-  // ------------------------------------------------------------------ 묵주(손에 든 것, SPEC §32)
-  // 원점 = 손에 쥔 곳. 구슬 고리가 -y 로 늘어지고(XY 평면), 그 아래에 구슬 3알과 십자가가 달린다. 새 에셋 없이 지오메트리 1개로 만든다.
-  var ROSARY = { BEADS: 30, DROP: 0.15, HALF_W: 0.036, R: 0.0052, R_BIG: 0.0068, TAIL: 3, TAIL_GAP: 0.0118, CROSS_H: 0.040, CROSS_W: 0.024, CROSS_T: 0.007, PALM: 0.062, RAIL_DZ: 0.11, RAIL_DY: 0.03, FADE: 8, LEN: 0, TRIS: 0 };
+  // ------------------------------------------------------------------ 묵주(손에 든 것, SPEC §32, T-86)
+  // 원점 = 손에 쥔 곳. 구슬 고리가 -y 로 늘어지고(XY 평면), 그 아래에 구슬 3알과 십자가가 달린다. 새 에셋 없이 지오메트리로 만든다.
+  // 메시는 최대 2개: 알(모든 묵주가 지오메트리 1개 공유, 재질은 묵주 모습별 공유)과 끈+십자가(모습별 지오메트리 1개, 색은 정점색).
+  // 폰에서 읽히도록 알·십자가를 옛 값보다 25~30% 키웠다(알 지름 13mm·큰 알 17.6mm·십자가 4.8cm — 손 크기에서 믿을 만한 범위).
+  var ROSARY = { BEADS: 20, DROP: 0.14, HALF_W: 0.036, R: 0.0066, R_BIG: 0.0088, TAIL: 3, TAIL_GAP: 0.0152, CROSS_H: 0.048, CROSS_W: 0.029, CROSS_T: 0.009, CORD: 0.0026, PALM: 0.062, RAIL_DZ: 0.11, RAIL_DY: 0.03, FADE: 8, LEN: 0, TRIS: 0 };
   ROSARY.LEN = ROSARY.DROP + ROSARY.R_BIG * 2 + ROSARY.TAIL * ROSARY.TAIL_GAP + 0.004 + ROSARY.CROSS_H;
-  var rosaryGeo = null;
-  function rosaryLoop(n) {   // 물방울 모양 고리 위에 같은 간격으로 놓은 n 개의 점 [x, y]
+  var rosaryGeo = null, rosaryTrim = null;
+  function rosaryLoop(n) {   // 물방울 모양 고리 위에 같은 간격으로 놓은 n 개의 점 [x, y] (out.curve = 촘촘한 곡선)
     var M = 240, pts = [], len = [0], i, a, k;
     for (i = 0; i <= M; i++) { a = TAU * i / M; k = (1 - Math.cos(a)) / 2; pts.push([ROSARY.HALF_W * Math.sin(a) * (0.5 + 0.5 * k), -ROSARY.DROP * k]); }
     for (i = 1; i <= M; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
@@ -854,37 +856,86 @@
       var f = (d - len[j - 1]) / ((len[j] - len[j - 1]) || 1);
       out.push([lerp(pts[j - 1][0], pts[j][0], f), lerp(pts[j - 1][1], pts[j][1], f)]);
     }
+    out.curve = pts;
     return out;
   }
-  function getRosaryGeo() {
+  function pushGeo(arr, g, x, y, z) {   // 지오메트리를 arr({pos, nor})에 이어 붙인다. 삼각형 수를 돌려준다.
+    if (g.index) g = g.toNonIndexed();
+    var p = g.attributes.position.array, nn = g.attributes.normal.array;
+    for (var q = 0; q < p.length; q += 3) { arr.pos.push(p[q] + x, p[q + 1] + y, p[q + 2] + z); arr.nor.push(nn[q], nn[q + 1], nn[q + 2]); }
+    return p.length / 9;
+  }
+  function pushPrism(arr, ax, ay, bx, by, h) {   // 두 점(XY) 사이의 가는 네모 기둥(끈·사슬), 삼각형 8개
+    var dx = bx - ax, dy = by - ay, l = Math.hypot(dx, dy) || 1, nx = -dy / l * h, ny = dx / l * h, s, k;
+    var P = [[ax + nx, ay + ny, h], [ax - nx, ay - ny, h], [ax - nx, ay - ny, -h], [ax + nx, ay + ny, -h]], Q = [[bx + nx, by + ny, h], [bx - nx, by - ny, h], [bx - nx, by - ny, -h], [bx + nx, by + ny, -h]];
+    for (s = 0; s < 4; s++) {
+      var a0 = P[s], a1 = P[(s + 1) % 4], b0 = Q[s], b1 = Q[(s + 1) % 4];
+      var ux = a1[0] - a0[0], uy = a1[1] - a0[1], uz = a1[2] - a0[2], vx = b0[0] - a0[0], vy = b0[1] - a0[1], vz = b0[2] - a0[2];
+      var cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx, cl = Math.hypot(cx, cy, cz) || 1;
+      var tri = [a0, a1, b1, a0, b1, b0];
+      for (k = 0; k < 6; k++) { arr.pos.push(tri[k][0], tri[k][1], tri[k][2]); arr.nor.push(cx / cl, cy / cl, cz / cl); }
+    }
+    return 8;
+  }
+  function getRosaryGeo() {   // 알: 고리 알(다섯째마다 큰 알) + 가운데 큰 알 + 꼬리 알 3
     if (rosaryGeo) return rosaryGeo;
-    var pos = [], nor = [], col = [], wood = lin(0x6b4226), gold = lin(0xc9a04a), i;
-    function add(g, x, y, z, c) {
-      if (g.index) g = g.toNonIndexed();
-      var p = g.attributes.position.array, nn = g.attributes.normal.array;
-      for (var q = 0; q < p.length; q += 3) { pos.push(p[q] + x, p[q + 1] + y, p[q + 2] + z); nor.push(nn[q], nn[q + 1], nn[q + 2]); col.push(c[0], c[1], c[2]); }
-    }
+    var A = { pos: [], nor: [] }, tris = 0, i;
     var small = new T.OctahedronGeometry(ROSARY.R, 1), big = new T.OctahedronGeometry(ROSARY.R_BIG, 1);
-    var loop = rosaryLoop(ROSARY.BEADS), mid = ROSARY.BEADS / 2;
-    for (i = 0; i < loop.length; i++) {   // 고리 맨 아래(가운데 메달 자리)와 여섯째 알마다 큰 알
-      var isBig = (i % 6) === 5 && i !== mid - 1;
-      add(isBig ? big : small, loop[i][0], loop[i][1], 0, isBig ? gold : wood);
-    }
+    var loop = rosaryLoop(ROSARY.BEADS);
+    for (i = 0; i < loop.length; i++) tris += pushGeo(A, (i % 5) === 2 ? big : small, loop[i][0], loop[i][1], 0);   // 고리 맨 아래 양옆(9·10번)은 작은 알
     var y = -ROSARY.DROP - ROSARY.R_BIG;
-    add(big, 0, y, 0, gold);
+    tris += pushGeo(A, big, 0, y, 0);
     y -= ROSARY.R_BIG;
-    for (i = 0; i < ROSARY.TAIL; i++) { y -= ROSARY.TAIL_GAP; add(small, 0, y + ROSARY.TAIL_GAP / 2, 0, wood); }
-    y -= 0.004;
-    add(new T.BoxGeometry(ROSARY.CROSS_T, ROSARY.CROSS_H, 0.005), 0, y - ROSARY.CROSS_H / 2, 0, gold);
-    add(new T.BoxGeometry(ROSARY.CROSS_W, ROSARY.CROSS_T, 0.005), 0, y - ROSARY.CROSS_H * 0.32, 0, gold);
+    for (i = 0; i < ROSARY.TAIL; i++) { y -= ROSARY.TAIL_GAP; tris += pushGeo(A, small, 0, y + ROSARY.TAIL_GAP / 2, 0); }
     var g = new T.BufferGeometry();
-    g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
-    g.setAttribute('normal', new T.Float32BufferAttribute(nor, 3));
-    g.setAttribute('color', new T.Float32BufferAttribute(col, 3));
+    g.setAttribute('position', new T.Float32BufferAttribute(A.pos, 3));
+    g.setAttribute('normal', new T.Float32BufferAttribute(A.nor, 3));
     g.computeBoundingSphere();
-    ROSARY.TRIS = pos.length / 9;
+    ROSARY.BEAD_TRIS = tris;
     rosaryGeo = g;
+    ROSARY.TRIS = tris + getRosaryTrim().tris;
     return g;
+  }
+  function getRosaryTrim() {   // 끈(고리 + 세로줄) + 십자가: 위치·법선은 모든 모습이 공유, 색(정점색)만 모습마다
+    if (rosaryTrim) return rosaryTrim;
+    var A = { pos: [], nor: [] }, i, cordN = 0;
+    var c = rosaryLoop(ROSARY.BEADS).curve, S = 28, step = (c.length - 1) / S;
+    for (i = 0; i < S; i++) { var p0 = c[Math.round(i * step)], p1 = c[Math.round((i + 1) * step)]; cordN += pushPrism(A, p0[0], p0[1], p1[0], p1[1], ROSARY.CORD / 2); }
+    var y = -ROSARY.DROP - ROSARY.R_BIG * 2 - ROSARY.TAIL * ROSARY.TAIL_GAP - 0.004;   // 십자가 윗끝
+    cordN += pushPrism(A, 0, -ROSARY.DROP, 0, y, ROSARY.CORD / 2);
+    var crossN = pushGeo(A, new T.BoxGeometry(ROSARY.CROSS_T, ROSARY.CROSS_H, 0.006), 0, y - ROSARY.CROSS_H / 2, 0);
+    crossN += pushGeo(A, new T.BoxGeometry(ROSARY.CROSS_W, ROSARY.CROSS_T, 0.006), 0, y - ROSARY.CROSS_H * 0.32, 0);
+    rosaryTrim = { pos: new T.Float32BufferAttribute(A.pos, 3), nor: new T.Float32BufferAttribute(A.nor, 3), cordVerts: cordN * 3, n: A.pos.length / 3, tris: cordN + crossN };
+    return rosaryTrim;
+  }
+  // 묵주 모습(look): 성당 표(rosary_looks.js; Flutter 가 {on, look} 으로 보냄)의 한 항목. 값은 검사해 쓰고, 없으면 옛 모습(갈색 알 + 금 십자가).
+  var ROSARY_DEFAULT = { id: '', bead: '#6b4226', rough: 0.6, metal: 0, emissive: '', emissiveI: 0, opacity: 1, facet: 0, cord: '#4a2c18', chain: 0, cross: '#c9a04a', crossMetal: 0.9, crossRough: 0.4 };
+  function hexOr(s, d) { return typeof s === 'string' && /^#[0-9a-fA-F]{6}$/.test(s) ? s : d; }
+  function numOr(v, lo, hi, d) { v = +v; return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; }
+  function normRosaryLook(o) {
+    var D = ROSARY_DEFAULT; o = o && typeof o === 'object' ? o : D;
+    return { id: typeof o.id === 'string' ? o.id.slice(0, 24) : '', bead: hexOr(o.bead, D.bead), rough: numOr(o.rough, 0.02, 1, D.rough), metal: numOr(o.metal, 0, 1, 0),
+      emissive: hexOr(o.emissive, ''), emissiveI: numOr(o.emissiveI, 0, 1.5, 0), opacity: numOr(o.opacity, 0.5, 1, 1), facet: o.facet ? 1 : 0,
+      cord: hexOr(o.cord, D.cord), chain: o.chain ? 1 : 0, cross: hexOr(o.cross, D.cross), crossMetal: numOr(o.crossMetal, 0, 1, 0), crossRough: numOr(o.crossRough, 0.05, 1, 0.4) };
+  }
+  var rosaryParts = {}, rosaryPartsN = 0;
+  function getRosaryParts(look) {   // 모습별 공유 재질 2개 + 끈·십자가 지오메트리 1개(모든 아바타가 나눠 쓴다)
+    var L = normRosaryLook(look), key = JSON.stringify(L), P = rosaryParts[key];
+    if (P) return P;
+    if (rosaryPartsN >= 40) { rosaryParts = {}; rosaryPartsN = 0; }   // 16종이면 닿지 않는 안전장치
+    getRosaryGeo();
+    var bead = new T.MeshStandardMaterial({ color: new T.Color(L.bead), roughness: L.rough, metalness: L.metal, envMapIntensity: L.metal > 0.5 ? 1.6 : 1.1, flatShading: !!L.facet });
+    if (L.emissive) { bead.emissive = new T.Color(L.emissive); bead.emissiveIntensity = L.emissiveI; }
+    if (L.opacity < 1) { bead.transparent = true; bead.opacity = L.opacity; }
+    var trim = new T.MeshStandardMaterial({ vertexColors: true, roughness: L.crossRough, metalness: L.crossMetal * (L.chain ? 1 : 0.5), envMapIntensity: L.crossMetal > 0.5 ? 1.6 : 1.0 });
+    var tr = getRosaryTrim(), col = new Float32Array(tr.n * 3), cc = lin(L.cord), xc = lin(L.cross), k;
+    for (k = 0; k < tr.n; k++) { var s = k < tr.cordVerts ? cc : xc; col[k * 3] = s[0]; col[k * 3 + 1] = s[1]; col[k * 3 + 2] = s[2]; }
+    var tg = new T.BufferGeometry();
+    tg.setAttribute('position', tr.pos); tg.setAttribute('normal', tr.nor); tg.setAttribute('color', new T.BufferAttribute(col, 3));
+    tg.computeBoundingSphere();
+    P = rosaryParts[key] = { look: L, beadMat: bead, trimMat: trim, trimGeo: tg };
+    rosaryPartsN++;
+    return P;
   }
 
   // ------------------------------------------------------------------ 아바타
@@ -1115,12 +1166,19 @@
   };
   Avatar.prototype.kneelOffset = function () { return this.kneelAmt * this.sitAmt * this.kneelFwd; };
   // 묵주를 든다/내려놓는다(SPEC §32). 처음 들 때 메시를 만든다(지오메트리·재질 공유). 손 위치는 update 가 매 프레임 맞춘다.
-  Avatar.prototype.setRosary = function (b) {
+  // look(선택, T-86): 든 묵주의 모습(rosary_looks.js 항목). 주면 들고 있는 중에도 바로 바뀐다(기도 중 묵주 바꾸기). 안 주면 지금 모습 유지(처음엔 옛 모습).
+  // 메시 2개: this.rosary(알, 루트) + 그 자식 끈·십자가. 지오메트리·재질은 모습별로 모든 아바타가 공유한다.
+  Avatar.prototype.setRosary = function (b, look) {
     this.rosaryTarget = b ? 1 : 0;
+    if (look && look !== this.rosaryLook) this.rosaryLook = look;
     if (b && !this.rosary) {
-      var m = new T.Mesh(getRosaryGeo(), getMats().far);
+      var P = getRosaryParts(this.rosaryLook), m = new T.Mesh(getRosaryGeo(), P.beadMat), tm = new T.Mesh(P.trimGeo, P.trimMat);
       m.castShadow = false; m.receiveShadow = false; m.frustumCulled = false; m.visible = false; m.userData.rosary = true;
-      this.body.add(m); this.rosary = m;
+      tm.castShadow = false; tm.receiveShadow = false; tm.frustumCulled = false; tm.userData.rosaryTrim = true;
+      m.add(tm); this.body.add(m); this.rosary = m; this.rosaryParts = P;
+    } else if (this.rosary && look) {
+      var Q = getRosaryParts(look);
+      if (Q !== this.rosaryParts) { this.rosaryParts = Q; this.rosary.material = Q.beadMat; var t2 = this.rosary.children[0]; t2.geometry = Q.trimGeo; t2.material = Q.trimMat; }
     }
   };
   // 불경 방지(reverence.js): 인사(손 흔들기)는 입구 가까이에서 걸을 때만 — 그 밖에서는 고개 숙임. 모르는 번호는 재생하지 않는다.
@@ -1358,7 +1416,7 @@
   root.ChurchAvatar = {
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
-    ROSARY: ROSARY, rosaryGeometry: getRosaryGeo, HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM,
+    ROSARY: ROSARY, rosaryGeometry: getRosaryGeo, rosaryParts: getRosaryParts, normRosaryLook: normRosaryLook, HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM,
     SIGN: { TL: SIGN_TL, DUR: EMOTE_DUR, phase: signPhase }, kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
     stats: function () {
