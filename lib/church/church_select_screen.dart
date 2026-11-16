@@ -4,6 +4,7 @@ import '../app/theme.dart';
 import '../app/settings.dart';
 import '../app/window_class.dart';
 import 'church_catalog.dart';
+import 'dev_glass.dart';
 import 'net/church_loads.dart';
 
 /// 정렬 기준.
@@ -54,8 +55,8 @@ class ChurchSelectScreen extends StatefulWidget {
     this.loads,
   });
 
-  /// 내부 3D 모형이 준비된 성당 id. 새 성당 내부가 들어올 때마다 늘린다.
-  static const Set<String> availableIds = {
+  /// 내부 3D 모형이 준비된 성당 id(일반 출시 빌드). 새 성당 내부가 들어올 때마다 늘린다.
+  static const Set<String> releaseIds = {
     'basic',
     'stpeter',
     'lateran',
@@ -64,8 +65,16 @@ class ChurchSelectScreen extends StatefulWidget {
     'milan',
     'florence',
     'myeongdong',
-    'danggogae',
   };
+
+  /// 교회 측 서면 동의를 기다리는 성당(docs/legal/church_permission/). 개발용 빌드에서만 연다.
+  /// 동의를 받으면 [releaseIds]로 옮긴다.
+  static const Set<String> pendingConsentIds = {'danggogae'};
+
+  /// 지금 빌드에서 들어갈 수 있는 성당 id. 나머지는 목록에 '준비 중'으로 보인다.
+  static Set<String> get availableIds => DevGlass.enabled
+      ? const {...releaseIds, ...pendingConsentIds}
+      : releaseIds;
 
   final AppSettings settings;
 

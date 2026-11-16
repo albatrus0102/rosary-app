@@ -83,6 +83,8 @@ void main() {
   testWidgets('준비 중 churches are hidden unless 준비 중 보기 is on', (tester) async {
     await _pumpSelect(tester, holder: AppSettingsHolder());
     expect(ChurchSelectScreen.availableIds, isNot(contains('sagrada')));
+    // 일반 빌드에서는 동의 대기 중인 당고개가 닫혀 있다.
+    expect(ChurchSelectScreen.availableIds, isNot(contains('danggogae')));
     expect(_card('sagrada'), findsNothing);
     expect(find.text('준비 중'), findsNothing);
     final chip = find.byKey(const ValueKey('chip-upcoming'));
@@ -695,7 +697,17 @@ void main() {
   group('당고개 순교성지 상세 시트', () {
     Future<void> open(WidgetTester tester, Size size, double scale) async {
       final h = AppSettingsHolder();
-      await _pumpSelect(tester, holder: h, size: size, textScale: scale);
+      // 당고개는 교회 측 동의 전이라 개발용 빌드에서만 열린다 → 시험에서는 명시해 연다.
+      await _pumpSelect(
+        tester,
+        holder: h,
+        size: size,
+        textScale: scale,
+        available: {
+          ...ChurchSelectScreen.releaseIds,
+          ...ChurchSelectScreen.pendingConsentIds,
+        },
+      );
       await _reveal(tester, _card('danggogae'));
       await tester.tap(_card('danggogae'));
       await tester.pumpAndSettle();
