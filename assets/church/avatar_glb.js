@@ -34,7 +34,11 @@
     sharePose: true,                       // LOD2 포즈 공유
     tagLift: 0.24                          // 머리 뼈 위로 이름표 높이(m)
   };
-  var EMOTE_DUR = [2.4, 3.4, 1.7, 3.0];    // 0 인사, 1 성호, 2 절, 3 촛불 봉헌
+  var EMOTE_DUR = [2.4, 3.4, 1.7, 3.0, 3.6, 2.6, 6.0];    // 0 인사, 1 성호, 2 절, 3 촛불 봉헌, 4 기도 시작 성호경, 5 기도 끝 성호경, 6 초 켜기 동작(손 뻗기 → 성호경 → 두 손 모음)
+  // 성호경(1·4·5·6)의 시간표·단계 계산은 avatar.js 의 ChurchAvatar.SIGN 하나를 공유한다(절차 아바타와 똑같은 타이밍). 6 은 그쪽의 3.
+  var SIGN_ID = { 1: 1, 4: 4, 5: 5, 6: 3 };
+  function signPh(e, t) { var S = root.ChurchAvatar && root.ChurchAvatar.SIGN; return S && SIGN_ID[e] !== undefined ? S.phase(SIGN_ID[e], t) : null; }
+  function emDur(e) { var S = root.ChurchAvatar && root.ChurchAvatar.SIGN; return S && SIGN_ID[e] !== undefined ? S.DUR[SIGN_ID[e]] : EMOTE_DUR[e]; }
 
   // ------------------------------------------------------------------ 데이터 읽기
   function b64ToBuf(s) {
@@ -450,9 +454,25 @@
     if (this.shadow) this.shadow.visible = l < 2;
     if (l === 2 && CFG.sharePose) this._pool(); else this._unpool();
   };
-  GP.setWalk = function (v) { this.walkTarget = v; };
-  GP.setSeated = function (b) { this.sitTarget = b ? 1 : 0; };
-  GP.setPray = function (b) { this.prayTarget = b ? 1 : 0; };
+  GP.setWalk = function (v) { this.walkTarget = v; if (v > 0.05 && SIGN_ID[this.emote] !== undefined) this.cancelGesture(); };
+  GP.setSeated = function (b) { this.sitTarget = b ? 1 : 0; if (!b && this.emote === 5) this.cancelGesture(); };
+  // 기도 시작에 성호경(켜질 때 0→1 한 번), 앉아(서서) 기도 중에 끄면 끝 성호경을 긋고 손을 모은 채 푼다. 절차 아바타(avatar.js setPray)와 같은 규칙.
+  GP.setPray = function (b, standing) {
+    if (b) {
+      var starting = !this.prayWant;
+      this.prayWant = true; this.prayTarget = 1; this.prayStand = standing ? 1 : 0;
+      if (this.emote === 5) { this.emote = -1; this.abortT = 0; }
+      else if (starting && this.lod !== 2 && this.emote < 0 && !this.headless && signPh(4, 0)) { this.emote = 4; this.emoteT = 0; this.abortT = 0; }
+    } else {
+      if (!this.prayWant) return;
+      this.prayWant = false;
+      if (this.emote === 4) { this.emote = -1; this.abortT = 0; }
+      if (this.prayAmt > 0.5 && (this.sitTarget || this.prayStand) && this.lod !== 2 && this.emote < 0 && !this.headless && signPh(5, 0)) { this.emote = 5; this.emoteT = 0; this.abortT = 0; }
+      else { this.prayTarget = 0; this.prayStand = 0; }
+    }
+  };
+  GP.playLightGesture = function () { if (signPh(6, 0)) { this.emote = 6; this.emoteT = 0; this.abortT = 0; } else this.playEmote(3); };
+  GP.cancelGesture = function () { if (SIGN_ID[this.emote] !== undefined && !(this.abortT > 0)) this.abortT = 0.25; };
   // spot = ChurchLogic.kneelSpot(seatId): {fwd 좌석 중심에서 무릎까지 앞으로(m), y 무릎 받침 높이, rail 앞 등받이에 손 얹기}
   GP.setKneel = function (b, spot) {
     this.kneelTarget = b ? 1 : 0;
@@ -464,6 +484,7 @@
   GP.setSeatGeom = function (s) { this.seat = s; };
   GP.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
   GP.snapPose = function () {
+    if (this.emote === 4 || this.emote === 5) { this.emote = -1; this.abortT = 0; if (!this.prayWant) { this.prayTarget = 0; this.prayStand = 0; } }
     this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget;
     this.trans = null;
     this.base = this.sitTarget ? (this.kneelTarget ? 'kneel' : 'sit') : 'stand';
@@ -546,7 +567,11 @@
     this.prayAmt += (this.prayTarget - this.prayAmt) * Math.min(1, dt * 5);
     var kl = this.kneelLin, kt = this.kneelTarget;
     if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / CFG.kneel.dur; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
-    if (this.emote >= 0) { this.emoteT += dt; if (this.emoteT >= EMOTE_DUR[this.emote]) this.emote = -1; }
+    if (this.emote >= 0) {
+      this.emoteT += dt;
+      if (this.abortT > 0) { this.abortT -= dt; if (this.abortT <= 0) this.emoteT = 1e9; }
+      if (this.emoteT >= emDur(this.emote)) { if (this.emote === 5 && !this.prayWant) { this.prayTarget = 0; this.prayStand = 0; } this.emote = -1; this.abortT = 0; }
+    }
     if (this.pooled) {   // 대표(머리 없는 아바타)가 포즈를 만든다. 상태가 바뀌면 다른 대표로 옮긴다.
       if (poseKey(this) !== this.pooled.key) this._pool();
       if (this.pooled) { this._placeExtras(); return; }
@@ -624,24 +649,7 @@
     if (!full) return;
     // 3) 기도: 클립(윗몸만) 또는 절차(두 손을 가슴 앞에 모음). 무릎 꿇고 앞 등받이가 있으면 손을 그 윗단에.
     var A = this.anims;
-    if (pa > 0.001) {
-      if (A.has('pray')) this._sample('pray', t, pa);
-      else {
-        var ch = B.Spine2; wpos(ch, _v1);
-        var kr = ka * this.kneelRail;
-        _v1.y += lerp(-0.08, -0.14, kr) * s; _v1.z += lerp(0.21, 0.36, kr) * s;
-        bend(B.Neck, 1, 0, 0, 0.20 * pa); bend(B.Head, 1, 0, 0, 0.26 * pa);
-        if (this.nod && pa > 0.5) { var p2 = Math.sin(t * 0.55 + this.nodPh); if (p2 > 0.93) bend(B.Head, 1, 0, 0, (p2 - 0.93) * 2.4); }
-        for (var sd2 = -1; sd2 <= 1; sd2 += 2) {
-          var pr = sd2 > 0 ? 'Right' : 'Left';
-          _v2.copy(_v1); _v2.x += -sd2 * 0.012 * s;   // 오른손(sd=+1)은 -X 쪽
-          _pole.set(-sd2 * 0.55, -1, -0.35);
-          ik2(B[pr + 'Arm'], B[pr + 'ForeArm'], B[pr + 'Hand'], _v2, _pole, pa);
-          _v3.set(0, 0.72, 0.69); _v4.set(sd2, 0, 0);   // 손가락 위·앞, 손바닥은 맞은편 손 쪽
-          orientHand(B, sd2, _v3, _v4, pa);
-        }
-      }
-    }
+    if (pa > 0.001) this._prayPose(t, pa, ka * this.kneelRail, false);
     // 4) 이모트
     if (this.emote >= 0) {
       var eU = this.emoteT / EMOTE_DUR[this.emote], env = Math.min(sm(eU / 0.12), sm((1 - eU) / 0.12));
@@ -653,13 +661,31 @@
           var wv = Math.sin(this.emoteT * 11) * 0.38;
           _v3.set(-Math.sin(wv), Math.cos(wv), 0.22); _v4.set(0, 0, 1); orientHand(B, 1, _v3, _v4, env);
         }
-      } else if (this.emote === 1) {
-        var u = clamp((eU - 0.12) / 0.76, 0, 0.999) * 4, ix = Math.floor(u), f = sm(u - ix);
-        var Ak = CROSS[Math.min(3, ix)], Bk = CROSS[Math.min(3, ix + 1)];
-        this._crossPt(Ak, _v1); this._crossPt(Bk, _v2); _v1.lerp(_v2, f);
-        _pole.set(-0.6, -1, -0.3); ik2(B.RightArm, B.RightForeArm, B.RightHand, _v1, _pole, env);
-        _v3.fromArray(Ak[2]).lerp(_v2.fromArray(Bk[2]), f); _v4.fromArray(Ak[3]).lerp(_v2.fromArray(Bk[3]), f);
-        orientHand(B, 1, _v3, _v4, env);
+      } else if (SIGN_ID[this.emote] !== undefined) {
+        // 성호경(1·4·5·6): 이마 → 가슴 → 왼어깨 → 오른어깨 → 두 손 모음(고개 살짝 숙임, 머문 뒤 놓음). 6 은 앞에 초 쪽 손 뻗기.
+        var sg = signPh(this.emote, this.emoteT), abw = this.abortT > 0 ? this.abortT / 0.25 : 1;
+        if (sg) {
+          var cw = sg.cw * abw, jw = sg.jw * abw, ic = Math.floor(sg.u), fc = sm(sg.u - ic);
+          var Ak = CROSS[Math.min(3, ic)], Bk = CROSS[Math.min(3, ic + 1)];
+          this._crossPt(Ak, _v1); this._crossPt(Bk, _v2); _v1.lerp(_v2, fc);
+          _v3.fromArray(Ak[2]).lerp(_v2.fromArray(Bk[2]), fc); _v4.fromArray(Ak[3]).lerp(_v2.fromArray(Bk[3]), fc);
+          if (this.emote === 6 && this.emoteT < sg.tl.c0 + 0.35) {   // 손 뻗기 → (긋기로 이어짐)
+            var rp = sm(clamp(this.emoteT / 0.59, 0, 1)), bl = this.emoteT < sg.tl.c0 ? 0 : sm((this.emoteT - sg.tl.c0) / 0.35);
+            if (this.reach) _v2.copy(this.reach); else { wpos(B.Spine2, _v2); _v2.x -= 0.06 * s; _v2.y -= 0.22 * s; _v2.z += 0.42 * s; }
+            _v1.lerp(_v2, 1 - bl);
+            _v3.lerp(_v2.set(-0.1, 0.1, 1), 1 - bl); _v4.lerp(_v2.set(1, 0, 0), 1 - bl);
+            cw *= Math.max(sm(rp * 1.5), bl);
+          }
+          if (cw > 0.001) {
+            _pole.set(-0.6, -1, -0.3); ik2(B.RightArm, B.RightForeArm, B.RightHand, _v1, _pole, cw);
+            orientHand(B, 1, _v3, _v4, cw);
+          }
+          if (jw > 0.001) {
+            var hb = jw * (1 - pa);
+            bend(B.Neck, 1, 0, 0, 0.10 * hb); bend(B.Head, 1, 0, 0, 0.12 * hb);
+            this._prayPose(t, jw, ka * this.kneelRail, true);
+          }
+        }
       } else if (this.emote === 2) {
         if (!(this.actions.bow && this.trans && this.trans.name === 'bow')) {
           var bw = Math.sin(eU * PI);
@@ -674,6 +700,23 @@
         _v3.set(-0.1, 0.1, 1); _v4.set(1, 0, 0); orientHand(B, 1, _v3, _v4, env * rr);
         curlFingers(B, 1, 0.9 * env);
       }
+    }
+  };
+  // 두 손을 가슴 앞에 모은 기도 손(클립 있으면 클립). w 가중치, kr 무릎 꿇고 앞 등받이에 얹는 정도, noBow: 고개 숙임은 호출 쪽에서(성호경 끝)
+  GP._prayPose = function (t, w, kr, noBow) {
+    var B = this.B, s = this.type.s, A = this.anims;
+    if (A.has('pray')) { this._sample('pray', t, w); return; }
+    var ch = B.Spine2; wpos(ch, _v1);
+    _v1.y += lerp(-0.08, -0.14, kr) * s; _v1.z += lerp(0.21, 0.36, kr) * s;
+    if (!noBow) { bend(B.Neck, 1, 0, 0, 0.20 * w); bend(B.Head, 1, 0, 0, 0.26 * w); }
+    if (!noBow && this.nod && w > 0.5) { var p2 = Math.sin(t * 0.55 + this.nodPh); if (p2 > 0.93) bend(B.Head, 1, 0, 0, (p2 - 0.93) * 2.4); }
+    for (var sd2 = -1; sd2 <= 1; sd2 += 2) {
+      var pr = sd2 > 0 ? 'Right' : 'Left';
+      _v2.copy(_v1); _v2.x += -sd2 * 0.012 * s;   // 오른손(sd=+1)은 -X 쪽
+      _pole.set(-sd2 * 0.55, -1, -0.35);
+      ik2(B[pr + 'Arm'], B[pr + 'ForeArm'], B[pr + 'Hand'], _v2, _pole, w);
+      _v3.set(0, 0.72, 0.69); _v4.set(sd2, 0, 0);   // 손가락 위·앞, 손바닥은 맞은편 손 쪽
+      orientHand(B, sd2, _v3, _v4, w);
     }
   };
   GP._crossPt = function (row, out) {

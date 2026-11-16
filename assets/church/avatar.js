@@ -888,7 +888,22 @@
   }
 
   // ------------------------------------------------------------------ 아바타
-  var EMOTE_DUR = [2.4, 3.4, 1.7, 4.2];   // 3 = 초 켜기 동작(손 뻗기 → 성호경, 서버 이모트 번호 밖: playLightGesture 로만, 내 화면에서만)
+  // 3 = 초 켜기 동작(손 뻗기 → 성호경 → 두 손 모음), 4 = 기도 시작 성호경, 5 = 기도 끝 성호경: 서버 이모트 번호 밖(setPray/playLightGesture 로만).
+  // 성호경(1·3·4·5)은 모두 같은 끝맺음: 오른어깨 다음에 두 손을 가슴 앞에 모아(손가락 위) 잠깐 고개 숙여 머문 뒤 놓는다. 시간표(초)는 SIGN_TL, 계산은 signPhase 한 곳.
+  var EMOTE_DUR = [2.4, 5.6, 1.7, 6.0, 3.6, 2.6];
+  var SIGN_TL = {
+    1: { c0: 0.4, c1: 3.0, j0: 3.0, j1: 3.5, r0: 5.1, inn: 0.4 },     // 성호(메뉴): 긋기 0.4~3.0 → 손 모으기 → 1.6초 머묾 → 놓기(5.1~5.6)
+    3: { c0: 1.26, c1: 3.55, j0: 3.55, j1: 4.05, r0: 5.5, inn: 0.75 }, // 초 켜기: 손 뻗기 0~1.26 → 긋기 → 손 모으기 → 머묾(~1.5초) → 놓기(5.5~6.0)
+    4: { c0: 0.25, c1: 2.0, j0: 2.0, j1: 2.4, r0: 3.1, inn: 0.3 },     // 기도 시작: 긋고 모은 손으로 기도 자세에 이어진다(놓으면 기도 자세)
+    5: { c0: 0.25, c1: 1.85, j0: 1.85, j1: 2.25, r0: 99, inn: 0.3 }    // 기도 끝: 긋고 손을 모은 채 끝(그다음 기도 자세를 푼다)
+  };
+  // t초 시점의 성호경 단계: u 긋기 진행(0~4: 이마·가슴·왼어깨·오른어깨), cw 긋는 팔 가중치, jw 두 손 모음 가중치(= 고개 숙임 가중치)
+  function signPhase(e, t) {
+    var T = SIGN_TL[e];
+    if (!T) return null;
+    var rel = t > T.r0 ? sm(clamp((t - T.r0) / (EMOTE_DUR[e] - T.r0), 0, 1)) : 0, jn = sm(clamp((t - T.j0) / (T.j1 - T.j0), 0, 1));
+    return { u: clamp((t - T.c0) / (T.c1 - T.c0), 0, 0.999) * 4, cw: sm(clamp(t / T.inn, 0, 1)) * (1 - rel), jw: jn * (1 - rel), tl: T };
+  }
   // 성호 경로(오른손, 가슴 로컬): 이마 → 가슴 → 왼어깨 → 오른어깨. [손목 x,y,z, 손가락 F(x,y,z), 손바닥 N(x,y,z)]
   var CROSS = [
     [0.02, 0.43, -0.215, 0, 0.88, 0.48, 0, -0.48, 0.88],   // 이마(큰 머리 앞면 밖)
@@ -1010,9 +1025,25 @@
   };
   Avatar.prototype.lod = 0;
   Avatar.prototype.seatLift = 0.45;
-  Avatar.prototype.setWalk = function (v) { this.walkTarget = v; };
-  Avatar.prototype.setSeated = function (b) { this.sitTarget = b ? 1 : 0; };
-  Avatar.prototype.setPray = function (b, standing) { this.prayTarget = b ? 1 : 0; this.prayStand = b && standing ? 1 : 0; };   // standing: 서서 손을 모은다(앉지 않아도 기도 팔)
+  Avatar.prototype.setWalk = function (v) { this.walkTarget = v; if (v > 0.05 && SIGN_TL[this.emote]) this.cancelGesture(); };   // 걷기 입력은 성호경을 끊는다
+  Avatar.prototype.setSeated = function (b) { this.sitTarget = b ? 1 : 0; if (!b && this.emote === 5) this.cancelGesture(); };
+  // 기도 시작/끝에는 성호경(이마→가슴→왼어깨→오른어깨→두 손 모음)을 먼저 긋는다. 켜질 때만(0→1) 시작, 같은 값 반복 호출은 무시 — 다른 사람의 기도 상태(net_view)도 이 호출이라 화면마다 똑같이 보인다.
+  // 끝: 앉아(서서) 기도 자세인 채로 끄면 성호경(2.6초)을 긋는 동안 손을 모은 채 두었다가 푼다. 앉아 있지 않으면(일어남·걸음) 바로 푼다.
+  // standing: 서서 손을 모은다(앉지 않아도 기도 팔)
+  Avatar.prototype.setPray = function (b, standing) {
+    if (b) {
+      var starting = !this.prayWant;
+      this.prayWant = true; this.prayTarget = 1; this.prayStand = standing ? 1 : 0;
+      if (this.emote === 5) { this.emote = -1; this.abortT = 0; }
+      else if (starting && this.lod !== 2 && this.emote < 0) { this.emote = 4; this.emoteT = 0; this.abortT = 0; }
+    } else {
+      if (!this.prayWant) return;
+      this.prayWant = false;
+      if (this.emote === 4) { this.emote = -1; this.abortT = 0; }
+      if (this.prayAmt > 0.5 && (this.sitTarget || this.prayStand) && this.lod !== 2 && this.emote < 0) { this.emote = 5; this.emoteT = 0; this.abortT = 0; }
+      else { this.prayTarget = 0; this.prayStand = 0; }
+    }
+  };
   // 무릎 꿇기(앉아 있을 때만 보인다). spot = ChurchLogic.kneelSpot(seatId): {fwd 좌석 중심에서 무릎까지 앞으로(m), y 무릎 받침 높이, rail 앞에 손 얹을 등받이}.
   // 몸 전체가 뿌리(좌석 중심)에서 앞으로 fwd 만큼 나가 무릎틀 위에 무릎을 꿇는다. 전환은 KNEEL_DUR 초(부드러운 보간).
   Avatar.prototype.setKneel = function (b, spot) {
@@ -1099,11 +1130,12 @@
     if (e < 0) return;
     this.emote = e; this.emoteT = 0;
   };
-  // 초 켜기 동작(약 4.2초): 초 쪽으로 오른손을 뻗어 불을 옮기고(0~0.3) → 성호경(이마→가슴→왼어깨→오른어깨, 0.3~0.84) → 손을 내림. 걸으면 main.js 가 끊는다(cancelGesture).
-  Avatar.prototype.playLightGesture = function () { this.emote = 3; this.emoteT = 0; };
-  Avatar.prototype.cancelGesture = function () { if (this.emote === 3) this.emote = -1; };
+  // 초 켜기 동작(약 6초): 초 쪽으로 오른손을 뻗어 불을 옮기고 → 성호경(이마→가슴→왼어깨→오른어깨) → 두 손을 가슴 앞에 모아 고개 숙임(약 1.5초) → 놓음. 걸으면 main.js 가 끊는다(cancelGesture).
+  Avatar.prototype.playLightGesture = function () { this.emote = 3; this.emoteT = 0; this.abortT = 0; };
+  // 부드럽게 끊는다(0.25초에 팔을 원래 자세로). 기도 끝 성호경이었다면 기도 자세도 푼다.
+  Avatar.prototype.cancelGesture = function () { if (SIGN_TL[this.emote] && !(this.abortT > 0)) this.abortT = 0.25; };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
-  Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; };
+  Avatar.prototype.snapPose = function () { if (this.emote === 4 || this.emote === 5) { this.emote = -1; this.abortT = 0; if (!this.prayWant) { this.prayTarget = 0; this.prayStand = 0; } }  this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; };
   var KNEEL_DUR = 0.7, KNEEL_THIGH = 0.12, KNEEL_KNEE_R = 0.075, KNEEL_DEFAULT = { fwd: 1.22, y: 0.145, rail: true };
   // 무릎 꿇은 자세의 다리 각도와 관절 위치(순수 계산, 시험용으로도 공개). y = 무릎 받침 윗면 높이.
   // 반환: t1 허벅지, t2 종아리(허벅지 기준), hipY 고관절 높이, kneeY 무릎 관절 높이, hipBack 무릎에서 고관절까지 뒤로(m), shinBack 무릎에서 발목까지 뒤로(m)
@@ -1132,12 +1164,18 @@
       var vReal = 4.0 * w, stepLen = Math.max(0.25, 2 * 0.84 * Math.sin(Math.min(0.9, A)) * 0.95);
       this.phase += dt * PI * vReal / stepLen;
     }
-    var emoting = this.emote >= 0, eU = 0, eEnv = 0;
+    var emoting = this.emote >= 0, eU = 0, eEnv = 0, sp = null, jw = 0;
     if (emoting) {
       this.emoteT += dt; eU = this.emoteT / EMOTE_DUR[this.emote];
-      if (eU >= 1) { this.emote = -1; emoting = false; eU = 0; } else eEnv = this.emote === 3 ? Math.min(sm(eU / 0.18), sm((0.9 - eU) / 0.1)) : Math.min(sm(eU / 0.12), sm((1 - eU) / 0.12));
+      var ab = 1;
+      if (this.abortT > 0) { this.abortT -= dt; if (this.abortT <= 0) eU = 1; else ab = this.abortT / 0.25; }
+      if (eU >= 1) {
+        if (this.emote === 5 && !this.prayWant) { this.prayTarget = 0; this.prayStand = 0; }
+        this.emote = -1; this.abortT = 0; emoting = false; eU = 0;
+      } else if (SIGN_TL[this.emote]) { sp = signPhase(this.emote, this.emoteT); eEnv = sp.cw * ab; jw = sp.jw * ab; }
+      else eEnv = Math.min(sm(eU / 0.12), sm((1 - eU) / 0.12));
     }
-    var bow = emoting && this.emote === 2 ? Math.sin(eU * PI) : 0;
+    var bow = emoting && this.emote === 2 ? Math.sin(eU * PI) : 0;   // jw = 성호경 끝 두 손 모음(고개를 살짝 숙인다)
     if (this.lod === 2) {
       var fv = this._variant();
       if (fv !== this._fv) { this._fv = fv; this._applyFar(fv); }
@@ -1188,7 +1226,7 @@
     var turn = 0.075 * (0.5 + w) * sR * w;
     var lean = -0.04 * w;
     var hipsRy = turn, spineRy = -0.8 * turn, chestRy = -0.8 * turn;
-    var spX = lerp(lean - 0.02, -0.02, sa) + (-0.10) * pa + (-0.40) * bow;
+    var spX = lerp(lean - 0.02, -0.02, sa) + (-0.10) * pa + (-0.40) * bow - 0.05 * jw;
     var chX = lerp(-0.012 + br * 0.006, -0.03, sa) + (-0.07) * pa + (-0.25) * bow;
     setE(hips, 0, hipsRy, 0.0);
     var sk = sa * (1 - ka);
@@ -1206,8 +1244,8 @@
     var nodv = 0;
     if (this.nod && pa > 0.5) { var ph2 = Math.sin(t * 0.55 + this.nodPh); nodv = ph2 > 0.93 ? (ph2 - 0.93) * 4 : 0; }
     var gaze = Math.sin(t * 0.37 + this.off) * Math.sin(t * 0.11 + this.off * 2) * (1 - pa);
-    setE(bs[B.neck], 0.02 - 0.20 * pa - 0.12 * bow - nodv * 0.4, (gaze * 0.12) * (1 - w) - (hipsRy + spineRy + chestRy) * 0.0, Math.sin(ph * 0.5) * 0.03 * w);
-    setE(bs[B.head], -0.02 - 0.28 * pa - 0.10 * bow - nodv * 0.6 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
+    setE(bs[B.neck], 0.02 - 0.20 * pa - 0.12 * bow - 0.14 * jw - nodv * 0.4, (gaze * 0.12) * (1 - w) - (hipsRy + spineRy + chestRy) * 0.0, Math.sin(ph * 0.5) * 0.03 * w);
+    setE(bs[B.head], -0.02 - 0.28 * pa - 0.10 * bow - 0.16 * jw - nodv * 0.6 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
 
     // ---- 팔 ----
     var armA = 0.10 + 0.34 * w, elb = 0.20 + 0.30 * w + 0.04 * br, side, qs = this.qs;
@@ -1230,39 +1268,32 @@
         qs.lH[idx].copy(_q2.copy(qs.lU[idx]).multiply(qs.lF[idx]).invert()).multiply(_q1);
         qU.slerp(qs.lU[idx], sa); qF.slerp(qs.lF[idx], sa); qH.slerp(qs.lH[idx], sa);
       }
-      if (pa > 0.001) {
+      if (pa > 0.001 || jw > 0.001) {
         // 무릎 꿇고 앞에 등받이가 있으면 모은 손을 그 윗단(손잡이) 위에 얹는다
         var kr = ka * this.kneelRail;
         arm2(side, side * 0.021, lerp(0.065, KNEEL_HAND_Y, kr), lerp(-0.185, KNEEL_HAND_Z, kr), side * 0.55, -1, 0.35, qs.pU[idx], qs.pF[idx]);
         handQ(side, 0, 0.72, -0.69, -side, 0, 0, _q1);
         qs.pH[idx].copy(_q2.copy(qs.pU[idx]).multiply(qs.pF[idx]).invert()).multiply(_q1);
-        qU.slerp(qs.pU[idx], pa); qF.slerp(qs.pF[idx], pa); qH.slerp(qs.pH[idx], pa);
+        if (pa > 0.001) { qU.slerp(qs.pU[idx], pa); qF.slerp(qs.pF[idx], pa); qH.slerp(qs.pH[idx], pa); }
       }
-      if (emoting && side > 0 && eEnv > 0.001 && (this.emote < 2 || this.emote === 3)) {
+      if (emoting && side > 0 && eEnv > 0.001 && this.emote !== 2) {
         var tx, ty, tz, fx, fy, fz, nx, ny, nz, px = 0.6, py = -1, pz = 0.3;
-        if (this.emote === 3) {
+        if (this.emote === 3 && this.emoteT < sp.tl.c0) {
           // 초 쪽으로 손을 앞·아래로 뻗어 심지에 불을 옮긴다(끝에서 살짝 흔들림)
-          if (eU < 0.3) {
-            var rp = sm(clamp(eU / 0.14, 0, 1)) * (1 - 0.0 * eU);
-            tx = 0.12; ty = 0.04 + 0.05 * Math.sin(this.emoteT * 6) * rp; tz = -0.43 * rp - 0.17 * (1 - rp);
-            fx = 0; fy = -0.2; fz = -1; nx = 0; ny = -1; nz = -0.2; px = 0.6; py = -0.6; pz = 0.3;
-          } else {
-            var uc = clamp((eU - 0.3) / 0.54, 0, 0.999) * 4, ic = Math.floor(uc), fc = sm(uc - ic);
-            var Ac = CROSS[Math.min(3, ic)], Bc = CROSS[Math.min(3, ic + 1)];
-            tx = lerp(Ac[0], Bc[0], fc); ty = lerp(Ac[1], Bc[1], fc); tz = lerp(Ac[2], Bc[2], fc);
-            fx = lerp(Ac[3], Bc[3], fc); fy = lerp(Ac[4], Bc[4], fc); fz = lerp(Ac[5], Bc[5], fc);
-            nx = lerp(Ac[6], Bc[6], fc); ny = lerp(Ac[7], Bc[7], fc); nz = lerp(Ac[8], Bc[8], fc);
-            if (eU < 0.34) { var bl = sm((eU - 0.3) / 0.04); tx = lerp(0.12, tx, bl); ty = lerp(0.04, ty, bl); tz = lerp(-0.43, tz, bl); }
-          }
+          var rp = sm(clamp(this.emoteT / 0.59, 0, 1));
+          tx = 0.12; ty = 0.04 + 0.05 * Math.sin(this.emoteT * 6) * rp; tz = -0.43 * rp - 0.17 * (1 - rp);
+          fx = 0; fy = -0.2; fz = -1; nx = 0; ny = -1; nz = -0.2; px = 0.6; py = -0.6; pz = 0.3;
+        } else if (sp) {
+          // 성호경: 이마 → 가슴 → 왼어깨 → 오른어깨
+          var ic = Math.floor(sp.u), fc = sm(sp.u - ic);
+          var Ac = CROSS[Math.min(3, ic)], Bc = CROSS[Math.min(3, ic + 1)];
+          tx = lerp(Ac[0], Bc[0], fc); ty = lerp(Ac[1], Bc[1], fc); tz = lerp(Ac[2], Bc[2], fc);
+          fx = lerp(Ac[3], Bc[3], fc); fy = lerp(Ac[4], Bc[4], fc); fz = lerp(Ac[5], Bc[5], fc);
+          nx = lerp(Ac[6], Bc[6], fc); ny = lerp(Ac[7], Bc[7], fc); nz = lerp(Ac[8], Bc[8], fc);
+          if (this.emote === 3 && this.emoteT < sp.tl.c0 + 0.35) { var bl = sm((this.emoteT - sp.tl.c0) / 0.35); tx = lerp(0.12, tx, bl); ty = lerp(0.04 + 0.05 * Math.sin(this.emoteT * 6), ty, bl); tz = lerp(-0.43, tz, bl); }
         } else if (this.emote === 0) {
           var wv = Math.sin(this.emoteT * 11) * 0.38;
           tx = 0.25; ty = 0.30; tz = -0.12; fx = Math.sin(wv); fy = Math.cos(wv); fz = -0.22; nx = 0; ny = 0; nz = -1; px = 0.9; py = -0.8; pz = 0.3;
-        } else {
-          var u = clamp((eU - 0.12) / 0.76, 0, 0.999) * 4, ix = Math.floor(u), f = sm(u - ix);
-          var Ak = CROSS[Math.min(3, ix)], Bk = CROSS[Math.min(3, ix + 1)];
-          tx = lerp(Ak[0], Bk[0], f); ty = lerp(Ak[1], Bk[1], f); tz = lerp(Ak[2], Bk[2], f);
-          fx = lerp(Ak[3], Bk[3], f); fy = lerp(Ak[4], Bk[4], f); fz = lerp(Ak[5], Bk[5], f);
-          nx = lerp(Ak[6], Bk[6], f); ny = lerp(Ak[7], Bk[7], f); nz = lerp(Ak[8], Bk[8], f);
         }
         arm2(1, tx, ty, tz, px, py, pz, qs.eU, qs.eF2);
         handQ(1, fx, fy, fz, nx, ny, nz, _q1);
@@ -1270,6 +1301,8 @@
         qs.eH.copy(_q2.copy(qs.eU).multiply(eF2).invert()).multiply(_q1);
         qU.slerp(qs.eU, eEnv); qF.slerp(eF2, eEnv); qH.slerp(qs.eH, eEnv);
       }
+      // 성호경 끝: 두 손을 가슴 앞에 모은다(기도 자세와 같은 손 위치·방향 qs.p*, 양팔 같은 가중치라 서로 엇갈리지 않는다)
+      if (jw > 0.001) { qU.slerp(qs.pU[idx], jw); qF.slerp(qs.pF[idx], jw); qH.slerp(qs.pH[idx], jw); }
       ua.quaternion.copy(qU); fa.quaternion.copy(qF); ha.quaternion.copy(qH);
     }
     // 이름표 높이
@@ -1326,7 +1359,7 @@
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
     ROSARY: ROSARY, rosaryGeometry: getRosaryGeo, HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM,
-    kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
+    SIGN: { TL: SIGN_TL, DUR: EMOTE_DUR, phase: signPhase }, kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
     stats: function () {
       var out = { near: {}, mid: {}, far: [] }, s, g;

@@ -174,7 +174,7 @@ test('kneel transition: smooth 0.6~0.8 s both ways, only while seated', () => {
 
 test('kneeling: knees on the kneeler, nothing inside the back of the row ahead, hands on its top rail', () => {
   const av = seatedAvatar();
-  av.setPray(true); av.setKneel(true, SPOT); run(av, 2.5);
+  av.setPray(true); av.setKneel(true, SPOT); run(av, 4.5);   // 기도 시작 성호경(3.6초) 뒤
   const hip = joint(av, 'ulR'), knee = joint(av, 'llR'), kneeL = joint(av, 'llL'), ankle = joint(av, 'ftR');
   // 무릎: 무릎틀 위(앞뒤 범위 안, 윗면에 닿음)
   for (const k of [knee, kneeL]) {
@@ -290,4 +290,97 @@ test('look: LOD silhouettes match (mid mesh and far impostor keep the big head a
       assert.ok(Math.abs(o.shW - a.shW) < 0.05, `g${g} shoulders ${o.shW} vs ${a.shW}`);
     }
   }
+});
+
+// ---------------------------------------------------------------- 성호경 끝맺음: 두 손 모음(초 켜기·성호·기도 시작/끝 공통, ChurchAvatar.SIGN)
+const SG = A.SIGN;
+const handGap = (av) => { const l = joint(av, 'haL'), r = joint(av, 'haR'); return Math.hypot(l.x - r.x, l.y - r.y, l.u - r.u); };
+function standing() { const av = new A.Avatar({}, { showTag: false }); av.setPose(0, 0, 0, 0); av.snapPose(); av.update(1 / 60, 0); return av; }
+function trace(av, sec) {   // 프레임별 두 손 간격·손 높이·머리 위치
+  const out = [];
+  run(av, sec, (t) => { const h = joint(av, 'head'); out.push({ t, gap: handGap(av), ry: joint(av, 'haR').y, ly: joint(av, 'haL').y, e: av.emote, hy: h.y, hu: h.u }); });
+  return out;
+}
+const near = (tr, t) => tr.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a));
+
+test('SIGN 시간표: 긋기 → 손 모으기 → 머묾 → 놓기 순서, 초 켜기 5~6초·머묾 1.4초 이상', () => {
+  for (const e of [1, 3, 4, 5]) {
+    const T = SG.TL[e], D = SG.DUR[e];
+    assert.ok(T.c0 < T.c1 && T.c1 <= T.j0 && T.j0 < T.j1 && T.j1 < D, 'order ' + e);
+  }
+  assert.ok(SG.DUR[3] >= 5 && SG.DUR[3] <= 6, 'light gesture ' + SG.DUR[3]);
+  assert.ok(SG.TL[3].r0 - SG.TL[3].j1 >= 1.4, 'hold');
+  assert.ok(SG.DUR[5] <= 2.7, 'closing cross ~2.5s');
+  const p = (t) => SG.phase(3, t);
+  assert.equal(p(0.1).jw, 0); assert.equal(p(SG.TL[3].j1 + 0.2).jw, 1); assert.ok(p(SG.DUR[3] - 0.001).jw < 0.01);
+  assert.ok(p(SG.TL[3].c1 - 0.01).u > 3.9, '오른어깨까지 긋는다');
+});
+
+test('초 켜기 동작: 오른어깨 다음 두 손을 가슴 앞에 모으고 고개를 숙였다가 부드럽게 놓는다', () => {
+  const av = standing(); av.playLightGesture();
+  const T = SG.TL[3], tr = trace(av, SG.DUR[3] + 0.5);
+  const mid = near(tr, (T.j1 + T.r0) / 2), rest = near(tr, 0.02), sh = near(tr, T.c1 - 0.05);
+  assert.ok(mid.gap < 0.09, '모은 두 손 간격 ' + mid.gap);
+  assert.ok(mid.ry > 0.95 && mid.ry < 1.4 && Math.abs(mid.ry - mid.ly) < 0.04, '가슴 높이 ' + mid.ry + ' ' + mid.ly);
+  assert.ok(sh.gap > 0.2, '오른어깨 때는 손이 떨어져 있다 ' + sh.gap);
+  assert.ok(mid.hy < rest.hy - 0.005 || mid.hu > rest.hu + 0.005, '고개 숙임 ' + (mid.hy - rest.hy) + ' ' + (mid.hu - rest.hu));
+  const hold = tr.filter((f) => f.t > T.j1 + 0.05 && f.t < T.r0 - 0.05);
+  assert.ok(hold.length >= 80 && Math.max(...hold.map((f) => f.gap)) < 0.1);
+  for (let i = 1; i < tr.length; i++) assert.ok(Math.abs(tr[i].ry - tr[i - 1].ry) < 0.035, 'jump at ' + tr[i].t);
+  const end = tr[tr.length - 1];
+  assert.equal(end.e, -1); assert.ok(end.gap > 0.2, '놓은 뒤 ' + end.gap);
+});
+
+test('초 켜기 동작: 걷기 입력으로 끊으면 0.25초에 부드럽게 팔이 내려온다', () => {
+  const av = standing(); av.playLightGesture(); run(av, 4.4);
+  assert.ok(handGap(av) < 0.1);
+  av.setWalk(1); let prev = joint(av, 'haR').y, maxJump = 0;
+  run(av, 0.6, () => { const y = joint(av, 'haR').y; maxJump = Math.max(maxJump, Math.abs(y - prev)); prev = y; });
+  assert.equal(av.emote, -1); assert.ok(maxJump < 0.08, 'cancel jump ' + maxJump);
+});
+
+test('성호(1): 마지막에도 팔을 떨구지 않고 두 손을 모았다가 놓는다', () => {
+  const av = standing(); av.playEmote(1);
+  const T = SG.TL[1], tr = trace(av, SG.DUR[1] + 0.2);
+  const hold = tr.filter((f) => f.t > T.j1 + 0.05 && f.t < T.r0 - 0.05);
+  assert.ok(hold.length > 60 && Math.max(...hold.map((f) => f.gap)) < 0.1, '모은 손');
+  assert.equal(tr[tr.length - 1].e, -1);
+});
+
+test('기도 시작: 앉아/서서/무릎 꿇고 기도를 켜면 성호경 후 두 손 모은 기도 자세로 이어진다(반복 호출은 다시 긋지 않음)', () => {
+  for (const mode of ['seat', 'stand', 'kneel']) {
+    const av = mode === 'stand' ? standing() : seatedAvatar();
+    if (mode === 'kneel') { av.setKneel(true, SPOT); run(av, 1); }
+    av.setPray(true, mode === 'stand');
+    assert.equal(av.emote, 4, mode + ' starts with the cross');
+    const tr = trace(av, SG.DUR[4] + 1.0);
+    assert.equal(av.emote, -1);
+    const T = SG.TL[4], joined = tr.filter((f) => f.t > T.j1 + 0.05 && f.t < T.r0 - 0.05);
+    assert.ok(Math.max(...joined.map((f) => f.gap)) < 0.12, mode + ' joined after cross');
+    assert.ok(tr.some((f) => f.t > T.c0 + 0.6 && f.t < T.c1 - 0.1 && f.gap > 0.12), mode + ' 긋는 동안 손이 떨어진다');
+    assert.ok(tr[tr.length - 1].gap < 0.12, mode + ' 끝에도 손을 모은 채');
+    for (let i = 0; i < 5; i++) av.setPray(true, mode === 'stand');
+    assert.equal(av.emote, -1, '반복 호출은 무시');
+  }
+});
+
+test('기도 끝: 앉은 채 끄면 끝 성호경(~2.5초) 뒤 손을 풀고, 일어나면 바로 푼다', () => {
+  const av = seatedAvatar(); av.setPray(true); run(av, 5);
+  av.setPray(false);
+  assert.equal(av.emote, 5); assert.equal(av.prayTarget, 1, '성호경 동안은 손을 모은 자세 유지');
+  run(av, SG.DUR[5] + 0.05);
+  assert.equal(av.emote, -1); assert.equal(av.prayTarget, 0);
+  const b = seatedAvatar(); b.setPray(true); run(b, 5); b.setPray(false); run(b, 0.5);
+  b.setSeated(false); b.setPray(false); run(b, 0.4);
+  assert.equal(b.emote, -1); assert.equal(b.prayTarget, 0);
+  const c = seatedAvatar(); c.setPray(true); run(c, 5); c.setSeated(false); c.setPray(false);
+  assert.equal(c.emote, -1); assert.equal(c.prayTarget, 0);
+  const d = seatedAvatar(); d.setPray(true); run(d, 5); d.setPray(false); d.setPray(true);
+  assert.equal(d.prayTarget, 1); assert.equal(d.emote, -1);
+});
+
+test('다른 사람 화면: 처음부터 기도 중인 아바타는 snapPose 로 성호경 없이 기도 자세', () => {
+  const av = new A.Avatar({}, { showTag: false }); av.setPose(0, 0, 0, 0);
+  av.setSeated(true); av.setPray(true); av.snapPose();
+  assert.equal(av.emote, -1);
 });
