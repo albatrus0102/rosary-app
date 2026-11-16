@@ -13,11 +13,11 @@
 
 | 키 | 쓰는 곳 | 모델(제목) | 만든이(스캔) | 라이선스 | 원본 주소 | 삼각형 원본 → 근거리/원거리 |
 |---|---|---|---|---|---|---|
-| `pieta` | 성 베드로 대성전 피에타 경당 — **피에타(미켈란젤로)** | Michelangelo, Pietà — plaster cast 3D scan (KAS115) | SMK – Statens Museum for Kunst (Royal Cast Collection) | Public Domain Mark 1.0 (https://creativecommons.org/publicdomain/mark/1.0/) | https://open.smk.dk/artwork/image/KAS115 | 400,016 → 36,000 / 8,000 |
-| `crucifix` | 우리 본당 · 피렌체 · 명동 · 성 바오로(십자가 경당) 십자고상 — 대용 | “Crucified Christ” from St. Jadwiga’s hospital | Virtual Museums of Małopolska (Museum of the Biecz Land) | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a | 232,154 → 16,000 / 4,000 |
-| `st_peter` | 라테라노 신랑 벽감(익랑 쪽 왼쪽) · 성 바오로 대성전 계단 왼쪽 — 성 베드로 상(대용) | Saint Peter | Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec) | CC0 1.0 | https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751 | 250,192 → 20,000 / 5,000 |
-| `st_paul` | 라테라노 신랑 벽감(익랑 쪽 오른쪽) · 성 바오로 대성전 계단 오른쪽 — 성 바오로 상(대용) | Saint Paul the Apostle | Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec) | CC0 1.0 | https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca | 249,784 → 20,000 / 5,000 |
-| `angel` | 명동대성당 주제대 양옆 천사상 2(오른쪽은 좌우 반전) — 대용 | Engel (Maria-Lanzendorf 갈바리아, 18세기 초) | noe-3d.at | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b | 453,628 → 15,000 / 4,000 |
+| `pieta` | 성 베드로 대성전 피에타 경당 — **피에타(미켈란젤로)** | Michelangelo, Pietà — plaster cast 3D scan (KAS115) | SMK – Statens Museum for Kunst (Royal Cast Collection) | Public Domain Mark 1.0 (https://creativecommons.org/publicdomain/mark/1.0/) | https://open.smk.dk/artwork/image/KAS115 | 1,498,118(전체 해상도 `_full`) → 100,000 / 8,000 |
+| `crucifix` | 우리 본당 · 피렌체 · 명동 · 성 바오로(십자가 경당) 십자고상 — 대용 | “Crucified Christ” from St. Jadwiga’s hospital | Virtual Museums of Małopolska (Museum of the Biecz Land) | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) | https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a | 232,154 → 24,000 / 4,000 |
+| `st_peter` | 라테라노 신랑 벽감(익랑 쪽 왼쪽) · 성 바오로 대성전 계단 왼쪽 — 성 베드로 상(대용) | Saint Peter | Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec) | CC0 1.0 | https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751 | 250,192 → 36,000 / 5,000 |
+| `st_paul` | 라테라노 신랑 벽감(익랑 쪽 오른쪽) · 성 바오로 대성전 계단 오른쪽 — 성 바오로 상(대용) | Saint Paul the Apostle | Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec) | CC0 1.0 | https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca | 249,784 → 36,000 / 5,000 |
+| `angel` | 명동대성당 주제대 양옆 천사상 2(오른쪽은 좌우 반전) — 대용 | Engel (Maria-Lanzendorf 갈바리아, 18세기 초) | noe-3d.at | CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) | https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b | 453,628 → 30,000 / 4,000 |
 
 원본 작품 정보: 피에타 석고 주형 176×170×89 cm(파리 에콜 데 보자르 주형 공방 1020번, 원작 1498–99). 십자고상: 비에치 지방 박물관 AH/1273, 채색 목조. 성 베드로·성 바오로: 티니에츠 베네딕도회 수도원 박물관 RZ/13/2012·RZ/12/2012, 17세기 중반 크라쿠프 금박 목조. 천사: 오스트리아 마리아 란첸도르프 갈바리아, 18세기 초 석상.
 
