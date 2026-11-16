@@ -76,3 +76,7 @@ art/music_handoff/*.part
 
 # Meshy 성모상 원본 glb(16.9MB) — 저장소에 올리지 않는다(docs/church/ASSET_LICENSES.md). 배포용 판은 assets/church/statue3d_mary_meshy.js
 art/statues/meshy/*.glb
+
+# 성상 3D 원본(SMK·Zenodo·스케치팹에서 받은 것; 저장소에는 올리지 않는다 — art/statue_handoff/manifest.json)
+art/statue_handoff/received/
+art/statue_handoff/*.part
