@@ -342,7 +342,7 @@
       if (o.mine && App.me && App.me.mode === 'walk' && App.meAv && App.world.slotPos) {
         var sp0 = App.world.slotPos(o.slot | 0);
         if (sp0) {
-          App.turn = { yaw: Math.atan2(-(sp0.x - App.me.x), -(sp0.z - App.me.z)), t: 4.2 };
+          App.turn = { yaw: Math.atan2(-(sp0.x - App.me.x), -(sp0.z - App.me.z)), t: 6.0 };
           App.lightG = { t: 0 };
           if (App.meAv.playLightGesture) App.meAv.playLightGesture();
         }
@@ -500,7 +500,7 @@
         else {
           App.lightG.t += dt;
           if (App.lightG.t > 0.9 && App.lightG.t < 1.5) { pp.x = me.x; pp.z = me.z; logic.moveCircle(pp, Math.sin(me.yaw) * 0.5 * dt, Math.cos(me.yaw) * 0.5 * dt); me.x = pp.x; me.z = pp.z; }
-          else if (App.lightG.t >= 4.3) App.lightG = null;
+          else if (App.lightG.t >= 6.1) App.lightG = null;
         }
       }
       var k = Math.min(1, dt * 12);
