@@ -81,7 +81,7 @@ void main() {
       const bundled = [
         'basic', 'stpeter', 'lateran', 'maggiore', //
         'stpaul', 'milan', 'florence', 'myeongdong', //
-        'danggogae',
+        'danggogae', 'yeouido',
       ];
       for (final c in bundled) {
         expect(ChurchCatalog.byId.containsKey(c), isTrue, reason: c);
@@ -99,11 +99,19 @@ void main() {
       expect(StationsSeriesCatalog.forChurch('nowhere').id, 'fugel');
       expect(StationsSeriesCatalog.forChurch(null).id, 'fugel');
       expect(StationsSeriesCatalog.forChurch('stpeter').id, 'previati');
-      // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다
-      expect(
-        StationsSeriesCatalog.assignments.values.toSet().length,
-        StationsSeriesCatalog.assignments.length,
+      // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다.
+      // 예외: 여의도동은 번들된 연작이 모두 배정된 뒤에 들어와 기본 연작(푸겔)을 우리 본당과 함께 쓴다
+      // (docs/church/interiors/yeouido.md §7).
+      const shared = {'yeouido': 'fugel'};
+      shared.forEach(
+        (c, sid) =>
+            expect(StationsSeriesCatalog.assignments[c], sid, reason: c),
       );
+      final own = [
+        for (final e in StationsSeriesCatalog.assignments.entries)
+          if (!shared.containsKey(e.key)) e.value,
+      ];
+      expect(own.toSet().length, own.length);
       for (final c in bundled) {
         expect(StationsSeriesCatalog.assignments.containsKey(c), isTrue);
       }

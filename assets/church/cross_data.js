@@ -102,7 +102,8 @@
    "milan": "hermann_paul",
    "florence": "mosler",
    "myeongdong": "fugel_munich",
-   "danggogae": "tiepolo"
+   "danggogae": "tiepolo",
+   "yeouido": "fugel"
   },
   "packs": {
    "fugel": {

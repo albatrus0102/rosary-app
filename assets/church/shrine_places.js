@@ -14,6 +14,7 @@
     stpaul: { x: -16.9, z: -11.5, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '왼쪽 익랑 쪽 벽' },
     milan: { x: -19.4, z: -16.7, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '왼쪽(북) 익랑 벽 — 실제 마돈나 델 알베로 제대 쪽' },
     danggogae: { x: 6.95, z: 13.5, yaw: 270, kind: 'pond', img: 'plain_white', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '입구 홀 오른쪽 끝벽(성당 문을 바라볼 때 오른쪽). 사용자 제보: 성모상 앞 지름 약 1.5m 둥근 연못에 초를 띄운다 — 연못이 봉헌초 대(원형 18칸)' },
+    yeouido: { x: 10.7, z: 14.5, yaw: 270, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '오른쪽 벽 입구 쪽(정문에서 들어와 오른쪽). 실제 파티마의 성모상은 1층 로비의 밝은 돌 벽감(앞에 봉헌초 받침)에 모셔져 있다 — 성전 안으로 옮긴 연출. 성상은 앱 공용 3D 성모상(실제 성상의 모사가 아님)' },
     florence: { x: -7.5, z: -4.7, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '왼쪽 측랑 맨 앞 벽면(팔각 통로 바로 앞)' },
     maggiore: { x: -27.2, z: -9.965, yaw: 90, kind: 'existing', icon: true, go_ko: '로마 백성의 구원 성화', label_ko: '로마 백성의 구원 앞', note: "파올리나 경당 제단의 '로마 백성의 구원' 성화 앞(제단 계단 아래, 기도 좌석 앞). 성상은 세우지 않음" },
     stpeter: { x: -13.825, z: -24.25, yaw: 0, kind: 'existing', img: 'immaculate_blue', mesh: 'mary_meshy', altar_d: -0.88, altar_h: 1.14, label_ko: '성모상 앞', note: "서쪽 왼쪽 모서리 경당 '기둥의 성모(Madonna della Colonna)' 제대 앞(제대 단 앞 가장자리). 기둥의 성모는 성화(사진 미확보)이므로 이 성상은 그 성화를 대신하는 재현이 아닌 일반 성모상이다 — 이름을 '기둥의 성모상'이라 하지 않는다. 제대 위(뒤 제단화 앞)에 입체 성모상을 모심(altar_d = 제대 중심까지 뒤로, altar_h = 제대 윗면 높이)" }

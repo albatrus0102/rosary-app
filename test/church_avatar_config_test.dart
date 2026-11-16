@@ -332,6 +332,7 @@ void main() {
         'florence',
         'myeongdong',
         'danggogae',
+        'yeouido',
         'stmark',
         'jeondong',
         'yakhyeon',
@@ -367,6 +368,7 @@ void main() {
         'florence',
         'myeongdong',
         'danggogae',
+        'yeouido',
       ]);
       expect(ChurchCatalog.all.where((c) => c.wave == 2), hasLength(8));
       expect(ChurchCatalog.resolve('zzz').id, 'basic');
@@ -374,10 +376,34 @@ void main() {
       expect(ChurchCatalog.inGroup('한국').map((c) => c.id), [
         'myeongdong',
         'danggogae',
+        'yeouido',
         'jeondong',
         'yakhyeon',
         'gyesan',
       ]);
+    });
+
+    test('여의도동성당: 사용자의 본당(T-79) — 성당·한국·1984, 사실·출처·모형 고지', () {
+      final y = ChurchCatalog.byId['yeouido']!;
+      expect(y.nameKo, '여의도동성당');
+      expect(y.kind, '성당');
+      expect(y.group, '한국');
+      expect(y.builtYear, 1984);
+      expect(y.scalePercent, 100);
+      expect(y.wave, 1);
+      expect(y.blurb, contains('파티마의 성모'));
+      expect(y.people, isEmpty);
+      expect(y.facts, hasLength(4));
+      expect(y.facts.first, contains('1974년 9월 17일'));
+      expect(y.modelNote, contains('실제 치수는 확인 전이며'));
+      expect(y.modelNote, contains('분위기를 재현한 것'));
+      expect(y.modelNote, contains('성화·유리화·조각은 싣지 않았습니다'));
+      expect(y.source, contains('ycatholic.or.kr'));
+      // 미사 시간·사제 성함은 싣지 않는다(바뀔 수 있고, 개인 정보)
+      for (final t in [y.blurb, ...y.facts, y.modelNote]) {
+        expect(t, isNot(contains('신부')));
+        expect(t, isNot(contains('미사 시간')));
+      }
     });
 
     test('당고개 순교성지: 종류 성지, 순교자 10위(주교회의 표기·차례)와 근거·고지', () {
