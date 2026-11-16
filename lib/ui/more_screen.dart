@@ -6,6 +6,7 @@ import '../app/app_services.dart';
 import '../app/leader_voice.dart';
 import '../app/release_gate.dart';
 import '../app/settings.dart';
+import '../app/skins.dart';
 import '../app/theme.dart';
 import '../auth/account_screen.dart';
 import '../auth/legal_screen.dart';
@@ -15,6 +16,7 @@ import '../domain/stations_series.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_licenses_screen.dart';
 import 'art_credits_screen.dart';
+import 'skin_picker.dart';
 import 'stations_sheet.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
@@ -83,6 +85,23 @@ class MoreScreen extends StatelessWidget {
                         subtitle: Text(rosaryInfo(settings.rosaryId).name),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: onOpenStyles,
+                      ),
+                    ),
+                    ListenableBuilder(
+                      listenable: settings,
+                      builder: (context, _) => ListTile(
+                        key: const ValueKey('more-skin'),
+                        leading: const Icon(Icons.color_lens_outlined),
+                        title: const Text('스킨'),
+                        subtitle: Text(
+                          Skins.effective(
+                            settings.skinId,
+                            DateTime.now(),
+                            settings.skinCustoms,
+                          ).nameKo,
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => showSkinPicker(context, settings),
                       ),
                     ),
                     ListTile(
