@@ -7,7 +7,7 @@
 ## 오늘 밤 PC에서 할 일(2026-11-16 적어 둠)
 1. **사람이 부른 성가 받기**: `art/music_handoff/`(채팅으로 보낸 `rosarium_chant_handoff.zip`)를 풀고 `rosarium_get_chant.bat` 더블클릭 → 바탕화면 `rosarium_chant.zip` 을 채팅에 올린다. 클라우드에서는 위키미디어가 429 로 막아 받지 못함(우회 금지).
    - 넣기로 한 곡: 1 Veni Sancte Spiritus, 2 Victimae paschali laudes, 3 Puer natus est, 5 Lamentatio III(커먼즈 Membeth 자작, PD/CC0). 받으면 라이선스 재확인 → 압축 → '성가(육성)'으로 오르간 4곡 옆에 추가·출처 기록(`tools/music/import_handoff.py`).
-2. **성모상 3D(Colab)**: `tools/statues/colab/rosarium_statue3d.ipynb` 를 colab.research.google.com 에 올려 T4 GPU로 '모두 실행' → 그림 6장(`mary_marble_views.zip`, 원본 `art/statues/marble_views/`) 업로드 → 나온 GLB(원본·폰용)를 채팅에 올린다.
+2. ~~성모상 3D(Colab)~~ — 필요 없어짐: 사용자가 Meshy AI(무료, CC BY 4.0)로 만든 GLB를 받아 적용 중. Colab 노트북(`tools/statues/colab/`)은 다른 성상용 예비로 남김.
 
 ## 보류(나중에 하기로 함)
 | 항목 | 내용 | 자료 |
