@@ -345,7 +345,7 @@ void main() {
       expect(ChurchCatalog.byId['stpeter']!.nameKo, '성 베드로 대성전');
       expect(ChurchCatalog.byId['basic']!.scalePercent, 100);
       expect(ChurchCatalog.byId['basic']!.kind, '우리 본당');
-      expect(ChurchCatalog.byId['milan']!.scalePercent, 40);
+      expect(ChurchCatalog.byId['milan']!.scalePercent, 47);
       for (final c in ChurchCatalog.all) {
         expect(RegExp(r'^[a-z]+$').hasMatch(c.id), isTrue, reason: c.id);
         expect(c.wave, anyOf(1, 2));
@@ -395,15 +395,103 @@ void main() {
       expect(y.people, isEmpty);
       expect(y.facts, hasLength(4));
       expect(y.facts.first, contains('1974년 9월 17일'));
-      expect(y.modelNote, contains('실제 치수는 확인 전이며'));
-      expect(y.modelNote, contains('분위기를 재현한 것'));
-      expect(y.modelNote, contains('성화·유리화·조각은 싣지 않았습니다'));
+      expect(y.modelNote, contains('실제 여의도동성당과 같지 않습니다'));
+      expect(y.modelNote, contains('분위기만'));
+      expect(y.modelNote, contains('작가의 작품은 싣지 않고'));
+      expect(y.modelNote, contains('승인한 모형이 아닙니다'));
       expect(y.source, contains('ycatholic.or.kr'));
       // 미사 시간·사제 성함은 싣지 않는다(바뀔 수 있고, 개인 정보)
       for (final t in [y.blurb, ...y.facts, y.modelNote]) {
         expect(t, isNot(contains('신부')));
         expect(t, isNot(contains('미사 시간')));
       }
+    });
+
+    test('3D 내부가 있는 성당은 모두 실제와 다른 점을 밝힌다(같지 않습니다 … 승인한 모형이 아닙니다)', () {
+      // 웹 빌더(assets/church/ch_<id>.js)가 있는 성당 = 3D 내부가 있는 성당
+      final built = [
+        for (final c in ChurchCatalog.all)
+          if (File('assets/church/ch_${c.id}.js').existsSync()) c,
+      ];
+      expect(built.map((c) => c.id).toSet(), {
+        'basic',
+        'stpeter',
+        'lateran',
+        'maggiore',
+        'stpaul',
+        'milan',
+        'florence',
+        'myeongdong',
+        'danggogae',
+        'yeouido',
+      });
+      for (final c in built) {
+        final lines = c.modelNote.split('\n');
+        // 첫 문장: 실제와 같지 않다
+        expect(
+          RegExp(r'^이 3D 성당은 실제[^.]*같지 않습니다\. ').hasMatch(lines.first),
+          isTrue,
+          reason: c.id,
+        );
+        if (c.id != 'basic') {
+          expect(
+            lines.first,
+            anyOf(contains('실제 ${c.nameKo}과 '), contains('실제 ${c.nameKo}와 ')),
+            reason: c.id,
+          );
+          expect(lines.first, endsWith('다음이 실제와 다릅니다.'), reason: c.id);
+        }
+        // 끝 문장: 교회 측이 만들거나 승인한 것이 아니다
+        expect(lines.last, endsWith('만들거나 승인한 모형이 아닙니다.'), reason: c.id);
+        expect(lines.last, isNot(startsWith('·')), reason: c.id);
+        // 가운데는 항목(가운뎃점)만, 4~8개
+        final bullets = lines.sublist(1, lines.length - 1);
+        expect(bullets.length, inInclusiveRange(4, 8), reason: c.id);
+        for (final b in bullets) {
+          expect(b, startsWith('· '), reason: c.id);
+          expect(b, endsWith('.'), reason: c.id);
+        }
+        expect(c.modelNote, contains('십자가의 길 14처'), reason: c.id);
+        expect(c.modelNote, contains('전례 시기'), reason: c.id);
+        // 줄인 성당은 비율을 밝히고, 그 값은 웹 빌더의 축척과 같다
+        final js = File('assets/church/ch_${c.id}.js').readAsStringSync();
+        final m = RegExp(r"id: '" + c.id + r"', scalePercent: (\d+)")
+            .firstMatch(js);
+        if (m != null) {
+          expect(c.scalePercent, int.parse(m.group(1)!), reason: c.id);
+        }
+        if (c.scalePercent != 100) {
+          expect(
+            c.modelNote,
+            contains('실제의 약 ${c.scalePercent}% 크기로 줄였'),
+            reason: c.id,
+          );
+        }
+      }
+      // 3D 내부가 없는 성당에는 고지를 지어내지 않는다
+      for (final c in ChurchCatalog.all) {
+        if (!built.contains(c)) expect(c.modelNote, isEmpty, reason: c.id);
+      }
+    });
+
+    test('동의 요청 편지는 앱의 고지 글(modelNote)을 한 글자도 다르지 않게 인용한다', () {
+      const letters = {
+        'danggogae':
+            'docs/legal/church_permission/02_Danggogae_consent_request.md',
+        'yeouido': 'docs/legal/church_permission/05_Yeouido_consent_request.md',
+      };
+      letters.forEach((id, path) {
+        final text = File(path).readAsStringSync();
+        for (final line in ChurchCatalog.byId[id]!.modelNote.split('\n')) {
+          expect(text, contains('> $line'), reason: '$id: $line');
+        }
+        expect(text, contains('실제와 다른 곳을 알려 주시면 고치겠습니다. 싣기를 원치 않으시면 싣지 않겠습니다.'));
+        expect(text, contains("'현대식 본당'"));
+        expect(text, contains('실제 성당과 다른 가상 재현입니다'));
+        // 개인 정보는 저장소에 넣지 않는다(자리 표시만)
+        expect(text, contains('〔성명〕'));
+        expect(RegExp(r'[\w.]+@gmail\.com|010-\d{4}-\d{4}').hasMatch(text), isFalse);
+      });
     });
 
     test('당고개 순교성지: 종류 성지, 순교자 10위(주교회의 표기·차례)와 근거·고지', () {
@@ -437,9 +525,11 @@ void main() {
       expect(d.peopleNote, contains('가톨릭굿뉴스'));
       expect(d.facts, hasLength(4));
       // 추정으로 지은 부분과 싣지 않은 작품을 밝힌다. 미확인 정보(작가 세례명)는 쓰지 않는다.
-      expect(d.modelNote, contains('실제 치수는 확인 전이며'));
-      expect(d.modelNote, contains('분위기를 재현한 것'));
-      expect(d.modelNote, contains('싣지 않았습니다'));
+      expect(d.modelNote, contains('실제 당고개 순교성지와 같지 않습니다'));
+      expect(d.modelNote, contains('실제로 재지 않고 추정한 값'));
+      expect(d.modelNote, contains('분위기만 재현한 것'));
+      expect(d.modelNote, contains('작가의 작품은 싣지 않았습니다'));
+      expect(d.modelNote, contains('성지가 만들거나 승인한 모형이 아닙니다'));
       expect(d.source, contains('danggogae.org'));
       final all = [
         d.blurb,

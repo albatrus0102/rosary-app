@@ -46,6 +46,8 @@ void main() {
       );
       await tester.pump();
       expect(find.text('성당에 들어가는 중…'), findsOneWidget);
+      // 들어갈 때마다 실제 성당이 아님을 한 줄로 밝힌다(작은 글씨).
+      expect(find.text('실제 성당과 다른 가상 재현입니다'), findsOneWidget);
       scene.emit(const SceneReady());
       await tester.pump(const Duration(milliseconds: 500));
       // ready 만으로는 걷히지 않는다(장면은 아직 없다).

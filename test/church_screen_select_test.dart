@@ -54,6 +54,7 @@ Future<void> _reveal(WidgetTester tester, Finder f) async {
 Finder _card(String id) => find.byKey(ValueKey('church-card-$id'));
 
 void main() {
+  _modelNoteLayoutTests();
   testWidgets('renders group headers and one card per catalog church', (
     tester,
   ) async {
@@ -145,7 +146,9 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('설명 준비 중'), findsOneWidget);
-    expect(find.text('실제 건축을 단순화한 3D 모형입니다'), findsOneWidget);
+    // 실제와 다른 점을 적은 고지가 그대로(앞에 다른 말 없이) 보인다
+    expect(find.text(info.modelNote, skipOffstage: false), findsOneWidget);
+    expect(info.modelNote, startsWith('이 3D 성당은 실제 성 베드로 대성전과 같지 않습니다.'));
     expect(find.textContaining(info.kind), findsWidgets);
     expect(h.settings.churchId, 'basic');
     await tester.tap(find.widgetWithText(FilledButton, '입장'));
@@ -738,10 +741,11 @@ void main() {
           );
           expect(tester.takeException(), isNull);
         }
-        final note = find.textContaining('실제 치수는 확인 전이며 사진을 보고 분위기를 재현한 것입니다');
+        final note = find.textContaining('실제 여의도동성당과 같지 않습니다');
         await tester.scrollUntilVisible(note, 240, scrollable: scroll);
         expect(note, findsOneWidget);
-        expect(find.textContaining('성화·유리화·조각은 싣지 않았습니다'), findsOneWidget);
+        expect(find.textContaining('작가의 작품은 싣지 않고'), findsOneWidget);
+        expect(find.textContaining('승인한 모형이 아닙니다'), findsOneWidget);
         final btn = find.widgetWithText(FilledButton, '입장');
         expect(btn, findsOneWidget);
         expect(tester.getRect(btn).bottom <= 800, isTrue);
@@ -817,11 +821,12 @@ void main() {
         scrollable: scroll,
       );
       // 추정으로 지은 부분을 한 줄로 밝힌다
-      final note = find.textContaining('실제 치수는 확인 전이며 사진을 보고 분위기를 재현한 것입니다');
+      final note = find.textContaining('실제 당고개 순교성지와 같지 않습니다');
       await tester.scrollUntilVisible(note, 200, scrollable: scroll);
       expect(note, findsOneWidget);
-      expect(find.textContaining('실제 건축을 단순화한 3D 모형입니다'), findsOneWidget);
-      expect(find.textContaining('성화·유리화·조각은 싣지 않았습니다'), findsOneWidget);
+      expect(find.text(info.modelNote), findsOneWidget);
+      expect(find.textContaining('작가의 작품은 싣지 않았습니다'), findsOneWidget);
+      expect(find.textContaining('성지가 만들거나 승인한 모형이 아닙니다'), findsOneWidget);
       expect(tester.takeException(), isNull);
       expect(find.widgetWithText(FilledButton, '입장'), findsOneWidget);
     });
@@ -853,6 +858,45 @@ void main() {
       expect(tester.getRect(btn).bottom <= 800, isTrue);
       expect(tester.getSize(btn).height >= 48, isTrue);
     });
+  });
+}
+
+// 고지 글(여러 줄 + 가운뎃점 항목)이 좁은 화면·큰 글자에서도 넘치지 않는지 성당마다 본다.
+void _modelNoteLayoutTests() {
+  group('모형 고지(실제와 다른 점) 표시', () {
+    for (final id in ['basic', 'stpeter', 'stpaul', 'myeongdong']) {
+      testWidgets('$id: 360x800 글자 2배에서 고지 끝까지 스크롤되고 넘치지 않는다', (tester) async {
+        final info = ChurchCatalog.byId[id]!;
+        await _pumpSelect(
+          tester,
+          holder: AppSettingsHolder(),
+          size: const Size(360, 800),
+          textScale: 2.0,
+        );
+        await _reveal(tester, _card(id));
+        await tester.tap(_card(id));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        final sheet = find.byType(BottomSheet);
+        final scroll = find
+            .descendant(of: sheet, matching: find.byType(Scrollable))
+            .first;
+        final note = find.text(info.modelNote);
+        await tester.scrollUntilVisible(note, 240, scrollable: scroll);
+        // 고지의 맨 끝(승인 여부 문장)까지 내려간다
+        await tester.drag(scroll, const Offset(0, -6000));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(note, findsOneWidget);
+        final r = tester.getRect(note), s = tester.getRect(sheet);
+        expect(r.left >= s.left && r.right <= s.right, isTrue);
+        final btn = find.widgetWithText(FilledButton, '입장');
+        expect(r.bottom <= tester.getRect(btn).top, isTrue);
+        expect(tester.getRect(btn).bottom <= 800, isTrue);
+        // 항목마다 줄이 바뀐다
+        expect(tester.widget<Text>(note).data, contains('\n· '));
+      });
+    }
   });
 }
 
