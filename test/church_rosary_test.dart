@@ -251,7 +251,9 @@ void main() {
       // 묵주 그림(기존 에셋) 또는 대체 아이콘
       expect(
         find.byKey(const ValueKey('pray-rosary-image')).evaluate().length +
-            find.byKey(const ValueKey('pray-rosary-icon')).evaluate().length,
+            find.byKey(const ValueKey('pray-rosary-icon')).evaluate().length +
+            // 검수용(출시) 빌드: 그림 대신 단순 도형(ReleaseGate.rosaryPhotos)
+            find.byKey(const ValueKey('rosary-glyph')).evaluate().length,
         1,
       );
       // 오늘의 신비가 부제에 보인다

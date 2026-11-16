@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 
 import '../app/leader_audio_store.dart';
+import '../app/release_gate.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../domain/leader_cues.dart';
@@ -25,7 +26,7 @@ class _LeaderRecordScreenState extends State<LeaderRecordScreen> {
   static const _guidance =
       '본당에서 선창하시는 분의 목소리를 녹음해 두면 후창 모드에서 앞단을 들려줍니다. '
       "뒷단을 따라 바치고 '다음 구슬' 버튼이나 화면 탭으로 넘깁니다. "
-      '(선창 모드의 뒷단에는 쓰이지 않고, AI 음성이나 기기 음성이 읽어 줍니다.)';
+      '(선창 모드의 뒷단에는 쓰이지 않고, ${ReleaseGate.aiVoiceClips ? 'AI 음성이나 ' : ''}기기 음성이 읽어 줍니다.)';
 
   // 화면당 하나씩, 처음 필요할 때 만든다.
   AudioRecorder? _recorder;

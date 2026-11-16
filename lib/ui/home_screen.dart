@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../app/app_services.dart';
 import '../app/leader_audio_store.dart';
+import '../app/release_gate.dart';
 import '../app/rosary_style.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
@@ -20,6 +21,7 @@ import 'prayer_screen.dart';
 import 'quiet_prayer_screen.dart';
 import 'widgets/page_body.dart';
 import 'widgets/pill.dart';
+import 'widgets/rosary_glyph.dart';
 import 'widgets/section_header.dart';
 import 'widgets/stations_lent_card.dart';
 
@@ -473,22 +475,26 @@ class _HeroCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: AppShape.medium,
-                  child: Image(
-                    // 160dp 칸에 필요한 만큼만 디코드한다(원본은 655~1024px, 키우지는 않는다).
-                    image: ResizeImage(
-                      AssetImage(style.fullImage),
-                      width: (160 * MediaQuery.devicePixelRatioOf(context))
-                          .ceil(),
-                      height: (160 * MediaQuery.devicePixelRatioOf(context))
-                          .ceil(),
-                      policy: ResizeImagePolicy.fit,
-                      allowUpscaling: false,
-                    ),
-                    height: 160,
-                    width: 160,
-                    fit: BoxFit.contain,
-                    semanticLabel: '묵주 그림',
-                  ),
+                  child: ReleaseGate.rosaryPhotos
+                      ? Image(
+                          // 160dp 칸에 필요한 만큼만 디코드한다(원본은 655~1024px, 키우지는 않는다).
+                          image: ResizeImage(
+                            AssetImage(style.fullImage),
+                            width: (160 * MediaQuery.devicePixelRatioOf(context))
+                                .ceil(),
+                            height:
+                                (160 * MediaQuery.devicePixelRatioOf(context))
+                                    .ceil(),
+                            policy: ResizeImagePolicy.fit,
+                            allowUpscaling: false,
+                          ),
+                          height: 160,
+                          width: 160,
+                          fit: BoxFit.contain,
+                          semanticLabel: '묵주 그림',
+                        )
+                      // 검수용(출시) 빌드: 출처 미확인 그림 대신 단순한 도형(ReleaseGate.rosaryPhotos).
+                      : RosaryGlyph(style: style, size: 160),
                 ),
                 const SizedBox(width: AppSpace.sm),
                 Expanded(

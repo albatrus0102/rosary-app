@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/analytics/analytics.dart';
 import 'package:rosary_app/analytics/analytics_observer.dart';
 import 'package:rosary_app/app/app.dart';
@@ -699,8 +700,10 @@ void main() {
       await tester.pump();
 
       // 선창 음성 소스·화자(둘 다 현재 값의 이름).
-      await tester.tap(find.text(LeaderVoicePersona.priest.voiceLabel));
-      await tester.pump();
+      if (ReleaseGate.aiVoiceClips) {
+        await tester.tap(find.text(LeaderVoicePersona.priest.voiceLabel));
+        await tester.pump();
+      }
       await tester.tap(find.text(LeaderVoiceSource.tts.label));
       await tester.pumpAndSettle();
       final rate = slider(AppSettings.maxTtsRate);
@@ -730,10 +733,16 @@ void main() {
       ];
       expect(scales, hasLength(1));
       expect(((scales.single as num) * 20) % 1, closeTo(0, 1e-9)); // 0.05 단위
-      expect(_events('leader_voice_change').map(_props).toList(), [
-        {'source': 'bundled', 'persona': 'priest'},
-        {'source': 'tts', 'persona': 'priest'},
-      ]);
+      expect(
+        _events('leader_voice_change').map(_props).toList(),
+        // 검수용(출시) 빌드는 AI 음성 칸이 없고 이미 기기 음성이라 바뀌는 것이 없다(ReleaseGate.aiVoiceClips).
+        ReleaseGate.aiVoiceClips
+            ? [
+                {'source': 'bundled', 'persona': 'priest'},
+                {'source': 'tts', 'persona': 'priest'},
+              ]
+            : isEmpty,
+      );
       // 값은 보내지 않는다(어떤 설정인지만).
       for (final e in _events('setting_change')) {
         expect(_props(e).keys, ['key']);

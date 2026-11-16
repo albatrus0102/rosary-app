@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../app/release_gate.dart';
 import '../../app/rosary_style.dart';
 import '../../domain/rosary_sequence.dart';
 
@@ -619,6 +620,8 @@ class _RosaryMapState extends State<RosaryMap>
   }
 
   void _resolveImage() {
+    // 검수용(출시) 빌드: 출처 미확인 구슬 그림은 번들에 없다(ReleaseGate.rosaryPhotos). 색깔 원으로 그린다.
+    if (!ReleaseGate.rosaryPhotos) return;
     final stream = AssetImage(widget.style.unitImage)
         .resolve(createLocalImageConfiguration(context));
     if (stream.key == _stream?.key) return;

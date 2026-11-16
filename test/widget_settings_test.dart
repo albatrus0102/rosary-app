@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/leader_audio_store.dart';
 import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/licenses.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
@@ -319,12 +320,18 @@ void main() {
     await tester.tap(find.text('선창 녹음 관리'));
     await tester.pumpAndSettle();
     expect(find.text('성호경'), findsWidgets);
-  });
+  }, skip: !ReleaseGate.aiVoiceClips);
 
   test('settings: defaults to bundled voice with the sister persona', () async {
     SharedPreferences.setMockInitialValues({});
     final settings = await AppSettings.load();
-    expect(settings.leaderVoiceSource, LeaderVoiceSource.bundled);
+    // 검수용(출시) 빌드는 AI 음성(bundled) 대신 기기 음성으로 읽는다(ReleaseGate.aiVoiceClips).
+    expect(
+      settings.leaderVoiceSource,
+      ReleaseGate.aiVoiceClips
+          ? LeaderVoiceSource.bundled
+          : LeaderVoiceSource.tts,
+    );
     expect(settings.leaderPersona, LeaderVoicePersona.sister);
   });
 
@@ -348,7 +355,12 @@ void main() {
         'leader_persona': 'nonsense',
       });
       settings = await AppSettings.load();
-      expect(settings.leaderVoiceSource, LeaderVoiceSource.bundled);
+      expect(
+        settings.leaderVoiceSource,
+        ReleaseGate.aiVoiceClips
+            ? LeaderVoiceSource.bundled
+            : LeaderVoiceSource.tts,
+      );
       expect(settings.leaderPersona, LeaderVoicePersona.sister);
     },
   );
@@ -417,7 +429,7 @@ void main() {
     await tester.tap(find.text('미리 듣기'));
     await tester.pump();
     expect(spoken, ['sister:hail_mary', 'priest:hail_mary']);
-  });
+  }, skip: !ReleaseGate.aiVoiceClips);
 
   testWidgets('settings: bundled voice with some clips shows count and note', (
     tester,
@@ -455,7 +467,7 @@ void main() {
     expect(settings.leaderVoiceSource, LeaderVoiceSource.tts);
     expect(find.text('말하기 속도'), findsOneWidget);
     expect(find.text('여성 목소리(AI)'), findsNothing);
-  });
+  }, skip: !ReleaseGate.aiVoiceClips);
 
   testWidgets('settings: leader voice switch hides controls', (tester) async {
     SharedPreferences.setMockInitialValues({});

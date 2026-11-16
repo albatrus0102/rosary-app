@@ -4,10 +4,11 @@
 #   bash tools/build_dev_apk.sh [flutter build apk 에 더 넘길 인자...]
 #
 # 일반(배포) APK 와 다른 점은 두 가지뿐이다.
-#   1) assets/church/dev/ (시안 그림 팩·대응표·QA Gallery)를 번들에 넣는다. 이 폴더는 pubspec.yaml 에 없으므로
-#      빌드하는 동안만 pubspec.yaml 에 한 줄을 더했다가 끝나면(실패·중단 포함) 원래대로 되돌린다.
+#   1) assets/church/dev/ (시안 그림 팩·대응표·QA Gallery·프레비아티 3D 팩)와, 검수용(출시) 빌드에서 뺀 자산
+#      (tools/release_hidden_assets.txt: AI 음성·프레비아티·바티칸/이탈리아 배경 7점·묵주 그림)를 번들에 넣는다.
+#      이 경로들은 pubspec.yaml 에 없으므로 빌드하는 동안만 pubspec.yaml 에 줄을 더했다가 끝나면(실패·중단 포함) 원래대로 되돌린다.
 #   2) --dart-define=ROSARIUM_DEV_GLASS=true : Flutter 가 장면을 ?devglass=1 로 열고, '개발용 임시 시안' 배지와
-#      '더보기 > QA Gallery' 항목을 켠다.
+#      '더보기 > QA Gallery' 항목을 켜며, lib/app/release_gate.dart 의 숨김(ReleaseGate)을 모두 푼다.
 # 산출물: build/dev-apk/rosarium-dev-<버전>-arm64-v8a.apk (arm64 전용, 서명은 일반 빌드와 같은 디버그 키).
 # 절대 배포하지 않는다: 시안은 실제 작품이 아니고(release_approved=false) 권리 확인도 되지 않았다.
 set -euo pipefail
@@ -25,7 +26,7 @@ fi
 
 restore() {
   if [ -s "$BAK" ]; then cp "$BAK" pubspec.yaml; fi
-  rm -f "$BAK"
+  rm -f "$BAK" "${ADDF:-}"
 }
 cp pubspec.yaml "$BAK"
 trap restore EXIT INT TERM
@@ -35,8 +36,14 @@ if grep -q 'assets/church/dev' pubspec.yaml; then
   exit 1
 fi
 
-# 1) pubspec.yaml 의 '- assets/church/' 바로 뒤에 개발용 폴더를 임시로 더한다.
-awk -v add="$LINE" '{ print } $0 ~ /^    - assets\/church\/$/ { print add; n++ } END { if (n != 1) exit 3 }' "$BAK" > pubspec.yaml \
+# 1) pubspec.yaml 의 '- assets/church/' 바로 뒤에 개발용 폴더와 검수용 빌드에서 뺀 자산을 임시로 더한다.
+ADDF="$(mktemp)"
+echo "$LINE" > "$ADDF"
+while IFS= read -r l; do
+  case "$l" in ''|'#'*) continue ;; esac
+  echo "    - $l" >> "$ADDF"
+done < tools/release_hidden_assets.txt
+awk -v addf="$ADDF" '{ print } $0 ~ /^    - assets\/church\/$/ { while ((getline x < addf) > 0) print x; close(addf); n++ } END { if (n != 1) exit 3 }' "$BAK" > pubspec.yaml \
   || { echo "pubspec.yaml 에서 '- assets/church/' 줄을 찾지 못했습니다." >&2; exit 1; }
 
 # 2) 빌드. 백엔드 값은 환경 변수로 넘기면 일반 빌드와 같이 들어간다(없으면 '백엔드 미설정' 빌드).

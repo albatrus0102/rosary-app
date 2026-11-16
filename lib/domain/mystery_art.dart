@@ -4,6 +4,7 @@
 // 1·2단(겟세마니·채찍질)은 십자가의 길에 없는 장면이라 거장 그림을 쓴다.
 // 출처·라이선스: docs/ux/ART_REFERENCES.md, 앱 안 '성화 출처' 화면(art_credits.dart).
 
+import '../app/release_gate.dart';
 import 'prayer_data.dart';
 import 'stations_of_cross.dart';
 
@@ -60,6 +61,13 @@ MysteryArt mysteryArtFor(MysterySet set, int? decade) {
   }
   final (fx, fy) = _focus[set]![d - 1];
   return MysteryArt('assets/images/mysteries/${set.name}_$d.webp', fx, fy);
+}
+
+/// 지금 빌드에서 쓰는 [set]의 [decade]단 배경. 검수용(출시) 빌드에서 숨긴 그림이면 null(그림 없이 표면색만)이다.
+/// [ReleaseGate.hiddenMysteryArt] 참고.
+MysteryArt? visibleMysteryArtFor(MysterySet set, int? decade) {
+  final art = mysteryArtFor(set, decade);
+  return ReleaseGate.mysteryArtVisible(art.asset) ? art : null;
 }
 
 /// 번들된 배경 그림 경로 전부(시험용).

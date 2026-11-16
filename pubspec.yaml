@@ -48,14 +48,15 @@ flutter:
         - asset: assets/fonts/Pretendard-Bold.otf
           weight: 700
   assets:
-    - assets/images/
+    # 검수용(출시) 빌드에서 뺀 자산(출처 미확인 묵주 그림 25장·AI 음성 62개·프레비아티·바티칸/이탈리아 공공 소장 배경 7점)은
+    # 여기에 없다. 목록은 tools/release_hidden_assets.txt, 이유·풀리는 조건은 lib/app/release_gate.dart.
+    # tools/build_dev_apk.sh 가 개발용 빌드 때만 그 목록을 임시로 더한다(개발용 유리 폴더와 같은 방식).
     # 성당 입구 화면 그림 슬롯(배경·레일 장식, 성당별 대표 그림·썸네일, 3D 렌더 샷).
     # 대체 규칙은 lib/church/church_entry_art.dart, 만드는 법은 docs/church/ENTRY_ART.md.
     - assets/images/church_entry/
     # 십자가의 길 14처(묵상 시트·고통의 신비 배경)와 신비 배경 17점. 원본은 번들 밖 art/images_unused/
     # (tools/stations/build_art.py 가 WebP 로 줄인다; 출처 docs/ux/ART_REFERENCES.md).
     - assets/images/stations/
-    - assets/images/stations/previati/
     - assets/images/stations/oreilly/
     - assets/images/stations/corot/
     - assets/images/stations/hermann_paul/
@@ -63,7 +64,17 @@ flutter:
     - assets/images/stations/tiepolo/
     - assets/images/stations/fugel_munich/
     - assets/images/stations/fahnroth/
-    - assets/images/mysteries/
+    # 기도 배경 17점 중 검수용 빌드에서 보이는 10점(나머지 7점은 tools/release_hidden_assets.txt).
+    - assets/images/mysteries/joyful_3.webp
+    - assets/images/mysteries/joyful_5.webp
+    - assets/images/mysteries/luminous_2.webp
+    - assets/images/mysteries/luminous_3.webp
+    - assets/images/mysteries/luminous_5.webp
+    - assets/images/mysteries/sorrowful_1.webp
+    - assets/images/mysteries/glorious_2.webp
+    - assets/images/mysteries/glorious_3.webp
+    - assets/images/mysteries/glorious_4.webp
+    - assets/images/mysteries/glorious_5.webp
     # 성당 장면(JS·텍스처)과 스테인드글라스: glass_catalog.json, 성당 안에 걸 8점만 썸네일(_th)과
     # 1k 사진 팩(gpack_*_1k.js; 3D·평면 보기 공용). 나머지 38점·2k·1k WebP 원본은 번들 밖
     # (art/glass_unbundled/, art/glass_2k/, art/glass_1k/; tools/glass_bundle/glass_bundle.py).
@@ -75,8 +86,7 @@ flutter:
     - assets/sounds/
     # 기도 배경 성가(오르간 4곡, AAC). tools/music/make_organ_tracks.py 가 만든다(출처 licenses/MUSIC.md).
     - assets/music/
-    - assets/leader_voice/sister/
-    - assets/leader_voice/priest/
+    # (선창·후창 AI 음성 assets/leader_voice/ 는 검수용 빌드에서 뺐다: tools/release_hidden_assets.txt)
     - assets/fonts/OFL-Pretendard.txt
     # 번들 JS(three.js r149·meshoptimizer 디코더·esbuild 도우미)의 MIT 전문. lib/app/licenses.dart 가 라이선스 화면에 등록한다.
     - assets/licenses/

@@ -7,6 +7,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/app_services.dart';
 import '../app/bundled_leader_voice.dart';
+import '../app/release_gate.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/prayer_music.dart';
@@ -223,10 +224,13 @@ class _PrayerScreenState extends State<PrayerScreen>
     if (voice == null) {
       _ownsVoice = true;
       // 직접 녹음은 앞단뿐이라, 선창 모드의 뒷단은 AI 음성(없는 부분은 기기 음성)으로 들려준다.
+      // 검수용(출시) 빌드는 AI 음성을 쓰지 않으므로 기기 음성이 읽는다(ReleaseGate.aiVoiceClips).
       final source =
           _speaksResponder &&
               _settings.leaderVoiceSource == LeaderVoiceSource.recorded
-          ? LeaderVoiceSource.bundled
+          ? (ReleaseGate.aiVoiceClips
+                ? LeaderVoiceSource.bundled
+                : LeaderVoiceSource.tts)
           : _settings.leaderVoiceSource;
       voice = switch (source) {
         LeaderVoiceSource.bundled => BundledLeaderVoice(
@@ -792,7 +796,10 @@ class _PrayerScreenState extends State<PrayerScreen>
             // 기도 배경 그림(설정 '기도 배경 그림', 기본 켬): 그 단의 성화를 낮은 대비로 맨 아래에 깐다.
             body: PrayerBackground(
               enabled: _settings.prayerBackground && !finished && !_rosaryMode,
-              art: mysteryArtFor(widget.mysterySet, _session.current.decade),
+              art: visibleMysteryArtFor(
+                widget.mysterySet,
+                _session.current.decade,
+              ),
               child: SafeArea(
                 child: finished
                     ? Column(

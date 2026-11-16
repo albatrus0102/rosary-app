@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../app/rosary_style.dart';
 import '../app/theme.dart';
+import '../ui/widgets/rosary_glyph.dart';
 import 'auth_service.dart';
 import 'auth_state.dart';
 import 'auth_widgets.dart';
@@ -184,17 +186,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         shape: AppShape.extraLargeBorder,
                         child: Padding(
                           padding: const EdgeInsets.all(AppSpace.sm),
-                          child: Image.asset(
-                            'assets/images/rosary.webp',
-                            width: 96,
-                            height: 96,
-                            fit: BoxFit.contain,
-                            excludeFromSemantics: true,
-                            errorBuilder: (_, _, _) => Icon(
-                              Icons.favorite_border,
-                              size: 64,
-                              color: scheme.primary,
-                            ),
+                          child: RosaryStyleImage(
+                            style: RosaryStyle.bead,
+                            size: 96,
                           ),
                         ),
                       ),

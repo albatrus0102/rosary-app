@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/church/church_catalog.dart';
 import 'package:rosary_app/domain/art_credits.dart';
@@ -56,10 +57,10 @@ void main() {
 
   group('series data', () {
     test('generated files are up to date with the JSON source', () {
-      final all = StationsSeriesCatalog.all;
+      final all = StationsSeriesCatalog.allIncludingHidden;
       final list = (src['series'] as List).cast<Map<String, dynamic>>();
       expect(all.map((s) => s.id), list.map((s) => s['id']));
-      expect(StationsSeriesCatalog.assignments, src['assignments']);
+      expect(StationsSeriesCatalog.sourceAssignments, src['assignments']);
       expect(StationsSeriesCatalog.disclosure, src['disclosure']);
       expect(StationsSeriesCatalog.fallback.id, src['default']);
       expect(StationsSeriesCatalog.fallback.id, 'fugel');
@@ -98,11 +99,19 @@ void main() {
       // 모르는 성당·성당 밖은 기본 연작
       expect(StationsSeriesCatalog.forChurch('nowhere').id, 'fugel');
       expect(StationsSeriesCatalog.forChurch(null).id, 'fugel');
-      expect(StationsSeriesCatalog.forChurch('stpeter').id, 'previati');
+      // 검수용(출시) 빌드는 프레비아티를 숨기고 성 베드로를 oreilly 로 바꾼다(ReleaseGate.stationSeriesOverrides).
+      expect(
+        StationsSeriesCatalog.forChurch('stpeter').id,
+        ReleaseGate.showAll ? 'previati' : 'oreilly',
+      );
       // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다.
       // 예외: 여의도동은 번들된 연작이 모두 배정된 뒤에 들어와 기본 연작(푸겔)을 우리 본당과 함께 쓴다
       // (docs/church/interiors/yeouido.md §7).
-      const shared = {'yeouido': 'fugel'};
+      // 검수용 빌드에서는 성 베드로도 라테라노와 oreilly 를 함께 쓴다(공유 예외 하나 추가, 개발용 빌드에서는 없음).
+      final shared = {
+        'yeouido': 'fugel',
+        if (!ReleaseGate.showAll) 'stpeter': 'oreilly',
+      };
       shared.forEach(
         (c, sid) =>
             expect(StationsSeriesCatalog.assignments[c], sid, reason: c),
@@ -118,7 +127,7 @@ void main() {
     });
 
     test('14 pictures mapped and bundled per series, ≤40KB each', () {
-      for (final s in StationsSeriesCatalog.all) {
+      for (final s in StationsSeriesCatalog.allIncludingHidden) {
         expect(s.fileUrls, hasLength(14), reason: s.id);
         expect(s.fileUrls.toSet(), hasLength(s.id == 'mosler' ? 1 : 14));
         for (var n = 1; n <= 14; n++) {
@@ -128,11 +137,19 @@ void main() {
           expect(s.fileUrl(n), startsWith('https://'));
         }
         final dir = s.assetDir;
+        // 검수용(출시) 빌드에서 뺀 연작은 pubspec 이 아니라 tools/release_hidden_assets.txt 에 있다.
+        final hidden = ReleaseGate.hiddenStationSeriesIds.contains(s.id);
         expect(
           File('pubspec.yaml').readAsStringSync(),
-          contains('    - $dir/\n'),
-          reason: '$dir 가 pubspec assets 에 있어야 한다',
+          hidden ? isNot(contains('    - $dir/\n')) : contains('    - $dir/\n'),
+          reason: '$dir 의 pubspec assets 등록',
         );
+        if (hidden) {
+          expect(
+            File('tools/release_hidden_assets.txt').readAsStringSync(),
+            contains('$dir/'),
+          );
+        }
       }
     });
 
@@ -148,7 +165,7 @@ void main() {
           reason: '${m['id']}',
         );
       }
-      for (final s in StationsSeriesCatalog.all) {
+      for (final s in StationsSeriesCatalog.allIncludingHidden) {
         expect(s.licenseUrl, startsWith('https://creativecommons.org/'));
         expect(s.source, startsWith('https://'));
         expect(s.changes, isNotEmpty);
@@ -168,17 +185,25 @@ void main() {
         }
       }
       // 프레비아티(바티칸 박물관 소장)는 출시 전 확인 대상으로 남긴다.
-      expect(StationsSeriesCatalog.byId('previati').rights, '출시 전 확인');
+      expect(
+        StationsSeriesCatalog.allIncludingHidden
+            .firstWhere((s) => s.id == 'previati')
+            .rights,
+        '출시 전 확인',
+      );
       expect(File('docs/BACKLOG.md').readAsStringSync(), contains('프레비아티'));
     });
 
     test('each series ≤ 0.45MB (pictures + atlas; first two are older)', () {
       for (final m in (src['series'] as List).cast<Map<String, dynamic>>()) {
         final id = m['id'] as String;
-        var total = File('assets/church/${m['pack']}').lengthSync();
+        var total = File('assets/church/${m['pack']}').lengthSync(); // previati 는 dev/ 아래
         for (var n = 1; n <= 14; n++) {
-          total += File(StationsSeriesCatalog.byId(id).imageAsset(n))
-              .lengthSync();
+          total += File(
+            StationsSeriesCatalog.allIncludingHidden
+                .firstWhere((s) => s.id == id)
+                .imageAsset(n),
+          ).lengthSync();
         }
         // 푸겔 1921(기본)·모슬러는 한도를 정하기 전에 만든 것(0.56MB·0.47MB).
         final limit = (id == 'fugel' || id == 'mosler') ? 565 : 450;

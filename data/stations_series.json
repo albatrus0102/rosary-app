@@ -139,7 +139,7 @@
    "aspect": 0.87,
    "fit": "contain",
    "asset_dir": "assets/images/stations/previati",
-   "pack": "cross_pack_previati.js",
+   "pack": "dev/cross_pack_previati.js",
    "prepare": "previati",
    "fetch_width": 1280,
    "commons_license": "cc-by-3.0",

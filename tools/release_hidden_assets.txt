@@ -1,0 +1,30 @@
+# 검수용(출시) 빌드의 번들에서 뺀 자산 — pubspec.yaml 의 assets 항목 형식(한 줄에 하나, # 은 주석).
+#
+#   * 일반(배포) 빌드: 이 경로들이 pubspec.yaml 에 없으므로 APK 에 들어가지 않는다.
+#   * 개발용 빌드(tools/build_dev_apk.sh): 이 목록을 빌드하는 동안만 pubspec.yaml 에 더했다가 되돌린다.
+#   * tools/check_release_apk.sh: 배포 APK 의 flutter_assets 아래에 이 경로가 하나도 없어야 통과한다
+#     (끝이 / 이면 그 폴더 아래 전부, 아니면 그 파일).
+#   * test/release_gate_test.dart: 이 목록 ↔ pubspec.yaml ↔ lib/app/release_gate.dart 가 서로 맞는지 검사한다.
+#
+# 항목마다 이유와 풀리는 조건은 lib/app/release_gate.dart 에 있다.
+
+# 1. AI 선창·후창 음성(ElevenLabs 62개)
+assets/leader_voice/sister/
+assets/leader_voice/priest/
+
+# 3. 프레비아티 〈십자가의 길〉 그림(바티칸 박물관 소장품 사진). 3D 장면용 팩은 assets/church/dev/cross_pack_previati.js
+#    (assets/church/dev/ 는 개발용 빌드만 담는다).
+assets/images/stations/previati/
+
+# 4. 기도 배경: 라파엘로 〈거룩한 변모〉(바티칸) + 이탈리아 국립·시립 미술관 소장 6점
+assets/images/mysteries/joyful_1.webp
+assets/images/mysteries/joyful_2.webp
+assets/images/mysteries/joyful_4.webp
+assets/images/mysteries/luminous_1.webp
+assets/images/mysteries/luminous_4.webp
+assets/images/mysteries/sorrowful_2.webp
+assets/images/mysteries/glorious_1.webp
+
+# 5. 출처 미확인 묵주 그림(구슬 12장 + 묵주 전체 12장 + 기본 rosary.webp). assets/images/ 바로 아래 파일만
+#    (하위 폴더 church_entry·stations·mysteries 는 따로 등록되어 있다).
+assets/images/
