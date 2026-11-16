@@ -67,7 +67,7 @@ CandleInfo? _candle(Object? v) {
     slot: slot,
     until: until,
     intention: intention,
-    color: color != null && color >= 0 && color < 6 ? color : null,
+    color: isValidCandleColor(color) ? color as int : null,
   );
 }
 

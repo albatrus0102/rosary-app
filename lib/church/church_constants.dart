@@ -271,18 +271,28 @@ String? baptismalAliasMatch(int index, String query) {
   return null;
 }
 
-/// 촛불 지향 프리셋(인덱스 0..7).
-/// 봉헌초 색(성당·성지에서 흔히 파는 색유리/컵 초). 번호 = 서버 `color`(0..5)·장면 CANDLE_COLORS 순서.
-/// 색마다 정해진 뜻은 붙이지 않는다(출처가 없는 뜻을 만들지 않는다).
+/// 봉헌초 색(성당·성지에서 흔히 파는 색유리 컵 + 상아색 초). 번호 = 서버 `color`(0..7)·장면 CANDLE_COLORS 순서.
+/// 0..5 는 저장된 옛 초와 호환되도록 바꾸지 않는다(6 보라·7 호박색은 뒤에 덧붙임). 화면에 보이는 순서는 [candleColorUiOrder].
+/// 색마다 정해진 뜻은 붙이지 않는다(가톨릭에 색-지향 규정 없음, docs/church/CANDLE_COLORS.md).
 const List<({String name, int rgb})> candleColors = [
-  (name: '흰색', rgb: 0xFFEDE6D6),
-  (name: '빨강', rgb: 0xFFB3202E),
-  (name: '노랑', rgb: 0xFFE2A516),
-  (name: '파랑', rgb: 0xFF2A56B8),
-  (name: '초록', rgb: 0xFF2F8A4A),
-  (name: '분홍', rgb: 0xFFD8628F),
+  (name: '흰색', rgb: 0xFFE4ECEE),
+  (name: '빨강', rgb: 0xFFC01C34),
+  (name: '노랑', rgb: 0xFFF2B929),
+  (name: '파랑', rgb: 0xFF2C62D2),
+  (name: '초록', rgb: 0xFF1F9D5C),
+  (name: '분홍', rgb: 0xFFEA7AA2),
+  (name: '보라', rgb: 0xFF8B5BD4),
+  (name: '호박색', rgb: 0xFFE58A1F),
 ];
 
+/// 시트에 보이는 순서: 우리나라 성당에서 확인된 5색(흰/투명·빨강·파랑·초록·노랑) → 분홍·보라·호박색.
+const List<int> candleColorUiOrder = [0, 1, 3, 4, 2, 5, 6, 7];
+
+/// 서버·저장소와 같은 색 번호 범위(0..7).
+bool isValidCandleColor(Object? v) =>
+    v is int && v >= 0 && v < candleColors.length;
+
+/// 촛불 지향 프리셋(인덱스 0..7).
 const List<String> candleIntentions = [
   '가족과 이웃을 위해',
   '아픈 이들을 위해',

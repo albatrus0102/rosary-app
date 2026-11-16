@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'church_constants.dart';
 import 'net/church_net.dart';
 
 /// 봉헌초가 타는 시간: 켠 뒤 하루. 서버(`server/church/src/room_logic.ts`의
@@ -28,7 +29,9 @@ class ChurchCandleStore {
         final list = <CandleInfo>[];
         for (final c in v) {
           if (c is! Map) continue;
-          final slot = c['slot'], until = c['until'], intention = c['intention'];
+          final slot = c['slot'],
+              until = c['until'],
+              intention = c['intention'];
           if (slot is! int || until is! int || intention is! int) continue;
           if (until <= nowMs) continue; // 다 탄 초
           final color = c['color'];
@@ -37,7 +40,7 @@ class ChurchCandleStore {
               slot: slot,
               until: until,
               intention: intention,
-              color: color is int && color >= 0 && color < 6 ? color : null,
+              color: isValidCandleColor(color) ? color as int : null,
             ),
           );
         }

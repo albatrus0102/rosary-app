@@ -95,9 +95,9 @@ await check('source JSON: T items are well formed and grouped (3 예약, 16 신�
   eq(cat('예약(월 01시)').map((x) => x.status), ['done', 'done', 'done']);   // 2026-11-16 T-01~T-03 완료
   assert(cat('예약(월 01시)').every((x) => x.note.includes('2026-11-16')), 'completed scheduled items carry the completion date');
   eq(cat('보류').map((x) => x.status), ['dropped', 'dropped', 'dropped', 'dropped']);
-  assert(cat('결정 대기').every((x) => x.status === 'todo' && x.note.startsWith('[결정 필요]')), 'decision items');
+  assert(cat('결정 대기').every((x) => (x.status === 'todo' || x.id === 'T-94') && x.note.startsWith('[결정 필요]')), 'decision items');
   assert(cat('출시 전').every((x) => ['R1', 'R2'].includes(x.release)), 'pre-release items are R1 (R2 only for T-92 Milan)');
-  eq(T.filter((x) => x.status === 'done').map((x) => x.id), ['T-01', 'T-02', 'T-03', 'T-08', 'T-55', 'T-58', 'T-59', 'T-81', 'T-82', 'T-93']);
+  eq(T.filter((x) => x.status === 'done').map((x) => x.id), ['T-01', 'T-02', 'T-03', 'T-08', 'T-55', 'T-58', 'T-59', 'T-81', 'T-82', 'T-93', 'T-94']);
   eq(T.filter((x) => x.status === 'review').map((x) => x.id), ['T-80', 'T-90']);
   const t01 = T.find((x) => x.id === 'T-01'), t04 = T.find((x) => x.id === 'T-04');
   assert(/옛 작품/.test(t01.note) && /최후 수단/.test(t01.note) && /티에폴로/.test(t01.note), 'T-01 old-works-first note');

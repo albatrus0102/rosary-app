@@ -97,7 +97,12 @@ test('world.js 연결: 봉헌초는 한 덩어리 불꽃 + 색·내 초 인스�
   const src = fs.readFileSync(path.join(here, '../../assets/church/world.js'), 'utf8');
   assert.ok(src.includes('createFlameBatch'));
   assert.ok(!/new T\.Sprite\(flameMat\)/.test(src), '켤 때마다 스프라이트를 만들지 않는다');
-  assert.ok(src.includes('CANDLE_COLORS') && src.includes('cups.setColorAt'), '초 색(컵·촛농)은 인스턴스 색');
+  assert.ok(src.includes('CANDLE_COLORS') && src.includes('cups.setColorAt'), '초 색(컵)은 인스턴스 색');
+  assert.ok(src.includes('aGlow') && src.includes('WAX_IVORY'), '유리컵 자체발광은 인스턴스 속성, 촛농은 상아색');
+  const pal = /CANDLE_COLORS = \[([^\]]+)\]/.exec(src)[1].split(',').map((x) => x.trim());
+  assert.equal(pal.length, 8, '초 색 8가지');
+  assert.equal(pal[1], '0xc01c34', '번호 1 = 빨강(옛 초와 호환)');
+  assert.equal(pal[3], '0x2c62d2', '번호 3 = 파랑');
   assert.ok(/mineMap/.test(src) && /aMine|ml\)/.test(src), '내 초 표시');
   assert.ok(src.includes('prefers-reduced-motion'), '움직임 줄이기 존중');
   const av = fs.readFileSync(path.join(here, '../../assets/church/avatar.js'), 'utf8');

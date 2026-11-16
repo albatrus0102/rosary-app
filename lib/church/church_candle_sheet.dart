@@ -4,12 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'church_constants.dart';
 import '../app/theme.dart';
 
-/// 시트에서 고른 것: 지향 인덱스(0..7)와 초 색(0..5, [candleColors]).
+/// 시트에서 고른 것: 지향 인덱스(0..7)와 초 색(0..7, [candleColors]).
 class CandleChoice {
   const CandleChoice(this.intention, this.color);
   final int intention;
   final int color;
 }
+
+/// 색 고르기 아래 안내문. 색에 뜻이나 효능을 붙이지 않는다.
+const String candleColorNotice =
+    '봉헌초의 색은 자유롭게 고르세요. 촛불의 색보다 하느님께 봉헌하는 기도와 마음이 중요합니다.';
 
 /// 마지막으로 고른 초 색을 기억하는 키.
 const String candleColorPrefsKey = 'church_candle_color_v1';
@@ -118,36 +122,36 @@ class _CandleSheetState extends State<CandleSheet> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              for (var i = 0; i < candleColors.length; i++)
-                Semantics(
-                  label: '${candleColors[i].name} 초',
-                  selected: i == _color,
-                  button: true,
-                  child: InkResponse(
-                    key: ValueKey('candle-color-$i'),
-                    onTap: () {
-                      setState(() => _color = i);
-                      _saveColor(i);
-                    },
-                    radius: 28,
-                    child: SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: Center(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          width: i == _color ? 40 : 32,
-                          height: i == _color ? 40 : 32,
-                          decoration: BoxDecoration(
-                            color: Color(candleColors[i].rgb),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: i == _color
-                                  ? scheme.primary
-                                  : scheme.outlineVariant,
-                              width: i == _color ? 3 : 1,
+              for (final i in candleColorUiOrder)
+                Expanded(
+                  child: Semantics(
+                    label: '${candleColors[i].name} 초',
+                    selected: i == _color,
+                    button: true,
+                    child: InkResponse(
+                      key: ValueKey('candle-color-$i'),
+                      onTap: () {
+                        setState(() => _color = i);
+                        _saveColor(i);
+                      },
+                      radius: 24,
+                      child: SizedBox(
+                        height: 48,
+                        child: Center(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 120),
+                            width: i == _color ? 36 : 28,
+                            height: i == _color ? 36 : 28,
+                            decoration: BoxDecoration(
+                              color: Color(candleColors[i].rgb),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: i == _color
+                                    ? scheme.primary
+                                    : scheme.outlineVariant,
+                                width: i == _color ? 3 : 1,
+                              ),
                             ),
                           ),
                         ),
@@ -156,6 +160,16 @@ class _CandleSheetState extends State<CandleSheet> {
                   ),
                 ),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 0),
+          child: Text(
+            candleColorNotice,
+            key: const ValueKey('candle-color-notice'),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ),
         Padding(

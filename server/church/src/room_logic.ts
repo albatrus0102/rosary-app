@@ -139,8 +139,8 @@ export interface PeerView {
 /** 봉헌초가 타는 시간: 켠 뒤 하루(24시간). 서버·앱(lib/church/church_candle_store.dart)·SPEC 이 같은 값을 쓴다. */
 export const CANDLE_TTL_MS = 24 * 60 * 60 * 1000;
 
-/** 초 색 번호의 최댓값(0..5 = 흰·빨강·노랑·파랑·초록·분홍). 앱 church_candle_sheet.dart 의 색 목록과 같아야 한다. */
-export const CANDLE_COLOR_MAX = 5;
+/** 초 색 번호의 최댓값(0..7 = 흰·빨강·노랑·파랑·초록·분홍·보라·호박). 앱 church_candle_sheet.dart 의 색 목록과 같아야 한다. */
+export const CANDLE_COLOR_MAX = 7;
 
 function withColor<T extends object>(o: T, color: number | undefined): T & { color?: number } {
   return color === undefined ? o : { ...o, color };
@@ -151,7 +151,7 @@ export interface Candle {
   /** 꺼지는 시각(epoch ms) = 켠 시각 + CANDLE_TTL_MS */
   until: number;
   intention: number;
-  /** 초(컵) 색 0..5(흰·빨강·노랑·파랑·초록·분홍). 옛 초·옛 클라이언트는 없음 — 없으면 응답에도 넣지 않는다. */
+  /** 초(컵) 색 0..7(흰·빨강·노랑·파랑·초록·분홍·보라·호박). 옛 초·옛 클라이언트는 없음 — 없으면 응답에도 넣지 않는다. */
   color?: number;
 }
 

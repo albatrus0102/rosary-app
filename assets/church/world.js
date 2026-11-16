@@ -264,20 +264,28 @@
     var candleMat = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, emissive: 0x6a3a14, emissiveIntensity: 0.55 });   // 켜진 초만 보인다(꺼진 칸은 배율 0): 촛농이 불빛에 따뜻하게 물든다
     var candles = new T.InstancedMesh(candleGeo, candleMat, Math.max(1, nSlots));
     var cupGeo = new T.CylinderGeometry(0.075, 0.055, 0.09, 12).translate(0, 0.045, 0);
-    var cupMat = new T.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.15, metalness: 0.1, clearcoat: 0.8 });
+    // 컵 = 살짝 비치는 색유리. 인스턴스 색 = 유리색, 인스턴스 속성 aGlow(0 꺼짐 / 1 켜짐) = 안쪽 불빛이 유리를 물들이는 자체발광(draw call +0).
+    var cupMat = new T.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.12, metalness: 0.05, clearcoat: 0.9, transparent: true, opacity: 0.86 });
+    cupMat.onBeforeCompile = function (sh) {
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aGlow;\nvarying float vGlow;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlow = aGlow;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * vGlow * 0.85;');
+    };
     var cups = new T.InstancedMesh(cupGeo, cupMat, Math.max(1, nSlots));
+    var cupGlow = new T.InstancedBufferAttribute(new Float32Array(Math.max(1, nSlots)), 1);
+    cupGeo.setAttribute('aGlow', cupGlow);
     var m4 = new T.Matrix4(), zeroM = new T.Matrix4().makeScale(0, 0, 0), tc = new T.Color();
-    // 봉헌초 색(성당·성지에서 흔히 파는 색유리/컵 초): 0 흰 1 빨강 2 노랑 3 파랑 4 초록 5 분홍. [컵(유리)색, 초(촛농)색]. 색마다 정해진 뜻은 붙이지 않는다.
-    var CANDLE_COLORS = [[0xe9e4d8, 0xfffaf0], [0xb3202e, 0xf0868e], [0xe2a516, 0xffe48a], [0x2a56b8, 0x9cbcf5], [0x2f8a4a, 0xa4e2b0], [0xd8628f, 0xffc2d6]];
-    var CUP_DEFAULT = 0x7a1822;
-    var INTENT_COL = [0xfff0d8, 0xffd6e0, 0xd9ecff, 0xe6deff, 0xffe9a8, 0xd8f2d0, 0xffd2b0, 0xf0e0c8];
+    // 봉헌초 색(번호는 서버·저장소와 같아 바꾸지 않는다): 0 흰/투명 1 루비 빨강 2 황금 노랑 3 코발트 파랑 4 에메랄드 초록 5 로즈 분홍 6 보라 7 호박. 값 = 컵(유리)색. 촛농은 항상 상아색.
+    // 색마다 정해진 뜻은 붙이지 않는다(가톨릭에 색-지향 규정 없음).
+    var CANDLE_COLORS = [0xe4ecee, 0xc01c34, 0xf2b929, 0x2c62d2, 0x1f9d5c, 0xea7aa2, 0x8b5bd4, 0xe58a1f];
+    var CUP_DEFAULT = 0xc01c34, WAX_IVORY = 0xfff3dc, DIM = 0.5;
+    function dimC(hex, k) { tc.setHex(hex); tc.multiplyScalar(k); return tc; }
     var slotY0 = [], floats = [], tv = new T.Vector3(), CANDLE_CHECK = 0;
     for (i = 0; i < nSlots; i++) {
       var floorH = logic.floorY(slots[i].x, slots[i].z);
       slotY0[i] = floorH + slots[i].y;
       m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z);
       if (slots[i].float) { floats.push(i); m4.copy(zeroM); }   // 물 위에 뜬 초: 붉은 유리 받침 없이 납작한 초(원반)만 뜬다
-      cups.setMatrixAt(i, m4); cups.setColorAt(i, tc.setHex(CUP_DEFAULT));
+      cups.setMatrixAt(i, m4); cups.setColorAt(i, dimC(CUP_DEFAULT, DIM));
       candles.setMatrixAt(i, zeroM); candles.setColorAt(i, tc.setHex(0xffffff));
     }
     cups.instanceMatrix.needsUpdate = true; if (cups.instanceColor) cups.instanceColor.needsUpdate = true;
@@ -340,17 +348,20 @@
       m4.makeTranslation(slots[s].x, slotY0[s] + (fl0 ? 0 : 0.05), slots[s].z);
       if (fl0) m4.scale(tv.set(1.7, 0.4, 1.7));
       candles.setMatrixAt(s, m4);
-      candles.setColorAt(s, tc.setHex(col >= 0 ? CANDLE_COLORS[col][1] : INTENT_COL[(c.intention | 0) % 8]));
-      cups.setColorAt(s, tc.setHex(col >= 0 ? CANDLE_COLORS[col][0] : CUP_DEFAULT)); cups.instanceColor.needsUpdate = true;
+      candles.setColorAt(s, tc.setHex(WAX_IVORY));
+      cups.setColorAt(s, tc.setHex(col >= 0 ? CANDLE_COLORS[col] : CUP_DEFAULT)); cups.instanceColor.needsUpdate = true;
+      cupGlow.setX(s, 1); cupGlow.needsUpdate = true;
       candles.instanceMatrix.needsUpdate = true; candles.instanceColor.needsUpdate = true;
       flameAt(s, slots[s].x, slots[s].z, slotY0[s], false);
     }
     function unlightSlot(s) {
       if (!lit[s]) return;
+      var oc = lit[s].color;   // 다 탄 컵은 유리색을 그대로 두되 어둡게(안쪽 불빛 없음)
       delete lit[s]; litCount--;
       if (mineMap[s]) { delete mineMap[s]; saveMine(); }
       candles.setMatrixAt(s, zeroM); candles.instanceMatrix.needsUpdate = true;
-      cups.setColorAt(s, tc.setHex(CUP_DEFAULT)); cups.instanceColor.needsUpdate = true;
+      cups.setColorAt(s, dimC(oc >= 0 ? CANDLE_COLORS[oc] : CUP_DEFAULT, DIM)); cups.instanceColor.needsUpdate = true;
+      cupGlow.setX(s, 0); cupGlow.needsUpdate = true;
       fb.clear(s);
     }
 

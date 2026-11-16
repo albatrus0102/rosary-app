@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
 import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/church/church_candle_store.dart';
+import 'package:rosary_app/church/church_candle_sheet.dart'
+    show candleColorNotice;
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_screen.dart';
 import 'package:rosary_app/church/net/church_net.dart';
@@ -482,8 +484,20 @@ void main() {
       expect(candleIntentions, hasLength(8));
       await tester.tap(find.text(candleIntentions[2]));
       await tester.pump();
-      // 초 색 6가지 중 파랑(3)을 고른다: 서버·장면에 color 가 실리고, 내 초(mine)로 표시된다
-      expect(candleColors, hasLength(6));
+      // 초 색 8가지 중 파랑(3)을 고른다: 서버·장면에 color 가 실리고, 내 초(mine)로 표시된다
+      expect(candleColors, hasLength(8));
+      expect(candleColorUiOrder.toList()..sort(), [0, 1, 2, 3, 4, 5, 6, 7]);
+      expect(candleColors.map((c) => c.name).toList(), [
+        '흰색',
+        '빨강',
+        '노랑',
+        '파랑',
+        '초록',
+        '분홍',
+        '보라',
+        '호박색',
+      ]);
+      expect(find.text(candleColorNotice), findsOneWidget);
       for (var i = 0; i < candleColors.length; i++) {
         expect(find.byKey(ValueKey('candle-color-$i')), findsOneWidget);
       }
