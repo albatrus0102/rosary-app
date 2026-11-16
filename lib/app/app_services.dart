@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/auth_service.dart';
 import '../auth/consent_store.dart';
 import '../auth/fake_auth_service.dart';
+import '../backup/backup_service.dart';
 import '../stats/prayer_stats_store.dart';
 import '../sync/prayer_sync.dart';
 import 'settings.dart';
@@ -21,6 +22,7 @@ class AppServices {
     required this.consent,
     required this.backendConfigured,
     this.sync,
+    this.backup,
   });
 
   /// 네트워크도 디스크도 쓰지 않는 기본 묶음(테스트·백엔드 미설정 개발용).
@@ -30,6 +32,7 @@ class AppServices {
     PrayerStatsStore? stats,
     ConsentBackend? consentBackend,
     bool backendConfigured = false,
+    BackupService? backup,
   }) {
     final authService = auth ?? FakeAuthService();
     return AppServices(
@@ -42,6 +45,7 @@ class AppServices {
         backend: consentBackend ?? InMemoryConsentBackend(),
       ),
       backendConfigured: backendConfigured,
+      backup: backup,
     );
   }
 
@@ -55,6 +59,9 @@ class AppServices {
 
   /// 기도 기록 동기화(백엔드가 설정되었을 때만).
   final PrayerSync? sync;
+
+  /// 백업과 복원(내보내기·가져오기·자동 백업·기기 안 금고). 시험용 기본 묶음에는 없다.
+  final BackupService? backup;
 
   /// 이 묶음이 직접 만든 가짜 서비스를 정리한다(주입받은 것은 건드리지 않는다).
   void disposeInMemory() {

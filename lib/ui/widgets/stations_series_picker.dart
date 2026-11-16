@@ -34,6 +34,13 @@ abstract final class StationsSeriesChoice {
     }
   }
 
+  /// 백업을 가져오거나 되살린 뒤: 저장된 선택을 다시 읽는다.
+  static Future<void> reload() async {
+    _loaded = false;
+    selected.value = null;
+    await load();
+  }
+
   /// [id] 연작을 고른다(null 은 자동). 바로 반영하고 저장한다.
   static Future<void> select(String? id) async {
     _loaded = true;

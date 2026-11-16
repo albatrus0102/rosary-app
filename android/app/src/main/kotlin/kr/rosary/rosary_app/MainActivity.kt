@@ -20,9 +20,20 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 class MainActivity : FlutterActivity() {
+    /** 백업 채널(자동 백업 폴더·내보내기·가져오기). 결과는 [onActivityResult]로 돌아온다. */
+    private var backup: BackupBridge? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (backup?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     // 묵주 화면의 차등 진동(T-81): timings = [쉼, 울림, 쉼, 울림 …](ms), amplitude 1..255.
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        backup = BackupBridge(this).also {
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "rosarium/backup").setMethodCallHandler(it)
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "rosarium/vibrate").setMethodCallHandler { call, result ->
             if (call.method != "pattern") { result.notImplemented(); return@setMethodCallHandler }
             try {

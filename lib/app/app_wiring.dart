@@ -158,6 +158,14 @@ class AppWiring with WidgetsBindingObserver {
       await prefs.remove(statsOwnerKey);
     } catch (_) {}
     try {
+      // 기기 안 백업 사본(금고)에도 이 사용자의 기록이 있다 — 함께 지운다.
+      await services.backup?.onAccountDeleted();
+    } catch (e) {
+      debugPrint(
+        'account cleanup: backup vault clear failed (${e.runtimeType})',
+      );
+    }
+    try {
       await services.consent.clearLocalData(_lastUid);
     } catch (e) {
       debugPrint('account cleanup: consent clear failed (${e.runtimeType})');

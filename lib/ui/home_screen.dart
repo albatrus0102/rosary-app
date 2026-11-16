@@ -11,6 +11,7 @@ import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
 import '../app/window_class.dart';
+import '../backup/backup_ui.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
@@ -311,6 +312,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
         _HeroCard(style: settings.rosaryStyle, onTap: widget.onOpenStyles),
         const SizedBox(height: AppSpace.md),
+        if (AppServicesScope.maybeOf(context)?.backup case final backup?)
+          BackupHomeCard(service: backup),
         if (AppServicesScope.maybeOf(context) case final services?) ...[
           StatsSummaryCard(
             store: services.stats,

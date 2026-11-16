@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../analytics/analytics_observer.dart';
 import '../auth/auth_gate.dart';
+import '../backup/backup_ui.dart';
 import '../ui/app_shell.dart';
 import '../ui/skin_picker.dart';
 import 'app_services.dart';
@@ -131,7 +132,10 @@ class _RosaryAppState extends State<RosaryApp> with WidgetsBindingObserver {
                 authService: services.auth,
                 consentStore: services.consent,
                 backendConfigured: services.backendConfigured,
-                child: AppShell(settings: settings),
+                child: BackupOfferWatcher(
+                  service: services.backup,
+                  child: AppShell(settings: settings),
+                ),
               ),
             );
           },

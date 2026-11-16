@@ -6,6 +6,9 @@
         android:label="로사리움"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
@@ -36,6 +39,12 @@
                 <data android:scheme="kr.rosary.rosaryapp" android:host="login-callback"/>
             </intent-filter>
         </activity>
+        <!-- 백업 파일을 공유 시트로 보낼 때만 쓰는 읽기 전용 공급자(lib/backup, BackupShareProvider.kt). -->
+        <provider
+            android:name=".BackupShareProvider"
+            android:authorities="${applicationId}.backupshare"
+            android:exported="false"
+            android:grantUriPermissions="true" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <!-- 이미지 카드 공유(공유 시트·인스타그램 스토리)용 FileProvider: res/xml/file_paths.xml -->

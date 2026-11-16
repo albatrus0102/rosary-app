@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../app/app_services.dart';
 import '../app/bundled_leader_voice.dart';
 import '../app/release_gate.dart';
 import '../app/leader_audio_store.dart';
@@ -13,6 +14,7 @@ import '../app/theme.dart';
 import '../rosary3d/rosary_gallery_screen.dart';
 import '../rosary3d/rosary_model.dart';
 import '../app/track.dart';
+import '../backup/backup_ui.dart';
 import '../church/church_liturgy.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
@@ -178,6 +180,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildLeaderSection(context),
                   _buildChurchSection(context),
                   _buildStatsSection(context),
+                  if (AppServicesScope.maybeOf(context)?.backup
+                      case final backup?)
+                    BackupSettingsSection(service: backup),
                   _buildAboutSection(context),
                 ],
               ),

@@ -73,6 +73,18 @@ class SavedPrayer {
 /// 앱 설정. `shared_preferences`에 저장된다(신비 선택은 제외).
 class AppSettings extends ChangeNotifier {
   AppSettings._(this._prefs) {
+    _readFromPrefs();
+  }
+
+  /// 백업을 가져오거나 되살린 뒤: 저장소에서 모든 값을 다시 읽고 화면에 알린다.
+  void reloadFromPrefs() {
+    final mystery = _mysterySet; // 이번 세션에 고른 신비는 저장하지 않는 값이라 그대로 둔다.
+    _readFromPrefs();
+    _mysterySet = mystery;
+    notifyListeners();
+  }
+
+  void _readFromPrefs() {
     _chimeOnTenHailMarys = _prefs.getBool(_kChime) ?? true;
     _tickPerBead = _prefs.getBool(_kTick) ?? false;
     _rosaryStyle = _enumByName(
