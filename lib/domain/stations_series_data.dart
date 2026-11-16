@@ -18,6 +18,7 @@ const Map<String, String> _assignments = {
   "florence": "mosler",
   "myeongdong": "fugel_munich",
   "danggogae": "tiepolo",
+  "yeouido": "fugel",
 };
 
 const List<StationsSeries> _series = [

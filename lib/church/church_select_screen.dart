@@ -29,6 +29,7 @@ const Map<String, String> churchStyleById = {
   'florence': '고딕',
   'myeongdong': '고딕',
   'danggogae': '근대',
+  'yeouido': '근대',
   'stmark': '로마네스크·비잔틴',
   'jeondong': '로마네스크·비잔틴',
   'yakhyeon': '고딕',
@@ -69,7 +70,7 @@ class ChurchSelectScreen extends StatefulWidget {
 
   /// 교회 측 서면 동의를 기다리는 성당(docs/legal/church_permission/). 개발용 빌드에서만 연다.
   /// 동의를 받으면 [releaseIds]로 옮긴다.
-  static const Set<String> pendingConsentIds = {'danggogae'};
+  static const Set<String> pendingConsentIds = {'danggogae', 'yeouido'};
 
   /// 지금 빌드에서 들어갈 수 있는 성당 id. 나머지는 목록에 '준비 중'으로 보인다.
   static Set<String> get availableIds => DevGlass.enabled

@@ -66,6 +66,7 @@
 | 피렌체 대성당 (`florence`) | D. 모슬러 《The Stations of the Cross》 삽화, 1859 | Public domain | Google Books 스캔(Internet Archive 사본) | 확인 |
 | 명동대성당 (`myeongdong`) | 게프하르트 푸겔 〈뮌헨 성 요셉 성당 십자가의 길〉, 1904–08 | Public domain | 1908년경 그림엽서 스캔(Commons 올린 이의 스캔) | 확인 |
 | 당고개 순교성지 `danggogae`(2026-11-15 배정. 실제 성당의 14처는 생존 작가 작품이라 싣지 않는다) | 조반니 도메니코 티에폴로 〈Via Crucis〉 동판화, 1749 | CC0 1.0 | Rijksmuseum | 확인 |
+| 여의도동성당 `yeouido`(2026-11-16 배정. 번들 연작이 모두 배정된 뒤라 기본 연작을 우리 본당과 **함께 쓴다** — 유일한 예외, `interiors/yeouido.md` §7) | 게프하르트 푸겔 〈십자가의 길〉, 1921 | Public domain | Andreas Praefcke | 확인 |
 
 ### 연작
 | id | 연작 | 작가 | 연도 | 사진·스캔 | 라이선스 | 변경 | 용량(그림 14장 + 아틀라스) | 권리 확인 |

@@ -85,6 +85,7 @@ void main() {
     expect(ChurchSelectScreen.availableIds, isNot(contains('sagrada')));
     // 일반 빌드에서는 동의 대기 중인 당고개가 닫혀 있다.
     expect(ChurchSelectScreen.availableIds, isNot(contains('danggogae')));
+    expect(ChurchSelectScreen.availableIds, isNot(contains('yeouido')));
     expect(_card('sagrada'), findsNothing);
     expect(find.text('준비 중'), findsNothing);
     final chip = find.byKey(const ValueKey('chip-upcoming'));
@@ -691,6 +692,62 @@ void main() {
         find.byKey(const ValueKey('glass-today'), skipOffstage: false),
         findsNothing,
       );
+    });
+  });
+
+  group('여의도동성당 상세 시트', () {
+    // 교회 측 동의 전이라 개발용 빌드에서만 열린다(pendingConsentIds) → 시험에서는 명시해 연다.
+    Future<void> open(WidgetTester tester, Size size, double scale) async {
+      await _pumpSelect(
+        tester,
+        holder: AppSettingsHolder(),
+        size: size,
+        textScale: scale,
+        available: {
+          ...ChurchSelectScreen.releaseIds,
+          ...ChurchSelectScreen.pendingConsentIds,
+        },
+      );
+      await _reveal(tester, _card('yeouido'));
+      await tester.tap(_card('yeouido'));
+      await tester.pumpAndSettle();
+    }
+
+    Finder inSheet(Finder f) =>
+        find.descendant(of: find.byType(BottomSheet), matching: f);
+
+    testWidgets('소개·알아 둘 사실·출처·모형 고지가 보이고 [입장]이 된다(360x800 글자 2배 포함)', (
+      tester,
+    ) async {
+      final info = ChurchCatalog.byId['yeouido']!;
+      expect(ChurchSelectScreen.pendingConsentIds, contains('yeouido'));
+      expect(ChurchSelectScreen.releaseIds, isNot(contains('yeouido')));
+      for (final (size, scale) in [
+        (const Size(400, 800), 1.0),
+        (const Size(360, 800), 2.0),
+      ]) {
+        await open(tester, size, scale);
+        expect(tester.takeException(), isNull);
+        expect(inSheet(find.text('여의도동성당')), findsOneWidget);
+        final scroll = inSheet(find.byType(Scrollable)).first;
+        for (final t in [info.blurb, ...info.facts, info.source]) {
+          await tester.scrollUntilVisible(
+            find.text(t),
+            240,
+            scrollable: scroll,
+          );
+          expect(tester.takeException(), isNull);
+        }
+        final note = find.textContaining('실제 치수는 확인 전이며 사진을 보고 분위기를 재현한 것입니다');
+        await tester.scrollUntilVisible(note, 240, scrollable: scroll);
+        expect(note, findsOneWidget);
+        expect(find.textContaining('성화·유리화·조각은 싣지 않았습니다'), findsOneWidget);
+        final btn = find.widgetWithText(FilledButton, '입장');
+        expect(btn, findsOneWidget);
+        expect(tester.getRect(btn).bottom <= 800, isTrue);
+        Navigator.of(tester.element(btn)).pop();
+        await tester.pumpAndSettle();
+      }
     });
   });
 

@@ -161,8 +161,12 @@ test('series: every church maps to a bundled atlas pack; default is fugel', () =
     assert.ok(src.includes('data:image/webp;base64,'), id);
     if (id !== 'fugel') assert.ok(src.includes(`ChurchCrossPacks || {})["${id}"]`), `${id} 등록 이름`);
   }
-  // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다
-  assert.equal(new Set(Object.values(S.churches)).size, Object.keys(S.churches).length);
+  // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다. 예외: 여의도동(yeouido)은 번들된 9개 연작이 모두 배정된 뒤에 들어와
+  // 기본 연작(푸겔, 우리 본당과 같음)을 함께 쓴다(docs/church/interiors/yeouido.md §7 — 새 자유 라이선스 연작이 오면 바꾼다)
+  const SHARED = { yeouido: 'fugel' };
+  for (const [c, sid] of Object.entries(SHARED)) assert.equal(S.churches[c], sid, c);
+  const own = Object.entries(S.churches).filter(([c]) => !SHARED[c]).map(([, sid]) => sid);
+  assert.equal(new Set(own).size, own.length);
 });
 
 test('series loader: loads the church series only, releases the previous one', async () => {
