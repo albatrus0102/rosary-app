@@ -24,16 +24,23 @@
 
 ### 출시 전 필수 목록 (must-do)
 
+진행 표시(2026-11-16): ☑ 개발 몫 완료 · ◐ 개발 몫 완료/준비, 사용자·외부 단계 남음.
+- M4 ☑ — three.js·meshoptimizer·esbuild MIT 전문 등록, 시험 추가.
+- M5 ◐ — 출처 조사·기록 완료(출처 미확인), 사용자 확인과 교체 결정 남음. 3D 렌더 대체 프로토타입은 품질 미달이라 적용하지 않음.
+- M6 ◐ — 요청서 보강 완료(설계자 권리·동의 범위·성모상 정정). 발송은 사용자.
+- M8 ◐ — 문의서 영·한 초안과 대안 실행 절차 준비. 발송·결정은 사용자.
+- S3 ☑ — Meshy 원본 GLB 확인, 식별 표지 보존.
+
 | # | 할 일 | 파일·위치 | 담당 |
 |---|---|---|---|
 | M1 | 주교회의 「저작권 사용 승인」 신청 → 승인 받은 뒤 공개 배포. 승인 문구를 앱에 반영 | `docs/legal/church_permission/01_*`, `lib/domain/prayer_data.dart`, `data/stations_prayers.json`, `lib/ui/more_screen.dart`·`lib/ui/settings_screen.dart`(`prayerSourceNote`) | 사용자(발송) → 외부(주교회의) → 개발(반영) |
 | M2 | ElevenLabs 생성 당시 플랜 확인(2026-11-12 전후 결제 내역)과 두 목소리(`yeieVCpNANUQm8gq7quR`, `JL0iS7pVcKbJG6tHz7fn`)의 종류(Voice Design / Voice Library / 기본) 확인. 무료였으면 §7 의 선택지 중 하나 실행 | `assets/leader_voice/sister/*.mp3`, `assets/leader_voice/priest/*.mp3`(62개), `tools/leader_voice/manifest.json`, `lib/app/leader_voice.dart`(`aiVoiceDisclosure`) | 사용자 → 개발 |
 | M3 | 런처 아이콘 교체(Flutter 로고 제거) | `android/app/src/main/res/mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}/ic_launcher.png` | 사용자(디자인 승인) + 개발 |
-| M4 | 오픈소스 라이선스 화면에 three.js(r149, MIT)·meshoptimizer(MIT) 전문 추가 | `lib/app/licenses.dart` (대상 파일: `assets/church/three.min.js`, `assets/church/three_extras.js`, `assets/church/statue3d_mary_meshy.js`) | 개발 |
-| M5 | 묵주 그림 24장 출처 확인·기록(어떤 도구로 누가 만들었는지). 실물 상품 사진을 본뜬 것이면 교체 | `assets/images/{bead,crystal,fatima,jade,jp2,knot,lourdes,pastel,pearl,penal,rosary,rosewood,stuart}.webp`, `assets/images/rosary_*.webp`(원본 `art/images_src/*.png`) | 사용자 → 개발(기록) |
-| M6 | 당고개: 서면 동의 전에는 지금처럼 배포판에서 닫아 둔다. 동의 요청서 보강(§5.4) 후 발송 | `lib/church/church_select_screen.dart`(`pendingConsentIds`), `docs/legal/church_permission/02_Danggogae_consent_request.md` | 개발(문서 보강) → 사용자(발송) → 외부 |
+| M4 ☑ | 오픈소스 라이선스 화면에 three.js(r149, MIT)·meshoptimizer(MIT) 전문 추가 | `lib/app/licenses.dart` (대상 파일: `assets/church/three.min.js`, `assets/church/three_extras.js`, `assets/church/statue3d_mary_meshy.js`) | 개발 |
+| M5 ◐ | 묵주 그림 24장 출처 확인·기록(어떤 도구로 누가 만들었는지). 실물 상품 사진을 본뜬 것이면 교체 | `assets/images/{bead,crystal,fatima,jade,jp2,knot,lourdes,pastel,pearl,penal,rosary,rosewood,stuart}.webp`, `assets/images/rosary_*.webp`(원본 `art/images_src/*.png`) | 사용자 → 개발(기록) |
+| M6 ◐ | 당고개: 서면 동의 전에는 지금처럼 배포판에서 닫아 둔다. 동의 요청서 보강(§5.4) 후 발송 | `lib/church/church_select_screen.dart`(`pendingConsentIds`), `docs/legal/church_permission/02_Danggogae_consent_request.md` | 개발(문서 보강) → 사용자(발송) → 외부 |
 | M7 | 출시 빌드마다 개발용 유리 제외 검사 통과 | `bash tools/check_release_apk.sh <배포 APK>` | 개발 |
-| M8 | 프레비아티(바티칸 박물관 소장) 처리 결정: 바티칸 박물관 이미지·저작권 사무실(`id.musei@scv.va`)에 문의 발송, 출시 때까지 답이 없으면 성 베드로 배정을 다른 연작으로 바꿈 | `data/stations_series.json`(`assignments.stpeter`), `assets/images/stations/previati/`, `assets/church/cross_pack_previati.js` | 사용자(결정·발송) → 개발 |
+| M8 ◐ | 프레비아티(바티칸 박물관 소장) 처리 결정: 바티칸 박물관 이미지·저작권 사무실(`id.musei@scv.va`)에 문의 발송, 출시 때까지 답이 없으면 성 베드로 배정을 다른 연작으로 바꿈 | `data/stations_series.json`(`assignments.stpeter`), `assets/images/stations/previati/`, `assets/church/cross_pack_previati.js` | 사용자(결정·발송) → 개발 |
 
 권장(출시 전이면 좋음): S1 성화 출처 화면에 '이탈리아·바티칸 소장 문화재 이미지는 비상업 이용' 문구(§1.6), S2 밀라노 창 사진의 원작 특정(§4), S3 Meshy 원본 GLB 의 식별 메타데이터 확인·보존(§6), S4 AI 성모상 그림의 역이미지 검색(§6), S5 KIPRIS 상표 검색(§10), S6 세례명 목록 출처 기록(§0 표 A22), S7 명동대성당(서울대교구)에 안내 전자우편(§5).
 
@@ -64,14 +71,14 @@
 | A10 | AI 성모상 그림 3장(색+깊이) | `assets/church/statue3d_{hanbok_rosary,immaculate_blue,plain_white}.js` | 사용자가 ChatGPT 로 생성(원본 PNG 에 C2PA 메타데이터 있음, `art/statues/*.png`) | OpenAI 약관: 출력 소유권을 사용자에게 양도(§6) | 성화 출처 'AI 생성 성모상(ChatGPT, 사용자 제공)' | ✅ / 유사성 확인 권장 ⚠️ |
 | A11 | Meshy 3D 성모상 | `assets/church/statue3d_mary_meshy.js`(meshoptimizer 디코더 동봉) | Meshy AI 무료 플랜, 입력 그림은 사용자의 GPT/Gemini 그림 | Meshy 약관 3.2: 무료 플랜 출력은 **Meshy 소유, CC BY 4.0 으로 제공, Meshy 표기 조건**(확인 2026-11-16) | 성화 출처 "성모상 3D: Meshy AI로 생성(CC BY 4.0)" | ⚠️(§6: 약관 2.4 식별 표지) |
 | A12 | 입구 화면 장식·대표 그림 | `assets/images/church_entry/{bg_glow,rail_decor,hero_milan,thumb_stpeter,thumb_maggiore,thumb_stpaul,thumb_milan,thumb_myeongdong}.webp` | 사용자가 올린 AI 생성 시안에서 잘라 냄(`docs/church/ENTRY_ART.md`) | 생성 도구 약관(OpenAI 추정 〔미확인〕) | 없음(의무 없음) | ✅(도구 기록 권장) |
-| A13 | 묵주·구슬 그림 24장 | `assets/images/*.webp`(성당 입구 폴더 제외) | **출처 미기록**(2026-10-30 커밋, 메타데이터 없음) | 미확인 | 없음 | ❓ → M5 |
+| A13 | 묵주·구슬 그림 24장 | `assets/images/*.webp`(성당 입구 폴더 제외) | **출처 미기록**(2026-10-30 커밋, 메타데이터 없음) | 미확인 | 없음 | ❓ → M5(조사 완료, 출처 미확인) |
 | A14 | 자체 3D 렌더 | `assets/images/church_entry/render_*.webp`, `assets/church_thumbs/*.webp` | 우리 3D 장면을 찍은 것(`tools/church_web/entry_shots.mjs`, `thumbs.mjs`) | 자체 | — | ✅ (당고개 그림은 §5 참고) |
 | A15 | 선창·후창 AI 음성 62개 | `assets/leader_voice/sister/*.mp3`(31), `assets/leader_voice/priest/*.mp3`(31) | ElevenLabs `eleven_multilingual_v2`, 2026-11-12 생성, 목소리 ID 2개 | **플랜 미기록**. ElevenLabs 약관 1(c)·도움말(§7) | 합성 음성 안내(“AI로 합성한 음성…”) — 서비스명·`elevenlabs.io` 표기 없음 | ❓/⚠️ → M2 |
 | A16 | 기도 배경 오르간 4곡 | `assets/music/organ_*.m4a` | 자체 합성(`tools/music/make_organ_tracks.py`), 선율은 그레고리오 성가(PD), 음높이는 GregoBase(CC0) | CC0(우리 것), `licenses/MUSIC.md` | 성화·음악 출처 + OSS 화면 | ✅ |
 | A17 | 효과음 | `assets/sounds/*.wav` | 자체 합성(`tools/rosary3d/make_sounds.mjs`; `bead_tick`·`decade_chime` 은 2026-10-30 커밋, 합성으로 추정) | 자체 | — | ✅(옛 2개는 추정) |
 | A18 | 글꼴 Pretendard 4종 | `assets/fonts/Pretendard-*.otf`, `assets/fonts/OFL-Pretendard.txt` | Kil Hyung-jin(orioncactus), v1.309, 수정 없음(글리프 14,716 확인) | SIL OFL 1.1, 예약 글꼴 이름 "Pretendard" | OSS 화면(LicenseRegistry 등록) | ✅ |
-| A19 | three.js r149 + examples 번들 | `assets/church/three.min.js`, `assets/church/three_extras.js` (`assets/rosary3d/` 가 상대 경로로 같이 씀) | three.js authors | MIT(파일 머리에 저작권+SPDX 만) | **OSS 화면에 없음** | ⚠️ → M4 |
-| A20 | meshoptimizer 디코더 | `assets/church/statue3d_mary_meshy.js` 안 | Arseny Kapoulkine | MIT | **OSS 화면에 없음** | ⚠️ → M4 |
+| A19 | three.js r149 + examples 번들 | `assets/church/three.min.js`, `assets/church/three_extras.js` (`assets/rosary3d/` 가 상대 경로로 같이 씀) | three.js authors | MIT(파일 머리에 저작권+SPDX 만) | **OSS 화면에 없음** | ✅ M4 완료(2026-11-16) |
+| A20 | meshoptimizer 디코더 | `assets/church/statue3d_mary_meshy.js` 안 | Arseny Kapoulkine | MIT | OSS 화면에 등록 | ✅ |
 | A21 | Flutter·Dart 패키지 | 앱 바이너리 | pub.dev | BSD 97, MIT 24, Apache-2.0 8, MPL-2.0 1(`dbus`, Linux 전용 전이 의존) | `showLicensePage` 가 자동 수집 | ✅ |
 | A22 | 세례명 목록 3,788개 | `assets/church/baptismal_names.js`, `lib/church/baptismal_names_data.dart` (원본 `data/baptismal_names.tsv`) | **출처 미기록** | 이름(사실) 자체는 저작물 아님. 남의 목록을 통째로 옮겼다면 데이터베이스 제작자 권리 쟁점 가능 〔미확인〕 | — | ❓(낮음) → S6 |
 | A23 | 공식 기도문 | `lib/domain/prayer_data.dart`, `data/stations_prayers.json`(→ Dart) | 한국천주교주교회의 『가톨릭 기도서』 | 승인 필요 | 기도문 출처 표기 | ⚠️ → M1 |
@@ -386,8 +393,8 @@ CC 권장 표기: **T**itle(있으면), **A**uthor, **S**ource(원본 링크), *
 |---|---|---|---|---|
 | Pretendard v1.309(수정 없음, 4종) | SIL OFL 1.1, 예약 글꼴 이름 "Pretendard"(https://openfontlicense.org/ ) | 라이선스 동봉, 단독 판매 금지, 수정 시 이름 변경 | `assets/fonts/OFL-Pretendard.txt` 동봉 + `registerFontLicenses()` 로 OSS 화면 등록 | ✅ |
 | 그 밖의 글꼴 | 웹 장면은 시스템 글꼴(`system-ui, sans-serif`, Georgia)만 사용, 웹 글꼴 없음 | — | — | ✅ |
-| three.js r149 (`three.min.js`, `three_extras.js`) | MIT(https://github.com/mrdoob/three.js/blob/r149/LICENSE ) | 저작권 고지 + **허락 문구 전문** 동봉 | 파일 머리에 "Copyright 2010-2023 Three.js Authors / SPDX-License-Identifier: MIT" 만. OSS 화면에 없음 | ⚠️ M4 |
-| meshoptimizer 디코더 | MIT(https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md ) | 같음 | 팩 머리말에 "MIT" 표기만 | ⚠️ M4 |
+| three.js r149 (`three.min.js`, `three_extras.js`) | MIT(https://github.com/mrdoob/three.js/blob/r149/LICENSE ) | 저작권 고지 + **허락 문구 전문** 동봉 | 파일 머리에 "Copyright 2010-2023 Three.js Authors / SPDX-License-Identifier: MIT" 만. OSS 화면에 없음 | ✅ M4 완료 |
+| meshoptimizer 디코더 | MIT(https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md ) | 같음 | 팩 머리말에 "MIT" 표기만 | ✅ M4 완료 |
 | esbuild 런타임 도우미(`three_extras.js` 번들 안의 몇 줄) | MIT | 같음(사소) | 없음 | M4 에 함께 |
 | Flutter 엔진·SDK, pub 패키지 130개(pubspec.lock 기준, 개발용 포함) | BSD 97 · MIT 24 · Apache-2.0 8 · MPL-2.0 1(`dbus` 0.8.0, Linux 데스크톱용 전이 의존, Android 코드에는 쓰이지 않을 것으로 봄) | 고지 | `showLicensePage` 가 패키지 LICENSE 와 엔진 NOTICES 를 자동으로 모은다 | ✅ |
 | 앱 안 라이선스 화면 | — | — | 더보기 → 「오픈소스 라이선스」(`lib/ui/more_screen.dart`), 설정 → 정보(`lib/ui/settings_screen.dart`) 에서 `showLicensePage(applicationName: '로사리움')`. 성화·성가 목록도 `LicenseRegistry` 에 등록(`lib/app/licenses.dart`) | ✅ |
@@ -447,18 +454,18 @@ CC 권장 표기: **T**itle(있으면), **A**uthor, **S**ource(원본 링크), *
 | ☐ | 6 | 플랜·목소리 기록 남기기 | 개발 | `tools/leader_voice/README.md`, `manifest.json` | 예 |
 | ☐ | 7 | 앱 아이콘 디자인 확정 | 사용자 | — | 예 |
 | ☐ | 8 | 런처 아이콘 교체(적응형 아이콘 포함) | 개발 | `android/app/src/main/res/mipmap-*/ic_launcher.png` | 예 |
-| ☐ | 9 | three.js·meshoptimizer MIT 전문을 OSS 화면에 등록 | 개발 | `lib/app/licenses.dart`, `pubspec.yaml` | 예 |
-| ☐ | 10 | 묵주 그림 24장 출처 확인(도구·날짜) | 사용자 | `assets/images/*.webp`, `art/images_src/*.png` | 예 |
-| ☐ | 11 | 그 결과를 자산 기록에 반영(필요하면 교체) | 개발 | `docs/church/ASSET_LICENSES.md` | 예 |
+| ☑ | 9 | three.js·meshoptimizer MIT 전문을 OSS 화면에 등록 → 완료(2026-11-16): `assets/licenses/*.txt` 3종(three.js·meshoptimizer·esbuild 도우미) + `licenses.dart` + `test/licenses_test.dart`. 번들 `three_glb.js`·GLTFLoader 는 앱에 싣지 않음(`assets/church/index.html` 에 없음). | 개발 | `lib/app/licenses.dart`, `pubspec.yaml` | 예 |
+| ☐ | 10 | 묵주 그림 24장 출처 확인(도구·날짜) → 개발 조사 완료(2026-11-16): 저장소 기록만으로 출처 미확인, 이미지 생성 AI 풍. 사용자 확인 필요 — `docs/legal/ROSARY_IMAGES_PROVENANCE.md` 의 확인 표. | 사용자 | `assets/images/*.webp`, `art/images_src/*.png` | 예 |
+| ◐ | 11 | 그 결과를 자산 기록에 반영(필요하면 교체) → 기록 완료(`ASSET_LICENSES.md`·`ROSARY_IMAGES_PROVENANCE.md`: "출처 미확인 — 출시 전 교체 필요"). 교체는 미실행: 3D 렌더 프로토타입(`tools/rosary3d/render_stills.mjs`)의 품질이 기존 그림에 못 미쳐 파일은 그대로 둠. | 개발 | `docs/church/ASSET_LICENSES.md` | 예 |
 | ☐ | 12 | 배포 APK 로 개발용 유리 제외 검사 | 개발 | `tools/check_release_apk.sh` | 예 |
-| ☐ | 13 | 당고개 요청서 보강(설계자 권리, 동의 범위, 성모상 설명) | 개발 | `docs/legal/church_permission/02_Danggogae_consent_request.md` | 당고개 공개 시 |
+| ☑ | 13 | 당고개 요청서 보강(설계자 권리, 동의 범위, 성모상 설명) → 완료(2026-11-16): 설계자 권리 직접 질문, 동의 범위 5항, 성모상 = Meshy AI 3D 로 정정. | 개발 | `docs/legal/church_permission/02_Danggogae_consent_request.md` | 당고개 공개 시 |
 | ☐ | 14 | 당고개 성지·서울대교구에 발송(명동 안내 한 문단 포함) | 사용자 | 같음 | 당고개 공개 시 |
 | ☐ | 15 | 당고개 서면 동의(+설계자 권리 확인) | 외부(성지·교구·설계자) | `replies/` 보관 | 당고개 공개 시 |
-| ☐ | 16 | 프레비아티·라파엘로 문의 발송(`id.musei@scv.va`) 여부 결정 | 사용자 | §2.3 | 예(결정) |
-| ☐ | 17 | 바티칸 박물관 회신(없으면 프레비아티 교체) | 외부 → 개발 | `data/stations_series.json` | 조건부 |
+| ◐ | 16 | 프레비아티·라파엘로 문의 발송(`id.musei@scv.va`) 여부 결정 → 문의서 초안 준비됨(`docs/legal/church_permission/06_Vatican_Museums_request.md`, 영·한). 보낼지 결정은 사용자. | 사용자 | §2.3 | 예(결정) |
+| ◐ | 17 | 바티칸 박물관 회신(없으면 프레비아티 교체) → 대안 실행 절차 준비됨(같은 문서 "준비해 둔 대안", 적용 안 함). | 외부 → 개발 | `data/stations_series.json` | 조건부 |
 | ☐ | 18 | 성화 출처 화면에 비상업·재사용 제한 고지(S1) | 개발 | `lib/ui/art_credits_screen.dart` | 아니오 |
 | ☐ | 19 | 밀라노 창 사진 원작 특정(S2) | 개발(조사) + 사용자(눈 확인) | `assets/church/glass_catalog.json` | 아니오 |
-| ☐ | 20 | Meshy 원본 GLB 식별 메타데이터 확인·보존(S3) | 사용자(파일 제공) + 개발 | `art/statues/meshy/*.glb`(저장소 밖), `assets/church/statue3d_mary_meshy.js` | 아니오 |
+| ☑ | 20 | Meshy 원본 GLB 식별 메타데이터 확인·보존(S3) → 완료(2026-11-16): 원본 GLB 의 식별 표지는 `asset.generator = "xpostprocessing"` 하나뿐이었고 팩에서 빠져 있었음 → `meta.src` 로 보존(`licenses/MESHY_STATUE.md`). | 사용자(파일 제공) + 개발 | `art/statues/meshy/*.glb`(저장소 밖), `assets/church/statue3d_mary_meshy.js` | 아니오 |
 | ☐ | 21 | AI 성모상 역이미지 검색(S4) | 사용자 | `art/statues/` | 아니오 |
 | ☐ | 22 | KIPRIS 상표 검색·캡처 보관(S5) | 사용자 | `docs/legal/` | 아니오(권장) |
 | ☐ | 23 | 세례명 목록 출처 기록(S6) | 사용자 → 개발 | `data/baptismal_names.tsv` | 아니오 |

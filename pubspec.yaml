@@ -78,3 +78,5 @@ flutter:
     - assets/leader_voice/sister/
     - assets/leader_voice/priest/
     - assets/fonts/OFL-Pretendard.txt
+    # 번들 JS(three.js r149·meshoptimizer 디코더·esbuild 도우미)의 MIT 전문. lib/app/licenses.dart 가 라이선스 화면에 등록한다.
+    - assets/licenses/

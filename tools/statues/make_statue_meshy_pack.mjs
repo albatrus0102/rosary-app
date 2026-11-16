@@ -42,9 +42,13 @@ console.log('verts', nu, 'near tris', ri.length / 3, 'far tris', rf.length / 3, 
 // 디코더 번들
 const dec = await build({ stdin: { contents: "export { MeshoptDecoder } from 'meshoptimizer/decoder';", resolveDir: path.join(here, '../avatar_glb'), loader: 'js' }, bundle: true, format: 'iife', globalName: 'MD', minify: true, target: 'es2019', write: false, legalComments: 'none' });
 const meta = { w: +(mx[0] - mn[0]).toFixed(4), h: +(mx[1] - mn[1]).toFixed(4), d: +(mx[2] - mn[2]).toFixed(4), min: mn.map((v) => +v.toFixed(5)), max: mx.map((v) => +v.toFixed(5)), verts: nu, tris: ri.length / 3, farTris: rf.length / 3 };
+// Meshy 약관 2.4(AI 식별 표지 보존): 원본 GLB 의 asset.generator("xpostprocessing", Meshy 후처리기)와 출처·라이선스를 팩의 meta.src 로 남긴다.
+// 원본 GLB 에는 그 밖의 extras·저작권·워터마크 필드가 없다(2026-11-16 확인, licenses/MESHY_STATUE.md). 다른 모델을 쓸 때는 원본의 asset 블록을 다시 확인해 고친다.
+meta.src = {"generator":"Meshy AI","gltfAssetGenerator":"xpostprocessing","model":"Marian_Serenity","url":"https://www.meshy.ai","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0/","attribution":"Meshy AI","aiGenerated":true,"note":"AI-generated 3D model (Meshy AI); original glTF asset.generator preserved; geometry simplified and quantized"};
 const js = `/* statue3d_${key}.js — 생성 파일(tools/statues/meshy_decimate.mjs + make_statue_meshy_pack.mjs). 흰 대리석 성모상(입체) — 모든 성당 성모 자리(명동·마조레 제외).
    원본: Meshy AI 로 생성(CC BY 4.0 — 'Meshy AI'; 사용자가 직접 만든 그림에서 생성), 739,044 삼각형 → ${meta.tris} 삼각형(근거리) / ${meta.farTris}(원거리).
    좌표 = 원본 GLB 그대로(Y 위, 원점 중심, 앞 +Z, 위 ${meta.h}m·너비 ${meta.w}m·깊이 ${meta.d}m, 팔각 받침 포함). 위치 uint16 양자화 + 법선 팔면체 + meshopt 압축.
+   식별: meta.src = Meshy AI 생성 표지(원본 glTF asset.generator "xpostprocessing", CC BY 4.0, https://www.meshy.ai) — 지우지 말 것(Meshy 약관 2.4).
    포함: MeshoptDecoder(meshoptimizer, MIT). load(THREE) → Promise<{near, far}>(BufferGeometry 둘, 정점 공유). */
 (function () {
   ${dec.outputFiles[0].text.trim()}

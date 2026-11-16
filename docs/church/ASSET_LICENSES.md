@@ -231,3 +231,8 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 - 썸네일 `assets/church_thumbs/danggogae.webp`, 입구 그림 `assets/images/church_entry/render_danggogae.webp` 는 우리 3D 장면을 찍은 것이다.
 - 나중에 사용자가 ChatGPT 로 만든 전용 질감(D-01~D-07)을 올리면 `assets/church/tex_dg_*.jpg` + `tex_pack_danggogae.js` 로 넣고,
   그때 `docs/church/licenses/danggogae.md` 에 '사용자가 ChatGPT 로 생성, 날짜, 프롬프트 번호'를 적는다.
+
+## 묵주·구슬 그림 24장(`assets/images/{bead,crystal,fatima,jade,jp2,knot,lourdes,pastel,pearl,penal,rosary,rosewood,stuart}.webp`, `rosary_*.webp`) — 출처 미확인 — 출시 전 교체 필요 (2026-11-16)
+
+- 우리 도구가 만든 것이 아니다(생성 스크립트 없음). 2026-10-30 초기 커밋(`3b400b6`, `8a0a9ba`)에 출처 기록 없이 들어왔고, 이미지 생성 AI 풍으로 보이나 도구·작성자·참고 이미지 여부를 확인할 수 없다.
+- 조사 결과·사용자 확인 항목·교체 경로(3D 렌더 프로토타입 `tools/rosary3d/render_stills.mjs`): `docs/legal/ROSARY_IMAGES_PROVENANCE.md`.

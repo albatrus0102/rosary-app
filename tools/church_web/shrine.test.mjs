@@ -116,6 +116,9 @@ test('shrine 3D mesh: 명동(한복 그림 성상)·마조레(성화)를 뺀 모
   assert.ok(a.meta.tris >= 25000 && a.meta.tris <= 40000, 'near tris ' + a.meta.tris);
   assert.ok(a.meta.farTris >= 4000 && a.meta.farTris <= 12000, 'far tris ' + a.meta.farTris);
   assert.ok(a.meta.h > 1.9 && a.meta.h < 1.91 && Math.abs(a.meta.min[1] - Shrine.MESH.Y_MIN) < 0.001, 'bounds');
+  assert.equal(a.meta.src.generator, 'Meshy AI', 'Meshy 약관 2.4: 식별 표지(meta.src) 보존');
+  assert.equal(a.meta.src.gltfAssetGenerator, 'xpostprocessing');
+  assert.equal(a.meta.src.license, 'CC BY 4.0');
   assert.ok(Shrine.MESH.S * a.meta.h >= 1.4 && Shrine.MESH.S * a.meta.h <= 1.7, '성상 높이(받침 포함) 1.4~1.7m');
 });
 
