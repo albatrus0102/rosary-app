@@ -1,7 +1,7 @@
-/* controls.js — 입력. 화면을 왼쪽/오른쪽 절반으로 나눈다(C-01, Roblox 규약).
-   왼쪽 절반(걷는 중에만): 닿은 곳에 떠다니는 스틱이 생긴다. 앱에서는 Flutter 가 이 영역을 가로채 setJoystick 으로 값을 보내고,
+/* controls.js — 입력. 이동 영역은 왼쪽 아래 고정 손잡이 원(+작은 여백)뿐이다(C-01; 예전 '왼쪽 절반'은 확대·시점 끌기를 막아 없앴다).
+   원 안(걷는 중에만): 앱에서는 Flutter 가 이 원을 가로채 setJoystick 으로 값을 보내고,
    웹 단독(브라우저 미리보기/테스트)에서는 아래 웹 스틱이 같은 일을 한다.
-   오른쪽 절반(그리고 앉은 동안 화면 전체): 드래그 = 카메라 회전, 두 손가락 핀치/휠 = 줌. 키보드(WASD/화살표, Q/E)도 유지.
+   그 밖의 모든 곳(왼쪽 포함, 앉은 동안은 화면 전체): 드래그 = 카메라 회전, 두 손가락 핀치/휠 = 줌. 키보드(WASD/화살표, Q/E)도 유지.
    창 감상 모드(ctl.viewMode, G-07): 화면 전체가 감상 제스처 — 한 손가락 끌기 = onView('pan',{dx,dy}), 두 손가락 = onView('pinch',{k,cx,cy}),
    휠 = pinch, 두 번 탭 = onView('dtap'), 탭 = onView('tap'). 걷기·카메라 회전 값은 건드리지 않는다. */
 (function (root) {
@@ -28,7 +28,19 @@
         return out;
       },
       // 터치 x 가 왼쪽(이동) 절반인가
-      inMoveZone: function (clientX) { return clientX < (root.innerWidth || canvas.clientWidth || 360) * 0.5; },
+      // 이동 영역은 '고정 손잡이 원'(+작은 여백)뿐이다. 화면 왼쪽 절반 전체가 아니다(왼쪽에서도 시점 끌기·핀치가 되어야 한다).
+      // 앱(Flutter)이 실제로 그린 원은 setInput({stick}) 으로 받고(접는 화면·안전 영역에 따라 바뀜), 아직 못 받았으면 왼쪽 아래 기본 원.
+      stick: null,
+      setStick: function (cx, cy, r) { cx = +cx; cy = +cy; r = +r; ctl.stick = (isFinite(cx) && isFinite(cy) && r > 0) ? { cx: cx, cy: cy, r: r } : null; },
+      stickCircle: function () {
+        if (ctl.stick) return ctl.stick;
+        var h = root.innerHeight || canvas.clientHeight || 640;
+        return { cx: 8 + 66, cy: h - 8 - 66, r: 66 };   // ChurchMoveZone 기본(지름 132, 여백 8)
+      },
+      inMoveZone: function (clientX, clientY) {
+        var c = ctl.stickCircle(), m = 8;
+        return Math.hypot(clientX - c.cx, clientY - c.cy) <= c.r + m;
+      },
       // 걷는 중에만 왼쪽 절반이 이동 영역이다(앉으면 화면 전체가 카메라 영역).
       setMoveZone: function (on) { on = !!on; if (ctl.moveZone === on) return; ctl.moveZone = on; if (!on) releaseMove(); },
       // 창 감상 제스처
@@ -110,7 +122,7 @@
     canvas.addEventListener('pointerdown', function (e) {
       if (ctl.viewMode) { vDown(e); return; }
       var role = 'orbit';
-      if (!ctl.ext && ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX) && count < 2) role = 'move';
+      if (!ctl.ext && ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX, e.clientY) && count < 2) role = 'move';
       pts[e.pointerId] = { x: e.clientX, y: e.clientY, role: role, sx: e.clientX, sy: e.clientY, t0: Date.now(), alone: countAll() === 0, moved: 0 };
       if (role === 'move') {
         if (ctl.onMoveTouch) ctl.onMoveTouch();

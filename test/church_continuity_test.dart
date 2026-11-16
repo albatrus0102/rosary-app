@@ -39,6 +39,7 @@ Future<_Shell> _pumpShell(
   SharedPreferences.setMockInitialValues(prefs);
   final settings = await AppSettings.load();
   settings.churchAvatarChosen = true;
+  settings.churchHudCollapsed = prefs['church_hud_collapsed'] as bool? ?? false;
   settings.churchId = 'basic';
   final services = AppServices.inMemory(settings);
   addTearDown(services.disposeInMemory);
@@ -371,7 +372,8 @@ void main() {
       expect(find.text('혼자 모드'), findsNothing);
       expect(h.settings.churchHudCollapsed, isTrue);
       final button = tester.getRect(find.byType(ChurchHudMenuButton));
-      expect(button.size, const Size(48, 48));
+      expect(button.height, 48);
+      expect(button.width, greaterThan(48), reason: '알약(아이콘 + 화살표)');
       expect(find.bySemanticsLabel('메뉴 펼치기'), findsOneWidget);
       final chip = tester.getRect(find.byType(ChurchStatusChip));
       expect(chip.height, lessThan(before.height));
@@ -478,9 +480,12 @@ void main() {
   group('고정 조이스틱과 두 손가락 확대', () {
     testWidgets('입장하면 웹에 앱 손잡이를 알린다(화면 전체가 시점·확대)', (tester) async {
       final h = await pumpChurch(tester);
-      expect(h.scene.argsOf('setInput'), [
+      final inputs = h.scene.argsOf('setInput');
+      expect(inputs.where((a) => a.containsKey('ext')), [
         {'ext': true},
       ]);
+      // 이동 영역은 왼쪽 절반이 아니라 손잡이 원: 원의 자리도 함께 알린다.
+      expect(inputs.any((a) => a.containsKey('stick')), isTrue);
     });
 
     testWidgets('손잡이 밖의 두 손가락은 웹 장면이 처리한다(앱은 끼어들지 않는다)', (tester) async {
@@ -496,7 +501,11 @@ void main() {
       await b.up();
       await tester.pump();
       expect(h.scene.count('setJoystick'), joy, reason: '이동하지 않는다');
-      expect(h.scene.count('setInput'), 1, reason: 'ext 한 번뿐');
+      expect(
+        h.scene.argsOf('setInput').where((a) => a.containsKey('ext')).length,
+        1,
+        reason: 'ext 한 번뿐',
+      );
     });
 
     testWidgets('손잡이를 잡은 채 두 번째 손가락이 닿으면 확대가 우선, 이동은 멈춘다', (tester) async {

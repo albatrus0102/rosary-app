@@ -364,6 +364,7 @@
     setInput: function (o) {
       var c = App.ctl; if (!c || !o) return;
       if (o.ext !== undefined) { c.ext = !!o.ext; if (c.ext) c.setMoveZone(false); }
+      if (o.stick) c.setStick(o.stick.cx, o.stick.cy, o.stick.r);   // 앱이 그린 이동 손잡이 원(CSS px)
       if (o.pinch !== undefined) c.extPinch = !!o.pinch;
       if (o.k !== undefined) c.pinchBy(o.k);
     },
@@ -684,6 +685,7 @@
     if (App.view && (App.view.active || App.view.parked)) {
       var busy = false;
       try { busy = App.view.frame(dt); } catch (e) { if (console && console.error) console.error('[church] view frame', e); }
+      if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }
       if (busy) requestAnimationFrame(loop); else App.rafOn = false;
       return;
     }
@@ -712,6 +714,7 @@
     var gq = PH ? PH.gpuBegin() : null, tr = PH ? performance.now() : 0;
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
     if (PH) { PH.gpuEnd(gq); PH.frame(raw, performance.now() - tj, performance.now() - tr); }
+    if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }   // 앱의 입장 화면을 걷는 신호
     // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).
     var seatedNow = App.me.mode === 'seated' ? 1 : 0;
     if (chg) { App.quality = chg; post({ e: 'perf', fps: Math.round(1 / Math.max(raw, 0.001)), tier: App.R.tier, sat: seatedNow, a: 1 }); }

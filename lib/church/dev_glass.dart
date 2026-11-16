@@ -125,7 +125,7 @@ class DevGlassBadge extends StatelessWidget {
         final text = Theme.of(context).textTheme.labelMedium;
         return IgnorePointer(
           child: Align(
-            alignment: const Alignment(0, -0.52),
+            alignment: Alignment.centerLeft,
             child: Semantics(
               label: s.label,
               container: true,

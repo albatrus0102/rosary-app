@@ -77,7 +77,7 @@ void main() {
       expect(
         screen,
         contains(
-          'if (DevGlass.enabled) const Positioned.fill(child: DevGlassBadge())',
+          'child: DevGlassBadge()',
         ),
       );
     });

@@ -424,7 +424,9 @@ class ChurchTopActions extends StatelessWidget {
   }
 }
 
-/// 접힌 메뉴: 금색 테두리의 작은 단추 하나(48dp). 누르면 도구 줄(소리·아바타·인사·가기)이 펼쳐진다.
+/// 접힌 메뉴: 도구 줄이 줄어든 모습(같은 어두운 알약 + 흐린 소리·아바타·인사 아이콘 + 펼치기 화살표).
+/// 아무것도 안 보이는 단추가 아니라 '이 줄이 접혀 있다'고 읽히므로, 누르면 펼쳐진다는 것이 바로 보인다.
+/// 알약 전체가 하나의 누르는 자리(높이 48dp)다.
 class ChurchHudMenuButton extends StatelessWidget {
   const ChurchHudMenuButton({super.key, required this.onPressed});
 
@@ -433,6 +435,7 @@ class ChurchHudMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final faint = scheme.onSurfaceVariant.withValues(alpha: 0.55);
     return Semantics(
       button: true,
       label: '메뉴 펼치기',
@@ -441,16 +444,40 @@ class ChurchHudMenuButton extends StatelessWidget {
         message: '메뉴 펼치기',
         child: Material(
           color: ChurchHudStyle.surface(scheme),
-          shape: CircleBorder(side: ChurchHudStyle.border(scheme)),
+          shape: ChurchHudStyle.bar(scheme),
           clipBehavior: Clip.antiAlias,
           elevation: ChurchHudStyle.elevation,
           child: InkWell(
             key: const ValueKey('hud-expand'),
             onTap: onPressed,
-            child: SizedBox(
-              width: 48,
-              height: 48,
-              child: Icon(Icons.menu, size: 24, color: scheme.primary),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+              child: Padding(
+                padding: const EdgeInsets.only(left: AppSpace.sm),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final i in const [
+                      Icons.volume_up_outlined,
+                      Icons.face_outlined,
+                      Icons.waving_hand_outlined,
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSpace.xs),
+                        child: Icon(i, size: 18, color: faint),
+                      ),
+                    SizedBox(
+                      width: 40,
+                      height: 48,
+                      child: Icon(
+                        Icons.chevron_left,
+                        size: 28,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -740,6 +767,7 @@ class ChurchMoveZone extends StatefulWidget {
     this.onTap,
     this.onTouchDown,
     this.onPinch,
+    this.onZone,
     this.rightSide = false,
     this.insets = EdgeInsets.zero,
   });
@@ -760,6 +788,10 @@ class ChurchMoveZone extends StatefulWidget {
 
   /// 앱이 대신 처리하는 두 손가락 확대. `on`: 시작(true)/끝(false), `k`: 거리 변화 배율(>1 벌림).
   final void Function({required bool on, double? k})? onPinch;
+
+  /// 손잡이 원의 실제 자리(이 위젯 좌표 = 웹 화면 좌표)가 정해지거나 바뀔 때(처음·펴고 접기·안전 영역 변화) 부른다.
+  /// 웹은 이 원 안만 이동 영역으로 알고, 나머지 화면은 시점 끌기·확대에 쓴다.
+  final void Function(Offset center, double radius)? onZone;
 
   /// 손잡이 지름(120~140dp).
   final double size;
@@ -801,6 +833,16 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   Timer? _pinchTimer;
 
   Size _area = Size.zero;
+  (Offset, double)? _zoneSent;
+
+  void _syncZone() {
+    final z = (_center, _radius);
+    if (_zoneSent == z) return;
+    _zoneSent = z;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _zoneSent == z) widget.onZone?.call(z.$1, z.$2);
+    });
+  }
 
   double get _radius => widget.size / 2;
 
@@ -961,6 +1003,7 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
     return LayoutBuilder(
       builder: (context, c) {
         _area = c.biggest;
+        _syncZone();
         return Listener(
           // 모든 손가락을 지켜보되(두 손가락 판정), 원 밖의 터치는 아래 웹 장면으로 지나가게 둔다.
           behavior: HitTestBehavior.translucent,

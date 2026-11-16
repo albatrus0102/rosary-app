@@ -8,6 +8,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'church_diagnostics.dart';
+import 'church_theme.dart';
 import 'dev_glass.dart';
 
 export 'church_diagnostics.dart';
@@ -27,6 +28,8 @@ sealed class SceneEvent {
       switch (j['e']) {
         case 'ready':
           return const SceneReady();
+        case 'firstFrame':
+          return const SceneFirstFrame();
         case 'near':
           final seat = j['seat'];
           final candle = j['candle'];
@@ -209,8 +212,15 @@ sealed class SceneEvent {
   }
 }
 
+/// 페이지(HTML)가 다 읽혔다. 장면은 아직 없다 — `init` 을 받아야 짓기 시작한다.
 class SceneReady extends SceneEvent {
   const SceneReady();
+}
+
+/// 장면의 첫 프레임을 그렸다(웹 `firstFrame`). 이때까지 앱은 입장 화면을 덮어 둔다
+/// (장면을 짓는 3~4초 동안 웹뷰가 빈 흰 화면으로 보이던 문제).
+class SceneFirstFrame extends SceneEvent {
+  const SceneFirstFrame();
 }
 
 /// 가까이 있는 것. [seat]은 앉을 수 있는 빈 좌석, [candle]은 촛불 슬롯,
@@ -495,6 +505,7 @@ abstract class ChurchSceneController {
   final StreamController<SceneEvent> _events =
       StreamController<SceneEvent>.broadcast();
   final ValueNotifier<SceneLoad> _load = ValueNotifier(SceneLoad.loading);
+  final ValueNotifier<bool> _firstFrame = ValueNotifier(false);
   final List<(String, Map<String, Object?>)> _queue = [];
   bool _initDone = false;
   bool _disposed = false;
@@ -504,6 +515,9 @@ abstract class ChurchSceneController {
 
   /// 로딩/오류 상태(오류면 화면이 다시 시도 버튼을 보여 준다).
   ValueListenable<SceneLoad> get loadState => _load;
+
+  /// 장면이 첫 프레임을 그렸는가. false 인 동안 화면은 '성당에 들어가는 중' 입장 화면으로 덮는다.
+  ValueListenable<bool> get firstFrame => _firstFrame;
 
   bool get isDisposed => _disposed;
   bool get initDone => _initDone;
@@ -524,6 +538,7 @@ abstract class ChurchSceneController {
     _initDone = false;
     _queue.clear();
     _load.value = SceneLoad.loading;
+    _firstFrame.value = false;
   }
 
   /// 구현체가 웹 메시지/이벤트를 받았을 때 부른다.
@@ -531,6 +546,7 @@ abstract class ChurchSceneController {
   void dispatch(SceneEvent e) {
     if (_disposed) return;
     if (e is SceneReady) _load.value = SceneLoad.ready;
+    if (e is SceneFirstFrame) _firstFrame.value = true;
     _events.add(e);
   }
 
@@ -546,7 +562,9 @@ abstract class ChurchSceneController {
       // 걷기 입력·탭·걷기 취소는 오래된 값이 의미가 없으니 쌓지 않는다.
       if (method == 'setJoystick' ||
           method == 'tapAt' ||
-          (method == 'setInput' && !args.containsKey('ext')) ||
+          (method == 'setInput' &&
+              !args.containsKey('ext') &&
+              !args.containsKey('stick')) ||
           method == 'cancelWalk' ||
           method == 'resetView' ||
           method == 'endView') {
@@ -693,6 +711,12 @@ abstract class ChurchSceneController {
   /// 두 손가락 = 확대/축소로만 쓰고 자기 스틱(왼쪽 절반)을 만들지 않는다.
   Future<void> setAppStick() => _call('setInput', {'ext': true});
 
+  /// 앱이 그린 이동 손잡이 원(웹 화면 좌표 = 논리 픽셀)을 웹에 알린다. 웹은 이 원 밖의 터치를 모두
+  /// 시점 끌기·확대로 쓴다. 접는 화면을 펴고 접을 때·안전 영역이 바뀔 때마다 다시 보낸다.
+  Future<void> setStickZone(double cx, double cy, double r) => _call('setInput', {
+    'stick': {'cx': cx, 'cy': cy, 'r': r},
+  });
+
   /// 앱이 대신 처리하는 두 손가락 확대(손가락 하나가 손잡이 위에 있어 웹은 한 손가락만 보는 경우).
   /// [on]인 동안 웹은 한 손가락 끌기로 시점을 돌리지 않는다. [k]는 손가락 사이 거리의 변화 배율(>1 벌림).
   Future<void> appPinch({required bool on, double? k}) =>
@@ -757,6 +781,7 @@ abstract class ChurchSceneController {
     _queue.clear();
     _events.close();
     _load.dispose();
+    _firstFrame.dispose();
   }
 }
 
@@ -790,7 +815,8 @@ class WebViewChurchSceneController extends ChurchSceneController {
     _controller = c;
     c
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
+      // 흰 화면 방지: 장면을 짓는 동안 웹뷰 바탕이 투명/흰색으로 비치지 않게 성당 먹색으로 칠한다.
+      ..setBackgroundColor(ChurchTheme.scheme.surface)
       ..addJavaScriptChannel(
         'FlutterChurch',
         onMessageReceived: (m) {
@@ -905,8 +931,15 @@ class FakeChurchSceneController extends ChurchSceneController {
     calls.add((method, args));
   }
 
+  /// true 면 [SceneReady] 직후 첫 프레임([SceneFirstFrame])도 온 것으로 친다(입장 화면 덮개가 곧바로 걷힌다).
+  /// 입장 화면을 시험할 때만 false 로 둔다.
+  bool autoFirstFrame = true;
+
   /// 웹에서 온 이벤트를 흉내 낸다.
-  void emit(SceneEvent e) => dispatch(e);
+  void emit(SceneEvent e) {
+    dispatch(e);
+    if (e is SceneReady && autoFirstFrame) dispatch(const SceneFirstFrame());
+  }
 
   void failLoad() => setLoadError();
 

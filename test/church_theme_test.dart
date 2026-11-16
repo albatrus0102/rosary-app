@@ -152,7 +152,7 @@ void main() {
         // 불러오는 동안의 바탕도 성당 테마의 먹색.
         final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
         expect(scaffold.backgroundColor, ChurchTheme.scheme.surface);
-        expect(find.text('성당 문을 여는 중…'), findsOneWidget);
+        expect(find.text('성당에 들어가는 중…'), findsOneWidget);
         scene.emit(const SceneReady());
         await tester.pump();
 

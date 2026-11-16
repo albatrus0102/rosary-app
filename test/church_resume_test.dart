@@ -129,6 +129,7 @@ Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _pumpScreen(
   setView(tester, const Size(400, 800));
   SharedPreferences.setMockInitialValues(prefs);
   final settings = await AppSettings.load();
+  settings.churchHudCollapsed = false; // 도구 줄을 눌러야 하는 시험이 많아 펼쳐 둔다(앱 기본값은 접힘)
   settings.churchAvatarChosen = true;
   final net = FakeChurchNet();
   final scene = FakeChurchSceneController();
@@ -718,7 +719,7 @@ void main() {
       expect(made, hasLength(1));
       final fresh = made.single;
       expect(find.byKey(const ValueKey('fake-scene')), findsOneWidget);
-      expect(find.text('성당 문을 여는 중…'), findsOneWidget);
+      expect(find.text('성당에 들어가는 중…'), findsOneWidget);
       fresh.emit(const SceneReady());
       await _p(tester);
       await _p(tester);

@@ -733,6 +733,8 @@ void main() {
       await _settle(tester);
       scene.emit(const SceneReady());
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400)); // 입장 화면 덮개가 걷히는 시간
+      await tester.pump();
       expect(settings.churchId, 'milan');
       expect(net.connectedIds.last, 'milan');
       expect(find.text(ChurchCatalog.byId['milan']!.nameKo), findsOneWidget);

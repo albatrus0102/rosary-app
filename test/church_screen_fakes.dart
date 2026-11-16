@@ -80,10 +80,15 @@ class ChurchHarness {
   final FakeChurchSceneController scene;
 }
 
-Future<AppSettings> loadSettings({bool avatarChosen = true}) async {
+Future<AppSettings> loadSettings({
+  bool avatarChosen = true,
+  // 앱의 기본값은 '접힘'이지만, 대부분의 시험은 도구 줄을 눌러야 하므로 기본으로 펼쳐 둔다.
+  bool hudCollapsed = false,
+}) async {
   SharedPreferences.setMockInitialValues({});
   final s = await AppSettings.load();
   s.churchAvatarChosen = avatarChosen;
+  s.churchHudCollapsed = hudCollapsed;
   return s;
 }
 
@@ -110,9 +115,10 @@ Future<ChurchHarness> pumpChurch(
   Size size = const Size(400, 800),
   double textScale = 1.0,
   Widget Function(BuildContext, dynamic, dynamic)? prayerScreenBuilder,
+  bool hudCollapsed = false,
 }) async {
   setView(tester, size);
-  final settings = await loadSettings();
+  final settings = await loadSettings(hudCollapsed: hudCollapsed);
   final net = FakeChurchNet();
   final scene = FakeChurchSceneController();
   await tester.pumpWidget(

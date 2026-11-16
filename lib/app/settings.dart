@@ -139,7 +139,7 @@ class AppSettings extends ChangeNotifier {
       ChurchCamDist.normal,
     );
     _churchCamFollow = _prefs.getBool(_kChurchCamFollow) ?? true;
-    _churchHudCollapsed = _prefs.getBool(_kChurchHudCollapsed) ?? false;
+    _churchHudCollapsed = _prefs.getBool(_kChurchHudCollapsed) ?? true;
     _churchStickRight = _prefs.getBool(_kChurchStickRight) ?? false;
     ChurchDiagnostics.perfHud.value = _churchPerfHud;
     _prayerPosture = _enumByName(
