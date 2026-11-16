@@ -268,7 +268,7 @@
     var cupMat = new T.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.12, metalness: 0.05, clearcoat: 0.9, transparent: true, opacity: 0.86 });
     cupMat.onBeforeCompile = function (sh) {
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aGlow;\nvarying float vGlow;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlow = aGlow;');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * vGlow * 0.85;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;').replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * vColor.rgb * vGlow * 1.25;');
     };
     var cups = new T.InstancedMesh(cupGeo, cupMat, Math.max(1, nSlots));
     var cupGlow = new T.InstancedBufferAttribute(new Float32Array(Math.max(1, nSlots)), 1);
@@ -277,7 +277,7 @@
     // 봉헌초 색(번호는 서버·저장소와 같아 바꾸지 않는다): 0 흰/투명 1 루비 빨강 2 황금 노랑 3 코발트 파랑 4 에메랄드 초록 5 로즈 분홍 6 보라 7 호박. 값 = 컵(유리)색. 촛농은 항상 상아색.
     // 색마다 정해진 뜻은 붙이지 않는다(가톨릭에 색-지향 규정 없음).
     var CANDLE_COLORS = [0xe4ecee, 0xc01c34, 0xf2b929, 0x2c62d2, 0x1f9d5c, 0xea7aa2, 0x8b5bd4, 0xe58a1f];
-    var CUP_DEFAULT = 0xc01c34, WAX_IVORY = 0xfff3dc, DIM = 0.5;
+    var CUP_DEFAULT = 0xc01c34, CUP_EMPTY = 0x9aa4a8, WAX_IVORY = 0xfff3dc, DIM = 0.5;
     function dimC(hex, k) { tc.setHex(hex); tc.multiplyScalar(k); return tc; }
     var slotY0 = [], floats = [], tv = new T.Vector3(), CANDLE_CHECK = 0;
     for (i = 0; i < nSlots; i++) {
@@ -285,7 +285,7 @@
       slotY0[i] = floorH + slots[i].y;
       m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z);
       if (slots[i].float) { floats.push(i); m4.copy(zeroM); }   // 물 위에 뜬 초: 붉은 유리 받침 없이 납작한 초(원반)만 뜬다
-      cups.setMatrixAt(i, m4); cups.setColorAt(i, dimC(CUP_DEFAULT, DIM));
+      cups.setMatrixAt(i, m4); cups.setColorAt(i, dimC(CUP_EMPTY, 0.38));
       candles.setMatrixAt(i, zeroM); candles.setColorAt(i, tc.setHex(0xffffff));
     }
     cups.instanceMatrix.needsUpdate = true; if (cups.instanceColor) cups.instanceColor.needsUpdate = true;
@@ -360,7 +360,7 @@
       delete lit[s]; litCount--;
       if (mineMap[s]) { delete mineMap[s]; saveMine(); }
       candles.setMatrixAt(s, zeroM); candles.instanceMatrix.needsUpdate = true;
-      cups.setColorAt(s, dimC(oc >= 0 ? CANDLE_COLORS[oc] : CUP_DEFAULT, DIM)); cups.instanceColor.needsUpdate = true;
+      cups.setColorAt(s, (oc >= 0 ? dimC(CANDLE_COLORS[oc], DIM) : dimC(CUP_EMPTY, 0.38))); cups.instanceColor.needsUpdate = true;
       cupGlow.setX(s, 0); cupGlow.needsUpdate = true;
       fb.clear(s);
     }
