@@ -96,7 +96,7 @@
       ctx.boxAABB({ x0: -3.3, x1: 3.3, z0: Z0, z1: Z0 + 0.12, y0: SY, y1: SY + 6.0, surf: 'marble_beige' });
       ctx.boxAABB({ x0: -3.3, x1: -3.16, z0: Z0, z1: Z0 + 0.16, y0: SY, y1: SY + 6.0, color: GOLD });
       ctx.boxAABB({ x0: 3.16, x1: 3.3, z0: Z0, z1: Z0 + 0.16, y0: SY, y1: SY + 6.0, color: GOLD });
-      ctx.crucifix({ x: 0, y: SY + 2.9, z: Z0 + 0.3, h: 3.4, ry: 0 });
+      ctx.crucifix({ x: 0, y: SY + 2.9, z: Z0 + 0.3, h: 3.4, ry: 0, scan: true });   // 실물 스캔 십자고상(scan3d.js, 채색 목조 — 대용)
       ctx.altar({ x: 0, z: -17, y: SY, w: 2.6, d: 1.1, h: 1.0 });
       ctx.pulpit({ x: -4.6, z: -16, y: SY, ry: 0, style: 'ambo' });
       ctx.tabernacle({ x: 5, z: -18.4, y: SY, lamp: true });

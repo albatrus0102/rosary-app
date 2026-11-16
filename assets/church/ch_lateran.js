@@ -511,9 +511,15 @@
           // 충돌체(피어 전체)
           ctx.addCollider({ x0: Math.min(xf - s * 0.0, xb), x1: Math.max(xf - s * 0.0, xb), z0: zA, z1: zBb });
           // 사도상
-          var kind = APOS[String(s)][k];
+          var kind = APOS[String(s)][s > 0 ? 5 - k : k];   // 오른쪽 표는 익랑→입구 순(k=0 은 입구 쪽 피어) — 바오로가 익랑 쪽 첫 벽감(lateran.md §3)
           pedestal(s, zp);
-          statue(xf + s * 0.55, zp, PH, -s, 0, 2.44, kind);
+          // (T-80) 익랑 쪽 첫 벽감의 베드로·바오로만 실물 스캔 입상(티니에츠 17세기 목조 상의 스캔, CC0 — 대용, 흰 대리석 재질)으로.
+          // 나머지 열 사도는 절차 생성 그대로. 스캔을 못 세우면 같은 자리에 절차 생성 상.
+          var sk = kind === 'keys' ? 'st_peter' : (kind === 'sword' ? 'st_paul' : null);
+          (function (xs, zs, kd) {
+            var draw = function () { statue(xs, zs, PH, -s, 0, 2.44, kd); };
+            if (sk) ctx.scan({ key: sk, x: xs - s * 0.04, y: PH, z: zs, ry: Math.atan2(-s, 0), h: 2.44, name: 'lateran_' + sk }, draw); else draw();
+          })(xf + s * 0.55, zp, kind);
           ctx.addGlow({ x: xf + s * 0.4, y: 3.0, z: zp, size: 1.3, color: 0xffd9a0, kind: 'lamp' });
         }
         mark('side-piers');

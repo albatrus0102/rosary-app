@@ -360,7 +360,7 @@
         ctx.boxAABB({ x0: xm - 1.1, x1: xm + 1.1, z0: CHZ1, z1: CHZ1 + 0.08, y0: SY + 1.35, y1: SY + 4.3, color: C.gold });
         if (crucifixCh) {
           ctx.boxAABB({ x0: xm - 0.95, x1: xm + 0.95, z0: CHZ1, z1: CHZ1 + 0.1, y0: SY + 1.45, y1: SY + 4.2, color: 0x2a3550 });
-          ctx.crucifix({ x: xm, y: SY + 1.3, z: CHZ1 + 0.2, h: 2.8, glow: false });
+          ctx.crucifix({ x: xm, y: SY + 1.3, z: CHZ1 + 0.2, h: 2.8, glow: false, scan: true });   // 실물 스캔 채색 목조 십자고상(scan3d.js — 성 비르지타의 14세기 십자고상이 아닌 대용)
         } else {
           var art = [0x7a3a2e, 0, 0x8a5a2e, 0x3e5a3a][j];
           ctx.boxAABB({ x0: xm - 0.95, x1: xm + 0.95, z0: CHZ1, z1: CHZ1 + 0.1, y0: SY + 1.45, y1: SY + 4.2, color: art });
@@ -818,9 +818,13 @@
         ctx.box({ x: x, y: 0, z: -13.2, w: 1.5, h: 0.35, d: 1.5, color: 0xdcd3bf });
         ctx.box({ x: x, y: 0.35, z: -13.2, w: 1.1, h: 1.35, d: 1.1, color: 0xd8d1c1 });
         ctx.box({ x: x, y: 1.7, z: -13.2, w: 1.25, h: 0.12, d: 1.25, color: C.gold });
-        ctx.statue({ x: x, y: 1.82, z: -13.2, h: 2.5, kind: 'saint', robe: 0xdbd5c7, mantle: 0xcfc7b6, ry: 0, halo: false });
-        if (s[1] === 'paul') ctx.box({ x: x + 0.38, y: 2.5, z: -13.0, w: 0.06, h: 1.4, d: 0.06, color: 0xaaa9a4 });
-        else { ctx.box({ x: x + 0.34, y: 2.45, z: -13.0, w: 0.22, h: 0.06, d: 0.06, color: C.gold }); ctx.box({ x: x + 0.44, y: 2.35, z: -13.0, w: 0.06, h: 0.18, d: 0.06, color: C.gold }); }
+        // (T-80) 실물 스캔 입상(티니에츠 17세기 목조 성 베드로·성 바오로의 스캔, CC0 — 이 대성전의 실제 조각이 아닌 대용, 흰 대리석 재질).
+        // 신랑(+z)을 본다. 스캔을 못 세우면 예전 절차 생성 상 + 지물.
+        ctx.scan({ key: s[1] === 'paul' ? 'st_paul' : 'st_peter', x: x, y: 1.82, z: -13.2, ry: 0, h: 2.5, name: 'stpaul_' + s[1] }, function () {
+          ctx.statue({ x: x, y: 1.82, z: -13.2, h: 2.5, kind: 'saint', robe: 0xdbd5c7, mantle: 0xcfc7b6, ry: 0, halo: false });
+          if (s[1] === 'paul') ctx.box({ x: x + 0.38, y: 2.5, z: -13.0, w: 0.06, h: 1.4, d: 0.06, color: 0xaaa9a4 });
+          else { ctx.box({ x: x + 0.34, y: 2.45, z: -13.0, w: 0.22, h: 0.06, d: 0.06, color: C.gold }); ctx.box({ x: x + 0.44, y: 2.35, z: -13.0, w: 0.06, h: 0.18, d: 0.06, color: C.gold }); }
+        });
         ctx.addCollider({ x0: x - 0.85, x1: x + 0.85, z0: -14.05, z1: -12.35 });
       });
 

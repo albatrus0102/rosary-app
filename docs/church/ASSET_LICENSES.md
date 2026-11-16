@@ -241,6 +241,22 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 - 쓰는 성당: 우리 본당·라테라노·성 바오로·밀라노·피렌체·당고개·성 베드로(제대 위). 명동은 한복 그림 성상, 마조레는 성화 사진 그대로. 위 'AI 생성 성모상 그림' 중 푸른 망토·흰 돌 2장은 3D 를 못 읽을 때의 예비로만 남는다.
 - 원본 glb(16.9MB, `art/statues/meshy/marian_serenity_meshy_orig.glb`)는 `.gitignore` — 저장소에는 올리지 않는다.
 
+## 성상 3D 스캔 — SMK · Virtual Museums of Małopolska · noe-3d.at (2026-11-16 추가, T-80)
+
+`assets/church/scan3d_<키>.js` 5개(합계 ≈ 1.0MB, deflate ≈ 0.65MB) + 불러오기 `scan3d.js`. 실물 조각의 3D 스캔을 줄이고(meshopt) 재질을 바꿔(흰 대리석 / 정점 색) 쓴다. 자세히: `licenses/STATUE_SCANS.md`, 근거: `docs/church/STATUE_SOURCES.md`.
+
+| 키 | 쓰는 곳 | 만든이 | 라이선스 | 원본 |
+|---|---|---|---|---|
+| `pieta` | 성 베드로 피에타 경당(실물의 주형 — '피에타(미켈란젤로)') | SMK – Statens Museum for Kunst | Public Domain Mark 1.0 | https://open.smk.dk/artwork/image/KAS115 |
+| `crucifix` | 우리 본당·피렌체·명동·성 바오로 십자가 경당의 십자고상(대용) | Virtual Museums of Małopolska (Museum of the Biecz Land) | CC0 1.0 | https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a |
+| `st_peter` | 라테라노 벽감·성 바오로 계단의 성 베드로 상(대용) | Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec) | CC0 1.0 | https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751 |
+| `st_paul` | 라테라노 벽감·성 바오로 계단의 성 바오로 상(대용) | Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec) | CC0 1.0 | https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca |
+| `angel` | 명동 주제대 양옆 천사상 2(대용) | noe-3d.at | CC BY 4.0 | https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b |
+
+- 변경: 축소·재질 변경(삼각형 수 줄임, 양자화·압축, 질감 대신 흰 대리석 재질 또는 정점 색). 앱 '성화 · 음악 출처' → '성당 안 성상(3D 스캔)'에 제목·만든이·원본 주소·라이선스·변경을 적는다.
+- 조각 자체: 모두 작가 사후 70년이 지난 15~18세기 작품(피에타 1498–99). 대용은 실제 작품 이름을 붙이지 않는다.
+- 스캔을 못 읽으면 예전 그림(피에타 사진 판 — 위 '성당 안 진본 성화')이나 절차 생성 상이 그 자리에 선다.
+
 ## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
 
 - **번들에 더한 사진·그림·질감 파일: 없음.** 성당의 모든 표면(황토 미장·쪼갠 돌·마루 2종·불 켜진 한지·옹기 조각 벽·분홍 화강암·신자석 나무)은

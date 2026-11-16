@@ -67,6 +67,23 @@ class ArtCreditsScreen extends StatelessWidget {
                     children: [for (final c in churchArtCredits) tile(c)],
                   ),
                 ),
+                const SectionHeader('성당 안 성상(3D 스캔)'),
+                Text(
+                  '실물 조각을 3D로 스캔한 모형입니다. 화면에 맞게 삼각형 수를 줄이고(축소) 재질을 바꿨습니다. '
+                  "'대용'이라고 적은 것은 그 성당에 실제로 있는 조각이 아니라 비슷한 다른 작품입니다.",
+                  key: const ValueKey('statue-scan-disclosure'),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpace.xs),
+                Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  child: Column(
+                    children: [for (final c in statueScanCredits) tile(c)],
+                  ),
+                ),
                 const SectionHeader('기도 배경'),
                 Card.filled(
                   margin: EdgeInsets.zero,

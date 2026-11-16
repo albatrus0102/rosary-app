@@ -184,7 +184,7 @@ const List<ArtCredit> churchArtCredits = [
     license: 'CC BY 4.0(https://creativecommons.org/licenses/by/4.0/)',
   ),
   ArtCredit(
-    use: '성 베드로 대성전 · 피에타 경당',
+    use: '성 베드로 대성전 · 피에타 경당(3D 스캔을 못 읽을 때의 예비 사진)',
     credit: '미켈란젤로 〈피에타〉(1498–99). '
         '사진: Gary Todd, Wikimedia Commons "Michelangelo\'s Pieta, St. Peter\'s Basilica, Vatican City (48466681337).jpg" '
         '(https://commons.wikimedia.org/wiki/File:Michelangelo%27s_Pieta,_St._Peter%27s_Basilica,_Vatican_City_(48466681337).jpg). '
@@ -210,6 +210,53 @@ const List<ArtCredit> churchArtCredits = [
     credit: 'AI 생성 성모상(ChatGPT, 사용자 제공) 그림 3점: 흰 돌 성모, 푸른 망토의 원죄 없으신 성모, '
         '한복 차림에 묵주를 든 성모. 실제 조각 작품을 찍은 사진이 아닙니다. 크기를 줄임.',
     license: 'AI 생성 이미지(비상업 앱에서 사용)',
+  ),
+];
+
+/// 성당 안 성상 3D 스캔(실물 조각을 3D 로 스캔한 모형, `assets/church/scan3d_<키>.js`).
+/// 근거: licenses/STATUE_SCANS.md, docs/church/STATUE_SOURCES.md. 스캔의 라이선스와 조각 자체의 저작권은
+/// 따로 확인했다(모두 작가 사후 70년이 지난 17~18세기 이전 작품). '대용'은 그 성당의 실제 조각이 아닌 다른 작품이다.
+/// CC0·퍼블릭 도메인은 표기 의무가 없지만 박물관 자료라 함께 적는다. CC BY 는 저작자·라이선스 주소·원본 주소·변경을 적는다.
+const List<ArtCredit> statueScanCredits = [
+  ArtCredit(
+    use: '성 베드로 대성전 · 피에타 경당 — 피에타(미켈란젤로)',
+    credit: '미켈란젤로 〈피에타〉(1498–99)의 석고 주형 3D 스캔 "Michelangelo, Pietà"(KAS115). '
+        '스캔: SMK – Statens Museum for Kunst(덴마크 국립미술관, 왕립 석고 주형 컬렉션). '
+        '출처: https://open.smk.dk/artwork/image/KAS115. '
+        '변경: 축소·재질 변경(삼각형 400,016 → 36,000, 흰 대리석 재질을 입힘).',
+    license: 'Public domain (Public Domain Mark 1.0, https://creativecommons.org/publicdomain/mark/1.0/)',
+  ),
+  ArtCredit(
+    use: '십자고상(우리 본당 · 피렌체 대성당 · 명동대성당 · 성 바오로 대성전 십자가 경당) — 그 성당의 실제 십자고상이 아닌 대용',
+    credit: '"“Crucified Christ” from St. Jadwiga’s hospital"(채색 목조 십자고상, 비에치 지방 박물관 AH/1273). '
+        '스캔: Virtual Museums of Małopolska (Museum of the Biecz Land). '
+        '출처: https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a. '
+        '변경: 축소·재질 변경(삼각형 232,154 → 16,000, 질감을 정점 색으로 바꿈).',
+    license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
+  ),
+  ArtCredit(
+    use: '성 베드로 상(라테라노 대성전 신랑 벽감 · 성 바오로 대성전 계단 옆) — 대용',
+    credit: '"Saint Peter"(17세기 중반 크라쿠프 금박 목조상, 티니에츠 베네딕도회 수도원 박물관 RZ/13/2012). '
+        '스캔: Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec). '
+        '출처: https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751. '
+        '변경: 축소·재질 변경(삼각형 250,192 → 20,000, 흰 대리석 재질을 입힘).',
+    license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
+  ),
+  ArtCredit(
+    use: '성 바오로 상(라테라노 대성전 신랑 벽감 · 성 바오로 대성전 계단 옆) — 대용',
+    credit: '"Saint Paul the Apostle"(17세기 중반 크라쿠프 금박 목조상, 티니에츠 베네딕도회 수도원 박물관 RZ/12/2012). '
+        '스캔: Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec). '
+        '출처: https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca. '
+        '변경: 축소·재질 변경(삼각형 249,784 → 20,000, 흰 대리석 재질을 입힘).',
+    license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
+  ),
+  ArtCredit(
+    use: '천사상(명동대성당 주제대 양옆) — 대용',
+    credit: '"Engel"(마리아 란첸도르프 갈바리아의 천사 석상, 18세기 초, 오스트리아). '
+        '스캔: noe-3d.at. '
+        '출처: https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b. '
+        '변경: 축소·재질 변경(삼각형 453,628 → 15,000, 흰 대리석 재질을 입힘, 오른쪽 상은 좌우를 뒤집음).',
+    license: 'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)',
   ),
 ];
 

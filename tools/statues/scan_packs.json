@@ -1,0 +1,95 @@
+{
+  "_doc": "make_scan_pack.mjs 설정. rot = 원본(노드 변환 적용 뒤) → Y 위·앞 +Z 로 돌리는 각(도, X→Y→Z 순). h = 결과 높이(m, 받침 포함). near/far = 목표 삼각형. kind: marble(공용 흰 대리석 재질) | color(질감을 정점 색으로). credit = 앱 출처 화면(lib/domain/art_credits.dart)과 같은 문구.",
+  "packs": [
+    {
+      "key": "pieta",
+      "label_ko": "미켈란젤로 〈피에타〉(성 베드로 대성전 피에타 경당) — 석고 주형 스캔, 흰 대리석 재질.",
+      "src": "smk_KAS115_pieta_michelangelo_small.stl",
+      "kind": "marble",
+      "rot": [0, 0, 0],
+      "h": 1.74,
+      "near": 36000,
+      "far": 8000,
+      "credit": {
+        "title": "Michelangelo, Pietà — plaster cast 3D scan (KAS115)",
+        "author": "SMK – Statens Museum for Kunst (Royal Cast Collection)",
+        "license": "Public Domain (Public Domain Mark 1.0)",
+        "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "url": "https://open.smk.dk/artwork/image/KAS115",
+        "changes": "Simplified (triangle count reduced), material changed to white marble"
+      }
+    },
+    {
+      "key": "crucifix",
+      "label_ko": "십자고상(채색 목조) — 제대·경당 십자고상 대용(특정 작품 아님).",
+      "src": "zenodo_crucified_christ_malopolska.glb",
+      "kind": "color",
+      "rot": [0, 0, 0],
+      "h": 1.0,
+      "near": 16000,
+      "far": 4000,
+      "credit": {
+        "title": "“Crucified Christ” from St. Jadwiga’s hospital",
+        "author": "Virtual Museums of Małopolska (Museum of the Biecz Land)",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "url": "https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a",
+        "changes": "Simplified (triangle count reduced), texture baked to vertex colours"
+      }
+    },
+    {
+      "key": "st_peter",
+      "label_ko": "성 베드로 입상(열쇠) — 대용, 흰 대리석 재질(원본은 17세기 중반 금박 목조, 티니에츠).",
+      "src": "zenodo_saint_peter_tyniec.glb",
+      "kind": "marble",
+      "rot": [0, -90, 0],
+      "h": 2.5,
+      "near": 20000,
+      "far": 5000,
+      "credit": {
+        "title": "Saint Peter",
+        "author": "Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec)",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "url": "https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751",
+        "changes": "Simplified (triangle count reduced), material changed to white marble"
+      }
+    },
+    {
+      "key": "st_paul",
+      "label_ko": "성 바오로 입상(칼과 책) — 대용, 흰 대리석 재질(원본은 17세기 중반 금박 목조, 티니에츠).",
+      "src": "zenodo_saint_paul_tyniec.glb",
+      "kind": "marble",
+      "rot": [0, 0, 0],
+      "h": 2.5,
+      "near": 20000,
+      "far": 5000,
+      "credit": {
+        "title": "Saint Paul the Apostle",
+        "author": "Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec)",
+        "license": "CC0 1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "url": "https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca",
+        "changes": "Simplified (triangle count reduced), material changed to white marble"
+      }
+    },
+    {
+      "key": "angel",
+      "label_ko": "서 있는 천사(바로크, 18세기 초 마리아 란첸도르프 갈바리아) — 제대 양옆 천사상 대용, 흰 대리석 재질.",
+      "src": "zenodo_angel_maria_lanzendorf_noe3d.glb",
+      "kind": "marble",
+      "rot": [0, 0, 0],
+      "h": 1.45,
+      "near": 15000,
+      "far": 4000,
+      "credit": {
+        "title": "Engel",
+        "author": "noe-3d.at",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "url": "https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b",
+        "changes": "Simplified (triangle count reduced), material changed to white marble"
+      }
+    }
+  ]
+}

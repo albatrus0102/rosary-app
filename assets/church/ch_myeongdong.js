@@ -719,7 +719,7 @@
       ctx.altar({ x: 0, z: -14.2, y: PY, w: 2.4, d: 1.0, h: 1.0, style: 'block', color: 0x6a4a30, candles: 2, flowers: false });
       [-1, 1].forEach(function (s) { flowers(s * 2.0, -14.0, PY, 0.85); });
       ctx.pulpit({ x: 1.9, z: -12.2, y: PY, ry: 0, style: 'ambo', color: 0x6a4a30 });
-      ctx.crucifix({ x: 3.5, y: PY + 0.55, z: -13.0, h: 4.4, ry: 0, glow: false });
+      ctx.crucifix({ x: 3.5, y: PY + 0.55, z: -13.0, h: 4.4, ry: 0, glow: false, scan: true });   // 실물 스캔 십자고상(scan3d.js, 채색 목조 — 대용)
       ctx.box({ mat: 'wood', x: 3.5, y: PY, z: -13.0, w: 0.6, h: 0.55, d: 0.6, color: C.wood }); ctx.addCollider({ x: 3.5, z: -13.0, r: 0.5 });
 
       function flowers(x, z, y, sc) {
@@ -733,7 +733,11 @@
         ctx.cyl({ x: s * 3.35, y: PY, z: -28.2, r: 0.34, rTop: 0.28, h: 0.2, seg: 8, color: 0xe9e1d0 });
         ctx.cyl({ x: s * 3.35, y: PY + 0.2, z: -28.2, r: 0.24, h: 0.95, seg: 8, color: 0xf2ebdc });
         ctx.cyl({ x: s * 3.35, y: PY + 1.15, z: -28.2, r: 0.3, rTop: 0.34, h: 0.1, seg: 8, color: 0xe9e1d0 });
-        ctx.statue({ x: s * 3.35, y: PY + 1.25, z: -28.2, ry: -s * 0.5, h: 1.45, kind: 'angel', robe: 0xf4f0e8, mantle: 0xe6dcc6, halo: false });
+        // (T-80) 실물 스캔 천사(18세기 초 바로크 석상, noe-3d.at CC BY 4.0 — 대용, 흰 대리석 재질). 신자 쪽(+z)을 보며 제대 쪽으로 0.5 rad 돌아선다.
+        // 오른쪽은 좌우를 뒤집어 짝을 맞춘다(둘 다 고개를 제대 쪽으로 든다). 스캔을 못 세우면 절차 생성 천사.
+        ctx.scan({ key: 'angel', x: s * 3.35, y: PY + 1.25, z: -28.2, ry: -s * 0.5, h: 1.45, mirror: s > 0, name: 'myeongdong_angel' }, function () {
+          ctx.statue({ x: s * 3.35, y: PY + 1.25, z: -28.2, ry: -s * 0.5, h: 1.45, kind: 'angel', robe: 0xf4f0e8, mantle: 0xe6dcc6, halo: false });
+        });
       });
 
       // 설교대(왼쪽, 첨탑 닫집)

@@ -717,11 +717,20 @@
           if (bapt) { /* 세례반만 */ } else if (pieta) {
             // 피에타 경당(C-15): 미켈란젤로 〈피에타〉 사진 판(위키미디어 공용, 사진 Gary Todd, Public Domain Mark — art_stpeter.js, docs/church/licenses/stpeter.md)을
             // 제대 뒤 벽감에 세우고, 실제처럼 경당 어귀를 방탄유리(옅은 반사)로 막는다. 예전의 상자·원뿔·공으로 만든 조각군은 없앴다(REVERENCE.md).
+            // (T-80) 사진 판 대신 실물 주형 3D 스캔(SMK KAS115, 퍼블릭 도메인 — scan3d_pieta.js, 36k/8k 삼각형, 흰 대리석 재질)을
+            // 제대 위 높은 받침에 세운다(실제처럼 제대 뒤에서 높이 올라앉은 군상, 높이 1.74m = 실물). 스캔을 못 세우면 예전 사진 판.
             var pw = 3.4, phh = pw * 883 / 1024, pyb = 1.26, pxx = AISLE_OUT + 2.86;   // 뒷벽(3.8m) 거의 전체 — 사진 가장자리는 어둡게 눌러 어두운 벽에 녹아든다
-            ctx.box({ x: AISLE_OUT + 2.72, y: 1.08, z: zc, w: 0.34, h: 0.18, d: 3.7, color: 0xe6e0d4, mat: 'gloss' });                      // 받침(제대 뒤 단)
-            var pietaMat = ctx.mats.lambert({ color: 0x2a2623 });
-            ctx.plane({ x: pxx, y: pyb + phh / 2, z: zc, ry: -PI / 2, w: pw, h: phh, mat: pietaMat });
-            artPhoto('pieta', function (tx) { pietaMat.map = tx; pietaMat.color.setHex(0xffffff); pietaMat.emissive = new T.Color(0xffffff); pietaMat.emissiveMap = tx; pietaMat.emissiveIntensity = 0.42; pietaMat.needsUpdate = true; });
+            var PX = AISLE_OUT + 2.42, PB = 1.5;                                                                                              // 군상 가운데(깊이 0.91 → 뒤 끝이 뒷벽 바로 앞) · 받침 윗면
+            if (!ctx.scan({ key: 'pieta', x: PX, y: PB, z: zc, ry: -PI / 2, h: 1.74, mat: 'marbleLit', name: 'pieta_scan' }, pietaPhoto)) ctx.box({ x: AISLE_OUT + 2.72, y: 1.08, z: zc, w: 0.34, h: 0.18, d: 3.7, color: 0xe6e0d4, mat: 'gloss' });   // 받침(제대 뒤 단)
+            else {
+              ctx.box({ x: PX, y: 1.08, z: zc, w: 0.98, h: PB - 1.08 - 0.05, d: 1.95, color: 0xe6e0d4, mat: 'gloss' });                     // 높은 받침(제대 위)
+              ctx.box({ x: PX, y: PB - 0.05, z: zc, w: 1.04, h: 0.05, d: 2.0, color: GOLD_D });                                               // 받침 윗판 금 테
+            }
+            function pietaPhoto() {
+              var pietaMat = ctx.mats.lambert({ color: 0x2a2623 });
+              ctx.plane({ x: pxx, y: pyb + phh / 2, z: zc, ry: -PI / 2, w: pw, h: phh, mat: pietaMat });
+              artPhoto('pieta', function (tx) { pietaMat.map = tx; pietaMat.color.setHex(0xffffff); pietaMat.emissive = new T.Color(0xffffff); pietaMat.emissiveMap = tx; pietaMat.emissiveIntensity = 0.42; pietaMat.needsUpdate = true; });
+            }
             if (ctx._.batches.glassRefl) {   // 방탄유리: 경당 어귀 벽 바로 안쪽(벽이 아치 밖을 가린다)
               var gx = AISLE_OUT + 0.66, gz0 = zc - hz, gz1 = zc + hz;
               ctx._.batches.glassRefl.addTris([gx, 0, gz0, gx, 0, gz1, gx, hh, gz1, gx, 0, gz0, gx, hh, gz1, gx, hh, gz0], 0xffffff, [AISLE_OUT - 3, 2, zc], { vary: 0 });

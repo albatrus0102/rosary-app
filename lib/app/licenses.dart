@@ -39,6 +39,13 @@ void registerFontLicenses() {
           '${c.use}: ${c.credit} (${c.license})',
       ].join('\n\n'),
     );
+    // 성당 안 성상 3D 스캔(SMK·Virtual Museums of Małopolska·noe-3d.at): licenses/STATUE_SCANS.md.
+    yield LicenseEntryWithLineBreaks(
+      const ['성상 3D 스캔(성당 안)'],
+      [
+        for (final c in statueScanCredits) '${c.use}: ${c.credit} (${c.license})',
+      ].join('\n\n'),
+    );
     // 기도 배경 성가(오르간): 퍼블릭 도메인 선율을 앱이 직접 합성한 연주(CC0). licenses/MUSIC.md.
     yield LicenseEntryWithLineBreaks(
       const ['성가(기도 배경 음악)'],
