@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../backup/backup_registry.dart';
 import 'prayer_record.dart';
 import 'prayer_stats_calc.dart';
 
@@ -82,7 +83,26 @@ class PrayerStatsStore extends ChangeNotifier {
     await _persist();
   }
 
+  /// 백업·금고에서 온 기록을 합친다. 이미 있는 id는 건너뛴다(중복 없음). 더한 개수를 돌려준다.
+  /// 저장은 [add]와 같은 줄([_persist])을 탄다.
+  Future<int> mergeRecords(Iterable<PrayerRecord> incoming) async {
+    final ids = {for (final r in _records) r.id};
+    final fresh = [
+      for (final r in incoming)
+        if (r.hasProgress && ids.add(r.id)) r,
+    ];
+    if (fresh.isEmpty) return 0;
+    _records = _normalize([..._records, ...fresh]);
+    _calc = null;
+    notifyListeners();
+    await _persist();
+    return fresh.length;
+  }
+
   /// 모든 기록을 지운다. 호출하는 쪽에서 확인을 먼저 받아야 한다.
+  ///
+  /// 지우기 전에 「일부러 줄였다」 표식을 남긴다(기록 지우기·계정 전환·계정 삭제가 모두 여기를 지난다) —
+  /// 기기 안 금고가 이 줄어듦을 사고로 보고 되살리기를 권하지 않게(`lib/backup/backup_vault.dart`).
   Future<void> clear() async {
     _records = [];
     _calc = null;
@@ -91,8 +111,18 @@ class PrayerStatsStore extends ChangeNotifier {
     if (prefs == null) return;
     _writeChain = _writeChain.then((_) async {
       try {
+        await prefs.setInt(
+          BackupRegistry.intentDropKey,
+          DateTime.now().millisecondsSinceEpoch,
+        );
+      } catch (e) {
+        debugPrint('stats clear: intent mark failed (${e.runtimeType})');
+      }
+      try {
         await prefs.remove(prefsKey);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('stats clear: remove failed (${e.runtimeType})');
+      }
     });
     await _writeChain;
   }

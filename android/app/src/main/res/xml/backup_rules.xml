@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API 30 이하의 자동 백업 범위. data_extraction_rules.xml 과 같은 두 곳만(머리말의 이유 참고). -->
+<full-backup-content>
+    <include domain="file" path="backup_vault" />
+    <include domain="root" path="app_flutter/leader_audio" />
+</full-backup-content>

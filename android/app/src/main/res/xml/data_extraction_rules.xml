@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  안드로이드 자동 백업(구글 계정)·기기 이전(API 31+)에 실을 것. lib/backup/backup_vault.dart 참고.
+
+  <include>를 하나라도 쓰면 시스템은 기본 포함을 끄고 「지정한 것만」 담는다(공식 문서) — 그래서
+  <exclude>를 쓰지 않는다(독서공방 2026-08-20 실측: include + 넓은 exclude 가 빈 백업 세트를 만들었다).
+  - files/backup_vault : 기기 안 금고(설정·기도 기록 사본 — 토큰·기기 id·동의 기록 없음, 등록부 기준).
+    앱을 지웠다 깔거나 새 폰으로 옮기면 돌아오고, 첫 실행에서 「남아 있던 기록을 찾았어요」로 묻는다.
+  - app_flutter/leader_audio : 사용자가 직접 녹음한 선창 음성(예전 기본 백업이 담던 것 — 그대로 지킨다).
+  로그인 세션(키스토어·대체 저장소)·SharedPreferences 원본·분석 기기 id 는 담지 않는다.
+  test/backup_android_rules_test.dart 가 exclude·끝 슬래시 회귀를 막는다.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="backup_vault" />
+        <include domain="root" path="app_flutter/leader_audio" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="backup_vault" />
+        <include domain="root" path="app_flutter/leader_audio" />
+    </device-transfer>
+</data-extraction-rules>

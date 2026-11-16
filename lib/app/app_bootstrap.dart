@@ -13,6 +13,9 @@ import '../auth/auth_service.dart';
 import '../auth/consent_store.dart';
 import '../auth/fake_auth_service.dart';
 import '../auth/supabase_auth_service.dart';
+import '../backup/backup_platform.dart';
+import '../backup/backup_service.dart';
+import '../backup/backup_vault.dart';
 import '../stats/prayer_stats_store.dart';
 import '../sync/prayer_sync.dart';
 import 'app_services.dart';
@@ -46,6 +49,9 @@ Future<AppServices> bootstrapServices() async {
     prefsLoad,
   ).wait;
 
+  // 백업: 기기 안 금고 확인(줄어듦 감지)과 자동 백업 확인은 화면을 막지 않고 뒤에서 돈다.
+  final backup = _startBackup(prefs, settings, stats);
+
   if (!configured) {
     // 개발용: 로그인 없이 열린다. 동의·인증은 가짜이고 업로드는 없다.
     final auth = FakeAuthService();
@@ -59,6 +65,7 @@ Future<AppServices> bootstrapServices() async {
         backend: InMemoryConsentBackend(),
       ),
       backendConfigured: false,
+      backup: backup,
     );
   }
 
@@ -87,6 +94,7 @@ Future<AppServices> bootstrapServices() async {
     consent: consent,
     backendConfigured: true,
     sync: sync,
+    backup: backup,
   );
 
   try {
@@ -117,4 +125,36 @@ Future<AppServices> bootstrapServices() async {
     ),
   )..start();
   return services;
+}
+
+BackupService _startBackup(
+  SharedPreferences prefs,
+  AppSettings settings,
+  PrayerStatsStore stats,
+) {
+  final vault = BackupVault(files: DirVaultFiles(), prefs: prefs);
+  final service = BackupService(
+    prefs: prefs,
+    platform: MethodChannelBackupPlatform(),
+    vault: vault,
+    stats: stats,
+    settings: settings,
+  );
+  unawaited(() async {
+    try {
+      final pkg = await PackageInfo.fromPlatform();
+      final v = '${pkg.version}+${pkg.buildNumber}';
+      service.appVersion = v;
+      vault.appVersion = v;
+    } catch (e) {
+      debugPrint('backup: app version unavailable (${e.runtimeType})');
+    }
+    try {
+      await service.start();
+    } catch (e) {
+      // 금고·자동 백업 시작 실패는 앱을 막지 않는다 — 사유만 남긴다(설정 화면 상태 줄에도 보인다).
+      debugPrint('backup: start failed (${e.runtimeType})');
+    }
+  }());
+  return service;
 }
