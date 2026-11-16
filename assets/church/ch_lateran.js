@@ -8,7 +8,7 @@
   // ---------- 레이아웃(순수 데이터) ----------
   var layout = {
     id: 'lateran', scalePercent: 53,
-    bounds: { x0: -16.4, x1: 16.4, z0: -34.45, z1: 34.45 },
+    bounds: { x0: -16.4, x1: 16.4, z0: -38.45, z1: 34.45 },   // z0: 후진 뒤 주보랑(레오 13세, 19세기) 바깥벽까지
     spawn: { x: 0, z: 32.5, r: 0 },
     // '제대 앞' 자리: 콘페시오가 신랑으로 나와(H-1 B5) 축 위 첫 장애물이 콘페시오 앞 난간이 됐다 → 콘페시오 뒤, 교황 제대 바로 앞(익랑 단 위)을 직접 지정한다
     stations: { altar: { x: 0, z: -6.7 } },
@@ -41,6 +41,9 @@
       var ZE = 34.45, ZT1 = -5.9, ZT0 = -14.4, ZAC = -29.68, ZAP = -34.45, HC = 14.3, TY = 0.3;
       var CFX = 1.75, CFZ = -4.4, CFW = 0.15;              // 콘페시오(B5): 안쪽 x ±CFX, z ZT1…CFZ(신랑으로 1.5 나온다), 벽 두께 CFW
       var ZTC = (ZT0 + ZT1) / 2;                           // 익랑 가운데 z (오르간·성체 제대의 축)
+      // 후진 주보랑(레오 13세가 1880년대 후진을 물리며 낸 둘레 통로): 익랑 뒷벽의 문(성가대석 벽 바로 바깥) → 성가대석 옆 곧은 복도 → 후진을 도는 반원 복도.
+      // 안쪽 벽 = 성가대석 벽 바깥면(x ±AMI) / 후진 벽 바깥면(반지름 AMI), 바깥 벽 x ±AMO / 반지름 AMO. 천장 AMH(후진 창 아래).
+      var AMI = XN + 1, AMO = AMI + 2.5, AMH = TY + 3.45, AMD = { c: AMI + 1.25, w: 2.3, sp: TY + 2.2 };   // AMD: 익랑 뒷벽의 주보랑 문(중심·폭·아치 기공)
       var ZP = [32.4, 25.1, 17.8, 10.5, 3.2, -4.1];       // 신랑 피어 중심 z
       var ZB = [28.75, 21.45, 14.15, 6.85, -0.45];         // 아케이드 아치 중심 z
       // 안쪽·바깥 측랑 사이 각기둥(B2): 신랑 피어의 양 끝마다 → 자유 기둥 10 + 양 끝 벽에 붙은 2 = 한쪽 12
@@ -206,8 +209,9 @@
       var GLASS_PALE = [0xe8eff6, 0xdbe6f1, 0xf3f5f8, 0xd0deec, 0xeaf0f4];
       var GLASS_WARM = [0xf8eed2, 0xf1e2b8, 0xfff5dc, 0xe9d9a8];
       var GLASS_STAIN = [0x2f5db0, 0xc0392b, 0xe6b52e, 0x2f5db0, 0x3a8a5a, 0xe6b52e, 0x7a3fa0];
+      var GLASS_SOFT = [0xf3e6c4, 0xe9d7a6, 0x4f72b0, 0xb5574a, 0xf6edd6, 0xd9b45a, 0x5e8f6c, 0xefe2bc];   // 밝은 호박·크림 바탕에 보석 색 몇 칸
       function winAt(o) {  // 벽 중심면에 유리창 + 틀
-        var a = { x: o.x, y: o.sill, z: o.z, face: o.face, w: o.w, h: o.h, top: o.top || 'round', pattern: o.pattern || 'grid', colors: o.colors || GLASS_PALE, seed: o.seed || 3, frame: true, beam: !!o.beam, beamReach: o.reach || 9 };
+        var a = { x: o.x, y: o.sill, z: o.z, face: o.face, w: o.w, h: o.h, top: o.top || 'round', pattern: o.pattern || 'lancet', colors: o.colors || GLASS_PALE, seed: o.seed || 3, frame: true, beam: !!o.beam, beamReach: o.reach || 9 };
         ctx.window(a);
       }
 
@@ -617,9 +621,10 @@
       // =====================================================================
       wallOpen({ axis: 'z', n0: ZE, n1: ZE + 1.0, u0: -XO - 1.0, u1: XO + 1.0, y0: 0, y1: HC, color: STU, sillStone: MARB, sillIn: 0.1,
         wins: [{ c: 0, sill: 7.2, w: 3.2, h: 3.4, top: 'round' }, { c: -3.8, sill: 7.2, w: 1.3, h: 2.6, top: 'round' }, { c: 3.8, sill: 7.2, w: 1.3, h: 2.6, top: 'round' }] });
-      winAt({ x: 0, z: ZE + 0.5, sill: 7.2, w: 3.2, h: 3.4, top: 'round', face: [0, -1], pattern: 'grid', seed: 3, beam: false, reach: 12 });
-      winAt({ x: -3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'grid', seed: 4 });
-      winAt({ x: 3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'grid', seed: 5 });
+      // 정면 창 3: 예전 'grid'(0.4 m 색 격자 — 기하 자리표시 같다는 사용자 의견)를 다른 창과 같은 'lancet'(큰 칸) + 부드러운 보석 색으로
+      winAt({ x: 0, z: ZE + 0.5, sill: 7.2, w: 3.2, h: 3.4, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, seed: 3, beam: false, reach: 12 });
+      winAt({ x: -3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, seed: 4 });
+      winAt({ x: 3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, seed: 5 });
       [[0, 2.4, 4.7], [-7.97, 1.7, 3.8], [7.97, 1.7, 3.8], [-12, 1.7, 3.4], [12, 1.7, 3.4]].forEach(function (d) {
         var dx = d[0], dw = d[1], dh = d[2], zz = ZE, holy = dx === 12, pc = holy ? 0xb9934a : 0x7b6140;   // x=+12: 성문(밝은 청동 판 + 문 위 십자가)
         B(dx - dw / 2 - 0.25, dx - dw / 2, 0, dh + 0.25, zz - 0.1, zz + 0.05, MARB); B(dx + dw / 2, dx + dw / 2 + 0.25, 0, dh + 0.25, zz - 0.1, zz + 0.05, MARB);
@@ -666,8 +671,16 @@
       // 앞벽(측랑 끝 위)·뒷벽·끝벽 창
       SIDES.forEach(function (s) {
         // 뒷벽 (z=ZT0 .. -16.44), x 4.77..18.3
-        wallOpen({ axis: 'z', n0: ZT0 - 1.0, n1: ZT0, u0: Math.min(s * (XN + 1), s * XT), u1: Math.max(s * (XN + 1), s * XT), y0: 0, y1: HC, color: 0xe2d9c8, sillStone: MARB,
+        // 아래(0…5.0)는 주보랑 문, 위(5.0…HC)는 창 2 — 문과 창이 x 로 겹쳐 두 띠로 나눠 뚫는다
+        wallOpen({ axis: 'z', n0: ZT0 - 1.0, n1: ZT0, u0: Math.min(s * (XN + 1), s * XT), u1: Math.max(s * (XN + 1), s * XT), y0: 0, y1: 5.0, color: 0xe2d9c8,
+          wins: [{ c: s * AMD.c, sill: 0, w: AMD.w, h: AMD.sp, top: 'round' }] });
+        wallOpen({ axis: 'z', n0: ZT0 - 1.0, n1: ZT0, u0: Math.min(s * (XN + 1), s * XT), u1: Math.max(s * (XN + 1), s * XT), y0: 5.0, y1: HC, color: 0xe2d9c8, sillStone: MARB,
           wins: [{ c: s * AEND[0].c, sill: 9.0, w: 1.5, h: 2.4, top: 'round' }, { c: s * AEND[1].c, sill: 9.0, w: 1.5, h: 2.4, top: 'round' }] });   // 창은 익랑 칸(= 측랑) 중심에
+        // 주보랑 문틀: 대리석 아키볼트 + 문설주 띠 + 문 위 금 글귀 판
+        var dl = s * (AMD.c - AMD.w / 2), dr = s * (AMD.c + AMD.w / 2), DX0 = Math.min(dl, dr), DX1 = Math.max(dl, dr);
+        archBand('z', s * AMD.c, AMD.sp, AMD.w / 2, 0.16, ZT0, 1, 0.05, MARB, 10);
+        B(DX0 - 0.16, DX0, TY, AMD.sp, ZT0, ZT0 + 0.05, MARB); B(DX1, DX1 + 0.16, TY, AMD.sp, ZT0, ZT0 + 0.05, MARB);
+        B(s * AMD.c - 0.8, s * AMD.c + 0.8, AMD.sp + AMD.w / 2 + 0.35, AMD.sp + AMD.w / 2 + 0.75, ZT0, ZT0 + 0.04, GOLD2, { vary: 0 });
         [AEND[0].c, AEND[1].c].forEach(function (xx, i) { winAt({ x: s * xx, z: ZT0 - 0.5, sill: 9.0, w: 1.5, h: 2.4, top: 'round', face: [0, 1], seed: 20 + i + (s > 0 ? 3 : 0), colors: GLASS_WARM, pattern: 'lancet' }); });
         // 끝벽
         wallOpen({ axis: 'x', n0: Math.min(s * XT, s * (XT + 1)), n1: Math.max(s * XT, s * (XT + 1)), u0: ZT0, u1: ZT1, y0: 0, y1: HC, color: 0xe2d9c8, sillStone: MARB,
@@ -680,14 +693,17 @@
         // 하부 대리석 판(질감) + 프레스코
         var lowTex = ctx.tex.pattern('stone', { c1: 0xe6d7c8, c2: 0xd6c2b0 });
         var XF3 = AEND[1].c + AEND[1].w / 2 + 0.3;   // 앞벽에서 측랑 아치 바깥의 통벽이 시작하는 x(여기서 익랑 끝까지 징두리·프레스코)
-        ctx.wallFace({ x0: s * XN, z0: ZT0 + 0.01, x1: s * XT, z1: ZT0 + 0.01, y0: TY, y1: 3.2, facing: [0, 1], tex: lowTex, tile: [2.5, 2.9] });
+        // 뒷벽 징두리·프레스코는 주보랑 문(x DX0…DX1) 바깥에만: 문 안쪽(성가대석 쪽 x XN…DX0)은 좁은 띠라 징두리만
+        ctx.wallFace({ x0: s * XN, z0: ZT0 + 0.01, x1: s * (AMD.c - AMD.w / 2 - 0.16), z1: ZT0 + 0.01, y0: TY, y1: 3.2, facing: [0, 1], tex: lowTex, tile: [2.5, 2.9] });
+        ctx.wallFace({ x0: s * (AMD.c + AMD.w / 2 + 0.16), z0: ZT0 + 0.01, x1: s * XT, z1: ZT0 + 0.01, y0: TY, y1: 3.2, facing: [0, 1], tex: lowTex, tile: [2.5, 2.9] });
         ctx.wallFace({ x0: s * XF3, z0: ZT1 - 0.01, x1: s * XT, z1: ZT1 - 0.01, y0: TY, y1: 3.2, facing: [0, -1], tex: lowTex, tile: [2.5, 2.9] });
         ctx.wallFace({ x0: s * (XT - 0.01), z0: ZT0, x1: s * (XT - 0.01), z1: ZT1, y0: TY, y1: 3.2, facing: [-s, 0], tex: lowTex, tile: [2.5, 2.9] });
-        ctx.wallFace({ x0: s * XN, z0: ZT0 + 0.01, x1: s * XT, z1: ZT0 + 0.01, y0: 3.2, y1: 8.0, facing: [0, 1], tex: texFresco, tile: [(XT - XN) / 3, 4.8] });   // 그림 3폭이 딱 떨어지게
+        var XDF = AMD.c + AMD.w / 2 + 0.16;   // 문 바깥 x: 여기서 익랑 끝까지 프레스코 2폭(문 위는 민 벽 + 금 글귀 판)
+        ctx.wallFace({ x0: s * XDF, z0: ZT0 + 0.01, x1: s * XT, z1: ZT0 + 0.01, y0: 3.2, y1: 8.0, facing: [0, 1], tex: texFresco, tile: [(XT - XDF) / 2, 4.8] });
         ctx.wallFace({ x0: s * XF3, z0: ZT1 - 0.01, x1: s * XT, z1: ZT1 - 0.01, y0: 3.2, y1: 8.0, facing: [0, -1], tex: texFresco, tile: [XT - XF3, 4.8] });
         ctx.wallFace({ x0: s * (XT - 0.01), z0: ZT0, x1: s * (XT - 0.01), z1: ZT1, y0: 3.2, y1: 8.0, facing: [-s, 0], tex: texFresco, tile: [(ZT1 - ZT0) / 2, 4.8] });
         // 코니스(프레스코 위·아래 금 띠)
-        B(Math.min(s * XN, s * XT), Math.max(s * XN, s * XT), 3.2, 3.4, ZT0, ZT0 + 0.1, GOLD2); B(Math.min(s * XN, s * XT), Math.max(s * XN, s * XT), 8.0, 8.35, ZT0, ZT0 + 0.2, STU2);
+        B(Math.min(s * XDF, s * XT), Math.max(s * XDF, s * XT), 3.2, 3.4, ZT0, ZT0 + 0.1, GOLD2); B(Math.min(s * XN, s * XT), Math.max(s * XN, s * XT), 8.0, 8.35, ZT0, ZT0 + 0.2, STU2);
         B(Math.min(s * XF3, s * XT), Math.max(s * XF3, s * XT), 3.2, 3.4, ZT1 - 0.1, ZT1, GOLD2); B(Math.min(s * XB, s * XT), Math.max(s * XB, s * XT), 8.0, 8.35, ZT1 - 0.2, ZT1, STU2);
         B(Math.min(s * XT, s * (XT - 0.1)), Math.max(s * XT, s * (XT - 0.1)), 3.2, 3.4, ZT0, ZT1, GOLD2); B(Math.min(s * XT, s * (XT - 0.2)), Math.max(s * XT, s * (XT - 0.2)), 8.0, 8.35, ZT0, ZT1, STU2);
         // 벽기둥
@@ -702,8 +718,12 @@
           solid.add(Geo.cyl(12, 1), 0xd9c3a0, { x: cx, y: 7.08, z: ZT1 - 0.14, rx: PI / 2, sx: 0.26, sy: 0.04, sz: 0.34, flat: true, vary: 0 });
         });
       });
-      // 후면(익랑 뒷벽·성가대석 벽) 충돌
-      SIDES.forEach(function (s) { ctx.addCollider({ x0: Math.min(s * XN, s * XT), x1: Math.max(s * XN, s * XT), z0: ZAP, z1: ZT0 }); });
+      // 후면 충돌: 익랑 뒷벽(주보랑 문만 비움) · 성가대석 벽 · 주보랑 바깥(곧은 복도 바깥벽 뒤). 후진 둘레는 7장에서
+      SIDES.forEach(function (s) {
+        function blk(x0, x1, z0, z1) { ctx.addCollider({ x0: Math.min(s * x0, s * x1), x1: Math.max(s * x0, s * x1), z0: z0, z1: z1 }); }
+        blk(XN, AMD.c - AMD.w / 2, ZT0 - 1.0, ZT0); blk(AMD.c + AMD.w / 2, XT, ZT0 - 1.0, ZT0);
+        blk(XN, AMI, ZAC, ZT0); blk(AMO, XT, layout.bounds.z0, ZT0 - 1.0);
+      });
 
       // 오른쪽 끝(북): 오르간
       (function () {
@@ -971,9 +991,8 @@
           ctx.sphere({ x: ax, y: ay + 0.95, z: ZAC + 0.07, r: 0.22, color: 0xe8c8a6, w: 8, h: 6 }); ctx.solid.add(Geo.cyl(12, 1), GOLD2, { x: ax, y: ay + 0.95, z: ZAC + 0.04, rx: PI / 2, sx: 0.34, sy: 0.02, sz: 0.34, flat: true, vary: 0 });
           [-1, 1].forEach(function (w) { ctx.box({ x: ax + w * 0.65, y: ay + 0.1, z: ZAC + 0.05, w: 0.9, h: 0.16, d: 0.04, color: GOLD, rz: w * s * 0.5 }); ctx.box({ x: ax + w * 0.75, y: ay - 0.3, z: ZAC + 0.05, w: 0.7, h: 0.14, d: 0.04, color: GOLD2, rz: w * s * 0.35 }); });
         });
-        // 후진 충돌(원 고리)
-        var cn = Math.max(8, Math.round(PI * R / 0.9));
-        for (var k = 0; k <= cn; k++) { var ak = PI * k / cn; ctx.addCollider({ x: cx + Math.cos(ak) * (R + 0.75), z: cz - Math.sin(ak) * (R + 0.75), r: 0.8 }); }
+        // 후진 충돌: 후진 벽 바깥면(= 주보랑 안쪽 벽, 반지름 AMI)까지 원 하나(후진 안은 제단 금지 구역이기도 하다)
+        ctx.addCollider({ x: cx, z: cz, r: AMI });
         // 교황좌(카테드라) 5단
         ctx.steps({ x0: -1.7, x1: 1.7, z0: -33.5, z1: -31.5, y0: TY, y1: TY + 0.5, n: 5, dir: [0, -1], color: MARB });
         B(-1.7, 1.7, TY, TY + 0.5, -34.3, -33.5, MARB); ctx.floorZone({ x0: -1.7, x1: 1.7, z0: -34.4, z1: -33.4, y: TY + 0.5 });
@@ -984,6 +1003,69 @@
         ctx.arch({ x: 0, y: TY + 3.0, z: -33.6, span: 1.8, rise: 1.1, t: 0.2, depth: 0.45, axis: 'x', type: 'pointed', color: MARB });
         ctx.addCollider({ x0: -1.8, x1: 1.8, z0: -34.45, z1: -33.2 });
       })();
+      // 후진 주보랑(레오 13세, 1880년대): 익랑 뒷벽 양쪽 문 → 성가대석 옆 곧은 복도 → 후진 뒤 반원 복도. 실제로 방문객이 교황 제대 뒤를 돌아
+      // 후진 바깥을 한 바퀴 걷는 길이다(옛 후진 모자이크 조각·기념비가 걸려 있다). 성가대석·후진 안(교황좌)은 제단 금지 구역으로 계속 막힌다.
+      // 면은 복도 안쪽만, 모두 기존 배치(사진 질감 표면 배치·solid·glow)에 넣는다 → 새 메시·스프라이트 없음.
+      (function () {
+        var cx = 0, cz = ZAC, N = Q(28), y0 = TY, y1 = AMH, DADO = TY + 1.25, Z0 = ZT0 - 1.0, RM = (AMI + AMO) / 2;
+        function P(a, r, y) { return [cx + r * Math.cos(a), y, cz - r * Math.sin(a)]; }   // a: 0 = +x 쪽, PI/2 = 후진 뒤(−z), PI = −x 쪽
+        function q(c, a, b, c2, d, hint) { var sf = AUTO[c], bt = sf ? ctx.surfBatch(sf) : solid; bt.addQuad(a, b, c2, d, (sf === S_MR || sf === S_WD) ? 0xffffff : c, hint); }
+        var FLOOR = MARB, WALL = STU, DAD = PINK2, CEIL = STU2;
+        // 반원 복도: 바닥·천장·안쪽 벽(후진 벽 바깥면)·바깥 벽
+        for (var i = 0; i < N; i++) {
+          var a0 = PI * i / N, a1 = PI * (i + 1) / N, am = (a0 + a1) / 2;
+          q(FLOOR, P(a0, AMI, y0), P(a1, AMI, y0), P(a1, AMO, y0), P(a0, AMO, y0), P(am, RM, y0 + 1));
+          q(CEIL, P(a0, AMI, y1), P(a1, AMI, y1), P(a1, AMO, y1), P(a0, AMO, y1), P(am, RM, y1 - 1));
+          [AMI, AMO].forEach(function (r) {
+            q(DAD, P(a0, r, y0), P(a1, r, y0), P(a1, r, DADO), P(a0, r, DADO), P(am, RM, (y0 + DADO) / 2));
+            q(WALL, P(a0, r, DADO), P(a1, r, DADO), P(a1, r, y1), P(a0, r, y1), P(am, RM, (DADO + y1) / 2));
+          });
+        }
+        ctx.floorZone({ x0: -AMO, x1: AMO, z0: layout.bounds.z0, z1: ZAP, y: TY });
+        // 곧은 복도(양쪽): 바닥·천장·바깥 벽(안쪽 벽은 성가대석 벽 상자 면) + 양쪽 징두리, 문턱
+        SIDES.forEach(function (s) {
+          var xi = s * AMI, xo = s * AMO, xm = s * RM;
+          q(FLOOR, [xi, y0, ZAC], [xo, y0, ZAC], [xo, y0, Z0], [xi, y0, Z0], [xm, y0 + 1, (ZAC + Z0) / 2]);
+          q(CEIL, [xi, y1, ZAC], [xo, y1, ZAC], [xo, y1, Z0], [xi, y1, Z0], [xm, y1 - 1, (ZAC + Z0) / 2]);
+          [xi + s * 0.005, xo].forEach(function (x) {
+            q(DAD, [x, y0, ZAC], [x, y0, Z0], [x, DADO, Z0], [x, DADO, ZAC], [xm, (y0 + DADO) / 2, (ZAC + Z0) / 2]);
+          });
+          q(WALL, [xo, DADO, ZAC], [xo, DADO, Z0], [xo, y1, Z0], [xo, y1, ZAC], [xm, 2, (ZAC + Z0) / 2]);
+          q(FLOOR, [s * (AMD.c - AMD.w / 2), y0, Z0], [s * (AMD.c + AMD.w / 2), y0, Z0], [s * (AMD.c + AMD.w / 2), y0, ZT0], [s * (AMD.c - AMD.w / 2), y0, ZT0], [s * AMD.c, y0 + 1, ZT0 - 0.5]);
+          // 천장 가로 띠·바깥 벽 벽기둥(곧은 복도 4칸)
+          for (var k = 0; k <= 4; k++) {
+            var zz = Z0 + (ZAC - Z0) * k / 4;
+            if (k > 0 && k < 4) B(Math.min(xi, xo), Math.max(xi, xo), y1 - 0.16, y1, zz - 0.13, zz + 0.13, STU_SH);
+            B(Math.min(xo, xo - s * 0.07), Math.max(xo, xo - s * 0.07), y0, y1, zz - 0.18, zz + 0.18, STU2);
+          }
+        });
+        // 반원 복도의 방사 띠·벽기둥(30° 마다), 벽기둥 사이 기념 판(흰 대리석 + 금 테; 옛 교황·후원자 기념비 대역) + 벽 등
+        for (var j = 1; j < 6; j++) {
+          var a = PI * j / 6;
+          solid.addBeam(P(a, AMI, y1 - 0.08), P(a, AMO, y1 - 0.08), 0.16, 0.26, STU_SH, { vary: 0 });
+          ctx.box({ x: P(a, AMO - 0.035, 0)[0], y: y0, z: P(a, AMO - 0.035, 0)[2], w: 0.36, h: y1 - y0, d: 0.07, ry: a + PI / 2, color: STU2 });
+        }
+        for (j = 0; j < 6; j++) {
+          var ap = PI * (j + 0.5) / 6, pp = P(ap, AMO - 0.04, 0);
+          ctx.box({ x: pp[0], y: TY + 1.55, z: pp[2], w: 1.0, h: 0.8, d: 0.05, ry: ap + PI / 2, color: GOLD2 });
+          ctx.box({ x: P(ap, AMO - 0.06, 0)[0], y: TY + 1.6, z: P(ap, AMO - 0.06, 0)[2], w: 0.88, h: 0.7, d: 0.04, ry: ap + PI / 2, color: 0xf2ead8 });
+          [2.12, 2.0, 1.88].forEach(function (ly, li) { var tp = P(ap, AMO - 0.085, 0); ctx.box({ x: tp[0], y: TY + ly, z: tp[2], w: li ? 0.58 : 0.4, h: 0.035, d: 0.02, ry: ap + PI / 2, color: 0x6e6252, vary: 0 }); });   // 새김 글귀(선)
+          var lp = P(ap, AMO - 0.2, 0);   // 기념 판 위 벽등(금속 받침 + 빛 기둥: glow 배치)
+          ctx.cyl({ x: lp[0], y: TY + 2.7, z: lp[2], r: 0.07, rTop: 0.12, h: 0.12, seg: 8, color: GOLD });
+          glow.add(Geo.cyl(8, 1), new T.Color(0xffd78a).multiplyScalar(2.2), { x: lp[0], y: TY + 2.82, z: lp[2], sx: 0.08, sy: 0.24, sz: 0.08, flat: true, vary: 0 });
+        }
+        // 곧은 복도 벽등(빛 기둥은 glow 배치 — 스프라이트 등빛은 반사 바닥 패스마다 draw call 이 늘어 쓰지 않는다)
+        SIDES.forEach(function (s) {
+          [0.3, 0.7].forEach(function (f) {
+            var zz = Z0 + (ZAC - Z0) * f, xx = s * (AMO - 0.2);
+            ctx.cyl({ x: xx, y: TY + 2.7, z: zz, r: 0.07, rTop: 0.12, h: 0.12, seg: 8, color: GOLD });
+            glow.add(Geo.cyl(8, 1), new T.Color(0xffd78a).multiplyScalar(2.2), { x: xx, y: TY + 2.82, z: zz, sx: 0.08, sy: 0.24, sz: 0.08, flat: true, vary: 0 });
+          });
+        });
+        // 걷기 경계: 반원 바깥 벽(원 충돌체 고리; 안쪽 벽은 7장의 후진 원 충돌체)
+        var cr = 0.6, cn = Math.ceil(PI * (AMO + cr) / 0.85);
+        for (var c2 = 0; c2 <= cn; c2++) { var ac = PI * c2 / cn; ctx.addCollider({ x: cx + Math.cos(ac) * (AMO + cr), z: cz - Math.sin(ac) * (AMO + cr), r: cr }); }
+      })();
 
       mark('before');
       // =====================================================================
@@ -992,7 +1074,7 @@
       ctx.renderSeats(layout, 'bench', { wood: 0xa4713f, seat: 0xbd8a52, back: 0x8c5e36 });
       ctx.candleStand(0, { wood: 0x8a5d3b });
       ctx.setSky({ outside: false });
-      ctx.setCameraBounds({ x0: -13.6, x1: 13.6, z0: -34.1, z1: 34.1, yMax: 13.0 });
+      ctx.setCameraBounds({ x0: -13.6, x1: 13.6, z0: -38.1, z1: 34.1, yMax: 13.0 });
     }
   };
 })();

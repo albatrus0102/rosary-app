@@ -334,11 +334,41 @@
         wrun(Wr, g[0], g[1], 8.2, YT, g[3]);
         g[3].forEach(function (h, j) { win(Wr, h.c, h, 1, { seed: 90 + j, beam: false }); });
       });
-      // 경당 안쪽 어두운 방(걷기 불가)
-      chap.forEach(function (h) {
-        ctx.boxAABB({ x0: h.c - h.hw - 0.05, x1: h.c + h.hw + 0.05, z0: ZB - 1.9, z1: ZB - WT + 0.02, y0: SY, y1: SY + 3.2, color: 0x8a7258 });
-        ctx.boxAABB({ x0: h.c - 0.5, x1: h.c + 0.5, z0: ZB - 1.7, z1: ZB - 1.0, y0: SY, y1: SY + 1.0, color: 0xe8dfc9 });
-        ctx.addGlow({ x: h.c, y: SY + 2.3, z: ZB - 1.2, size: 1.6, color: 0xffc977, kind: 'lamp' });
+      // 후진 옆 경당 4곳(왼쪽부터 성 스테파노 · 십자가(성체) · [후진] · 성 라우렌시오 · 성 베네딕토): 익랑 뒷벽의 아치 문으로 걸어 들어가는 방.
+      // (예전에는 문 뒤가 어두운 상자라 들어갈 수 없었다 — 사용자 제보 "뒤쪽을 갈 수가 없음".) 방은 CHZ0(벽 뒷면)…CHZ1, 바닥은 익랑과 같은 SY.
+      // 면은 방 안쪽만(solid 배치 → draw call 0 증가). 등은 예전의 경당 빛 4개를 방 안 등으로 옮겼다(스프라이트 수 그대로).
+      var CHZ0 = ZB - WT, CHZ1 = ZB - WT - 3.75, CHY = SY + 5.2;
+      function chapHW(c) { return Math.abs(c) < 12 ? 1.7 : 1.9; }
+      chap.forEach(function (h, j) {
+        var hw = chapHW(h.c), x0 = h.c - hw, x1 = h.c + hw, xm = h.c, zm = (CHZ0 + CHZ1) / 2, D = 0x9d8f78;
+        quad([x0, SY, CHZ1], [x1, SY, CHZ1], [x1, SY, CHZ0], [x0, SY, CHZ0], 0xd8cfbd, [xm, SY + 1, zm], 0.03, GL);                  // 바닥
+        quad([h.c - h.hw, SY, CHZ0], [h.c + h.hw, SY, CHZ0], [h.c + h.hw, SY, ZB], [h.c - h.hw, SY, ZB], 0xcfc6b4, [xm, SY + 1, ZB], 0.02, GL);   // 문턱
+        ctx.floorZone({ x0: x0, x1: x1, z0: CHZ1, z1: ZB, y: SY });
+        quad([x0, CHY, CHZ1], [x1, CHY, CHZ1], [x1, CHY, CHZ0], [x0, CHY, CHZ0], 0xeee3c8, [xm, CHY - 1, zm]);                      // 천장
+        [[x0, 1], [x1, -1]].forEach(function (w) {                                                                            // 옆벽(징두리 + 회벽)
+          quad([w[0], SY, CHZ1], [w[0], SY, CHZ0], [w[0], SY + 1.3, CHZ0], [w[0], SY + 1.3, CHZ1], D, [w[0] + w[1], SY + 0.6, zm]);
+          quad([w[0], SY + 1.3, CHZ1], [w[0], SY + 1.3, CHZ0], [w[0], CHY, CHZ0], [w[0], CHY, CHZ1], C.wallLow, [w[0] + w[1], 3, zm]);
+        });
+        quad([x0, SY, CHZ1], [x1, SY, CHZ1], [x1, SY + 1.3, CHZ1], [x0, SY + 1.3, CHZ1], D, [xm, SY + 0.6, CHZ1 + 1]);              // 뒷벽
+        quad([x0, SY + 1.3, CHZ1], [x1, SY + 1.3, CHZ1], [x1, CHY, CHZ1], [x0, CHY, CHZ1], C.wallLow, [xm, 3, CHZ1 + 1]);
+        ctx.boxAABB({ x0: x0, x1: x1, z0: CHZ1, z1: CHZ1 + 0.06, y0: CHY - 0.35, y1: CHY, color: C.gold });                        // 천장 아래 금 띠(뒷벽)
+        // 앞벽(익랑 뒷벽의 방 쪽 면 — 같은 아치 구멍)
+        wrun({ axis: 'x', c: ZB - WT / 2, t: WT, cp: C.wallNave, cn: C.wallLow, sides: [-1] }, x0, x1, SY, CHY, [{ c: h.c, hw: h.hw, yb: SY, ys: h.ys, rise: h.rise, n: 8, ring: null }]);
+        // 제대 + 금 틀 제단화(십자가 경당은 짙은 바탕에 14세기 나무 십자고상)
+        var crucifixCh = h.c === -9.5;
+        ctx.altar({ x: xm, z: CHZ1 + 0.62, y: SY, w: 1.7, d: 0.8, h: 1.0, style: 'block', candles: 0, flowers: false });
+        ctx.boxAABB({ x0: xm - 1.1, x1: xm + 1.1, z0: CHZ1, z1: CHZ1 + 0.08, y0: SY + 1.35, y1: SY + 4.3, color: C.gold });
+        if (crucifixCh) {
+          ctx.boxAABB({ x0: xm - 0.95, x1: xm + 0.95, z0: CHZ1, z1: CHZ1 + 0.1, y0: SY + 1.45, y1: SY + 4.2, color: 0x2a3550 });
+          ctx.crucifix({ x: xm, y: SY + 1.3, z: CHZ1 + 0.2, h: 2.8, glow: false });
+        } else {
+          var art = [0x7a3a2e, 0, 0x8a5a2e, 0x3e5a3a][j];
+          ctx.boxAABB({ x0: xm - 0.95, x1: xm + 0.95, z0: CHZ1, z1: CHZ1 + 0.1, y0: SY + 1.45, y1: SY + 4.2, color: art });
+          ctx.boxAABB({ x0: xm - 0.35, x1: xm + 0.35, z0: CHZ1, z1: CHZ1 + 0.12, y0: SY + 2.0, y1: SY + 3.7, color: 0xe6d6b4 });   // 성인 형상(밝은 색 면)
+          ctx.boxAABB({ x0: xm - 0.22, x1: xm + 0.22, z0: CHZ1, z1: CHZ1 + 0.13, y0: SY + 3.75, y1: SY + 4.05, color: 0xf2cf7a });  // 후광
+        }
+        ctx.lantern({ x: xm, y: CHY - 1.4, z: zm + 0.3, chain: 1.2 });
+        // 걷기 경계: 방 옆벽·뒷벽 바깥은 막는다(아래 'T자 윤곽' 충돌체가 방 사이 벽과 방 뒤를 채운다)
       });
       // 윗벽 윗부분 몰딩(익랑)
       ctx.boxAABB({ x0: -TX, x1: TX, z0: ZB, z1: ZB + 0.45, y0: YT, y1: YT + 0.2, color: C.gold });
@@ -860,8 +890,14 @@
       ctx.addCollider({ x0: -19.6, x1: 19.6, z0: ZE, z1: 35.5 });
       ctx.addCollider({ x0: TX, x1: 19.6, z0: -36, z1: ZT });
       ctx.addCollider({ x0: -19.6, x1: -TX, z0: -36, z1: ZT });
-      ctx.addCollider({ x0: NW, x1: 19.6, z0: -36, z1: ZB });
-      ctx.addCollider({ x0: -19.6, x1: -NW, z0: -36, z1: ZB });
+      // 익랑 뒷벽 뒤: 후진 옆 경당 4곳의 방(문 → 방)만 비우고 나머지는 막는다. 경당 문은 벽(두께 WT)의 아치 구멍 폭(±1.2) 그대로.
+      [-1, 1].forEach(function (s) {
+        var a = [9.5, 14].map(function (c) { return [c - chapHW(c), c + chapHW(c), c - 1.2, c + 1.2]; }), xs = function (x0, x1) { return { x0: s > 0 ? x0 : -x1, x1: s > 0 ? x1 : -x0 }; };
+        function blk(x0, x1, z0, z1) { var q = xs(x0, x1); ctx.addCollider({ x0: q.x0, x1: q.x1, z0: z0, z1: z1 }); }
+        blk(NW, a[0][2], CHZ0, ZB); blk(a[0][3], a[1][2], CHZ0, ZB); blk(a[1][3], 19.6, CHZ0, ZB);   // 벽 조각(문 사이)
+        blk(NW, a[0][0], -36, CHZ0); blk(a[0][1], a[1][0], -36, CHZ0); blk(a[1][1], 19.6, -36, CHZ0); // 방 사이·바깥
+        blk(a[0][0], a[0][1], -36, CHZ1); blk(a[1][0], a[1][1], -36, CHZ1);                          // 방 뒤
+      });
       // 개선문 벽(측랑 쪽 벽 조각)
       [[NW - 1.3, NW + 1.25], [10.65, 13.15], [15.95, 19.6]].forEach(function (r) {
         ctx.addCollider({ x0: r[0], x1: r[1], z0: ZT, z1: ZF + 0.3 });

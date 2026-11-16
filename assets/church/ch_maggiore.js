@@ -25,7 +25,7 @@
   var HPI = Math.PI / 2;
   var layout = {
     id: 'maggiore', scalePercent: 80,
-    bounds: { x0: -30.0, x1: 30.0, z0: -23.2, z1: 28.0 },
+    bounds: { x0: -30.0, x1: 30.0, z0: -34.7, z1: 28.0 },   // z0: 개선 아치 뒤 익랑 팔·성가대 칸·후진(뒤쪽 걷기, 후진 안은 금지 구역)
     spawn: { x: 0, z: 24.5, r: 0 },
     seatGroups: [
       { g: 'L', rows: 14, perRow: 4, origin: { x: -1.5, z: -12.0 }, dx: -1.0, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.5, 0.5] },
@@ -302,7 +302,9 @@
       var cosm = ctx.tex.pattern('cosmati', { c1: 0xf2eee4, c2: 0x3a6b52, c3: 0x7a3045 });
       // 개선 아치 뒤: 후진 폭의 성가대 칸(x ±CHOIR_X) + 반원 후진. 양옆(측랑 머리)은 벽이다(르타루이 도면 k).
       var CHOIR_X = 5.6;
-      ctx.floor({ x0: -CHOIR_X, x1: CHOIR_X, z0: -28.8, z1: Z_A, y: PY, tex: cosm, tile: 2.8, gloss: 0.85, reflect: false });
+      // 개선 아치 뒤 바닥: 성가대 칸 + 양옆 익랑 팔(x ±XA; 측랑 끝벽의 아치 문으로 들어간다) 한 장
+      ctx.floor({ x0: -XA, x1: XA, z0: -28.8, z1: Z_A, y: PY, tex: cosm, tile: 2.8, gloss: 0.85, reflect: false });
+      ctx.floorZone({ x0: -XA, x1: XA, z0: -28.8, z1: Z_A, y: PY });
       ctx.floor({ x0: -CHOIR_X, x1: CHOIR_X, z0: -34.4, z1: -28.8, y: PY, tex: cosm, tile: 2.8, gloss: 0.85, reflect: false });
 
       mark('floors');
@@ -609,14 +611,19 @@
         ctx.box({ x: xw + 0.75, y: 0.05, z: z, w: 0.86, h: 0.012, d: 1.26, color: 0xdedad0, vary: 0 });
       })();
 
-      // 측랑 끝벽(개선문 쪽): 측랑 머리는 막힌 벽이고 제대가 있다
+      // 측랑 끝벽(개선문 쪽): 아치 문(3단 오름)으로 개선 아치 뒤의 익랑 팔(성가대 칸 양옆, 깊이 약 6.4 m)로 들어간다.
+      // (예전에는 막힌 벽 + 곁 제대라 제대 뒤쪽으로 갈 길이 없었다 — 사용자 제보. 곁 제대는 익랑 팔 끝벽으로 옮겼다.)
+      var ARM = { c: 9.3, w: 2.6, h: 3.4, z0: -28.8, z1: Z_A - 0.5, y1: PY + 6.6 };   // 문 중심·폭·기공 높이 / 팔 안쪽 z 범위 / 팔 천장
       [-1, 1].forEach(function (s) {
-        B(s < 0 ? -XA : XN, s < 0 ? -XN : XA, 0, Y_TOP, Z_A - 0.5, Z_A, 0xd8c8a2);
-        // 측랑 끝 그림(제대 위)
-        ctx.box({ x: s * 9.3, y: 1.6, z: Z_A + 0.12, w: 2.6, h: 3.4, d: 0.1, color: GOLD });
-        ctx.box({ x: s * 9.3, y: 1.8, z: Z_A + 0.19, w: 2.2, h: 3.0, d: 0.06, color: s < 0 ? LAPIS : 0x8a3a2a });
-        ctx.box({ x: s * 9.3, y: 0, z: Z_A + 0.6, w: 3.0, h: 1.0, d: 1.0, color: MARBLE });
-        ctx.addCollider({ x0: s * 9.3 - 1.6, x1: s * 9.3 + 1.6, z0: Z_A, z1: Z_A + 1.2 });
+        var hole = [{ u: s * ARM.c, w: ARM.w, yb: 0, h: ARM.h, top: 'round', rise: ARM.w / 2 }];
+        openWall({ F: frameOf(0, Z_A, 0, 1), u0: s < 0 ? -XA : XN, u1: s < 0 ? -XN : XA, y0: 0, y1: Y_TOP, t: 0.5, holes: hole, color: 0xd8c8a2, rcolor: MARBLE });
+        openWall({ F: frameOf(0, Z_A - 0.5, 0, -1), u0: s < 0 ? XN : -XA, u1: s < 0 ? XA : -XN, y0: PY, y1: ARM.y1, t: 0, holes: [{ u: -s * ARM.c, w: ARM.w, yb: 0, h: ARM.h, top: 'round', rise: ARM.w / 2 }], color: 0xd8c8a2 });
+        ctx.arch({ x: s * ARM.c, y: ARM.h, z: Z_A + 0.04, span: ARM.w, rise: ARM.w / 2, axis: 'x', t: 0.22, depth: 0.08, color: GOLD, type: 'round' });
+        [-1, 1].forEach(function (q) { B(s * ARM.c + q * (ARM.w / 2 + 0.11) - 0.11, s * ARM.c + q * (ARM.w / 2 + 0.11) + 0.11, 0, ARM.h, Z_A, Z_A + 0.06, MARBLE); });
+        ctx.steps({ x0: s * ARM.c - ARM.w / 2, x1: s * ARM.c + ARM.w / 2, z0: Z_A, z1: Z_A + 0.75, y0: 0, y1: PY, n: 3, dir: [0, -1], color: MARBLE });
+        var e0 = s * ARM.c - ARM.w / 2, e1 = s * ARM.c + ARM.w / 2;
+        ctx.addCollider({ x0: s < 0 ? -XA : XN, x1: Math.min(e0, e1), z0: Z_A - 0.5, z1: Z_A });
+        ctx.addCollider({ x0: Math.max(e0, e1), x1: s < 0 ? -XN : XA, z0: Z_A - 0.5, z1: Z_A });
       });
 
       // ----- 큰 아치 통로: 신랑 벽의 아치에서 측랑을 가로질러 대경당 입구까지 하나의 반원 통 궁륭(기공 Y_ENT, 반지름 AR_R) -----
@@ -1351,11 +1358,46 @@
       AT.mesh(emissiveMat(apseTex, 0.14, { sheen: 0.25 }));
       [-1, 1].forEach(function (s) { ctx.box({ x: s * (AR + 0.35), y: PY, z: ACZ + 0.2, w: 0.5, h: 1.0, d: 0.5, color: MARBLE }); });
 
-      // 성가대 칸의 옆벽(후진 폭): 회벽 + 금빛 띠. 그 바깥(측랑 머리)은 막힌 방이다
+      // 성가대 칸의 옆벽(후진 폭): 회벽 + 금빛 띠. 벽 가운데 아치 문으로 양옆 익랑 팔과 이어진다(측랑 → 익랑 팔 → 성가대 칸 → 반대편:
+      // 교황 제대 뒤, 개선 아치 너머를 가로지르는 길). 성가대 칸에서는 후진 모자이크(성모 대관)를 올려다보고 개선 아치 너머로 발다키노 뒤를 본다.
+      var CZ0 = ACZ, CZ1 = Z_A - 0.9, CDC = (CZ0 + CZ1) / 2, CDW = 2.4, CDH = PY + 3.2;   // 옆벽 z 범위 / 문 중심·폭·기공
       [-1, 1].forEach(function (s) {
-        B(s < 0 ? -CHOIR_X - 0.5 : CHOIR_X, s < 0 ? -CHOIR_X : CHOIR_X + 0.5, PY, Y_TOP, ACZ, Z_A - 0.9, 0xd8c8a2);
-        ctx.box({ x: s * (CHOIR_X - 0.06), y: 3.0, z: (ACZ + Z_A - 0.9) / 2, w: 0.12, h: 0.3, d: Z_A - 0.9 - ACZ, color: GOLD_D });
-        ctx.box({ x: s * (CHOIR_X - 0.06), y: PY + AH - 0.15, z: (ACZ + Z_A - 0.9) / 2, w: 0.12, h: 0.3, d: Z_A - 0.9 - ACZ, color: GOLD });
+        var lo = Math.min(s * CZ0, s * CZ1), hi = Math.max(s * CZ0, s * CZ1), lo2 = Math.min(-s * CZ0, -s * CZ1), hi2 = Math.max(-s * CZ0, -s * CZ1);
+        openWall({ F: frameOf(s * CHOIR_X, 0, -s, 0), u0: lo, u1: hi, y0: PY, y1: Y_TOP, t: 0.5, holes: [{ u: s * CDC, w: CDW, yb: PY, h: CDH - PY, top: 'round', rise: CDW / 2 }], color: 0xd8c8a2, rcolor: MARBLE });
+        openWall({ F: frameOf(s * (CHOIR_X + 0.5), 0, s, 0), u0: lo2, u1: hi2, y0: PY, y1: ARM.y1, t: 0, holes: [{ u: -s * CDC, w: CDW, yb: PY, h: CDH - PY, top: 'round', rise: CDW / 2 }], color: 0xd8c8a2 });
+        ctx.arch({ x: s * (CHOIR_X - 0.04), y: CDH, z: CDC, span: CDW, rise: CDW / 2, axis: 'z', t: 0.2, depth: 0.08, color: GOLD, type: 'round' });
+        [[CZ0, CDC - CDW / 2 - 0.05], [CDC + CDW / 2 + 0.05, CZ1]].forEach(function (r) { ctx.box({ x: s * (CHOIR_X - 0.06), y: 3.0, z: (r[0] + r[1]) / 2, w: 0.12, h: 0.3, d: r[1] - r[0], color: GOLD_D }); });
+        ctx.box({ x: s * (CHOIR_X - 0.06), y: PY + AH - 0.15, z: (CZ0 + CZ1) / 2, w: 0.12, h: 0.3, d: CZ1 - CZ0, color: GOLD });
+        ctx.addCollider({ x0: Math.min(s * CHOIR_X, s * (CHOIR_X + 0.5)), x1: Math.max(s * CHOIR_X, s * (CHOIR_X + 0.5)), z0: CZ0, z1: CDC - CDW / 2 });
+        ctx.addCollider({ x0: Math.min(s * CHOIR_X, s * (CHOIR_X + 0.5)), x1: Math.max(s * CHOIR_X, s * (CHOIR_X + 0.5)), z0: CDC + CDW / 2, z1: CZ1 });
+      });
+      // 개선 아치 벽의 뒷면(성가대 칸 쪽 면): 예전에는 보이지 않는 면이라 만들지 않았다
+      openWall({ F: frameOf(0, Z_A - 0.9, 0, -1), u0: -6.4, u1: 6.4, y0: PY, y1: Y_TOP, t: 0, holes: [{ u: 0, w: 2 * ARC_A, yb: 0, h: ARC_Y, top: 'round', rise: ARC_A }], color: 0xd8c8a2 });
+      [-1, 1].forEach(function (s) { ctx.addCollider({ x0: Math.min(s * ARC_A, s * 6.4), x1: Math.max(s * ARC_A, s * 6.4), z0: Z_A - 0.9, z1: Z_A - 0.2 }); });
+
+      // 익랑 팔(성가대 칸 양옆, x ±(CHOIR_X+0.5)…±XA, z −28.8…Z_A−0.5): 뒷벽·끝벽·평천장(금 격자 띠), 끝벽에 곁 제대(예전 측랑 끝 제대), 매단 등 하나.
+      // 면·등 모두 기존 배치(solid·금속·glow) → 새 메시·스프라이트 없음.
+      [-1, 1].forEach(function (s) {
+        var xi = s * (CHOIR_X + 0.5), xo = s * XA, xm = (xi + xo) / 2, zc = (ARM.z0 + ARM.z1) / 2, X0 = Math.min(xi, xo), X1 = Math.max(xi, xo);
+        B(X0, X1, PY, ARM.y1, ARM.z0 - 0.5, ARM.z0, 0xd8c8a2);                                        // 뒷벽
+        B(Math.min(xo, xo + s * 0.5), Math.max(xo, xo + s * 0.5), PY, ARM.y1, ARM.z0 - 0.5, ARM.z1, 0xd8c8a2);   // 끝벽
+        B(s > 0 ? X0 : X0 - 0.5, s > 0 ? X1 + 0.5 : X1, ARM.y1, ARM.y1 + 0.3, ARM.z0 - 0.5, ARM.z1 + 0.5, 0xe9dcbc);   // 천장(끝벽 위까지)
+        [1 / 3, 2 / 3].forEach(function (f) { B(X0, X1, ARM.y1 - 0.22, ARM.y1, ARM.z0 + (ARM.z1 - ARM.z0) * f - 0.1, ARM.z0 + (ARM.z1 - ARM.z0) * f + 0.1, GOLD); });
+        B(xm - 0.1, xm + 0.1, ARM.y1 - 0.22, ARM.y1, ARM.z0, ARM.z1, GOLD);
+        B(X0, X1, PY + 1.2, PY + 1.32, ARM.z0, ARM.z0 + 0.06, GOLD_D);                               // 징두리 띠(뒷벽)
+        // 곁 제대(끝벽): 금 틀 그림 + 대리석 제대
+        var fx = xo - s * 0.06;
+        ctx.box({ x: fx, y: PY + 1.6, z: zc, w: 0.1, h: 3.4, d: 2.6, color: GOLD });
+        ctx.box({ x: fx - s * 0.06, y: PY + 1.8, z: zc, w: 0.06, h: 3.0, d: 2.2, color: s < 0 ? LAPIS : 0x8a3a2a });
+        ctx.box({ x: xo - s * 0.6, y: PY, z: zc, w: 1.0, h: 1.0, d: 3.0, color: MARBLE });
+        ctx.addCollider({ x0: Math.min(xo, xo - s * 1.2), x1: Math.max(xo, xo - s * 1.2), z0: zc - 1.6, z1: zc + 1.6 });
+        // 매단 등(키트 lantern 과 같은 모양, 스프라이트 등빛 없이 — 반사·패스마다 draw call 이 늘지 않게)
+        ctx.cyl({ x: xm, y: ARM.y1 - 1.8, z: zc, r: 0.02, h: 1.8, seg: 5, color: 0x2e2a26, mat: 'metal' });
+        ctx.cone({ x: xm, y: ARM.y1 - 1.78, z: zc, r: 0.2, h: 0.15, seg: 8, color: 0x2e2a26, mat: 'metal' });
+        ctx.glow.add(Geo.cyl(8, 1), new T.Color(0xffd78a).multiplyScalar(2.2), { x: xm, y: ARM.y1 - 2.15, z: zc, sx: 0.14, sy: 0.35, sz: 0.14, flat: true, vary: 0 });
+        // 걷기 경계: 팔 끝벽 바깥 · 뒷벽 뒤(후진 둘레 포함)
+        ctx.addCollider({ x0: Math.min(xo, s * 30), x1: Math.max(xo, s * 30), z0: -34.7, z1: Z_A - 0.5 });
+        ctx.addCollider({ x0: Math.min(s * CHOIR_X, s * 30), x1: Math.max(s * CHOIR_X, s * 30), z0: -34.7, z1: ARM.z0 });
       });
 
       mark('apse');
@@ -1373,7 +1415,7 @@
       ctx.renderSeats(layout, 'bench', { wood: 0x7a5538, seat: 0x8a6642, back: 0x5e402a });
       ctx.candleStand(0, { wood: 0x4a3220 });
       mark('seats');
-      ctx.setCameraBounds({ x0: -29.5, x1: 29.5, z0: -22.4, z1: Z_E - 0.6, yMax: 13.4 });
+      ctx.setCameraBounds({ x0: -29.5, x1: 29.5, z0: -28.4, z1: Z_E - 0.6, yMax: 13.4 });
     }
   };
 })();
