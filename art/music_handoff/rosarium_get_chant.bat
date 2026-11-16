@@ -8,12 +8,15 @@ $ProgressPreference = 'SilentlyContinue'
 $desk = [Environment]::GetFolderPath('Desktop')
 $dir = Join-Path $desk 'rosarium_chant'
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
-$ua = 'RosariumChantFetch/1.0 (personal non-commercial prayer app; 3 CC0 audio files)'
+$ua = 'RosariumChantFetch/1.0 (personal non-commercial prayer app; 6 CC0/PD audio files)'
 $api = 'https://commons.wikimedia.org/w/api.php'
 $tracks = @(
-  @('chant_ad_te_levavi', 'File:Ad.te.levavi.VIII.Ton.ogg'),
-  @('chant_factus_est_repente', 'File:Factus.est.repente.VII.Ton.ogg'),
-  @('chant_lamentatio_iii', 'File:Lamentation.III.Karsamstag.ogg')
+  @('chant_veni_sancte_spiritus', 'File:Veni.sancte.spiritus.ogg'),
+  @('chant_victimae_paschali', 'File:Ostersequenz.ogg'),
+  @('chant_puer_natus_est', 'File:Puer.natus.est.ogg'),
+  @('chant_rorate_caeli', 'File:Rorate.ogg'),
+  @('chant_lamentatio_iii', 'File:Lamentation.III.Karsamstag.ogg'),
+  @('chant_dies_irae', 'File:Dies.irae.ogg')
 )
 function StripHtml($s) { if ($null -eq $s) { return '' }; return (($s -replace '<[^>]+>', '') -replace '\s+', ' ').Trim() }
 function Polite($block) {
@@ -31,7 +34,7 @@ $i = 0
 foreach ($t in $tracks) {
   $i++
   $id = $t[0]; $title = $t[1]
-  Write-Host ("[{0}/3] {1}" -f $i, $title)
+  Write-Host ("[{0}/6] {1}" -f $i, $title)
   $row = [ordered]@{ id = $id; commons_title = $title; file_page = ('https://commons.wikimedia.org/wiki/' + $title); status = 'error' }
   try {
     $q = $api + '?action=query&format=json&prop=imageinfo&iiprop=url%7Csize%7Cmime%7Csha1%7Cextmetadata&titles=' + [uri]::EscapeDataString($title)
@@ -71,5 +74,5 @@ if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zip
 $okc = @($report | Where-Object { $_.status -eq 'ok' }).Count
 Write-Host ''
-Write-Host ("DONE: {0}/3 ok. Upload this file to Claude:  {1}" -f $okc, $zip)
+Write-Host ("DONE: {0}/6 ok. Upload this file to Claude:  {1}" -f $okc, $zip)
 explorer.exe /select,"$zip"

@@ -18,7 +18,7 @@ import urllib.request
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
-UA = 'RosariumChantFetch/1.0 (personal non-commercial prayer app; 3 CC0 audio files)'
+UA = 'RosariumChantFetch/1.0 (personal non-commercial prayer app; 6 CC0/PD audio files)'
 API = 'https://commons.wikimedia.org/w/api.php'
 
 

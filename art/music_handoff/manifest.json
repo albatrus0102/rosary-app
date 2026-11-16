@@ -1,28 +1,94 @@
 {
-  "checked": "2026-11-15",
-  "note": "위키미디어 커먼즈 구조화 데이터(P275=CC0)로 찾은 그레고리오 성가 녹음 후보. 작업 환경에서는 커먼즈가 요청을 제한(HTTP 429)해 파일 페이지의 라이선스 틀·연주자·길이를 확인하지 못했다. 스크립트가 API 로 라이선스를 다시 확인하고 CC0/Public domain 이 아니면 받지 않는다.",
-  "allowed_licenses": ["cc0", "pd"],
+  "checked": "2026-11-16",
+  "note": "위키미디어 커먼즈에서 사용자 Membeth 가 '자기 작품(Own work)'으로 올리고 퍼블릭 도메인으로 내놓은(PD-self 5곡, CC0 1곡) 그레고리오 성가 독창 녹음 6점. 2026-11-16 에 파일 페이지와 커먼즈 API(extmetadata)로 라이선스·작성자·길이·SHA-1 을 확인했다. 음원 자체는 작업 환경에서 받지 못해(upload.wikimedia.org HTTP 429) 음질은 귀로 확인하지 못했다. 스크립트가 API 로 라이선스를 다시 확인하고 CC0/Public domain 이 아니면 받지 않는다. 이전 후보 Ad te levavi(17초)·Factus est repente(10초)는 CC0(Bautsch, Own work)가 맞지만 너무 짧은 예시 음원이라 뺐다. 자세한 근거: CHANT_CANDIDATES_ko.md",
+  "allowed_licenses": [
+    "cc0",
+    "pd"
+  ],
   "tracks": [
     {
-      "id": "chant_ad_te_levavi",
-      "commons_title": "File:Ad.te.levavi.VIII.Ton.ogg",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Ad.te.levavi.VIII.Ton.ogg",
-      "title_ko": "아드 테 레바비 (Ad te levavi)",
-      "subtitle_ko": "대림 제1주일 입당송 · 제8선법 · 성가 녹음"
+      "id": "chant_veni_sancte_spiritus",
+      "commons_title": "File:Veni.sancte.spiritus.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Veni.sancte.spiritus.ogg",
+      "title_ko": "베니 상테 스피리투스 (Veni Sancte Spiritus)",
+      "subtitle_ko": "성령 강림 부속가 · 성가 녹음",
+      "rank": 1,
+      "performer": "Membeth (위키미디어 커먼즈 사용자, 본인 녹음 'Own work')",
+      "duration": "2:37",
+      "expected_license": "pd (PD-self)",
+      "expected_sha1": "56d9778c0c2d7f53460558f5f5349fd7fec977ee",
+      "expected_bytes": 2418909,
+      "note": "영광의 신비 3단(성령 강림)과 어울림. Ogg Vorbis 123 kbps."
     },
     {
-      "id": "chant_factus_est_repente",
-      "commons_title": "File:Factus.est.repente.VII.Ton.ogg",
-      "file_page": "https://commons.wikimedia.org/wiki/File:Factus.est.repente.VII.Ton.ogg",
-      "title_ko": "팍투스 에스트 레펜테 (Factus est repente)",
-      "subtitle_ko": "성령 강림 대축일 영성체송 · 제7선법 · 성가 녹음"
+      "id": "chant_victimae_paschali",
+      "commons_title": "File:Ostersequenz.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ostersequenz.ogg",
+      "title_ko": "빅티매 파스칼리 라우데스 (Victimae paschali laudes)",
+      "subtitle_ko": "부활 부속가 · 성가 녹음",
+      "rank": 2,
+      "performer": "Membeth (위키미디어 커먼즈 사용자, 본인 녹음 'Own work')",
+      "duration": "1:42",
+      "expected_license": "pd (PD-self)",
+      "expected_sha1": "12153e4b790266bbdb5ba6b3b301bf4167182b1c",
+      "expected_bytes": 1562888,
+      "note": "영광의 신비 1단(부활)과 어울림."
+    },
+    {
+      "id": "chant_puer_natus_est",
+      "commons_title": "File:Puer.natus.est.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Puer.natus.est.ogg",
+      "title_ko": "푸에르 나투스 에스트 (Puer natus est)",
+      "subtitle_ko": "주님 성탄 대축일 입당송 · 성가 녹음",
+      "rank": 3,
+      "performer": "Membeth (위키미디어 커먼즈 사용자, 본인 녹음 'Own work')",
+      "duration": "1:18",
+      "expected_license": "pd (PD-self)",
+      "expected_sha1": "5e606a0898f8f8cd6dcefafe01f252af1779d39d",
+      "expected_bytes": 1211892,
+      "note": "환희의 신비 3단(탄생)과 어울림. 커먼즈 '오늘의 미디어' 선정 이력."
+    },
+    {
+      "id": "chant_rorate_caeli",
+      "commons_title": "File:Rorate.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Rorate.ogg",
+      "title_ko": "로라테 챌리 (Rorate caeli)",
+      "subtitle_ko": "대림 제4주일 입당송 · 성가 녹음",
+      "rank": 4,
+      "performer": "Membeth (위키미디어 커먼즈 사용자, 본인 녹음 'Own work')",
+      "duration": "1:02",
+      "expected_license": "pd (PD-self)",
+      "expected_sha1": "4eed29927c2ab42a3298b0fe6dd52eb73299bf17",
+      "expected_bytes": 946785,
+      "note": "환희의 신비 1단(예고)과 어울림(로라테 미사는 성모 신심 미사). 짧음."
     },
     {
       "id": "chant_lamentatio_iii",
       "commons_title": "File:Lamentation.III.Karsamstag.ogg",
       "file_page": "https://commons.wikimedia.org/wiki/File:Lamentation.III.Karsamstag.ogg",
       "title_ko": "예레미야의 애가 (Lamentatio III)",
-      "subtitle_ko": "성토요일 독서 선율 · 성가 녹음"
+      "subtitle_ko": "성토요일 독서 선율 · 성가 녹음",
+      "rank": 5,
+      "performer": "Membeth (위키미디어 커먼즈 사용자, 본인 녹음 'Own work')",
+      "duration": "6:09",
+      "expected_license": "cc0 (CC0 1.0)",
+      "expected_sha1": "cfa5f9b250b650768339c4f0ac4dd5e9d23ad798",
+      "expected_bytes": 7295213,
+      "note": "참회 분위기 — 고통의 신비용. 가장 길고(6분) 유일한 정식 CC0. Ogg Vorbis 158 kbps."
+    },
+    {
+      "id": "chant_dies_irae",
+      "commons_title": "File:Dies.irae.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Dies.irae.ogg",
+      "title_ko": "디에스 이레 (Dies irae)",
+      "subtitle_ko": "위령 미사 부속가 · 성가 녹음 (예비)",
+      "rank": 6,
+      "performer": "Membeth (위키미디어 커먼즈 사용자, 본인 녹음 'Own work')",
+      "duration": "7:14",
+      "expected_license": "pd (PD-self)",
+      "expected_sha1": "d13e914db3016ab43bcb89c695e501ac8fd19605",
+      "expected_bytes": 6562097,
+      "note": "예비 후보. 위령 성가라 평소 배경으로는 무거울 수 있음 — 들어 보고 결정. 커먼즈 '오늘의 미디어' 선정 이력."
     }
   ]
 }
