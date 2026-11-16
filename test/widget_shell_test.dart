@@ -26,7 +26,7 @@ Future<void> _pumpShell(
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  SharedPreferences.setMockInitialValues({});
+  SharedPreferences.setMockInitialValues({'stats_goal_prompted': true}); // 기록 탭의 목표 안내 시트가 탭 조작을 가리지 않게
   final settings = await AppSettings.load();
   final services = AppServices.inMemory(settings);
   addTearDown(services.disposeInMemory);

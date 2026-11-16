@@ -889,7 +889,7 @@ class _PrayerScreenState extends State<PrayerScreen>
       navigator.pushReplacement(
         MaterialPageRoute<void>(
           settings: const RouteSettings(name: 'stats'),
-          builder: (_) => StatsScreen(store: services.stats),
+          builder: (_) => SettingsStatsScreen(store: services.stats, settings: _settings),
         ),
       ),
     );

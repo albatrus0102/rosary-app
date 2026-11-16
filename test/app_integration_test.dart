@@ -322,7 +322,7 @@ void main() {
   group('통계 화면', () {
     testWidgets('홈에 요약 카드가 있고 누르면 통계 화면이 열린다', (tester) async {
       _size(tester, const Size(400, 900));
-      final settings = await _settings();
+      final settings = await _settings({'stats_goal_prompted': true});
       final stats = PrayerStatsStore.inMemory([
         PrayerRecord(
           at: DateTime.now(),
@@ -363,7 +363,7 @@ void main() {
 
     testWidgets('내비게이션 옵저버와 탭 선택이 화면 id를 남긴다', (tester) async {
       _size(tester, const Size(400, 900));
-      final settings = await _settings();
+      final settings = await _settings({'stats_goal_prompted': true});
       await _startAnalytics();
 
       await tester.pumpWidget(RosaryApp(settings));
