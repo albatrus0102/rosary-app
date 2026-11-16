@@ -10,6 +10,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'church_diagnostics.dart';
 import 'church_rosary_looks.g.dart';
 import 'church_theme.dart';
+import 'church_touch_trace.dart';
 import 'dev_glass.dart';
 
 export 'church_diagnostics.dart';
@@ -569,23 +570,46 @@ abstract class ChurchSceneController {
           method == 'cancelWalk' ||
           method == 'resetView' ||
           method == 'endView') {
+        if (ChurchTouchTrace.on && _traced(method)) {
+          ChurchTouchTrace.instance.sent(method, args, drop: true);
+        }
         return;
       }
       if (_queue.length < 300) _queue.add((method, args));
       return;
     }
-    await invoke(method, args);
+    await _invoke(method, args);
     if (method == 'init') {
       _initDone = true;
       if (ChurchDiagnostics.perfHud.value) {
-        await invoke('setPerfHud', const {'on': true});
+        await _invoke('setPerfHud', const {'on': true});
       }
+      // 개발용 빌드: 웹도 받은 포인터·입력·yaw 를 기록해 보낸다(터치 기록, church_touch_trace.dart).
+      if (ChurchTouchTrace.on) await _invoke('setInput', const {'trace': true});
       final pending = List.of(_queue);
       _queue.clear();
       for (final (m, a) in pending) {
         if (_disposed) return;
-        await invoke(m, a);
+        await _invoke(m, a);
       }
+    }
+  }
+
+  static bool _traced(String m) =>
+      m == 'setJoystick' ||
+      m == 'setInput' ||
+      m == 'tapAt' ||
+      m == 'cancelWalk';
+
+  /// 실제 호출 한 번. 실패는 삼키되(화면은 계속) 로그와 터치 기록에 남긴다.
+  Future<void> _invoke(String method, Map<String, Object?> args) async {
+    final traced = ChurchTouchTrace.on && _traced(method);
+    if (traced) ChurchTouchTrace.instance.sent(method, args);
+    try {
+      await invoke(method, args);
+    } catch (e) {
+      debugPrint('ChurchAPI.$method failed: $e');
+      if (traced) ChurchTouchTrace.instance.sent(method, args, error: '$e');
     }
   }
 
@@ -724,14 +748,59 @@ abstract class ChurchSceneController {
 
   /// 앱이 그린 이동 손잡이 원(웹 화면 좌표 = 논리 픽셀)을 웹에 알린다. 웹은 이 원 밖의 터치를 모두
   /// 시점 끌기·확대로 쓴다. 접는 화면을 펴고 접을 때·안전 영역이 바뀔 때마다 다시 보낸다.
-  Future<void> setStickZone(double cx, double cy, double r) => _call('setInput', {
-    'stick': {'cx': cx, 'cy': cy, 'r': r},
-  });
+  Future<void> setStickZone(double cx, double cy, double r) =>
+      _call('setInput', {
+        'stick': {'cx': cx, 'cy': cy, 'r': r},
+      });
 
-  /// 손잡이를 잡은 채 다른 한 손가락으로 끄는 시점 회전을 앱이 대신 읽어 보낸다(이동 + 시점 동시).
-  /// [on]인 동안 웹은 그 손가락의 한 손가락 끌기를 따로 읽지 않는다(두 번 돌지 않게). [dx]·[dy]는 끈 양(논리 픽셀).
-  Future<void> appLook({required bool on, double? dx, double? dy}) =>
-      _call('setInput', {'look': on, 'dx': ?dx, 'dy': ?dy});
+  /// 걷는 동안 앱이 3D 화면 위의 손가락을 모두 맡아 읽은 시점·확대 입력을 웹에 보낸다(ChurchMoveZone).
+  ///
+  /// * [on]: 시점 손가락이 닿기 시작(true)/모두 떨어짐(false). 그동안 웹은 자동 따라가기로 시점을 빼앗지 않는다.
+  /// * [dx]·[dy]: 한 손가락 끌기량(논리 픽셀 = 웹 CSS 픽셀, 웹이 받는 그대로 yaw/pitch 로 바뀐다).
+  /// * [k]: 두 손가락 사이 거리의 변화 배율(>1 벌림 = 다가감).
+  ///
+  /// [setJoystick]처럼 웹뷰 호출이 끝나기 전에 온 입력은 합쳐(끌기량은 더하고 배율은 곱하고 on/off 는 마지막 값) 한 번에 보낸다.
+  /// 손가락 이동 이벤트(초당 120~240번)마다 플랫폼 채널 호출이 쌓이지 않게 하면서, 지연 없이 다음 프레임에 닿게 한다.
+  Future<void> appLook({
+    bool? on,
+    double dx = 0,
+    double dy = 0,
+    double k = 1,
+  }) async {
+    if (on != null) _lookOn = on;
+    if (dx.isFinite) _lookDx += dx;
+    if (dy.isFinite) _lookDy += dy;
+    if (k.isFinite && k > 0) _lookK *= k;
+    if (_lookBusy) return;
+    _lookBusy = true;
+    try {
+      while (!_disposed) {
+        final on0 = _lookOn;
+        final dx0 = _lookDx, dy0 = _lookDy, k0 = _lookK;
+        _lookOn = null;
+        _lookDx = _lookDy = 0;
+        _lookK = 1;
+        final moved = dx0 != 0 || dy0 != 0;
+        final zoomed = (k0 - 1).abs() > 1e-6;
+        if (on0 == null && !moved && !zoomed) break;
+        await _call('setInput', {
+          'look': ?on0,
+          // 두 축을 늘 함께 보낸다(한 축만 보내면 옛 웹은 다른 축을 NaN 으로 읽어 끌기를 버렸다).
+          if (moved) 'dx': dx0,
+          if (moved) 'dy': dy0,
+          if (zoomed) 'k': k0,
+        });
+      }
+    } finally {
+      _lookBusy = false;
+    }
+  }
+
+  bool? _lookOn;
+  double _lookDx = 0;
+  double _lookDy = 0;
+  double _lookK = 1;
+  bool _lookBusy = false;
 
   /// 손잡이 위에서 일어난 탭은 Flutter가 가로채므로, 거기서 일어난 탭을 화면 좌표(논리 픽셀)로 웹에 넘긴다.
   /// 웹이 표식(촛불 봉헌대·제대 앞 등)을 맞히면 그곳으로 걷기 시작한다.
@@ -803,8 +872,11 @@ String churchApiScript(String method, Map<String, Object?> args) {
   final json = jsonEncode(args)
       .replaceAll('\u2028', r'\u2028')
       .replaceAll('\u2029', r'\u2029');
+  // 웹에 그 메서드가 없으면(목록 bridge.js METHODS 에서 빠짐) 조용히 버리지 않고 {e:'apiMissing'} 로 알린다.
   return 'try{if(window.ChurchAPI&&window.ChurchAPI.$method){'
-      'window.ChurchAPI.$method($json);}}catch(e){}';
+      'window.ChurchAPI.$method($json);}'
+      'else if(window.ChurchAPI&&window.ChurchBridge){'
+      'var o={e:"apiMissing"};o.m="$method";window.ChurchBridge.post(o);}}catch(e){}';
 }
 
 /// webview_flutter 기반 구현.
@@ -831,8 +903,11 @@ class WebViewChurchSceneController extends ChurchSceneController {
       ..addJavaScriptChannel(
         'FlutterChurch',
         onMessageReceived: (m) {
+          // 개발용 터치 기록·없는 메서드 알림(일반 빌드에서는 기록하지 않고 버린다)
+          if (ChurchTouchTrace.handleRaw(m.message)) return;
           if (ChurchDiagnostics.handleRaw(m.message)) return;
-          if (DevGlass.handleRaw(m.message)) return; // 개발용 임시 유리 표시(일반 빌드에서는 무시)
+          // 개발용 임시 유리 표시(일반 빌드에서는 무시)
+          if (DevGlass.handleRaw(m.message)) return;
           final e = SceneEvent.parse(m.message);
           if (e == null) return;
           if (e is SceneReady) _readyTimer?.cancel();
@@ -897,13 +972,9 @@ class WebViewChurchSceneController extends ChurchSceneController {
   }
 
   @override
-  Future<void> invoke(String method, Map<String, Object?> args) async {
-    try {
-      await _controller.runJavaScript(churchApiScript(method, args));
-    } catch (e) {
-      debugPrint('ChurchAPI.$method failed: $e');
-    }
-  }
+  Future<void> invoke(String method, Map<String, Object?> args) =>
+      // 실패는 부르는 쪽(ChurchSceneController._invoke)이 로그·터치 기록에 남긴다.
+      _controller.runJavaScript(churchApiScript(method, args));
 
   @override
   Future<bool> isAlive() async {
@@ -1014,9 +1085,16 @@ class FakeChurchSceneController extends ChurchSceneController {
   }
 
   @override
-  Widget buildView(BuildContext context) => ColoredBox(
-    key: const ValueKey('fake-scene'),
-    // 시험용 가짜 장면: 어두운 3D 장면 자리표시(고정 색 대신 테마의 scrim 역할).
-    color: Theme.of(context).colorScheme.scrim,
+  Widget buildView(BuildContext context) => Listener(
+    // 웹뷰(플랫폼 뷰) 자리에 닿은 손가락 수: 걷는 동안은 앱 입력 층이 다 맡아 0 이어야 한다.
+    onPointerDown: (_) => viewPointerDowns++,
+    child: ColoredBox(
+      key: const ValueKey('fake-scene'),
+      // 시험용 가짜 장면: 어두운 3D 장면 자리표시(고정 색 대신 테마의 scrim 역할).
+      color: Theme.of(context).colorScheme.scrim,
+    ),
   );
+
+  /// 장면 자리(실제로는 웹뷰)가 받은 손가락 수.
+  int viewPointerDowns = 0;
 }

@@ -128,6 +128,7 @@
       App.ctl = root.ChurchControls.create(canvas);
       App.ctl.onTap = function (x, y) { tapAt(x, y); };
       App.ctl.onMoveTouch = function () { cancelWalk('touch'); };
+      if (TR.on) App.ctl.trace = tracePtr;
       App.me = { x: 0, z: 17, y: 0, yaw: 0, vx: 0, vz: 0, mode: 'walk', seat: null, t: 0, fx: 0, fz: 0, fyaw: 0, tx: 0, tz: 0, tyaw: 0, pendingStand: false, speed: 0 };
       App.meAv = new root.ChurchAvatar.Avatar(App.cfg, { self: true });
       App.scene.add(App.meAv.root);
@@ -276,6 +277,57 @@
     kick();
   }
 
+  // ---- 터치 기록(개발용 빌드에서 앱이 setInput({trace:true}) 로 켠다) ----
+  // 웹이 받은 포인터 이벤트(controls.js trace), 받은 setInput, 그 결과 yaw/pitch, 그 프레임에 자동 따라가기가 yaw 를 바꿨는가, 카메라 리그 상태를
+  // 모아 0.5초마다 {e:'trace', s:요약, items:[...]} 로 앱에 보낸다. 꺼져 있으면 아무것도 하지 않는다.
+  var TR = { on: false, items: [], drop: 0, timer: null, mv: {}, ins: 0, looks: 0, ks: 0, ly: 0, fy: 0, fol: 0, lastF: 0, fYaw: 0, lastPost: 0 };
+  function r3(v) { return Math.round(v * 1000) / 1000; }
+  function tr(it) { it.t = Date.now(); if (TR.items.length < 1200) TR.items.push(it); else TR.drop++; }
+  function traceOn(on) {
+    if (TR.on === on) return;
+    TR.on = on;
+    if (App.ctl) App.ctl.trace = on ? tracePtr : null;
+    if (TR.timer) { clearInterval(TR.timer); TR.timer = null; }
+    if (!on) { TR.items = []; return; }
+    var nav = root.navigator || {};
+    tr({ k: 'hdr', ua: nav.userAgent || '', dpr: root.devicePixelRatio || 1, w: root.innerWidth || 0, h: root.innerHeight || 0 });
+    TR.timer = setInterval(traceFlush, 500);
+  }
+  function tracePtr(ty, e) {
+    if (ty === 'move') {   // 움직임은 손가락마다 30ms 에 한 번만
+      var now = Date.now(), l = TR.mv[e.pointerId] || 0;
+      if (now - l < 30) return;
+      TR.mv[e.pointerId] = now;
+    } else if (ty !== 'down') delete TR.mv[e.pointerId];
+    tr({ k: 'p', ty: ty, id: e.pointerId, x: Math.round(e.clientX), y: Math.round(e.clientY), pt: e.pointerType || '' });
+  }
+  // 프레임 표본: 무엇이 움직이는 동안(손가락·조이스틱·yaw 변화) 0.1초에 한 번. ly = 그동안 앱 시점 입력이 바꾼 yaw, fy = 자동 따라가기가 바꾼 yaw.
+  function traceFrame(ctl, me) {
+    var now = Date.now();
+    if (now - TR.lastF < 100) return;
+    var moving = ctl.joyX !== 0 || ctl.joyY !== 0 || Math.hypot(me.vx, me.vz) > 0.05;
+    var active = moving || ctl.dragging || ctl.extLook || TR.ly !== 0 || TR.fy !== 0 || Math.abs(ctl.yaw - TR.fYaw) > 1e-4;
+    if (!active) return;
+    TR.lastF = now; TR.fYaw = ctl.yaw;
+    tr({ k: 'f', yaw: r3(ctl.yaw), pitch: r3(ctl.pitch), zoom: r3(ctl.zoom), ly: r3(TR.ly), fy: r3(TR.fy), joy: [r3(ctl.joyX), r3(ctl.joyY)],
+      spd: r3(Math.hypot(me.vx, me.vz)), ext: ctl.ext ? 1 : 0, xl: ctl.extLook ? 1 : 0, dr: ctl.dragging ? 1 : 0, mode: me.mode, walk: App.walkSt ? 1 : 0,
+      rig: { o: rigO.opt === undefined ? -1 : rigO.opt, fp: r3(rigO.fp || 0), d: r3(rigO.dist || 0), auto: App.camCfg && App.camCfg.auto ? 1 : 0 },
+      spot: App.spot ? 1 : 0, wp: ctl.pointerCount ? ctl.pointerCount() : 0 });
+    TR.ly = 0; TR.fy = 0;
+  }
+  function traceFlush() {
+    if (!TR.on) return;
+    var now = Date.now();
+    if (!TR.items.length && now - TR.lastPost < 2000) return;   // 조용할 때는 2초에 한 번(살아 있음 표시)만
+    TR.lastPost = now;
+    var c = App.ctl, items = TR.items, drop = TR.drop;
+    TR.items = []; TR.drop = 0;
+    post({ e: 'trace', s: { ins: TR.ins, looks: TR.looks, ks: TR.ks, fol: TR.fol, yaw: c ? r3(c.yaw) : 0, pitch: c ? r3(c.pitch) : 0, zoom: c ? r3(c.zoom) : 0,
+      ext: c && c.ext ? 1 : 0, xl: c && c.extLook ? 1 : 0, dr: c && c.dragging ? 1 : 0, wp: c && c.pointerCount ? c.pointerCount() : 0,
+      follow: App.camCfg && App.camCfg.follow ? 1 : 0 },
+      items: items, drop: drop });
+  }
+
   var api = {
     init: function (o) { start(o); },
     // 보이지 않는 동안(다른 탭·다른 화면·앱 백그라운드) 그리기 고리와 소리를 멈춘다. 멈추면서 {e:'state'} 로 지금 상태를 알린다.
@@ -372,16 +424,26 @@
     walkTo: function (o) { walkTo(o || {}); },
     cancelWalk: function () { cancelWalk('api'); },
     // Flutter 가 왼쪽 절반 터치를 가로채므로, 거기서 일어난 탭을 화면 좌표(CSS px)로 넘겨 받는다.
-    tapAt: function (o) { tapAt(+o.x, +o.y); },
-    // 앱 입력 연동: {ext} 앱이 고정 이동 손잡이를 그림(웹 스틱 끔), {pinch,k} 앱이 대신 처리하는 두 손가락 확대, {look,dx,dy} 앱이 대신 읽는 시점 끌기(controls.js)
+    tapAt: function (o) { if (domTap(+o.x, +o.y)) return; tapAt(+o.x, +o.y); },
+    // 앱 입력 연동(controls.js). 걷는 동안 앱(Flutter)이 3D 화면 위의 모든 손가락을 맡아 읽고 여기로 보낸다(웹뷰는 그 손가락을 받지 않는다).
+    //   {ext} 앱이 고정 이동 손잡이를 그림(웹 스틱 끔), {stick} 손잡이 원(CSS px),
+    //   {look} 앱이 읽는 시점 손가락이 닿아 있는가(그동안 자동 따라가기가 시점을 빼앗지 않는다), {dx,dy} 시점 끌기(CSS px = 논리 px),
+    //   {k} 두 손가락 확대(손가락 사이 거리 배율, >1 벌림), {pinch} 예전 앱 확대 표시(호환), {trace} 터치 기록(개발용 빌드).
     setInput: function (o) {
+      if (o && o.trace !== undefined) traceOn(!!o.trace);
       var c = App.ctl; if (!c || !o) return;
+      var y0 = c.yaw;
       if (o.ext !== undefined) { c.ext = !!o.ext; if (c.ext) c.setMoveZone(false); }
       if (o.stick) c.setStick(o.stick.cx, o.stick.cy, o.stick.r);   // 앱이 그린 이동 손잡이 원(CSS px)
       if (o.pinch !== undefined) c.extPinch = !!o.pinch;
+      if (o.look !== undefined) c.setLookExt(o.look);   // 앱이 읽는 시점 손가락(on/off)
       if (o.k !== undefined) c.pinchBy(o.k);
-      if (o.look !== undefined) c.setLookExt(o.look);   // 앱이 대신 읽는 시점 끌기(손잡이 + 다른 손가락)
       if (o.dx !== undefined || o.dy !== undefined) c.lookBy(o.dx, o.dy);
+      if (TR.on) {
+        TR.ins++; if (o.dx !== undefined || o.dy !== undefined) TR.looks++; if (o.k !== undefined) TR.ks++;
+        TR.ly += c.yaw - y0;
+        if (o.trace === undefined) tr({ k: 'in', a: o, yaw: r3(c.yaw), pitch: r3(c.pitch) });
+      }
     },
     setSeatTaken: function (o) {
       if (!App.net || !o.seat) return;
@@ -439,6 +501,19 @@
       return;
     }
     startWalk(o);
+  }
+  // 앱이 3D 화면 위의 손가락을 맡는 동안(걷는 중)은 웹 단추(성능 표시의 '10초 기록' 등)가 직접 눌리지 않는다:
+  // 앱이 넘긴 탭 자리에 웹 단추가 있으면 그것을 누른다.
+  function domTap(x, y) {
+    try {
+      if (!(x >= 0) || !(y >= 0) || !document.elementFromPoint) return false;
+      var el = document.elementFromPoint(x, y);
+      while (el && el !== document.body) {
+        if (el.tagName === 'BUTTON') { el.click(); return true; }
+        el = el.parentElement;
+      }
+    } catch (e) { /* ignore */ }
+    return false;
   }
   function tapAt(x, y) {
     if (viewing()) return;
@@ -592,6 +667,7 @@
     if (!CG.prayYaw) return si.yaw + (CG.PRAY ? CG.PRAY.side : 0);
     return CG.prayYaw(gd, App.world.cameraBounds, si.x, App.me.y + 1.25, si.z, si.yaw, base * (CG.PRAY.zoom || 1), CG.PRAY.pitch);
   }
+  var fol = { follow: false, walkSt: false, seated: false, spot: false, t: 0, meYaw: 0, speed: 0, dt: 0 };
   function seeEase(cur, on, dt) { var v = cur + ((on ? 1 : 0) - cur) * Math.min(1, dt * (on ? 10 : 4)); return v < 0.003 ? 0 : v; }
   function updateCamera(dt) {
     var me = App.me, ctl = App.ctl, cam = App.camera, cb = App.world.cameraBounds;
@@ -612,10 +688,11 @@
     // 자동 걷기 중에는 카메라가 천천히 아바타 뒤로 돌아 가는 길이 보이게 한다(직접 돌린 뒤 1.5초는 그대로 둔다)
     // ('걸을 때 뒤로 따라가기' 켬일 때만) 조이스틱으로 앞쪽(±70°)으로 걸을 때도 아주 천천히 뒤로 정렬한다. 옆으로 걸을 땐 돌지 않는다(빙빙 돌지 않게).
     // 앉아 있을 때는 끌어서 돌린 방향을 그대로 둔다(사용자 조작이 이긴다).
+    // (controls.js followStep: 사용자가 끄는 중 — 웹 손가락이든 앱이 읽는 손가락(extLook)이든 — 에는 돌리지 않는다)
     var CC = App.camCfg;
-    if (CC.follow && App.walkSt && !seated && !ctl.dragging && App.t - ctl.lastDragT > 1.5) ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 1.2));
-    else if (CC.follow && !App.walkSt && !seated && !SP && !ctl.dragging && App.t - ctl.lastDragT > 2.5 && Math.hypot(me.vx, me.vz) > 0.6 && Math.abs(wrap(me.yaw - ctl.yaw)) < 1.2)
-      ctl.yaw += wrap(me.yaw - ctl.yaw) * (1 - Math.exp(-dt * 0.5));
+    fol.follow = CC.follow; fol.walkSt = !!App.walkSt; fol.seated = !!seated; fol.spot = !!SP; fol.t = App.t; fol.meYaw = me.yaw; fol.speed = Math.hypot(me.vx, me.vz); fol.dt = dt;
+    var fyaw = root.ChurchControls.followStep(ctl, fol);
+    if (TR.on) { TR.fy += fyaw; if (fyaw !== 0) TR.fol++; }
     var baseD = (7.2 * (1 - sf) + 4.4 * sf) * (App.inset ? 1 + 0.3 * sf : 1) * CC.dist, D = baseD * ctl.zoom;   // 묵주 패널 중에는 조금 물러나 앉은·무릎 꿇은 몸 전체가 보이게
     var pitch = ctl.pitch * (1 - 0.3 * sf);
     if (App.spotF > 0) { CG.spotBlend(pitch, D, baseD, App.spotF, spotO, App.spotKind); pitch = spotO.pitch; D = spotO.D; } else spotO.fwd = spotO.up = 0;
@@ -694,6 +771,7 @@
     }
     cam.position.copy(App.camPos);
     cam.lookAt(lookTarget);
+    if (TR.on) traceFrame(ctl, me);
     // 카메라가 아바타 머리에 가까우면(1.7m 미만, 사용자가 당긴 앉은 시점 정도) 아바타·이름표를 흐리게 — 최소 0.35.
     // 1인칭이면 아바타를 숨긴다. 잘라내지 못한 가림물(인스턴스 촛대 등) 뒤의 몸은 금색 실루엣(X-ray)으로 보인다(avatar.js setXray, 걷는 동안).
     var av = App.meAv;

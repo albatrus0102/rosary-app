@@ -38,6 +38,7 @@ import 'church_presence_sheet.dart';
 import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
 import 'church_theme.dart';
+import 'church_touch_trace.dart';
 import 'dev_glass.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
@@ -254,6 +255,19 @@ class _ChurchScreenState extends State<ChurchScreen>
   DateTime? _satSince;
   Duration _satTotal = Duration.zero;
 
+  /// 개발용 터치 진단 표시(church_touch_trace.dart).
+  bool _touchDiag = false;
+  Size? _traceScreen;
+  bool _traceWalking = true;
+  ChurchTouchTraceRoute? _traceRoute;
+
+  void _onPerfHudDiag() {
+    if (!mounted || _disposed) return;
+    setState(() => _touchDiag = ChurchDiagnostics.perfHud.value);
+  }
+
+  void _toggleTouchDiag() => setState(() => _touchDiag = !_touchDiag);
+
   @override
   void initState() {
     super.initState();
@@ -274,6 +288,18 @@ class _ChurchScreenState extends State<ChurchScreen>
     _net.state.addListener(_onNetState);
     _lastRosaryId = _settings.rosaryId;
     _settings.addListener(_onSettings);
+    // 개발용 빌드: 터치 기록(기기 정보 한 번) + 성능 표시를 켜면 터치 진단 표시도 함께 뜬다.
+    if (ChurchTouchTrace.on) {
+      unawaited(ChurchTouchTrace.instance.collectDevice());
+      ChurchTouchTrace.instance.decision('church-enter', {
+        'church': widget.churchId,
+      });
+      _touchDiag = ChurchDiagnostics.perfHud.value;
+      ChurchDiagnostics.perfHud.addListener(_onPerfHudDiag);
+      // HUD 단추·웹(앉아 있을 때)으로 간 손가락도 기록한다(입력 층이 맡은 손가락은 거기서 기록).
+      _traceRoute = ChurchTouchTraceRoute(walking: () => _traceWalking)
+        ..start();
+    }
     _liturgy = ChurchLiturgyBinding(onChanged: _onLiturgy);
     _syncMusicHold();
     _lastAmbient = _ambientOn;
@@ -1232,6 +1258,15 @@ class _ChurchScreenState extends State<ChurchScreen>
     _syncVisibility();
     if (bg == _background) return;
     _background = bg;
+    if (bg && ChurchTouchTrace.on) {
+      // 백그라운드로 가면 기록을 파일로도 남긴다(앱이 정리돼도 마지막 기록이 문서 폴더에 있다).
+      unawaited(
+        ChurchTouchTrace.instance.writeFile().then<void>(
+          (_) {},
+          onError: (Object e) => debugPrint('touch trace write: $e'),
+        ),
+      );
+    }
     if (bg) {
       unawaited(_scene.setJoystick(0, 0));
       unawaited(_scene.setAmbient(on: false));
@@ -1648,6 +1683,13 @@ class _ChurchScreenState extends State<ChurchScreen>
   @override
   void dispose() {
     _disposed = true;
+    if (ChurchTouchTrace.on) {
+      ChurchDiagnostics.perfHud.removeListener(_onPerfHudDiag);
+      _traceRoute?.stop();
+      ChurchTouchTrace.instance.decision('church-exit', {
+        'church': widget.churchId,
+      });
+    }
     _liturgy.dispose();
     _perfBannerTimer?.cancel();
     _hintTimer?.cancel();
@@ -1771,6 +1813,18 @@ class _ChurchScreenState extends State<ChurchScreen>
       onGo: walking ? _onGo : null,
       onCollapse: () => _setHudCollapsed(true),
     );
+    if (ChurchTouchTrace.on) {
+      final sz = MediaQuery.sizeOf(context);
+      if (_traceScreen != sz) {
+        _traceScreen = sz;
+        // 펴고 접기·회전: 그때의 화면(크기·DPR·접힘선)을 기록에 남긴다.
+        ChurchTouchTrace.instance.decision(
+          'screen',
+          ChurchTouchTrace.screenInfo(),
+        );
+      }
+    }
+    _traceWalking = walking;
     return Scaffold(
       key: _hudKey,
       backgroundColor: scheme.surface,
@@ -1785,8 +1839,9 @@ class _ChurchScreenState extends State<ChurchScreen>
                 child: _scene.buildView(context),
               ),
             ),
-          // 고정 이동 손잡이(아래 구석의 원 안만 이동 입력). 그 밖의 화면은 아래 웹 장면이 받아
-          // 한 손가락 = 시점 회전(손잡이를 잡은 채로도), 두 손가락 = 확대/축소. HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
+          // 걷는 동안의 입력 층: 고정 이동 손잡이(아래 구석의 원) + 3D 화면 위의 모든 손가락(한 손가락 = 시점 회전,
+          // 두 손가락 = 확대/축소, 탭 = 표식). 안드로이드 웹뷰는 손잡이를 잡은 채 닿은 다른 손가락의 움직임을 받지 못하므로
+          // (ChurchMoveZone 설명) 앱이 다 읽어 웹에 보낸다. HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
           if (walking)
             Positioned.fill(
               child: ChurchMoveZone(
@@ -1795,15 +1850,18 @@ class _ChurchScreenState extends State<ChurchScreen>
                 insets: MediaQuery.paddingOf(context),
                 onChanged: (x, y) => unawaited(_scene.setJoystick(x, y)),
                 // 손잡이 원의 실제 자리를 웹에 알린다(웹은 이 원 안만 이동 영역으로 쓴다).
-                onZone: (c, r) =>
-                    unawaited(_scene.setStickZone(c.dx, c.dy, r)),
+                onZone: (c, r) => unawaited(_scene.setStickZone(c.dx, c.dy, r)),
                 // 손잡이를 건드리면 자동 걷기가 끊기고, 짧은 탭은 웹 표식 누르기로 넘긴다.
                 onTouchDown: () {
                   if (_walkKind != null) _cancelWalk();
                 },
                 onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
-                onLook: ({required bool on, double? dx, double? dy}) =>
-                    unawaited(_scene.appLook(on: on, dx: dx, dy: dy)),
+                onLook: ({
+                  bool? on,
+                  double dx = 0,
+                  double dy = 0,
+                  double k = 1,
+                }) => unawaited(_scene.appLook(on: on, dx: dx, dy: dy, k: k)),
               ),
             ),
           if (!_sceneReleased)
@@ -1869,6 +1927,26 @@ class _ChurchScreenState extends State<ChurchScreen>
                     const Padding(
                       padding: EdgeInsets.only(top: AppSpace.xs),
                       child: DevGlassBadge(),
+                    ),
+                  // 개발용 터치 진단(개발용 APK 에서만): 작은 단추로 켜고 끄며, 성능 표시를 켜면 함께 뜬다.
+                  if (ChurchTouchTrace.on)
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpace.xs),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _touchDiag
+                            ? ChurchTouchDiagPanel(onClose: _toggleTouchDiag)
+                            : IconButton.filledTonal(
+                                key: const ValueKey('touch-diag-toggle'),
+                                tooltip: '터치 진단(개발용)',
+                                visualDensity: VisualDensity.compact,
+                                icon: const Icon(
+                                  Icons.touch_app_outlined,
+                                  size: 18,
+                                ),
+                                onPressed: _toggleTouchDiag,
+                              ),
+                      ),
                     ),
                   // 자동 걷기 중이면 왼쪽에 '걷는 중… (취소)' 칩.
                   if (walking && _walkKind != null)
@@ -2076,8 +2154,8 @@ class _LoadOverlayState extends State<_LoadOverlay> {
       listenable: Listenable.merge([scene.loadState, scene.firstFrame]),
       builder: (context, _) {
         final error = scene.loadState.value == SceneLoad.error;
-        final done = scene.loadState.value == SceneLoad.ready &&
-            scene.firstFrame.value;
+        final done =
+            scene.loadState.value == SceneLoad.ready && scene.firstFrame.value;
         if (!done) {
           _gone = false;
           _covered = true;

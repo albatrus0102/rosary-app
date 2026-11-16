@@ -48,6 +48,9 @@ awk -v addf="$ADDF" '{ print } $0 ~ /^    - assets\/church\/$/ { while ((getline
 
 # 2) 빌드. 백엔드 값은 환경 변수로 넘기면 일반 빌드와 같이 들어간다(없으면 '백엔드 미설정' 빌드).
 DEFINES=(--dart-define=ROSARIUM_DEV_GLASS=true)
+# 빌드 표시(터치 기록 머리에 들어간다: 어느 커밋의 APK 로 찍은 기록인지)
+BUILD_ID="$(git rev-parse --short HEAD 2>/dev/null || echo nogit)-$(date +%m%d%H%M)"
+DEFINES+=("--dart-define=ROSARIUM_BUILD_ID=$BUILD_ID")
 for k in SUPABASE_URL SUPABASE_ANON_KEY CHURCH_SERVER_URL; do
   v="${!k:-}"
   if [ -n "$v" ]; then DEFINES+=("--dart-define=$k=$v"); fi

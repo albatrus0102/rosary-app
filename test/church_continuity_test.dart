@@ -478,6 +478,34 @@ void main() {
   });
 
   group('고정 조이스틱과 시점·확대(멀티터치)', () {
+    // 실제 ChurchScreen 의 Stack(장면 → 입력 층 → 입장 덮개 → HUD)을 그대로 띄우고 손가락을 놓는다.
+    // 기기(안드로이드 웹뷰)는 손잡이를 잡은 채 닿은 다른 손가락의 움직임을 받지 못하므로, 걷는 동안 장면 위의
+    // 손가락은 모두 앱 입력 층이 읽어 setInput 으로 보낸다. 웹뷰 자리(가짜 장면)는 손가락을 하나도 받지 않아야 한다.
+    double sumOf(FakeChurchSceneController s, String key, {int from = 0}) {
+      var v = 0.0;
+      final l = s.argsOf('setInput');
+      for (var i = from; i < l.length; i++) {
+        final x = l[i][key];
+        if (x is num) v += x;
+      }
+      return v;
+    }
+
+    double prodK(FakeChurchSceneController s, {int from = 0}) {
+      var v = 1.0;
+      final l = s.argsOf('setInput');
+      for (var i = from; i < l.length; i++) {
+        final x = l[i]['k'];
+        if (x is num) v *= x;
+      }
+      return v;
+    }
+
+    List<Object?> looks(FakeChurchSceneController s) => [
+      for (final a in s.argsOf('setInput'))
+        if (a.containsKey('look')) a['look'],
+    ];
+
     testWidgets('입장하면 웹에 앱 손잡이를 알린다(화면 전체가 시점·확대)', (tester) async {
       final h = await pumpChurch(tester);
       final inputs = h.scene.argsOf('setInput');
@@ -488,27 +516,32 @@ void main() {
       expect(inputs.any((a) => a.containsKey('stick')), isTrue);
     });
 
-    testWidgets('손잡이 밖의 두 손가락은 웹 장면이 처리한다(앱은 끼어들지 않는다)', (tester) async {
+    testWidgets('장면 위 한 손가락 끌기: 앱이 읽어 시점(dx·dy)으로 보내고 웹뷰는 손가락을 받지 않는다', (
+      tester,
+    ) async {
       final h = await pumpChurch(tester);
       final joy = h.scene.count('setJoystick');
-      // 한 손가락은 예전 이동 영역(왼쪽 절반), 다른 손가락은 오른쪽.
-      final a = await tester.startGesture(const Offset(90, 380));
-      final b = await tester.startGesture(const Offset(300, 420), pointer: 7);
-      await a.moveBy(const Offset(-30, 0));
-      await b.moveBy(const Offset(30, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      await a.up();
-      await b.up();
+      final g = await tester.startGesture(const Offset(300, 300));
       await tester.pump();
+      expect(looks(h.scene), [true]);
+      await g.moveBy(const Offset(25, 0));
+      await g.moveBy(const Offset(15, -10));
+      await tester.pump();
+      expect(sumOf(h.scene, 'dx'), closeTo(40, 0.01));
+      expect(sumOf(h.scene, 'dy'), closeTo(-10, 0.01));
+      // 두 축은 늘 함께 간다(한 축만 보내면 웹이 끌기를 버리던 문제 방지).
+      for (final a in h.scene.argsOf('setInput')) {
+        expect(a.containsKey('dx'), a.containsKey('dy'));
+      }
+      await g.up();
+      await tester.pump();
+      expect(looks(h.scene), [true, false]);
       expect(h.scene.count('setJoystick'), joy, reason: '이동하지 않는다');
-      expect(
-        h.scene.argsOf('setInput').where((a) => a.containsKey('ext')).length,
-        1,
-        reason: 'ext 한 번뿐',
-      );
+      expect(h.scene.count('tapAt'), 0, reason: '끌었으니 탭이 아니다');
+      expect(h.scene.viewPointerDowns, 0, reason: '웹뷰는 걷는 동안 손가락을 받지 않는다');
     });
 
-    testWidgets('손잡이를 잡은 채 다른 손가락으로 끌면 이동하면서 시점이 돈다(핀치 아님)', (tester) async {
+    testWidgets('손잡이를 먼저 잡고 다른 손가락으로 끌면 이동하면서 시점이 돈다', (tester) async {
       final h = await pumpChurch(tester);
       final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
       final a = await tester.startGesture(stick);
@@ -518,24 +551,27 @@ void main() {
 
       final b = await tester.startGesture(const Offset(300, 300), pointer: 7);
       await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'look': true});
+      expect(looks(h.scene), [true]);
       // 손잡이는 풀리지 않는다.
       expect(h.scene.lastArgs('setJoystick')!['y'] as double, greaterThan(0.5));
-      await b.moveBy(const Offset(40, 20));
-      await tester.pump(const Duration(milliseconds: 50));
-      final look = h.scene.lastArgs('setInput')!;
-      expect(look['look'], true);
-      expect(look['dx'] as double, closeTo(40, 0.01));
-      expect(look['dy'] as double, closeTo(20, 0.01));
+      // 걸으면서(손잡이도 움직이며) 시점 손가락을 끈다.
+      for (var i = 0; i < 4; i++) {
+        await a.moveBy(const Offset(1, 0));
+        await b.moveBy(const Offset(10, 5));
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      expect(sumOf(h.scene, 'dx'), closeTo(40, 0.01));
+      expect(sumOf(h.scene, 'dy'), closeTo(20, 0.01));
       expect(
-        h.scene.argsOf('setInput').any((x) => x.containsKey('pinch')),
+        h.scene.argsOf('setInput').any((x) => x.containsKey('k')),
         isFalse,
       );
+      expect(h.scene.lastArgs('setJoystick')!['y'] as double, greaterThan(0.5));
 
       // 시점 손가락을 먼저 떼면 시점만 끝나고 이동은 이어진다.
       await b.up();
       await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'look': false});
+      expect(looks(h.scene), [true, false]);
       final joy = h.scene.count('setJoystick');
       await a.moveBy(const Offset(10, -10));
       await tester.pump(const Duration(milliseconds: 50));
@@ -544,57 +580,110 @@ void main() {
       await tester.pump();
       expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
       expect(h.scene.count('tapAt'), 0);
+      expect(h.scene.viewPointerDowns, 0);
     });
 
-    testWidgets('손잡이 손가락을 먼저 떼어도 시점 손가락은 이어지고 이동은 멈춘다', (tester) async {
-      final h = await pumpChurch(tester);
-      final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
-      final a = await tester.startGesture(stick);
-      await a.moveBy(const Offset(0, -40));
-      final b = await tester.startGesture(const Offset(300, 300), pointer: 7);
-      await tester.pump(const Duration(milliseconds: 50));
-      await a.up();
-      await tester.pump();
-      expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
-      expect(h.scene.lastArgs('setInput')!['look'], true);
-      await b.moveBy(const Offset(-30, 0));
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(h.scene.lastArgs('setInput')!['dx'] as double, closeTo(-30, 0.01));
-      await b.up();
-      await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'look': false});
-    });
-
-    testWidgets('밖에서 시점을 돌리던 중 손잡이에 닿으면 웹 손가락은 그대로, 앱은 시점을 읽지 않는다', (tester) async {
+    testWidgets('시점을 먼저 돌리던 중 손잡이를 잡아도 시점 손가락은 계속 시점을 돌린다(기기에서 멈추던 순서)', (
+      tester,
+    ) async {
       final h = await pumpChurch(tester);
       final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
       final a = await tester.startGesture(const Offset(300, 300));
+      await a.moveBy(const Offset(20, 0));
+      await tester.pump();
       final b = await tester.startGesture(stick, pointer: 7);
       await b.moveBy(const Offset(0, -40));
-      await a.moveBy(const Offset(20, 0));
       await tester.pump(const Duration(milliseconds: 50));
       expect(h.scene.lastArgs('setJoystick')!['y'] as double, greaterThan(0.5));
-      expect(h.scene.argsOf('setInput').any((x) => x.containsKey('look')), isFalse);
-      expect(h.scene.argsOf('setInput').any((x) => x.containsKey('pinch')), isFalse);
-      await a.up();
+      final from = h.scene.argsOf('setInput').length;
+      await a.moveBy(const Offset(30, 0));
+      await tester.pump();
+      expect(sumOf(h.scene, 'dx', from: from), closeTo(30, 0.01));
+      expect(looks(h.scene), [true], reason: '시점은 끊기지 않는다');
+      // 손잡이를 먼저 떼어도 시점 손가락은 이어진다(튀지 않게 직전 위치와의 차이만).
       await b.up();
       await tester.pump();
+      expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
+      final from2 = h.scene.argsOf('setInput').length;
+      await a.moveBy(const Offset(-12, 0));
+      await tester.pump();
+      expect(sumOf(h.scene, 'dx', from: from2), closeTo(-12, 0.01));
+      await a.up();
+      await tester.pump();
+      expect(looks(h.scene), [true, false]);
+      expect(h.scene.viewPointerDowns, 0);
     });
 
-    testWidgets('손잡이를 잡은 채 손잡이 아닌 손가락이 둘이면 앱은 시점에서 물러나 웹이 핀치한다', (tester) async {
+    testWidgets('장면 위 두 손가락은 확대(k), 손잡이를 잡은 채로도', (tester) async {
       final h = await pumpChurch(tester);
       final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
-      final a = await tester.startGesture(stick);
-      final b = await tester.startGesture(const Offset(300, 300), pointer: 7);
+      final s = await tester.startGesture(stick, pointer: 3);
+      await s.moveBy(const Offset(0, -45));
+      await tester.pump(const Duration(milliseconds: 50));
+      final a = await tester.startGesture(const Offset(200, 300), pointer: 4);
+      final b = await tester.startGesture(const Offset(300, 300), pointer: 5);
       await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'look': true});
-      final c = await tester.startGesture(const Offset(200, 300), pointer: 8);
+      final from = h.scene.argsOf('setInput').length;
+      await a.moveBy(const Offset(-50, 0)); // 100 → 150
+      await b.moveBy(const Offset(50, 0)); // 150 → 200
       await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'look': false});
-      await c.up();
-      await b.up();
+      expect(prodK(h.scene, from: from), closeTo(2.0, 0.001));
+      expect(sumOf(h.scene, 'dx', from: from), 0, reason: '두 손가락은 시점이 아니라 확대');
+      expect(h.scene.lastArgs('setJoystick')!['y'] as double, greaterThan(0.5));
+      // 하나를 떼면 남은 손가락이 이어서 시점을 돌린다(점프 없이).
       await a.up();
       await tester.pump();
+      final from2 = h.scene.argsOf('setInput').length;
+      await b.moveBy(const Offset(8, 0));
+      await tester.pump();
+      expect(sumOf(h.scene, 'dx', from: from2), closeTo(8, 0.01));
+      await b.up();
+      await s.up();
+      await tester.pump();
+      expect(looks(h.scene), [true, false]);
+    });
+
+    testWidgets('장면 위 짧은 탭은 표식 누르기(tapAt), 다른 손가락이 있으면 탭이 아니다', (tester) async {
+      final h = await pumpChurch(tester);
+      await tester.tapAt(const Offset(250, 320));
+      await tester.pump();
+      expect(h.scene.lastArgs('tapAt'), {'x': 250.0, 'y': 320.0});
+      final n = h.scene.count('tapAt');
+      final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
+      final s = await tester.startGesture(stick);
+      await s.moveBy(const Offset(0, -30));
+      await tester.tapAt(const Offset(250, 320));
+      await s.up();
+      await tester.pump();
+      expect(
+        h.scene.count('tapAt'),
+        n,
+        reason: '걸으면서 닿은 손가락은 탭으로 걷기를 시작하지 않는다',
+      );
+      expect(h.scene.viewPointerDowns, 0);
+    });
+
+    testWidgets('HUD 단추가 먼저 받는다(입력 층 위)', (tester) async {
+      final h = await pumpChurch(tester);
+      final n = h.scene.argsOf('setInput').length;
+      await tester.tap(find.byKey(const ValueKey('hud-collapse')));
+      await tester.pump();
+      expect(h.settings.churchHudCollapsed, isTrue);
+      expect(h.scene.argsOf('setInput').length, n, reason: '단추 터치는 시점이 아니다');
+      expect(h.scene.count('tapAt'), 0);
+    });
+
+    testWidgets('앉아 있으면 입력 층이 없어 웹이 직접 손가락을 받는다', (tester) async {
+      final h = await pumpChurch(tester);
+      h.scene.emit(const SceneSeated('L03-2'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('move-zone')), findsNothing);
+      final before = h.scene.viewPointerDowns;
+      await tester.tapAt(const Offset(200, 400));
+      await tester.pump();
+      expect(h.scene.viewPointerDowns, before + 1);
+      await tester.pump(const Duration(seconds: 7));
     });
 
     testWidgets("설정 '조이스틱 위치: 오른쪽'이면 손잡이는 오른쪽, 상황 단추는 왼쪽", (tester) async {

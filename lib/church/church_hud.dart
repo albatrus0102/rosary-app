@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../app/theme.dart';
+import 'church_touch_trace.dart';
 import 'net/church_net.dart';
 
 /// 3D 장면 위 HUD 의 M3 표면 규칙(2026-11 성당 테마 재디자인).
@@ -748,15 +749,21 @@ class ChurchWalkHint extends StatelessWidget {
   }
 }
 
-/// 고정 이동 손잡이(조이스틱). 화면 아래 한쪽 구석([rightSide]면 오른쪽)의 원 안에서만 이동 입력을 받고,
-/// 끌면 [-1,1] 값을 낸다(y > 0 이 앞 = 위로 끌기). 갱신은 최대 30Hz, 손을 떼면 가운데로 돌아가며 (0,0)을 한 번 보낸다.
+/// 고정 이동 손잡이(조이스틱) + 걷는 동안 3D 화면 위의 **모든 손가락**을 맡는 입력 층.
 ///
-/// 이 위젯은 장면 전체를 덮지만 **원 안의 터치만** 가로챈다. 원 밖의 터치는 아래 웹 장면이 그대로 받아
-/// 한 손가락 끌기 = 시점 회전, 두 손가락 = 확대/축소로 쓴다(HUD 버튼은 이 위젯보다 위에 둔다).
+/// 화면 아래 한쪽 구석([rightSide]면 오른쪽)의 원 안에서 닿은 손가락은 이동(끌면 [-1,1], y > 0 이 앞 = 위로 끌기,
+/// 갱신은 최대 30Hz, 손을 떼면 가운데로 돌아가며 (0,0)을 한 번 보냄)이고, 그 밖의 손가락은 여기서 읽어 웹에 보낸다:
+/// 한 손가락 끌기 = 시점 회전([onLook] dx·dy), 두 손가락 = 확대/축소([onLook] k), 짧은 탭 = 표식 누르기([onTap]).
 ///
-/// 이동 + 시점 동시: 손잡이 손가락이 눌린 채 다른 한 손가락이 닿으면 그 손가락의 끌기를 여기서 읽어
-/// [onLook]으로 웹에 보내 시점을 돌린다(손잡이 손가락은 계속 걷는다). 손잡이 손가락 + 다른 한 손가락은 핀치가 아니다.
-/// 핀치(확대)는 손잡이가 아닌 두 손가락일 때만 웹이 맡는다. 어느 손가락을 먼저 떼어도 다른 쪽은 이어서 동작한다.
+/// 왜 앱이 다 맡는가: 안드로이드에서 웹뷰는 플랫폼 뷰라 Flutter 가 손가락을 넘겨 줄 때 `_AndroidMotionEventConverter`
+/// 가 원래 MotionEvent 의 손가락 수(`platformData`)와 웹뷰가 아는 손가락 수가 다르면 ACTION_MOVE 를 버린다
+/// (flutter/lib/src/services/platform_views.dart `toAndroidMotionEvent`: `pointerIdx != originalPointerCount - 1`).
+/// 손잡이 손가락은 Flutter 만 보므로, 손잡이를 잡은 채로는 웹뷰가 다른 손가락의 움직임을 하나도 받지 못한다.
+/// 그래서 손가락을 웹뷰에 나눠 주지 않고(불투명 Listener) 이 층이 역할을 정해 짧은 메시지로 보낸다.
+/// HUD 버튼은 이 층보다 위(Stack 뒤쪽)에 두어 터치를 먼저 받는다. 앉아 있는 동안(이 층이 없음)은 웹이 직접 받는다.
+///
+/// 역할: 원 안에서 처음 닿은 손가락 = stick(하나뿐), 그 밖 = view. view 가 하나면 look, 둘 이상이면 앞의 둘로 pinch.
+/// 어느 순서로 닿고 떼어도 각 손가락은 제 역할을 이어 간다(시점이 튀지 않게 늘 직전 위치와의 차이만 보낸다).
 class ChurchMoveZone extends StatefulWidget {
   const ChurchMoveZone({
     super.key,
@@ -778,19 +785,24 @@ class ChurchMoveZone extends StatefulWidget {
   /// 손잡이가 차지하는 폭(여백 포함): 같은 줄의 다른 HUD 가 이만큼 비켜 선다.
   static const double reserve = 132 + margin + AppSpace.xs;
 
+  /// 탭으로 치는 최대 움직임(논리 px)과 시간.
+  static const double tapSlop = 12;
+  static const Duration tapTime = Duration(milliseconds: 450);
+
   final void Function(double x, double y) onChanged;
 
-  /// 손잡이를 거의 끌지 않고 짧게 눌렀다 뗀 '탭'(화면 좌표). 웹 장면의 표식을 누르는 데 쓴다.
+  /// 거의 끌지 않고 짧게 눌렀다 뗀 '탭'(화면 좌표). 손잡이 위든 장면 위든 웹 장면의 표식을 누르는 데 쓴다.
+  /// 장면 위의 탭은 그 손가락 혼자(닿을 때 다른 손가락이 없고, 떼기 전에 다른 손가락도 닿지 않음)일 때만.
   final ValueChanged<Offset>? onTap;
 
   /// 손잡이에 손이 닿을 때(자동 걷기를 멈추는 데 쓴다).
   final VoidCallback? onTouchDown;
 
-  /// 손잡이를 잡은 채 다른 한 손가락으로 끄는 시점 회전. `on`: 시작(true)/끝(false), `dx`·`dy`: 그동안 끈 양(논리 픽셀).
-  final void Function({required bool on, double? dx, double? dy})? onLook;
+  /// 시점·확대 입력. `on`: 장면 손가락이 닿기 시작(true)/모두 떨어짐(false),
+  /// `dx`·`dy`: 한 손가락 끌기량(논리 px), `k`: 두 손가락 사이 거리 배율(>1 벌림).
+  final void Function({bool? on, double dx, double dy, double k})? onLook;
 
   /// 손잡이 원의 실제 자리(이 위젯 좌표 = 웹 화면 좌표)가 정해지거나 바뀔 때(처음·펴고 접기·안전 영역 변화) 부른다.
-  /// 웹은 이 원 안만 이동 영역으로 알고, 나머지 화면은 시점 끌기·확대에 쓴다.
   final void Function(Offset center, double radius)? onZone;
 
   /// 손잡이 지름(120~140dp).
@@ -810,6 +822,17 @@ class ChurchMoveZone extends StatefulWidget {
   State<ChurchMoveZone> createState() => _ChurchMoveZoneState();
 }
 
+/// 이 층이 맡은 손가락 하나.
+class _Ptr {
+  _Ptr(this.pos, this.at, {required this.alone}) : down = pos;
+  Offset pos;
+  final Offset down;
+  final Duration at;
+  bool alone;
+  double moved = 0;
+  int lastTraceMs = 0;
+}
+
 class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   Offset _knob = Offset.zero; // -1..1 (화면 좌표: y 아래가 +)
   int? _pointer; // 손잡이를 잡은 손가락
@@ -823,14 +846,13 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   double _maxDrag = 0;
   Duration _downTime = Duration.zero;
 
-  /// 지금 화면에 닿아 있는 손가락(HUD 버튼 위의 것은 빼고): 위치와, 손잡이 안에서 시작했는지.
-  final Map<int, ({Offset pos, bool inStick})> _pts = {};
+  /// 지금 이 층에 닿아 있는 모든 손가락(HUD 버튼 위의 것은 HUD 가 먼저 받아 여기 오지 않는다).
+  final Map<int, _Ptr> _pts = {};
 
-  /// 앱이 읽는 시점 손가락(손잡이 손가락이 눌린 채 닿은 다른 한 손가락)과 아직 못 보낸 끌기량.
-  int? _lookPtr;
-  double _lookDx = 0;
-  double _lookDy = 0;
-  Timer? _lookTimer;
+  /// 장면(view) 손가락: 닿은 순서. 하나면 시점, 둘 이상이면 앞의 둘로 확대.
+  final List<int> _views = [];
+  bool _lookOn = false;
+  double _pinchDist = 0;
 
   Size _area = Size.zero;
   (Offset, double)? _zoneSent;
@@ -906,87 +928,163 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
     if (wasSent) widget.onChanged(0, 0);
   }
 
-  /// 손잡이 손가락이 눌린 채 닿은 '다른 한 손가락'의 끌기를 앱이 대신 읽어 시점 회전으로 보낸다(이동 + 시점 동시).
-  void _startLook(int id) {
-    _lookPtr = id;
-    _lookDx = _lookDy = 0;
-    widget.onLook?.call(on: true);
+  // --- 역할(기록·진단 표시) ---
+  static ChurchTouchTrace get _trace => ChurchTouchTrace.instance;
+
+  String _roleOf(int id) {
+    if (id == _pointer) return 'stick';
+    final i = _views.indexOf(id);
+    if (i < 0) return 'none';
+    if (_views.length == 1) return 'look';
+    return i < 2 ? 'pinch' : 'view';
   }
 
-  void _flushLook() {
-    _lookTimer?.cancel();
-    _lookTimer = null;
-    final dx = _lookDx, dy = _lookDy;
-    _lookDx = _lookDy = 0;
-    if (dx != 0 || dy != 0) widget.onLook?.call(on: true, dx: dx, dy: dy);
+  void _syncRoles() {
+    if (!ChurchTouchTrace.on) return;
+    for (final id in _pts.keys) {
+      _trace.roles[id] = _roleOf(id);
+    }
   }
 
-  void _endLook() {
-    if (_lookPtr == null) return;
-    _flushLook();
-    _lookPtr = null;
-    widget.onLook?.call(on: false);
+  void _setPinchBase() {
+    _pinchDist = _views.length >= 2
+        ? (_pts[_views[0]]!.pos - _pts[_views[1]]!.pos).distance
+        : 0;
   }
 
   void _down(PointerDownEvent e) {
-    final inStick = _inStick(e.localPosition);
-    _pts[e.pointer] = (pos: e.localPosition, inStick: inStick);
-    if (_pointer == null && inStick) {
-      // 손잡이를 잡는다. 다른 손가락이 이미 장면을 끌고 있어도 그대로 둔다(웹은 그 한 손가락만 봐 핀치가 아니다).
+    final p = e.localPosition;
+    // 새 손가락이 닿으면 이미 닿아 있던 손가락은 더 이상 '혼자 탭'이 아니다.
+    for (final o in _pts.values) {
+      o.alone = false;
+    }
+    _pts[e.pointer] = _Ptr(p, _clock.elapsed, alone: _pts.isEmpty);
+    if (_pointer == null && _inStick(p)) {
+      // 손잡이를 잡는다. 다른 손가락이 이미 장면을 끌고 있으면 그 손가락은 그대로 시점을 돌린다.
       _pointer = e.pointer;
-      _downAt = e.localPosition;
+      _downAt = p;
       _maxDrag = 0;
       _downTime = _clock.elapsed;
       widget.onTouchDown?.call();
       setState(() => _used = true);
-      _update(e.localPosition);
-      return;
+      _update(p);
+      if (ChurchTouchTrace.on) {
+        _trace.decision('stick-grab', {
+          'id': e.pointer,
+          'views': _views.length,
+        });
+      }
+    } else {
+      _views.add(e.pointer);
+      if (!_lookOn) {
+        _lookOn = true;
+        widget.onLook?.call(on: true);
+      }
+      if (_views.length == 2) _setPinchBase();
+      if (ChurchTouchTrace.on) {
+        _trace.decision(
+          _views.length == 1
+              ? 'look-start'
+              : (_views.length == 2 ? 'pinch-start' : 'view-extra'),
+          {'id': e.pointer, 'stick': ?_pointer, 'views': _views.length},
+        );
+      }
     }
-    if (_lookPtr != null) {
-      // 시점 손가락이 이미 있는데 또 하나가 닿았다: 손잡이 아닌 손가락이 둘이다 -> 웹이 핀치로 읽게 앱은 물러난다.
-      _endLook();
-      return;
-    }
-    // 손잡이 손가락 + 다른 손가락 하나: 그 손가락이 시점을 돌린다(손잡이 손가락은 핀치에 끼지 않는다).
-    if (_pointer != null && _pts.length == 2) _startLook(e.pointer);
+    _syncRoles();
   }
 
   void _move(PointerMoveEvent e) {
     final p = _pts[e.pointer];
     if (p == null) return;
     final prev = p.pos;
-    _pts[e.pointer] = (pos: e.localPosition, inStick: p.inStick);
-    if (e.pointer == _lookPtr) {
-      final d = e.localPosition - prev;
-      _lookDx += d.dx;
-      _lookDy += d.dy;
-      _lookTimer ??= Timer(widget.minInterval, _flushLook);
+    p.pos = e.localPosition;
+    final d = (e.localPosition - p.down).distance;
+    if (d > p.moved) p.moved = d;
+    if (e.pointer == _pointer) {
+      _update(e.localPosition);
       return;
     }
-    if (e.pointer == _pointer) _update(e.localPosition);
+    final i = _views.indexOf(e.pointer);
+    if (i < 0) return;
+    if (_views.length == 1) {
+      final dd = e.localPosition - prev;
+      if (dd != Offset.zero) widget.onLook?.call(dx: dd.dx, dy: dd.dy);
+    } else if (i < 2) {
+      final dist = (_pts[_views[0]]!.pos - _pts[_views[1]]!.pos).distance;
+      if (_pinchDist > 0 && dist > 0 && dist != _pinchDist) {
+        widget.onLook?.call(k: dist / _pinchDist);
+      }
+      _pinchDist = dist;
+    }
   }
 
   void _up(PointerEvent e, {required bool cancelled}) {
-    if (_pts.remove(e.pointer) == null) return;
-    if (e.pointer == _lookPtr) {
-      _endLook();
+    final p = _pts.remove(e.pointer);
+    if (p == null) return;
+    if (ChurchTouchTrace.on) _trace.roles.remove(e.pointer);
+    final quick = _clock.elapsed - p.at < ChurchMoveZone.tapTime;
+    if (e.pointer == _pointer) {
+      final isTap =
+          !cancelled &&
+          _maxDrag < ChurchMoveZone.tapSlop &&
+          _clock.elapsed - _downTime < ChurchMoveZone.tapTime;
+      _release();
+      if (ChurchTouchTrace.on) {
+        _trace.decision('stick-release', {'id': e.pointer, 'tap': isTap});
+      }
+      if (isTap) widget.onTap?.call(e.localPosition);
+      _syncRoles();
       return;
     }
-    if (e.pointer != _pointer) return;
+    final i = _views.indexOf(e.pointer);
+    if (i < 0) return;
+    _views.removeAt(i);
+    // 확대하던 둘 중 하나가 떨어지면: 남은 둘(셋째 손가락이 있었다면)로 새 기준, 하나 남으면 그 손가락이 이어서 시점.
+    if (i < 2) _setPinchBase();
     final isTap =
-        !cancelled &&
-        _maxDrag < 12 &&
-        _clock.elapsed - _downTime < const Duration(milliseconds: 450);
-    _release();
+        !cancelled && p.alone && p.moved < ChurchMoveZone.tapSlop && quick;
+    if (_views.isEmpty && _lookOn) {
+      _lookOn = false;
+      widget.onLook?.call(on: false);
+    }
+    if (ChurchTouchTrace.on) {
+      _trace.decision('view-up', {
+        'id': e.pointer,
+        'tap': isTap,
+        'views': _views.length,
+      });
+    }
     if (isTap) widget.onTap?.call(e.localPosition);
+    _syncRoles();
+  }
+
+  void _traceEvent(PointerEvent e) {
+    if (!ChurchTouchTrace.on) return;
+    // 이 층이 기록한 손가락(바깥 기록 층은 HUD·웹으로 간 손가락만 기록한다)
+    if (e is PointerDownEvent) _trace.claimed.add(e.pointer);
+    final role = _roleOf(e.pointer);
+    if (e is PointerMoveEvent) {
+      // 움직임은 손가락마다 33ms 에 한 번(고리 버퍼가 몇 초 만에 차지 않게)
+      final p = _pts[e.pointer];
+      final ms = e.timeStamp.inMilliseconds;
+      if (p != null) {
+        if (ms - p.lastTraceMs < 33) return;
+        p.lastTraceMs = ms;
+      }
+    }
+    _trace.pointer(e, role);
   }
 
   @override
   void dispose() {
     _pending?.cancel();
-    _lookTimer?.cancel();
     if (_pointer != null && _sent) widget.onChanged(0, 0);
-    if (_lookPtr != null) widget.onLook?.call(on: false);
+    if (_lookOn) widget.onLook?.call(on: false);
+    if (ChurchTouchTrace.on) {
+      for (final id in _pts.keys) {
+        _trace.roles.remove(id);
+      }
+    }
     super.dispose();
   }
 
@@ -1002,12 +1100,24 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
         _area = c.biggest;
         _syncZone();
         return Listener(
-          // 모든 손가락을 지켜보되(두 손가락 판정), 원 밖의 터치는 아래 웹 장면으로 지나가게 둔다.
-          behavior: HitTestBehavior.translucent,
-          onPointerDown: _down,
-          onPointerMove: _move,
-          onPointerUp: (e) => _up(e, cancelled: false),
-          onPointerCancel: (e) => _up(e, cancelled: true),
+          // 불투명: 걷는 동안 3D 화면 위 손가락은 모두 여기서 읽는다(웹뷰에 나눠 주지 않는다, 위 설명).
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (e) {
+            _down(e);
+            _traceEvent(e);
+          },
+          onPointerMove: (e) {
+            _traceEvent(e);
+            _move(e);
+          },
+          onPointerUp: (e) {
+            _traceEvent(e);
+            _up(e, cancelled: false);
+          },
+          onPointerCancel: (e) {
+            _traceEvent(e);
+            _up(e, cancelled: true);
+          },
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -1097,7 +1207,7 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
   }
 }
 
-/// 원 안의 터치만 받는 자리(모서리의 터치는 아래 장면으로 지나간다).
+/// 손잡이 원(시험·접근성에서 원의 자리를 찾는 표식). 터치 경로는 바깥 불투명 Listener 가 맡는다.
 class _CircleHit extends SingleChildRenderObjectWidget {
   const _CircleHit({super.key, super.child});
 

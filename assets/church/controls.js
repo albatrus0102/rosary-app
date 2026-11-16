@@ -18,12 +18,14 @@
       // 앱(Flutter)이 고정 이동 손잡이를 그린다(ext): 웹은 스틱을 만들지 않고 화면 전체를 시점 회전·핀치로 쓴다.
       // extPinch: 손가락 하나가 앱 손잡이 위에 있어 웹이 한 손가락만 보는 핀치 — 그동안 한 손가락 회전을 멈춘다(확대는 pinchBy).
       ext: false, extPinch: false,
-      // extLook: 손잡이 손가락(Flutter 가 가로챔)이 눌린 채 닿은 다른 손가락의 끌기를 앱이 대신 읽어 lookBy 로 보낸다 — 그동안 웹은 같은 손가락의
-      // 한 손가락 회전을 하지 않는다(두 번 돌지 않게). 손잡이 손가락 + 다른 한 손가락은 절대 핀치가 아니다(웹은 손잡이 손가락을 못 본다).
+      // extLook: 걷는 동안 앱(Flutter)이 3D 화면 위 손가락을 모두 맡아 읽고(안드로이드 웹뷰는 손잡이를 잡은 채 닿은 다른 손가락의 움직임을
+      // 받지 못한다) setInput{look,dx,dy,k} 로 보낸다. look=true 인 동안(앱의 시점 손가락이 닿아 있음) 끌기 상태로 쳐 자동 따라가기가 쉬고,
+      // 웹이 혹시 같은 손가락을 받아도 한 번 더 돌리지 않는다.
       extLook: false,
       // 시점 회전 한 번(화면 px 끌기량). 웹 한 손가락 끌기와 앱이 보내는 lookBy 가 같은 식을 쓴다.
       lookBy: function (dx, dy) {
-        dx = +dx; dy = +dy; if (!isFinite(dx) || !isFinite(dy)) return;
+        // 빠진 축은 0(앱은 한 축만 바뀌어도 둘 다 보내지만, 한쪽이 없다고 끌기 전체를 버리지 않는다)
+        dx = dx === undefined ? 0 : +dx; dy = dy === undefined ? 0 : +dy; if (!isFinite(dx) || !isFinite(dy)) return;
         ctl.yaw -= dx * 0.0065;
         // 아래로 끌면 시점이 올라가고, 맨 아래(수평)에서 더 위로 끌면 천장을 올려다본다(look).
         var dp = dy * 0.004;
@@ -71,6 +73,8 @@
       },
       // 걷는 중에만 왼쪽 절반이 이동 영역이다(앉으면 화면 전체가 카메라 영역).
       setMoveZone: function (on) { on = !!on; if (ctl.moveZone === on) return; ctl.moveZone = on; if (!on) releaseMove(); },
+      // 터치 기록(개발용 빌드, main.js 가 켠다): trace(type, e) — 웹이 받은 포인터 이벤트마다. 꺼져 있으면 null(비용 없음).
+      trace: null,
       // 창 감상 제스처
       viewMode: false, onView: null,
       setViewMode: function (on) { on = !!on; if (ctl.viewMode === on) return; ctl.viewMode = on; vpts = {}; vLast = 0; if (on) { releaseMove(); ctl.moveZone = false; pts = {}; recount(); } }
@@ -148,6 +152,7 @@
     function orbitIds() { var o = []; for (var k in pts) if (pts[k].role === 'orbit') o.push(k); return o; }
     function pd() { var ks = orbitIds(); var a = pts[ks[0]], b = pts[ks[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
     canvas.addEventListener('pointerdown', function (e) {
+      if (ctl.trace) ctl.trace('down', e);
       if (ctl.viewMode) { vDown(e); return; }
       var role = 'orbit';
       if (!ctl.ext && ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX, e.clientY)) role = 'move';
@@ -164,6 +169,7 @@
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     });
     canvas.addEventListener('pointermove', function (e) {
+      if (ctl.trace) ctl.trace('move', e);
       if (ctl.viewMode) { vMove(e); return; }
       var p = pts[e.pointerId];
       if (!p) return;
@@ -188,6 +194,7 @@
       ctl.lastDragT = ctl.now;
     });
     function up(e) {
+      if (ctl.trace) ctl.trace(e.type === 'pointercancel' ? 'cancel' : 'up', e);
       if (ctl.viewMode) { vUp(e); return; }
       var p = pts[e.pointerId];
       if (!p) return;
@@ -204,7 +211,22 @@
     canvas.addEventListener('wheel', function (e) {
       if (ctl.viewMode) { vEmit('pinch', { k: Math.exp(-e.deltaY * 0.0015), cx: e.clientX, cy: e.clientY }); e.preventDefault(); return; }
       ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom * (1 + e.deltaY * 0.001))); e.preventDefault(); }, { passive: false });
+    ctl.pointerCount = countAll;
     return ctl;
   }
-  root.ChurchControls = { create: create };
+  function wrapA(a) { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; }
+  // 걸을 때 카메라가 아바타 뒤로 천천히 도는 '자동 따라가기' 한 프레임(main.js updateCamera). 돌린 양(라디안)을 돌려준다.
+  // 사용자가 시점을 끄는 동안은 절대 돌리지 않는다: 웹 손가락(dragging)이든 앱이 대신 읽는 손가락(extLook)이든 같다.
+  // s: { follow(설정 '걸을 때 뒤로 따라가기'), walkSt(자동 걷기 중), seated, spot(자리 시점 중), t(초), meYaw, speed(m/s), dt }
+  function followStep(ctl, s) {
+    if (!s.follow || s.seated || ctl.dragging || ctl.extLook) return 0;
+    var before = ctl.yaw, since = s.t - ctl.lastDragT;
+    if (s.walkSt) {
+      if (since > 1.5) ctl.yaw += wrapA(s.meYaw - ctl.yaw) * (1 - Math.exp(-s.dt * 1.2));
+    } else if (!s.spot && since > 2.5 && s.speed > 0.6 && Math.abs(wrapA(s.meYaw - ctl.yaw)) < 1.2) {
+      ctl.yaw += wrapA(s.meYaw - ctl.yaw) * (1 - Math.exp(-s.dt * 0.5));
+    }
+    return ctl.yaw - before;
+  }
+  root.ChurchControls = { create: create, followStep: followStep };
 })(typeof window !== 'undefined' ? window : this);
