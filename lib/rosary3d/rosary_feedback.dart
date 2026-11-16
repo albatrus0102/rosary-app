@@ -26,26 +26,91 @@ abstract class RosaryFeedbackSink {
   Future<void> dispose();
 }
 
+/// 효과음 한 개를 미리 올려 두고 반복 재생하는 재생기. 테스트는 가짜로 바꾼다.
+abstract class RosaryClip {
+  /// 소리를 한 번만 올린다(이후 [play]마다 다시 올리지 않는다).
+  Future<void> load();
+
+  /// 처음부터 다시 낸다. 앞선 소리가 남아 있어도 끊지 않는다(stop 없음 = 출력 스트림 닫힘 '툭' 방지).
+  Future<void> play(double volume);
+
+  Future<void> dispose();
+}
+
+/// audioplayers 저지연(SoundPool) 재생기 한 개 = 소리 한 개. 만들고 나면 죽이지 않는다.
+class AudioplayersRosaryClip implements RosaryClip {
+  AudioplayersRosaryClip(this.asset);
+  final String asset;
+  final AudioPlayer _p = AudioPlayer()
+    ..setPlayerMode(PlayerMode.lowLatency)
+    ..setReleaseMode(ReleaseMode.stop);
+  double? _vol;
+
+  @override
+  Future<void> load() => _p.setSource(AssetSource(asset));
+
+  @override
+  Future<void> play(double volume) async {
+    if (_vol != volume) {
+      _vol = volume;
+      await _p.setVolume(volume);
+    }
+    await _p.resume();
+  }
+
+  @override
+  Future<void> dispose() => _p.dispose();
+}
+
+/// 효과음 파일(assets/sounds 기준). 같은 파일은 같은 재생기를 쓴다.
+String rosarySoundAsset(RosaryCue cue) => switch (cue) {
+  RosaryCue.bead || RosaryCue.minor => 'sounds/r_bead.wav',
+  RosaryCue.ourFather || RosaryCue.gloryBe => 'sounds/r_low.wav',
+  RosaryCue.tenComplete => 'sounds/r_bells2.wav',
+  RosaryCue.mystery => 'sounds/r_bell_soft.wav',
+  RosaryCue.rosaryComplete => 'sounds/r_bell_end.wav',
+};
+
 /// 실제 기기: 안드로이드는 플랫폼 채널 `rosarium/vibrate`(VibrationEffect 파형·세기)로 차등 진동,
 /// 채널이 없으면(iOS·데스크톱) Flutter 기본 HapticFeedback 으로 대신한다. 효과음은 코드로 합성한 WAV(assets/sounds/r_*).
+/// 효과음 재생기는 소리마다 하나씩 처음 한 번만 만들어 미리 올리고, 화면을 떠날 때까지 닫지 않는다.
 class DeviceRosaryFeedback implements RosaryFeedbackSink {
+  DeviceRosaryFeedback({
+    RosaryClip Function(String asset)? clipFactory,
+    Future<void> Function(RosaryCue cue, double strength)? vibrateImpl,
+  }) : _clipFactory = clipFactory ?? AudioplayersRosaryClip.new,
+       // ignore: prefer_initializing_formals
+       _vibrateImpl = vibrateImpl;
+
   static const MethodChannel _vibe = MethodChannel('rosarium/vibrate');
-  AudioPlayer? _tick;
-  AudioPlayer? _bell;
+  final RosaryClip Function(String asset) _clipFactory;
+  final Future<void> Function(RosaryCue cue, double strength)? _vibrateImpl;
+  final Map<String, Future<RosaryClip?>> _clips = {};
   FlutterTts? _tts;
   bool _channelMissing = false;
+  bool _disposed = false;
 
-  AudioPlayer _player(bool tick) {
-    final p = tick ? _tick : _bell;
-    if (p != null) return p;
-    final n = AudioPlayer()..setPlayerMode(PlayerMode.lowLatency);
-    if (tick) {
-      _tick = n;
-    } else {
-      _bell = n;
+  /// 화면이 열릴 때 모든 소리를 미리 올려 첫 탭의 지연·소리 끊김을 없앤다.
+  Future<void> preload() async {
+    for (final c in RosaryCue.values) {
+      await _clip(rosarySoundAsset(c));
     }
-    return n;
   }
+
+  Future<RosaryClip?> _clip(String asset) => _clips.putIfAbsent(asset, () async {
+    try {
+      final c = _clipFactory(asset);
+      await c.load();
+      if (_disposed) {
+        await c.dispose();
+        return null;
+      }
+      return c;
+    } catch (e) {
+      debugPrint('rosary sound load failed: $e');
+      return null;
+    }
+  });
 
   @override
   void play(
@@ -55,11 +120,14 @@ class DeviceRosaryFeedback implements RosaryFeedbackSink {
     required double strength,
     required double volume,
   }) {
+    if (_disposed) return;
     if (vibrate) unawaited(_vibrate(cue, strength));
     if (sound) unawaited(_sound(cue, volume));
   }
 
   Future<void> _vibrate(RosaryCue cue, double strength) async {
+    final impl = _vibrateImpl;
+    if (impl != null) return impl(cue, strength);
     if (!_channelMissing) {
       try {
         await _vibe.invokeMethod<void>('pattern', {
@@ -100,19 +168,10 @@ class DeviceRosaryFeedback implements RosaryFeedbackSink {
   }
 
   Future<void> _sound(RosaryCue cue, double volume) async {
-    final asset = switch (cue) {
-      RosaryCue.bead || RosaryCue.minor => 'sounds/r_bead.wav',
-      RosaryCue.ourFather || RosaryCue.gloryBe => 'sounds/r_low.wav',
-      RosaryCue.tenComplete => 'sounds/r_bells2.wav',
-      RosaryCue.mystery => 'sounds/r_bell_soft.wav',
-      RosaryCue.rosaryComplete => 'sounds/r_bell_end.wav',
-    };
-    final tick = cue == RosaryCue.bead || cue == RosaryCue.minor;
     try {
-      final p = _player(tick);
-      await p.stop();
-      await p.setVolume(cue == RosaryCue.minor ? volume * 0.5 : volume);
-      await p.play(AssetSource(asset));
+      final c = await _clip(rosarySoundAsset(cue));
+      if (c == null || _disposed) return;
+      await c.play(cue == RosaryCue.minor ? volume * 0.5 : volume);
     } catch (e) {
       debugPrint('rosary sound failed: $e');
     }
@@ -142,8 +201,12 @@ class DeviceRosaryFeedback implements RosaryFeedbackSink {
 
   @override
   Future<void> dispose() async {
-    await _tick?.dispose();
-    await _bell?.dispose();
+    _disposed = true;
+    final clips = _clips.values.toList();
+    _clips.clear();
+    for (final f in clips) {
+      await (await f)?.dispose();
+    }
     await _tts?.stop();
   }
 }

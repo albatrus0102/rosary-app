@@ -95,7 +95,7 @@ class _ChurchRosaryPanelState extends State<ChurchRosaryPanel> {
     _fb =
         widget.feedback ??
         ChurchRosaryPanel.debugFeedback ??
-        DeviceRosaryFeedback();
+        (DeviceRosaryFeedback()..preload());
     _last = _c.session.index;
     _c.session.addListener(_onStep);
   }

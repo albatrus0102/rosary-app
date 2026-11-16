@@ -201,7 +201,8 @@ class _PrayerScreenState extends State<PrayerScreen>
             ? 'low'
             : 'high';
       scene.setStep(_session.index, animate: false);
-      _fb = widget.rosaryFeedback ?? DeviceRosaryFeedback();
+      _fb = widget.rosaryFeedback ??
+          (DeviceRosaryFeedback()..preload());
       _fbLast = _session.index;
       _session.addListener(_onRosaryStep);
       _settings.addListener(_onRosarySettings);
