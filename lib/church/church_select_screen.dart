@@ -109,7 +109,9 @@ class ChurchSelectScreen extends StatefulWidget {
 
   /// 성당마다 실제와 다른 점을 적은 고지([ChurchInfo.modelNote])가 있으면 그것만 보인다.
   static String _noteFor(ChurchInfo info) {
-    if (info.modelNote.isNotEmpty) return info.modelNote;
+    if (info.modelNote.isNotEmpty) {
+      return ReleaseGate.churchNote(info.id, info.modelNote);
+    }
     if (info.id == ChurchCatalog.defaultId) return '실제 성당이 아닌 가상의 본당입니다';
     return _note;
   }

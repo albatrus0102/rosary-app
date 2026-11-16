@@ -11,6 +11,7 @@ import 'package:rosary_app/app/rosary_style.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/leader_voice.dart';
 import 'package:rosary_app/app/theme.dart';
+import 'package:rosary_app/church/church_catalog.dart';
 import 'package:rosary_app/church/church_select_screen.dart';
 import 'package:rosary_app/domain/art_credits.dart';
 import 'package:rosary_app/domain/mystery_art.dart';
@@ -134,6 +135,20 @@ void main() {
           containsAll(['stpeter', 'lateran']),
         );
       }
+    });
+
+    test('St Peter note does not mention Previati in release builds', () {
+      final raw = ChurchCatalog.byId['stpeter']!.modelNote;
+      expect(raw, contains('프레비아티'), reason: '원문은 개발용 빌드용으로 남긴다');
+      final shown = ReleaseGate.churchNote('stpeter', raw);
+      expect(shown.contains('프레비아티'), _dev);
+      if (!_dev) {
+        expect(shown, contains('옛 석판화 연작(1897년)'));
+        expect(shown, isNot(contains('1901')));
+      }
+      // 다른 성당 안내문은 건드리지 않는다.
+      final l = ChurchCatalog.byId['lateran']!.modelNote;
+      expect(ReleaseGate.churchNote('lateran', l), l);
     });
 
     test('source data still lists Previati (kept for dev builds)', () {
@@ -289,6 +304,20 @@ void main() {
         // Flutter 기본 로고 PNG(팔레트 PNG, 수 KB 이하)가 아니라 새로 그린 RGB PNG 인가(색 유형 2).
         expect(b[25], 2, reason: '$d: RGB 8비트');
       });
+      // 적응형 아이콘: 배경색 + 투명 바탕 전경(RGBA, 색 유형 6)
+      final xml = File(
+        'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
+      ).readAsStringSync();
+      expect(xml, contains('@mipmap/ic_launcher_foreground'));
+      expect(
+        File('android/app/src/main/res/values/ic_launcher_background.xml')
+            .readAsStringSync(),
+        contains('#140806'),
+      );
+      final fg = File(
+        'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png',
+      ).readAsBytesSync();
+      expect(fg[25], 6);
     });
   });
 

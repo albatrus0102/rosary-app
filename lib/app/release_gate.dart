@@ -45,6 +45,18 @@ abstract final class ReleaseGate {
     'stpeter': 'oreilly',
   };
 
+  /// 성당 안내문([ChurchInfo.modelNote])의 연작 설명도 바꾼 연작에 맞춘다(성당 id → (원래 문구, 대체 문구)).
+  /// 대체 문구는 라테라노 안내문과 같은 `oreilly`(1897년 석판화) 설명이다.
+  static const Map<String, (String, String)> churchNoteOverrides = {
+    'stpeter': ('옛 그림 연작(프레비아티, 1901~1902년)', '옛 석판화 연작(1897년)'),
+  };
+
+  /// [note]에 검수용(출시) 빌드의 대체 문구를 적용한다.
+  static String churchNote(String churchId, String note) {
+    final o = churchNoteOverrides[churchId];
+    return showAll || o == null ? note : note.replaceAll(o.$1, o.$2);
+  }
+
   /// 이 연작을 지금 빌드에서 보여도 되는가.
   static bool stationSeriesVisible(String id) =>
       showAll || !hiddenStationSeriesIds.contains(id);
