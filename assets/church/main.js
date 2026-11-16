@@ -371,13 +371,15 @@
     cancelWalk: function () { cancelWalk('api'); },
     // Flutter 가 왼쪽 절반 터치를 가로채므로, 거기서 일어난 탭을 화면 좌표(CSS px)로 넘겨 받는다.
     tapAt: function (o) { tapAt(+o.x, +o.y); },
-    // 앱 입력 연동: {ext} 앱이 고정 이동 손잡이를 그림(웹 스틱 끔), {pinch,k} 앱이 대신 처리하는 두 손가락 확대(controls.js)
+    // 앱 입력 연동: {ext} 앱이 고정 이동 손잡이를 그림(웹 스틱 끔), {pinch,k} 앱이 대신 처리하는 두 손가락 확대, {look,dx,dy} 앱이 대신 읽는 시점 끌기(controls.js)
     setInput: function (o) {
       var c = App.ctl; if (!c || !o) return;
       if (o.ext !== undefined) { c.ext = !!o.ext; if (c.ext) c.setMoveZone(false); }
       if (o.stick) c.setStick(o.stick.cx, o.stick.cy, o.stick.r);   // 앱이 그린 이동 손잡이 원(CSS px)
       if (o.pinch !== undefined) c.extPinch = !!o.pinch;
       if (o.k !== undefined) c.pinchBy(o.k);
+      if (o.look !== undefined) c.setLookExt(o.look);   // 앱이 대신 읽는 시점 끌기(손잡이 + 다른 손가락)
+      if (o.dx !== undefined || o.dy !== undefined) c.lookBy(o.dx, o.dy);
     },
     setSeatTaken: function (o) {
       if (!App.net || !o.seat) return;

@@ -722,10 +722,10 @@ abstract class ChurchSceneController {
     'stick': {'cx': cx, 'cy': cy, 'r': r},
   });
 
-  /// 앱이 대신 처리하는 두 손가락 확대(손가락 하나가 손잡이 위에 있어 웹은 한 손가락만 보는 경우).
-  /// [on]인 동안 웹은 한 손가락 끌기로 시점을 돌리지 않는다. [k]는 손가락 사이 거리의 변화 배율(>1 벌림).
-  Future<void> appPinch({required bool on, double? k}) =>
-      _call('setInput', {'pinch': on, 'k': ?k});
+  /// 손잡이를 잡은 채 다른 한 손가락으로 끄는 시점 회전을 앱이 대신 읽어 보낸다(이동 + 시점 동시).
+  /// [on]인 동안 웹은 그 손가락의 한 손가락 끌기를 따로 읽지 않는다(두 번 돌지 않게). [dx]·[dy]는 끈 양(논리 픽셀).
+  Future<void> appLook({required bool on, double? dx, double? dy}) =>
+      _call('setInput', {'look': on, 'dx': ?dx, 'dy': ?dy});
 
   /// 손잡이 위에서 일어난 탭은 Flutter가 가로채므로, 거기서 일어난 탭을 화면 좌표(논리 픽셀)로 웹에 넘긴다.
   /// 웹이 표식(촛불 봉헌대·제대 앞 등)을 맞히면 그곳으로 걷기 시작한다.

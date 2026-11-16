@@ -1731,7 +1731,7 @@ class _ChurchScreenState extends State<ChurchScreen>
               ),
             ),
           // 고정 이동 손잡이(아래 구석의 원 안만 이동 입력). 그 밖의 화면은 아래 웹 장면이 받아
-          // 한 손가락 = 시점 회전, 두 손가락 = 확대/축소. HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
+          // 한 손가락 = 시점 회전(손잡이를 잡은 채로도), 두 손가락 = 확대/축소. HUD(아래 SafeArea)가 이 위에 놓여 버튼이 터치를 먼저 받는다.
           if (walking)
             Positioned.fill(
               child: ChurchMoveZone(
@@ -1747,8 +1747,8 @@ class _ChurchScreenState extends State<ChurchScreen>
                   if (_walkKind != null) _cancelWalk();
                 },
                 onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
-                onPinch: ({required bool on, double? k}) =>
-                    unawaited(_scene.appPinch(on: on, k: k)),
+                onLook: ({required bool on, double? dx, double? dy}) =>
+                    unawaited(_scene.appLook(on: on, dx: dx, dy: dy)),
               ),
             ),
           if (!_sceneReleased)

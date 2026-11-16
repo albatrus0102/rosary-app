@@ -18,6 +18,34 @@
       // 앱(Flutter)이 고정 이동 손잡이를 그린다(ext): 웹은 스틱을 만들지 않고 화면 전체를 시점 회전·핀치로 쓴다.
       // extPinch: 손가락 하나가 앱 손잡이 위에 있어 웹이 한 손가락만 보는 핀치 — 그동안 한 손가락 회전을 멈춘다(확대는 pinchBy).
       ext: false, extPinch: false,
+      // extLook: 손잡이 손가락(Flutter 가 가로챔)이 눌린 채 닿은 다른 손가락의 끌기를 앱이 대신 읽어 lookBy 로 보낸다 — 그동안 웹은 같은 손가락의
+      // 한 손가락 회전을 하지 않는다(두 번 돌지 않게). 손잡이 손가락 + 다른 한 손가락은 절대 핀치가 아니다(웹은 손잡이 손가락을 못 본다).
+      extLook: false,
+      // 시점 회전 한 번(화면 px 끌기량). 웹 한 손가락 끌기와 앱이 보내는 lookBy 가 같은 식을 쓴다.
+      lookBy: function (dx, dy) {
+        dx = +dx; dy = +dy; if (!isFinite(dx) || !isFinite(dy)) return;
+        ctl.yaw -= dx * 0.0065;
+        // 아래로 끌면 시점이 올라가고, 맨 아래(수평)에서 더 위로 끌면 천장을 올려다본다(look).
+        var dp = dy * 0.004;
+        if (dp < 0 && ctl.pitch + dp < 0.06) {
+          ctl.look = Math.min(1.35, ctl.look + (0.06 - (ctl.pitch + dp)));
+          ctl.pitch = 0.06;
+        } else if (dp > 0 && ctl.look > 0) {
+          var take = Math.min(ctl.look, dp);
+          ctl.look -= take;
+          ctl.pitch = Math.min(1.25, ctl.pitch + (dp - take));
+        } else {
+          ctl.pitch = Math.max(0.06, Math.min(1.25, ctl.pitch + dp));
+        }
+        ctl.lastDragT = ctl.now;
+        if (ctl.extLook) ctl.dragging = true;   // 앱이 끄는 동안은 자동 따라가기가 시점을 빼앗지 않는다
+      },
+      // 앱이 시점 끌기를 대신 읽는 시작/끝. 끝나면 웹에 남은 시점 손가락이 없을 때만 끌기 상태를 푼다.
+      setLookExt: function (on) {
+        on = !!on; if (ctl.extLook === on) return; ctl.extLook = on;
+        if (on) { ctl.dragging = true; } else { recount(); }
+        ctl.lastDragT = ctl.now;
+      },
       pinchBy: function (k) { k = +k; if (k > 0 && isFinite(k)) ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom / k)); ctl.lastDragT = ctl.now; },
       setJoystick: function (x, y) { ctl.joyX = Math.max(-1, Math.min(1, +x || 0)); ctl.joyY = Math.max(-1, Math.min(1, +y || 0)); },
       // 이동 입력(키보드 우선)
@@ -114,7 +142,7 @@
     function recount() {
       var n = 0; for (var k in pts) if (pts[k].role === 'orbit') n++;
       count = n;
-      if (n === 0) ctl.dragging = false;
+      if (n === 0) ctl.dragging = !!ctl.extLook;
     }
     function countAll() { var n = 0; for (var k in pts) n++; return n; }
     function orbitIds() { var o = []; for (var k in pts) if (pts[k].role === 'orbit') o.push(k); return o; }
@@ -122,7 +150,7 @@
     canvas.addEventListener('pointerdown', function (e) {
       if (ctl.viewMode) { vDown(e); return; }
       var role = 'orbit';
-      if (!ctl.ext && ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX, e.clientY) && count < 2) role = 'move';
+      if (!ctl.ext && ctl.moveZone && movePid === null && ctl.inMoveZone(e.clientX, e.clientY)) role = 'move';
       pts[e.pointerId] = { x: e.clientX, y: e.clientY, role: role, sx: e.clientX, sy: e.clientY, t0: Date.now(), alone: countAll() === 0, moved: 0 };
       if (role === 'move') {
         if (ctl.onMoveTouch) ctl.onMoveTouch();
@@ -154,20 +182,8 @@
         var d = pd();
         if (lastDist > 0) ctl.zoom = Math.max(0.55, Math.min(1.6, ctl.zoom * (lastDist / d)));
         lastDist = d;
-      } else if (!ctl.extPinch) {
-        ctl.yaw -= dx * 0.0065;
-        // 아래로 끌면 시점이 올라가고, 맨 아래(수평)에서 더 위로 끌면 천장을 올려다본다(look).
-        var dp = dy * 0.004;
-        if (dp < 0 && ctl.pitch + dp < 0.06) {
-          ctl.look = Math.min(1.35, ctl.look + (0.06 - (ctl.pitch + dp)));
-          ctl.pitch = 0.06;
-        } else if (dp > 0 && ctl.look > 0) {
-          var take = Math.min(ctl.look, dp);
-          ctl.look -= take;
-          ctl.pitch = Math.min(1.25, ctl.pitch + (dp - take));
-        } else {
-          ctl.pitch = Math.max(0.06, Math.min(1.25, ctl.pitch + dp));
-        }
+      } else if (!ctl.extPinch && !ctl.extLook) {
+        ctl.lookBy(dx, dy);
       }
       ctl.lastDragT = ctl.now;
     });

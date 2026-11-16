@@ -477,7 +477,7 @@ void main() {
     }
   });
 
-  group('고정 조이스틱과 두 손가락 확대', () {
+  group('고정 조이스틱과 시점·확대(멀티터치)', () {
     testWidgets('입장하면 웹에 앱 손잡이를 알린다(화면 전체가 시점·확대)', (tester) async {
       final h = await pumpChurch(tester);
       final inputs = h.scene.argsOf('setInput');
@@ -508,7 +508,7 @@ void main() {
       );
     });
 
-    testWidgets('손잡이를 잡은 채 두 번째 손가락이 닿으면 확대가 우선, 이동은 멈춘다', (tester) async {
+    testWidgets('손잡이를 잡은 채 다른 손가락으로 끌면 이동하면서 시점이 돈다(핀치 아님)', (tester) async {
       final h = await pumpChurch(tester);
       final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
       final a = await tester.startGesture(stick);
@@ -518,48 +518,83 @@ void main() {
 
       final b = await tester.startGesture(const Offset(300, 300), pointer: 7);
       await tester.pump();
-      expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
-      expect(h.scene.lastArgs('setInput'), {'pinch': true});
-      final joy = h.scene.count('setJoystick');
-
-      // 손가락을 벌린다 → k > 1(확대).
-      await b.moveBy(const Offset(60, -80));
+      expect(h.scene.lastArgs('setInput'), {'look': true});
+      // 손잡이는 풀리지 않는다.
+      expect(h.scene.lastArgs('setJoystick')!['y'] as double, greaterThan(0.5));
+      await b.moveBy(const Offset(40, 20));
       await tester.pump(const Duration(milliseconds: 50));
-      final k = h.scene.lastArgs('setInput')!['k']! as double;
-      expect(k, greaterThan(1));
-      // 손잡이 쪽 손가락을 움직여도 이동하지 않는다(확대 값만 바뀐다).
-      await a.moveBy(const Offset(40, 40));
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(h.scene.count('setJoystick'), joy);
+      final look = h.scene.lastArgs('setInput')!;
+      expect(look['look'], true);
+      expect(look['dx'] as double, closeTo(40, 0.01));
+      expect(look['dy'] as double, closeTo(20, 0.01));
+      expect(
+        h.scene.argsOf('setInput').any((x) => x.containsKey('pinch')),
+        isFalse,
+      );
 
+      // 시점 손가락을 먼저 떼면 시점만 끝나고 이동은 이어진다.
       await b.up();
       await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'pinch': false});
-      // 남은 손가락은 다시 이동을 시작하지 않는다.
-      await a.moveBy(const Offset(0, -20));
+      expect(h.scene.lastArgs('setInput'), {'look': false});
+      final joy = h.scene.count('setJoystick');
+      await a.moveBy(const Offset(10, -10));
       await tester.pump(const Duration(milliseconds: 50));
-      expect(h.scene.count('setJoystick'), joy);
+      expect(h.scene.count('setJoystick'), greaterThan(joy));
       await a.up();
       await tester.pump();
+      expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
       expect(h.scene.count('tapAt'), 0);
     });
 
-    testWidgets('밖에서 시점을 돌리던 중 두 번째 손가락이 손잡이에 닿아도 확대다', (tester) async {
+    testWidgets('손잡이 손가락을 먼저 떼어도 시점 손가락은 이어지고 이동은 멈춘다', (tester) async {
       final h = await pumpChurch(tester);
       final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
-      final joy = h.scene.count('setJoystick');
+      final a = await tester.startGesture(stick);
+      await a.moveBy(const Offset(0, -40));
+      final b = await tester.startGesture(const Offset(300, 300), pointer: 7);
+      await tester.pump(const Duration(milliseconds: 50));
+      await a.up();
+      await tester.pump();
+      expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
+      expect(h.scene.lastArgs('setInput')!['look'], true);
+      await b.moveBy(const Offset(-30, 0));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(h.scene.lastArgs('setInput')!['dx'] as double, closeTo(-30, 0.01));
+      await b.up();
+      await tester.pump();
+      expect(h.scene.lastArgs('setInput'), {'look': false});
+    });
+
+    testWidgets('밖에서 시점을 돌리던 중 손잡이에 닿으면 웹 손가락은 그대로, 앱은 시점을 읽지 않는다', (tester) async {
+      final h = await pumpChurch(tester);
+      final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
       final a = await tester.startGesture(const Offset(300, 300));
       final b = await tester.startGesture(stick, pointer: 7);
-      await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'pinch': true});
-      await b.moveBy(const Offset(40, -40)); // 가까워진다 → 축소
+      await b.moveBy(const Offset(0, -40));
+      await a.moveBy(const Offset(20, 0));
       await tester.pump(const Duration(milliseconds: 50));
-      expect(h.scene.lastArgs('setInput')!['k']! as double, lessThan(1));
-      expect(h.scene.count('setJoystick'), joy);
+      expect(h.scene.lastArgs('setJoystick')!['y'] as double, greaterThan(0.5));
+      expect(h.scene.argsOf('setInput').any((x) => x.containsKey('look')), isFalse);
+      expect(h.scene.argsOf('setInput').any((x) => x.containsKey('pinch')), isFalse);
       await a.up();
       await b.up();
       await tester.pump();
-      expect(h.scene.lastArgs('setInput'), {'pinch': false});
+    });
+
+    testWidgets('손잡이를 잡은 채 손잡이 아닌 손가락이 둘이면 앱은 시점에서 물러나 웹이 핀치한다', (tester) async {
+      final h = await pumpChurch(tester);
+      final stick = tester.getCenter(find.byKey(const ValueKey('move-zone')));
+      final a = await tester.startGesture(stick);
+      final b = await tester.startGesture(const Offset(300, 300), pointer: 7);
+      await tester.pump();
+      expect(h.scene.lastArgs('setInput'), {'look': true});
+      final c = await tester.startGesture(const Offset(200, 300), pointer: 8);
+      await tester.pump();
+      expect(h.scene.lastArgs('setInput'), {'look': false});
+      await c.up();
+      await b.up();
+      await a.up();
+      await tester.pump();
     });
 
     testWidgets("설정 '조이스틱 위치: 오른쪽'이면 손잡이는 오른쪽, 상황 단추는 왼쪽", (tester) async {
