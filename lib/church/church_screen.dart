@@ -2105,6 +2105,17 @@ class _LoadOverlayState extends State<_LoadOverlay> {
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
+                            if (!error) ...[
+                              const SizedBox(height: AppSpace.xxs),
+                              // 실제 성당으로 오해하지 않도록 들어갈 때마다 한 줄로 밝힌다.
+                              Text(
+                                '실제 성당과 다른 가상 재현입니다',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: AppSpace.md),
                             if (error)
                               FilledButton.icon(

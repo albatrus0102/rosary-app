@@ -108,9 +108,11 @@ class ChurchSelectScreen extends StatefulWidget {
 
   static const String _note = '실제 건축을 단순화한 3D 모형입니다';
 
+  /// 성당마다 실제와 다른 점을 적은 고지([ChurchInfo.modelNote])가 있으면 그것만 보인다.
   static String _noteFor(ChurchInfo info) {
+    if (info.modelNote.isNotEmpty) return info.modelNote;
     if (info.id == ChurchCatalog.defaultId) return '실제 성당이 아닌 가상의 본당입니다';
-    return info.modelNote.isEmpty ? _note : '$_note. ${info.modelNote}';
+    return _note;
   }
 
   /// 목록을 걸러 정렬한다(즐겨찾기가 항상 먼저, 같은 즐겨찾기 상태 안에서는 정렬 기준대로).
