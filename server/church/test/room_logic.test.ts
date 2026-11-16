@@ -1266,3 +1266,35 @@ test('who: WHO_MAX 명까지만 담고 more 로 알린다', () => {
   assert.equal(w.more, true);
   assert.equal(w.room, WHO_MAX + 3);
 });
+
+test('촛불 색: color(0..5)는 선택이며 저장·방송·복원에 실리고, 없으면 응답에도 없다(옛 초와 호환)', () => {
+  const h = new Harness();
+  const a = h.join(1);
+  const b = h.join(2);
+  nearCandle(h, a);
+  nearCandle(h, b);
+  h.clear();
+  h.send(a, { t: 'candle', slot: 7, intention: 2, color: 4 });
+  const litAt = h.t;
+  assert.deepEqual(h.msgs(b), [{ t: 'candle', slot: 7, until: litAt + CANDLE_TTL_MS, intention: 2, color: 4 }]);
+  assert.deepEqual({ ...h.saved[0] }, { slot: 7, until: litAt + CANDLE_TTL_MS, intention: 2, color: 4, seq: 1, at: litAt });
+  // 색 없는 옛 요청: 색 필드 없이 그대로
+  h.clear();
+  h.send(a, { t: 'candle', slot: 8, intention: 1 });
+  assert.equal('color' in h.msgs(b)[0], false);
+  // 범위 밖·잘못된 색은 bad_msg
+  for (const color of [6, -1, 1.5, '2']) {
+    h.clear();
+    h.send(a, { t: 'candle', slot: 9, intention: 1, color });
+    assert.deepEqual(h.msgs(a), [{ t: 'error', code: 'bad_msg' }]);
+  }
+  assert.deepEqual(h.logic.activeCandles().map((c) => [c.slot, c.color]), [[7, 4], [8, undefined]]);
+  // 복원: 색 있는 행·없는 옛 행·잘못된 색
+  const h2 = new Harness();
+  h2.logic.restoreCandles([
+    { slot: 1, until: 0, intention: 1, color: 3, seq: 1 },
+    { slot: 2, until: 0, intention: 1, seq: 2 },
+    { slot: 3, until: 0, intention: 1, color: 99, seq: 3 },
+  ]);
+  assert.deepEqual(h2.logic.activeCandles().map((c) => c.color), [3, undefined, undefined]);
+});

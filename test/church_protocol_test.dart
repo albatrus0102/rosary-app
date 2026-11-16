@@ -166,6 +166,27 @@ void main() {
         c.info,
         const CandleInfo(slot: 5, until: 1760001800000, intention: 3),
       );
+      // 초 색(0..5): 있으면 싣고, 없거나 범위 밖이면 null(옛 서버·옛 초 호환)
+      expect(c.color, isNull);
+      final cc = parseChurchEvent(
+        '{"t":"candle","slot":5,"until":1,"intention":3,"color":4}',
+      );
+      expect((cc as Candle).color, 4);
+      expect(cc.info.color, 4);
+      final bad = parseChurchEvent(
+        '{"t":"candle","slot":5,"until":1,"intention":3,"color":9}',
+      );
+      expect((bad as Candle).color, isNull);
+      expect(jsonDecode(candleMessage(5, 3, color: 2)), {
+        't': 'candle',
+        'slot': 5,
+        'intention': 3,
+        'color': 2,
+      });
+      expect(
+        const CandleInfo(slot: 1, until: 2, intention: 3, color: 1).toJson(),
+        {'slot': 1, 'until': 2, 'intention': 3, 'color': 1},
+      );
       final e = parseChurchEvent('{"t":"emote","id":"p","e":1}');
       expect(e, isA<Emote>());
       expect((e as Emote).e, 1);

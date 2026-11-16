@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'church_constants.dart';
 import '../app/theme.dart';
 
-/// 봉헌 초 지향을 고르는 모달 바텀 시트. 고른 지향 인덱스(0..7)를 돌려준다.
-Future<int?> showCandleSheet(BuildContext context) {
-  return showModalBottomSheet<int>(
+/// 시트에서 고른 것: 지향 인덱스(0..7)와 초 색(0..5, [candleColors]).
+class CandleChoice {
+  const CandleChoice(this.intention, this.color);
+  final int intention;
+  final int color;
+}
+
+/// 마지막으로 고른 초 색을 기억하는 키.
+const String candleColorPrefsKey = 'church_candle_color_v1';
+
+/// 봉헌 초 지향·색을 고르는 모달 바텀 시트. 고른 [CandleChoice]를 돌려준다(닫으면 null).
+Future<CandleChoice?> showCandleSheet(BuildContext context) {
+  return showModalBottomSheet<CandleChoice>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -24,6 +35,32 @@ class CandleSheet extends StatefulWidget {
 
 class _CandleSheetState extends State<CandleSheet> {
   int _selected = 0;
+  int _color = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadColor();
+  }
+
+  Future<void> _loadColor() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final v = prefs.getInt(candleColorPrefsKey);
+      if (v != null && v >= 0 && v < candleColors.length && mounted) {
+        setState(() => _color = v);
+      }
+    } catch (_) {
+      // 저장소를 못 읽어도 기본(흰색)으로 진행한다.
+    }
+  }
+
+  Future<void> _saveColor(int v) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(candleColorPrefsKey, v);
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +112,57 @@ class _CandleSheetState extends State<CandleSheet> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+          child: Text('초 색', style: theme.textTheme.labelLarge),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              for (var i = 0; i < candleColors.length; i++)
+                Semantics(
+                  label: '${candleColors[i].name} 초',
+                  selected: i == _color,
+                  button: true,
+                  child: InkResponse(
+                    key: ValueKey('candle-color-$i'),
+                    onTap: () {
+                      setState(() => _color = i);
+                      _saveColor(i);
+                    },
+                    radius: 28,
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          width: i == _color ? 40 : 32,
+                          height: i == _color ? 40 : 32,
+                          decoration: BoxDecoration(
+                            color: Color(candleColors[i].rgb),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: i == _color
+                                  ? scheme.primary
+                                  : scheme.outlineVariant,
+                              width: i == _color ? 3 : 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 4),
           child: FilledButton.icon(
-            onPressed: () => Navigator.of(context).pop(_selected),
+            onPressed: () =>
+                Navigator.of(context).pop(CandleChoice(_selected, _color)),
             icon: const Icon(Icons.local_fire_department_outlined),
             label: const Text('초 켜기'),
           ),

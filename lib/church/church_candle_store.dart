@@ -31,7 +31,15 @@ class ChurchCandleStore {
           final slot = c['slot'], until = c['until'], intention = c['intention'];
           if (slot is! int || until is! int || intention is! int) continue;
           if (until <= nowMs) continue; // 다 탄 초
-          list.add(CandleInfo(slot: slot, until: until, intention: intention));
+          final color = c['color'];
+          list.add(
+            CandleInfo(
+              slot: slot,
+              until: until,
+              intention: intention,
+              color: color is int && color >= 0 && color < 6 ? color : null,
+            ),
+          );
         }
         if (list.isNotEmpty) out[k] = list;
       });

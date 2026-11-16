@@ -48,7 +48,7 @@ class SoloChurchNet implements ChurchNet {
   }) {}
 
   @override
-  void lightCandle(int slot, int intention) {}
+  void lightCandle(int slot, int intention, {int? color}) {}
 
   @override
   void emote(int e) {}

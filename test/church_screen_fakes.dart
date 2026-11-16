@@ -58,7 +58,13 @@ class FakeChurchNet implements ChurchNet {
   /// `sendPraying` 의 kneel 인자(호출 순서대로).
   final List<bool> kneels = [];
   @override
-  void lightCandle(int slot, int intention) => candles.add((slot, intention));
+  void lightCandle(int slot, int intention, {int? color}) {
+    candles.add((slot, intention));
+    candleColors.add(color);
+  }
+
+  /// `lightCandle` 의 color 인자(호출 순서대로; 없으면 null).
+  final List<int?> candleColors = [];
   @override
   void emote(int e) => emotes.add(e);
   int whoRequests = 0;

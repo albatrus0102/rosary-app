@@ -336,7 +336,19 @@
     peerPraying: function (o) { if (App.net) App.net.peerPraying(o.id, !!o.on, o.ms === undefined ? -1 : o.ms, o.k ? 1 : 0, o.r ? 1 : 0); },
     peerEmote: function (o) { if (App.net) App.net.peerEmote(o.id, o.e); },
     setCandles: function (o) { if (App.world) App.world.setCandles(o.candles || []); },
-    lightCandle: function (o) { if (App.world) { App.world.lightCandle(o); root.ChurchAudio.chime(); } },
+    lightCandle: function (o) {
+      if (!App.world) return;
+      App.world.lightCandle(o); root.ChurchAudio.chime();
+      // 내가 켠 초(o.mine): 그 초 쪽으로 돌아 손을 뻗고 한 걸음 물러나 인사하는 동작. 다른 사람 화면에는 보내지 않는다(서버 초 이벤트에 보낸 사람 id 가 없다).
+      if (o.mine && App.me && App.me.mode === 'walk' && App.meAv && App.world.slotPos) {
+        var sp0 = App.world.slotPos(o.slot | 0);
+        if (sp0) {
+          App.turn = { yaw: Math.atan2(-(sp0.x - App.me.x), -(sp0.z - App.me.z)), t: 4.2 };
+          App.lightG = { t: 0 };
+          if (App.meAv.playLightGesture) App.meAv.playLightGesture();
+        }
+      }
+    },
     // 카메라 설정(설정 > 성당 > 카메라, docs/church/CAMERA.md): autoZoom(벽 피하기) · dist('near'|'normal'|'far') · follow(걸을 때 뒤로 정렬)
     setCamera: function (o) { applyCamCfg(o); },
     setAmbient: function (o) { App.ambient = !!o.on; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); },
@@ -482,6 +494,15 @@
         vel.vx = vel.vz = vel.speed = 0; App.turn = { yaw: walked.yaw, t: 0.8 };
         // 기도 자리(제대 앞·성모 기도 자리·봉헌초·14처 판)에 닿으면 '자리 시점'으로 부드럽게 옮긴다(끌면 바로 수동)
         if (walked.kind === 'altar' || walked.kind === 'shrine' || walked.kind === 'candle' || walked.kind === 'cross') App.spot = { yaw: walked.yaw, t0: App.t, seat: false };
+      }
+      if (App.lightG) {
+        // 초 켜기 동작: 걷기 입력이 들어오면 끊고, 아니면 0.9~1.5초에 0.3m 뒤로 물러난 뒤 성호경
+        if (vel.speed > 0.05 || me.mode !== 'walk') { App.lightG = null; if (App.meAv && App.meAv.cancelGesture) App.meAv.cancelGesture(); }
+        else {
+          App.lightG.t += dt;
+          if (App.lightG.t > 0.9 && App.lightG.t < 1.5) { pp.x = me.x; pp.z = me.z; logic.moveCircle(pp, Math.sin(me.yaw) * 0.5 * dt, Math.cos(me.yaw) * 0.5 * dt); me.x = pp.x; me.z = pp.z; }
+          else if (App.lightG.t >= 4.3) App.lightG = null;
+        }
       }
       var k = Math.min(1, dt * 12);
       me.vx += (vel.vx - me.vx) * k; me.vz += (vel.vz - me.vz) * k;

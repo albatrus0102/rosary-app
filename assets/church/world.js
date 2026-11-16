@@ -261,12 +261,15 @@
     // ---- 촛불대 ----
     var slots = logic.slots, nSlots = slots.length;
     var candleGeo = new T.CylinderGeometry(0.05, 0.055, 0.2, 10).translate(0, 0.1, 0);
-    var candleMat = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55 });
+    var candleMat = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, emissive: 0x6a3a14, emissiveIntensity: 0.55 });   // 켜진 초만 보인다(꺼진 칸은 배율 0): 촛농이 불빛에 따뜻하게 물든다
     var candles = new T.InstancedMesh(candleGeo, candleMat, Math.max(1, nSlots));
     var cupGeo = new T.CylinderGeometry(0.075, 0.055, 0.09, 12).translate(0, 0.045, 0);
-    var cupMat = new T.MeshPhysicalMaterial({ color: 0x7a1822, roughness: 0.15, metalness: 0.1, clearcoat: 0.8 });
+    var cupMat = new T.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.15, metalness: 0.1, clearcoat: 0.8 });
     var cups = new T.InstancedMesh(cupGeo, cupMat, Math.max(1, nSlots));
     var m4 = new T.Matrix4(), zeroM = new T.Matrix4().makeScale(0, 0, 0), tc = new T.Color();
+    // 봉헌초 색(성당·성지에서 흔히 파는 색유리/컵 초): 0 흰 1 빨강 2 노랑 3 파랑 4 초록 5 분홍. [컵(유리)색, 초(촛농)색]. 색마다 정해진 뜻은 붙이지 않는다.
+    var CANDLE_COLORS = [[0xe9e4d8, 0xfffaf0], [0xb3202e, 0xf0868e], [0xe2a516, 0xffe48a], [0x2a56b8, 0x9cbcf5], [0x2f8a4a, 0xa4e2b0], [0xd8628f, 0xffc2d6]];
+    var CUP_DEFAULT = 0x7a1822;
     var INTENT_COL = [0xfff0d8, 0xffd6e0, 0xd9ecff, 0xe6deff, 0xffe9a8, 0xd8f2d0, 0xffd2b0, 0xf0e0c8];
     var slotY0 = [], floats = [], tv = new T.Vector3(), CANDLE_CHECK = 0;
     for (i = 0; i < nSlots; i++) {
@@ -274,40 +277,81 @@
       slotY0[i] = floorH + slots[i].y;
       m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z);
       if (slots[i].float) { floats.push(i); m4.copy(zeroM); }   // 물 위에 뜬 초: 붉은 유리 받침 없이 납작한 초(원반)만 뜬다
-      cups.setMatrixAt(i, m4);
+      cups.setMatrixAt(i, m4); cups.setColorAt(i, tc.setHex(CUP_DEFAULT));
       candles.setMatrixAt(i, zeroM); candles.setColorAt(i, tc.setHex(0xffffff));
     }
-    cups.instanceMatrix.needsUpdate = true;
+    cups.instanceMatrix.needsUpdate = true; if (cups.instanceColor) cups.instanceColor.needsUpdate = true;
     candles.instanceMatrix.needsUpdate = true; if (candles.instanceColor) candles.instanceColor.needsUpdate = true;
     candles.castShadow = false; cups.castShadow = false;
     if (nSlots) { world.add(cups); world.add(candles); }
-    var lit = {}, litCount = 0, flames = {};
-    var flameMat = new T.SpriteMaterial({ map: ctx._getFlameTex(), color: new T.Color(1.6, 1.4, 1.0), blending: T.AdditiveBlending, transparent: true, depthWrite: false, fog: false });
+    var lit = {}, litCount = 0;
+    // 모든 불꽃(봉헌초 + 제단·촛대)을 InstancedMesh 하나로(kit.js createFlameBatch): 촛불을 켜도 draw call 이 늘지 않는다. 인스턴스 0..nSlots-1 = 봉헌초 칸.
+    var fb = root.ChurchKit.createFlameBatch(nSlots + S.flames.length);
+    for (i = 0; i < nSlots; i++) fb.alloc();
+    var altarFlames = S.flames.map(function (h) { var idx = fb.alloc(); h._i = idx; h._v = false; return h; });
+    function syncAltarFlames() {
+      for (var q = 0; q < altarFlames.length; q++) {
+        var h = altarFlames[q];
+        if (h.visible === h._v) continue;
+        h._v = h.visible;
+        if (h.visible) fb.set(h._i, h.x, h.y, h.z, 1.3 * h.scale, h.phase, 0, 0); else fb.clear(h._i);
+      }
+    }
+    syncAltarFlames();
+    var f = fb.mesh; f.renderOrder = 6;   // 불꽃은 사진 판(glass_place.js)·빛줄기 뒤, 표식·이름표 앞
+    ctx.root.add(f);
+    try { if (root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches) fb.setReducedMotion(true); } catch (e) { /* 없으면 그대로 */ }
+    // 내 초 표시: 인스턴스 속성 하나(aMine: 0 남의 초 / 1 내 초(받침 금빛 고리) / 2 방금 켠 내 초(맥동 고리 + 큰 불꽃)). 내 초 목록은 기기에만 둔다(localStorage, 24시간).
+    var clockT = 0, mineKey = 'rosarium_mine_' + id, mineMap = {};
+    try { mineMap = JSON.parse((root.localStorage && root.localStorage.getItem(mineKey)) || '{}') || {}; } catch (e) { mineMap = {}; }
+    function saveMine() { try { if (root.localStorage) root.localStorage.setItem(mineKey, JSON.stringify(mineMap)); } catch (e) { /* 저장 불가 */ } }
+    var labelSp = null, labelT0 = -99;
+    function showMineLabel(s) {
+      if (!labelSp) {
+        var tex = G.canvasTexture(128, 48, function (g, w2, h2) {
+          g.fillStyle = 'rgba(40,24,6,0.78)'; g.beginPath(); g.moveTo(14, 4); g.arcTo(w2 - 4, 4, w2 - 4, h2 - 4, 18); g.arcTo(w2 - 4, h2 - 4, 4, h2 - 4, 18); g.arcTo(4, h2 - 4, 4, 4, 18); g.arcTo(4, 4, w2 - 4, 4, 18); g.fill();
+          g.strokeStyle = '#ffd36a'; g.lineWidth = 3; g.stroke();
+          g.fillStyle = '#ffe9a8'; g.font = 'bold 26px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('내 초', w2 / 2, h2 / 2 + 1);
+        }, false);
+        labelSp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+        labelSp.scale.set(0.42, 0.16, 1); labelSp.renderOrder = 9; labelSp.visible = false; world.add(labelSp);
+      }
+      labelSp.position.set(slots[s].x, slotY0[s] + 0.62, slots[s].z); labelSp.material.opacity = 1; labelSp.visible = true; labelT0 = clockT;
+    }
+    function flameAt(s, x, z, y, fresh) {
+      var f0 = slots[s].float, ml = lit[s] ? lit[s].mine : 0;
+      fb.set(s, x, y + (f0 ? 0.19 : 0.34), z, f0 ? 0.95 : 1.15, (s * 2.399) % 6.28, f0 ? 0.34 : 0.4, f0 ? 0.19 : 0.34, fresh ? clockT : (lit[s] ? lit[s].t0 : -100), ml);
+    }
 
-    function lightSlot(c) {
+    function lightSlot(c, fresh) {
       var s = c.slot | 0;
       if (s < 0 || s >= nSlots) return;
-      if (!lit[s]) litCount++;
-      lit[s] = { intention: c.intention | 0, until: c.until || 0 };
+      var prev = lit[s], isNew = !prev, mine = prev ? prev.mine : 0;
+      if (!prev) litCount++;
+      if (c.mine) {
+        if (mine !== 2 && fresh) { mine = 2; fresh = true; } else if (!mine) mine = 1;
+        mineMap[s] = c.until || (Date.now() + 864e5); saveMine();
+      } else if (!prev && mineMap[s] && (mineMap[s] > Date.now())) mine = 1;
+      var col = (c.color === undefined || c.color === null || !(c.color >= 0 && c.color < CANDLE_COLORS.length)) ? -1 : (c.color | 0);
+      lit[s] = { intention: c.intention | 0, until: c.until || 0, color: col, mine: mine, t0: (fresh && (isNew || mine === 2)) ? clockT : (prev ? prev.t0 : -100) };
+      fresh = !!(fresh && (isNew || (c.mine && mine === 2)));
+      if (fresh && mine === 2) showMineLabel(s);
       var fl0 = slots[s].float;   // 뜬 초는 납작한 원반 초(반지름 0.09, 높이 0.08)
       m4.makeTranslation(slots[s].x, slotY0[s] + (fl0 ? 0 : 0.05), slots[s].z);
       if (fl0) m4.scale(tv.set(1.7, 0.4, 1.7));
       candles.setMatrixAt(s, m4);
-      candles.setColorAt(s, tc.setHex(INTENT_COL[(c.intention | 0) % 8]));
+      candles.setColorAt(s, tc.setHex(col >= 0 ? CANDLE_COLORS[col][1] : INTENT_COL[(c.intention | 0) % 8]));
+      cups.setColorAt(s, tc.setHex(col >= 0 ? CANDLE_COLORS[col][0] : CUP_DEFAULT)); cups.instanceColor.needsUpdate = true;
       candles.instanceMatrix.needsUpdate = true; candles.instanceColor.needsUpdate = true;
-      if (!flames[s]) {
-        var f = new T.Sprite(flameMat);
-        f.scale.set(0.1, 0.16, 1); f.renderOrder = 6;
-        f.position.set(slots[s].x, slotY0[s] + (fl0 ? 0.17 : 0.3), slots[s].z);
-        world.add(f); flames[s] = { sp: f, ph: Math.random() * 6.28 };
-      }
-      flames[s].sp.visible = true;
+      flameAt(s, slots[s].x, slots[s].z, slotY0[s], false);
     }
     function unlightSlot(s) {
       if (!lit[s]) return;
       delete lit[s]; litCount--;
+      if (mineMap[s]) { delete mineMap[s]; saveMine(); }
       candles.setMatrixAt(s, zeroM); candles.instanceMatrix.needsUpdate = true;
-      if (flames[s]) flames[s].sp.visible = false;
+      cups.setColorAt(s, tc.setHex(CUP_DEFAULT)); cups.instanceColor.needsUpdate = true;
+      fb.clear(s);
     }
 
     // ---- 가까운 좌석/촛불 강조 ----
@@ -437,6 +481,7 @@
       stars.material.opacity = env.night * 0.9;
       moonSp.material.opacity = Math.max(0.2, env.night);
       candleLight.userData.k = env.candle;
+      fb.setNight(env.night);
       if (bLight) { bLight.userData.k = S.lights[0].kind === 'always' ? 1 : env.lamp; }
       for (var gI = 0; gI < S.glows.length; gI++) {
         var gl = S.glows[gI];
@@ -525,10 +570,16 @@
       },
       setCandles: function (list) {
         var keep = {};
-        (list || []).forEach(function (c) { keep[c.slot] = 1; lightSlot(c); });
+        (list || []).forEach(function (c) { keep[c.slot] = 1; lightSlot(c, false); });
         Object.keys(lit).forEach(function (s) { if (!keep[s]) unlightSlot(+s); });
       },
-      lightCandle: lightSlot,
+      lightCandle: function (c) { lightSlot(c, true); },
+      slotPos: function (s) { return slots[s] ? { x: slots[s].x, y: slotY0[s], z: slots[s].z } : null; },
+      colorOf: function (s) { return lit[s] ? lit[s].color : -1; },
+      isMine: function (s) { return lit[s] ? lit[s].mine : 0; },
+      mineLabelVisible: function () { return !!(labelSp && labelSp.visible); },
+      flameBatch: fb,
+      setReducedMotion: function (b) { fb.setReducedMotion(!!b); },
       isLit: function (s) { return !!lit[s]; },
       litCount: function () { return litCount; },
       setHighlight: function (seatId, slot) {
@@ -555,7 +606,7 @@
             var fx2 = fS.x + 0.012 * Math.sin(t * 0.31 + fph), fz2 = fS.z + 0.012 * Math.cos(t * 0.27 + fph * 1.3), fy2 = slotY0[fs] + 0.004 * Math.sin(t * 0.9 + fph);
             if (!lit[fs]) continue;
             m4.makeTranslation(fx2, fy2, fz2).scale(tv.set(1.7, 0.4, 1.7)); candles.setMatrixAt(fs, m4);
-            if (flames[fs]) { flames[fs].sp.position.x = fx2; flames[fs].sp.position.z = fz2; }
+            flameAt(fs, fx2, fz2, fy2, false);
           }
           candles.instanceMatrix.needsUpdate = true;
         }
@@ -563,16 +614,8 @@
         envTimer += dt;
         curHour += dt / 3600;
         if (envTimer > 5) { envTimer = 0; applyEnv(); }
-        for (var k in flames) {
-          var f = flames[k];
-          if (!f.sp.visible) continue;
-          var fl = 1 + 0.18 * Math.sin(t * 13 + f.ph) + 0.1 * Math.sin(t * 23 + f.ph * 2);
-          f.sp.scale.set(0.1 * (1 - 0.05 * (fl - 1)), 0.16 * fl, 1);
-        }
-        for (var i2 = 0; i2 < S.flames.length; i2++) {
-          var ff = S.flames[i2], q = 1 + 0.16 * Math.sin(t * 12 + ff.phase) + 0.08 * Math.sin(t * 21 + ff.phase * 2);
-          ff.sp.scale.set(ff.sx * (1.02 - 0.05 * (q - 1)), ff.sy * q, 1);
-        }
+        clockT = t; fb.setTime(t); syncAltarFlames();
+        if (labelSp && labelSp.visible) { var la = t - labelT0; if (la > 5 || la < 0) labelSp.visible = false; else labelSp.material.opacity = la < 3.5 ? 1 : Math.max(0, 1 - (la - 3.5) / 1.5); }   // 깜박임은 셰이더(시간 uniform 하나)
         for (var g3 = 0; g3 < S.glows.length; g3++) {
           var gl = S.glows[g3];
           if (gl.kind === 'none') continue;
@@ -607,7 +650,7 @@
         if (camera) api.setSkyCenter(camera.position);
       },
       dispose: function () {
-        disposeReflectors();
+        disposeReflectors(); fb.dispose();
         var texs = new Set();
         function texOf(m) {
           for (var k in m) { var t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t !== envTex) texs.add(t); }

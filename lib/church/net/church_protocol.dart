@@ -62,7 +62,13 @@ CandleInfo? _candle(Object? v) {
   final until = _int(v['until']);
   final intention = _int(v['intention']);
   if (slot == null || until == null || intention == null) return null;
-  return CandleInfo(slot: slot, until: until, intention: intention);
+  final color = _int(v['color']);
+  return CandleInfo(
+    slot: slot,
+    until: until,
+    intention: intention,
+    color: color != null && color >= 0 && color < 6 ? color : null,
+  );
 }
 
 ChurchEvent? _parse(Map<String, dynamic> m) {
@@ -158,7 +164,7 @@ ChurchEvent? _parse(Map<String, dynamic> m) {
     case 'candle':
       final c = _candle(m);
       if (c == null) return null;
-      return Candle(c.slot, c.until, c.intention);
+      return Candle(c.slot, c.until, c.intention, c.color);
     case 'emote':
       final id = m['id'];
       final e = _int(m['e']);
@@ -241,8 +247,12 @@ String prayMessage(
   if (on && rosary) 'r': 1,
 });
 
-String candleMessage(int slot, int intention) =>
-    jsonEncode({'t': 'candle', 'slot': slot, 'intention': intention});
+String candleMessage(int slot, int intention, {int? color}) => jsonEncode({
+  't': 'candle',
+  'slot': slot,
+  'intention': intention,
+  if (color != null) 'color': color,
+});
 
 String emoteMessage(int e) => jsonEncode({'t': 'emote', 'e': e});
 

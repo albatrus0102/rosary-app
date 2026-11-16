@@ -482,12 +482,22 @@ void main() {
       expect(candleIntentions, hasLength(8));
       await tester.tap(find.text(candleIntentions[2]));
       await tester.pump();
+      // 초 색 6가지 중 파랑(3)을 고른다: 서버·장면에 color 가 실리고, 내 초(mine)로 표시된다
+      expect(candleColors, hasLength(6));
+      for (var i = 0; i < candleColors.length; i++) {
+        expect(find.byKey(ValueKey('candle-color-$i')), findsOneWidget);
+      }
+      await tester.tap(find.byKey(const ValueKey('candle-color-3')));
+      await tester.pump();
       await tester.tap(_sheetButton);
       await tester.pumpAndSettle();
       expect(h.net.candles, [(5, 2)]);
+      expect(h.net.candleColors, [3]);
       final args = h.scene.lastArgs('lightCandle')!;
       expect(args['slot'], 5);
       expect(args['intention'], 2);
+      expect(args['color'], 3);
+      expect(args['mine'], true);
       // 켠 뒤 하루 동안 탄다
       final until = args['until']! as int;
       final left = until - DateTime.now().millisecondsSinceEpoch;

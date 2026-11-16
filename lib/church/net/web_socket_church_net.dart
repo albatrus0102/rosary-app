@@ -353,8 +353,8 @@ class WebSocketChurchNet implements ChurchNet {
   }) => _raw(prayMessage(on, ms, kneel: kneel, rosary: rosary));
 
   @override
-  void lightCandle(int slot, int intention) =>
-      _raw(candleMessage(slot, intention));
+  void lightCandle(int slot, int intention, {int? color}) =>
+      _raw(candleMessage(slot, intention, color: color));
 
   @override
   void emote(int e) => _raw(emoteMessage(e));

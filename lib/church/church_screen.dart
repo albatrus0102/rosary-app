@@ -1024,6 +1024,7 @@ class _ChurchScreenState extends State<ChurchScreen>
             slot: e.slot,
             until: e.until,
             intention: e.intention,
+            color: e.color,
           ),
         );
       case Emote():
@@ -1386,14 +1387,15 @@ class _ChurchScreenState extends State<ChurchScreen>
       return;
     }
     _sheetOpen = true;
-    final int? intention;
+    final CandleChoice? choice;
     try {
-      intention = await showCandleSheet(_themed);
+      choice = await showCandleSheet(_themed);
     } finally {
       _sheetOpen = false;
     }
-    if (intention == null || _disposed) return;
-    _net.lightCandle(slot, intention);
+    if (choice == null || _disposed) return;
+    final intention = choice.intention, color = choice.color;
+    _net.lightCandle(slot, intention, color: color);
     // 촛불을 켰다는 사실만 기록한다. 지향 값은 절대 넘기지 않는다.
     Track.church('church_candle', widget.churchId);
     // 켠 초는 하루 동안 탄다. 혼자 모드에서는 기기에 남겨 앱을 다시 열어도 이어진다
@@ -1404,12 +1406,23 @@ class _ChurchScreenState extends State<ChurchScreen>
       unawaited(
         ChurchCandleStore.add(
           widget.churchId,
-          CandleInfo(slot: slot, until: until, intention: intention),
+          CandleInfo(
+            slot: slot,
+            until: until,
+            intention: intention,
+            color: color,
+          ),
         ),
       );
     }
     unawaited(
-      _scene.lightCandle(slot: slot, until: until, intention: intention),
+      _scene.lightCandle(
+        slot: slot,
+        until: until,
+        intention: intention,
+        color: color,
+        mine: true,
+      ),
     );
   }
 

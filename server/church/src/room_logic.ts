@@ -139,11 +139,20 @@ export interface PeerView {
 /** 봉헌초가 타는 시간: 켠 뒤 하루(24시간). 서버·앱(lib/church/church_candle_store.dart)·SPEC 이 같은 값을 쓴다. */
 export const CANDLE_TTL_MS = 24 * 60 * 60 * 1000;
 
+/** 초 색 번호의 최댓값(0..5 = 흰·빨강·노랑·파랑·초록·분홍). 앱 church_candle_sheet.dart 의 색 목록과 같아야 한다. */
+export const CANDLE_COLOR_MAX = 5;
+
+function withColor<T extends object>(o: T, color: number | undefined): T & { color?: number } {
+  return color === undefined ? o : { ...o, color };
+}
+
 export interface Candle {
   slot: number;
   /** 꺼지는 시각(epoch ms) = 켠 시각 + CANDLE_TTL_MS */
   until: number;
   intention: number;
+  /** 초(컵) 색 0..5(흰·빨강·노랑·파랑·초록·분홍). 옛 초·옛 클라이언트는 없음 — 없으면 응답에도 넣지 않는다. */
+  color?: number;
 }
 
 /** 저장소에 보존되는 촛불(seq: 켠 순서, 가장 작은 것이 가장 오래됨). */
@@ -395,7 +404,7 @@ export class RoomLogic {
     this.pruneCandles(now);
     return [...this.candles.values()]
       .sort((a, b) => a.slot - b.slot)
-      .map((c) => ({ slot: c.slot, until: c.until, intention: c.intention }));
+      .map((c) => withColor({ slot: c.slot, until: c.until, intention: c.intention }, c.color));
   }
 
   /** 만료된 초를 메모리에서 지운다(저장소의 행은 같은 슬롯에 새 초가 켜질 때 덮어쓴다 — 복원 때도 만료분은 버린다). */
@@ -413,7 +422,9 @@ export class RoomLogic {
       const at = isFiniteNum(c.at) && c.at > 0 ? Math.min(c.at, now) : now;
       if (seq > this.candleSeq) this.candleSeq = seq;
       if (at + CANDLE_TTL_MS <= now) continue;
-      this.candles.set(c.slot, { slot: c.slot, until: at + CANDLE_TTL_MS, intention: c.intention, seq, at });
+      const sc: StoredCandle = { slot: c.slot, until: at + CANDLE_TTL_MS, intention: c.intention, seq, at };
+      if (isInt(c.color, 0, CANDLE_COLOR_MAX)) sc.color = c.color;
+      this.candles.set(c.slot, sc);
     }
   }
 
@@ -802,7 +813,7 @@ export class RoomLogic {
   }
 
   private onCandle(peer: Peer, m: Message): void {
-    if (!isInt(m.slot, 0, totalCandleSlots(this.layout) - 1) || !isInt(m.intention, 0, 7)) {
+    if (!isInt(m.slot, 0, totalCandleSlots(this.layout) - 1) || !isInt(m.intention, 0, 7) || (m.color !== undefined && !isInt(m.color, 0, CANDLE_COLOR_MAX))) {
       this.send(peer.connId, { t: 'error', code: 'bad_msg' });
       return;
     }
@@ -820,18 +831,19 @@ export class RoomLogic {
       // 이 대가 가득 찼으면 candle_full 도 함께 보낸다(앱이 '자리가 모두 찼어요' 안내).
       let count = 0;
       for (let s = base; s < base + stand.slots; s++) if (this.candles.has(s)) count++;
-      this.send(peer.connId, { t: 'candle', slot: lit.slot, until: lit.until, intention: lit.intention });
+      this.send(peer.connId, withColor({ t: 'candle', slot: lit.slot, until: lit.until, intention: lit.intention }, lit.color));
       if (count >= stand.slots) this.send(peer.connId, { t: 'error', code: 'candle_full' });
       return;
     }
     const target = m.slot;
     const c: StoredCandle = { slot: target, until: now + CANDLE_TTL_MS, intention: m.intention, seq: ++this.candleSeq, at: now };
+    if (m.color !== undefined) c.color = m.color;
     this.candles.set(target, c);
     const day = kstDay(now);
     if (this.lit.day !== day) this.lit = { day, count: 0 };
     this.lit.count++;
     this.persistCandleFn?.(c);
-    const out = { t: 'candle', slot: target, until: c.until, intention: c.intention };
+    const out = withColor({ t: 'candle', slot: target, until: c.until, intention: c.intention }, c.color);
     for (const p of this.peersByConn.values()) this.send(p.connId, out); // 촛불은 모두에게
   }
 

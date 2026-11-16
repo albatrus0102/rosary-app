@@ -888,7 +888,7 @@
   }
 
   // ------------------------------------------------------------------ 아바타
-  var EMOTE_DUR = [2.4, 3.4, 1.7];
+  var EMOTE_DUR = [2.4, 3.4, 1.7, 4.2];   // 3 = 초 켜기 동작(손 뻗기 → 성호경, 서버 이모트 번호 밖: playLightGesture 로만, 내 화면에서만)
   // 성호 경로(오른손, 가슴 로컬): 이마 → 가슴 → 왼어깨 → 오른어깨. [손목 x,y,z, 손가락 F(x,y,z), 손바닥 N(x,y,z)]
   var CROSS = [
     [0.02, 0.43, -0.215, 0, 0.88, 0.48, 0, -0.48, 0.88],   // 이마(큰 머리 앞면 밖)
@@ -1099,6 +1099,9 @@
     if (e < 0) return;
     this.emote = e; this.emoteT = 0;
   };
+  // 초 켜기 동작(약 4.2초): 초 쪽으로 오른손을 뻗어 불을 옮기고(0~0.3) → 성호경(이마→가슴→왼어깨→오른어깨, 0.3~0.84) → 손을 내림. 걸으면 main.js 가 끊는다(cancelGesture).
+  Avatar.prototype.playLightGesture = function () { this.emote = 3; this.emoteT = 0; };
+  Avatar.prototype.cancelGesture = function () { if (this.emote === 3) this.emote = -1; };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
   Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; };
   var KNEEL_DUR = 0.7, KNEEL_THIGH = 0.12, KNEEL_KNEE_R = 0.075, KNEEL_DEFAULT = { fwd: 1.22, y: 0.145, rail: true };
@@ -1132,7 +1135,7 @@
     var emoting = this.emote >= 0, eU = 0, eEnv = 0;
     if (emoting) {
       this.emoteT += dt; eU = this.emoteT / EMOTE_DUR[this.emote];
-      if (eU >= 1) { this.emote = -1; emoting = false; eU = 0; } else eEnv = Math.min(sm(eU / 0.12), sm((1 - eU) / 0.12));
+      if (eU >= 1) { this.emote = -1; emoting = false; eU = 0; } else eEnv = this.emote === 3 ? Math.min(sm(eU / 0.18), sm((0.9 - eU) / 0.1)) : Math.min(sm(eU / 0.12), sm((1 - eU) / 0.12));
     }
     var bow = emoting && this.emote === 2 ? Math.sin(eU * PI) : 0;
     if (this.lod === 2) {
@@ -1235,9 +1238,23 @@
         qs.pH[idx].copy(_q2.copy(qs.pU[idx]).multiply(qs.pF[idx]).invert()).multiply(_q1);
         qU.slerp(qs.pU[idx], pa); qF.slerp(qs.pF[idx], pa); qH.slerp(qs.pH[idx], pa);
       }
-      if (emoting && side > 0 && eEnv > 0.001 && this.emote < 2) {
+      if (emoting && side > 0 && eEnv > 0.001 && (this.emote < 2 || this.emote === 3)) {
         var tx, ty, tz, fx, fy, fz, nx, ny, nz, px = 0.6, py = -1, pz = 0.3;
-        if (this.emote === 0) {
+        if (this.emote === 3) {
+          // 초 쪽으로 손을 앞·아래로 뻗어 심지에 불을 옮긴다(끝에서 살짝 흔들림)
+          if (eU < 0.3) {
+            var rp = sm(clamp(eU / 0.14, 0, 1)) * (1 - 0.0 * eU);
+            tx = 0.12; ty = 0.04 + 0.05 * Math.sin(this.emoteT * 6) * rp; tz = -0.43 * rp - 0.17 * (1 - rp);
+            fx = 0; fy = -0.2; fz = -1; nx = 0; ny = -1; nz = -0.2; px = 0.6; py = -0.6; pz = 0.3;
+          } else {
+            var uc = clamp((eU - 0.3) / 0.54, 0, 0.999) * 4, ic = Math.floor(uc), fc = sm(uc - ic);
+            var Ac = CROSS[Math.min(3, ic)], Bc = CROSS[Math.min(3, ic + 1)];
+            tx = lerp(Ac[0], Bc[0], fc); ty = lerp(Ac[1], Bc[1], fc); tz = lerp(Ac[2], Bc[2], fc);
+            fx = lerp(Ac[3], Bc[3], fc); fy = lerp(Ac[4], Bc[4], fc); fz = lerp(Ac[5], Bc[5], fc);
+            nx = lerp(Ac[6], Bc[6], fc); ny = lerp(Ac[7], Bc[7], fc); nz = lerp(Ac[8], Bc[8], fc);
+            if (eU < 0.34) { var bl = sm((eU - 0.3) / 0.04); tx = lerp(0.12, tx, bl); ty = lerp(0.04, ty, bl); tz = lerp(-0.43, tz, bl); }
+          }
+        } else if (this.emote === 0) {
           var wv = Math.sin(this.emoteT * 11) * 0.38;
           tx = 0.25; ty = 0.30; tz = -0.12; fx = Math.sin(wv); fy = Math.cos(wv); fz = -0.22; nx = 0; ny = 0; nz = -1; px = 0.9; py = -0.8; pz = 0.3;
         } else {

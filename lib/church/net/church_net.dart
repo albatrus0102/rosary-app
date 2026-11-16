@@ -85,6 +85,7 @@ class CandleInfo {
     required this.slot,
     required this.until,
     required this.intention,
+    this.color,
   });
 
   final int slot;
@@ -93,10 +94,14 @@ class CandleInfo {
   final int until;
   final int intention;
 
+  /// 초 색 번호(0..5, [candleColors]). 색을 고르기 전에 켠 옛 초는 null.
+  final int? color;
+
   Map<String, dynamic> toJson() => {
     'slot': slot,
     'until': until,
     'intention': intention,
+    if (color != null) 'color': color,
   };
 
   @override
@@ -104,10 +109,11 @@ class CandleInfo {
       other is CandleInfo &&
       other.slot == slot &&
       other.until == until &&
-      other.intention == intention;
+      other.intention == intention &&
+      other.color == color;
 
   @override
-  int get hashCode => Object.hash(slot, until, intention);
+  int get hashCode => Object.hash(slot, until, intention, color);
 
   @override
   String toString() =>
@@ -240,14 +246,15 @@ class Praying extends ChurchEvent {
 }
 
 class Candle extends ChurchEvent {
-  const Candle(this.slot, this.until, this.intention);
+  const Candle(this.slot, this.until, this.intention, [this.color]);
 
   final int slot;
   final int until;
   final int intention;
+  final int? color;
 
   CandleInfo get info =>
-      CandleInfo(slot: slot, until: until, intention: intention);
+      CandleInfo(slot: slot, until: until, intention: intention, color: color);
 }
 
 class Emote extends ChurchEvent {
@@ -329,7 +336,7 @@ abstract class ChurchNet {
   /// [kneel]: 무릎 꿇고 기도(서버 `k:1`). 다른 사람 화면에도 무릎 꿇은 자세로 보인다.
   /// [rosary]: 묵주를 들고 기도(서버 `r:1`). 다른 사람 화면에도 묵주를 든 모습으로 보인다.
   void sendPraying(bool on, int ms, {bool kneel = false, bool rosary = false});
-  void lightCandle(int slot, int intention);
+  void lightCandle(int slot, int intention, {int? color});
   void emote(int e);
 
   /// 이 방 접속자 명단을 청한다. 답은 [events]에 [Who]로 온다(online이 아니면 아무 일도 없다).

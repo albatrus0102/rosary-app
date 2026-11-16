@@ -373,13 +373,12 @@
       S_.glows.push({ sp: sp, size: s, pulse: o.pulse || 0, phase: rand() * 6.28, base: 0.6, kind: o.kind || 'lamp' });
       return sp;
     };
+    // 제단·촛대 불꽃: 스프라이트를 만들지 않고 자료만 적는다(핸들 .visible 로 켜고 끈다). world.js 가 봉헌초와 함께
+    // createFlameBatch 한 덩어리(draw call 1번)로 그린다 — 불꽃 겹 + 후광 + 깜박임은 셰이더.
     ctx.addFlame = function (o) {
-      var sp = new T.Sprite(new T.SpriteMaterial({ map: getFlameTex(), color: 0xffffff, blending: T.AdditiveBlending, transparent: true, depthWrite: false, fog: false }));
-      var s = o.scale || 1;
-      sp.position.set(o.x, o.y, o.z); sp.scale.set(0.13 * s, 0.2 * s, 1);
-      ctx.root.add(sp);
-      S_.flames.push({ sp: sp, sx: 0.13 * s, sy: 0.2 * s, phase: rand() * 6.28 });
-      return sp;
+      var h = { x: o.x, y: o.y, z: o.z, scale: o.scale || 1, phase: rand() * 6.28, visible: true };
+      S_.flames.push(h);
+      return h;
     };
     ctx.addWindowBeam = function (o) { S_.beams.push(o); };
     // 접촉 AO 데칼(바닥에 놓는 부드러운 어두운 사각형). x0,x1,z0,z1,y, 크기는 이미 번짐 포함.
@@ -1462,5 +1461,130 @@
     return ctx;
   }
 
-  root.ChurchKit = { createContext: createContext, profilePts: profilePts, profileFn: profileFn, JEWEL: JEWEL, SURFACES: SURFACES };
+
+  // ---- 촛불 한 덩어리(불꽃 + 후광 + 바닥 빛무리) -------------------------------------------------------------
+  // 장면 하나에 InstancedMesh 하나(draw call 1). 인스턴스 = 불꽃 하나: 행렬(이동 + 균일 배율 s), aPhase(깜박임 위상), aPool(바닥 빛무리 반경 m, 0=없음),
+  // aDrop(불꽃 중심에서 받침면까지 높이). 끄기 = 배율 0(퇴화) — 켜고 꺼도 draw call 은 변하지 않는다(촛불마다 스프라이트를 만들던 예전 방식 대체).
+  // 빌보드·불꽃 모양(바깥 주황 / 속 노랑 / 심 흰색 / 밑동 푸른기)·깜박임·후광은 전부 셰이더(JS 가 촛불마다 돌지 않는다). 시간 uniform 하나만 갱신.
+  function createFlameBatch(capacity) {
+    var n = Math.max(1, capacity | 0);
+    var g = new T.InstancedBufferGeometry();
+    var P = [], K = [], I = [];
+    var c = [[-1, -1], [1, -1], [1, 1], [-1, 1]], vi;
+    for (vi = 0; vi < 4; vi++) { P.push(c[vi][0], c[vi][1], 0); K.push(0); }   // 빌보드 쿼드(kind 0)
+    for (vi = 0; vi < 4; vi++) { P.push(c[vi][0], 0, c[vi][1]); K.push(1); }   // 바닥 쿼드(kind 1)
+    I.push(0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6);
+    g.setAttribute('position', new T.Float32BufferAttribute(P, 3));
+    g.setAttribute('aKind', new T.Float32BufferAttribute(K, 1));
+    g.setIndex(I);
+    var phase = new Float32Array(n), pool = new Float32Array(n), drop = new Float32Array(n), t0a = new Float32Array(n), mineA = new Float32Array(n);
+    var aPh = new T.InstancedBufferAttribute(phase, 1), aPo = new T.InstancedBufferAttribute(pool, 1), aDr = new T.InstancedBufferAttribute(drop, 1), aT = new T.InstancedBufferAttribute(t0a, 1), aMn = new T.InstancedBufferAttribute(mineA, 1);
+    g.setAttribute('aPhase', aPh); g.setAttribute('aPool', aPo); g.setAttribute('aDrop', aDr); g.setAttribute('aT0', aT); g.setAttribute('aMine', aMn);
+    var uniforms = { uTime: { value: 0 }, uFlick: { value: 1 }, uHalo: { value: 1 } };
+    var mat = new T.ShaderMaterial({
+      uniforms: uniforms, transparent: true, depthWrite: false, depthTest: true, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false,
+      vertexShader: [
+        'attribute float aKind; attribute float aPhase; attribute float aPool; attribute float aDrop; attribute float aT0; attribute float aMine;',
+        'varying vec2 vUv; varying float vKind; varying float vPhase; varying float vT0; varying float vMine;',
+        'void main(){',
+        '  float s = length(instanceMatrix[0].xyz);',
+        '  vec3 base = instanceMatrix[3].xyz;',
+        '  vKind = aKind; vPhase = aPhase; vT0 = aT0; vMine = aMine;',
+        '  if (aKind < 0.5) {',
+        '    vec4 mv = viewMatrix * modelMatrix * vec4(base, 1.0);',
+        '    mv.xy += position.xy * (0.34 * s * (1.0 + (aMine > 1.5 ? 0.35 : 0.0)));',
+        '    vUv = position.xy;',
+        '    gl_Position = projectionMatrix * mv;',
+        '  } else {',
+        '    float R = aPool * step(0.0001, s);',
+        '    vec3 wp = base + vec3(position.x * R, -aDrop + 0.006, position.z * R);',
+        '    vUv = position.xz;',
+        '    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(wp, 1.0);',
+        '  }',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'uniform float uTime; uniform float uFlick; uniform float uHalo;',
+        'varying vec2 vUv; varying float vKind; varying float vPhase; varying float vT0; varying float vMine;',
+        'void main(){',
+        '  float ph = vPhase;',
+        '  float inten = 1.0 + uFlick * (0.07 * sin(uTime * 12.0 + ph) + 0.05 * sin(uTime * 21.0 + ph * 2.0));',
+        '  float age = uTime - vT0;',
+        '  inten *= 1.0 + 1.6 * exp(-max(age, 0.0) * 2.6) * step(0.0, age) * step(age, 3.0);',   // 불이 붙는 순간 한 번 번쩍
+        '  vec3 col = vec3(0.0);',
+        '  if (vKind > 0.5) {',
+        '    float r = length(vUv);',
+        '    float f = pow(clamp(1.0 - r, 0.0, 1.0), 2.2) * (1.0 - smoothstep(0.6, 1.0, r));',
+        '    col = vec3(1.0, 0.55, 0.2) * f * 0.6 * uHalo * inten;',
+        '    if (vMine > 0.5) {',                                  // 내 초: 받침 둘레의 금빛 고리(항상 은은히) + 켠 직후 퍼지는 맥동 고리
+        '      float ring = exp(-pow((r - 0.5) * 11.0, 2.0)) * 0.55;',
+        '      float pa = mod(age, 1.5) / 1.5, pr = 0.3 + 0.7 * pa;',
+        '      float pulse = (vMine > 1.5 && age < 7.0) ? exp(-pow((r - pr) * 9.0, 2.0)) * (1.0 - pa) * 1.6 : 0.0;',
+        '      col += vec3(1.0, 0.82, 0.28) * (ring + pulse);',
+        '    }',
+        '  } else {',
+        '    float len = length(vUv);',
+        '    float edge = 1.0 - smoothstep(0.55, 1.0, len);',
+        '    float h1 = pow(clamp(1.0 - len, 0.0, 1.0), 2.6) * edge;',   // 넓고 옅은 번짐
+        '    float h2 = exp(-len * len * 70.0) * edge;',                 // 불꽃 곁의 진한 번짐
+        '    col += (vec3(1.0, 0.5, 0.16) * h1 * 0.42 + vec3(1.0, 0.72, 0.32) * h2 * 0.75) * uHalo * inten;',
+        '    vec2 q = vUv * (0.34 / 0.075);',                     // 불꽃 좌표: 아래(-1) → 위(+1), 반폭 ~0.5
+        '    float sway = uFlick * (sin(uTime * 9.0 + ph) * 0.09 + sin(uTime * 17.0 + ph * 2.3) * 0.05);',
+        '    float hs = 1.0 + uFlick * (0.10 * sin(uTime * 11.0 + ph) + 0.06 * sin(uTime * 23.0 + ph * 1.9));',
+        '    float tt = (q.y / hs + 1.0) * 0.5;',
+        '    q.x -= sway * clamp(tt, 0.0, 1.0) * clamp(tt, 0.0, 1.0);',
+        '    float ttc = clamp(tt, 0.0, 1.0);',
+        '    float w = 0.5 * pow(1.0 - ttc, 0.8) * sqrt(smoothstep(0.0, 0.3, ttc));',
+        '    float ax = abs(q.x);',
+        '    float rng = step(0.0, tt) * step(tt, 1.0);',
+        '    float inside = (1.0 - smoothstep(w - 0.1, w + 0.02, ax)) * rng;',
+        '    float mid = (1.0 - smoothstep(w * 0.78 - 0.08, w * 0.78 + 0.02, ax)) * rng;',
+        '    float wi = w * 0.55;',
+        '    float core = (1.0 - smoothstep(wi - 0.06, wi + 0.02, ax)) * smoothstep(0.02, 0.2, tt) * (1.0 - smoothstep(0.35, 0.75, tt)) * rng;',
+        '    float blue = (1.0 - smoothstep(0.0, 0.12, abs(tt - 0.05))) * (1.0 - smoothstep(0.0, 0.2, ax));',
+        '    vec3 fc = vec3(1.0, 0.42, 0.08) * inside * 1.6 + vec3(1.0, 0.8, 0.3) * mid + vec3(1.0, 0.97, 0.82) * core * 1.4;',
+        '    fc += vec3(0.25, 0.45, 1.0) * blue * 0.35 * inside;',
+        '    col += fc;',
+        '  }',
+        '  gl_FragColor = vec4(col, 1.0);',
+        '}'
+      ].join('\n')
+    });
+    var mesh = new T.InstancedMesh(g, mat, n);
+    mesh.frustumCulled = false; mesh.renderOrder = 6; mesh.castShadow = false; mesh.receiveShadow = false;
+    var zero = new T.Matrix4().makeScale(0, 0, 0), m4 = new T.Matrix4(), used = 0;
+    for (var i = 0; i < n; i++) mesh.setMatrixAt(i, zero);
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.visible = false;
+    var on = new Uint8Array(n), onCount = 0;
+    return {
+      mesh: mesh, uniforms: uniforms, capacity: n,
+      // 불꽃 한 개 자리 배정(촛불 슬롯마다/제단 불꽃마다 한 번). 반환 = 인스턴스 번호(모자라면 -1)
+      alloc: function () { return used < n ? used++ : -1; },
+      // 켜기: 불꽃 중심 (x,y,z), 배율 s(1 = 키 약 0.15m 불꽃), 위상, 바닥 빛무리 반경 poolR(m, 0=없음)·받침면까지 높이 dropY
+      set: function (i, x, y, z, s, ph, poolR, dropY, t0, mine) {
+        if (i < 0 || i >= n) return;
+        mesh.setMatrixAt(i, m4.makeScale(s, s, s).setPosition(x, y, z));
+        phase[i] = ph || 0; pool[i] = poolR || 0; drop[i] = dropY || 0; t0a[i] = t0 === undefined ? -100 : t0; mineA[i] = mine || 0;
+        aT.needsUpdate = true; aMn.needsUpdate = true; aPh.needsUpdate = true; aPo.needsUpdate = true; aDr.needsUpdate = true;
+        mesh.instanceMatrix.needsUpdate = true;
+        if (!on[i]) { on[i] = 1; onCount++; }
+        mesh.visible = onCount > 0;
+      },
+      move: function (i, x, y, z, s) { mesh.setMatrixAt(i, m4.makeScale(s, s, s).setPosition(x, y, z)); mesh.instanceMatrix.needsUpdate = true; },
+      clear: function (i) {
+        if (i < 0 || i >= n || !on[i]) return;
+        mesh.setMatrixAt(i, zero); mesh.instanceMatrix.needsUpdate = true;
+        on[i] = 0; onCount--; mesh.visible = onCount > 0;
+      },
+      isOn: function (i) { return !!on[i]; },
+      litCount: function () { return onCount; },
+      setTime: function (t) { uniforms.uTime.value = t; },
+      setReducedMotion: function (b) { uniforms.uFlick.value = b ? 0 : 1; },
+      setNight: function (night) { uniforms.uHalo.value = 0.5 + 0.85 * night; },
+      dispose: function () { g.dispose(); mat.dispose(); }
+    };
+  }
+
+  root.ChurchKit = { createContext: createContext, createFlameBatch: createFlameBatch, profilePts: profilePts, profileFn: profileFn, JEWEL: JEWEL, SURFACES: SURFACES };
 })(typeof window !== 'undefined' ? window : this);

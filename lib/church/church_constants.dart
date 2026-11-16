@@ -272,6 +272,17 @@ String? baptismalAliasMatch(int index, String query) {
 }
 
 /// 촛불 지향 프리셋(인덱스 0..7).
+/// 봉헌초 색(성당·성지에서 흔히 파는 색유리/컵 초). 번호 = 서버 `color`(0..5)·장면 CANDLE_COLORS 순서.
+/// 색마다 정해진 뜻은 붙이지 않는다(출처가 없는 뜻을 만들지 않는다).
+const List<({String name, int rgb})> candleColors = [
+  (name: '흰색', rgb: 0xFFEDE6D6),
+  (name: '빨강', rgb: 0xFFB3202E),
+  (name: '노랑', rgb: 0xFFE2A516),
+  (name: '파랑', rgb: 0xFF2A56B8),
+  (name: '초록', rgb: 0xFF2F8A4A),
+  (name: '분홍', rgb: 0xFFD8628F),
+];
+
 const List<String> candleIntentions = [
   '가족과 이웃을 위해',
   '아픈 이들을 위해',
