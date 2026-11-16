@@ -3,6 +3,7 @@
 // 십자가의 길은 성당마다 다른 연작(대체 성화)을 쓰고, CC BY 연작은 촬영자·라이선스 링크·변경 여부 표기가 의무다
 // (`stations_series.dart`, 원자료 data/stations_series.json).
 
+import 'prayer_music_tracks.dart';
 import 'stations_of_cross.dart';
 import 'stations_series.dart';
 
@@ -204,4 +205,14 @@ const List<ArtCredit> churchArtCredits = [
         '한복 차림에 묵주를 든 성모. 실제 조각 작품을 찍은 사진이 아닙니다. 크기를 줄임.',
     license: 'AI 생성 이미지(비상업 앱에서 사용)',
   ),
+];
+
+/// 기도 배경 성가(오르간)의 출처. 곡 목록: `prayer_music_tracks.dart`, 근거: licenses/MUSIC.md.
+List<ArtCredit> get musicCredits => [
+  for (final t in prayerMusicTracks)
+    ArtCredit(
+      use: t.title,
+      credit: '${t.credit}. 출처: ${t.source}',
+      license: t.license,
+    ),
 ];

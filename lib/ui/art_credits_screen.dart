@@ -6,7 +6,7 @@ import '../domain/art_credits.dart';
 import '../domain/stations_series.dart';
 import 'widgets/section_header.dart';
 
-/// '성화 출처': 기도 배경과 십자가의 길 그림의 작가·소장처·촬영자·라이선스.
+/// '성화 · 음악 출처': 기도 배경과 십자가의 길 그림의 작가·소장처·촬영자·라이선스, 기도 음악의 출처.
 ///
 /// 십자가의 길은 성당마다 다른 연작(대체 성화)이라 연작마다 카드 하나를 둔다. CC BY 연작은
 /// 촬영자·라이선스 주소·변경 여부·파일별 원본 주소를 모두 적는다(표기 의무).
@@ -27,7 +27,7 @@ class ArtCreditsScreen extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar.large(title: Text('성화 출처')),
+          const SliverAppBar.large(title: Text('성화 · 음악 출처')),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(
               AppSpace.sm,
@@ -73,6 +73,23 @@ class ArtCreditsScreen extends StatelessWidget {
                   color: scheme.surfaceContainerLow,
                   child: Column(
                     children: [for (final c in mysteryArtCredits) tile(c)],
+                  ),
+                ),
+                const SectionHeader('기도 음악(성가)'),
+                Text(
+                  '그레고리오 성가의 선율(퍼블릭 도메인)을 로사리움이 오르간 소리로 직접 만든 연주입니다. '
+                  '합성음이며 사람이 연주·녹음한 음원이 아닙니다.',
+                  key: const ValueKey('music-credits-disclosure'),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpace.xs),
+                Card.filled(
+                  margin: EdgeInsets.zero,
+                  color: scheme.surfaceContainerLow,
+                  child: Column(
+                    children: [for (final c in musicCredits) tile(c)],
                   ),
                 ),
               ],

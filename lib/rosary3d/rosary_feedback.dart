@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../app/prayer_music.dart';
 import '../app/settings.dart';
 import '../domain/rosary_session.dart';
 import 'rosary_model.dart';
@@ -197,6 +198,10 @@ void playRosaryStepCue(
     volume: s.chimeVolume,
   );
   if (s.rosaryVoiceTitle && !voiceBusy) {
-    unawaited(sink.announce(rosaryVoiceTitle(session.current)));
+    unawaited(
+      PrayerMusic.of(
+        s,
+      ).duckWhile(sink.announce(rosaryVoiceTitle(session.current))),
+    );
   }
 }

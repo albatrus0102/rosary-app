@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app/app_services.dart';
+import '../app/prayer_music.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
@@ -272,7 +273,9 @@ class _ChurchScreenState extends State<ChurchScreen>
     _net.state.addListener(_onNetState);
     _settings.addListener(_onSettings);
     _liturgy = ChurchLiturgyBinding(onChanged: _onLiturgy);
+    _syncMusicHold();
     _lastAmbient = _ambientOn;
+    _music.addListener(_onMusic);
     unawaited(_loadHintFlag());
     unawaited(_loadResume());
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
@@ -307,6 +310,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     final hidden = _hidden;
     if (hidden == _wasHidden) return;
     _wasHidden = hidden;
+    _syncMusicHold();
     if (hidden) {
       _onHidden();
     } else {
@@ -1106,10 +1110,39 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   /// 실제로 울리는지: 설정이 켜져 있어도 성삼일 침묵 중에는 끈다(REVERENCE.md).
-  bool get _ambientOn => _settings.churchAmbient && !_liturgy.silent;
+  /// 소리 설정이 켜져 있는지(HUD 표시). 성삼일 침묵 중에는 꺼진 것으로 본다.
+  bool get _ambientWanted => _settings.churchAmbient && !_liturgy.silent;
+
+  /// 장면의 오르간 패드를 실제로 울릴지: 배경 성가가 울리는 동안에는 끈다(두 음악이 겹치지 않게).
+  bool get _ambientOn => _ambientWanted && !_music.audible;
+
+  /// 성가가 울리고 멎을 때 오르간 패드만 맞춘다(빌드 중에 불릴 수 있어 setState 하지 않는다).
+  void _onMusic() {
+    if (_disposed) return;
+    final ambient = _ambientOn;
+    if (ambient == _lastAmbient) return;
+    _lastAmbient = ambient;
+    if (!_background) unawaited(_scene.setAmbient(on: ambient));
+  }
+
+  late final PrayerMusic _music = PrayerMusic.of(_settings);
+  MusicHold? _musicHold;
+
+  /// '성당 안에서도 성가 듣기'가 켜져 있고 성당이 보이는 동안 성가를 붙잡는다.
+  void _syncMusicHold() {
+    final want = !_disposed && _settings.prayerMusicInChurch && !_hidden;
+    if (want && _musicHold == null) {
+      _musicHold = _music.hold('church');
+    } else if (!want && _musicHold != null) {
+      final h = _musicHold!;
+      _musicHold = null;
+      h.release();
+    }
+  }
 
   void _onSettings() {
     if (_disposed) return;
+    _syncMusicHold();
     final ambient = _ambientOn;
     if (ambient != _lastAmbient) {
       _lastAmbient = ambient;
@@ -1572,6 +1605,8 @@ class _ChurchScreenState extends State<ChurchScreen>
     unawaited(ChurchResumeState.clear());
     WidgetsBinding.instance.removeObserver(this);
     _settings.removeListener(_onSettings);
+    _music.removeListener(_onMusic);
+    _syncMusicHold();
     _net.state.removeListener(_onNetState);
     _sceneSub?.cancel();
     _netSub?.cancel();
@@ -1674,7 +1709,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     );
     // 도구 줄: 소리·아바타·인사 (+ 걸어 다닐 수 있으면 '가기').
     final topActions = ChurchTopActions(
-      ambientOn: _ambientOn,
+      ambientOn: _ambientWanted,
       onToggleAmbient: _toggleAmbient,
       onEditAvatar: _openAvatarEditor,
       onEmote: _emote,

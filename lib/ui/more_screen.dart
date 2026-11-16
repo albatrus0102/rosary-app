@@ -177,8 +177,8 @@ class MoreScreen extends StatelessWidget {
                     ListTile(
                       key: const ValueKey('more-art-credits'),
                       leading: const Icon(Icons.image_outlined),
-                      title: const Text('성화 출처'),
-                      subtitle: const Text('기도 배경·십자가의 길 그림의 작가와 라이선스'),
+                      title: const Text('성화 · 음악 출처'),
+                      subtitle: const Text('기도 배경·십자가의 길 그림, 성가의 출처와 라이선스'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => unawaited(
                         Navigator.of(context).push(

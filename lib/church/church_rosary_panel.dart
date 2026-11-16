@@ -10,6 +10,7 @@ import '../domain/rosary_sequence.dart';
 import '../rosary3d/rosary_feedback.dart';
 import '../rosary3d/rosary_model.dart';
 import '../rosary3d/rosary_scene.dart';
+import '../ui/prayer_music_sheet.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
 
@@ -290,6 +291,7 @@ class _ChurchRosaryPanelState extends State<ChurchRosaryPanel> {
               onSelected: (m) => switch (m) {
                 0 => widget.onTogglePause(),
                 1 => widget.onFullScreen(),
+                3 => togglePrayerMusic(context, widget.settings),
                 _ => widget.onEnd(),
               },
               itemBuilder: (context) => [
@@ -298,6 +300,12 @@ class _ChurchRosaryPanelState extends State<ChurchRosaryPanel> {
                   child: Text(_c.paused ? '이어 기도' : '잠깐 쉬기'),
                 ),
                 const PopupMenuItem(value: 1, child: Text('묵주기도 화면으로')),
+                CheckedPopupMenuItem(
+                  key: const ValueKey('church-rosary-music'),
+                  value: 3,
+                  checked: widget.settings.prayerMusic,
+                  child: const Text('♪ 성가 듣기'),
+                ),
                 const PopupMenuItem(value: 2, child: Text('끝내기')),
               ],
             )

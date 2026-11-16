@@ -9,6 +9,7 @@ import '../app/app_services.dart';
 import '../app/bundled_leader_voice.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
+import '../app/prayer_music.dart';
 import '../app/prayer_tracking.dart';
 import '../app/settings.dart';
 import '../app/sound_player.dart';
@@ -27,6 +28,7 @@ import '../rosary3d/rosary_prayer_view.dart';
 import '../rosary3d/rosary_scene.dart';
 import '../stats/prayer_stats_store.dart';
 import '../stats/stats_screen.dart';
+import 'prayer_music_sheet.dart';
 import 'widgets/prayer_actions.dart';
 import 'widgets/prayer_background.dart';
 import 'widgets/prayer_bead_strip.dart';
@@ -145,9 +147,14 @@ class _PrayerScreenState extends State<PrayerScreen>
 
   AppSettings get _settings => widget.settings;
 
+  /// 배경 성가(기본 꺼짐). 이 화면이 열려 있는 동안 붙잡고, 목소리가 나올 때는 낮춘다.
+  late final PrayerMusic _music = PrayerMusic.of(_settings);
+  MusicHold? _musicHold;
+
   @override
   void initState() {
     super.initState();
+    _musicHold = _music.hold('prayer');
     _ownsSession = widget.session == null;
     _session =
         widget.session ?? RosarySession(buildRosarySequence(widget.mysterySet));
@@ -281,6 +288,7 @@ class _PrayerScreenState extends State<PrayerScreen>
     final old = _voice;
     if (old != null) {
       old.isSpeaking.removeListener(_onSpeakingChanged);
+      _music.setSpeaking(this, false);
       _session.removeListener(_onSessionChanged);
       if (_ownsVoice) {
         unawaited(old.dispose());
@@ -324,6 +332,7 @@ class _PrayerScreenState extends State<PrayerScreen>
   }
 
   void _onSpeakingChanged() {
+    _music.setSpeaking(this, _voice?.isSpeaking.value ?? false);
     if (mounted) setState(() {});
   }
 
@@ -350,8 +359,8 @@ class _PrayerScreenState extends State<PrayerScreen>
       final gen = ++_titleGen;
       unawaited(voice.stop());
       unawaited(
-        fb
-            .announce(rosaryVoiceTitle(_session.current))
+        _music
+            .duckWhile(fb.announce(rosaryVoiceTitle(_session.current)))
             .then((_) async {
               if (gen != _titleGen || _disposed || _session.index != idx) {
                 return;
@@ -511,6 +520,8 @@ class _PrayerScreenState extends State<PrayerScreen>
     WidgetsBinding.instance.removeObserver(this);
     HardwareKeyboard.instance.removeHandler(_onKey);
     _tracking?.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
+    _music.setSpeaking(this, false);
+    _musicHold?.release();
     _session.removeListener(_onSessionChanged);
     _session.removeListener(_onProgress);
     if (_rosaryMode) {
@@ -851,6 +862,10 @@ class _PrayerScreenState extends State<PrayerScreen>
         unawaited(_confirmExit());
       case _PrayerMenu.gallery:
         _openGallery();
+      case _PrayerMenu.music:
+        togglePrayerMusic(context, _settings);
+      case _PrayerMenu.musicOptions:
+        unawaited(showPrayerMusicSheet(context, _settings));
     }
   }
 
@@ -1017,6 +1032,17 @@ class _PrayerScreenState extends State<PrayerScreen>
           checked: _settings.shortPrayers,
           child: const Text('외운 기도 짧게 보기'),
         ),
+        CheckedPopupMenuItem(
+          key: const ValueKey('prayer-menu-music'),
+          value: _PrayerMenu.music,
+          checked: _settings.prayerMusic,
+          child: const Text('♪ 성가 듣기'),
+        ),
+        const PopupMenuItem(
+          key: ValueKey('prayer-menu-music-options'),
+          value: _PrayerMenu.musicOptions,
+          child: Text('성가 고르기 · 음량'),
+        ),
         const PopupMenuItem(value: _PrayerMenu.end, child: Text('기도 끝내기')),
       ],
       onMenu: _onMenu,
@@ -1140,7 +1166,7 @@ class _PrayerScreenState extends State<PrayerScreen>
   }
 }
 
-enum _PrayerMenu { map, shortPrayers, end, gallery }
+enum _PrayerMenu { map, shortPrayers, end, gallery, music, musicOptions }
 
 /// 고정 48dp 머리줄: 뒤로, 제목(+부제), 글자 크기, ⋮.
 class _PrayerHeader extends StatelessWidget {

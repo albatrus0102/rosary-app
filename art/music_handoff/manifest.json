@@ -1,0 +1,28 @@
+{
+  "checked": "2026-11-15",
+  "note": "위키미디어 커먼즈 구조화 데이터(P275=CC0)로 찾은 그레고리오 성가 녹음 후보. 작업 환경에서는 커먼즈가 요청을 제한(HTTP 429)해 파일 페이지의 라이선스 틀·연주자·길이를 확인하지 못했다. 스크립트가 API 로 라이선스를 다시 확인하고 CC0/Public domain 이 아니면 받지 않는다.",
+  "allowed_licenses": ["cc0", "pd"],
+  "tracks": [
+    {
+      "id": "chant_ad_te_levavi",
+      "commons_title": "File:Ad.te.levavi.VIII.Ton.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Ad.te.levavi.VIII.Ton.ogg",
+      "title_ko": "아드 테 레바비 (Ad te levavi)",
+      "subtitle_ko": "대림 제1주일 입당송 · 제8선법 · 성가 녹음"
+    },
+    {
+      "id": "chant_factus_est_repente",
+      "commons_title": "File:Factus.est.repente.VII.Ton.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Factus.est.repente.VII.Ton.ogg",
+      "title_ko": "팍투스 에스트 레펜테 (Factus est repente)",
+      "subtitle_ko": "성령 강림 대축일 영성체송 · 제7선법 · 성가 녹음"
+    },
+    {
+      "id": "chant_lamentatio_iii",
+      "commons_title": "File:Lamentation.III.Karsamstag.ogg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Lamentation.III.Karsamstag.ogg",
+      "title_ko": "예레미야의 애가 (Lamentatio III)",
+      "subtitle_ko": "성토요일 독서 선율 · 성가 녹음"
+    }
+  ]
+}

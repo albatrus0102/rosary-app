@@ -14,7 +14,9 @@ import '../app/track.dart';
 import '../church/church_liturgy.dart';
 import '../domain/leader_cues.dart';
 import '../domain/prayer_data.dart';
+import '../domain/prayer_music_tracks.dart';
 import 'leader_record_screen.dart';
+import 'prayer_music_sheet.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 
@@ -223,6 +225,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             settings.tickPerBead = v;
             Track.setting('tick_bead');
           },
+        ),
+        ListTile(
+          key: const ValueKey('settings-prayer-music'),
+          leading: const Icon(Icons.music_note_outlined),
+          title: const Text('성가 · 배경 음악'),
+          subtitle: Text(
+            settings.prayerMusic
+                ? '켜짐 · ${musicTrackById(settings.prayerMusicTrack)?.title ?? '섞어 듣기'}'
+                : '꺼짐 · 기도 중에 오르간 성가를 잔잔하게 틀어 둡니다',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => unawaited(showPrayerMusicSheet(context, settings)),
         ),
         SwitchListTile(
           secondary: const Icon(Icons.vibration),

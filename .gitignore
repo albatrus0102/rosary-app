@@ -68,3 +68,8 @@ tools/**/node_modules/
 art/commons_handoff/originals/
 art/commons_handoff/*.part
 art/commons_handoff/received/
+
+# 성가 녹음 원본(커먼즈에서 받은 것; 앱에는 줄인 assets/music/*.m4a 만 넣는다)
+art/music_handoff/originals/
+art/music_handoff/received/
+art/music_handoff/*.part

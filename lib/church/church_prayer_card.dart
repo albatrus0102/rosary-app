@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/prayer_music.dart';
 import '../app/prayer_tracking.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
@@ -46,6 +47,20 @@ class ChurchPrayerController extends ChangeNotifier {
 
   late final PrayerTracking _tracking;
 
+  /// 앉아서 기도하는 동안만 배경 성가를 붙잡는다(쉬는 중·일어섬·마침에는 놓는다).
+  MusicHold? _musicHold;
+
+  void _syncMusic() {
+    final want = !_disposed && running && !session.isFinished;
+    if (want && _musicHold == null) {
+      _musicHold = PrayerMusic.of(settings).hold('church_rosary');
+    } else if (!want && _musicHold != null) {
+      final h = _musicHold!;
+      _musicHold = null;
+      h.release();
+    }
+  }
+
   final AppSettings settings;
   final MysterySet mysterySet;
   late final RosarySession session;
@@ -81,6 +96,7 @@ class ChurchPrayerController extends ChangeNotifier {
     } else {
       settings.saveProgress(mysterySet, session.index);
     }
+    _syncMusic();
     notifyListeners();
   }
 
@@ -90,6 +106,7 @@ class ChurchPrayerController extends ChangeNotifier {
     _paused = false;
     _tracking.resume();
     if (!session.isFinished) _startTimer();
+    _syncMusic();
     notifyListeners();
   }
 
@@ -99,6 +116,7 @@ class ChurchPrayerController extends ChangeNotifier {
     _paused = true;
     _tracking.pause();
     _stopTimer();
+    _syncMusic();
     notifyListeners();
   }
 
@@ -107,6 +125,7 @@ class ChurchPrayerController extends ChangeNotifier {
     _paused = false;
     _tracking.resume();
     if (!session.isFinished) _startTimer();
+    _syncMusic();
     notifyListeners();
   }
 
@@ -116,6 +135,7 @@ class ChurchPrayerController extends ChangeNotifier {
     _tracking.pause(); // 서 있는 동안은 기도 시간이 아니다. 다시 앉으면 start()가 이어 잰다.
     _stopTimer();
     if (save) saveProgress();
+    _syncMusic();
     notifyListeners();
   }
 
@@ -149,6 +169,7 @@ class ChurchPrayerController extends ChangeNotifier {
     if (_disposed) return;
     _disposed = true;
     _stopTimer();
+    _syncMusic();
     _tracking.dispose(); // 진행이 있으면 기록 1건을 남긴다. 세션 정리보다 먼저.
     session.removeListener(_onSession);
     session.dispose();

@@ -7,6 +7,7 @@ import '../church/church_diagnostics.dart';
 import '../church/church_resume_state.dart';
 import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
+import '../domain/prayer_music_tracks.dart';
 import '../rosary3d/rosary_model.dart';
 import 'leader_voice.dart';
 import 'rosary_style.dart';
@@ -194,7 +195,60 @@ class AppSettings extends ChangeNotifier {
     );
     _rosaryDecadeOnly = _prefs.getBool(_kRosaryDecadeOnly) ?? false;
     _rosaryVoiceTitle = _prefs.getBool(_kRosaryVoiceTitle) ?? false;
+    _prayerMusic = _prefs.getBool(_kPrayerMusic) ?? false;
+    _prayerMusicTrack = _prefs.getString(_kPrayerMusicTrack) ?? kMusicShuffle;
+    _prayerMusicVolume =
+        (_prefs.getDouble(_kPrayerMusicVolume) ?? defaultPrayerMusicVolume)
+            .clamp(minPrayerMusicVolume, maxPrayerMusicVolume);
+    _prayerMusicInChurch = _prefs.getBool(_kPrayerMusicInChurch) ?? false;
   }
+
+  static const _kPrayerMusic = 'prayer_music';
+  static const _kPrayerMusicTrack = 'prayer_music_track';
+  static const _kPrayerMusicVolume = 'prayer_music_volume';
+  static const _kPrayerMusicInChurch = 'prayer_music_church';
+
+  static const double minPrayerMusicVolume = 0.05;
+  static const double maxPrayerMusicVolume = 1.0;
+  static const double defaultPrayerMusicVolume = 0.3;
+
+  late bool _prayerMusic;
+  late String _prayerMusicTrack;
+  late double _prayerMusicVolume;
+  late bool _prayerMusicInChurch;
+
+  /// 기도 중 배경 성가(오르간). 기본 꺼짐.
+  bool get prayerMusic => _prayerMusic;
+  set prayerMusic(bool v) =>
+      _setBool(v, _prayerMusic, _kPrayerMusic, () => _prayerMusic = v);
+
+  /// 들을 곡의 id, 또는 [kMusicShuffle](섞어 듣기, 기본).
+  String get prayerMusicTrack => _prayerMusicTrack;
+  set prayerMusicTrack(String v) {
+    if (v == _prayerMusicTrack) return;
+    _prayerMusicTrack = v;
+    _prefs.setString(_kPrayerMusicTrack, v);
+    notifyListeners();
+  }
+
+  /// 성가 음량(0.05..1.0). 기본은 낮게.
+  double get prayerMusicVolume => _prayerMusicVolume;
+  set prayerMusicVolume(double v) {
+    final c = v.clamp(minPrayerMusicVolume, maxPrayerMusicVolume).toDouble();
+    if (c == _prayerMusicVolume) return;
+    _prayerMusicVolume = c;
+    _prefs.setDouble(_kPrayerMusicVolume, c);
+    notifyListeners();
+  }
+
+  /// 성당 안을 걸을 때도 성가를 듣는다(묵주기도 중이 아니어도). 기본 꺼짐.
+  bool get prayerMusicInChurch => _prayerMusicInChurch;
+  set prayerMusicInChurch(bool v) => _setBool(
+    v,
+    _prayerMusicInChurch,
+    _kPrayerMusicInChurch,
+    () => _prayerMusicInChurch = v,
+  );
 
   /// 새 설치의 기도 화면. 앱은 묵주 화면(T-81)이고, 기존 위젯 테스트는 test/flutter_test_config.dart 가
   /// 기도문 중심 화면으로 돌려 그대로 검증한다(새 화면은 test/rosary3d_*_test.dart).

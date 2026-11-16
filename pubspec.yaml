@@ -73,6 +73,8 @@ flutter:
     - assets/rosary3d/
     - assets/church_thumbs/
     - assets/sounds/
+    # 기도 배경 성가(오르간 4곡, AAC). tools/music/make_organ_tracks.py 가 만든다(출처 licenses/MUSIC.md).
+    - assets/music/
     - assets/leader_voice/sister/
     - assets/leader_voice/priest/
     - assets/fonts/OFL-Pretendard.txt
