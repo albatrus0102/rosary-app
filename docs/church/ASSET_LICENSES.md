@@ -212,6 +212,15 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 - 권리: ChatGPT 생성 이미지. 앱은 완전 비상업(BACKLOG '결정(2026-11-15)'). 유료화·광고·후원을 도입하면 ChatGPT 생성 이미지 약관을 이 3장까지 포함해 다시 확인한다.
 - 성 베드로('기둥의 성모' 성화)·마조레('로마 백성의 구원' 성화)는 이 그림을 쓰지 않는다.
 
+## 성모상 3D — Meshy AI (2026-11-16 추가)
+
+`assets/church/statue3d_mary_meshy.js`(≈ 400KB). 사용자가 직접 만든 성모상 그림(GPT/Gemini, `art/statues/marble_views/`)을 Meshy AI 무료 플랜으로 3D 변환한 형태만 쓴다(739,044 삼각형, 위치+법선뿐 — 색·질감 없음).
+
+- 라이선스: **CC BY 4.0**, 저작자표시 "Meshy AI". 앱 '성화 출처' 화면에 "성모상 3D: Meshy AI로 생성(CC BY 4.0), 원 그림 사용자 제작" 표기. 자세히: `licenses/MESHY_STATUE.md`.
+- 변경: 삼각형 약 36,000(근거리)/8,000(원거리)로 줄임 + 양자화·meshopt 압축 + 흰 대리석 재질(`shrine.js`).
+- 쓰는 성당: 우리 본당·라테라노·성 바오로·밀라노·피렌체·당고개·성 베드로(제대 위). 명동은 한복 그림 성상, 마조레는 성화 사진 그대로. 위 'AI 생성 성모상 그림' 중 푸른 망토·흰 돌 2장은 3D 를 못 읽을 때의 예비로만 남는다.
+- 원본 glb(16.9MB, `art/statues/meshy/marian_serenity_meshy_orig.glb`)는 `.gitignore` — 저장소에는 올리지 않는다.
+
 ## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
 
 - **번들에 더한 사진·그림·질감 파일: 없음.** 성당의 모든 표면(황토 미장·쪼갠 돌·마루 2종·불 켜진 한지·옹기 조각 벽·분홍 화강암·신자석 나무)은

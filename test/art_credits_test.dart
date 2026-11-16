@@ -11,7 +11,7 @@ void main() {
   });
 
   test('CC BY 사진: 저작자 · 라이선스 주소 · 원본 주소 · 변경사항', () {
-    final by = churchArtCredits.where((c) => c.license.contains('CC BY')).toList();
+    final by = churchArtCredits.where((c) => c.license.contains('CC BY') && !c.credit.contains('Meshy')).toList();
     expect(by.length, 4);
     for (final c in by) {
       expect(c.license, contains('https://creativecommons.org/licenses/by/'), reason: c.use);
@@ -31,5 +31,13 @@ void main() {
       expect(c.credit, contains('사진: Gary Todd'));
     }
     expect(churchArtCredits.any((c) => c.use.startsWith('피렌체') && c.license.contains('PD-Art')), isTrue);
+  });
+
+  test('성모상 3D: Meshy AI 표기(CC BY 4.0) · 원 그림 사용자 제작', () {
+    final m = churchArtCredits.where((c) => c.credit.contains('Meshy AI')).toList();
+    expect(m.length, 1);
+    expect(m.single.credit, contains('성모상 3D: Meshy AI로 생성(CC BY 4.0), 원 그림 사용자 제작'));
+    expect(m.single.credit, contains('변경: '));
+    expect(m.single.license, contains('https://creativecommons.org/licenses/by/4.0/'));
   });
 }

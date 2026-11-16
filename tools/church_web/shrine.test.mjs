@@ -97,6 +97,49 @@ test('shrine statues: 입체 성모상 — 자리마다 깊이·색 묶음(statu
   assert.ok(Shrine.STATUE.BACK > -0.245 && Shrine.STATUE.BACK + 0.25 < 0.28, '벽감 뒤판 앞, 앞면이 받침 위');
 });
 
+test('shrine 3D mesh: 명동(한복 그림 성상)·마조레(성화)를 뺀 모든 성모 자리가 Meshy 입체 성모상(mary_meshy)을 쓴다, 그림 변위는 예비', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const dir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../assets/church');
+  for (const id of READY) {
+    const p = Places[id];
+    if (id === 'myeongdong' || id === 'maggiore') { assert.equal(p.mesh, undefined, id + ' 는 입체 메쉬 없음'); continue; }
+    assert.equal(p.mesh, 'mary_meshy', id);
+    assert.ok(p.img && fs.existsSync(path.join(dir, 'statue3d_' + p.img + '.js')), id + ': 예비 그림 성상 묶음');
+  }
+  assert.equal(Places.myeongdong.img, 'hanbok_rosary');
+  const src = fs.readFileSync(path.join(dir, 'statue3d_mary_meshy.js'), 'utf8');
+  assert.ok(src.length <= 1024 * 1024, 'pack ≤ 1MB ' + src.length);
+  const win = { atob: (s) => Buffer.from(s, 'base64').toString('binary') };
+  new Function('window', 'atob', src)(win, win.atob);
+  const a = win.ChurchArt.statues3d.mary_meshy;
+  assert.ok(a.mesh && typeof a.load === 'function');
+  assert.ok(a.meta.tris >= 25000 && a.meta.tris <= 40000, 'near tris ' + a.meta.tris);
+  assert.ok(a.meta.farTris >= 4000 && a.meta.farTris <= 12000, 'far tris ' + a.meta.farTris);
+  assert.ok(a.meta.h > 1.9 && a.meta.h < 1.91 && Math.abs(a.meta.min[1] - Shrine.MESH.Y_MIN) < 0.001, 'bounds');
+  assert.ok(Shrine.MESH.S * a.meta.h >= 1.4 && Shrine.MESH.S * a.meta.h <= 1.7, '성상 높이(받침 포함) 1.4~1.7m');
+});
+
+test('shrine 3D mesh: 묶음이 풀려 나온 기하 — 정점 공유·법선 단위길이·+Z 쪽 앞면', async () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const T = require('../../assets/church/three.min.js');
+  const dir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../assets/church');
+  const win = {}; new Function('window', 'atob', fs.readFileSync(path.join(dir, 'statue3d_mary_meshy.js'), 'utf8'))(win, (s) => Buffer.from(s, 'base64').toString('binary'));
+  const r = await win.ChurchArt.statues3d.mary_meshy.load(T);
+  assert.equal(r.near.attributes.position, r.far.attributes.position, '정점 버퍼 공유');
+  assert.equal(r.near.index.count / 3, r.meta.tris); assert.equal(r.far.index.count / 3, r.meta.farTris);
+  const n = r.near.attributes.normal.array, P = r.near.attributes.position.array;
+  for (let i = 0; i < n.length; i += 3 * 97) assert.ok(Math.abs(Math.hypot(n[i], n[i + 1], n[i + 2]) - 1) < 0.01, 'unit normal');
+  // 얼굴(위쪽 앞)은 +Z 쪽: 머리 높이(y > 0.5) 정점의 z 최대가 최소보다 앞(+)에 치우친다
+  let zs = 0, c = 0; for (let i = 0; i < P.length; i += 3) if (P[i + 1] > 0.55 && P[i + 1] < 0.75) { zs += P[i + 2]; c++; }
+  assert.ok(zs / c > 0.0, '얼굴 높이 정점 평균 z > 0 (앞 +Z) ' + zs / c);
+  for (const g of [r.near, r.far]) {   // 인덱스가 정점과 맞게 풀렸는지: 긴 변(> 0.1m)을 가진 삼각형은 평평한 받침 면뿐(≤ 3%)
+    const I = g.index.array; let long = 0;
+    for (let t = 0; t < I.length; t += 3) { const e = (i, j) => Math.hypot(P[i * 3] - P[j * 3], P[i * 3 + 1] - P[j * 3 + 1], P[i * 3 + 2] - P[j * 3 + 2]); if (Math.max(e(I[t], I[t + 1]), e(I[t + 1], I[t + 2]), e(I[t], I[t + 2])) > 0.1) long++; }
+    assert.ok(long / (I.length / 3) < (g === r.near ? 0.03 : 0.3), 'long-edge tris ' + long);
+  }
+  assert.ok(r.near.boundingSphere.radius > 0.9 && r.near.boundingSphere.radius < 1.1);
+});
+
 test('shrine statueMesh: 변위 격자 — 실루엣 밖 정점 제거·가장자리 1칸, 앞면 감김, 삼각형 예산(≤ 30k / 원거리 ≤ 5k)', () => {
   // 타원 실루엣(112×224)에 반타원 깊이: 그림 성상과 같은 크기의 격자
   const dw = 112, dh = 224, d = new Float32Array(dw * dh), sd = new Float32Array(dw * dh);

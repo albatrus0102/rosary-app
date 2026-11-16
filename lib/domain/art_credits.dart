@@ -200,7 +200,13 @@ const List<ArtCredit> churchArtCredits = [
     license: 'Public domain(원작) · Public Domain Mark 1.0(사진)',
   ),
   ArtCredit(
-    use: '성당 안 성모상(우리 본당·명동·당고개·라테라노·성 바오로·밀라노·피렌체의 성모 기도 자리)',
+    use: '성당 안 성모상 3D(우리 본당·당고개·라테라노·성 바오로·밀라노·피렌체·성 베드로의 성모 기도 자리)',
+    credit: '성모상 3D: Meshy AI로 생성(CC BY 4.0), 원 그림 사용자 제작. '
+        '변경: 삼각형 수를 줄이고(739,044 → 약 36,000) 압축, 흰 대리석 재질을 입힘.',
+    license: 'Meshy AI 생성물 · CC BY 4.0(https://creativecommons.org/licenses/by/4.0/)',
+  ),
+  ArtCredit(
+    use: '성당 안 성모상 그림(명동의 한복 성모상 · 3D를 못 읽을 때의 예비)',
     credit: 'AI 생성 성모상(ChatGPT, 사용자 제공) 그림 3점: 흰 돌 성모, 푸른 망토의 원죄 없으신 성모, '
         '한복 차림에 묵주를 든 성모. 실제 조각 작품을 찍은 사진이 아닙니다. 크기를 줄임.',
     license: 'AI 생성 이미지(비상업 앱에서 사용)',

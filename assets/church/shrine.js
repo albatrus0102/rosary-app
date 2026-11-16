@@ -108,6 +108,36 @@
     else { var sc = document.createElement('script'); sc.src = 'statue3d_' + p.img + '.js'; sc.async = true; sc.onload = apply; document.head.appendChild(sc); }
     return true;
   }
+  // Meshy 3D 성모상(statue3d_<mesh>.js — tools/statues/make_statue_meshy_pack.mjs: 739k → 36k 삼각형 + 원거리 8k, meshopt 압축).
+  // 한 성당에 한 자리뿐이라 그리기 호출 1(THREE.LOD 두 단계 중 하나만 그려진다). 재질 하나(흰 대리석), 월드 해제 때 기하·재질이 함께 놓인다.
+  // 원본 앞 = +Z, 아래 y = -0.952(팔각 받침 포함 — 따로 받침 얹지 않는다). 묶음이 없거나 풀기에 실패하면 fail() 로 그림 변위(imageStatue) 성상을 세운다.
+  var MESH = { S: 0.8, Y_MIN: -0.952, LOD_FAR: 7 };
+  function meshable(ctx) { var T = ctx.THREE; return !!(T && T.BufferGeometry && T.LOD && typeof document !== 'undefined' && document.head && document.head.appendChild); }
+  function meshStatue(ctx, p, f, x, z, y0, fail) {
+    var T = ctx.THREE; if (!meshable(ctx)) return false;
+    var s = p.mesh_s || MESH.S;
+    var mat = new T.MeshStandardMaterial({ color: 0xb0aba2, roughness: 0.55, metalness: 0, envMapIntensity: 0.8 });
+    var lod = new T.LOD(); lod.name = 'shrine_statue'; lod.visible = false; lod.userData.noCam = true; lod.userData.noAO = true;
+    lod.position.set(x, y0 - MESH.Y_MIN * s, z); lod.rotation.y = Math.atan2(f[0], f[1]); lod.scale.setScalar(s);
+    var dead = false; mat.addEventListener('dispose', function () { dead = true; });
+    ctx.add(lod); if (ctx.stats) ctx.stats.meshes++;
+    function bad() { if (dead) return; dead = true; if (lod.parent) lod.parent.remove(lod); mat.dispose(); lod.levels.forEach(function (l) { l.object.geometry.dispose(); }); fail(); }
+    function apply() {
+      var a = root.ChurchArt && root.ChurchArt.statues3d && root.ChurchArt.statues3d[p.mesh]; if (dead) return;
+      if (!a || !a.load) return bad();
+      var pr; try { pr = a.load(T); } catch (e) { return bad(); }
+      pr.then(function (r) {
+        if (dead) return;
+        [[r.near, 0, 'near'], [r.far, MESH.LOD_FAR, 'far']].forEach(function (L) {
+          var m = new T.Mesh(L[0], mat); m.name = 'shrine_statue_' + L[2]; m.userData.noCam = true; m.userData.noAO = true; lod.addLevel(m, L[1]);
+        });
+        lod.position.y = y0 - r.meta.min[1] * s; lod.visible = true;   // 받침 바닥이 y0 에 닿게
+      }, bad);
+    }
+    if (root.ChurchArt && root.ChurchArt.statues3d && root.ChurchArt.statues3d[p.mesh]) apply();
+    else { var sc = document.createElement('script'); sc.src = 'statue3d_' + p.mesh + '.js'; sc.async = true; sc.onload = apply; sc.onerror = bad; document.head.appendChild(sc); }
+    return true;
+  }
   function build(ctx, layout) {
     var sh = layout && layout.shrine, p = sh && placeOf(layout.id);
     if (!p) return null;
@@ -122,14 +152,16 @@
       if (p.img) { B(-0.12, -0.525, 0, 0.3, 0.05, 2.55, BACK); B(-0.12, 0.525, 0, 0.3, 0.05, 2.55, BACK); }   // 얕은 벽감(옆 날개): 그림 성상이 정면 위주로 보이게
       B(-0.26, 0, 2.55, 0.09, 1.2, 0.07, 0xc9a24a, 'metal');     // 금빛 갓
       B(0, 0, 0, 0.5, 0.62, 0.85, STONE, 'gloss');               // 받침
-      B(0, 0, 0.85, 0.56, 0.7, 0.06, STONE, 'gloss');
-      var plain = p.kind === 'plain' || p.kind === 'pond';
-      if (!(p.img && imageStatue(ctx, p, f, y + 0.91))) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
+      var plain = p.kind === 'plain' || p.kind === 'pond', m3 = p.mesh && meshable(ctx);   // 3D 성상은 제 받침이 있어 윗판을 얹지 않는다
+      if (!m3) B(0, 0, 0.85, 0.56, 0.7, 0.06, STONE, 'gloss');
+      var relief = function () { return p.img && imageStatue(ctx, p, f, y + (m3 ? 0.85 : 0.91)); };
+      if (!(m3 && meshStatue(ctx, p, f, p.x, p.z, y + 0.85, relief)) && !relief()) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
     }
     if (p.kind === 'existing' && p.img && p.altar_h) {   // 제대 위 성모상(성 베드로): 뒤 제단화 앞, 제대 윗면에 받침 + 입체 성모상
       var ad = p.altar_d || -0.9, sp = { x: p.x + f[0] * ad, z: p.z + f[1] * ad, img: p.img };
-      B(ad, 0, p.altar_h, 0.5, 0.62, 0.08, STONE, 'gloss');
-      if (!imageStatue(ctx, sp, f, y + p.altar_h + 0.08)) ctx.statue({ x: sp.x, z: sp.z, y: y + p.altar_h + 0.08, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: 'mary', halo: true });
+      var m3 = p.mesh && meshable(ctx), sy = y + p.altar_h + (m3 ? 0 : 0.08), relief = function () { return imageStatue(ctx, sp, f, y + p.altar_h + 0.08); };
+      if (!m3) B(ad, 0, p.altar_h, 0.5, 0.62, 0.08, STONE, 'gloss');   // 3D 성상은 제 받침(팔각)을 제대 윗면에 바로 얹는다
+      if (!(m3 && meshStatue(ctx, p, f, sp.x, sp.z, sy, relief)) && !relief()) ctx.statue({ x: sp.x, z: sp.z, y: y + p.altar_h + 0.08, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: 'mary', halo: true });
     }
     if (p.kind === 'pond') {
       // 둥근 연못: 낮은 돌 테두리(20조각, kit 묶음에 합쳐진다) + 어두운 바닥 + 물 표면(짙은 청록, 불투명 광택 — 실시간 반사·투명 없음)
@@ -159,7 +191,7 @@
     ctx.addCollider(fp);
     return sh;
   }
-  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, statueMesh: statueMesh, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
+  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, MESH: MESH, statueMesh: statueMesh, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
   // 레이아웃 등록을 감싼다: 이미 등록된 것 + 앞으로 등록될 것 모두
   var L = root.ChurchLayouts;
   if (L && !L._shrineWrapped) {
