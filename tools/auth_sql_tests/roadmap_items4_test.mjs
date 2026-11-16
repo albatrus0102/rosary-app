@@ -81,10 +81,10 @@ await check('earlier migration files are untouched (their seeds do not know T-xx
   assert(sqlOf(M2).includes(OLD_G01), 'M2 still has the original G-01 title');
 });
 
-await check('source JSON: T items are well formed and grouped (3 예약, 10 신규, 4 보류, 13 결정, 10 출시 전, 19 기술부채)', async () => {
-  assert(T.length >= 30 && T.length <= 70, 'count ' + T.length);
+await check('source JSON: T items are well formed and grouped (3 예약, 16 신규, 4 보류, 14 결정, 13 출시 전, 22 기술부채)', async () => {
+  assert(T.length >= 30 && T.length <= 80, 'count ' + T.length);
   const cat = (c) => T.filter((x) => x.category === c);
-  eq(['예약(월 01시)', '신규 요청', '보류', '결정 대기', '출시 전', '기술부채'].map((c) => cat(c).length), [3, 13, 4, 13, 11, 20]);   // 2026-11-15: T-82~T-86(3D 묵주 후속) 추가. 이전: T-08·T-39 추가, 이후 조사 결과·남은 일 T-58~T-78·T-79(여의도성당)·T-80(성상 3D 스캔본)·T-81(3D 묵주 기도 화면) 추가
+  eq(['예약(월 01시)', '신규 요청', '보류', '결정 대기', '출시 전', '기술부채'].map((c) => cat(c).length), [3, 16, 4, 14, 13, 22]);   // 2026-11-16: T-87~T-94 추가(성가 받기·접속자 동기화·초 지향·카메라 2차·허락 첨부·밀라노 서류·오르간 청취·촛불 색).  2026-11-15: T-82~T-86(3D 묵주 후속) 추가. 이전: T-08·T-39 추가, 이후 조사 결과·남은 일 T-58~T-78·T-79(여의도성당)·T-80(성상 3D 스캔본)·T-81(3D 묵주 기도 화면) 추가
   eq(new Set(T.map((x) => x.id)).size, T.length, 'unique ids');
   for (const x of T) {
     assert(/^T-\d\d$/.test(x.id), x.id);
@@ -92,12 +92,13 @@ await check('source JSON: T items are well formed and grouped (3 예약, 10 신�
     assert(['R1', 'R2', 'R3'].includes(x.release) && /^P[012]$/.test(x.priority) && /^[SML]$/.test(x.effort), x.id + ' enums');
     assert(x.note.length <= 500, x.id + ' note length');
   }
-  eq(cat('예약(월 01시)').map((x) => x.status), ['todo', 'todo', 'todo']);
-  assert(cat('예약(월 01시)').every((x) => x.note.includes('2026-11-16') && x.note.includes('01:00')), 'scheduled notes carry the time');
+  eq(cat('예약(월 01시)').map((x) => x.status), ['done', 'done', 'done']);   // 2026-11-16 T-01~T-03 완료
+  assert(cat('예약(월 01시)').every((x) => x.note.includes('2026-11-16')), 'completed scheduled items carry the completion date');
   eq(cat('보류').map((x) => x.status), ['dropped', 'dropped', 'dropped', 'dropped']);
   assert(cat('결정 대기').every((x) => x.status === 'todo' && x.note.startsWith('[결정 필요]')), 'decision items');
-  assert(cat('출시 전').every((x) => x.release === 'R1'), 'pre-release items are R1');
-  eq(T.filter((x) => x.status === 'done').map((x) => x.id), ['T-55']);
+  assert(cat('출시 전').every((x) => ['R1', 'R2'].includes(x.release)), 'pre-release items are R1 (R2 only for T-92 Milan)');
+  eq(T.filter((x) => x.status === 'done').map((x) => x.id), ['T-01', 'T-02', 'T-03', 'T-08', 'T-55', 'T-58', 'T-59', 'T-81', 'T-82', 'T-93']);
+  eq(T.filter((x) => x.status === 'review').map((x) => x.id), ['T-80', 'T-90']);
   const t01 = T.find((x) => x.id === 'T-01'), t04 = T.find((x) => x.id === 'T-04');
   assert(/옛 작품/.test(t01.note) && /최후 수단/.test(t01.note) && /티에폴로/.test(t01.note), 'T-01 old-works-first note');
   assert(/우리 본당/.test(t04.title) && /명동/.test(t04.note) && /ai_stations_prompts/.test(t04.evidence), 'T-04 narrowed scope');
