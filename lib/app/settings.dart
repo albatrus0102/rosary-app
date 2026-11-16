@@ -12,6 +12,7 @@ import '../rosary3d/rosary_model.dart';
 import 'leader_voice.dart';
 import 'release_gate.dart';
 import 'rosary_style.dart';
+import 'skins.dart';
 
 /// 기도문 본문 글꼴: 고딕(번들 Pretendard, 기본) 또는 기기 시스템 글꼴.
 enum PrayerFont { gothic, system }
@@ -202,6 +203,56 @@ class AppSettings extends ChangeNotifier {
         (_prefs.getDouble(_kPrayerMusicVolume) ?? defaultPrayerMusicVolume)
             .clamp(minPrayerMusicVolume, maxPrayerMusicVolume);
     _prayerMusicInChurch = _prefs.getBool(_kPrayerMusicInChurch) ?? false;
+    _skinId = _prefs.getString(_kSkinId) ?? kDefaultSkinId;
+    _skinSeen = {...?_prefs.getStringList(_kSkinSeen)};
+    _skinCustoms = _prefs.getString(_kSkinCustoms) ?? '';
+  }
+
+  // ── 스킨(앱 색 테마). 전부 평범한 값이라 백업이 그대로 담는다. 규칙은 skins.dart ──
+  static const _kSkinId = 'skin_id';
+  static const _kSkinSeen = 'skin_seen';
+  static const _kSkinCustoms = 'skin_customs';
+  late String _skinId;
+  late Set<String> _skinSeen;
+  late String _skinCustoms;
+  String? _skinPreviewId;
+
+  /// 고른 스킨 id. 날짜 문 밖이어도 값은 그대로 둔다(화면은 [Skins.effectiveId]가 정한다).
+  String get skinId => _skinId;
+  set skinId(String v) {
+    if (v == _skinId) return;
+    _skinId = v;
+    _prefs.setString(_kSkinId, v);
+    notifyListeners();
+  }
+
+  /// 저장하지 않는 미리 보기 중인 스킨 id(null이면 미리 보기 아님).
+  String? get skinPreviewId => _skinPreviewId;
+  set skinPreviewId(String? v) {
+    if (v == _skinPreviewId) return;
+    _skinPreviewId = v;
+    notifyListeners();
+  }
+
+  /// 본 적 있는 새 스킨 id(빨간 점을 끈다).
+  Set<String> get skinSeen => Set.unmodifiable(_skinSeen);
+  void markSkinSeen(String id) {
+    if (!_skinSeen.add(id)) return;
+    _prefs.setStringList(_kSkinSeen, _skinSeen.toList()..sort());
+    notifyListeners();
+  }
+
+  /// 내가 만든 스킨(저장은 JSON 문자열 하나).
+  List<CustomSkin> get skinCustoms =>
+      _skinCustomsList ??= decodeCustomSkins(_skinCustoms);
+  List<CustomSkin>? _skinCustomsList;
+  set skinCustoms(List<CustomSkin> v) {
+    final s = encodeCustomSkins(v);
+    if (s == _skinCustoms) return;
+    _skinCustoms = s;
+    _skinCustomsList = null;
+    _prefs.setString(_kSkinCustoms, s);
+    notifyListeners();
   }
 
   static const _kPrayerMusic = 'prayer_music';

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'settings.dart';
+import 'skins.dart';
 
 /// Material 3 모양(shape) 스케일 토큰: 0 / 4 / 8 / 12 / 16 / 28 / full.
 abstract final class AppShape {
@@ -266,6 +267,42 @@ abstract final class AppTheme {
     PrayerFont font = PrayerFont.gothic,
   ]) => _build(scheme, font);
 
+  /// 지금 그릴 스킨: 미리 보기 중이면 그것, 아니면 고른 스킨. 날짜 문 밖이면 기본([Skins.effectiveId]).
+  static AppSkin activeSkin(AppSettings settings, [DateTime? now]) =>
+      Skins.effective(
+        settings.skinPreviewId ?? settings.skinId,
+        now ?? DateTime.now(),
+        settings.skinCustoms,
+      );
+
+  /// [skin]을 [system] 밝기에서 입힌 테마. 기본 스킨은 손으로 정한 상아색·갈색·금색 구성 그대로다.
+  /// 성당 3D 화면은 [ChurchTheme]를 따로 쓰므로 스킨의 영향을 받지 않는다.
+  static ThemeData forSkin(
+    AppSkin skin,
+    Brightness system, {
+    PrayerFont font = PrayerFont.gothic,
+  }) {
+    final (tokens, b) = skin.resolve(system);
+    if (skin.builtin) {
+      return b == Brightness.dark ? dark(font: font) : light(font: font);
+    }
+    final scheme = skinScheme(tokens, b);
+    ColorScheme? chrome;
+    if (b == Brightness.light) {
+      chrome = skin.dark != null
+          ? skinScheme(skin.dark!, Brightness.dark)
+          : _chromeCache[tokens] ??= deriveChromeScheme(tokens);
+    }
+    return _build(scheme, font, chrome, tokens.gold);
+  }
+
+  static final Map<(SkinTokens, Brightness), ColorScheme> _skinSchemeCache = {};
+  static final Map<SkinTokens, ColorScheme> _chromeCache = {};
+
+  /// 토큰에서 유도한 색 구성(같은 토큰은 같은 인스턴스).
+  static ColorScheme skinScheme(SkinTokens t, Brightness b) =>
+      _skinSchemeCache[(t, b)] ??= deriveSkinScheme(t, b);
+
   /// [context] 테마의 내비게이션(레일·하단 바)용 테마: 밝은 테마에서도 어두운 갈색 구성
   /// ([AppDecor.chrome])을 쓰는 같은 M3 테마. 어두운 테마에서는 앱 테마 그대로다.
   static ThemeData chromeOf(BuildContext context) {
@@ -363,38 +400,42 @@ abstract final class AppTheme {
   /// 새 [ThemeData]를 만들면 내용이 같아도 `==`가 false라(상태별 콜백 객체가 매번 새로 생김)
   /// MaterialApp의 AnimatedTheme이 200ms 동안 매 프레임 `ThemeData.lerp` + 앱 전체 리빌드를
   /// 돌린다. 같은 색 구성에는 같은 인스턴스를 돌려주어 그 일을 없앤다.
-  static final Map<(ColorScheme, PrayerFont, ColorScheme?), ThemeData>
+  static final Map<(ColorScheme, PrayerFont, ColorScheme?, Color?), ThemeData>
   _themeCache = {};
 
   static ThemeData _build(
     ColorScheme scheme,
     PrayerFont font, [
     ColorScheme? chrome,
+    Color? goldOverride,
   ]) {
     // 어두운 구성은 내비게이션도 자기 구성을 쓴다.
     final nav = scheme.brightness == Brightness.dark ? null : chrome;
-    final key = (scheme, font, nav);
+    final key = (scheme, font, nav, goldOverride);
     final cached = _themeCache[key];
     if (cached != null) return cached;
-    // 기기 색(배경화면)이나 글꼴이 바뀔 때만 새 항목이 생긴다. 쌓이지 않게 조금만 둔다.
-    if (_themeCache.length >= 12) _themeCache.clear();
-    return _themeCache[key] = _buildUncached(scheme, font, nav);
+    // 기기 색(배경화면)·글꼴·스킨이 바뀔 때만 새 항목이 생긴다. 쌓이지 않게 조금만 둔다.
+    if (_themeCache.length >= 24) _themeCache.clear();
+    return _themeCache[key] = _buildUncached(scheme, font, nav, goldOverride);
   }
 
   static ThemeData _buildUncached(
     ColorScheme scheme,
     PrayerFont font,
     ColorScheme? chrome,
+    Color? goldOverride,
   ) {
     final text = textTheme(scheme, font);
     final overlay = systemOverlayStyle(scheme.brightness);
     final dark = scheme.brightness == Brightness.dark;
     // 장식 금색: 앱 고유 구성이면 정해 둔 금색, 그 밖(기기 색·화면 한정 구성)이면 그 구성의 강조색.
-    final gold = identical(scheme, _seedLight)
-        ? _goldLight
-        : identical(scheme, _seedDark)
-        ? _goldDark
-        : (dark ? scheme.primary : scheme.tertiary);
+    final gold =
+        goldOverride ??
+        (identical(scheme, _seedLight)
+            ? _goldLight
+            : identical(scheme, _seedDark)
+            ? _goldDark
+            : (dark ? scheme.primary : scheme.tertiary));
     final decor = AppDecor(gold: gold, chrome: chrome ?? scheme);
     // 내비게이션 표시기: 가는 금색 테두리의 알약.
     final indicator = StadiumBorder(side: BorderSide(color: gold));

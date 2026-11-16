@@ -209,7 +209,8 @@ void main() {
     expect(style.fontSize, greaterThan(24 * 1.4));
 
     // 기본으로 되돌리기.
-    await tester.tap(find.text('기본'));
+    // 스킨 항목의 부제('기본')와 겹치지 않게 글자 크기 되돌리기 단추만 찾는다.
+    await tester.tap(find.widgetWithText(TextButton, '기본'));
     await tester.pump();
     expect(settings.prayerTextScale, AppSettings.defaultTextScale);
   });

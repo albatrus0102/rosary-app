@@ -7,6 +7,7 @@ import '../app/release_gate.dart';
 import '../app/leader_audio_store.dart';
 import '../app/leader_voice.dart';
 import '../app/settings.dart';
+import '../app/skins.dart';
 import '../app/sound_player.dart';
 import '../app/theme.dart';
 import '../rosary3d/rosary_gallery_screen.dart';
@@ -18,6 +19,7 @@ import '../domain/prayer_data.dart';
 import '../domain/prayer_music_tracks.dart';
 import 'leader_record_screen.dart';
 import 'prayer_music_sheet.dart';
+import 'skin_picker.dart';
 import 'widgets/page_body.dart';
 import 'widgets/section_header.dart';
 
@@ -398,6 +400,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             settings.prayerBackground = v;
             Track.setting('prayer_background');
           },
+        ),
+        // 앱 색 테마(스킨). 성당 3D 화면과 기도 화면 바탕 설정은 따로다.
+        ListTile(
+          key: const ValueKey('settings-skin'),
+          leading: const Icon(Icons.color_lens_outlined),
+          title: const Text('스킨'),
+          subtitle: Text(
+            Skins.effective(
+              settings.skinId,
+              DateTime.now(),
+              settings.skinCustoms,
+            ).nameKo,
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => showSkinPicker(context, settings),
         ),
         SwitchListTile(
           secondary: const Icon(Icons.palette_outlined),
