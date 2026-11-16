@@ -5,7 +5,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
-const assets = path.resolve(here, '../../assets/church');
+const assets = process.env.CHURCH_ROOT || path.resolve(here, '../../assets/church');   // CHURCH_ROOT: 고치기 전 사본과 비교할 때
 
 function makeSandbox() {
   const sandbox = { console, performance, setTimeout, clearTimeout };

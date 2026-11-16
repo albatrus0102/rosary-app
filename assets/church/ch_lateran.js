@@ -401,7 +401,15 @@
       // 익랑·성가대석·후진 바닥(4단 높음)
       B(-XT, XT, 0, TY - 0.01, ZAP, ZT1, STU_SH);
       texFloor({ x0: -XT, x1: XT, z0: ZT0, z1: ZT1, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT1, reflect: true });
-      texFloor({ x0: -XN - 0.2, x1: XN + 0.2, z0: ZAP, z1: ZT0, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT0 });
+      // 후진 바닥판: 반원 후진(반지름 XN) 뒤에 반원 주보랑 바닥(안쪽 반지름 AMI = XN + 1)이 같은 높이 TY 로 깔린다. 직사각형 하나로 깔면 모서리가 주보랑 바닥 위로 튀어나와
+      // 두 면이 같은 깊이로 뭉개져 깜빡인다(coplanar.test). 후진 중심(ZAC)에서 떨어진 거리 d 구간마다 폭을 줄여 판 모서리가 반지름 5.7(< AMI)을 넘지 않게 하고,
+      // 후진 안(반지름 XN)은 빠짐없이 덮는다. 같은 질감·같은 재질이라 한 메시로 합쳐지므로 draw call 은 그대로다(질감 기준점 bx,bz 도 같다).
+      texFloor({ x0: -XN - 0.2, x1: XN + 0.2, z0: ZAC, z1: ZT0, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT0 });
+      [0, 1.6, 2.8, 3.9, XN].forEach(function (d0, gi, ds) {
+        if (gi === ds.length - 1) return;
+        var d1 = ds[gi + 1], hw = Math.min(XN + 0.2, Math.sqrt(5.7 * 5.7 - d1 * d1));
+        texFloor({ x0: -hw, x1: hw, z0: ZAC - d1, z1: ZAC - d0, y: TY, tex: texCosmati, tw: 9.54, th: 7.3, bx: -XN, bz: ZT0 });
+      });
       ctx.floorZone({ x0: -XT, x1: XT, z0: ZAP, z1: ZT1, y: TY });
       // 신랑→익랑 계단 4단: 가운데(x ±1.9)는 콘페시오가 끊어 두 갈래(H-1 B5)
       SIDES.forEach(function (s) { ctx.steps({ x0: s < 0 ? -XN : CFX + CFW, x1: s < 0 ? -CFX - CFW : XN, z0: ZT1, z1: ZT1 + 0.8, y0: 0, y1: TY, n: 4, dir: [0, -1], color: MARB }); });

@@ -707,7 +707,7 @@
         ctx.boxAABB({ x0: -1.7, x1: 1.7, z0: i === 2 ? -11 : st[1] - 0.4, z1: st[1], y0: st[0], y1: st[0] + 0.012, color: 0xa72b35, vary: 0 });
       });
       ctx.carpet({ x0: -1.7, x1: 1.7, z0: -29.2, z1: -11, y: PY, color: 0xa72b35, border: C.gold });
-      ctx.carpet({ x0: -3.0, x1: 3.0, z0: -19.5, z1: -16.5, y: PY, color: 0xa72b35, border: C.gold });
+      ctx.carpet({ x0: -3.0, x1: 3.0, z0: -19.5, z1: -16.5, y: PY + 0.02, color: 0xa72b35, border: C.gold });
       ctx.addCollider({ x0: -5.1, x1: 5.1, z0: -32, z1: -9.8 });
       // 제대 난간(옛 영성체 난간): 가운데 트임
       [[-4.4, -1.3], [1.3, 4.4]].forEach(function (r) {

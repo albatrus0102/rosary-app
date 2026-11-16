@@ -126,7 +126,7 @@
           quad(WP(W, c - hw, yb, -W.t / 2), WP(W, c - hw, yb, W.t / 2), WP(W, c - hw, ys, W.t / 2), WP(W, c - hw, ys, -W.t / 2), rc, WP(W, c, (yb + ys) / 2, 0), 0.01, W.B);
           quad(WP(W, c + hw, yb, W.t / 2), WP(W, c + hw, yb, -W.t / 2), WP(W, c + hw, ys, -W.t / 2), WP(W, c + hw, ys, W.t / 2), rc, WP(W, c, (yb + ys) / 2, 0), 0.01, W.B);
         }
-        if (yb > yLow + 0.01) quad(WP(W, c - hw, yb, -W.t / 2), WP(W, c + hw, yb, -W.t / 2), WP(W, c + hw, yb, W.t / 2), WP(W, c - hw, yb, W.t / 2), ctx.shade(rc, 1.05), WP(W, c, yb + 1, 0), 0.01, W.B);
+        if (yb > yLow + 0.01 && !h.nosill) quad(WP(W, c - hw, yb, -W.t / 2), WP(W, c + hw, yb, -W.t / 2), WP(W, c + hw, yb, W.t / 2), WP(W, c - hw, yb, W.t / 2), ctx.shade(rc, 1.05), WP(W, c, yb + 1, 0), 0.01, W.B);
       }
       function wrun(W, u0, u1, yLow, yHigh, holes) {
         holes = holes.slice().sort(function (a, b) { return a.c - b.c; });
@@ -323,11 +323,13 @@
       // 큰 아치 안쪽 면 금색
       // ---------- 벽: 익랑 뒷벽(후진 입구·경당 4곳·창) ----------
       var Wr = { axis: 'x', c: ZB - WT / 2, t: WT, cp: C.wallNave, cn: C.wallNave, sides: [1] };
-      var apseHole = { c: 0, hw: NW, yb: SY, ys: 6.0, rise: 5.2, n: 24, ring: 0xf3e3a0, ringW: 0.3 };
+      // nosill: 문지방 윗면은 후진 바닥판(z0…ZB, 같은 높이 SY)이 이미 덮는다. 같은 높이에 한 장 더 깔면 두 면이 같은 깊이로 뭉개져 깜빡인다(2026-11-16 사용자 보고 "발 앞의 줄").
+      var apseHole = { c: 0, hw: NW, yb: SY, ys: 6.0, rise: 5.2, n: 24, ring: 0xf3e3a0, ringW: 0.3, nosill: true };
       Wr.cp = 0xe9c768;
       wrun(Wr, -NW, NW, 0, YT, [apseHole]);
       var chap = [], chapWin = [];
-      [-14, -9.5, 9.5, 14].forEach(function (c) { chap.push({ c: c, hw: 1.2, yb: SY, ys: 3.3, rise: 1.2, n: 8, ring: C.ring }); chapWin.push({ c: c, hw: 0.6, yb: 9.4, ys: 12.8, rise: 0.6, n: 6, ring: C.ring, ringW: 0.16 }); });
+      // nosill: 문턱 윗면은 방 쪽 '문턱' 판(아래 quad)이 덮는다 — 같은 높이에 한 장 더 깔면 깜빡인다
+      [-14, -9.5, 9.5, 14].forEach(function (c) { chap.push({ c: c, hw: 1.2, yb: SY, ys: 3.3, rise: 1.2, n: 8, ring: C.ring, nosill: true }); chapWin.push({ c: c, hw: 0.6, yb: 9.4, ys: 12.8, rise: 0.6, n: 6, ring: C.ring, ringW: 0.16 }); });
       Wr.cp = C.wallNave;
       [[-TX, -NW, chap.slice(0, 2), chapWin.slice(0, 2)], [NW, TX, chap.slice(2), chapWin.slice(2)]].forEach(function (g) {
         wrun(Wr, g[0], g[1], 0, 8.2, g[2]);
@@ -391,8 +393,8 @@
           }); });
           ctx.boxAABB({ x0: xw, x1: xw + 0.24, z0: zd - 0.98, z1: zd + 0.98, y0: SY + 3.0, y1: SY + 3.16, color: 0xd9d3c5 });
         });
-        ctx.boxAABB({ x0: sx > 0 ? TX - 0.45 : -TX, x1: sx > 0 ? TX : -TX + 0.45, z0: ZB, z1: ZT, y0: YT, y1: YT + 0.2, color: C.gold });
-        ctx.boxAABB({ x0: sx > 0 ? TX - 0.7 : -TX, x1: sx > 0 ? TX : -TX + 0.7, z0: ZB, z1: ZT, y0: YT + 0.2, y1: NH, color: 0xd9d3c5 });
+        ctx.boxAABB({ x0: sx > 0 ? TX - 0.45 : -TX, x1: sx > 0 ? TX : -TX + 0.45, z0: ZB + 0.7, z1: ZT, y0: YT, y1: YT + 0.2, color: C.gold });
+        ctx.boxAABB({ x0: sx > 0 ? TX - 0.7 : -TX, x1: sx > 0 ? TX : -TX + 0.7, z0: ZB + 0.7, z1: ZT, y0: YT + 0.2, y1: NH, color: 0xd9d3c5 });
         ctx.boxAABB({ x0: sx > 0 ? TX - 0.07 : -TX, x1: sx > 0 ? TX : -TX + 0.07, z0: ZB, z1: ZT, y0: SY, y1: SY + 1.3, color: 0xa79882 });
       });
       // ---------- 벽: 입구 벽(청동문 3개 + 큰 창 3개) ----------
