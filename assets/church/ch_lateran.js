@@ -60,7 +60,7 @@
 
       // ---------- 사진 질감(키트 surf) 자동 매핑: 색 → 표면 ----------
       function hp(n) { return (ctx.hasPhoto && ctx.hasPhoto(n)) ? n : undefined; }
-      var S_PL = hp('marble_beige'), S_MW = hp('marble_white'), S_MR = hp('marble_rose'), S_LM = hp('limestone'), S_WD = hp('wood_dark');
+      var S_PL = hp('marble_beige'), S_MW = hp('marble_white'), S_MR = hp('marble_rose'), S_LM = hp('travertine') || hp('limestone'), S_WD = hp('wood_dark');
       var AUTO = {};
       [STU, STU2, 0xe2d9c8, 0xe2dacb, 0xe2d9c8, 0xf1eadb].forEach(function (c) { AUTO[c] = S_PL; });
       [MARB, 0xf0ebe0, 0xe3ddd0, 0xf2ead8, 0xf4ecda, 0xd8d2c4, 0xd6cfbe].forEach(function (c) { AUTO[c] = S_MW; });

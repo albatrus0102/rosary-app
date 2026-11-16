@@ -182,7 +182,7 @@
       function extrude(shape, depth, color, x, y, z, rotY) {
         var g = new T.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: false, curveSegments: 10 });
         if (rotY) g.rotateY(rotY);
-        ctx.surfBatch('limestone').add(g, 0xe0d6c0, { x: x, y: y, z: z, flat: true });
+        ctx.surfBatch('travertine').add(g, 0xe0d6c0, { x: x, y: y, z: z, flat: true });
       }
       function archHolePath(cx, y0, w, hRect) {
         var p = new T.Path();
@@ -194,7 +194,7 @@
 
       // ---- 회랑·경당용 가벼운 부품(I-5): 기존 배치(석회암·대리석·광택·금속)에 합쳐져 draw call 을 늘리지 않는다 ----
       function wq(x0, z0, x1, z1, y0, y1, hx, hz) {   // 안쪽 면만 있는 벽(석회암). (hx,hz) = 실내 쪽 점
-        ctx.surfBatch('limestone').addQuad([x0, y0, z0], [x1, y0, z1], [x1, y1, z1], [x0, y1, z0], 0xe0d6c0, [hx, (y0 + y1) / 2, hz]);
+        ctx.surfBatch('travertine').addQuad([x0, y0, z0], [x1, y0, z1], [x1, y1, z1], [x0, y1, z0], 0xe0d6c0, [hx, (y0 + y1) / 2, hz]);
       }
       function col2(xa, xb, z0, z1) { ctx.addCollider({ x0: Math.min(xa, xb), x1: Math.max(xa, xb), z0: Math.min(z0, z1), z1: Math.max(z0, z1) }); }
       function colWall(cx, cz, n, hw2, dep) { var a = onWall(cx, cz, n, -hw2, 0), b = onWall(cx, cz, n, hw2, dep); col2(a[0], b[0], a[1], b[1]); }
@@ -422,7 +422,7 @@
         var n = [-s, 0];
         PIERS.forEach(function (pz, pi) {
           var zc = (pz[0] + pz[1]) / 2, len = pz[1] - pz[0], hc = hw(zc);
-          ctx.box({ x: s * (hc + PIER_OUT) / 2, y: 0, z: zc, w: PIER_OUT - hc, h: YS, d: len, color: 0xe0d6c0, surf: 'limestone' });
+          ctx.box({ x: s * (hc + PIER_OUT) / 2, y: 0, z: zc, w: PIER_OUT - hc, h: YS, d: len, color: 0xe0d6c0, surf: 'travertine' });
           ctx.aoDecal({ x0: s * hc - 0.0, x1: s * PIER_OUT, z0: zc - len / 2, z1: zc + len / 2, y: 0, pad: 0.3 });
           // 걸레받이/받침
           ctx.box({ x: s * (hc + PIER_OUT) / 2, y: 0, z: zc, w: PIER_OUT - hc + 0.22, h: 0.55, d: len + 0.22, color: CREAM_D, surf: 'marble_beige' });
@@ -688,7 +688,7 @@
           var pa = gi.attributes.position.array;
           for (var ti = 0; ti < pa.length; ti += 9) { for (var cc = 0; cc < 3; cc++) { var tmp = pa[ti + 3 + cc]; pa[ti + 3 + cc] = pa[ti + 6 + cc]; pa[ti + 6 + cc] = tmp; } }
         }
-        ctx.surfBatch('limestone').add(gi, 0xe0d6c0, { x: s * AISLE_OUT, y: 0, z: 0, flat: true });
+        ctx.surfBatch('travertine').add(gi, 0xe0d6c0, { x: s * AISLE_OUT, y: 0, z: 0, flat: true });
         // 경당 내부(작은 방): 바닥·옆·뒤·천장
         [30.15, 21.5, 12.85].forEach(function (zc, ci) {
           if (ci === 2) { deepChapel(s, zc); return; }
@@ -772,7 +772,7 @@
       VC('fonts');
       // ---------------------------------------------------------------- 교차부: 돔 피어 4개(모서리 깎음)
       function prism(poly, y0, y1, color) {
-        var cx0 = 0, cz0 = 0, i, n = poly.length, PB = ctx.surfBatch('limestone');
+        var cx0 = 0, cz0 = 0, i, n = poly.length, PB = ctx.surfBatch('travertine');
         poly.forEach(function (p) { cx0 += p[0] / n; cz0 += p[1] / n; });
         for (i = 0; i < n; i++) {
           var a = poly[i], b = poly[(i + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.sqrt(dx * dx + dz * dz) || 1;
@@ -1041,8 +1041,8 @@
       [-1, 1].forEach(function (s) {
         // 익랑 벽(안쪽면 z=-4.75 / -13.25)
         // (I-5 ①-3) 돔 피어 옆 x 10.95…16.7 구간은 회랑 통로로 여는 아치(폭 4.8), 그 바깥 16.7…21.25 만 통벽
-        ctx.box({ x: s * (R_OUT + 21.25) / 2, y: 0, z: -4.45, w: 21.25 - R_OUT, h: YS, d: 0.6, color: 0xe0d6c0, surf: 'limestone' });
-        ctx.box({ x: s * (R_OUT + 21.25) / 2, y: 0, z: -13.55, w: 21.25 - R_OUT, h: YS, d: 0.6, color: 0xe0d6c0, surf: 'limestone' });
+        ctx.box({ x: s * (R_OUT + 21.25) / 2, y: 0, z: -4.45, w: 21.25 - R_OUT, h: YS, d: 0.6, color: 0xe0d6c0, surf: 'travertine' });
+        ctx.box({ x: s * (R_OUT + 21.25) / 2, y: 0, z: -13.55, w: 21.25 - R_OUT, h: YS, d: 0.6, color: 0xe0d6c0, surf: 'travertine' });
         archWallX(s * AISLE_OUT, s * R_OUT, -4.75, 0.6, YS, s * 13.825, 4.8, AMB_Y);
         archWallX(s * AISLE_OUT, s * R_OUT, -13.85, 0.6, YS, s * 13.825, 4.8, AMB_Y);
         [-4.45, -13.55].forEach(function (z) {
@@ -1085,7 +1085,7 @@
       // 후진 팔 벽
       [-1, 1].forEach(function (s) {
         // (I-5 ①-4) 첫 칸(z −25.75…−19.95)은 서쪽 모서리 경당으로 여는 아치(폭 4.5), 그 뒤(−30.25…−25.75)는 통벽
-        ctx.box({ x: s * 4.55, y: 0, z: -28.0, w: 0.6, h: YS, d: 4.5, color: 0xe0d6c0, surf: 'limestone' });
+        ctx.box({ x: s * 4.55, y: 0, z: -28.0, w: 0.6, h: YS, d: 4.5, color: 0xe0d6c0, surf: 'travertine' });
         archWallZ(-25.75, -19.95, s > 0 ? 4.25 : -4.85, 0.6, YS, -22.85, 4.5, AMB_Y);
         ctx.arch({ x: s * 4.55, z: -22.85, y: AMB_Y, span: 4.5, rise: 2.25, t: 0.28, depth: 0.74, axis: 'z', seg: 10, color: CREAM_D });
         ctx.box({ x: s * 4.19, y: AMB_Y + 2.15, z: -22.85, w: 0.16, h: 0.55, d: 0.5, color: GOLD_D });

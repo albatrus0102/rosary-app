@@ -38,9 +38,12 @@
     marble_checker: { photo: 'marble_checker', tile: 2.4, clearcoat: 0.85, ccRough: 0.05, normalScale: 0.3, envK: 1.3, fb: 'checker' },
     limestone: { photo: 'limestone', tile: 1.8, clearcoat: 0.1, ccRough: 0.4, normalScale: 0.6, envK: 1.2, fb: 'marbleBeige' },
     plaster: { photo: 'plaster', tile: 2.6, roughness: 0.95, normalScale: 0.6, envK: 1.1, color: 0xf2eadc, fb: 'plaster' },
-    stone_grey: { photo: 'stone_grey', tile: 2.6, roughness: 0.9, normalScale: 0.7, envK: 0.7, fb: 'plaster' },
+    stone_grey: { photo: 'stone_grey', decal: 'mortar_decal', tile: 2.6, roughness: 0.9, normalScale: 0.7, envK: 0.7, fb: 'plaster' },   // 줄눈 데칼(T-23)을 곱해 어긋쌓기 석재 벽처럼
+    // (2026-11-16) 사용자가 ChatGPT 로 만든 재질: 트래버틴 어긋쌓기(T-06), 회색 화강암·석회암 어긋쌓기(T-07). 이음매는 타일 가장자리와 맞춰 두었다.
+    travertine: { photo: 'travertine', tile: 2.4, clearcoat: 0.08, ccRough: 0.45, normalScale: 0.4, envK: 1.0, fb: 'marbleBeige' },
+    granite: { photo: 'granite', tile: 2.8, roughness: 0.9, normalScale: 0.6, envK: 0.7, fb: 'plaster' },
     brick_grey: { photo: 'brick_grey', tile: 2.4, roughness: 0.9, normalScale: 0.9, envK: 0.6, fb: 'brick' },
-    wood_dark: { photo: 'wood_dark', tile: 1.4, clearcoat: 0.55, ccRough: 0.22, normalScale: 0.5, envK: 1.0, fb: 'wood' },
+    wood_dark: { photo: 'wood_dark', tile: 1.2, clearcoat: 0.55, ccRough: 0.22, normalScale: 0.28, envK: 1.0, fb: 'wood' },
     wood_cherry: { photo: 'wood_cherry', tile: 1.4, clearcoat: 0.6, ccRough: 0.18, normalScale: 0.4, envK: 1.0, fb: 'wood' },
     mosaic_gold: { photo: 'mosaic_gold', tile: 1.6, metalness: 0.75, roughness: 0.38, envK: 1.6, emissive: 0.08, fb: 'mosaic' },
     gold_relief: { photo: 'gold_relief', tile: 3.0, metalness: 0.7, roughness: 0.4, envK: 1.4, fb: 'mosaic' },
@@ -145,7 +148,7 @@
       });
       if (def.photo) {
         var fb = fallbackFor(def.fb);
-        m.map = Ph.get(def.photo, { repeat: rep, fallbackCanvas: fb.image });
+        m.map = (def.decal && Ph.getDecal) ? Ph.getDecal(def.photo, def.decal, { repeat: rep, fallbackCanvas: fb.image }) : Ph.get(def.photo, { repeat: rep, fallbackCanvas: fb.image });
         if (hasN) { m.normalMap = Ph.get(def.photo + '_n', { repeat: rep, enc: 'linear' }); m.normalScale = new T.Vector2(num(def.normalScale, 0.5), num(def.normalScale, 0.5)); }
         if (hasR) m.roughnessMap = Ph.get(def.photo + '_r', { repeat: rep, enc: 'linear' });
       } else if (def.tex) {
@@ -191,6 +194,14 @@
       surface: function (name, o) { return physMat(surfDef(name), o); }
     };
     mats.glassRefl.vertexColors = false;
+    // 금박(T-17): 금속 묶음(금·청동 장식, 주두, 틀)에 금박 잔주름의 명암(회색조, 평균 0.9)·법선·거칠기를 입힌다. 색은 빌더가 주는 정점 색(성당마다의 금색)을 그대로 따른다.
+    // 묶음 하나에 UV 만 더하는 것이라 draw call 은 그대로다. 저사양(low)에서는 명암 질감만(법선·거칠기 생략).
+    if (Ph && Ph.has('gold_leaf')) {
+      B_.metal.enableUV(1.0, 1.0);
+      mats.metal.map = Ph.get('gold_leaf');
+      if (!low && Ph.has('gold_leaf_n')) { mats.metal.normalMap = Ph.get('gold_leaf_n', { enc: 'linear' }); mats.metal.normalScale = new T.Vector2(0.16, 0.16); }
+      if (!low && Ph.has('gold_leaf_r')) { mats.metal.roughnessMap = Ph.get('gold_leaf_r', { enc: 'linear' }); mats.metal.roughness = 1; }
+    }
 
     // ---- 재질 배치 선택 ----
     function isGold(c) {
@@ -1190,6 +1201,8 @@
       var along = l >= w; var len = along ? l : w, wid = along ? w : l;
       t.repeat.set(1, Math.max(1, len / (wid * 2)));
       var m = new T.MeshStandardMaterial({ map: t, roughness: 0.95, color: 0xffffff, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.05 });
+      // 벨벳 결(T-13): 보풀 명암을 요철로만 입힌다(색·무늬는 그대로, 질감 1장 추가·draw call 변화 없음). low 에서는 생략.
+      if (!low && Ph && Ph.has('velvet')) { var vb = Ph.get('velvet', { enc: 'linear', repeat: [wid / 0.6, len / 0.6] }); m.bumpMap = vb; m.bumpScale = 2.5; }
       // 밤·어두운 룩에서 카펫이 완전한 검정으로 뭉개지지 않게 자체 밝기를 조금(낮 0.05 → 밤 0.2, 질감 색 그대로) 준다(world.js applyEnv 가 갱신)
       S_.physMats.push({ m: m, envK: 0.2, cc: 0, em: 0, lift: [0.05, 0.2] });
       var mesh = new T.Mesh(new T.PlaneGeometry(wid, len), m);

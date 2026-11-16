@@ -144,6 +144,7 @@
     var T = root.THREE, G = root.ChurchGeo, Geo = G.Geo, ctx = world.ctx;
     // 금색 장식도 소품 배치에 넣는다(그리기 호출을 아끼려고 금속 재질을 따로 쓰지 않는다)
     var cloth = new G.Batch(71), solid = new G.Batch(72), metal = solid;
+    if (!low && root.ChurchPhotos && root.ChurchPhotos.has('velvet')) cloth.enableUV(0.6, 0.6);
     var pts = [], rnd = G.rng(4242);
     var cHex = COLORS[pl.state.color].hex;
     function col(name) { return COLORS[name].hex; }
@@ -396,6 +397,8 @@
       group.add(g);
     }
     var clothMat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, side: T.DoubleSide, emissive: new T.Color(em.hex), emissiveIntensity: em.em, envMapIntensity: 0.6 });
+    // 벨벳 결(T-13): 보풀 명암(회색조, 평균 0.88)을 곱한다. 전례 색은 정점 색 그대로(재질·draw call 수는 그대로, UV 만 추가). low 는 생략.
+    if (cloth.u && root.ChurchPhotos && root.ChurchPhotos.has('velvet')) clothMat.map = root.ChurchPhotos.get('velvet');
     mats.push(clothMat);
     addBatch(cloth, clothMat, 'liturgy-cloth', true);
     addBatch(solid, (ctx.mats && ctx.mats.solid) || clothMat, 'liturgy-props');   // 성당 재질을 그대로 쓴다(시간대·화질 따라 함께 바뀐다)

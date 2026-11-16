@@ -84,7 +84,8 @@
     var PAL_APSE = [0xb3171f, 0x1a46a8, 0xb3171f, 0x1a46a8, 0x2552b8, 0xe8a926, 0x9a1630, 0x1a46a8, 0xf0b93a, 0xb3171f, 0x6d1426, 0xd7ccb0, 0x2c8a4e, 0xe8a926];
     var HASP = !!(ctx.hasPhoto && ctx.hasPhoto('stone_grey') && ctx.surfBatch);
     var STONE = 0x948a80, STONE_L = 0xaaa096, STONE_D = 0x6a625a, PINKST = 0xa08f87, WALLC = HASP ? 0xe6dfd8 : 0x857c73;
-    var WB = HASP ? ctx.surfBatch('stone_grey') : S;   // 벽·아케이드: 사진 석재 질감
+    var HASG = !!(HASP && ctx.hasPhoto('granite'));   // 회색 화강암·석회암 어긋쌓기(ChatGPT T-07, 2026-11-16): 고딕 석조 벽·기둥의 켜(줄눈)
+    var WB = HASP ? ctx.surfBatch(HASG ? 'granite' : 'stone_grey') : S;   // 벽·아케이드: 사진 석재 질감
 
     // 성당 내부 분위기: 코어 조명(반구광·태양·환경 반사·안개)을 내부용으로 낮춘다(밀라노는 어둡고 따뜻한 내부)
     var sceneRef = null, MOOD = { hemi: 0.62, dir: 0.8, env: 0.6 };

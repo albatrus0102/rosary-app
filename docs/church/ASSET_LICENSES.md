@@ -7,7 +7,7 @@
 성당별 사진은 `assets/church/tex_<성당id>_*.jpg` 로 추가하고, 그 성당 전용 표를 `docs/church/licenses/<성당id>.md` 에 쓴다(앱의 라이선스 화면이 읽는다).
 각 파일마다 원본 URL · 작가 · 라이선스 · (필요하면) 표시 문구를 기록한다.
 
-## 공용 질감 (assets/church/tex_*.jpg, 모두 1024px 이하, JPEG q80)
+## 공용 질감 (assets/church/tex_*.jpg, 모두 1024px 이하, JPEG q80) — 아래 표의 marble_white·marble_checker·wood_dark 는 2026-11-16 에 ChatGPT 생성물로 교체됨(다음 절)
 | 번들 파일 | 원본 | 작가 | 라이선스 | 비고 |
 |---|---|---|---|---|
 | tex_marble_white(.jpg/_n/_r) | https://ambientcg.com/a/Marble021 | ambientCG | CC0 | Color/NormalGL/Roughness 1K |
@@ -24,6 +24,26 @@
 | tex_mosaic_gold | https://commons.wikimedia.org/wiki/File:Apsis_mosaic_San_Clemente.jpg (산 클레멘테 성당 후진 반돔의 금빛 소용돌이 부분을 잘라 4방향 대칭 타일로 만듦) | Jastrow | Public domain (PD-Art, 11–12세기 모자이크 사진) | 글자·인물이 없는 영역만 사용 |
 | tex_fresco_dome | https://commons.wikimedia.org/wiki/File:Intercession_of_Charles_Borromeo_supported_by_the_Virgin_Mary_-_Detail_Rottmayr_Fresco_-_Karlskirche_-_Vienna.JPG | Johann Michael Rottmayr (1725–30, 비엔나 카를스키르헤 천장화 사진) | Public domain | |
 | tex_gold_relief | https://commons.wikimedia.org/wiki/File:Fronton_Porte_Dor%C3%A9e_Fontainebleau.jpg | Jebulon | CC0 | 금박 장식 문 위 |
+
+## 사용자가 ChatGPT 로 생성한 질감 (2026-11-16, 프롬프트 번호 = [TEXTURE_PROMPTS.md](TEXTURE_PROMPTS.md) §2)
+외부 라이선스 없음. 이용 권한은 ChatGPT 이용약관(사용자 요금제 약관)에 따른다. 원본 PNG(약 1254²)는 저장소에 넣지 않고, **처리된 1024/512 JPEG 만** `art/church_tex_src/` 에 둔다(`tools/church_web/tex_ingest_chatgpt.py`: 이음매 보정 → 리사이즈 → 노말·러프니스 유도).
+| 번들 파일 | 출처 | 프롬프트 | 처리 | 비고 |
+|---|---|---|---|---|
+| tex_marble_white(.jpg/_n/_r) | 사용자가 ChatGPT 로 생성, 2026-11-16 | T-01 흰 카라라 대리석 | 사방 30% 교차 페이드 심리스 → 1024 | 기존 CC0 Marble021 **대체** |
+| tex_marble_checker(_n/_r) | 〃 | T-02 흑백 2×2 체스판 | 줄눈이 가장자리에서 얇던 것을 **타일 4장을 잘라 줄눈 8px(전 구간 동일)로 재조립** → 1024 | 기존 합성본 **대체** |
+| tex_travertine(_n/_r) | 〃 | T-06 꿀색 트래버틴 어긋쌓기 | 줄 간격이 안 맞던 아래 줄을 블록 8장으로 **재조립(4줄, 한 줄씩 반 블록 어긋, 줄눈이 타일 가장자리와 정렬)**, 채도 45% 낮춤(로마 크림빛 실내에 맞춤) → 1024 | 신규 |
+| tex_granite(_n/_r) | 〃 | T-07 회색 화강암·석회암 어긋쌓기 | 세로는 줄눈 중심~중심으로 잘라 주기 맞춤, 가로는 64px 교차 페이드 → 1024 | 신규 |
+| tex_wood_dark(_n/_r) | 〃 | T-10 어두운 호두나무 널 | 가로 교차 페이드(세로 주기는 원본이 이미 맞음) → 1024 | 기존 CC0 dark_wood **대체** |
+| tex_velvet | 〃 | T-13 붉은 벨벳 | 심리스 → 512 회색조 **명암 맵**(평균 0.88): 색은 쓰는 곳(양탄자·전례 천)의 색을 따른다 | 신규 |
+| tex_gold_leaf(_n/_r) | 〃 | T-17 두드린 금박 | 심리스 → 512 회색조 명암 맵(평균 0.9) + 법선·거칠기 유도. 금 **색**은 빌더의 정점 색이 정한다 | 신규 |
+| tex_mortar_decal | 〃 | T-23 줄눈 데칼(흰 바탕 회색 선) | 세로 주기 자름 + 가로 교차 페이드 → 512 회색조. 실행 시 사진에 **곱해** 합성(캔버스 1장 공유) | 신규 |
+
+**적용(2026-11-16)** — 질감 슬롯을 교체(marble_white·marble_checker·wood_dark)했으므로 그 슬롯을 쓰던 모든 성당이 자동으로 새 질감을 받는다. 추가 연결:
+- 성 베드로: 피어·벽기둥·벽면의 `limestone` → `travertine`(로마 석재). 라테라노: 그늘 스투코 `STU_SH` → `travertine`. 신랑 바닥 등 **고유 문양 바닥은 그대로**(체스판으로 바꾸지 않음; 체스판은 문서상 체스판 바닥이 없어 `ch_basic` 만 쓴다).
+- 밀라노: 벽·아케이드 묶음 `stone_grey` → `granite`(고딕 석조의 켜). 피렌체: `stone_grey` 에 줄눈 데칼(T-23)을 곱해 어긋쌓기 사암 벽처럼(런타임 캔버스 합성, 사진·데칼 쌍당 1장 공유).
+- 신자석·무릎틀·마룻바닥·성가대석: `wood_dark` = 호두나무(T-10). 모든 성당의 대리석 `marble_white` = 카라라(T-01).
+- 금박(T-17): 금속 묶음(`mats.metal`)에 명암·법선·거칠기만 입힘(색은 성당별 정점 색). 벨벳(T-13): 양탄자 요철(bump) + 전례 천 묶음(`liturgy-cloth`)의 명암. 둘 다 새 draw call 없음.
+- 선별 못 한 것: 무릎틀 쿠션 벨벳(새 묶음 = draw call +1 이라 보류).
 
 ## 환경광 HDRI (assets/church/env_church.js)
 | 파일 | 원본 | 작가 | 라이선스 |
