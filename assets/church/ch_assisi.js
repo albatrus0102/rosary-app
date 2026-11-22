@@ -92,7 +92,10 @@
     as_plasterL: { photo: 'assisi_fresco', tile: [3.0, 3.0], roughness: 0.93, normalScale: 0.3, envK: 0.5, fb: 'plaster', tint: 0xa08066 },
     as_vaultL: { photo: 'assisi_vault', tile: [2.6, 2.6], roughness: 0.9, normalScale: 0.25, envK: 0.5, fb: 'plaster', tint: 0xb8bcd0 },
     as_floorL: { photo: 'assisi_floor', tile: [2.4, 2.4], roughness: 0.55, clearcoat: 0.15, ccRough: 0.4, normalScale: 0.2, envK: 0.6, fb: 'marble', tint: 0xb8a898 },
-    as_stoneC: { photo: 'assisi_stone', tile: [2.0, 2.0], roughness: 0.9, normalScale: 0.9, envK: 0.4, fb: 'plaster', tint: 0xb4a090 }
+    as_stoneC: { photo: 'assisi_stone', tile: [2.0, 2.0], roughness: 0.9, normalScale: 0.9, envK: 0.4, fb: 'plaster', tint: 0xb4a090 },
+    // 층 사이 이음(두 층에서 다 보이는 것): 하부 → 상부 계단·벽·천장·테라스 복도, 묘소로 내려가는 우물 계단·벽·층계참. 어느 층 묶음에도 넣지 않는다(늘 그린다)
+    // — 층 묶음에 두면 위층에서 내려다보거나 아래층에서 올려다볼 때 그 층이 꺼져 계단·벽이 사라지고 빈 하늘이 보였다(2026-11-22 확인 샷).
+    as_stoneS: { photo: 'assisi_stone', tile: [2.4, 2.4], roughness: 0.86, normalScale: 0.75, envK: 0.45, fb: 'plaster', tint: 0xb8a08e }
   };
   var LEVEL_SURF = { U: ['as_stoneU', 'as_plasterU', 'as_ochreU', 'as_vaultU', 'as_cycleU', 'as_drapeU', 'as_floorU'], L: ['as_stoneL', 'as_plasterL', 'as_vaultL', 'as_floorL'], C: ['as_stoneC'] };
   var GEN_TEX = ['assisi_cycle', 'assisi_drape', 'assisi_floor'];
@@ -592,7 +595,7 @@
         bx('as_stoneL', xi, sx * (LXX + 0.4), YL, LTOP, LZN - 0.4, LZN, 0x8a7868);                          // 나르텍스 서벽(신랑 폭 밖)
         bx('as_stoneL', sx * LTX, sx * (LTX + 0.4), YL, LTOP, TZ0 - 0.4, 0.4, 0x8a7868);                    // 트란셉트 끝
         bx('as_stoneL', xi, sx * (LTX + 0.4), YL, LTOP, 0, 0.4, 0x8a7868);                                   // 트란셉트 동벽 뒤
-        if (sx > 0) { bx('as_stoneL', LAR, LDOOR.x0, YL, LTOP, TZ0 - 0.4, TZ0, 0x8a7868); bx('as_stoneL', LDOOR.x1, LTX + 0.4, YL, LTOP, TZ0 - 0.4, TZ0, 0x8a7868); bx('as_stoneL', LDOOR.x0, LDOOR.x1, YL + 2.8, LTOP, TZ0 - 0.4, TZ0, 0x8a7868); }
+        if (sx > 0) { bx('as_stoneL', LAR, LDOOR.x0, YL, LTOP, TZ0 - 0.4, TZ0, 0x8a7868); bx('as_stoneL', LDOOR.x1, LTX + 0.4, YL, LTOP, TZ0 - 0.4, TZ0, 0x8a7868); bx('as_stoneS', LDOOR.x0, LDOOR.x1, YL + 2.8, LTOP, TZ0 - 0.4, TZ0, 0x8a7868); }   // 문 위 벽 = 계단 아래 끝 벽(이음 묶음: 위에서 내려다봐도 보인다)
         else bx('as_stoneL', -LTX - 0.4, -LAR, YL, LTOP, TZ0 - 0.4, TZ0, 0x8a7868);
       });
       bx('as_stoneL', -LXX - 0.4, LXX + 0.4, YL, LTOP, LZX, LZX + 0.4, 0x8a7868);                             // 나르텍스 동벽
@@ -682,7 +685,7 @@
         for (var k = 1; k <= WELL.n; k++) {
           var zt = WELL.zTop - (k - 1) * run, zb = zt - run, h = YL - k * rise;
           zone(x0, x1, zb, zt, h);
-          ctx.boxAABB({ x0: x0, x1: x1, y0: h - 0.12, y1: h, z0: zb, z1: zt, color: 0xc8b8a8, surf: 'as_stoneC' });
+          ctx.boxAABB({ x0: x0, x1: x1, y0: h - 0.12, y1: h, z0: zb, z1: zt, color: 0xc0ae9c, surf: 'as_stoneS' });
         }
         // 우물 안 옆벽(디딤 위 사람·위층 사람 모두를 막는다 — 위에서는 난간, 안에서는 벽)
         [x0, x1].forEach(function (xw) { colY(xw - 0.1, WELL.zBot, xw + 0.1, WELL.zTop, YC - 0.5, YL + 1.2); });
@@ -690,41 +693,43 @@
         // 보이는 것: 우물 벽(어두운 돌) + 위 난간
         [x0, x1].forEach(function (xw, wi) {
           var nrm = wi ? -1 : 1;
-          vquad(B.as_stoneC, xw, WELL.zBot, xw, WELL.zTop, YC, YL, nrm, 0, 0x9a8a7a);
-          bx('as_stoneL', xw - 0.08, xw + 0.08, YL, YL + 0.85, WELL.zBot - 0.08, WELL.zTop, 0xc0ae98);
+          vquad(B.as_stoneS, xw, WELL.zBot, xw, WELL.zTop, YC, YL, nrm, 0, 0x948474);
+          bx('as_stoneS', xw - 0.08, xw + 0.08, YL, YL + 0.85, WELL.zBot - 0.08, WELL.zTop, 0xc0ae98);
         });
-        bx('as_stoneL', x0 - 0.08, x1 + 0.08, YL, YL + 0.85, WELL.zBot - 0.16, WELL.zBot, 0xc0ae98);
+        bx('as_stoneS', x0 - 0.08, x1 + 0.08, YL, YL + 0.85, WELL.zBot - 0.16, WELL.zBot, 0xc0ae98);
       });
 
       // =================================================================== 지하 묘소(YC)
       level('C');
       curFloor = YC;
-      var cS = B.as_stoneC, cF = B.as_stoneC;   // 묘소 바닥 = 같은 맨돌(묶음 하나)
+      var cS = B.as_stoneC, cF = B.as_stoneC, sS = B.as_stoneS;   // 묘소 바닥 = 같은 맨돌(묶음 하나). 층계참(우물 아래 끝 — 하부에서도 보인다)은 이음 묶음
       // 층계참(두 계단이 만나는 곳, 야코파 데 세테솔리의 벽감) · 기도방 · 둥근 방
       zone(-LAND.x, LAND.x, LAND.z0, LAND.z1, YC); zone(-PRAY.x, PRAY.x, PRAY.z0, PRAY.z1, YC);
       // 둥근 방 바닥 구역: 원 안의 가로 띠들(네모 하나로 덮으면 모서리가 벽 밖 흙 속까지 '바닥'이 된다 — 카메라 공간·길 찾기가 그리로 샌다)
       circleZones(CRY.x, CRY.z, CRY.r, -1, 1, YC);
       zone(-PRAY.x, PRAY.x, CRY.z + sqrt(CRY.r * CRY.r - PRAY.x * PRAY.x) - 0.1, PRAY.z0, YC);   // 기도방 → 둥근 방 입구(원 띠가 닿지 않는 호 앞)
-      flr(cF, -LAND.x, LAND.x, LAND.z0, LAND.z1, YC); flr(cF, -PRAY.x, PRAY.x, PRAY.z0, PRAY.z1, YC);
+      flr(sS, -LAND.x, LAND.x, LAND.z0, LAND.z1, YC); flr(cF, -PRAY.x, PRAY.x, PRAY.z0, PRAY.z1, YC);
       var NC = low ? 16 : 24;
       for (var cq = 0; cq < NC; cq++) { var c0 = cq * 2 * PI / NC, c1 = (cq + 1) * 2 * PI / NC; cF.addTris([CRY.x, YC, CRY.z, CRY.x + CRY.r * cos(c0), YC, CRY.z + CRY.r * sin(c0), CRY.x + CRY.r * cos(c1), YC, CRY.z + CRY.r * sin(c1)], 0xffffff, [CRY.x, YC + 5, CRY.z], { vary: 0 }); }
       // 층계참·기도방 벽과 천장(하부 바닥판 밑 2.9m)
       var CT = 2.9;
-      vquad(cS, -WELL.x0, LAND.z1, WELL.x0, LAND.z1, YC, YL - 0.4, 0, -1, 0xa89888);   // 두 계단 사이 벽(야코파의 벽감)
-      bx('as_stoneC', -0.45, 0.45, YC + 0.6, YC + 1.7, LAND.z1 - 0.12, LAND.z1, 0x5a4a40);
+      vquad(sS, -WELL.x0, LAND.z1, WELL.x0, LAND.z1, YC, YL - 0.4, 0, -1, 0xa89888);   // 두 계단 사이 벽(야코파의 벽감)
+      bx('as_stoneS', -0.45, 0.45, YC + 0.6, YC + 1.7, LAND.z1 - 0.12, LAND.z1, 0x5a4a40);
       [1, -1].forEach(function (sx) {
-        vquad(cS, sx * LAND.x, LAND.z0, sx * LAND.x, LAND.z1, YC, YL - 0.4, -sx, 0, 0xa89888);
+        vquad(sS, sx * LAND.x, LAND.z0, sx * LAND.x, LAND.z1, YC, YL - 0.4, -sx, 0, 0xa89888);
         vquad(cS, sx * PRAY.x, LAND.z0, sx * LAND.x, LAND.z0, YC, CT, 0, 1, 0xa89888);
         vquad(cS, sx * PRAY.x, PRAY.z0, sx * PRAY.x, PRAY.z1, YC, CT, -sx, 0, 0xa89888);
         col(sx * LAND.x, LAND.z0, sx * (LAND.x + 0.5), LAND.z1 + 0.5); col(sx * PRAY.x, PRAY.z0 - 0.2, sx * (LAND.x + 0.5), LAND.z0);
       });
       col(-WELL.x0, LAND.z1, WELL.x0, LAND.z1 + 0.4);
-      ceil(cS, -LAND.x, LAND.x, LAND.z0, LAND.z1, YL - 0.4, 0x8a7a6c); ceil(cS, -PRAY.x, PRAY.x, PRAY.z0, LAND.z0, CT, 0x8a7a6c);
+      ceil(sS, -LAND.x, LAND.x, LAND.z0, LAND.z1, YL - 0.4, 0x8a7a6c); ceil(cS, -PRAY.x, PRAY.x, PRAY.z0, LAND.z0, CT, 0x8a7a6c);
       vquad(cS, -LAND.x, LAND.z0, LAND.x, LAND.z0, CT, YL - 0.4, 0, 1, 0x8a7a6c);         // 기도방 천장 → 층계참 천장 사이 턱
       var PZ0 = CRY.z + sqrt(CRY.r * CRY.r - PRAY.x * PRAY.x) - 0.05;   // 기도방이 둥근 방 벽(원)에 닿는 z(입구 호의 끝)
       ceil(cS, -PRAY.x, PRAY.x, PZ0, PRAY.z0, CT, 0x8a7a6c);
+      // 기도방 → 둥근 방 입구 바닥: 원 바닥(다각형)이 닿지 않는 호 앞 두 귀퉁이(최대 0.68m)를 메운다 — 원 바닥보다 2mm 아래(겹친 곳은 원 바닥이 보인다)
+      flr(cF, -PRAY.x, PRAY.x, PZ0 - 0.05, PRAY.z0 + 0.02, YC - 0.002);
       [1, -1].forEach(function (sx) { vquad(cS, sx * PRAY.x, PZ0, sx * PRAY.x, PRAY.z0, YC, CT, -sx, 0, 0xa89888); });
-      [1, -1].forEach(function (sx) { vquad(cS, sx * WELL.x0, WELL.zTop, sx * WELL.x1, WELL.zTop, YC, YL, 0, -1, 0x8a7a6c); });   // 계단 우물 위 끝(하부 바닥 밑)
+      [1, -1].forEach(function (sx) { vquad(sS, sx * WELL.x0, WELL.zTop, sx * WELL.x1, WELL.zTop, YC, YL, 0, -1, 0x8a7a6c); });   // 계단 우물 위 끝(하부 바닥 밑)
       // 둥근 방: 벽(신로마네스크 맨돌, 1925~32 타르키) + 낮은 돔 천장 + 모서리 벽감 4(네 동료) + 기도방 쪽 입구
       (function roundRoom() {
         var n = low ? 16 : 24, ENT = Math.asin(PRAY.x / CRY.r);   // 입구(+z 쪽) 반각
@@ -794,19 +799,19 @@
       for (var sk = 1; sk <= STR.n; sk++) {
         var szt = STR.z0 - (sk - 1) * STR.run + (sk === 1 ? 0.1 : 0), szb = STR.z0 - sk * STR.run, sh = YL + sk * srise;
         zone(STR.x0, STR.x1, szb, szt, sh);
-        ctx.boxAABB({ x0: STR.x0, x1: STR.x1, y0: YL, y1: sh, z0: szb, z1: szt, color: 0xd8c4b0, surf: 'as_stoneL' });
+        ctx.boxAABB({ x0: STR.x0, x1: STR.x1, y0: YL, y1: sh, z0: szb, z1: szt, color: 0xd8c4b0, surf: 'as_stoneS' });
       }
       zone(STR.x0, TER.x1, TER.z0, TER.z1, YU); zone(TER.x0, TER.x1, TER.z1, TZ0 - 0.6, YU);
-      ctx.boxAABB({ x0: STR.x0, x1: TER.x1, y0: YU - 0.4, y1: YU, z0: TER.z0, z1: TER.z1, color: 0xd8c4b0, surf: 'as_stoneU' });
-      ctx.boxAABB({ x0: TER.x0, x1: TER.x1, y0: YU - 0.4, y1: YU, z0: TER.z1, z1: TZ0 - 0.6, color: 0xd8c4b0, surf: 'as_stoneU' });
+      ctx.boxAABB({ x0: STR.x0, x1: TER.x1, y0: YU - 0.4, y1: YU, z0: TER.z0, z1: TER.z1, color: 0xd8c4b0, surf: 'as_stoneS' });
+      ctx.boxAABB({ x0: TER.x0, x1: TER.x1, y0: YU - 0.4, y1: YU, z0: TER.z1, z1: TZ0 - 0.6, color: 0xd8c4b0, surf: 'as_stoneS' });
       // 벽: 서쪽(후진 쪽) · 계단과 복도 사이 · 복도 바깥(동쪽은 트란셉트, 북쪽 바깥) · 남쪽 끝
       var top = YU + 3.2;
-      ctx.boxAABB({ x0: STR.x0 - 0.25, x1: STR.x0, y0: YL, y1: top, z0: TER.z0, z1: TZ0, color: 0xcab6a2, surf: 'as_stoneL' });
-      ctx.boxAABB({ x0: STR.x1, x1: TER.x0, y0: YL, y1: top, z0: STR.z1, z1: TZ0, color: 0xcab6a2, surf: 'as_stoneL' });
-      ctx.boxAABB({ x0: TER.x1, x1: TER.x1 + 0.25, y0: YU - 0.4, y1: top, z0: TER.z0, z1: TZ0, color: 0xcab6a2, surf: 'as_stoneU' });
-      ctx.boxAABB({ x0: STR.x0 - 0.25, x1: TER.x1 + 0.25, y0: YL, y1: top, z0: TER.z0 - 0.25, z1: TER.z0, color: 0xcab6a2, surf: 'as_stoneU' });
-      ctx.boxAABB({ x0: STR.x0, x1: STR.x1, y0: top - 0.15, y1: top, z0: TER.z0, z1: TZ0, color: 0xe4d4c2, surf: 'as_stoneL' });
-      ctx.boxAABB({ x0: TER.x0, x1: TER.x1, y0: top - 0.15, y1: top, z0: TER.z0, z1: TZ0 - 0.6, color: 0xe4d4c2, surf: 'as_stoneU' });
+      ctx.boxAABB({ x0: STR.x0 - 0.25, x1: STR.x0, y0: YL, y1: top, z0: TER.z0, z1: TZ0, color: 0xcab6a2, surf: 'as_stoneS' });
+      ctx.boxAABB({ x0: STR.x1, x1: TER.x0, y0: YL, y1: top, z0: STR.z1, z1: TZ0, color: 0xcab6a2, surf: 'as_stoneS' });
+      ctx.boxAABB({ x0: TER.x1, x1: TER.x1 + 0.25, y0: YU - 0.4, y1: top, z0: TER.z0, z1: TZ0, color: 0xcab6a2, surf: 'as_stoneS' });
+      ctx.boxAABB({ x0: STR.x0 - 0.25, x1: TER.x1 + 0.25, y0: YL, y1: top, z0: TER.z0 - 0.25, z1: TER.z0, color: 0xcab6a2, surf: 'as_stoneS' });
+      ctx.boxAABB({ x0: STR.x0, x1: STR.x1, y0: top - 0.15, y1: top, z0: TER.z0, z1: TZ0, color: 0xe4d4c2, surf: 'as_stoneS' });
+      ctx.boxAABB({ x0: TER.x0, x1: TER.x1, y0: top - 0.15, y1: top, z0: TER.z0, z1: TZ0 - 0.6, color: 0xe4d4c2, surf: 'as_stoneS' });
       col(STR.x0 - 0.6, TER.z0 - 0.6, STR.x0, TZ0 - 0.6); col(STR.x1, STR.z1, TER.x0, TZ0 - 0.6); col(TER.x1, TER.z0 - 0.6, TER.x1 + 0.6, TZ0 - 0.6); col(STR.x0 - 0.6, TER.z0 - 0.6, TER.x1 + 0.6, TER.z0);
       // 복도 옆 창 자리(테라스 — 실제는 회랑을 내려다보는 열린 테라스): 벽등 몇 개
       [-10, -14.5, -19].forEach(function (z) { glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: TER.x1 - 0.02, y: YU + 2.0, z: z, vary: 0 }); glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: STR.x0 + 0.02, y: YL + 2.0 + (TZ0 - z) / (TZ0 - STR.z1) * (YU - YL), z: z, vary: 0 }); });

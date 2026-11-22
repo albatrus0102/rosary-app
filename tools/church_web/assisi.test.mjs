@@ -257,3 +257,33 @@ test('assisi: 성능 예산(고화질 빌드) — 묶음·삼각형·점광원 1
   assert.ok(lt < tris);
   console.log(`# assisi 고화질: 묶음 ${items.length}, 삼각형 ${Math.round(tris)}, 충돌체 ${ctx._.colliders.length}, 바닥 구역 ${ctx._.zones.length} / 간단: 삼각형 ${Math.round(lt)}`);
 });
+
+// 층 사이 이음(계단·우물·층계참)은 어느 층 묶음에도 없어야 한다: 층 묶음은 보는 층이 아니면 꺼지므로(world.js levelVis),
+// 위층에서 내려다보거나 아래층에서 올려다볼 때 계단·벽이 사라지고 빈 하늘이 보였다(2026-11-22 확인 샷 — 우물 디딤 흰 구멍·테라스 복도 옆 빈 곳).
+test('assisi: 층 사이 이음(하부 → 상부 계단, 묘소 우물·층계참)은 공용 묶음 — 층 묶음(U·L·C)에 이음 안 삼각형이 없다', () => {
+  const ctx = Kit.createContext({ layout: lay, quality: 'high' });
+  c.builder.build(ctx);
+  const items = ctx._prepare(), V = Bd.levelVis, ST = Bd.stair, WL = Bd.well, LD = Bd.landing;
+  const lvNames = new Set([...V.items.U, ...V.items.L, ...V.items.C]);
+  // 이음 부피(안쪽으로 2cm 줄인 상자): 계단 위 공간, 우물 안, 층계참
+  const vols = [
+    { n: '하부 → 상부 계단', x0: ST.x0, x1: ST.x1, z0: ST.z1, z1: ST.z0, y0: H.lower, y1: H.upper },
+    ...[1, -1].map((sx) => ({ n: '우물 ' + sx, x0: Math.min(sx * WL.x0, sx * WL.x1), x1: Math.max(sx * WL.x0, sx * WL.x1), z0: WL.zBot, z1: WL.zTop, y0: H.crypt, y1: H.lower })),
+    { n: '층계참', x0: -LD.x, x1: LD.x, z0: LD.z0, z1: LD.z1, y0: H.crypt - 0.05, y1: H.lower - 0.4 }
+  ];
+  const inV = (v, x, y, z) => x > v.x0 + 0.02 && x < v.x1 - 0.02 && z > v.z0 + 0.02 && z < v.z1 - 0.02 && y > v.y0 + 0.02 && y < v.y1 - 0.02;
+  const bad = [], shared = {};
+  for (const it of items) {
+    const p = it.batch.p;
+    for (let i = 0; i < p.length; i += 9) {
+      const x = (p[i] + p[i + 3] + p[i + 6]) / 3, y = (p[i + 1] + p[i + 4] + p[i + 7]) / 3, z = (p[i + 2] + p[i + 5] + p[i + 8]) / 3;
+      for (const v of vols) if (inV(v, x, y, z)) {
+        if (lvNames.has(it.name)) { if (bad.length < 4) bad.push(`${it.name} @ ${v.n} (${x.toFixed(2)},${y.toFixed(2)},${z.toFixed(2)})`); }
+        else shared[v.n] = (shared[v.n] || 0) + 1;
+      }
+    }
+  }
+  assert.deepEqual(bad, [], '층 묶음에 든 이음 삼각형');
+  for (const v of vols) assert.ok(shared[v.n] > 0, v.n + ' 이음 삼각형이 공용 묶음에 있다');
+  assert.ok(!lvNames.has('surf_as_stoneS') && items.some((it) => it.name === 'surf_as_stoneS'), '공용 이음 묶음 surf_as_stoneS');
+});

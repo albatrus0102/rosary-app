@@ -57,7 +57,8 @@ function outside(probe, p) {
 }
 
 function sweep(c, env, useGuard) {
-  const { L } = env, B = c.layout.bounds; let bad = 0, n = 0, hug = 0, fp = 0, pas = 0; const ex = [];
+  const { L } = env, B = c.layout.bounds; let bad = 0, n = 0, hug = 0, fp = 0, pas = 0, lv = 0; const ex = [], lex = [];
+  const upYs = L.multi ? (L.levels || []).map((l) => l.y).sort((a, b) => a - b).slice(1) : [];
   // 여러 층 성당은 그 자리의 바닥마다(같은 xz 의 하부 성당·묘소도) 잰다. 한 층은 바닥 하나(예전과 같다)
   for (let x = B.x0 + 0.6; x < B.x1; x += 2.2) for (let z = B.z0 + 0.6; z < B.z1; z += 2.2) for (const fl of (L.multi ? L.floorsAt(x, z) : [null])) {
     if (fl !== null && L.floorY(x, z, fl) !== fl) continue;
@@ -72,9 +73,15 @@ function sweep(c, env, useGuard) {
       if (cp[0] < B.x0 || cp[0] > B.x1 || cp[2] < B.z0 || cp[2] > B.z1) { pas++; continue; }
       if (outside(env.probe, cp)) { bad++; if (ex.length < 3) ex.push(`(${x.toFixed(1)},${z.toFixed(1)}) yaw${k * 30} → (${cp.map((v) => v.toFixed(1))})`); }
       if (useGuard && hugging(env.probe, cp)) hug++;
+      // 여러 층: 머리 → 카메라 선이 위층 걷는 바닥(구역, 기하가 아닌 다른 출처)을 지나면 다른 층에 선 것이다(묘소 → 하부 성당 바닥 위)
+      for (const h of upYs) {
+        const ay = me.y + 1.0; if ((ay < h) === (cp[1] < h)) continue;
+        const t = (h - ay) / (cp[1] - ay), hx = x + (cp[0] - x) * t, hz = z + (cp[2] - z) * t;
+        if (L.floorsAt(hx, hz).some((f) => Math.abs(f - h) < 0.05)) { lv++; if (lex.length < 3) lex.push(`(${x.toFixed(1)},${z.toFixed(1)},${me.y}) → (${cp.map((v) => v.toFixed(1))})`); break; }
+      }
     }
   }
-  return { bad, n, ex, hug, fp, pas };
+  return { bad, n, ex, hug, fp, pas, lv, lex };
 }
 
 for (const c of churches) {
@@ -83,7 +90,9 @@ for (const c of churches) {
     assert.ok(env.guard.triangles > 100, 'guard triangles');
     assert.ok(env.guard.space && env.guard.space.reachable > 1000, 'camera space');
     const now = sweep(c, env, true), old = sweep(c, env, false);
-    if (process.env.CAMG_DEBUG) console.log(c.id, 'tris', env.guard.triangles, 'old', old.bad, '/', old.n, 'new', now.bad, 'hug', now.hug, 'fp', now.fp, 'pas', now.pas, JSON.stringify(now.ex));
+    if (process.env.CAMG_DEBUG) console.log(c.id, 'tris', env.guard.triangles, 'old', old.bad, '/', old.n, 'new', now.bad, 'hug', now.hug, 'fp', now.fp, 'pas', now.pas, 'level', now.lv, JSON.stringify(now.ex), JSON.stringify(now.lex));
+    // 여러 층: 카메라가 다른 층(위층 바닥 너머)에 서지 않는다
+    assert.equal(now.lv, 0, `다른 층에 선 카메라 ${now.lv}/${now.n}: ${now.lex.join('; ')}`);
     // 남는 것은 모델의 실제 구멍(열린 정문, 모델링 안 된 경당 아치, 벽 조각 틈)뿐: 표본의 1% 이하, 예전의 1/4 이하
     assert.ok(now.bad <= now.n * 0.01, `${now.bad}/${now.n} 바깥: ${now.ex.join('; ')}`);
     if (old.bad > 40) assert.ok(now.bad * 4 <= old.bad, `예전 ${old.bad} → 지금 ${now.bad}`);

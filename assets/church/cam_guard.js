@@ -18,6 +18,29 @@
     // 여러 층(o.levelBase(x,z,y) → 그 삼각형이 놓인 층의 바닥): 바닥 판·낮은 물체·가는 면 판정의 기준 높이를 삼각형마다 그 층 바닥으로 잡는다.
     // 없으면(한 층 성당) 예전처럼 하나(fy0 = 스폰 바닥).
     var LB = o.levelBase || null;
+    // 층 칸막이 지도(여러 층, o.levelYs = 맨 아래층 말고 층 바닥 높이들): 층마다 xz 0.4m 칸 비트맵. 카메라 자리는 머리 → 카메라 선이
+    // 위층 바닥 판을 지나면 안 된다(공간 복셀은 층을 가리지 않고 이어져 있어 리그가 묘소 천장을 잘라내고 하부 성당 바닥 위에 서곤 했다).
+    var PL = o.levelYs && o.levelYs.length && b ? o.levelYs.slice() : null, PC = 0.4, PX0 = 0, PZ0 = 0, PNX = 0, PNZ = 0, PM = null;
+    if (PL) {
+      PX0 = b.x0 - pad; PZ0 = b.z0 - pad; PNX = Math.ceil((b.x1 - b.x0 + 2 * pad) / PC); PNZ = Math.ceil((b.z1 - b.z0 + 2 * pad) / PC);
+      PM = PL.map(function () { return new Uint8Array(PNX * PNZ); });
+    }
+    function partMark(v, y) {
+      for (var li = 0; li < PL.length; li++) {
+        if (y < PL[li] - 0.45 || y > PL[li] + 0.2) continue;
+        var ax = v[0], az = v[2], bx2 = v[3], bz2 = v[5], cx2 = v[6], cz2 = v[8];
+        var d = (bz2 - cz2) * (ax - cx2) + (cx2 - bx2) * (az - cz2);
+        if (d > -1e-9 && d < 1e-9) return;
+        var i0 = Math.max(0, Math.floor((Math.min(ax, bx2, cx2) - PX0) / PC)), i1 = Math.min(PNX - 1, Math.floor((Math.max(ax, bx2, cx2) - PX0) / PC));
+        var k0 = Math.max(0, Math.floor((Math.min(az, bz2, cz2) - PZ0) / PC)), k1 = Math.min(PNZ - 1, Math.floor((Math.max(az, bz2, cz2) - PZ0) / PC));
+        for (var k = k0; k <= k1; k++) for (var i = i0; i <= i1; i++) {
+          var px = PX0 + (i + 0.5) * PC, pz = PZ0 + (k + 0.5) * PC;
+          var l1 = ((bz2 - cz2) * (px - cx2) + (cx2 - bx2) * (pz - cz2)) / d, l2 = ((cz2 - az) * (px - cx2) + (ax - cx2) * (pz - cz2)) / d, e = -0.02;
+          if (l1 >= e && l2 >= e && 1 - l1 - l2 >= e) PM[li][k * PNX + i] = 1;
+        }
+        return;
+      }
+    }
     // 바닥(위를 보는 거의 수평 면, 걷는 바닥 높이 + 0.35m 아래)은 절대 지우지 않는다. floorTop = 가장 높은 바닥 구역(제단 단 등).
     var hasLow = o.yLow !== undefined, fy0 = hasLow ? o.yLow - 1.05 : 0, floorTop = o.floorTop === undefined ? fy0 : Math.max(fy0, o.floorTop);
     obj.updateMatrixWorld(true);
@@ -52,6 +75,8 @@
           var fyAt = LB ? lb : (o.floorY ? (o.floorY((mnx + mxx) * 0.5, (mnz + mxz) * 0.5) || 0) : floorTop);
           flat = mxY < fyAt + 0.2 || mxY < lb + 0.25 ? 1 : 0;
         }
+        // 여러 층: 위층 바닥 판(그 층 바닥 −0.45 … +0.2 의 수평면 — 아래층 천장 포함)을 층 칸막이 지도에 찍는다(partCross)
+        if (PL && Math.abs(ny) > 0.8 * nl) partMark(v, mxY);
         // 낮은 물체(의자·무릎틀·난간): 카메라를 막지 않는다(카메라는 그 위에 뜬다). 기도 자세에서 가리면 지운다(seeThru 85).
         if (mxY < (LB ? lb + (yLow - fy0) : yLow)) {
           if (!flat) lowT.push(mi, i);
@@ -141,6 +166,18 @@
     }
     var api = { clip: clip, clipWide: clipWide, out: out, triangles: nt, thinTriangles: nThin, lowTriangles: lowT.length / 2, cells: NX * NZ, see: null, space: null };
     api.isThin = function (t) { return thin[t] === 1; };
+    // 선분 A→B 가 위층 바닥 판(층 칸막이)을 지나는가 — 여러 층에서만, 한 층은 늘 false
+    api.partCross = function (ax, ay, az, bx, by, bz) {
+      if (!PM) return false;
+      for (var li = 0; li < PL.length; li++) {
+        var h = PL[li];
+        if ((ay < h) === (by < h)) continue;
+        var t2 = (h - ay) / (by - ay), i = Math.floor((ax + (bx - ax) * t2 - PX0) / PC), k = Math.floor((az + (bz - az) * t2 - PZ0) / PC);
+        if (i >= 0 && k >= 0 && i < PNX && k < PNZ && PM[li][k * PNX + i]) return true;
+      }
+      return false;
+    };
+    api.partitions = PM ? PM.map(function (m) { var n = 0; for (var c = 0; c < m.length; c++) n += m[c]; return n; }) : null;
     // 카메라가 설 수 있는 실내 공간(복셀): 리그가 '벽 앞으로 당기기' 대신 '벽 너머 실내에 서고 사이를 지우기'를 고른다.
     if (o.space !== false && nt) api.space = buildSpace(T9, nt, o, fy0, b ? { x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1, yMax: b.yMax } : { x0: x0, x1: x1, z0: z0, z1: z1 }, clip, out);
     // 메시마다 seeThru(Uint8, 정규화) 꼭짓점 값: 255 가는 면(기둥·성상), 170 넓은 면(벽·아치·천장·윗벽), 85 낮은 물체(의자), 0 바닥.
@@ -485,6 +522,8 @@
     if (!Q.sp) return true;
     var v = Q.sp.at(x, y, z);
     if (!v) return false;
+    // 여러 층: 머리 → 카메라가 위층 바닥 판을 지나면 안 된다(다른 층에 서지 않게 — 묘소에서 하부 성당 바닥 위로 나가지 않게)
+    if (Q.g && Q.g.partCross && Q.g.partCross(Q.mx, Q.fy, Q.mz, x, y, z)) return false;
     // 실내(지붕 아래) 아바타 → 지붕 밖 카메라: 열린 문으로 곧게 보일 때만(벽 너머 바깥 마당에 서지 않게)
     if (Q.needCov && !(v & 2) && Q.g && (Q.g.clip(Q.mx, Q.fy, Q.mz, x, y, z, 0) < 1 || Q.g.out.thin < 1)) return false;
     // 카메라 통로(걷는 곳 밖): 아바타와 사이에 벽 하나(두께 1.2m 이하)만 있을 때(성당 안쪽에서 두 벽 너머 통로로 가지 않게)
@@ -689,6 +728,7 @@
     if (logic.multi) {
       var lo = 1e9; (logic.levels || []).forEach(function (L) { if (L.y < lo) lo = L.y; }); if (!(lo < 1e8)) lo = 0;
       o2.levelLow = lo;
+      o2.levelYs = (logic.levels || []).map(function (L) { return L.y; }).filter(function (y) { return y > lo + 0.12; });
       o2.levelBase = function (x, z, y) { return logic.floorY(x, z, y + (logic.C.STEP || 0.45)); };
       o2.walkFloors = function (x, z) {
         var fl = logic.floorsAt(x, z), out = [];
