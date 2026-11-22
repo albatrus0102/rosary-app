@@ -26,8 +26,8 @@ import { buildBVH, makeTracer, hemiDirs, frame } from './ao_bvh.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const ASSETS = process.env.CHURCH_ROOT || path.resolve(here, '../../assets/church');
-// rays: 반구 광선 수 · cell: 바닥 격자(m) · key: 정점 묶음(m) · fR: 이웃 평균 반경(m) · gamma/gammaN/gammaC: 낮 휘도/밤 휘도/색 로그 누르기 · lim/limN/limC: 상한(단) · q: 1단 = 32단계
-export const GI = { v: 1, rays: 96, cell: 0.3, key: 0.25, fR: 1.0, fMax: 40, gamma: 0.7, gammaN: 0.45, gammaC: 0.7, lim: 0.8, limN: 0.6, limC: 0.3, q: 32, hourDay: 11, hourNight: 22 };
+// rays: 반구 광선 수 · cell: 바닥 격자(m) · key: 정점 묶음(m) · fR: 이웃 평균 반경(m) · gamma/gammaN/gammaC: 낮 휘도/밤 휘도/색 로그 누르기 · lim/limD·limN/limND·limC: 밝게/어둡게 상한(단) — 어둡게는 작게(구석·의자 밑은 AO 가 이미 어둡게 한다, 두 번 어둡게 하면 보이는 곳이 평균 맞추기로 밝아진다) · refCell: 둘레 평균 칸(m, 3×3×3 흐림) · q: 1단 = 32단계
+export const GI = { v: 1, rays: 96, cell: 0.3, key: 0.25, fR: 1.0, fMax: 40, gamma: 0.55, gammaN: 0.35, gammaC: 0.7, lim: 0.5, limD: 0.25, limN: 0.3, limND: 0.2, limC: 0.3, refCell: 2.5, q: 32, hourDay: 11, hourNight: 22 };
 const SKIP = new Set(['glass', 'glassRefl', 'glow', 'aodecal']);
 const LS = 10;   // 등불 한 개: x,y,z, r,g,b(세기 × 색), lum, range, soft, virtual(앱에 빛이 없음 = 직접 몫도 굽는다)
 export const TEXAVG = path.join(here, 'gi_texavg.json');
@@ -352,20 +352,21 @@ export async function bakeChurch(c, H, o = {}) {
   const lamps = lampsOf(c, H, R);
   const sc = { alb: col.alb, emD: col.emD, emA: col.emA, envk: col.envk, lamps, env: { sun: R.sun, sunE: R.sunE, moon: R.moon, moonE: R.moonE, hsD: R.hsD, hgD: R.hgD, iblD: R.iblD, skyD: R.skyD, hsA: R.hsA, hgA: R.hgA, iblA: R.iblA, skyA: R.skyA } };
   // 정점 점: 같은 자리(25cm)·같은 방향(약 15°)은 한 번만 잰다. 넓이 가중치(평균용) = 닿은 삼각형 넓이의 1/3
-  const keyIdx = new Map(), uniq = [], area = [], vref = [];
+  const keyIdx = new Map(), uniq = [], area = [], vref = [], bigA = [];
   col.targets.forEach((tg) => {
     const P = tg.P, N = tg.N, n = P.length / 3, ref = new Int32Array(n);
     for (let i = 0; i < n; i++) {
       const k = recvKey(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], N[i * 3], N[i * 3 + 1], N[i * 3 + 2]);   // 열쇠는 배치 법선 그대로(앱과 같게)
       let nx = N[i * 3], ny = N[i * 3 + 1], nz = N[i * 3 + 2]; const l = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1; nx /= l; ny /= l; nz /= l;
       let u = keyIdx.get(k);
-      if (u === undefined) { u = uniq.length / 6; keyIdx.set(k, u); uniq.push(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], nx, ny, nz); area.push(0); }
+      if (u === undefined) { u = uniq.length / 6; keyIdx.set(k, u); uniq.push(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], nx, ny, nz); area.push(0); bigA.push(0); }
       ref[i] = u;
     }
     for (let i = 0; i + 8 < P.length; i += 9) {
       const ax = P[i + 3] - P[i], ay = P[i + 4] - P[i + 1], az = P[i + 5] - P[i + 2], bx = P[i + 6] - P[i], by = P[i + 7] - P[i + 1], bz = P[i + 8] - P[i + 2];
       const a3 = 0.5 * Math.hypot(ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx) / 3;
       area[ref[i / 3]] += a3; area[ref[i / 3 + 1]] += a3; area[ref[i / 3 + 2]] += a3;
+      for (let q = 0; q < 3; q++) if (a3 * 3 > bigA[ref[i / 3 + q]]) bigA[ref[i / 3 + q]] = a3 * 3;
     }
     vref.push(ref);
   });
@@ -384,7 +385,11 @@ export async function bakeChurch(c, H, o = {}) {
   }
   const all = new Float64Array(uniq.length + fpts.length); all.set(uniq, 0); all.set(fpts, uniq.length);
   const tT = Date.now();
-  const res = await traceAll(bvh, sc, all, { rays, workers: o.workers });
+  // 개발용 GI_CACHE=<폴더>: 광선 추적 결과를 저장해 두고(같은 점 수·광선 수면) 다시 쓴다 — 뒤처리(누르기·평균)만 고칠 때 빨리 다시 굽는다
+  let res = null;
+  const cf = process.env.GI_CACHE ? path.join(process.env.GI_CACHE, c.id + '_' + rays + '_' + all.length + '.f32') : null;
+  if (cf && fs.existsSync(cf)) res = new Float32Array(new Uint8Array(fs.readFileSync(cf)).buffer);
+  if (!res) { res = await traceAll(bvh, sc, all, { rays, workers: o.workers }); if (cf) { fs.mkdirSync(process.env.GI_CACHE, { recursive: true }); fs.writeFileSync(cf, Buffer.from(res.buffer)); } }
   const traceMs = Date.now() - tT;
   if (o.debug) return { res, uniq, NU, area, fpts, col, bvh, R, lamps };
   // ---- 이웃 평균(서로 보이는 같은 방향 이웃만) + 물체 속 점 메우기 ----
@@ -451,25 +456,73 @@ export async function bakeChurch(c, H, o = {}) {
   const mean = [0, 0, 0, 0, 0, 0];
   for (let u = 0; u < NU; u++) if (wts[u] && bur[u] !== 2) { for (let j = 0; j < 6; j++) mean[j] += V[u * 6 + j] * wts[u]; wm += wts[u]; }
   for (let j = 0; j < 6; j++) mean[j] = Math.max(1e-6, mean[j] / Math.max(1e-9, wm));
-  // 로그 휘도 Y·색 C(채널 - Y)로 나눠 누르고 상한
-  const comp = (x, xo, s, out, o2) => {   // x[xo..xo+2] 를 갈래 s(0 낮, 3 밤)의 평균으로 나눈다
-    const r = Math.max(1e-4, x[xo] / mean[s]), g = Math.max(1e-4, x[xo + 1] / mean[s + 1]), bb = Math.max(1e-4, x[xo + 2] / mean[s + 2]);
-    const gm = s ? GI.gammaN : GI.gamma, lm = s ? GI.limN : GI.lim;
-    const Y = Math.log2(Math.max(1e-4, lum(r, g, bb))), Yc = Math.max(-lm, Math.min(lm, Y * gm));
-    const cl = (v) => Math.max(-GI.limC, Math.min(GI.limC, (Math.log2(v) - Y) * GI.gammaC));
-    out[o2] = Yc + cl(r); out[o2 + 1] = Yc + cl(g); out[o2 + 2] = Yc + cl(bb);
+  // 비(로그): 낮 RGB 3개 + 밤 휘도 1개
+  const RV = new Float64Array(NU * 4), RF = new Float64Array(NF * 4);
+  const raw4 = (x, xo, out, oo) => {
+    for (let j = 0; j < 3; j++) out[oo + j] = Math.log2(Math.max(1e-4, x[xo + j] / mean[j]));
+    out[oo + 3] = Math.log2(Math.max(1e-4, lum(x[xo + 3] / mean[3], x[xo + 4] / mean[4], x[xo + 5] / mean[5])));
+  };
+  for (let u = 0; u < NU; u++) if (bur[u] !== 2) raw4(V, u * 6, RV, u * 4);
+  for (let k = 0; k < NF; k++) if (!Number.isNaN(FV[k * 6])) raw4(FV, k * 6, RF, k * 4);
+  // 넓은 둘레(약 7.5m)의 평균을 빼서 '곳마다의 차이'만 남긴다: 성당 전체 평균으로만 맞추면 잘 보이는 신랑이 통째로 어두워지거나
+  // (안 보이는 높은 궁륭·지붕 밑이 평균을 끌어올려서) 등불 둘레가 통째로 밝아진다 → 화면 밝기가 바뀐다. 방향 갈래(위·옆·아래·바닥)마다 따로.
+  const clsOf = (u) => (uniq[u * 6 + 4] > 0.7 ? 0 : (uniq[u * 6 + 4] < -0.7 ? 2 : 1));
+  const fw = new Float64Array(NF);
+  // 바닥 갈래의 평균은 위가 트인 칸만(의자·제대 밑처럼 1.2m 안에 덮개가 있는 칸은 화면에 거의 안 보이고 AO 가 이미 어둡게 한다 —
+  // 그 칸까지 평균에 넣으면 보이는 통로 바닥이 통째로 밝아진다)
+  for (let k = 0; k < NF; k++) {
+    const x = fpts[k * 6], y = fpts[k * 6 + 1], z = fpts[k * 6 + 2];
+    fw[k] = !Number.isNaN(FV[k * 6]) && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && trace(x, y + 0.05, z, 0, 1, 0, 0.01, 1.2, null) < 0 ? 1 : 0;
+  }
+  const GC = GI.refCell, gx0 = b.x0 - 2 * GC, gz0 = b.z0 - 2 * GC;
+  let gy0 = Infinity, gy1 = -Infinity; for (let u = 0; u < NU; u++) { const y = uniq[u * 6 + 1]; if (y < gy0) gy0 = y; if (y > gy1) gy1 = y; }
+  gy0 -= GC;
+  const GX = Math.ceil((b.x1 - b.x0) / GC) + 4, GZ = Math.ceil((b.z1 - b.z0) / GC) + 4, GY = Math.ceil((gy1 - gy0) / GC) + 2, GN = GX * GY * GZ;
+  const gS = new Float64Array(4 * GN * 5);   // 갈래 4 × 칸 × (값 4 + 무게)
+  const gIdx = (x, y, z) => { const i = Math.max(0, Math.min(GX - 1, Math.floor((x - gx0) / GC))), j = Math.max(0, Math.min(GY - 1, Math.floor((y - gy0) / GC))), k = Math.max(0, Math.min(GZ - 1, Math.floor((z - gz0) / GC))); return (k * GY + j) * GX + i; };
+  const addG = (cl, x, y, z, arr, o2, w) => { const c = (cl * GN + gIdx(x, y, z)) * 5; for (let j = 0; j < 4; j++) gS[c + j] += arr[o2 + j] * w; gS[c + 4] += w; };
+  for (let u = 0; u < NU; u++) if (wts[u] && bur[u] !== 2) addG(clsOf(u), uniq[u * 6], uniq[u * 6 + 1], uniq[u * 6 + 2], RV, u * 4, wts[u]);
+  for (let k = 0; k < NF; k++) if (fw[k]) addG(3, fpts[k * 6], fpts[k * 6 + 1], fpts[k * 6 + 2], RF, k * 4, fw[k]);
+  const gB = new Float64Array(gS.length);   // 3×3×3 상자 흐림
+  for (let cl = 0; cl < 4; cl++) for (let k = 0; k < GZ; k++) for (let j = 0; j < GY; j++) for (let i = 0; i < GX; i++) {
+    const o2 = (cl * GN + (k * GY + j) * GX + i) * 5;
+    for (let dk = -1; dk <= 1; dk++) for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+      const ii = i + di, jj = j + dj, kk = k + dk; if (ii < 0 || jj < 0 || kk < 0 || ii >= GX || jj >= GY || kk >= GZ) continue;
+      const q = (cl * GN + (kk * GY + jj) * GX + ii) * 5; for (let m = 0; m < 5; m++) gB[o2 + m] += gS[q + m];
+    }
+  }
+  const ref = (cl, x, y, z, out) => {   // 칸 중심 사이 삼선형 보간(무게 있는 칸만)
+    const fx = (x - gx0) / GC - 0.5, fy = (y - gy0) / GC - 0.5, fz = (z - gz0) / GC - 0.5, i0 = Math.floor(fx), j0 = Math.floor(fy), k0 = Math.floor(fz);
+    const acc = [0, 0, 0, 0]; let ws = 0;
+    for (let dk = 0; dk < 2; dk++) for (let dj = 0; dj < 2; dj++) for (let di = 0; di < 2; di++) {
+      const ii = Math.max(0, Math.min(GX - 1, i0 + di)), jj = Math.max(0, Math.min(GY - 1, j0 + dj)), kk = Math.max(0, Math.min(GZ - 1, k0 + dk));
+      const q = (cl * GN + (kk * GY + jj) * GX + ii) * 5; if (gB[q + 4] <= 0) continue;
+      const w = (di ? fx - i0 : 1 - (fx - i0)) * (dj ? fy - j0 : 1 - (fy - j0)) * (dk ? fz - k0 : 1 - (fz - k0)) + 1e-6;
+      for (let m = 0; m < 4; m++) acc[m] += gB[q + m] / gB[q + 4] * w; ws += w;
+    }
+    for (let m = 0; m < 4; m++) out[m] = ws > 0 ? acc[m] / ws : 0;
+  };
+  // 둘레 평균을 빼고 로그 영역에서 누른다: 휘도 γ·상한, 색(채널 - 휘도) γ·상한, 밤 휘도 γ·상한
+  const r4 = [0, 0, 0, 0];
+  const comp = (arr, o2, cl, x, y, z, out, oo) => {
+    ref(cl, x, y, z, r4);
+    const d0 = arr[o2] - r4[0], d1 = arr[o2 + 1] - r4[1], d2 = arr[o2 + 2] - r4[2], dn = arr[o2 + 3] - r4[3];
+    const Y = Math.log2(Math.max(1e-4, lum(2 ** d0, 2 ** d1, 2 ** d2))), Yc = Math.max(-GI.limD, Math.min(GI.lim, Y * GI.gamma));
+    const cc = (v) => Math.max(-GI.limC, Math.min(GI.limC, (v - Y) * GI.gammaC));
+    out[oo] = Yc + cc(d0); out[oo + 1] = Yc + cc(d1); out[oo + 2] = Yc + cc(d2);
+    out[oo + 3] = out[oo + 4] = out[oo + 5] = Math.max(-GI.limND, Math.min(GI.limN, dn * GI.gammaN));   // 밤: 휘도만(색은 앱이 낮 색 + 등불 색조로)
   };
   const LV = new Float64Array(NU * 6), LF = new Float64Array(NF * 6);
-  for (let u = 0; u < NU; u++) { if (bur[u] === 2) continue; comp(V, u * 6, 0, LV, u * 6); comp(V, u * 6 + 3, 3, LV, u * 6 + 3); }
-  for (let k = 0; k < NF; k++) { if (Number.isNaN(FV[k * 6])) continue; comp(FV, k * 6, 0, LF, k * 6); comp(FV, k * 6 + 3, 3, LF, k * 6 + 3); }
+  for (let u = 0; u < NU; u++) if (bur[u] !== 2) comp(RV, u * 4, clsOf(u), uniq[u * 6], uniq[u * 6 + 1], uniq[u * 6 + 2], LV, u * 6);
+  for (let k = 0; k < NF; k++) if (!Number.isNaN(FV[k * 6])) comp(RF, k * 4, 3, fpts[k * 6], fpts[k * 6 + 1], fpts[k * 6 + 2], LF, k * 6);
+  // 아주 큰 삼각형(8~20m² 넘는 바닥·천장·벽 한 장)의 꼭짓점 값은 몇 m 를 한 줄로 이어 버린다(방 구석의 값이 바닥 한가운데까지) → 중립 쪽으로.
+  // 바닥은 바닥 격자가 따로 맡는다.
+  for (let u = 0; u < NU; u++) { const f = Math.max(0, Math.min(1, (bigA[u] - 8) / 12)); if (f > 0) for (let j = 0; j < 6; j++) LV[u * 6 + j] *= 1 - f; }
   // 넓이 가중 평균을 1 로: 낮은 채널마다(로그 이동), 밤은 휘도만(밤 색은 낮 색 + 등불 색조, gi_fx.js). 상한 때문에 3번 되풀이.
   // 방향 갈래(위를 보는 면·옆면·아래를 보는 면·바닥 격자)마다 따로 맞춘다: 위·아래 차이는 앱의 반구광(하늘·땅 색)이 이미 그린다 →
   // 빛 번짐은 '같은 방향의 면끼리'의 곳마다 차이만 더한다(바닥이 화면 대부분인 시점에서 전체 밝기가 바뀌지 않게).
   const nY = (arr, o2) => Math.log2(Math.max(1e-4, lum(2 ** arr[o2 + 3], 2 ** arr[o2 + 4], 2 ** arr[o2 + 5])));
   const C4 = (arr, o2, sh, out, oo) => { for (let j = 0; j < 3; j++) out[oo + j] = arr[o2 + j] + sh[j]; out[oo + 3] = nY(arr, o2) + sh[3]; };
-  const clsOf = (u) => (uniq[u * 6 + 4] > 0.7 ? 0 : (uniq[u * 6 + 4] < -0.7 ? 2 : 1));
-  const fw = new Float64Array(NF);
-  for (let k = 0; k < NF; k++) { const x = fpts[k * 6], z = fpts[k * 6 + 2]; fw[k] = !Number.isNaN(FV[k * 6]) && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 ? 1 : 0; }
   const shifts = [0, 1, 2, 3].map(() => [0, 0, 0, 0]), t4 = [0, 0, 0, 0];
   for (let it = 0; it < 3; it++) {
     const m2 = shifts.map(() => [0, 0, 0, 0, 0]);
@@ -511,7 +564,7 @@ export async function bakeChurch(c, H, o = {}) {
   const z = zlib.deflateRawSync(raw, { level: 9, memLevel: 9 }).toString('base64');
   // 밤 세기 배율: 밤 간접광(평균 조도)이 낮보다 약하면 변화도 덜(최소 0.35) — 밤에 번짐이 빛나 보이지 않게
   const mD = lum(mean[0], mean[1], mean[2]), mA = lum(mean[3], mean[4], mean[5]);
-  const nk = +Math.max(0.35, Math.min(1, Math.sqrt(mA / mD))).toFixed(3);
+  const nk = +Math.max(0.35, Math.min(0.8, Math.sqrt(mA / mD))).toFixed(3);
   // 등불 색조(밤에 평균보다 밝은 곳을 이 색 쪽으로 조금): 등불 세기 가중 평균 색, 휘도 1
   let lt = [0, 0, 0];
   for (let l = 0; l < lamps.length; l += LS) { lt[0] += lamps[l + 3]; lt[1] += lamps[l + 4]; lt[2] += lamps[l + 5]; }

@@ -30,6 +30,7 @@
     '\t}\n';
   var MARK = '/*gifx*/';
   var DEBUG = /[?&]gidbg=1/.test((root.location && root.location.search) || '');   // 개발용: 빛 번짐 비만 보이기(회색 세상)
+  var KQ = /[?&]gik=([0-9.]+)/.exec((root.location && root.location.search) || ''), KDEV = KQ ? +KQ[1] : 1;   // 개발용: 세기 배율(?gik=0 = 속성만 붙이고 효과 0)
 
   function createUniforms() {
     return { uGIK: { value: 0 }, uGINight: { value: 0 }, uGITint: { value: new T.Vector3(1, 1, 1) }, uGIFloor: { value: null }, uGIFloorR: { value: new T.Vector4(0, 0, 0, 0) }, uGIFloorOn: { value: 0 } };
@@ -119,6 +120,23 @@
     });
   }
 
+  // 고친 재질을 쓰는데 속성이 없는 메시(인스턴스 기둥·판·빌더가 직접 지은 메시)에 중립 속성을 붙인다.
+  // WebGL2 의 '속성 배열이 없을 때 쓰는 기본값'(vertexAttrib*)은 VAO 가 아니라 맥락 전체의 상태라서, three 가 VAO 를 처음 만들 때 한 번만 넣은 기본값이
+  // 다른 프로그램의 같은 자리 기본값으로 덮여 엉뚱한 값(예: 1.0 → 비 16배, 기둥이 하얗게 탄다)을 읽는다 → 기본값에 기대지 않는다. aoOcc(ao_fx)도 같이.
+  function cover(root0) {
+    var n0 = 0;
+    if (!root0 || !root0.traverse) return 0;
+    root0.traverse(function (m) {
+      if (!m.isMesh || !m.geometry || !m.geometry.attributes || !m.geometry.attributes.position) return;
+      var ms = Array.isArray(m.material) ? m.material : [m.material], gi = false, ao = false;
+      ms.forEach(function (x) { if (x && x.userData) { if (x.userData.giFx) gi = true; if (x.userData.aoFx) ao = true; } });
+      var g = m.geometry, n = g.attributes.position.count;
+      if (gi && !g.attributes.aoGI) { g.setAttribute('aoGI', new T.BufferAttribute(new Uint8Array(n * 4).fill(128), 4, true)); n0++; }
+      if (ao && !g.attributes.aoOcc) { g.setAttribute('aoOcc', new T.BufferAttribute(new Uint8Array(n), 1, true)); n0++; }
+    });
+    return n0;
+  }
+
   var loading = {};
   function loadScript(id, cb) {
     if (root.ChurchGIBake && root.ChurchGIBake[id]) { cb(true); return; }
@@ -139,10 +157,11 @@
     return Math.max(0, (tierK || 0) * (lookK === undefined ? 1 : lookK) * (1 + (k - 1) * n));
   }
 
-  /** world.js 가 높음·보통에서 ao_fx 다음에 부른다. o: {id, items(배치 항목 + group), mats(ao_fx 가 고친 재질)} */
+  /** world.js 가 높음·보통에서 ao_fx 다음에 부른다. o: {id, items(배치 항목 + group), mats(ao_fx 가 고친 재질), root(월드 그룹 — 속성 없는 메시에 중립 속성)} */
   function attach(o) {
     var U = createUniforms(), st = { id: o.id, patched: 0, applied: 0, stale: 0, floor: false, done: false, ms: 0, recv: 0, why: '' };
     o.mats.forEach(function (m) { if (patch(m, U)) st.patched++; });
+    st.covered = cover(o.root);
     var targets = o.items.filter(function (it) { return it.ao && it.group; });
     var disposed = false, ready = false, floorTex = null, meta = { nk: 1, lt: [1, 1, 1] }, envK = { night: 0, tierK: 0, lookK: 1 };
     function finish(why) { st.why = why || st.why; st.done = true; targets.forEach(function (it) { release(it.group); }); }
@@ -186,6 +205,7 @@
           U.uGIFloorOn.value = 1; st.floor = true;
           meta.nk = data.nk === undefined ? 1 : data.nk; meta.lt = data.lt || [1, 1, 1];
           U.uGITint.value.set(meta.lt[0], meta.lt[1], meta.lt[2]);
+          st.covered += cover(o.root);   // 굽는 사이 붙은 메시(전례 장식 등)도
           ready = true; update();
           st.ms = Math.round((msAll + (root.performance || Date).now() - t2) * 10) / 10;
           finish('');
@@ -195,7 +215,7 @@
     }
     function update() {
       U.uGINight.value = Math.max(0, Math.min(1, envK.night));
-      U.uGIK.value = ready ? strength(envK.night, meta.nk, envK.tierK, envK.lookK) : 0;
+      U.uGIK.value = ready ? strength(envK.night, meta.nk, envK.tierK, envK.lookK) * KDEV : 0;
     }
     if (!targets.length) finish('no targets'); else loadScript(o.id, apply);
     return {
@@ -207,5 +227,5 @@
     };
   }
 
-  root.ChurchGIFx = { attach: attach, patch: patch, createUniforms: createUniforms, mapRecv: mapRecv, unpack: unpack, strength: strength, MARK: MARK };
+  root.ChurchGIFx = { attach: attach, patch: patch, cover: cover, createUniforms: createUniforms, mapRecv: mapRecv, unpack: unpack, strength: strength, MARK: MARK };
 })(typeof window !== 'undefined' ? window : this);

@@ -216,6 +216,7 @@ test('ao_fx 와 triIds 를 같이 쓴다: 둘 다 쓴 뒤에야 놓는다(triUse
   assert.match(src, /ud\.triUsers = \(ud\.triUsers \|\| 1\) - 1; if \(ud\.triUsers <= 0\) ud\.triIds = null;/);
   assert.match(g, /ud\.triUsers = \(ud\.triUsers \|\| 1\) - 1; if \(ud\.triUsers <= 0\) ud\.triIds = null;/);
   assert.match(w, /m\.userData\.triUsers = 2/);
+  assert.match(w, /ChurchGIFx\.attach\(\{ id: id, items: items, mats: aoMats, root: world \}\)/, '속성 없는 메시에 중립 속성(cover)');
   assert.ok(src.includes('/*gifx*/'), 'ao_fx 블록 안 표지');
 });
 
@@ -225,4 +226,17 @@ test('gi_<성당>.js 의 배치(정점 수·검사합)가 ao_<성당>.js 와 같
     assert.equal(g.b.length, ao.b.length, id);
     g.b.forEach((e, k) => { assert.equal(e.name, ao.b[k].name, id); assert.equal(e.n, ao.b[k].n, id + ' ' + e.name); assert.ok(Math.abs(e.s - ao.b[k].s) <= 1e-6 * Math.max(1, Math.abs(e.s)), id + ' ' + e.name + ' 검사합'); });
   }
+});
+
+test('속성 없는 메시(인스턴스 기둥·판)에 중립 aoGI·aoOcc 를 붙인다 — WebGL2 기본 속성값은 맥락 전체 상태라 기대지 않는다', () => {
+  const sb = sandbox(['three.min.js', 'ao_fx.js', 'gi_fx.js']), T = sb.THREE;
+  const m = new T.MeshStandardMaterial(); sb.ChurchAOFx.patch(m, sb.ChurchAOFx.createUniforms()); sb.ChurchGIFx.patch(m, sb.ChurchGIFx.createUniforms());
+  const g = new T.Group(), inst = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), m, 3), plain = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshStandardMaterial());
+  g.add(inst); g.add(plain);
+  assert.equal(sb.ChurchGIFx.cover(g), 2);
+  const a = inst.geometry.attributes.aoGI;
+  assert.ok(a && a.itemSize === 4 && a.normalized && Array.from(a.array).every((v) => v === 128), '비 1');
+  assert.ok(inst.geometry.attributes.aoOcc && Array.from(inst.geometry.attributes.aoOcc.array).every((v) => v === 0), '가림 0');
+  assert.ok(!plain.geometry.attributes.aoGI, '고치지 않은 재질의 메시는 그대로');
+  assert.equal(sb.ChurchGIFx.cover(g), 0, '두 번 붙이지 않는다');
 });

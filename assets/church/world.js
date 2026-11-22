@@ -557,7 +557,7 @@
       var giWant = !!root.ChurchGIFx && !!(tierCfg && tierCfg[tier].gi > 0) && !/[?&]gi=0/.test((root.location && root.location.search) || '');
       if (giWant) items.forEach(function (it) { if (it.ao && it.group) it.group.children.forEach(function (m) { if (m.userData.triIds) m.userData.triUsers = 2; }); });
       try { aoFx = root.ChurchAOFx.attach({ id: id, items: items, mats: aoMats, aoOpts: S.aoOpts }); } catch (e) { if (root.console) console.warn('[church] aofx', e); aoFx = null; }
-      if (giWant && aoFx) { try { giFx = root.ChurchGIFx.attach({ id: id, items: items, mats: aoMats }); } catch (e) { if (root.console) console.warn('[church] gifx', e); giFx = null; } }
+      if (giWant && aoFx) { try { giFx = root.ChurchGIFx.attach({ id: id, items: items, mats: aoMats, root: world }); } catch (e) { if (root.console) console.warn('[church] gifx', e); giFx = null; } }
     }
     // 성당 안 반사 탐침(probe_fx.js, RENDER_V4.md §2): 금·청동·대리석·광택 재질의 거울 반사를 이 성당 안에서 찍은 큐브맵으로. low·감상실은 없음.
     var probes = null;
