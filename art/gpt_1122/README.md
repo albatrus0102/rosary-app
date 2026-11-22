@@ -5,7 +5,7 @@
 - tex/T-28_fresco_plain_*: 인물 없는 빛바랜 프레스코 벽. 이음매 거의 없음.
 - onboarding/onboarding_1_hands_*: 쓰지 않음(주름진 노인 손 — 사용자 지적 「왜 할머니냐」, 나이 구분 없는 그림으로 다시 받는다).
 - onboarding/onboarding_2_church_*: 쓰지 않음(할머니 인물 — 같은 이유).
-- 빠진 것: 안내 그림 3(돋보기 안경과 기도서 — 글씨 크기 장).
+- onboarding/onboarding_3_textsize_A·B: 글씨 크기 장(안경·기도서·묵주, 사람 없음). B(책갈피 있음)를 우선.
 
 프롬프트와 규격: docs/church/TEXTURE_PROMPTS.md (T-26~T-28은 2026-11-22 대화에서 받은 것).
 권리: 사용자가 ChatGPT로 생성(이용 권한은 ChatGPT 이용약관).
