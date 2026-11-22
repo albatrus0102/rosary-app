@@ -95,7 +95,9 @@ const REAL = {
   danggogae() { return R('hanji', '한지 유리화 빛 상자(작가 미확인, 2011)', '2011', 'interiors/danggogae.md §6.4'); },
   yeouido(o) {
     if (/^front/.test(o.key)) return R('stained_protected', '정면 키 큰 현대 색유리(작가 미확인)', '현대', 'interiors/yeouido.md §4.1');
-    return R('plain', '옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)', '', 'interiors/yeouido.md §6.3');
+    if (/^lobbyGlass/.test(o.key)) return R('stained_protected', '로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가)', '2024', 'interiors/yeouido.md §4.1');
+    if (/^lobbyFront/.test(o.key)) return R('clear', '로비 유리 정면(맑은 유리, 밖은 밝은 빛)', '', 'interiors/yeouido.md §2.5');
+    return R('plain', '창(실물 미확인 — 옅은 빛 유리로 둠)', '', 'interiors/yeouido.md §6.3');
   }
 };
 

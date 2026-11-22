@@ -752,6 +752,8 @@ void main() {
         await tester.scrollUntilVisible(note, 240, scrollable: scroll);
         expect(note, findsOneWidget);
         expect(find.textContaining('작가의 작품은 싣지 않고'), findsOneWidget);
+        expect(find.textContaining('성가대석의 계단식 좌석'), findsOneWidget);
+        expect(find.textContaining('로비의 성화 액자'), findsOneWidget);
         expect(find.textContaining('승인한 모형이 아닙니다'), findsOneWidget);
         final btn = find.widgetWithText(FilledButton, '입장');
         expect(btn, findsOneWidget);

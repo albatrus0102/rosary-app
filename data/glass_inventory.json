@@ -156,18 +156,18 @@
    "gaps": 0
   },
   "yeouido": {
-   "openings": 14,
+   "openings": 8,
    "stained": 0,
-   "protected": 2,
+   "protected": 5,
    "unverified": 0,
-   "plain": 12,
+   "plain": 3,
    "alabaster": 0,
    "hanji": 0,
    "virtual": 0,
    "notWindow": 0,
    "photo": 0,
-   "gen": 2,
-   "plainModel": 12,
+   "gen": 5,
+   "plainModel": 3,
    "cells": 0,
    "hanjiModel": 0,
    "gaps": 0
@@ -8763,15 +8763,72 @@
     "gap": null
    },
    {
-    "key": "sideL_b1",
-    "zone": "side",
+    "key": "lobbyGlass1",
+    "zone": "lobby_glass",
     "shape": "rect",
-    "size": "0.80×5.00",
+    "size": "2.60×3.75",
     "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "kind": "stained_protected",
+     "what": "로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가)",
+     "era": "2024",
+     "src": "interiors/yeouido.md §4.1"
+    },
+    "model": {
+     "release": "gen:yeouido_lobby",
+     "dev": "gen:yeouido_lobby",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobbyGlass2",
+    "zone": "lobby_glass",
+    "shape": "rect",
+    "size": "2.60×3.75",
+    "real": {
+     "kind": "stained_protected",
+     "what": "로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가)",
+     "era": "2024",
+     "src": "interiors/yeouido.md §4.1"
+    },
+    "model": {
+     "release": "gen:yeouido_lobby",
+     "dev": "gen:yeouido_lobby",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobbyGlass3",
+    "zone": "lobby_glass",
+    "shape": "rect",
+    "size": "2.60×3.75",
+    "real": {
+     "kind": "stained_protected",
+     "what": "로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가)",
+     "era": "2024",
+     "src": "interiors/yeouido.md §4.1"
+    },
+    "model": {
+     "release": "gen:yeouido_lobby",
+     "dev": "gen:yeouido_lobby",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobbyFront1",
+    "zone": "lobby_front",
+    "shape": "rect",
+    "size": "2.60×3.90",
+    "real": {
+     "kind": "clear",
+     "what": "로비 유리 정면(맑은 유리, 밖은 밝은 빛)",
      "era": "",
-     "src": "interiors/yeouido.md §6.3"
+     "src": "interiors/yeouido.md §2.5"
     },
     "model": {
      "release": "plain",
@@ -8782,15 +8839,15 @@
     "gap": null
    },
    {
-    "key": "sideL_b2",
-    "zone": "side",
+    "key": "lobbyFront2",
+    "zone": "lobby_front",
     "shape": "rect",
-    "size": "0.80×5.00",
+    "size": "2.60×3.90",
     "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "kind": "clear",
+     "what": "로비 유리 정면(맑은 유리, 밖은 밝은 빛)",
      "era": "",
-     "src": "interiors/yeouido.md §6.3"
+     "src": "interiors/yeouido.md §2.5"
     },
     "model": {
      "release": "plain",
@@ -8801,186 +8858,15 @@
     "gap": null
    },
    {
-    "key": "sideL_b3",
-    "zone": "side",
+    "key": "lobbyFront3",
+    "zone": "lobby_front",
     "shape": "rect",
-    "size": "0.80×5.00",
+    "size": "2.60×3.90",
     "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "kind": "clear",
+     "what": "로비 유리 정면(맑은 유리, 밖은 밝은 빛)",
      "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideL_b4",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideL_b5",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideL_b6",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideR_b1",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideR_b2",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideR_b3",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideR_b4",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideR_b5",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
-    },
-    "model": {
-     "release": "plain",
-     "dev": "plain",
-     "fallback": null
-    },
-    "ok": true,
-    "gap": null
-   },
-   {
-    "key": "sideR_b6",
-    "zone": "side",
-    "shape": "rect",
-    "size": "0.80×5.00",
-    "real": {
-     "kind": "plain",
-     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
-     "era": "",
-     "src": "interiors/yeouido.md §6.3"
+     "src": "interiors/yeouido.md §2.5"
     },
     "model": {
      "release": "plain",

@@ -9,7 +9,9 @@
          겹치지 않아야 하며, 판 앞 1.2~2.4m 에 충돌 없고 입구에서 닿는 '서는 자리'가 있고 그 자리에서 벽까지 직선으로 막히지 않아야 한다.
        - 순서는 실제 관례: 제대를 바라볼 때 오른쪽 벽의 제대 쪽에서 1처 → 입구 쪽으로 7처 → 왼쪽 벽 입구 쪽 8처 → 제대 쪽 14처(한 바퀴).
          한쪽에 7곳이 안 되면 다른 쪽에서 채운다(성당 전체 14곳이 안 되면 판을 걸지 않고 why 를 돌려준다).
-       - layout.crossWay = {start:'R'|'L', front:{x,z}, plaques:[{x,z,face:[nx,nz],side?,stand?:{x,z}}…14]} 로 성당별로 정할 수 있다(선택).
+       - layout.crossWay = {start:'R'|'L', front:{x,z}, plaques:[{x,z,face:[nx,nz],side?,stand?:{x,z},y?,w?,h?}…14], panels?} 로 성당별로 정할 수 있다(선택).
+         panels: false 면 그림 판(아틀라스·뒤판)을 그리지 않는다 — 빌더가 그 자리에 실제 14처 자리의 중립 부조를 짓는 성당(여의도동).
+         근접 이벤트·누르기·서는 자리는 그대로다(묵상 시트의 그림은 Flutter 가 고른 연작에서 온다).
          front: 그 점보다 제대 쪽에는 걸지 않는다(피렌체: 쿠폴라 아래 낮은 성가대 울타리).
    ChurchWayCross.create(App, H) → 판 그리기·근접 이벤트. H = {post}
        - 판 = 캔버스 아틀라스 한 장(14칸: 위 작은 십자가 + 금테 액자 + 그림 + 로마 숫자 판) 사각형 14개를 한 지오메트리로(draw call 1)
@@ -231,7 +233,8 @@
       all = ov.map(function (q, i) {
         var fl = Math.sqrt(q.face[0] * q.face[0] + q.face[1] * q.face[1]) || 1, nx2 = q.face[0] / fl, nz2 = q.face[1] / fl;
         var fy2 = logic.floorY(q.x, q.z), sx = q.stand ? q.stand.x : q.x + nx2 * 1.6, sz = q.stand ? q.stand.z : q.z + nz2 * 1.6;   // stand: 서는 자리를 직접 정할 수 있다(신자석 끝과 벽 사이가 1.6m 가 안 되는 명동 측랑)
-        return { n: i + 1, index: i, side: q.side || '', x: q.x, y: fy2 + P.bottom + P.quadH / 2, z: q.z, nx: nx2, nz: nz2, w: P.quadW, h: P.quadH, stand: { x: sx, z: sz, yaw: Math.atan2(-(q.x - sx), -(q.z - sz)) } };
+        // y·w·h(선택): 판이 벽 높이가 아닌 자리(여의도동: 성가대석 난간의 부조 판 줄) — 판 중심 높이·누르는 크기를 직접 준다
+        return { n: i + 1, index: i, side: q.side || '', x: q.x, y: q.y !== undefined ? q.y : fy2 + P.bottom + P.quadH / 2, z: q.z, nx: nx2, nz: nz2, w: q.w || P.quadW, h: q.h || P.quadH, stand: { x: sx, z: sz, yaw: Math.atan2(-(q.x - sx), -(q.z - sz)) } };
       });
     }
     return { plaques: all, why: 'ok', counts: { R: cands.R.length, L: cands.L.length } };
@@ -468,6 +471,10 @@
       var res = derive({ layout: world.layout, logic: world.logic, stations: App.stations, walls: S_ ? S_.walls : [], windows: S_ ? S_.windows : [], roses: S_ ? S_.roses : [], glassSlots: world.glassSlots ? world.glassSlots() : [] });
       plaques = res.plaques; App.crossWhy = res.why;
       if (!plaques.length) return;
+      if (world.layout.crossWay && world.layout.crossWay.panels === false) {   // 그림 판 없이 자리만(빌더의 부조가 판이다): 연작 아틀라스를 읽지 않는다
+        series = packs.seriesFor(world.id).id; ready = true;
+        return;
+      }
       var tok = token; stats.loads++;
       // 이 성당의 그림 연작(대체 성화) 하나만 싣는다. 다른 연작의 아틀라스 문자열·<script> 는 내린다(성당을 옮겨도 한 연작만 남는다).
       var ser = packs.seriesFor(world.id);
@@ -487,10 +494,12 @@
 
     function update(dt, me, cam) {
       if (!ready) return;
-      var env = App.world && App.world.env, night = env && env.night ? env.night : 0;
-      var self = App.R.tier !== 'low' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
-      mat.uniforms.uK.value = 0.92 * (1 - 0.62 * night); mat.uniforms.uSelfTone.value = self;
-      mat.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
+      if (mat) {
+        var env = App.world && App.world.env, night = env && env.night ? env.night : 0;
+        var self = App.R.tier !== 'low' && root.ThreeX && root.ThreeX.EffectComposer ? 0 : 1;
+        mat.uniforms.uK.value = 0.92 * (1 - 0.62 * night); mat.uniforms.uSelfTone.value = self;
+        mat.blendSrcAlpha = self ? T.OneFactor : T.ZeroFactor;
+      }
       nearT += dt;
       if (nearT < NEAR_EVERY || !me) return;
       nearT = 0;

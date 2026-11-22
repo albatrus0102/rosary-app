@@ -399,6 +399,13 @@ void main() {
       expect(y.modelNote, contains('분위기만'));
       expect(y.modelNote, contains('작가의 작품은 싣지 않고'));
       expect(y.modelNote, contains('승인한 모형이 아닙니다'));
+      // 2026-11-22: 로비·계단·성가대석을 지었다 → '로비는 짓지 않았다'가 없고, 성가대석·로비 작품의 대체를 밝힌다
+      expect(y.modelNote, contains('성전 내부와 로비의 분위기만'));
+      expect(y.modelNote, contains('성가대석의 계단식 좌석은 줄 수를 줄였'));
+      expect(y.modelNote, contains('로비의 성화 액자와 색유리 벽도 그림을 옮기지 않고'));
+      expect(y.modelNote, contains('성가대석 난간의 실제 자리'));
+      expect(y.modelNote, isNot(contains('로비, 성모동산은 짓지 않았습니다')));
+      expect(y.modelNote, isNot(contains('성가대석 안은 짓지 않았')));
       expect(y.source, contains('ycatholic.or.kr'));
       // 미사 시간·사제 성함은 싣지 않는다(바뀔 수 있고, 개인 정보)
       for (final t in [y.blurb, ...y.facts, y.modelNote]) {
