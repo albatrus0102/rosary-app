@@ -331,6 +331,15 @@
     return shadowMat;
   }
 
+  // ------------------------------------------------------------------ 걷기 클립 재생(순수 계산; 시험용으로 공개)
+  // speed: 실제 이동 속도(m/s), clipSpeed: 클립을 만든 속도. 발이 미끄러지지 않으려면 timeScale = speed / clipSpeed 여야 한다.
+  // 옛 식은 입력 값으로 정하고 0.5 아래를 잘라(느리게 걸으면 발이 몸보다 빨리 돎) 막혀도 다리가 돌았다.
+  // 위쪽 2.2 배는 그대로: 그보다 빠르면 발이 헛돌아 보이므로 조금 미끄러지는 쪽을 택한다(잰걸음 클립이 생기면 그것으로, WALK_GAIT.md).
+  function walkPlayback(speed, clipSpeed) {
+    var sp = clipSpeed > 0.1 ? clipSpeed : 1.3, v = speed > 0 ? speed : 0;
+    return { weight: sm(v / 0.35), timeScale: clamp(v / sp, 0.05, 2.2) };
+  }
+
   // ------------------------------------------------------------------ GlbAvatar
   var BASE = ['idle', 'walk', 'sit_down', 'sit_idle', 'stand_up', 'kneel_idle', 'bow'];
   var LOOP = { idle: 1, walk: 1, sit_idle: 1, kneel_idle: 1, pray: 1 };
@@ -554,8 +563,8 @@
     }
     if (!tr) {
       if (this.base === 'stand') {
-        var ww = sm(this.walkAmt * 4);
-        tw.walk = this.anims.has('walk') ? ww : 0; tw.idle = 1 - tw.walk;
+        var pb = walkPlayback(this._speed(), this._clipSpeed());
+        tw.walk = this.anims.has('walk') ? pb.weight : 0; tw.idle = 1 - tw.walk;
       } else if (this.base === 'kneel' && this.anims.has('kneel_idle')) tw.kneel_idle = 1;
       else tw.sit_idle = 1;
     }
@@ -571,11 +580,12 @@
     }
     // 걷기 속도 맞추기
     var walk = this.actions.walk;
-    if (walk && walk.enabled) {
-      var sp = (this.anims.meta.walk && this.anims.meta.walk.speed) ? this.anims.meta.walk.speed * this.ratio : 1.3;
-      walk.timeScale = clamp(this.walkAmt * CFG.walkMax / sp, 0.5, 2.2);
-    }
+    if (walk && walk.enabled) walk.timeScale = walkPlayback(this._speed(), this._clipSpeed()).timeScale;
   };
+  // 걷기 클립을 만든 속도(m/s, 이 캐릭터 키에 맞춘 값)
+  GP._clipSpeed = function () { var m = this.anims && this.anims.meta.walk; return m && m.speed ? m.speed * this.ratio : 1.3; };
+  // 지금 걷는 속도(m/s): 실제로 옮겨 간 거리(벽에 막히면 0). 장면에 없는 포즈 공유 대표(headless)는 입력 값으로.
+  GP._speed = function () { return this.headless ? this.walkAmt * CFG.walkMax : (this.moveV || 0); };
 
   // ---- 상태 전환(목표가 바뀌면)
   GP._state = function () {
@@ -589,6 +599,11 @@
 
   GP.update = function (dt, t) {
     if (!this.type) return;
+    // 실제 이동량(docs/church/WALK_GAIT.md): 입력이 아니라 루트가 옮겨 간 거리로 걷는다. 순간 이동·앉기 중에는 0.
+    var rp = this.root.position, gs = this.gs || (this.gs = { x: rp.x, z: rp.z });
+    var dd = Math.sqrt((rp.x - gs.x) * (rp.x - gs.x) + (rp.z - gs.z) * (rp.z - gs.z)); gs.x = rp.x; gs.z = rp.z;
+    if (dd > 1.5 || this.sitTarget || !(dt > 0)) dd = 0;
+    this.moveV = (this.moveV || 0) + (dd / Math.max(dt, 1e-3) - (this.moveV || 0)) * Math.min(1, dt * 14);
     // 공통 상태량(avatar.js 와 같은 속도)
     var k = Math.min(1, dt * 10);
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
@@ -858,6 +873,7 @@
     load: load, loadAnims: loadAnims, create: create, available: available, tick: tick, setView: setView, stats: stats,
     setCatalog: function (c) { catalog = { F: c.F || [], M: c.M || [], anims: c.anims || { F: 'anims', M: 'anims' } }; },
     types: types, animSets: animSets, CFG: CFG, EMOTE_DUR: EMOTE_DUR,
+    walkPlayback: walkPlayback,
     _dbg: { aim: aim, ik2: ik2, orientHand: orientHand, curlFingers: curlFingers, pools: pools, b64ToBuf: b64ToBuf }
   };
 })(typeof window !== 'undefined' ? window : this);
