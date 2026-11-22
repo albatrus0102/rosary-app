@@ -156,7 +156,8 @@
           var x, z, r, walk = 0, fl = 0;
           if (rec.seat && logic) {
             var sp = logic.seatPos(rec.seat);
-            fl = logic.floorY(sp.x, sp.z);
+            fl = logic.seatFloor ? logic.seatFloor(rec.seat) : logic.floorY(sp.x, sp.z);
+            rec.fy = fl;
             if (rec.anim > 0 && !rec.fresh) {
               rec.anim -= dt;
               var k = 1 - Math.max(0, rec.anim) / 0.7, ks = k * k * (3 - 2 * k);
@@ -184,7 +185,10 @@
             if (rec.fresh) sp2 = 0;
             rec.speed += (sp2 - rec.speed) * Math.min(1, dt * 8);
             walk = rec.speed > 0.35 ? Math.min(1, rec.speed / 3.2 + 0.2) : 0;
-            fl = logic ? logic.floorY(x, z) : 0;
+            // 여러 층: 서버는 x,z 만 보낸다 → 이전 높이(rec.fy)에서 걷기 규칙으로 따라간다(처음은 입구 층). 한 층이면 세 번째 인자를 무시한다
+            if (logic && logic.multi && rec.fy === undefined) rec.fy = logic.floorY(logic.spawn.x, logic.spawn.z, logic.spawn.y === undefined ? null : logic.spawn.y);
+            fl = logic ? logic.floorY(x, z, rec.fy) : 0;
+            rec.fy = fl;
             v.setSeated(false); v.setPray(false); if (v.kneelTarget) v.setKneel(false); if (v.rosaryTarget) v.setRosary(false);
             if (walk > 0) r = v.root.rotation.y + angDiff(v.root.rotation.y, r) * Math.min(1, dt * 12);
           }
@@ -223,13 +227,13 @@
           var sp = logic.seatPos(id), av = new Av(rcfg(), {});
           av.setSeated(true); av.setPray(true); av.nod = true; av.nodPh = rnd() * 6;
           if (rnd() < 0.3) av.setKneel(true, logic.kneelSpot(id));   // 몇 사람은 무릎 꿇고 기도
-          av.setPose(sp.x, logic.floorY(sp.x, sp.z), sp.z, sp.yaw); av.snapPose();
+          av.setPose(sp.x, logic.seatFloor ? logic.seatFloor(id) : logic.floorY(sp.x, sp.z), sp.z, sp.yaw); av.snapPose();
           scene.add(av.root); if (root.ChurchRenderUtil) root.ChurchRenderUtil.markCaster(av.root); sit.push({ av: av, id: id }); taken[id] = 1;
         }
         var sp0 = logic.spawn;
         for (i = 0; i < 2; i++) {
           var wv = new Av(rcfg(), {});
-          var n = { av: wv, x: sp0.x + (i ? -1.4 : 1.4), z: sp0.z - 4 - i * 6, tx: 0, tz: 0, stuck: 0, lx: 0, lz: 0, pause: 0 };
+          var n = { av: wv, x: sp0.x + (i ? -1.4 : 1.4), z: sp0.z - 4 - i * 6, tx: 0, tz: 0, stuck: 0, lx: 0, lz: 0, pause: 0, fy: logic.floorY(sp0.x, sp0.z, sp0.y === undefined ? null : sp0.y) };
           n.lx = n.x; n.lz = n.z;
           wv.setPose(n.x, 0, n.z, 0); scene.add(wv.root); if (root.ChurchRenderUtil) root.ChurchRenderUtil.markCaster(wv.root); walkers.push(n);
           pick(n);
@@ -244,14 +248,14 @@
           var dx = n.tx - n.x, dz = n.tz - n.z, d = Math.sqrt(dx * dx + dz * dz);
           if (d < 0.4) { n.pause = 1.5 + rnd() * 3; pick(n); continue; }
           var sp = 0.8 * dt, p = { x: n.x, z: n.z };
-          logic.moveCircle(p, dx / d * sp, dz / d * sp);
-          n.x = p.x; n.z = p.z;
+          logic.moveCircle(p, dx / d * sp, dz / d * sp, undefined, n.fy);
+          n.x = p.x; n.z = p.z; n.fy = logic.floorY(n.x, n.z, n.fy);
           n.stuck += dt;
           if (n.stuck > 1.2) { if (Math.hypot(n.x - n.lx, n.z - n.lz) < 0.3) { pick(n); } n.lx = n.x; n.lz = n.z; n.stuck = 0; }
           var yaw = Math.atan2(-dx, -dz), cur = n.av.root.rotation.y;
           var df = (yaw - cur) % (PI * 2); if (df > PI) df -= PI * 2; if (df < -PI) df += PI * 2;
           n.av.setWalk(1);
-          n.av.setPose(n.x, logic.floorY(n.x, n.z), n.z, cur + df * Math.min(1, dt * 4));
+          n.av.setPose(n.x, n.fy, n.z, cur + df * Math.min(1, dt * 4));
           n.av.update(dt, t);
         }
       }
@@ -260,7 +264,7 @@
       var sp = logic.spawn, tries = 0;
       do {
         n.tx = sp.x + (rnd() - 0.5) * 8; n.tz = sp.z - rnd() * 14;
-        var p = { x: n.tx, z: n.tz }, hit = logic.moveCircle(p, 0, 0);
+        var p = { x: n.tx, z: n.tz }, hit = logic.moveCircle(p, 0, 0, undefined, n.fy);
         tries++;
         if (!hit) break;
       } while (tries < 20);

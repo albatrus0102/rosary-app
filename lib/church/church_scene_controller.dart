@@ -74,6 +74,11 @@ sealed class SceneEvent {
             shrineLabel: j['shrineLabel'] is String
                 ? j['shrineLabel'] as String
                 : null,
+            levels: [
+              if (j['levels'] is List)
+                for (final l in j['levels'] as List)
+                  if (l is String && l.isNotEmpty && l.length <= 40) l,
+            ],
           );
         case 'walkStart':
           final kind = j['kind'];
@@ -173,6 +178,7 @@ sealed class SceneEvent {
             walkKind: wk is String ? wk : null,
             walkIndex: wi is num ? wi.toInt() : 0,
             walkSeat: ws is String ? ws : null,
+            y: d(j['y']),
           );
         case 'restored':
           final seat = j['seat'];
@@ -259,7 +265,12 @@ class SceneStations extends SceneEvent {
     this.cross = 0,
     this.shrine = 0,
     this.shrineLabel,
+    this.levels = const [],
   });
+
+  /// 여러 층 성당(아시시: 상부 성당·하부 성당·지하 묘소)의 층 이름. '가기' 시트에 층마다 줄이 나오고
+  /// 고르면 `walkTo{kind:'level', index}`로 그 층까지 계단을 걸어간다. 한 층 성당은 빈 목록.
+  final List<String> levels;
 
   /// 성모상 앞(기도 자리)이 있으면 1. '가기' 시트에 성모상 줄이 나온다.
   final int shrine;
@@ -451,6 +462,7 @@ class SceneState extends SceneEvent {
     this.walkKind,
     this.walkIndex = 0,
     this.walkSeat,
+    this.y,
   });
   final String church;
   final double x;
@@ -458,6 +470,9 @@ class SceneState extends SceneEvent {
   final double r;
   final String? seat;
   final bool kneel;
+
+  /// 여러 층 성당에서 발 높이(층). 한 층 성당은 null.
+  final double? y;
 
   /// 묵주를 들고 있었는지(`rosary:1`).
   final bool rosary;

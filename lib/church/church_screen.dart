@@ -487,6 +487,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       walkIndex: e.walkIndex,
       walkSeat: e.walkSeat,
       savedAtMs: DateTime.now().millisecondsSinceEpoch,
+      y: e.y,
     );
     _resume = st;
     _coldResume = false;
@@ -1287,7 +1288,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_sheetOpen) return;
     _hideHint();
     _sheetOpen = true;
-    final ChurchGoTarget? target;
+    final ChurchGoChoice? target;
     try {
       target = await showChurchGoSheet(
         _themed,
@@ -1295,19 +1296,25 @@ class _ChurchScreenState extends State<ChurchScreen>
         hasCross: _stations.cross >= StationsOfCrossWalk.count,
         hasShrine: _stations.shrine > 0,
         shrineLabel: _stations.shrineLabel,
+        levels: _stations.levels,
       );
     } finally {
       _sheetOpen = false;
     }
     if (target == null || _disposed) return;
     unawaited(_scene.setJoystick(0, 0));
-    if (target == ChurchGoTarget.cross) {
-      // 순례 시작: 1처 판 앞으로 걷는다. 도착하면 묵상 시트가 열린다(_onWalkDone).
-      Track.event('stations_open', {'from': StationsFrom.church.name});
-      unawaited(_scene.walkTo(target.kind, index: 0));
+    if (target.target == ChurchGoTarget.level) {
+      // 여러 층 성당: 고른 층의 바로 가기 자리까지 계단을 걸어간다
+      unawaited(_scene.walkTo('level', index: target.index));
       return;
     }
-    unawaited(_scene.walkTo(target.kind));
+    if (target.target == ChurchGoTarget.cross) {
+      // 순례 시작: 1처 판 앞으로 걷는다. 도착하면 묵상 시트가 열린다(_onWalkDone).
+      Track.event('stations_open', {'from': StationsFrom.church.name});
+      unawaited(_scene.walkTo(target.target.kind, index: 0));
+      return;
+    }
+    unawaited(_scene.walkTo(target.target.kind));
   }
 
   /// 십자가의 길 [n]처 묵상 시트(순례 모드). '다음 처로'를 누르면 다음 판 앞까지 자동으로 걷는다.

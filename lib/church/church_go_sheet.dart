@@ -14,7 +14,10 @@ enum ChurchGoTarget {
   font('font', '성수대', Icons.water_drop_outlined),
 
   /// 십자가의 길: 1처 판 앞으로 걸어가 순례를 시작한다(`walkTo{kind:'cross', index:0}`).
-  cross('cross', '십자가의 길', Icons.route_outlined, '1처부터 14처까지 걸으며 묵상');
+  cross('cross', '십자가의 길', Icons.route_outlined, '1처부터 14처까지 걸으며 묵상'),
+
+  /// 여러 층 성당(아시시)의 층: 그 층까지 계단을 걸어간다(`walkTo{kind:'level', index}`). 층마다 한 줄.
+  level('level', '층', Icons.stairs_outlined);
 
   const ChurchGoTarget(this.kind, this.label, this.icon, [this.subtitle]);
 
@@ -25,16 +28,35 @@ enum ChurchGoTarget {
   final String? subtitle;
 }
 
+/// '가기' 시트에서 고른 것: 목적지 종류와(층 줄이면) 몇 번째 층인지.
+@immutable
+class ChurchGoChoice {
+  const ChurchGoChoice(this.target, [this.index = 0]);
+  final ChurchGoTarget target;
+
+  /// [ChurchGoTarget.level]일 때 층 번호(0부터, 웹 `layout.levels` 순서).
+  final int index;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ChurchGoChoice && other.target == target && other.index == index;
+
+  @override
+  int get hashCode => Object.hash(target, index);
+}
+
 /// '어디로 갈까요?' 바텀 시트. 고른 곳을 돌려준다(닫으면 null).
 /// 성수대는 그 성당에 있을 때만([hasFont]), 십자가의 길은 14처 판이 걸린 성당에서만([hasCross]) 줄이 나온다.
-Future<ChurchGoTarget?> showChurchGoSheet(
+/// 여러 층 성당이면 [levels](층 이름)마다 줄이 하나씩 더 나온다.
+Future<ChurchGoChoice?> showChurchGoSheet(
   BuildContext context, {
   bool hasFont = false,
   bool hasCross = false,
   bool hasShrine = false,
   String? shrineLabel,
+  List<String> levels = const [],
 }) {
-  return showModalBottomSheet<ChurchGoTarget>(
+  return showModalBottomSheet<ChurchGoChoice>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -47,6 +69,7 @@ Future<ChurchGoTarget?> showChurchGoSheet(
         hasCross: hasCross,
         hasShrine: hasShrine,
         shrineLabel: shrineLabel,
+        levels: levels,
       ),
     ),
   );
@@ -59,9 +82,13 @@ class ChurchGoSheet extends StatelessWidget {
     this.hasCross = false,
     this.hasShrine = false,
     this.shrineLabel,
+    this.levels = const [],
   });
 
   final bool hasFont;
+
+  /// 여러 층 성당의 층 이름(없으면 층 줄이 없다).
+  final List<String> levels;
   final bool hasCross;
 
   /// 성모상 앞 기도 자리가 있는 성당이면 '성모상' 줄이 나온다([shrineLabel]로 이름을 바꿀 수 있다).
@@ -75,8 +102,11 @@ class ChurchGoSheet extends StatelessWidget {
       for (final t in ChurchGoTarget.values)
         if ((t != ChurchGoTarget.font || hasFont) &&
             (t != ChurchGoTarget.cross || hasCross) &&
-            (t != ChurchGoTarget.shrine || hasShrine))
-          t,
+            (t != ChurchGoTarget.shrine || hasShrine) &&
+            t != ChurchGoTarget.level)
+          ChurchGoChoice(t),
+      for (var i = 0; i < levels.length; i++)
+        ChurchGoChoice(ChurchGoTarget.level, i),
     ];
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -92,21 +122,29 @@ class ChurchGoSheet extends StatelessWidget {
             shrinkWrap: true,
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
             children: [
-              for (final t in targets)
+              for (final c in targets)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: ListTile(
-                    key: ValueKey('go-${t.kind}'),
+                    key: ValueKey(
+                      c.target == ChurchGoTarget.level
+                          ? 'go-level-${c.index}'
+                          : 'go-${c.target.kind}',
+                    ),
                     minTileHeight: 56,
                     shape: RoundedRectangleBorder(borderRadius: AppShape.large),
-                    leading: Icon(t.icon),
+                    leading: Icon(c.target.icon),
                     title: Text(
-                      t == ChurchGoTarget.shrine
-                          ? (shrineLabel ?? t.label)
-                          : t.label,
+                      c.target == ChurchGoTarget.shrine
+                          ? (shrineLabel ?? c.target.label)
+                          : c.target == ChurchGoTarget.level
+                          ? levels[c.index]
+                          : c.target.label,
                     ),
-                    subtitle: t.subtitle == null ? null : Text(t.subtitle!),
-                    onTap: () => Navigator.of(context).pop(t),
+                    subtitle: c.target.subtitle == null
+                        ? null
+                        : Text(c.target.subtitle!),
+                    onTap: () => Navigator.of(context).pop(c),
                   ),
                 ),
             ],

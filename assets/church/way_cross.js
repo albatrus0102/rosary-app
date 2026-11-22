@@ -232,19 +232,22 @@
       // 레이아웃이 직접 정한 자리(선택): 위치·방향만 바꾸고 서는 자리는 다시 찾는다(시험이 확인).
       all = ov.map(function (q, i) {
         var fl = Math.sqrt(q.face[0] * q.face[0] + q.face[1] * q.face[1]) || 1, nx2 = q.face[0] / fl, nz2 = q.face[1] / fl;
-        var fy2 = logic.floorY(q.x, q.z), sx = q.stand ? q.stand.x : q.x + nx2 * 1.6, sz = q.stand ? q.stand.z : q.z + nz2 * 1.6;   // stand: 서는 자리를 직접 정할 수 있다(신자석 끝과 벽 사이가 1.6m 가 안 되는 명동 측랑)
+        var fy2 = logic.floorY(q.x, q.z, q.fy), sx = q.stand ? q.stand.x : q.x + nx2 * 1.6, sz = q.stand ? q.stand.z : q.z + nz2 * 1.6;   // stand: 서는 자리를 직접 정할 수 있다(신자석 끝과 벽 사이가 1.6m 가 안 되는 명동 측랑)
         // y·w·h(선택): 판이 벽 높이가 아닌 자리(여의도동: 성가대석 난간의 부조 판 줄) — 판 중심 높이·누르는 크기를 직접 준다
-        return { n: i + 1, index: i, side: q.side || '', x: q.x, y: q.y !== undefined ? q.y : fy2 + P.bottom + P.quadH / 2, z: q.z, nx: nx2, nz: nz2, w: q.w || P.quadW, h: q.h || P.quadH, stand: { x: sx, z: sz, yaw: Math.atan2(-(q.x - sx), -(q.z - sz)) } };
+        var pq = { n: i + 1, index: i, side: q.side || '', x: q.x, y: q.y !== undefined ? q.y : fy2 + P.bottom + P.quadH / 2, z: q.z, nx: nx2, nz: nz2, w: q.w || P.quadW, h: q.h || P.quadH, stand: { x: sx, z: sz, yaw: Math.atan2(-(q.x - sx), -(q.z - sz)) } };
+        if (q.fy !== undefined) { pq.fy = q.fy; pq.stand.y = logic.floorY(sx, sz, q.fy); }   // 여러 층: 판이 걸린 층(서는 자리·걷기 목적지 높이)
+        return pq;
       });
     }
     return { plaques: all, why: 'ok', counts: { R: cands.R.length, L: cands.L.length } };
   }
 
   // 근접 판정(순수): 서는 자리에서 NEAR_IN 안에 들어오면 그 판, 이미 그 판이면 NEAR_OUT 까지 유지. 가장 가까운 판 하나 또는 null.
-  function nearPlaque(plaques, x, z, cur) {
+  function nearPlaque(plaques, x, z, cur, y) {
     var best = null, bd = 1e9;
     for (var i = 0; i < plaques.length; i++) {
       var p = plaques[i], d = Math.hypot(x - p.stand.x, z - p.stand.z);
+      if (y !== undefined && p.stand.y !== undefined && Math.abs(p.stand.y - y) > 1.0) continue;   // 여러 층: 다른 층의 판
       var lim = cur && p.n === cur.n ? NEAR_OUT : NEAR_IN;
       if (d <= lim && d < bd) { bd = d; best = p; }
     }
@@ -503,7 +506,7 @@
       nearT += dt;
       if (nearT < NEAR_EVERY || !me) return;
       nearT = 0;
-      var best = me.mode === 'walk' ? nearPlaque(plaques, me.x, me.z, nearCur) : null;
+      var best = me.mode === 'walk' ? nearPlaque(plaques, me.x, me.z, nearCur, me.fy) : null;
       nearCur = best;
       var n = best ? best.n : null;
       if (n !== (lastN || null)) { lastN = n; post({ e: 'crossNear', n: n }); }
@@ -533,7 +536,10 @@
       // main.js walkTo: 서는 자리 {x,z,yaw,index,reach}
       station: function (index) {
         var p = plaques[index | 0];
-        return p ? { x: p.stand.x, z: p.stand.z, yaw: p.stand.yaw, index: p.index, reach: NEAR_IN } : null;
+        if (!p) return null;
+        var o = { x: p.stand.x, z: p.stand.z, yaw: p.stand.yaw, index: p.index, reach: NEAR_IN };
+        if (p.stand.y !== undefined) o.y = p.stand.y;
+        return o;
       },
       plaques: function () { return plaques; },
       series: function () { return series; },

@@ -29,6 +29,7 @@ class ChurchResumeState {
     this.walkIndex = 0,
     this.walkSeat,
     this.savedAtMs = 0,
+    this.y,
   });
 
   /// 저장분을 믿는 기간. 이보다 오래된 것은 버리고 입구에서 시작한다.
@@ -45,6 +46,8 @@ class ChurchResumeState {
     'entrance',
     'font',
     'cross',
+    'shrine',
+    'level',
   };
 
   final String churchId;
@@ -77,6 +80,9 @@ class ChurchResumeState {
   /// 저장 시각(epoch ms).
   final int savedAtMs;
 
+  /// 여러 층 성당(아시시)의 발 높이 — 같은 (x, z)에 층이 여럿이라 이 값으로 층을 되찾는다. 한 층 성당은 null.
+  final double? y;
+
   /// [churchId] 성당의 것이고 아직 [maxAge] 안인가.
   bool isFreshFor(String churchId, DateTime now) {
     if (churchId != this.churchId) return false;
@@ -103,6 +109,7 @@ class ChurchResumeState {
         walkIndex: walkIndex,
         walkSeat: walkSeat,
         savedAtMs: savedAtMs,
+        y: y,
       );
 
   /// 웹 브리지 `ChurchAPI.restore`의 인자.
@@ -110,6 +117,7 @@ class ChurchResumeState {
     'church': churchId,
     'x': x,
     'z': z,
+    'y': ?y,
     'r': r,
     'seat': seat,
     'posture': seat != null && kneel ? 'kneel' : 'sit',
@@ -127,6 +135,7 @@ class ChurchResumeState {
     'church': churchId,
     'x': x,
     'z': z,
+    'y': ?y,
     'r': r,
     'seat': ?seat,
     if (kneel) 'kneel': true,
@@ -183,6 +192,7 @@ class ChurchResumeState {
       walkIndex: okWalk && wi is num && wi >= 0 && wi < 1000 ? wi.toInt() : 0,
       walkSeat: okWalk && ws is String && _seatRe.hasMatch(ws) ? ws : null,
       savedAtMs: t is num && t.isFinite ? t.toInt() : 0,
+      y: _num(j['y'], limit: 200),
     );
   }
 

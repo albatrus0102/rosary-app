@@ -21,6 +21,9 @@
     }
     return { x: +(p.x + f[0] * STAND_D).toFixed(3), z: +(p.z + f[1] * STAND_D).toFixed(3), slots: SLOTS, reach: 1.8, cols: COLS, face: f, pitch: 0.15, step: 0.14, ystep: 0.07, y0: (p.y || 0) + 0.74, shrine: true, label: p.label_ko || '성모상 앞' };
   }
+  // 여러 층 성당(아시시): 자리표의 fy = 성모상이 선 층의 바닥 높이. 짓는 높이는 그 층, 충돌체는 그 층에서만 막는다(초 칸 높이는 world.js 가 층 바닥에 더한다)
+  function baseY(p) { return p.y !== undefined ? p.y : (p.fy || 0); }
+  function lvC(p, c) { if (p.fy !== undefined) { c.y0 = p.fy - 0.1; c.y1 = p.fy + 2.5; } return c; }
   // 아바타가 지나가지 못하는 자리(성상~무릎틀 책상). existing 은 성상 쪽을 빌더 충돌체가 이미 막는다.
   function footprint(p) {
     var pond = p.kind === 'pond', hw = pond ? POND.R + POND.RIM : HALF_W, fd = pond ? POND.D + POND.R + POND.RIM : FRONT_D;
@@ -33,8 +36,10 @@
     var p = placeOf(layout.id);
     if (!p) return layout;
     if (!layout.candles) layout.candles = { stands: [] };
-    layout.candles.stands.push(standOf(p));
+    var st0 = standOf(p); if (p.fy !== undefined) st0.fy = p.fy;
+    layout.candles.stands.push(st0);
     layout.shrine = { x: p.x, z: p.z, y: p.y || 0, yaw: p.yaw || 0, kind: p.kind, label: p.label_ko || '성모상 앞', stand: layout.candles.stands.length - 1 };
+    if (p.fy !== undefined) layout.shrine.fy = p.fy;
     return layout;
   }
   // 그림 성모상(입체): 그림에서 만든 깊이(statue3d_<img>.js — tools/statues/make_statue3d.py: 실루엣 부풀림 + 밝기 요철)로
@@ -141,7 +146,7 @@
   function build(ctx, layout) {
     var sh = layout && layout.shrine, p = sh && placeOf(layout.id);
     if (!p) return null;
-    var f = face(p), y = p.y || 0, alongX = Math.abs(f[0]) > 0.5;
+    var f = face(p), y = baseY(p), alongX = Math.abs(f[0]) > 0.5;
     function B(d, l, yy, sd, sl, h, color, mat) {
       ctx.box({ x: p.x + f[0] * d + f[1] * l, y: y + yy, z: p.z + f[1] * d - f[0] * l, w: alongX ? sd : sl, h: h, d: alongX ? sl : sd, color: color, mat: mat });
     }
@@ -173,7 +178,7 @@
       ctx.cyl({ x: cx, y: y, z: cz, r: POND.R + 0.01, h: POND.WATER_Y - 0.012, seg: 24, color: 0x1c2a2c, flat: true });
       ctx.cyl({ x: cx, y: y + POND.WATER_Y - 0.012, z: cz, r: POND.R + 0.005, h: 0.012, seg: 24, color: 0x1f4a4c, mat: 'gloss', flat: true });
       if (ctx.aoDecalCircle) ctx.aoDecalCircle({ x: cx, z: cz, r: POND.R + POND.RIM + 0.05, y: y });
-      ctx.addCollider(footprint(p));   // 성상 받침 ~ 연못 바깥 테두리를 한 상자로 막는다
+      ctx.addCollider(lvC(p, footprint(p)));   // 성상 받침 ~ 연못 바깥 테두리를 한 상자로 막는다
       return sh;
     }
     // 봉헌초 받침(2단, 슬롯 높이 0.74 / 0.81 에 맞춤). stand 'wood': 같은 높이의 나무 받침(앞 몸통 + 뒤 한 단)
@@ -197,7 +202,7 @@
     }
     var fp = footprint(p);
     if (ctx.aoDecal) ctx.aoDecal({ x0: fp.x0, x1: fp.x1, z0: fp.z0, z1: fp.z1, y: y, pad: 0.25 });
-    ctx.addCollider(fp);
+    ctx.addCollider(lvC(p, fp));
     return sh;
   }
   var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, MESH: MESH, statueMesh: statueMesh, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };

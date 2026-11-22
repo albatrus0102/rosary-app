@@ -51,6 +51,12 @@
     return true;
   }
 
+  // 여러 층: 입구(스폰) 층의 바닥 높이(layout.spawn.y 가 있으면 그 높이에서 잰다)
+  function spawnLevel(logic) {
+    var sp = logic.layout.spawn;
+    return logic.floorY(sp.x, sp.z, sp.y === undefined ? null : sp.y);
+  }
+
   function axisOf(layout) {
     var sx = 0, sz = 0, G = layout.seatGroups || [];
     for (var q = 0; q < G.length; q++) { var yaw = G[q].yaw || 0; sx += -Math.sin(yaw); sz += -Math.cos(yaw); }
@@ -60,17 +66,21 @@
   }
 
   // 신자가 쓰는 자리(좌석·촛불대·성모상·성수대·십자가의 길 판)
-  function publicPoints(layout, logic) {
+  // ly(여러 층만): 그 층(±1m)의 자리만 — 다른 층(아래 하부 성당의 좌석 등)은 이 층 제단 구역과 무관하다
+  function publicPoints(layout, logic, ly) {
     var pts = [];
-    (logic.seats || []).forEach(function (s) { pts.push([s.x, s.z]); var st = logic.standPos(s.id); if (st) pts.push([st.x, st.z]); });
-    (logic.bands || []).forEach(function (b) { pts.push(b.start); pts.push(b.end); });   // 신자석 줄 끝(여백 포함): 줄에 드나드는 통로
+    function on(fy) { return ly === undefined || ly === null || fy === undefined || Math.abs(fy - ly) <= 1.0; }
+    var gy = {};
+    (layout.seatGroups || []).forEach(function (G) { gy[G.g] = G.y; });
+    (logic.seats || []).forEach(function (s) { if (!on(s.fy)) return; pts.push([s.x, s.z]); var st = logic.standPos(s.id); if (st) pts.push([st.x, st.z]); });
+    (logic.bands || []).forEach(function (b) { if (!on(gy[b.g])) return; pts.push(b.start); pts.push(b.end); });   // 신자석 줄 끝(여백 포함): 줄에 드나드는 통로
     var stands = (layout.candles && layout.candles.stands) || [];
-    stands.forEach(function (S) { pts.push([S.x, S.z]); });
-    (logic.slots || []).forEach(function (s) { pts.push([s.x, s.z]); });
-    if (layout.shrine) pts.push([layout.shrine.x, layout.shrine.z]);
-    (layout.fonts || []).forEach(function (f) { pts.push([f.x, f.z]); });
+    stands.forEach(function (S) { if (on(S.fy)) pts.push([S.x, S.z]); });
+    (logic.slots || []).forEach(function (s) { if (on(s.fy)) pts.push([s.x, s.z]); });
+    if (layout.shrine && on(layout.shrine.fy)) pts.push([layout.shrine.x, layout.shrine.z]);
+    (layout.fonts || []).forEach(function (f) { if (on(f.fy)) pts.push([f.x, f.z]); });
     var cw = layout.crossWay;
-    if (cw && cw.plaques) cw.plaques.forEach(function (p) { pts.push([p.x, p.z]); if (p.stand) pts.push([p.stand.x, p.stand.z]); });
+    if (cw && cw.plaques) cw.plaques.forEach(function (p) { if (!on(p.fy)) return; pts.push([p.x, p.z]); if (p.stand) pts.push([p.stand.x, p.stand.z]); });
     return pts;
   }
 
@@ -83,6 +93,10 @@
     if (!alongZ && !alongX) return null;                       // 축이 비스듬한 성당은 아직 없다(시험이 확인)
     var P = (places || placesTable())[layout.id] || {};
     var B = layout.bounds, sp = layout.spawn, cols = logic.colliders;
+    // 여러 층(scene_logic levels): 제단은 입구(스폰)와 같은 층 — 그 층의 충돌체·바닥만 본다(아래층 벽이 축을 막지 않게)
+    var ySp = logic.multi ? spawnLevel(logic) : null;
+    if (logic.multi) cols = logic.collidersAt(ySp);
+    function fl(x, z) { return ySp === null ? logic.floorY(x, z) : logic.floorY(x, z, ySp + 0.7); }
     // u = 축 방향 거리(입구 → 제대), v = 축 옆 거리(입구 기준)
     var lx = -ax.z, lz = ax.x;
     function U(x, z) { return (x - sp.x) * ax.x + (z - sp.z) * ax.z; }
@@ -107,18 +121,18 @@
 
     // 2) 앞 가장자리: 단(바닥 높이 > 0) 위면 단의 첫 계단 발치까지 물러난다
     var front = uSt + K.FRONT_PAD, platHalf = 0;
-    var fy = logic.floorY(st.x, st.z);
-    if (fy > 0.02) {
+    var fy = fl(st.x, st.z), base0 = ySp === null ? 0 : ySp;
+    if (fy > base0 + 0.02) {
       var zs = (logic.layoutZones && logic.layoutZones()) || [];
       {   // 단이 성당 폭 전체여도(익랑·넓은 제단) 같은 규칙: 신자는 첫 계단 앞(신자석 쪽)에서 멈춘다(2026-11-15 사용자 결정)
         // 제대가 놓인 단의 계단 발치 = 뒤로 걸으며 바닥이 내려간 뒤 1m 이상 평평한 곳(층계참·신랑 바닥)이 시작되는 곳.
         // (피렌체처럼 낮은 단(좌석이 있는 성가대석) 안에 높은 제단이 있으면 높은 제단 계단에서 멈춘다)
         var foot = uSt, base = 0, prev = fy, runStart = -1;
         for (var b = 0.05; b < K.MAX_STEP_RUN; b += 0.05) {
-          var q = at(uSt - b, 0), y = logic.floorY(q.x, q.z);
+          var q = at(uSt - b, 0), y = fl(q.x, q.z);
           if (y < fy - 0.05 && Math.abs(y - prev) < 0.01) {
             if (runStart < 0) runStart = b;
-            if (b - runStart >= 1.0 || y <= 0.02) { foot = uSt - runStart; base = y; break; }
+            if (b - runStart >= 1.0 || y <= base0 + 0.02) { foot = uSt - runStart; base = y; break; }
           } else runStart = -1;
           prev = y;
         }
@@ -147,7 +161,7 @@
     //    끊긴 뒤 맨 뒤 신자 자리보다 더 깊은 곳(앱스 제대·주교좌)은 두 번째 구역으로 막는다.
     var halfW = platHalf > 0 ? Math.max(platHalf + K.PLAT_PAD, K.PLAT_MIN_HALF_W) : K.HALF_W;
     if (typeof P.halfW === 'number') halfW = P.halfW;
-    var pub = publicPoints(layout, logic).map(function (p) { return { u: U(p[0], p[1]), v: Math.abs(V(p[0], p[1])) }; })
+    var pub = publicPoints(layout, logic, ySp).map(function (p) { return { u: U(p[0], p[1]), v: Math.abs(V(p[0], p[1])) }; })
       .filter(function (p) { return p.u > front - K.PUBLIC_GAP; }).sort(function (a, b) { return a.u - b.u; });
     var far = typeof P.depth === 'number' ? front + P.depth : 1e9, lastCentral = -1e9;
     for (var i = 0; i < pub.length; i++) {
@@ -233,14 +247,16 @@
   }
 
   var api = {
-    K: K, EMOTE: EMOTE, derive: derive, make: make, freeAt: freeAt, axisOf: axisOf, publicPoints: publicPoints,
+    K: K, EMOTE: EMOTE, derive: derive, spawnLevel: spawnLevel, make: make, freeAt: freeAt, axisOf: axisOf, publicPoints: publicPoints,
     active: null,
     // ChurchLogic.create 끝에서 부른다: 구역을 유도해 충돌체로 넣고 logic.reverence 를 단다.
     apply: function (logic, places) {
       var zone = derive(logic, places);
       var rv = make(zone, logic.layout);
       logic.reverence = rv;
-      if (zone && logic.addKeepOut) rv.rects.forEach(function (r) { logic.addKeepOut({ x0: r.x0, x1: r.x1, z0: r.z0, z1: r.z1 }); });
+      // 여러 층: 금지 구역은 제단 층에서만 막는다(같은 자리 아래층 — 하부 성당·묘소 — 는 열어 둔다)
+      var ly = logic.multi ? spawnLevel(logic) : null;
+      if (zone && logic.addKeepOut) rv.rects.forEach(function (r) { var c = { x0: r.x0, x1: r.x1, z0: r.z0, z1: r.z1 }; if (ly !== null) { c.y0 = ly - 0.3; c.y1 = ly + 4; } logic.addKeepOut(c); });
       api.active = rv;
       return rv;
     },

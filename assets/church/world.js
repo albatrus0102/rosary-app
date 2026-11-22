@@ -105,6 +105,30 @@
     });
     // 바닥 판·평면 메쉬도 그림자를 받는다
     var stats = { vertices: vcount, meshes: mcount, colliders: S.colliders.length, seats: logic.seats.length };
+    // 여러 층(빌더 levelVis = {levels:[{id,y0,y1}], items:{층 id:[묶음 이름 'surf_…'…]}}): 보는 사람(아바타·카메라) 높이가 그 층 범위 안일 때만 그 층 묶음을 그린다.
+    // 다른 층 실내는 그리지 않아 draw call·삼각형이 더해지지 않는다. cam_guard·AO·탐침은 만들 때(전부 보일 때) 한 번 모은다.
+    var levelVis = null;
+    if (builder.levelVis && logic.multi) {
+      levelVis = { def: builder.levelVis, groups: {}, viewer: null, key: '' };
+      items.forEach(function (it) {
+        Object.keys(builder.levelVis.items || {}).forEach(function (lid) {
+          if (builder.levelVis.items[lid].indexOf(it.name) >= 0) (levelVis.groups[lid] = levelVis.groups[lid] || []).push(it.group);
+        });
+      });
+    }
+    function applyLevelVis(camY) {
+      if (!levelVis) return;
+      var ys = [camY], key = '';
+      if (levelVis.viewer !== null) ys.push(levelVis.viewer);
+      levelVis.def.levels.forEach(function (L) {
+        var on = false;
+        for (var q = 0; q < ys.length; q++) if (ys[q] >= L.y0 && ys[q] <= L.y1) on = true;
+        key += on ? '1' : '0'; L._on = on;
+      });
+      if (key === levelVis.key) return;
+      levelVis.key = key;
+      levelVis.def.levels.forEach(function (L) { (levelVis.groups[L.id] || []).forEach(function (g) { g.visible = L._on; }); });
+    }
 
     // ---- 조명 ----
     var bnd = layout.bounds, dim = Math.max(bnd.x1 - bnd.x0, bnd.z1 - bnd.z0);
@@ -295,7 +319,7 @@
     function dimC(hex, k) { tc.setHex(hex); tc.multiplyScalar(k); return tc; }
     var slotY0 = [], floats = [], tv = new T.Vector3(), CANDLE_CHECK = 0;
     for (i = 0; i < nSlots; i++) {
-      var floorH = logic.floorY(slots[i].x, slots[i].z);
+      var floorH = logic.floorY(slots[i].x, slots[i].z, slots[i].fy);   // 여러 층: 스탠드가 선 층(fy). 한 층은 세 번째 인자를 무시한다
       slotY0[i] = floorH + slots[i].y;
       m4.makeTranslation(slots[i].x, slotY0[i], slots[i].z);
       if (slots[i].float) { floats.push(i); m4.copy(zeroM); }   // 물 위에 뜬 초: 붉은 유리 받침 없이 납작한 초(원반)만 뜬다
@@ -585,11 +609,17 @@
         // 카메라 공간 복셀(걷는 자리·바닥 높이·카메라 상자 밖 통로) + 가림 잘라내기(seeThru)
         try {
           var go = root.ChurchCamGuard.spaceOpts ? root.ChurchCamGuard.spaceOpts(logic, layout, S.zones) : {};
+          // 여러 층: 기준 = 맨 아래층 바닥(묘소), 삼각형마다 그 층 바닥(go.levelBase), 공간은 카메라 상자 yMax 까지
+          if (logic.multi && go.levelLow !== undefined) { fy0 = go.levelLow; go.spaceTop = cb.yMax; }
           go.bounds = cb; go.yLow = fy0 + 1.05;
           return root.ChurchCamGuard.build(ctx.root, go);
         } catch (e) { if (root.console) console.warn('[church] camGuard', e); return null; }
       })(),
       reflectorCount: function () { return reflectors.length; },
+      // 여러 층: 보는 사람(내 아바타) 발 높이 — main.js 가 프레임마다 준다. 지금 그리는 층 표(시험·진단): levelKey() '110' 처럼 levels 순서
+      setViewer: function (y) { if (levelVis) levelVis.viewer = typeof y === 'number' ? y : null; },
+      levelKey: function () { return levelVis ? levelVis.key : ''; },
+      showLevelsAt: function (y) { if (levelVis) { levelVis.viewer = null; levelVis.key = ''; applyLevelVis(y); } },
       hour: function () { return curHour; },
       setHour: function (h) { curHour = ((h % 24) + 24) % 24; shForce = true; if (probes) { probes.resetEnvKey(); probes.markDirty('hour', true); } applyEnv(); },
       // PMREM 환경 텍스처 연결
@@ -764,6 +794,7 @@
         if (candleRing.visible) { var pl2 = 0.45 + 0.08 * Math.sin(t * 6); candleRing.scale.set(pl2, pl2, 1); }
         for (var h2 = 0; h2 < S.updateHooks.length; h2++) S.updateHooks[h2](dt, t);
         if (camera) api.setSkyCenter(camera.position);
+        if (levelVis && camera) applyLevelVis(camera.position.y);
       },
       aoFx: aoFx,
       probes: probes,

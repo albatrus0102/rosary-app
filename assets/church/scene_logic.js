@@ -8,7 +8,9 @@
 
   var C = {
     WALK_SPEED: 4.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
-    SEAT_H: 0.45, BAND_NEAR: -0.62, BAND_FAR: 0.20, STAND_FWD: 0.72
+    SEAT_H: 0.45, BAND_NEAR: -0.62, BAND_FAR: 0.20, STAND_FWD: 0.72,
+    // 여러 층(layout.levels, docs/church/interiors/assisi.md §엔진): 한 걸음에 오를 수 있는 높이, 몸이 차지하는 높이(충돌체 높이 범위와 견줌), 같은 층으로 치는 높이 차
+    STEP: 0.45, BODY0: 0.15, BODY1: 1.7, SAME_LEVEL: 1.0
   };
   // 신자석(긴 의자) 기하. u = 좌석 중심에서 제대 쪽(f)으로 잰 거리(m), y = 바닥에서의 높이(m). SPEC §28.
   // 한 줄 = [등받이(뒤로 기울임) + 좌석판] 이고, 등받이 뒷면에 '뒷줄 사람'이 쓰는 책 선반과 무릎틀(kneeler)이 달린다.
@@ -50,6 +52,7 @@
             z: G.origin.z + G.dz * r + (G.dzIdx || 0) * i,
             yaw: G.yaw || 0
           });
+          if (G.y !== undefined) out[out.length - 1].fy = G.y;   // 여러 층: 그 줄이 놓인 바닥 높이(층)
         }
       }
     }
@@ -124,6 +127,7 @@
               x: S.x + RG.r * (rfx * ca + rfz * sa), z: S.z + RG.r * (rfz * ca - rfx * sa),
               y: ry0, reach: S.reach || C.CANDLE_REACH, float: !!S.float
             });
+            if (S.fy !== undefined) out[out.length - 1].fy = S.fy;
           }
           left -= rn;
         }
@@ -144,14 +148,18 @@
           x: S.x + px * off - fx * back, z: S.z + pz * off - fz * back,
           y: y0 + ystep * (rows - 1 - row), reach: S.reach || C.CANDLE_REACH
         });
+        if (S.fy !== undefined) out[out.length - 1].fy = S.fy;   // 여러 층: 스탠드가 선 바닥 높이(층)
       }
     }
     return out;
   }
 
   function normCollider(c) {
-    if (c.r !== undefined && c.x0 === undefined) return { k: 1, x: c.x, z: c.z, r: c.r };
-    return { k: 0, x0: Math.min(c.x0, c.x1), x1: Math.max(c.x0, c.x1), z0: Math.min(c.z0, c.z1), z1: Math.max(c.z0, c.z1) };
+    var n = (c.r !== undefined && c.x0 === undefined) ? { k: 1, x: c.x, z: c.z, r: c.r }
+      : { k: 0, x0: Math.min(c.x0, c.x1), x1: Math.max(c.x0, c.x1), z0: Math.min(c.z0, c.z1), z1: Math.max(c.z0, c.z1) };
+    // 여러 층: 높이 범위(y0..y1)가 있는 충돌체는 그 높이에 몸이 걸칠 때만 막는다. 없으면 모든 층에서 막는다(한 층 성당은 늘 이쪽)
+    if (c.y0 !== undefined || c.y1 !== undefined) { n.y0 = c.y0 === undefined ? -1e9 : c.y0; n.y1 = c.y1 === undefined ? 1e9 : c.y1; }
+    return n;
   }
 
   function create(layout, extra) {
@@ -166,17 +174,30 @@
     var b = layout.bounds;
     var R = C.RADIUS;
     var walk = { minX: b.x0 + R, maxX: b.x1 - R, minZ: b.z0 + R, maxZ: b.z1 - R };
+    // 여러 층(layout.levels): 같은 (x,z) 에 바닥이 여럿 — floorY(x,z,yRef) 는 yRef + STEP 아래의 가장 높은 바닥, 충돌체는 높이 범위를 본다.
+    // levels 가 없는 성당(한 층)은 예전 그대로(아래 함수들이 yRef·y 인자를 무시한다).
+    var multi = !!(layout.levels && layout.levels.length);
+    var ground = layout.ground !== false;
+    var groupY = {};
+    for (i = 0; i < layout.seatGroups.length; i++) if (layout.seatGroups[i].y !== undefined) groupY[layout.seatGroups[i].g] = layout.seatGroups[i].y;
 
     var keep = [];   // 출입 금지 구역(reverence.js): setColliders 로 다시 지어도 남는다
     function rebuild(list) {
       colliders.length = 0;
-      for (var q = 0; q < bands.length; q++) colliders.push({ k: 0, x0: bands[q].x0, x1: bands[q].x1, z0: bands[q].z0, z1: bands[q].z1 });
+      for (var q = 0; q < bands.length; q++) {
+        var bc = { k: 0, x0: bands[q].x0, x1: bands[q].x1, z0: bands[q].z0, z1: bands[q].z1 };
+        if (multi && groupY[bands[q].g] !== undefined) { bc.y0 = groupY[bands[q].g] - 0.05; bc.y1 = groupY[bands[q].g] + 1.1; }   // 신자석 줄은 그 층에서만 막는다
+        colliders.push(bc);
+      }
       for (q = 0; q < list.length; q++) colliders.push(normCollider(list[q]));
       for (q = 0; q < keep.length; q++) colliders.push(keep[q]);
     }
     rebuild(extra.colliders || []);
 
+    // 몸(발 높이 y 에서 BODY0..BODY1)이 충돌체의 높이 범위에 걸치는가. y 가 없거나 한 층이면 늘 걸친다
+    function atLevel(c, y) { return y === undefined || y === null || c.y0 === undefined || (c.y1 >= y + C.BODY0 && c.y0 <= y + C.BODY1); }
     var L = {
+      multi: multi, levels: multi ? layout.levels : null,
       layout: layout, C: C, PEW: PEW, seats: seats, seatIds: seats.map(function (s) { return s.id; }),
       bands: bands, slots: slots, colliders: colliders, bounds: walk, spawn: layout.spawn,
       seatInfo: function (id) { return byId[id] || null; },
@@ -184,17 +205,50 @@
       setZones: function (z) { zones = (z || []).slice(); },
       layoutZones: function () { return zones; },
       addKeepOut: function (c) { var n = normCollider(c); n.keep = true; keep.push(n); colliders.push(n); return n; },
-      floorY: function (x, z) {
-        var y = 0;
+      // 바닥 높이. yRef(여러 층만): 그 높이(발)에서 한 걸음(STEP) 안으로 오를 수 있는 가장 높은 바닥 — 계단을 오르내리면 층이 저절로 바뀐다.
+      // yRef 없이 부르면(또는 한 층 성당) 예전처럼 그 자리의 가장 높은 바닥(바닥 0 포함).
+      floorY: function (x, z, yRef) {
+        var q, zn;
+        if (!multi || yRef === undefined || yRef === null) {
+          var y = 0;
+          for (q = 0; q < zones.length; q++) {
+            zn = zones[q];
+            if (x >= zn.x0 && x <= zn.x1 && z >= zn.z0 && z <= zn.z1 && zn.y > y) y = zn.y;
+          }
+          return y;
+        }
+        var lim = yRef + C.STEP, best = lim >= 0 && ground ? 0 : -1e9;   // 땅(0): layout.ground === false 면 후보가 아니다(맨 아래층 바닥도 구역으로 준다 — 겹친 층 아래 흙 속을 바닥으로 치지 않게)
+        for (q = 0; q < zones.length; q++) {
+          zn = zones[q];
+          if (x >= zn.x0 && x <= zn.x1 && z >= zn.z0 && z <= zn.z1 && zn.y > best && zn.y <= lim) best = zn.y;
+        }
+        return best < -1e8 ? 0 : best;
+      },
+      // 여러 층: 그 (x,z) 의 바닥 높이 후보(아래부터, 0 포함). 한 층이면 [floorY]
+      floorsAt: function (x, z) {
+        if (!multi) return [L.floorY(x, z)];
+        var out = ground ? [0] : [];
         for (var q = 0; q < zones.length; q++) {
           var zn = zones[q];
-          if (x >= zn.x0 && x <= zn.x1 && z >= zn.z0 && z <= zn.z1 && zn.y > y) y = zn.y;
+          if (x >= zn.x0 && x <= zn.x1 && z >= zn.z0 && z <= zn.z1 && out.indexOf(zn.y) < 0) out.push(zn.y);
         }
-        return y;
+        return out.sort(function (a, c2) { return a - c2; });
+      },
+      // 높이 y(발)의 몸에 걸치는 충돌체만(여러 층). 한 층이면 전부
+      collidersAt: function (y) {
+        if (!multi || y === undefined || y === null) return colliders;
+        var out = [];
+        for (var q = 0; q < colliders.length; q++) if (atLevel(colliders[q], y)) out.push(colliders[q]);
+        return out;
+      },
+      // 좌석이 놓인 바닥 높이(여러 층이면 줄의 y, 아니면 그 자리 바닥)
+      seatFloor: function (id) {
+        var s = byId[id]; if (!s) return 0;
+        return s.fy !== undefined && multi ? s.fy : L.floorY(s.x, s.z);
       },
       seatPos: function (id) {
         var s = byId[id]; if (!s) return null;
-        return { x: s.x, z: s.z, y: L.floorY(s.x, s.z) + C.SEAT_H, yaw: s.yaw };
+        return { x: s.x, z: s.z, y: L.seatFloor(id) + C.SEAT_H, yaw: s.yaw };
       },
       // 일어설 때 가는 곳: 좌석 앞(+f)의 줄 안 통로(좌석 앞끝과 앞줄 무릎틀 사이)
       standPos: function (id) {
@@ -217,14 +271,16 @@
         return { fwd: pewAhead(L.seatPitch(id)).kneel, y: PEW.KNEEL_TOP, rail: true };
       },
       // isTaken: function(id)->bool 또는 {id:truthy}
-      nearestSeat: function (x, z, isTaken, reach) {
+      nearestSeat: function (x, z, isTaken, reach, y) {
         reach = reach || C.SEAT_REACH;
+        var lv = multi && y !== undefined && y !== null;   // 여러 층: 다른 층의 좌석(바로 위·아래)은 고르지 않는다
         var r2 = reach * reach, best = null, bd = 1e9;
         var fn = typeof isTaken === 'function' ? isTaken : null;
         for (var q = 0; q < seats.length; q++) {
           var s = seats[q];
           var dx = x - s.x, dz = z - s.z, d2 = dx * dx + dz * dz;
           if (d2 > r2 || d2 >= bd) continue;
+          if (lv && Math.abs(L.seatFloor(s.id) - y) > C.SAME_LEVEL) continue;
           if (dx * s.f[0] + dz * s.f[1] < -0.1) continue; // 등받이 뒤(뒷줄 통로)에서는 불가: 좌석은 앞쪽 통로에서 앉는다
           if (fn ? fn(s.id) : (isTaken && isTaken[s.id])) continue;
           bd = d2; best = s.id;
@@ -234,27 +290,31 @@
       slotCount: slots.length,
       slotPos: function (slot) { return slots[slot] || null; },
       // isLit: function(slot)->bool (켜진 초는 건너뜀)
-      nearestCandleSlot: function (x, z, isLit, reach) {
-        var best = null, bd = 1e9;
+      nearestCandleSlot: function (x, z, isLit, reach, y) {
+        var best = null, bd = 1e9, lv = multi && y !== undefined && y !== null;
         for (var q = 0; q < slots.length; q++) {
           var s = slots[q];
           var dx = x - s.x, dz = z - s.z, d2 = dx * dx + dz * dz;
           var rr = reach || s.reach;
           if (d2 > rr * rr || d2 >= bd) continue;
+          if (lv && s.fy !== undefined && Math.abs(s.fy - y) > C.SAME_LEVEL) continue;
           if (isLit && isLit(q)) continue;
           bd = d2; best = q;
         }
         return best;
       },
       // 원(반경 r)을 (dx,dz)만큼 움직이고 충돌 해소(미끄러짐). p={x,z} 를 수정. 부딪히면 true.
-      moveCircle: function (p, dx, dz, r) {
+      // y(여러 층만): 발 높이 — 그 높이의 몸에 걸치는 충돌체만 막는다(아래·위층의 벽은 지나간다). 없으면 모든 충돌체.
+      moveCircle: function (p, dx, dz, r, y) {
         r = r || R;
+        var lv = multi && y !== undefined && y !== null;
         p.x += dx; p.z += dz;
         var hit = false;
         for (var iter = 0; iter < 3; iter++) {
           var any = false;
           for (var q = 0; q < colliders.length; q++) {
             var c = colliders[q];
+            if (lv && c.y0 !== undefined && (c.y1 < y + C.BODY0 || c.y0 > y + C.BODY1)) continue;
             if (c.k === 0) {
               if (p.x < c.x0 - r || p.x > c.x1 + r || p.z < c.z0 - r || p.z > c.z1 + r) continue;
               var cx = p.x < c.x0 ? c.x0 : (p.x > c.x1 ? c.x1 : p.x);

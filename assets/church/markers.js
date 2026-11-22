@@ -64,7 +64,7 @@
     group.add(holder);
 
     function add(kind, s) {
-      var floor = logic.floorY(s.x, s.z);
+      var floor = s.y !== undefined ? s.y : logic.floorY(s.x, s.z);   // 여러 층: 스테이션이 가진 층 높이
       var ringMat = new T.MeshBasicMaterial({ map: ringTex, transparent: true, depthWrite: false, fog: false, opacity: 0, toneMapped: false });
       var ring = new T.Mesh(ringGeo, ringMat);
       ring.rotation.x = -Math.PI / 2; ring.position.set(s.x, floor + 0.05, s.z); ring.renderOrder = 7;
@@ -106,6 +106,7 @@
           var it = items[i], s = it.s;
           var d = Math.sqrt((me.x - s.x) * (me.x - s.x) + (me.z - s.z) * (me.z - s.z));
           var want = on ? smooth((d - 1.0) / 1.6) : 0;           // 서 있는 자리에 가까우면 사라진다
+          if (s.y !== undefined && me.y !== undefined && Math.abs(s.y - me.y) > 1.6) want = 0;   // 여러 층: 다른 층(천장 너머·바닥 밑)의 표식은 숨긴다
           if (active) want *= (active.kind === it.kind && active.index === it.index) ? 1 : 0.35;
           it.a += (want - it.a) * k;
           var vis = it.a > 0.01;

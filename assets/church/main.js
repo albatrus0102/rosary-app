@@ -60,7 +60,9 @@
 
   // '가기' 메뉴의 성모상 줄 이름(shrine_places.go_ko, 기본 '성모상').
   function shrineGoLabel(id) { var P = root.ChurchShrinePlaces, p = P && P[id]; return (p && p.go_ko) || '성모상'; }
-  var nearShrineNow = false;   // nearStation 이 고른 곳이 성모상 앞인가(제대 앞과 같은 'altar' 칩이지만 묵주기도를 서서 한다)
+  var nearShrineNow = false;
+  // 여러 층 성당이면 pos·restored 에 발 높이 y 를 붙인다(이어 들어갈 때 같은 층으로). 한 층 성당의 이벤트 모양은 그대로
+  function posEv(o) { if (App.logic && App.logic.multi && App.me && typeof App.me.fy === 'number') o.y = r2(App.me.fy); return o; }   // nearStation 이 고른 곳이 성모상 앞인가(제대 앞과 같은 'altar' 칩이지만 묵주기도를 서서 한다)
   function setNear(seat, candle, station) {
     if (station === undefined) station = null;
     var shr = station === 'altar' && nearShrineNow;
@@ -97,7 +99,7 @@
     if (App.place) App.place.load(w);   // 이 성당의 진본 사진 창을 비동기로 건다(없거나 못 읽으면 절차적 유리 그대로)
     var sp = w.layout.spawn;
     var me = App.me;
-    me.x = sp.x; me.z = sp.z; me.yaw = sp.r || 0; me.y = w.logic.floorY(sp.x, sp.z); me.vx = 0; me.vz = 0; me.mode = 'walk'; me.seat = null;
+    me.x = sp.x; me.z = sp.z; me.yaw = sp.r || 0; me.fy = w.logic.floorY(sp.x, sp.z, sp.y === undefined ? null : sp.y); me.y = me.fy; me.vx = 0; me.vz = 0; me.mode = 'walk'; me.seat = null;
     App.net.setMySeat(null);
     App.ctl.yaw = me.yaw; App.camInit = false;
     App.meAv.setSeated(false); App.meAv.setPray(false);
@@ -110,7 +112,10 @@
     // 십자가의 길 14처 판: 자리는 바로 유도하고(cross 개수), 그림은 비동기로 싣는다(?cross=0 이면 끔)
     if (App.cross && !qs.thumb && qs.cross !== '0') App.cross.load(w);
     if (App.liturgy && !qs.thumb) App.liturgy.attach(w);   // 전례 시기 장식: 지금 시기대로 짓는다
-    post({ e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1, cross: App.cross ? App.cross.count() : 0, shrine: stn.candle.some(function (c) { return c.shrine; }) ? 1 : 0, shrineLabel: shrineGoLabel(w.id) });
+    var stEv = { e: 'stations', church: w.id, candle: stn.candle.length, altar: 1, font: stn.font.length, entrance: 1, cross: App.cross ? App.cross.count() : 0, shrine: stn.candle.some(function (c) { return c.shrine; }) ? 1 : 0, shrineLabel: shrineGoLabel(w.id) };
+    // 여러 층 성당(아시시): '가기' 시트의 층 줄(이름 목록, walkTo{kind:'level', index})
+    if (stn.levels && stn.levels.length) stEv.levels = stn.levels.map(function (l) { return l.label; });
+    post(stEv);
     if (console && console.log) console.log('[church] world ' + w.id + ' stats', JSON.stringify(w.stats));
   }
 
@@ -188,6 +193,7 @@
     var me = App.me, sp = App.logic.seatPos(seatId);
     if (!sp) return;
     cancelWalk('sit');
+    if (App.logic && App.logic.seatFloor) me.fy = App.logic.seatFloor(seatId);   // 좌석이 놓인 층
     me.mode = 'sitting'; me.seat = seatId; me.t = 0; me.fx = me.x; me.fz = me.z; me.fyaw = me.yaw;
     me.tx = sp.x; me.tz = sp.z; me.tyaw = sp.yaw; me.pendingStand = false;
     App.net.setMySeat(seatId);
@@ -226,6 +232,7 @@
     var s = { e: 'state', church: App.church, x: r2(x), z: r2(z), r: r2(r), seat: sit ? me.seat : null, posture: sit && App.posture === 'kneel' ? 'kneel' : 'sit',
       cy: r2(ctl.yaw), cp: r2(ctl.pitch), cz: r2(ctl.zoom), cl: r2(ctl.look) };
     if (App.rosary) s.rosary = 1;
+    if (App.logic && App.logic.multi && typeof me.fy === 'number') s.y = r2(me.mode === 'seated' || me.mode === 'sitting' ? App.logic.seatFloor(me.seat) : me.fy);   // 여러 층: 층
     var w = App.walkSt || App.pendingWalk;
     if (w && w.kind) s.walk = { kind: w.kind, index: w.index === undefined ? 0 : w.index, seat: w.seat || null };
     return s;
@@ -268,7 +275,9 @@
     } else {
       var x = fin(o.x, me.x), z = fin(o.z, me.z), r = fin(o.r, me.yaw);
       if (seat) { var st = logic.standPos(seat); x = st.x; z = st.z; r = st.yaw; }
-      pp.x = x; pp.z = z; logic.moveCircle(pp, 0, 0);   // 벽·가구 안이면 밀어낸다
+      var ry = seat ? logic.seatFloor(seat) : logic.floorY(x, z, typeof o.y === 'number' && isFinite(o.y) ? o.y : null);   // 여러 층: 저장된 높이(y)의 층
+      pp.x = x; pp.z = z; logic.moveCircle(pp, 0, 0, undefined, ry);   // 벽·가구 안이면 밀어낸다
+      me.fy = logic.floorY(pp.x, pp.z, ry);
       me.mode = 'walk'; me.seat = null; me.x = pp.x; me.z = pp.z; me.yaw = r;
       App.net.setMySeat(null);
       App.meAv.setSeated(false); App.meAv.setPray(false);
@@ -276,11 +285,12 @@
     }
     if (o.look && typeof o.look === 'object') App.rosaryLook = o.look;
     App.rosary = !!o.rosary; App.meAv.setRosary(App.rosary, App.rosaryLook);
-    me.y = logic.floorY(me.x, me.z);
+    if (sat) me.fy = logic.seatFloor(seat);
+    me.y = logic.multi ? me.fy : logic.floorY(me.x, me.z);
     App.meAv.setPose(me.x, me.y, me.z, me.yaw);
     App.camInit = false; App.wasMoving = false;
     if (sat) post({ e: 'seated', seat: seat });
-    post({ e: 'restored', seat: sat ? seat : null, lost: seat && !sat ? 1 : 0, x: r2(me.x), z: r2(me.z), r: r2(me.yaw) });
+    post(posEv({ e: 'restored', seat: sat ? seat : null, lost: seat && !sat ? 1 : 0, x: r2(me.x), z: r2(me.z), r: r2(me.yaw) }));
     if (!sat && o.walk && o.walk.kind) walkTo(o.walk);
     kick();
   }
@@ -358,7 +368,7 @@
         var si = App.logic.seatInfo(seat);
         if (!si || isTaken(seat) || Math.hypot(si.x - me.x, si.z - me.z) > 3.2) seat = null;
       }
-      if (!seat) seat = App.logic.nearestSeat(me.x, me.z, isTaken);
+      if (!seat) seat = App.logic.nearestSeat(me.x, me.z, isTaken, undefined, me.fy);
       if (seat) beginSit(seat);
     },
     stand: function () {
@@ -485,7 +495,7 @@
     if (kind === 'seat') {
       if (o.seat && !isTaken(o.seat)) tg = S.seatStation(o.seat);
       if (!tg) tg = S.nearestFreeSeat(me, isTaken);
-    } else if (kind === 'candle' || kind === 'altar' || kind === 'entrance' || kind === 'font' || kind === 'shrine') {
+    } else if (kind === 'candle' || kind === 'altar' || kind === 'entrance' || kind === 'font' || kind === 'shrine' || kind === 'level') {
       tg = S.station(kind, o.index, me);
     } else if (kind === 'cross') {
       tg = App.cross ? App.cross.station(o.index) : null;   // 십자가의 길 n처 판 앞(index 0..13)
@@ -548,6 +558,7 @@
     st.candle.forEach(function (c) { if (c.shrine) list.push(['altar', c, true]); });   // 성모상 앞(shrine.js): 제대 앞과 같은 '기도하기' 칩
     for (var i = 0; i < list.length; i++) {
       var k = list[i][0], s = list[i][1], d = Math.hypot(me.x - s.x, me.z - s.z);
+      if (s.y !== undefined && me.fy !== undefined && Math.abs(s.y - me.fy) > 1.0) continue;   // 여러 층: 바로 위·아래층의 자리는 아니다
       var lim = cur === k ? 2.0 : 1.3;
       if (d <= lim && d < bd) { bd = d; best = k; nearShrineNow = !!list[i][2]; }
     }
@@ -586,7 +597,7 @@
         if (vel.speed > 0.05 || me.mode !== 'walk') { App.lightG = null; if (App.meAv && App.meAv.cancelGesture) App.meAv.cancelGesture(); }
         else {
           App.lightG.t += dt;
-          if (App.lightG.t > 0.9 && App.lightG.t < 1.5) { pp.x = me.x; pp.z = me.z; logic.moveCircle(pp, Math.sin(me.yaw) * 0.5 * dt, Math.cos(me.yaw) * 0.5 * dt); me.x = pp.x; me.z = pp.z; }
+          if (App.lightG.t > 0.9 && App.lightG.t < 1.5) { pp.x = me.x; pp.z = me.z; logic.moveCircle(pp, Math.sin(me.yaw) * 0.5 * dt, Math.cos(me.yaw) * 0.5 * dt, undefined, me.fy); me.x = pp.x; me.z = pp.z; }
           else if (App.lightG.t >= 6.1) App.lightG = null;
         }
       }
@@ -595,7 +606,7 @@
       var sp = Math.sqrt(me.vx * me.vx + me.vz * me.vz);
       if (sp > 0.02) {
         pp.x = me.x; pp.z = me.z;
-        logic.moveCircle(pp, me.vx * dt, me.vz * dt);
+        logic.moveCircle(pp, me.vx * dt, me.vz * dt, undefined, me.fy);   // 여러 층: 지금 층의 충돌체만
         me.x = pp.x; me.z = pp.z;
       } else { me.vx = me.vz = 0; sp = 0; }
       if (vel.speed > 0.05) {
@@ -611,19 +622,21 @@
       me.speed = sp;
       av.setWalk(Math.min(1, sp / 4.0 * 1.05));
       if (sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5); } }
-      var fy = logic.floorY(me.x, me.z);
+      // 여러 층: 지금 발 높이(me.fy)에서 한 걸음 안의 가장 높은 바닥 → 계단을 오르내리며 층이 바뀐다(한 층 성당은 예전과 같은 값)
+      var fy = logic.floorY(me.x, me.z, me.fy);
+      me.fy = fy;
       me.y += (fy - me.y) * Math.min(1, dt * 14);
       // pos 이벤트
       var moving = sp > 0.05;
       if (moving) {
         App.posT += dt;
-        if (App.posT >= 0.1 || !App.wasMoving) { App.posT = 0; post({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 1 }); }
-      } else if (App.wasMoving) { post({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 0 }); App.posT = 0; }
+        if (App.posT >= 0.1 || !App.wasMoving) { App.posT = 0; post(posEv({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 1 })); }
+      } else if (App.wasMoving) { post(posEv({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 0 })); App.posT = 0; }
       App.wasMoving = moving;
       // 가까운 좌석/촛불
-      var seat = logic.nearestSeat(me.x, me.z, isTaken);
-      var cs = logic.nearestCandleSlot(me.x, me.z, function (s) { return App.world.isLit(s); });
-      if (cs === null) cs = logic.nearestCandleSlot(me.x, me.z, null);
+      var seat = logic.nearestSeat(me.x, me.z, isTaken, undefined, me.fy);
+      var cs = logic.nearestCandleSlot(me.x, me.z, function (s) { return App.world.isLit(s); }, undefined, me.fy);
+      if (cs === null) cs = logic.nearestCandleSlot(me.x, me.z, null, undefined, me.fy);
       setNear(seat, cs, nearStation(me));
       if (walked) post({ e: 'walkDone', kind: walked.kind, index: walked.index === undefined ? 0 : walked.index, seat: walked.seat || null });
     } else if (mode === 'sitting' || mode === 'standing') {
@@ -631,7 +644,7 @@
       var dur = mode === 'sitting' ? 0.8 : 0.55, u = Math.min(1, me.t / dur), s = u * u * (3 - 2 * u);
       me.x = me.fx + (me.tx - me.fx) * s; me.z = me.fz + (me.tz - me.fz) * s;
       me.yaw = me.fyaw + wrap(me.tyaw - me.fyaw) * s;
-      var fy2 = logic.floorY(me.x, me.z);
+      var fy2 = logic.floorY(me.x, me.z, me.fy);
       me.y += (fy2 - me.y) * Math.min(1, dt * 14);
       av.setWalk(0);
       if (u >= 1) {
@@ -643,7 +656,7 @@
           me.mode = 'walk'; me.seat = null; me.vx = me.vz = 0;
           App.net.setMySeat(null);
           post({ e: 'stood' });
-          post({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 0 });
+          post(posEv({ e: 'pos', x: r2(me.x), z: r2(me.z), r: r2(me.yaw), m: 0 }));
           App.wasMoving = false; App.near.seat = App.near.candle = undefined; App.near.station = null;
           if (App.pendingWalk) { var pw = App.pendingWalk; App.pendingWalk = null; startWalk(pw); }
         }
@@ -840,6 +853,7 @@
     var PH = root.ChurchPerfHud && root.ChurchPerfHud.on ? root.ChurchPerfHud : null, tj = PH ? performance.now() : 0;
     App.ctl.setMoveZone(App.me.mode === 'walk');
     updateMe(dt, App.t);
+    if (App.world && App.world.setViewer) App.world.setViewer(App.me.y);   // 여러 층: 보는 층만 그린다(world.js levelVis)
     updateCamera(dt);
     // 3D 이름표 크기 보정: 카메라 행렬을 갱신하고 아바타·표식에 알린다
     var vw = root.innerWidth || 360, vh = root.innerHeight || 640;

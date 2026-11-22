@@ -21,8 +21,9 @@ export function loadLayouts() {
   const out = [];
   for (const id of L.ids()) {
     const lay = JSON.parse(JSON.stringify(L.byId[id]));
-    lay.seats = Logic.seatsOf(lay).map((s) => ({ id: s.id, x: +s.x.toFixed(3), z: +s.z.toFixed(3), yaw: s.yaw }));
-    lay.slotPos = Logic.candleSlots(lay).map((s) => ({ slot: s.slot, stand: s.stand, x: +s.x.toFixed(3), z: +s.z.toFixed(3) }));
+    // 여러 층 성당(layout.levels)만 좌석·초 칸에 바닥 높이 y 를 붙인다(한 층 성당의 JSON 모양은 그대로)
+    lay.seats = Logic.seatsOf(lay).map((s) => (s.fy !== undefined ? { id: s.id, x: +s.x.toFixed(3), z: +s.z.toFixed(3), y: s.fy, yaw: s.yaw } : { id: s.id, x: +s.x.toFixed(3), z: +s.z.toFixed(3), yaw: s.yaw }));
+    lay.slotPos = Logic.candleSlots(lay).map((s) => (s.fy !== undefined ? { slot: s.slot, stand: s.stand, x: +s.x.toFixed(3), z: +s.z.toFixed(3), y: s.fy } : { slot: s.slot, stand: s.stand, x: +s.x.toFixed(3), z: +s.z.toFixed(3) }));
     out.push(lay);
   }
   return out;

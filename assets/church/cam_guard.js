@@ -14,7 +14,10 @@
     // 카메라 상자(bounds)보다 걷는 곳(region = layout.bounds)이 넓으면(명동·라테라노 익랑) 둘을 합친 곳의 면·공간을 모은다
     if (b && R) b = { x0: Math.min(b.x0, R.x0), x1: Math.max(b.x1, R.x1), z0: Math.min(b.z0, R.z0), z1: Math.max(b.z1, R.z1), yMax: b.yMax };
     var bx0 = b ? b.x0 - pad : -1e9, bx1 = b ? b.x1 + pad : 1e9, bz0 = b ? b.z0 - pad : -1e9, bz1 = b ? b.z1 + pad : 1e9;
-    var tris = [], triMesh = [], triI = [], triFlat = [], lowT = [], meshes = [];
+    var tris = [], triMesh = [], triI = [], triFlat = [], lowT = [], meshes = [], triBase = [];
+    // 여러 층(o.levelBase(x,z,y) → 그 삼각형이 놓인 층의 바닥): 바닥 판·낮은 물체·가는 면 판정의 기준 높이를 삼각형마다 그 층 바닥으로 잡는다.
+    // 없으면(한 층 성당) 예전처럼 하나(fy0 = 스폰 바닥).
+    var LB = o.levelBase || null;
     // 바닥(위를 보는 거의 수평 면, 걷는 바닥 높이 + 0.35m 아래)은 절대 지우지 않는다. floorTop = 가장 높은 바닥 구역(제단 단 등).
     var hasLow = o.yLow !== undefined, fy0 = hasLow ? o.yLow - 1.05 : 0, floorTop = o.floorTop === undefined ? fy0 : Math.max(fy0, o.floorTop);
     obj.updateMatrixWorld(true);
@@ -35,8 +38,9 @@
           v[k * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
         }
         var mxY = Math.max(v[1], v[4], v[7]);
-        if (hasLow && mxY < fy0 + 0.12) continue;   // 바닥 높이의 것(바닥 판·깔개·장식 띠)
         var mnx = Math.min(v[0], v[3], v[6]), mxx = Math.max(v[0], v[3], v[6]), mnz = Math.min(v[2], v[5], v[8]), mxz = Math.max(v[2], v[5], v[8]);
+        var lb = LB ? LB((mnx + mxx) * 0.5, (mnz + mxz) * 0.5, Math.min(v[1], v[4], v[7])) : fy0;
+        if (hasLow && mxY < lb + 0.12) continue;   // 바닥 높이의 것(바닥 판·깔개·장식 띠)
         if (mxx < bx0 || mnx > bx1 || mxz < bz0 || mnz > bz1) continue;
         var ax = v[3] - v[0], ay = v[4] - v[1], az = v[5] - v[2], cx = v[6] - v[0], cy = v[7] - v[1], cz = v[8] - v[2];
         var nx = ay * cz - az * cy, ny = az * cx - ax * cz, nz = ax * cy - ay * cx, nl = Math.sqrt(nx * nx + ny * ny + nz * nz);
@@ -44,12 +48,12 @@
         // 바닥: 거의 수평이고 그 자리 바닥 높이(floorY, 제단 단·성단 포함) 근처. 의자 좌석판 같은 높은 수평면은 바닥이 아니다
         var flat = 0;
         if (Math.abs(ny) > 0.8 * nl && mxY < floorTop + 0.35) {
-          var fyAt = o.floorY ? (o.floorY((mnx + mxx) * 0.5, (mnz + mxz) * 0.5) || 0) : floorTop;
-          flat = mxY < fyAt + 0.2 || mxY < fy0 + 0.25 ? 1 : 0;
+          var fyAt = LB ? lb : (o.floorY ? (o.floorY((mnx + mxx) * 0.5, (mnz + mxz) * 0.5) || 0) : floorTop);
+          flat = mxY < fyAt + 0.2 || mxY < lb + 0.25 ? 1 : 0;
         }
         // 낮은 물체(의자·무릎틀·난간): 카메라를 막지 않는다(카메라는 그 위에 뜬다). 기도 자세에서 가리면 지운다(seeThru 85).
-        if (mxY < yLow) { if (!flat) lowT.push(mi, i); continue; }
-        tris.push(v[0], v[1], v[2], ax, ay, az, cx, cy, cz); triMesh.push(mi); triI.push(i); triFlat.push(flat);
+        if (mxY < (LB ? lb + (yLow - fy0) : yLow)) { if (!flat) lowT.push(mi, i); continue; }
+        tris.push(v[0], v[1], v[2], ax, ay, az, cx, cy, cz); triMesh.push(mi); triI.push(i); triFlat.push(flat); if (LB) triBase.push(lb - fy0);
       }
     });
     var nt = tris.length / 9, T9 = new Float32Array(tris);
@@ -75,7 +79,7 @@
     var list = new Int32Array(cnt[NX * NZ]), fill = cnt.slice(0, NX * NZ);
     for (t = 0; t < nt; t++) span(t, function (c, tt) { list[fill[c]++] = tt; });
     var stamp = new Uint32Array(nt), gen = 0;
-    var thin = classifyThin(T9, nt, o.thinMax === undefined ? 4.4 : o.thinMax, fy0 + 0.35, fy0 + 2.8);
+    var thin = classifyThin(T9, nt, o.thinMax === undefined ? 4.4 : o.thinMax, fy0 + 0.35, fy0 + 2.8, LB ? triBase : null);
     var nThin = 0; for (t = 0; t < nt; t++) nThin += thin[t];
     var out = { thin: 1 };   // 마지막 clip/clipWide 에서 처음 닿은 '가는' 면의 비율(0..1, 없으면 1)
 
@@ -149,7 +153,8 @@
   function buildSpace(T9, nt, o, fy0, B, clip, out) {
     var cs = o.spaceCell || 0.4, chh = 0.5;
     var X0 = B.x0, Z0 = B.z0, NX = Math.max(1, Math.ceil((B.x1 - B.x0) / cs)), NZ = Math.max(1, Math.ceil((B.z1 - B.z0) / cs));
-    var yB = fy0 + 0.25, yT = Math.min(B.yMax || fy0 + 14, fy0 + 14), NY = Math.max(1, Math.ceil((yT - yB) / chh)), NXZ = NX * NZ, N = NXZ * NY;
+    // 여러 층(o.spaceTop): 맨 아래층(묘소)부터 맨 위층 궁륭까지 — 한 층은 바닥 + 14m
+    var yB = fy0 + 0.25, yT = o.spaceTop ? Math.min(B.yMax || o.spaceTop, o.spaceTop) : Math.min(B.yMax || fy0 + 14, fy0 + 14), NY = Math.max(1, Math.ceil((yT - yB) / chh)), NXZ = NX * NZ, N = NXZ * NY;
     if (N > 4e6) return null;   // 너무 큰 상자(시험용 등): 공간 없이(리그는 상자 경계만)
     var sol = new Uint8Array(N), t, q, c, gx, gz, gyy;
     // 면 칸 찍기: 삼각형마다 법선이 가장 큰 축(a)으로 투영해 나머지 두 축(u,v) 칸을 돌고, 칸 모서리 4곳의 평면 높이(a) 범위를 칠한다(보수적).
@@ -240,13 +245,17 @@
       var wx = X0 + (gx + SW * 0.5) * cs, wz = Z0 + (gz + SW * 0.5) * cs, wk = o.walk ? o.walk(wx, wz) : 1;
       if (wk === 2) for (var pz2 = 0; pz2 < SW && gz + pz2 < NZ; pz2++) for (var px2 = 0; px2 < SW && gx + px2 < NX; px2++) pas[(gz + pz2) * NX + gx + px2] = 1;
       if (!wk) continue;
-      var fyc = o.floorY ? (o.floorY(wx, wz) || 0) : fy0;
-      for (var sy = fyc + 0.9; sy <= fyc + 1.9; sy += chh) {
-        gyy = Math.floor((sy - yB) / chh); if (gyy < 0 || gyy >= NY) continue;
-        if (wk === 2 && !covV(Math.min(NX - 1, gx + 1), Math.min(NZ - 1, gz + 1), gyy)) continue;
-        for (var dz2 = 0; dz2 < SW && gz + dz2 < NZ; dz2++) for (var dx2 = 0; dx2 < SW && gx + dx2 < NX; dx2++) {
-          c = gyy * NXZ + (gz + dz2) * NX + gx + dx2;
-          if (!blk[c] && !reach[c]) { reach[c] = 1; qu[qt++] = c; }
+      // 여러 층(o.walkFloors): 그 자리의 걸을 수 있는 바닥마다 씨앗(하부 성당·묘소도 카메라 공간). 한 층은 바닥 하나
+      var fys = o.walkFloors && wk === 1 ? o.walkFloors(wx, wz) : [o.floorY ? (o.floorY(wx, wz) || 0) : fy0];
+      for (var fi = 0; fi < fys.length; fi++) {
+        var fyc = fys[fi];
+        for (var sy = fyc + 0.9; sy <= fyc + 1.9; sy += chh) {
+          gyy = Math.floor((sy - yB) / chh); if (gyy < 0 || gyy >= NY) continue;
+          if (wk === 2 && !covV(Math.min(NX - 1, gx + 1), Math.min(NZ - 1, gz + 1), gyy)) continue;
+          for (var dz2 = 0; dz2 < SW && gz + dz2 < NZ; dz2++) for (var dx2 = 0; dx2 < SW && gx + dx2 < NX; dx2++) {
+            c = gyy * NXZ + (gz + dz2) * NX + gx + dx2;
+            if (!blk[c] && !reach[c]) { reach[c] = 1; qu[qt++] = c; }
+          }
         }
       }
     }
@@ -296,7 +305,8 @@
   // 가는 면 판정: 몸 높이 띠(yB0..yB1)에 걸친 삼각형의 xz 그림자를 0.2m 칸에 찍고, 찍힌 칸을 8방향으로 이어 덩어리를 만든다.
   // 덩어리 xz 상자의 두 변이 모두 thinMax 이하이면 가는 덩어리(홀로 선 기둥·성상·제대 앞 난간 기둥). 벽은 띠 안에서 길게 이어져 넓다.
   // 삼각형은 그림자가 덮는 칸이 모두 가는 덩어리 위일 때 가늘다(띠 위로 이어지는 기둥 윗부분 포함, 기둥 사이를 덮는 아치·벽은 빈 칸에 걸쳐 넓다).
-  function classifyThin(T9, nt, thinMax, yB0, yB1) {
+  // off(선택, 여러 층): 삼각형마다 몸 높이 띠를 그 층 바닥만큼 올린다
+  function classifyThin(T9, nt, thinMax, yB0, yB1, off) {
     var thin = new Uint8Array(nt);
     if (!nt || !(thinMax > 0)) return thin;
     var CS = 0.2, tol2 = 0.1 * 0.1, X0 = 1e9, X1 = -1e9, Z0 = 1e9, Z1 = -1e9, t, q;
@@ -330,7 +340,7 @@
       }
     }
     var band = new Uint8Array(nt);
-    for (t = 0; t < nt; t++) { var r = yr(t); if (r[1] >= yB0 && r[0] <= yB1) { band[t] = 1; raster(t, function (c2) { occ[c2] = 1; }); } }
+    for (t = 0; t < nt; t++) { var r = yr(t), oo = off ? off[t] : 0; if (r[1] >= yB0 + oo && r[0] <= yB1 + oo) { band[t] = 1; raster(t, function (c2) { occ[c2] = 1; }); } }
     // 칸 덩어리(8방향): 덩어리마다 상자 → 가는 덩어리 칸 표시(thinC)
     var lab = new Int32Array(NC).fill(-1), stack = new Int32Array(NC), thinC = new Uint8Array(NC), members = new Int32Array(NC);
     for (var s0 = 0; s0 < NC; s0++) {
@@ -662,13 +672,27 @@
   function spaceOpts(logic, layout, zones) {
     var B = layout.bounds, p = { x: 0, z: 0 }, ft = 0;
     (zones || []).forEach(function (z) { if (z.y > ft) ft = z.y; });
-    return {
+    var o2 = {
       floorTop: ft, floorY: logic.floorY, region: B,
       walk: function (x, z) {
         if (x < B.x0 || x > B.x1 || z < B.z0 || z > B.z1) return 2;
+        if (logic.multi) return o2.walkFloors(x, z).length ? 1 : 0;
         p.x = x; p.z = z; return logic.moveCircle(p, 0, 0) ? 0 : 1;
       }
     };
+    // 여러 층(scene_logic levels, docs/church/interiors/assisi.md §엔진): 삼각형의 층 바닥 = 그 아래(밑면 + 한 걸음)의 가장 높은 바닥,
+    // 걷는 바닥 = 그 자리 바닥 후보 가운데 그 층 충돌체에 막히지 않은 것. 카메라 공간은 맨 아래 바닥부터 맨 위 궁륭(카메라 상자 yMax)까지
+    if (logic.multi) {
+      var lo = 1e9; (logic.levels || []).forEach(function (L) { if (L.y < lo) lo = L.y; }); if (!(lo < 1e8)) lo = 0;
+      o2.levelLow = lo;
+      o2.levelBase = function (x, z, y) { return logic.floorY(x, z, y + (logic.C.STEP || 0.45)); };
+      o2.walkFloors = function (x, z) {
+        var fl = logic.floorsAt(x, z), out = [];
+        for (var i = 0; i < fl.length; i++) { p.x = x; p.z = z; if (!logic.moveCircle(p, 0, 0, undefined, fl[i]) && logic.floorY(x, z, fl[i]) === fl[i]) out.push(fl[i]); }
+        return out;
+      };
+    }
+    return o2;
   }
 
   var api = { build: build, classifyThin: classifyThin, patchSee: patchSee, avatarAlpha: avatarAlpha, MIN_ALPHA: MIN_ALPHA, SPOT: SPOT, PRAY: PRAY, spotBlend: spotBlend, RIG: RIG, createRig: createRig, reachOn: reachOn, prayYaw: prayYaw, spaceOpts: spaceOpts };
