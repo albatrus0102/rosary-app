@@ -222,7 +222,7 @@ export function joyWalker(L, joy, camYaw = 0) {
     } else { me.vx = me.vz = 0; sp = 0; }
     if (vel.speed > 0.05) me.yaw += wrap(vel.yaw - me.yaw) * Math.min(1, dt * 11);
     else if (j.turnTo !== undefined) me.yaw += wrap(j.turnTo - me.yaw) * Math.min(1, dt * 8);
-    return Math.min(1, sp / 4.0 * 1.05);
+    return Math.min(1, sp / Logic.C.WALK_SPEED * 1.05);
   };
 }
 /** 자동 걷기(stations.stepWalk 경로). */
@@ -238,7 +238,7 @@ export function autoWalker(L, S, target) {
     let sp = Math.hypot(me.vx, me.vz);
     if (sp > 0.02) { pp.x = me.x; pp.z = me.z; L.moveCircle(pp, me.vx * dt, me.vz * dt); me.x = pp.x; me.z = pp.z; } else { me.vx = me.vz = 0; sp = 0; }
     if (speed > 0.05) me.yaw += wrap(yaw - me.yaw) * Math.min(1, dt * 11);
-    return Math.min(1, sp / 4.0 * 1.05);
+    return Math.min(1, sp / Logic.C.WALK_SPEED * 1.05);
   };
 }
 /** 다른 사람(net_view.js): 0.1초마다 받은 위치를 200ms 늦춰 선형 보간하고 그 이동으로 걸음 값을 정한다. walkOf(speed) = net_view 의 식. */

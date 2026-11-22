@@ -28,7 +28,7 @@
   var CFG = {
     seat: { h: 0.45, back: 0.14 },        // 좌석 윗면 높이(m), 앉을 때 골반을 좌석 중심에서 뒤로(m) (avatar.js SEAT_BACK 과 같은 뜻)
     kneel: { fwd: 1.22, y: 0.145, rail: true, thigh: 0.12, dur: 0.7 },   // 기본 무릎 자리(ChurchLogic.kneelSpot 형식) + 허벅지 기울기(rad)
-    walkMax: 4.0,                          // setWalk(1) 의 이동 속도(m/s). main.js: setWalk(speed/4.0)
+    walkMax: 2.0,                          // setWalk(1) 의 이동 속도(m/s). main.js: setWalk(speed/2.0) — 성당에서는 뛰지 않는다(2026-11-22)
     sitDur: 1.0, standDur: 0.9,            // 앉기·일어서기 전환 길이(s). 클립이 더 길면 빠르게 재생
     lodEvery: [1, 2, 4],                   // LOD 별 갱신 간격(프레임)
     sharePose: true,                       // LOD2 포즈 공유

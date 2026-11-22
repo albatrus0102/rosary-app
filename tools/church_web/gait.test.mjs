@@ -10,6 +10,8 @@ const require = createRequire(import.meta.url);
 const Logic = require('../../assets/church/scene_logic.js');
 const Stations = require('../../assets/church/stations.js');
 
+const WS = Logic.C.WALK_SPEED;   // 조이스틱 끝까지 = WS m/s (2026-11-22부터 2.0 — 성당에서는 뛰지 않는다)
+const J = (v) => v / WS;          // 원하는 속도(m/s) → 조이스틱 크기
 const SLIP_MAX = 0.05;   // 디딘 발 미끄러짐 / 몸 속도 (고치기 전 0.38~0.56, 배경 신자 5.25)
 const straight = (m, dur = 5) => runScenario(undefined, { dur, step: joyWalker(null, () => ({ x: 0, y: m })) });
 
@@ -22,7 +24,7 @@ test('조이스틱 0.2/0.5/1.0: 디딘 발이 바닥에 붙어 있다(미끄러�
 });
 
 test('보행 자세: 사람 보행 범위(걸음 수·보폭·무릎·팔·몸통·골반·발 폭)', () => {
-  const p = postureStats(straight(0.3), 1.5, 5);   // 1.2 m/s: 보통 걸음
+  const p = postureStats(straight(J(1.2)), 1.5, 5);   // 1.2 m/s: 보통 걸음
   assert.ok(p.cadence > 95 && p.cadence < 120, 'cadence/min ' + p.cadence);
   assert.ok(p.strideOverH > 0.7 && p.strideOverH < 0.9, 'stride/height ' + p.strideOverH);
   assert.ok(p.kneeSwingMax > 55 && p.kneeSwingMax < 78, 'swing knee ' + p.kneeSwingMax);
@@ -36,7 +38,7 @@ test('보행 자세: 사람 보행 범위(걸음 수·보폭·무릎·팔·몸�
   assert.ok(p.bob > 0.015 && p.bob < 0.06, 'hip bob ' + p.bob);
   assert.ok(p.minFootY > -0.025, 'feet do not sink ' + p.minFootY);
   // 느리면 보폭도 짧고 걸음도 느리다
-  const slow = postureStats(straight(0.2), 1.5, 5), fast = postureStats(straight(0.5), 1.5, 5);
+  const slow = postureStats(straight(J(0.8)), 1.5, 5), fast = postureStats(straight(J(2.0)), 1.5, 5);
   assert.ok(slow.stepLen < p.stepLen && p.stepLen < fast.stepLen, 'stride grows with speed');
   assert.ok(slow.cadence < p.cadence && p.cadence < fast.cadence, 'cadence grows with speed');
 });
@@ -47,7 +49,7 @@ test('출발·정지: 약 0.3초에 걸쳐 걷기 시작하고, 멈추면 발을
   assert.ok(slipStats(fr, 2, 3.5).ratio < SLIP_MAX, 'stop slip');
   // 몸(main.js 관성)은 약 0.25초에 거의 다 빨라지고, 다리는 실제 이동을 따라 같은 시각에 빨라진다(입력이 아니라 이동량)
   const at = (t) => fr.find((f) => f.t >= t);
-  assert.ok(at(0.03).bodyV < 0.5 * 4 && at(0.3).bodyV > 0.9 * 4, 'body ramp');
+  assert.ok(at(0.03).bodyV < 0.5 * WS && at(0.3).bodyV > 0.9 * WS, 'body ramp');
   const legs = runScenario(undefined, { dur: 0.6, step: joyWalker(null, () => ({ x: 0, y: 1 })) });
   const strikes = postureStats(legs, 0, 0.6).cadence * 0.6 / 60;
   assert.ok(strikes >= 1, 'first step within 0.6 s');
@@ -67,7 +69,7 @@ test('제자리에서 돌면 발을 디뎌 따라 돈다(바닥에서 발을 비
 
 test('다른 사람(0.1초 간격 위치 보간)과 배경 신자(0.8 m/s)도 발이 미끄러지지 않는다', () => {
   for (const m of [0.3, 1.0]) {
-    const fr = runScenario(undefined, { dur: 5, step: remoteWalker(() => ({ x: 0, y: m }), (sp) => (sp > 0.12 ? Math.min(1, sp / 4) : 0)) });
+    const fr = runScenario(undefined, { dur: 5, step: remoteWalker(() => ({ x: 0, y: m }), (sp) => (sp > 0.12 ? Math.min(1, sp / WS) : 0)) });
     assert.ok(slipStats(fr, 1.5, 5).ratio < SLIP_MAX, 'remote ' + m);
   }
   // 입력(setWalk)이 실제와 달라도(옛 배경 신자는 setWalk(1)) 다리는 실제 이동을 따른다
@@ -85,7 +87,7 @@ for (const c of churches) {
   test(`${c.id}(축척 ${c.layout.scalePercent || 100}%): 벽에 막히면 다리가 멈추고, 벽을 따라·자동 걷기도 미끄러지지 않는다`, () => {
     const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }), S = Stations.create(L);
     const base = { x0: c.layout.spawn.x, z0: c.layout.spawn.z, yaw0: 0 };
-    const push = runScenario(undefined, { ...base, dur: 12, step: joyWalker(L, () => ({ x: 1, y: 0 })) });
+    const push = runScenario(undefined, { ...base, dur: 24, step: joyWalker(L, () => ({ x: 1, y: 0 })) });
     let tb = -1;
     for (let i = 0, run = 0; i < push.length; i++) { run = push[i].bodyV < 0.05 ? run + push[i].dt : 0; if (run > 0.5) { tb = push[i].t; break; } }
     assert.ok(tb > 0, 'reached a wall');
@@ -102,8 +104,8 @@ for (const c of churches) {
 
 test('glb 걷기 클립: 실제 속도로 재생(느린 걸음에서 발이 몸보다 빨리 돌지 않는다)', () => {
   const Glb = loadAvatar().Glb;
-  for (const m of [0.1, 0.2, 0.3, 0.5]) {
-    const fr = straight(m);
+  for (const v of [0.4, 0.8, 1.2, 2.0]) {
+    const m = J(v), fr = straight(m);
     assert.ok(glbSlip(fr, { from: 1.5, to: 5, Glb }).ratio < 0.02, 'glb ' + m);
     assert.ok(glbSlip(fr, { from: 1.5, to: 5, Glb, old: true }).ratio > glbSlip(fr, { from: 1.5, to: 5, Glb }).ratio - 1e-9);
   }
