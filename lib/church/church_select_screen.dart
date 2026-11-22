@@ -4,7 +4,9 @@ import '../app/theme.dart';
 import '../app/release_gate.dart';
 import '../app/settings.dart';
 import '../app/window_class.dart';
+import '../stats/text_fit.dart';
 import 'church_catalog.dart';
+import 'church_constants.dart' show virtualChurchNote;
 import 'net/church_loads.dart';
 
 /// 정렬 기준.
@@ -621,6 +623,10 @@ class _ChurchCard extends StatelessWidget {
                         ),
                       ),
                     Align(
+                      alignment: Alignment.topLeft,
+                      child: _VirtualBadge(key: ValueKey('virtual-${info.id}')),
+                    ),
+                    Align(
                       alignment: Alignment.topRight,
                       child: Padding(
                         padding: const EdgeInsets.all(4),
@@ -711,6 +717,65 @@ class _ChurchCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// 카드 그림 왼쪽 위의 「가상」 표시. 누르면 앱 속 성당이 가상 공간임을 한 줄로 알려 준다.
+/// 보이는 알약은 작지만 누르는 자리는 48dp 이상이다.
+class _VirtualBadge extends StatelessWidget {
+  const _VirtualBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Semantics(
+      button: true,
+      label: '가상 성당',
+      hint: virtualChurchNote,
+      excludeSemantics: true,
+      onTap: () => _show(context),
+      child: InkWell(
+        onTap: () => _show(context),
+        borderRadius: BorderRadius.circular(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          child: Center(
+            widthFactor: 1,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.inverseSurface.withValues(alpha: 0.85),
+                borderRadius: AppShape.large,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                child: Text(
+                  '가상',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: scheme.onInverseSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _show(BuildContext context) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          key: const ValueKey('virtual-note'),
+          content: Text(keepAll(virtualChurchNote)),
+          duration: const Duration(seconds: 6),
+          showCloseIcon: true,
+        ),
+      );
   }
 }
 

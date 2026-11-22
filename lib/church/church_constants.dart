@@ -6,6 +6,10 @@ import 'baptismal_names_data.dart';
 export 'baptismal_names_data.dart'
     show baptismalNameCount, defaultBaptismalNameIndex;
 
+/// 앱 속 성당이 가상의 공간임을 밝히는 한 줄(앱 소개·성당 고르기 공용).
+const String virtualChurchNote =
+    '앱 속 성당은 실제 성당을 본떠 새로 지은 가상의 공간이에요. 실제와 다른 곳이 있어요.';
+
 /// 서버 설정. [serverUrl]이 빈 문자열이면 혼자 모드만 동작한다.
 ///
 /// 배포 후 빌드 시 `--dart-define=CHURCH_SERVER_URL=wss://host/ws` 로 주입하거나

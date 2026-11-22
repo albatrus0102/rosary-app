@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/settings.dart';
 import '../../app/track.dart';
+import '../church_constants.dart';
 import 'avatar_config.dart';
 import 'avatar_pickers.dart';
 import 'avatar_preview.dart';
@@ -33,8 +34,25 @@ class AvatarEditorScreen extends StatefulWidget {
 class _AvatarEditorScreenState extends State<AvatarEditorScreen> {
   late final Random _random = widget.random ?? Random();
   late AvatarConfig _config = widget.firstEntry
-      ? AvatarConfig.randomStart(_random)
+      ? _firstEntryStart()
       : widget.settings.churchAvatar;
+
+  /// 첫 입장 모습. 앱 소개에서 세례명을 미리 골랐다면 그 이름을 그대로 두고(이름이 흔한 여성·남성
+  /// 이름이면 성별도 맞춘다), 나머지는 무작위로 미리 골라 둔다.
+  AvatarConfig _firstEntryStart() {
+    final start = AvatarConfig.randomStart(_random);
+    if (!widget.settings.churchNameChosen) return start;
+    final name = widget.settings.churchAvatar.name;
+    var gender = start.gender;
+    if (commonBaptismalIndicesFor(avatarFemale).contains(name) &&
+        !commonBaptismalIndicesFor(avatarMale).contains(name)) {
+      gender = avatarFemale;
+    } else if (commonBaptismalIndicesFor(avatarMale).contains(name) &&
+        !commonBaptismalIndicesFor(avatarFemale).contains(name)) {
+      gender = avatarMale;
+    }
+    return start.withGender(gender).copyWith(name: name);
+  }
 
   void _update(AvatarConfig next) => setState(() => _config = next);
 
