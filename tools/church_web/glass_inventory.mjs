@@ -93,6 +93,12 @@ const REAL = {
   stpaul() { return R('alabaster', '설화석고 판(1891 폭발로 색유리 소실 뒤)', '', PLAN + ' §6.3'); },
   basic() { return R('virtual', '가상의 본당(실제 창 없음) — 창작 무늬', '', PLAN + ' §7'); },
   danggogae() { return R('hanji', '한지 유리화 빛 상자(작가 미확인, 2011)', '2011', 'interiors/danggogae.md §6.4'); },
+  assisi(o) {
+    if (o.key === 'rose') return R('stained', '파사드 이중 장미창(13세기, 코스마테스크) — 안쪽 유리', '13세기', 'interiors/assisi.md §2-4');
+    if (/^apse_/.test(o.key)) return R('stained', '후진 2연창(구·신약 대응, 1253년 무렵 독일 장인 — 공유 저작물이나 추상으로 둠)', '1253년 무렵', 'interiors/assisi.md §2-5');
+    if (/^trans/.test(o.key)) return R('stained', '트란셉트 4연창(13세기 후반) — 모형은 큰 창 하나', '13세기 후반', 'interiors/assisi.md §2-5');
+    return R('stained', '신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)', '1270–1291', 'interiors/assisi.md §2-5');
+  },
   yeouido(o) {
     if (/^front/.test(o.key)) return R('stained_protected', '정면 키 큰 현대 색유리(작가 미확인)', '현대', 'interiors/yeouido.md §4.1');
     if (/^lobbyGlass/.test(o.key)) return R('stained_protected', '로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가)', '2024', 'interiors/yeouido.md §4.1');
@@ -132,7 +138,7 @@ function modelOf(o, church) {
 
 export function inventory(opts = {}) {
   const out = {};
-  const ids = opts.ids || ['basic', 'stpeter', 'lateran', 'maggiore', 'stpaul', 'milan', 'florence', 'myeongdong', 'danggogae', 'yeouido'];
+  const ids = opts.ids || ['basic', 'stpeter', 'lateran', 'maggiore', 'stpaul', 'milan', 'florence', 'myeongdong', 'danggogae', 'yeouido', 'assisi'];
   for (const id of ids) {
     let rows = [];
     if (id === 'milan') {

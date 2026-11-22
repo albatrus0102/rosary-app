@@ -25,11 +25,12 @@ for (const lay of layouts) {
   test(`layout ${lay.id}: spawn is not inside a seat band, corridor in front of each seat is free`, () => {
     const L = Logic.create(lay, {});
     const p = { x: lay.spawn.x, z: lay.spawn.z };
-    assert.equal(L.moveCircle(p, 0, 0), false, 'spawn collides');
+    // 여러 층(layout.levels): 스폰·좌석 앞 자리는 그 층의 높이에서 잰다(다른 층의 줄 띠·벽은 그 층 사람을 막지 않는다). 한 층은 y 를 무시한다
+    assert.equal(L.moveCircle(p, 0, 0, undefined, L.multi ? L.floorY(p.x, p.z, lay.spawn.y) : undefined), false, 'spawn collides');
     for (const s of L.seats) {
       const sp = L.standPos(s.id);
       const q = { x: sp.x, z: sp.z };
-      assert.equal(L.moveCircle(q, 0, 0), false, 'stand pos blocked for ' + s.id);
+      assert.equal(L.moveCircle(q, 0, 0, undefined, L.multi ? L.seatFloor(s.id) : undefined), false, 'stand pos blocked for ' + s.id);
     }
   });
 }

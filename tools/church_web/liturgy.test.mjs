@@ -56,7 +56,7 @@ test('normalize: 모르는 값은 안전한 기본값으로', () => {
 
 test('모든 성당에 장식 자리 표가 있다', () => {
   for (const c of churches) assert.ok(Liturgy.PLACES[c.id], c.id + ': PLACES 에 없음');
-  assert.equal(churches.length, 10);
+  assert.equal(churches.length, 11);
 });
 
 test('시기별 장식 구성', () => {
@@ -87,7 +87,9 @@ for (const c of churches) {
     const { L, S } = mk(c);
     const st = S.stations(), sp = c.layout.spawn;
     const cr = cross(c, L, S);
-    assert.equal(cr.plaques.length, 14);
+    assert.equal(cr.plaques.length, c.layout.crossWay && c.layout.crossWay.none ? 0 : 14);   // 아시시: 14처를 걸지 않는다(crossWay.none)
+    // 여러 층 성당: 장식은 제단 층에 있다 — 다른 층(아래 하부 성당·묘소)의 자리·좌석·길은 견주지 않는다. 한 층 성당은 모두 견준다
+    const ay = Liturgy.PLACES[c.id].altar.y, onLv = (y) => !L.multi || y === undefined || Math.abs(y - ay) < 1.0;
     // 걷는 길(장식을 모르는 격자로 찾은 경로): 입구·제대 앞에서 모든 스테이션과 좌석 표본으로
     const targets = [st.altar, ...st.candle, ...st.font, ...cr.plaques.map((p) => p.stand)];
     const seatIds = L.seatIds.filter((_, i) => i % Math.max(1, Math.floor(L.seatIds.length / 14)) === 0);
@@ -108,15 +110,16 @@ for (const c of churches) {
         // 스테이션: 서는 자리에서 넉넉히 떨어진다
         assert.ok(distTo(col, sp.x, sp.z) > 2, tag + ' 입구');
         assert.ok(distTo(col, st.altar.x, st.altar.z) > R + 0.45, tag + ' 제대 앞 ' + distTo(col, st.altar.x, st.altar.z).toFixed(2));
-        for (const k of st.candle) { assert.ok(distTo(col, k.x, k.z) > 1.0, tag + ' 촛불 봉헌 자리'); assert.ok(distTo(col, k.stand.x, k.stand.z) > 1.5, tag + ' 촛불 봉헌대'); }
-        for (const f of st.font) assert.ok(distTo(col, f.x, f.z) > 1.0, tag + ' 성수대');
+        for (const k of st.candle) { if (!onLv(k.y)) continue; assert.ok(distTo(col, k.x, k.z) > 1.0, tag + ' 촛불 봉헌 자리'); assert.ok(distTo(col, k.stand.x, k.stand.z) > 1.5, tag + ' 촛불 봉헌대'); }
+        for (const f of st.font) if (onLv(f.y)) assert.ok(distTo(col, f.x, f.z) > 1.0, tag + ' 성수대');
         for (const p of cr.plaques) assert.ok(distTo(col, p.stand.x, p.stand.z) > R + 0.4, tag + ` ${p.n}처 서는 자리`);
         // 좌석·무릎틀
-        for (const s of L.seats) assert.ok(distTo(col, s.x, s.z) > 0.9, tag + ' 좌석 ' + s.id);
+        for (const s of L.seats) if (onLv(L.multi ? L.seatFloor(s.id) : undefined)) assert.ok(distTo(col, s.x, s.z) > 0.9, tag + ' 좌석 ' + s.id);
         // 걷는 길
         for (const p of paths) {
           for (let i = 1; i < p.pts.length; i++) {
             const a = p.pts[i - 1], b = p.pts[i], n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 0.15));
+            if (!onLv(a.y) && !onLv(b.y)) continue;   // 여러 층: 다른 층의 길 토막
             for (let q = 0; q <= n; q++) {
               const x = a.x + (b.x - a.x) * q / n, z = a.z + (b.z - a.z) * q / n;
               assert.ok(distTo(col, x, z) > R, tag + ` 걷는 길을 막음 (${x.toFixed(2)}, ${z.toFixed(2)})`);

@@ -56,6 +56,8 @@
     // 여의도동 로비 무지개 모티프 색유리 자리(작가 미확인): 사진의 색 분위기(위 파랑, 초록·노랑·주황, 맑은 칸)만 — 무지개 띠·구도는 옮기지 않는다
     abs_yeouido_lobby: { ground: [0x2f62b4, 0x4a8fd6, 0x7cb6e4, 0x3f8a54, 0x6aa84a, 0xe2b640, 0xe08a3a, 0xeef1f0, 0x2a58a8, 0xd8e6ea], ground2: [0x1d3c86], border: [0x2a4f8a], robe: [], gold: 0xe2b640, white: 0xeef1f0, accent: [] },
     abs_yeouido: { ground: [0x2f62b4, 0x4a8fd6, 0x1d3c86, 0x7cb6e4, 0x2a58a8, 0xeef1f4, 0x3a70c0, 0xc83a4a, 0x2f62b4, 0x5a9ad8, 0xe7a0b8, 0x1d3c86], ground2: [0x1d3c86], border: [0x1d3c86], robe: [], gold: 0xe7a0b8, white: 0xeef1f4, accent: [] },
+    // 아시시 상부 성당(13세기 창 자리, assisi.md §4): 코발트 바탕 + 루비 테두리 + 초록·금·흰 조각. 인물 없는 추상 모자이크
+    assisi13: { ground: [0x1c3c96, 0x22469f, 0x1a378a], ground2: [0xa31f2a, 0xb02a33], border: [0xa8222c, 0xd9a23a, 0x2f7d5b], robe: [0xa8222c, 0x2a56b8, 0x2f7d5b, 0xd9a23a, 0xe6dcc0, 0x6a3a86, 0xc8602a], gold: 0xd9a23a, white: 0xe6dcc0, accent: [0x2f7d5b, 0xd9a23a] },
     // 우리 본당(가상): 한국 현대 본당 풍 — 색면 + 단순한 상징(창작)
     parish: { ground: [0x2a62b4, 0x3f82cc, 0x23887a, 0xd9a43a, 0x2a62b4, 0xb8383f, 0x76489f, 0x3f82cc, 0xd8d4c4], ground2: [0x1c3f8a], border: [0xd9a43a], robe: [], gold: 0xe9b83e, white: 0xf3efe0, accent: [0xc0393f] }
   };
@@ -86,7 +88,8 @@
     marian_abstract: { pal: 'abs_marian', body: 'abstract', head: 'abstract', disc: 'abstract', variants: 1, era: '저작권 존속 장미창 자리: 추상 방사 색면' },
     yeouido_abstract: { pal: 'abs_yeouido', body: 'abstract', head: 'abstract', disc: 'abstract', variants: 2, era: '현대 추상 색면(원작 구도 없음)' },
     yeouido_lobby: { pal: 'abs_yeouido_lobby', body: 'abstract', head: 'abstract', disc: 'abstract', variants: 2, era: '현대 추상 색면(로비 색유리 벽 자리, 원작 구도 없음)' },
-    parish: { pal: 'parish', body: 'parish', head: 'parish', disc: 'parish', variants: 5, era: '가상 본당 창작(색면 + 단순 상징)' }
+    parish: { pal: 'parish', body: 'parish', head: 'parish', disc: 'parish', variants: 5, era: '가상 본당 창작(색면 + 단순 상징)' },
+    assisi_medieval: { pal: 'assisi13', body: 'mosaic13', head: 'mosaic13', disc: 'rose', variants: 2, era: '13세기풍 추상 색 모자이크(인물 없음 — 실제 창의 구도·인물을 옮기지 않음)' }
   };
   var SIZE = { body: [1, 2], head: [1, 1], disc: [2, 2] };
   function has(id) { return !!STYLES[id]; }
@@ -449,6 +452,28 @@
     abstractField(P, [[0, 0], [1, 0], [1, 2], [0, 2]], v, 1.6);
     P.lead(function (g2) { g2.moveTo(0, 0); g2.lineTo(1, 0); g2.moveTo(0, 2); g2.lineTo(1, 2); }, P.lw * 2.2); P.flushLeads();
   };
+  // 13세기풍 추상 모자이크(아시시): 테두리 띠 + 바탕 + 원형 메달리온 2개(안은 잘게 자른 색 조각 — 인물·장면 없음) + 사이 마름모
+  function mosaicDisc(P, cx, cy, R, v, rimCol) {
+    var r = P.r, pal = P.pal, poly = [], out = [], k;
+    P.piece(P_circ(cx, cy, R + 0.04), rimCol, {});
+    for (k = 0; k < 20; k++) { var a = k * TAU / 20; poly.push([cx + Math.cos(a) * R, cy + Math.sin(a) * R]); }
+    cutPieces(r, poly, 5, out, 0.006);
+    for (k = 0; k < out.length; k++) { var q = out[k]; P.piece(P_poly(q), pal.robe[Math.floor(r() * pal.robe.length)], { bb: bbOf(q) }); }
+    P.piece(P_circ(cx, cy, R * 0.18), pal.gold, { flat: true });
+    P.flushLeads();
+  }
+  BODY.mosaic13 = function (P, v) {
+    var pal = P.pal, bw = 0.1;
+    borderStrip(P, 0, bw, 0, 2, 0.12, [pal.border[0], pal.border[1]], false);
+    borderStrip(P, 1 - bw, 1, 0, 2, 0.12, [pal.border[0], pal.border[1]], false);
+    P.piece(P_rect(bw, 0, 1 - bw, 2), pal.ground[v % pal.ground.length], { bb: [bw, 0, 1 - bw, 2] });
+    P.flushLeads();
+    mosaicDisc(P, 0.5, 0.5, 0.3, v, pal.border[0]);
+    mosaicDisc(P, 0.5, 1.5, 0.3, v + 1, pal.border[(v + 1) % 2 ? 1 : 0]);
+    [[0.5, 1.0], [0.5, 0.0], [0.5, 2.0]].forEach(function (c) { var d = c[1] === 1 ? 0.12 : 0.08; P.piece(P_poly([[c[0], c[1] - d], [c[0] + d, c[1]], [c[0], c[1] + d], [c[0] - d, c[1]]]), pal.gold, {}); });
+    P.flushLeads();
+    P.lead(function (g2) { g2.moveTo(0, 0); g2.lineTo(1, 0); g2.moveTo(0, 2); g2.lineTo(1, 2); g2.moveTo(bw, 1); g2.lineTo(0.36, 1); g2.moveTo(0.64, 1); g2.lineTo(1 - bw, 1); }, P.lw * 2.2); P.flushLeads();
+  };
   // 우리 본당(가상): 색면 + 가운데 단순한 상징 하나(십자가·비둘기·잔·장미·별)
   function symbol(P, kind, cx, cy, R) {
     var pal = P.pal, wh = pal.white, gold = pal.gold;
@@ -491,6 +516,13 @@
   };
   HEAD.abstract = function (P, v) { abstractField(P, [[0, 0], [1, 0], [1, 1], [0, 1]], v + 3, 1.0); };
   HEAD.parish = function (P, v) { abstractField(P, [[0, 0], [1, 0], [1, 1], [0, 1]], v + 3, 1.0); P.piece(P_circ(0.5, 0.6, 0.22), P.pal.ground2[0], {}); P.flushLeads(); symbol(P, v % 5, 0.5, 0.6, 0.19); };
+  HEAD.mosaic13 = function (P, v) {
+    var pal = P.pal;
+    P.piece(P_rect(0, 0, 1, 1), pal.ground[v % pal.ground.length], { bb: [0, 0, 1, 1] });
+    P.flushLeads();
+    mosaicDisc(P, 0.5, 0.62, 0.22, v + 3, pal.border[1]);
+    P.lead(function (g2) { g2.moveTo(0, 1); g2.lineTo(1, 1); }, P.lw * 2.2); P.flushLeads();
+  };
   HEAD.ornament = function (P, v) {
     var pal = P.pal;
     P.piece(P_rect(0, 0, 1, 1), pal.ground[v % pal.ground.length], { bb: [0, 0, 1, 1] });

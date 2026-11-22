@@ -68,6 +68,34 @@ void main() {
       },
     );
 
+    testWidgets(
+      'a multi-level church (Assisi) gets one row per level → walkTo level index',
+      (tester) async {
+        final h = await pumpChurch(tester, size: const Size(360, 640));
+        final ev = SceneEvent.parse(
+          '{"e":"stations","candle":3,"altar":1,"font":2,"levels":["상부 성당","하부 성당","지하 묘소(성 프란치스코 무덤)"]}',
+        )! as SceneStations;
+        expect(ev.levels, ['상부 성당', '하부 성당', '지하 묘소(성 프란치스코 무덤)']);
+        expect(
+          (SceneEvent.parse('{"e":"stations","candle":1,"altar":1}')!
+                  as SceneStations)
+              .levels,
+          isEmpty,
+          reason: '한 층 성당은 층 줄이 없다',
+        );
+        h.scene.emit(ev);
+        await tester.pump();
+        await tester.tap(_goButton);
+        await _settle(tester);
+        expect(find.text('하부 성당'), findsOneWidget);
+        expect(find.byKey(const ValueKey('go-level-2')), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('go-level-1')));
+        await _settle(tester);
+        expect(h.scene.argsOf('walkTo').last, {'kind': 'level', 'index': 1});
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('shrineLabel renames the 성모상 row (Maggiore icon)', (
       tester,
     ) async {

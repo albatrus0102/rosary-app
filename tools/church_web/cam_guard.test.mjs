@@ -18,7 +18,10 @@ function setup(c) {
   const S = c.ctx._, B = c.layout.bounds, cb0 = S.cameraBounds || {};
   const cb = { x0: cb0.x0 ?? B.x0, x1: cb0.x1 ?? B.x1, z0: cb0.z0 ?? B.z0, z1: cb0.z1 ?? B.z1, yMax: cb0.yMax || 9 };
   const sp = c.layout.spawn || { x: 0, z: 0 };
-  const guard = Guard.build(c.ctx.root, { bounds: cb, yLow: (L.floorY(sp.x, sp.z) || 0) + 1.05, see: false, ...Guard.spaceOpts(L, c.layout, c.zones) });
+  // 여러 층 성당(scene_logic levels): world.js 와 같은 선택 — 기준 = 맨 아래층 바닥, 삼각형마다 그 층 바닥, 공간은 카메라 상자 yMax 까지
+  const so = Guard.spaceOpts(L, c.layout, c.zones), multi = L.multi && so.levelLow !== undefined;
+  if (multi) so.spaceTop = cb.yMax;
+  const guard = Guard.build(c.ctx.root, { bounds: cb, yLow: (multi ? so.levelLow : (L.floorY(sp.x, sp.z) || 0)) + 1.05, see: false, ...so });
   const probe = Guard.build(c.ctx.root, { bounds: { x0: cb.x0 - 20, x1: cb.x1 + 20, z0: cb.z0 - 20, z1: cb.z1 + 20 }, minArea: 0, see: false, space: false });
   return { L, cb, guard, probe };
 }
@@ -55,9 +58,11 @@ function outside(probe, p) {
 
 function sweep(c, env, useGuard) {
   const { L } = env, B = c.layout.bounds; let bad = 0, n = 0, hug = 0, fp = 0, pas = 0; const ex = [];
-  for (let x = B.x0 + 0.6; x < B.x1; x += 2.2) for (let z = B.z0 + 0.6; z < B.z1; z += 2.2) {
-    const p = { x, z }; if (L.moveCircle(p, 0, 0)) continue;
-    const me = { x, z, y: L.floorY(x, z) || 0 };
+  // 여러 층 성당은 그 자리의 바닥마다(같은 xz 의 하부 성당·묘소도) 잰다. 한 층은 바닥 하나(예전과 같다)
+  for (let x = B.x0 + 0.6; x < B.x1; x += 2.2) for (let z = B.z0 + 0.6; z < B.z1; z += 2.2) for (const fl of (L.multi ? L.floorsAt(x, z) : [null])) {
+    if (fl !== null && L.floorY(x, z, fl) !== fl) continue;
+    const p = { x, z }; if (L.moveCircle(p, 0, 0, undefined, fl === null ? undefined : fl)) continue;
+    const me = { x, z, y: fl === null ? (L.floorY(x, z) || 0) : fl };
     if (outside(env.probe, [x, me.y + 1.0, z])) continue;   // 머리부터 바깥(입구 앞 마당 등)은 제외
     if (env.guard.space.solid(x, me.y + 1.5, z) || env.guard.space.solid(x, me.y + 1.0, z)) continue;   // 걷는 곳이 벽 두께 안(모델 틈): 카메라 문제가 아니다
     for (const zoom of [1, 1.6]) for (let k = 0; k < 12; k++) for (const pitch of [0.06, 0.45]) {

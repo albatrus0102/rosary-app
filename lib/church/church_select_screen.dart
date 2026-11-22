@@ -27,6 +27,7 @@ const Map<String, String> churchStyleById = {
   'stpaul': '근대',
   'milan': '고딕',
   'florence': '고딕',
+  'assisi': '고딕',
   'myeongdong': '고딕',
   'danggogae': '근대',
   'yeouido': '근대',

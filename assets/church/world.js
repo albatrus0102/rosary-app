@@ -210,7 +210,8 @@
     var beamList = [], SHEETS = low ? 1 : 3;
     S.beams.forEach(function (b, bi) {
       var n = b.face, nl = Math.sqrt(n[0] * n[0] + n[1] * n[1]) || 1;
-      beamList.push({ b: b, nx: n[0] / nl, nz: n[1] / nl, bi: bi, colors: (b.colors && b.colors.length ? b.colors : [0xfff1c0]).map(function (c) { return G.toColor(c).clone(); }) });
+      // fb: 빛무늬가 닿는 바닥 높이 — 여러 층 성당은 창 안쪽 1.5m 의 맨 위 바닥(창이 있는 층), 한 층은 0(예전 그대로)
+      beamList.push({ b: b, nx: n[0] / nl, nz: n[1] / nl, bi: bi, fb: logic.multi ? logic.floorY(b.x + n[0] / nl * 1.5, b.z + n[1] / nl * 1.5) : 0, colors: (b.colors && b.colors.length ? b.colors : [0xfff1c0]).map(function (c) { return G.toColor(c).clone(); }) });
     });
     var nB = beamList.length;
     var bpArr = new Float32Array(nB * SHEETS * 18), bcArr = new Float32Array(nB * SHEETS * 18), buArr = new Float32Array(nB * SHEETS * 12);
@@ -242,8 +243,8 @@
           vis = (dy < -0.02 && !env.moon) ? Math.max(0, Math.min(1, (cosI - 0.08) * 2.4)) * env.beam : 0;
         }
         var hz = Math.sqrt(dx * dx + dz * dz) || 1e-3, sa2 = Math.max(0.05, -dy), reach = b.reach || 12, w = b.w, hh = b.h;
-        var topY = b.y + hh / 2, botY = Math.max(0.3, b.y - hh / 2);
-        var LT = Math.min(topY / sa2, reach / hz), LB = Math.min(botY / sa2, reach / hz);
+        var fb0 = e.fb || 0, topY = b.y + hh / 2, botY = Math.max(fb0 + 0.3, b.y - hh / 2);
+        var LT = Math.min((topY - fb0) / sa2, reach / hz), LB = Math.min((botY - fb0) / sa2, reach / hz);
         var colors = e.colors;
         for (var s = 0; s < SHEETS; s++) {
           var off = SHEETS === 1 ? 0 : (s - (SHEETS - 1) / 2) * w * 0.4;
@@ -258,9 +259,9 @@
             bcArr[o + q * 3] = col.r * 0.75 * vis; bcArr[o + q * 3 + 1] = col.g * 0.75 * vis; bcArr[o + q * 3 + 2] = col.b * 0.75 * vis;
           }
           if (s === (SHEETS === 1 ? 0 : 1)) {
-            var po = bi * 18, hw = w * 0.5, fy = floorY0 + 0.03;
+            var po = bi * 18, hw = w * 0.5, fy = floorY0 + fb0 + 0.03;
             var pcol = colors[(bi + 1) % colors.length];
-            var floorHit = (LB >= botY / sa2 - 1e-3 && LT >= topY / sa2 - 1e-3);
+            var floorHit = (LB >= (botY - fb0) / sa2 - 1e-3 && LT >= (topY - fb0) / sa2 - 1e-3);
             var f2 = floorHit ? vis : 0;
             var Q6 = [[B1[0] - ux * hw, fy, B1[2] - uz * hw], [B1[0] + ux * hw, fy, B1[2] + uz * hw], [T1[0] + ux * hw, fy, T1[2] + uz * hw], [B1[0] - ux * hw, fy, B1[2] - uz * hw], [T1[0] + ux * hw, fy, T1[2] + uz * hw], [T1[0] - ux * hw, fy, T1[2] - uz * hw]];
             for (q = 0; q < 6; q++) {

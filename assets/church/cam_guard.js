@@ -40,7 +40,8 @@
         var mxY = Math.max(v[1], v[4], v[7]);
         var mnx = Math.min(v[0], v[3], v[6]), mxx = Math.max(v[0], v[3], v[6]), mnz = Math.min(v[2], v[5], v[8]), mxz = Math.max(v[2], v[5], v[8]);
         var lb = LB ? LB((mnx + mxx) * 0.5, (mnz + mxz) * 0.5, Math.min(v[1], v[4], v[7])) : fy0;
-        if (hasLow && mxY < lb + 0.12) continue;   // 바닥 높이의 것(바닥 판·깔개·장식 띠)
+        // 바닥 높이의 것(바닥 판·깔개·장식 띠)은 뺀다. 여러 층에서 맨 아래층보다 높은 층의 바닥 판은 아래층의 천장이자 층 사이 칸막이라 남긴다(바닥이라 지우지는 않는다)
+        if (hasLow && mxY < lb + 0.12 && !(LB && lb > fy0 + 0.12)) continue;
         if (mxx < bx0 || mnx > bx1 || mxz < bz0 || mnz > bz1) continue;
         var ax = v[3] - v[0], ay = v[4] - v[1], az = v[5] - v[2], cx = v[6] - v[0], cy = v[7] - v[1], cz = v[8] - v[2];
         var nx = ay * cz - az * cy, ny = az * cx - ax * cz, nz = ax * cy - ay * cx, nl = Math.sqrt(nx * nx + ny * ny + nz * nz);
@@ -52,7 +53,10 @@
           flat = mxY < fyAt + 0.2 || mxY < lb + 0.25 ? 1 : 0;
         }
         // 낮은 물체(의자·무릎틀·난간): 카메라를 막지 않는다(카메라는 그 위에 뜬다). 기도 자세에서 가리면 지운다(seeThru 85).
-        if (mxY < (LB ? lb + (yLow - fy0) : yLow)) { if (!flat) lowT.push(mi, i); continue; }
+        if (mxY < (LB ? lb + (yLow - fy0) : yLow)) {
+          if (!flat) lowT.push(mi, i);
+          if (!(LB && flat && lb > fy0 + 0.12)) continue;   // 여러 층: 위층 바닥 판은 낮은 물체가 아니라 층 사이 칸막이(아래층 천장) — 면으로 남긴다
+        }
         tris.push(v[0], v[1], v[2], ax, ay, az, cx, cy, cz); triMesh.push(mi); triI.push(i); triFlat.push(flat); if (LB) triBase.push(lb - fy0);
       }
     });

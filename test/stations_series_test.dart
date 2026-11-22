@@ -82,7 +82,7 @@ void main() {
       const bundled = [
         'basic', 'stpeter', 'lateran', 'maggiore', //
         'stpaul', 'milan', 'florence', 'myeongdong', //
-        'danggogae', 'yeouido',
+        'danggogae', 'yeouido', 'assisi',
       ];
       for (final c in bundled) {
         expect(ChurchCatalog.byId.containsKey(c), isTrue, reason: c);
@@ -108,8 +108,10 @@ void main() {
       // 예외: 여의도동은 번들된 연작이 모두 배정된 뒤에 들어와 기본 연작(푸겔)을 우리 본당과 함께 쓴다
       // (docs/church/interiors/yeouido.md §7).
       // 검수용 빌드에서는 성 베드로도 라테라노와 oreilly 를 함께 쓴다(공유 예외 하나 추가, 개발용 빌드에서는 없음).
+      // 아시시는 14처 판을 걸지 않지만(crossWay.none) 묵상 시트를 위해 기본 연작에 묶는다(docs/church/interiors/assisi.md §6).
       final shared = {
         'yeouido': 'fugel',
+        'assisi': 'fugel',
         if (!ReleaseGate.showAll) 'stpeter': 'oreilly',
       };
       shared.forEach(

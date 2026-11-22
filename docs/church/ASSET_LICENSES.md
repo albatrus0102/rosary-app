@@ -45,6 +45,17 @@
 - 금박(T-17): 금속 묶음(`mats.metal`)에 명암·법선·거칠기만 입힘(색은 성당별 정점 색). 벨벳(T-13): 양탄자 요철(bump) + 전례 천 묶음(`liturgy-cloth`)의 명암. 둘 다 새 draw call 없음.
 - 선별 못 한 것: 무릎틀 쿠션 벨벳(새 묶음 = draw call +1 이라 보류).
 
+## 사용자가 ChatGPT 로 생성한 아시시 질감 (2026-11-22, 프롬프트 번호 T-26~T-28 = [TEXTURE_PROMPTS.md](TEXTURE_PROMPTS.md), 원본 `art/gpt_1122/tex/`)
+외부 라이선스 없음. 이용 권한은 ChatGPT 이용약관(사용자 요금제 약관)에 따른다. 처리: `tools/church_web/tex_ingest_assisi.py`(이음매 점검 → 1024 리사이즈 → 노말·러프니스 유도) → `art/church_tex_src/tex_assisi_*.jpg` → `build_texpack.mjs --church assisi` → **성당 전용 팩 `assets/church/tex_pack_assisi.js`**(공용 tex_pack.js 를 키우지 않는다 — 아시시에 들어갈 때만 쓰인다).
+
+| 파일 | 출처 | 프롬프트 | 처리 | 쓰는 곳 |
+|---|---|---|---|---|
+| tex_assisi_stone(.jpg/_n/_r) | 사용자가 ChatGPT 로 생성, 2026-11-22 | T-26 수바시오 분홍 돌(A·B 중 **A** — 분홍·흰 돌이 섞인 쪽, 이음매 가장자리 차 1.9 < 안쪽 4.3) | 2048 → 1024, 노말·러프니스 유도 | 아시시 벽 돌·기둥·리브·계단·통로 턱 |
+| tex_assisi_vault(.jpg/_n) | 〃 | T-27 파란 별 궁륭(A·B 중 **B** — 이음매 없음, 별이 작아 궁륭 크기에 맞다) | 1254 → 1024, 노말 유도 | 상부 별 궁륭(2·4베이·트란셉트·후진), 하부 신랑·나르텍스·트란셉트 궁륭 |
+| tex_assisi_fresco(.jpg/_n) | 〃 | T-28 빛바랜 민 프레스코 회벽(A·B 중 **A** — 채도가 낮은 황토. B 는 붉은 얼룩이 강함) | 1254 → 1024, 노말 유도 | 벽 회벽, 황토 그림 궁륭(박사·중재자·교차부) 바탕, 전기 띠 바탕 |
+
+용량: JPEG 7장 1244KB → `tex_pack_assisi.js` 1660KB(base64). 전기 28칸 아틀라스·휘장 굽도리·바닥 무늬는 **절차 생성**(사진 없음, 실행 때 캔버스) — 실제 그림(공유 저작물 사진)은 쿠스토디아 허락 뒤 `tex_assisi_cycle.jpg` 한 장을 같은 팩에 넣으면 코드 변경 없이 바뀐다(docs/church/interiors/assisi.md §질감).
+
 ## 환경광 HDRI (assets/church/env_church.js)
 | 파일 | 원본 | 작가 | 라이선스 |
 |---|---|---|---|

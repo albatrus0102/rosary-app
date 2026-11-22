@@ -35,6 +35,11 @@ test('cross_data.js: 14 stations with roman numerals', () => {
 
 const rows = [];
 for (const c of churches) {
+  // 14처 판을 걸지 않는 성당(crossWay.none — 아시시: 실제 벽이 벽화로 덮여 있고 판 자리가 확인되지 않음): 판 없음 + 이유 'none'
+  if (c.layout.crossWay && c.layout.crossWay.none) {
+    test(`way of the cross ${c.id}: none (layout.crossWay.none) — no plaques`, () => { const { r } = derive(c); assert.equal(r.why, 'none'); assert.equal(r.plaques.length, 0); });
+    continue;
+  }
   test(`way of the cross ${c.id}: 14 plaques on walls (or a gallery parapet), free stand spots, walkable loop`, () => {
     const { L, S, r } = derive(c);
     assert.equal(r.why, 'ok', JSON.stringify(r.counts));
@@ -169,7 +174,8 @@ test('series: every church maps to a bundled atlas pack; default is fugel', () =
   }
   // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다. 예외: 여의도동(yeouido)은 번들된 9개 연작이 모두 배정된 뒤에 들어와
   // 기본 연작(푸겔, 우리 본당과 같음)을 함께 쓴다(docs/church/interiors/yeouido.md §7 — 새 자유 라이선스 연작이 오면 바꾼다)
-  const SHARED = { yeouido: 'fugel' };
+  // 아시시(assisi)는 14처 판을 걸지 않지만(crossWay.none) 묵상 시트를 위해 기본 연작에 묶어 둔다(docs/church/interiors/assisi.md §6)
+  const SHARED = { yeouido: 'fugel', assisi: 'fugel' };
   for (const [c, sid] of Object.entries(SHARED)) assert.equal(S.churches[c], sid, c);
   const own = Object.entries(S.churches).filter(([c]) => !SHARED[c]).map(([, sid]) => sid);
   assert.equal(new Set(own).size, own.length);

@@ -237,6 +237,16 @@ Create an equirectangular 360-degree panorama in 2:1 aspect ratio of the interio
 ```
 한국어: 2:1 파노라마, 좌우 이음매 맞게. 가로 2048 이하로만 쓴다(1024×512 도 충분).
 
+### 2-7. 아시시 질감 (T-26~T-28, 2026-11-22 대화에서 받음 — 원본 `art/gpt_1122/tex/`)
+
+| 번호 | 내용 | 받은 판 | 적용(2026-11-22) |
+|---|---|---|---|
+| T-26 | 수바시오 분홍 돌(분홍·흰 석회석 어긋쌓기) | A·B(이음매 없음), C~F(두 장 시트를 자른 것 — 이음매 있음) | **A** → `tex_assisi_stone`(+_n/_r) |
+| T-27 | 파란 바탕 금별 궁륭 | A(이음매 조금), B(이음매 없음) | **B** → `tex_assisi_vault`(+_n) |
+| T-28 | 인물 없는 빛바랜 민 프레스코 회벽 | A·B | **A** → `tex_assisi_fresco`(+_n) |
+
+처리·권리: [ASSET_LICENSES.md](ASSET_LICENSES.md) '아시시 질감', 스크립트 `tools/church_web/tex_ingest_assisi.py`, 성당 전용 팩 `tex_pack_assisi.js`.
+
 ---
 
 ## 3. 한 번에 요청하는 묶음 프롬프트(세션 시작용)

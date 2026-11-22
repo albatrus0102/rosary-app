@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
 const assets = path.resolve(here, '../../assets/church');
 const GEN = require('../../assets/church/glass_gen.js');
-const CHURCHES = ['basic', 'stpeter', 'lateran', 'maggiore', 'stpaul', 'milan', 'florence', 'myeongdong', 'danggogae', 'yeouido'];
+const CHURCHES = ['basic', 'stpeter', 'lateran', 'maggiore', 'stpaul', 'milan', 'florence', 'myeongdong', 'danggogae', 'yeouido', 'assisi'];
 const inv = inventory();
 
 test('inventory: every church is listed and every opening has a real-building entry', () => {

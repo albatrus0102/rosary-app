@@ -172,7 +172,7 @@
     if (o.camera) applyCamCfg(o.camera);
     if (o.ambient !== undefined) { App.ambient = !!o.ambient; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); }
     // 테스트용 URL 초기 자세
-    if (qs.x !== undefined && qs.z !== undefined) { App.me.x = +qs.x; App.me.z = +qs.z; }
+    if (qs.x !== undefined && qs.z !== undefined) { App.me.x = +qs.x; App.me.z = +qs.z; if (App.logic && App.logic.multi) { App.me.fy = App.logic.floorY(App.me.x, App.me.z, qs.y !== undefined ? +qs.y : App.me.fy); App.me.y = App.me.fy; } }   // 여러 층: ?y= 로 층
     if (qs.yaw !== undefined) { App.ctl.yaw = (+qs.yaw) * PI / 180; App.me.yaw = App.ctl.yaw; }
     if (qs.pitch !== undefined) App.ctl.pitch = (+qs.pitch) * PI / 180;
     if (qs.look !== undefined) App.ctl.look = Math.max(0, Math.min(1.35, (+qs.look) * PI / 180 || 0));   // 끌기와 같은 상한(77°): 90° 를 넘기면 시선이 뒤로 뒤집힌다

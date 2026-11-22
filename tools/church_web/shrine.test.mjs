@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 const Places = require('../../assets/church/shrine_places.js');
 const Shrine = require('../../assets/church/shrine.js');
 const { churches, Logic, Stations, WayCross } = loadChurches();
-const READY = ['basic', 'myeongdong', 'lateran', 'stpaul', 'milan', 'danggogae', 'maggiore', 'florence', 'stpeter', 'yeouido'], PENDING = [];
+const READY = ['basic', 'myeongdong', 'lateran', 'stpaul', 'milan', 'danggogae', 'maggiore', 'florence', 'stpeter', 'yeouido', 'assisi'], PENDING = [];
 const by = Object.fromEntries(churches.map((c) => [c.id, c]));
 const rect = (q) => q.r !== undefined && q.x0 === undefined ? { x0: q.x - q.r, x1: q.x + q.r, z0: q.z - q.r, z1: q.z + q.r } : { x0: Math.min(q.x0, q.x1), x1: Math.max(q.x0, q.x1), z0: Math.min(q.z0, q.z1), z1: Math.max(q.z0, q.z1) };
 const overlap = (a, b, e = 0.02) => a.x0 < b.x1 - e && a.x1 > b.x0 + e && a.z0 < b.z1 - e && a.z1 > b.z0 + e;
@@ -37,7 +37,9 @@ for (const id of READY) test(`shrine ${id}: one place, clear, lightable, reachab
   // 충돌체: 자리 충돌체가 들어 있고, 다른 충돌체·좌석 줄과 겹치지 않는다(existing 은 성상 받침과 맞닿기만)
   const own = c.colliders.filter((q) => q.x0 === fp.x0 && q.x1 === fp.x1 && q.z0 === fp.z0 && q.z1 === fp.z1);
   assert.equal(own.length, 1, 'own collider registered once');
-  for (const q of c.colliders) if (q !== own[0]) assert.ok(!overlap(fp, rect(q)), `overlaps collider ${JSON.stringify(q)}`);
+  // 여러 층 성당(자리표 fy): 다른 층의 충돌체(높이 범위가 성상 층과 겹치지 않는 것)는 견주지 않는다
+  const sameLevel = (q) => sh.fy === undefined || q.y0 === undefined || (q.y1 >= sh.fy + 0.15 && q.y0 <= sh.fy + 1.7);
+  for (const q of c.colliders) if (q !== own[0] && sameLevel(q)) assert.ok(!overlap(fp, rect(q)), `overlaps collider ${JSON.stringify(q)}`);
   const L = Logic.create(lay, { colliders: c.colliders, zones: c.zones }), S = Stations.create(L), st = S.stations();
   for (const q of L.bands) assert.ok(!overlap(fp, q), 'overlaps a pew row');
   // 다른 봉헌초 대·14처 판과 떨어져 있다
@@ -55,9 +57,9 @@ for (const id of READY) test(`shrine ${id}: one place, clear, lightable, reachab
   const f = Shrine.face(p), d = (stn.x - p.x) * f[0] + (stn.z - p.z) * f[1], lat = Math.abs((stn.x - p.x) * f[1] - (stn.z - p.z) * f[0]);
   if (p.kind === 'pond') assert.ok(d > 2.6 && d < 3.2 && lat < 0.6, `station in front of the pond (d ${d.toFixed(2)}, lat ${lat.toFixed(2)})`);
   else assert.ok(d > 1.35 && d < 2.0 && lat < 0.6, `station in front of the kneeler (d ${d.toFixed(2)}, lat ${lat.toFixed(2)})`);
-  assert.ok(S.free(stn.x, stn.z) && S.findPath(lay.spawn, stn), 'reachable from spawn');
+  assert.ok(S.free(stn.x, stn.z, stn.y) && S.findPath(lay.spawn, stn), 'reachable from spawn');
   assert.ok(slots.some((s) => Math.hypot(s.x - stn.x, s.z - stn.z) <= 1.8));
-  assert.equal(L.floorY(stn.x, stn.z), sh.y, 'station on the same floor as the shrine');
+  assert.equal(L.floorY(stn.x, stn.z, stn.y), sh.fy === undefined ? sh.y : sh.fy, 'station on the same floor as the shrine');
 });
 
 test('shrine danggogae: 입구 홀 오른쪽 성모상 앞 둥근 연못(지름 1.5m) — 원형 슬롯 18칸이 물 안에 있고 서로 겹치지 않는다', () => {

@@ -59,6 +59,8 @@
 
   function derive(o) {
     var layout = o.layout, logic = o.logic, S = o.stations, N = o.n || 14;
+    // layout.crossWay.none: 그 성당에는 14처 판을 걸지 않는다(아시시 — 실제 벽이 벽화로 덮여 있고 판 자리가 확인되지 않음, assisi.md §6)
+    if (layout.crossWay && layout.crossWay.none) return { plaques: [], why: 'none' };
     var sp = layout.spawn, f = seatAxis(layout), r = { x: -f.z, z: f.x };   // r = 제대를 바라볼 때 오른쪽
     var st = S.stations(), altar = st.altar;
     // 판을 걸 벽 길이는 제대 자리 기준: 제단 출입 금지(reverence.js)로 '제대 앞' 자리가 첫 계단 앞으로 물러나도 벽은 그대로 쓴다

@@ -171,6 +171,23 @@
    "cells": 0,
    "hanjiModel": 0,
    "gaps": 0
+  },
+  "assisi": {
+   "openings": 14,
+   "stained": 14,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 0,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 14,
+   "plainModel": 0,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
   }
  },
  "churches": {
@@ -8871,6 +8888,274 @@
     "model": {
      "release": "plain",
      "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "assisi": [
+   {
+    "key": "rose",
+    "zone": "rose",
+    "shape": "circle",
+    "size": "3.00×3.00",
+    "real": {
+     "kind": "stained",
+     "what": "파사드 이중 장미창(13세기, 코스마테스크) — 안쪽 유리",
+     "era": "13세기",
+     "src": "interiors/assisi.md §2-4"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveN_b1",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveN_b2",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveN_b3",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveN_b4",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveS_b1",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveS_b2",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveS_b3",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveS_b4",
+    "zone": "nave",
+    "shape": "pointed",
+    "size": "1.50×5.10",
+    "real": {
+     "kind": "stained",
+     "what": "신랑 2연창(13세기 말, 프랑스 공방·성 프란치스코의 대가)",
+     "era": "1270–1291",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "transN",
+    "zone": "transept",
+    "shape": "pointed",
+    "size": "2.20×5.18",
+    "real": {
+     "kind": "stained",
+     "what": "트란셉트 4연창(13세기 후반) — 모형은 큰 창 하나",
+     "era": "13세기 후반",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "transS",
+    "zone": "transept",
+    "shape": "pointed",
+    "size": "2.20×5.18",
+    "real": {
+     "kind": "stained",
+     "what": "트란셉트 4연창(13세기 후반) — 모형은 큰 창 하나",
+     "era": "13세기 후반",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_1",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.05×4.16",
+    "real": {
+     "kind": "stained",
+     "what": "후진 2연창(구·신약 대응, 1253년 무렵 독일 장인 — 공유 저작물이나 추상으로 둠)",
+     "era": "1253년 무렵",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_2",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.05×4.16",
+    "real": {
+     "kind": "stained",
+     "what": "후진 2연창(구·신약 대응, 1253년 무렵 독일 장인 — 공유 저작물이나 추상으로 둠)",
+     "era": "1253년 무렵",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_3",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.05×4.16",
+    "real": {
+     "kind": "stained",
+     "what": "후진 2연창(구·신약 대응, 1253년 무렵 독일 장인 — 공유 저작물이나 추상으로 둠)",
+     "era": "1253년 무렵",
+     "src": "interiors/assisi.md §2-5"
+    },
+    "model": {
+     "release": "gen:assisi_medieval",
+     "dev": "gen:assisi_medieval",
      "fallback": null
     },
     "ok": true,

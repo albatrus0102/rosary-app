@@ -328,7 +328,13 @@
     };
 
     // ---- 충돌/바닥/카메라/조명 등록 ----
-    ctx.addCollider = function (c) { S_.colliders.push(c); return c; };
+    ctx.addCollider = function (c) {
+      // 여러 층 성당(scene_logic levels): setColliderRange 로 정한 높이 범위를 높이 없는 충돌체(벽·제대·기둥 등 도우미가 넣는 것 포함)에 붙인다
+      if (S_.colRange && c.y0 === undefined && c.y1 === undefined) c = Object.assign({}, c, { y0: S_.colRange.y0, y1: S_.colRange.y1 });
+      S_.colliders.push(c); return c;
+    };
+    // 여러 층: 이후 높이 없는 충돌체의 높이 범위 {y0,y1}(null 이면 끔 — 모든 층에서 막음). 한 층 성당은 부르지 않는다.
+    ctx.setColliderRange = function (r) { S_.colRange = r ? { y0: r.y0, y1: r.y1 } : null; };
     ctx.floorZone = function (z) { S_.zones.push(z); return z; };
     ctx.setCameraBounds = function (b) { S_.cameraBounds = b; };
     ctx.setSky = function (o) { S_.sky = o || {}; };
@@ -1401,6 +1407,8 @@
       var Lg = root.ChurchLogic, PW = Lg.PEW;
       var bands = Lg.rowBands(lay);
       var seats = Lg.seatsOf(lay);
+      var gY = {};   // 여러 층: 줄 그룹의 바닥 높이(seatGroups[].y). 없으면 0(예전 그대로)
+      (lay.seatGroups || []).forEach(function (G0) { if (G0.y !== undefined) gY[G0.g] = G0.y; });
       var bySR = {};
       for (var i = 0; i < seats.length; i++) { var s = seats[i]; (bySR[s.g + s.row] = bySR[s.g + s.row] || []).push(s); }
       var bb = (useSurf ? surfBatchFor(useSurf) : B_.wood), cb = B_.solid;
@@ -1413,7 +1421,7 @@
         var Bd = bands[b], f = Bd.f, e = Bd.e, yaw = Bd.yaw, front = !!Bd.front;
         var len = Math.sqrt(Math.pow(Bd.end[0] - Bd.start[0], 2) + Math.pow(Bd.end[1] - Bd.start[1], 2));
         var mx = (Bd.start[0] + Bd.end[0]) / 2, mz = (Bd.start[1] + Bd.end[1]) / 2;
-        var y0 = 0;
+        var y0 = gY[Bd.g] || 0;
         // 줄 좌표(a = 줄 방향, u = 제대 쪽) 상자. 밑면 중심 기준. rx > 0 이면 윗단이 뒤(-f)로 눕는다.
         var part = function (batch, color, a, u, y, w, h, d, rx, vary) {
           batch.add(Geo.box(), color, { x: mx + e[0] * a + f[0] * u, y: y0 + y, z: mz + e[1] * a + f[1] * u, ry: yaw, rx: rx || 0, sx: w, sy: h, sz: d, flat: true, vary: vary === undefined ? 0.03 : vary });
@@ -1505,6 +1513,7 @@
       var cols = st.cols || 8, pitch = st.pitch || 0.7, rows = Math.ceil(st.slots / cols);
       var width = cols * pitch + 0.2;
       var step = st.step || 0.35, y0 = st.y0 === undefined ? 0.8 : st.y0, ystep = st.ystep || 0.35;
+      var fy = st.fy || 0;   // 여러 층: 스탠드가 선 층의 바닥 높이(초 칸 높이 y 는 그 바닥에서 잰다)
       var minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9;
       for (var r = 0; r < rows; r++) {
         var rowSlots = slots.filter(function (s) { return s.row === r; });
@@ -1516,16 +1525,18 @@
         var bw = (cols - 1) * pitch + 0.5, depth = step + 0.2;
         var ccx = cx - f[0] * (step / 2 - 0.1), ccz = cz - f[1] * (step / 2 - 0.1);
         var along = Math.abs(f[0]) > 0.5;
-        ctx.box({ x: ccx, y: 0, z: ccz, w: along ? depth : bw, h: yy - 0.07, d: along ? bw : depth, color: wood, mat: 'wood' });
-        ctx.box({ x: ccx, y: yy - 0.07, z: ccz, w: along ? depth + 0.06 : bw + 0.06, h: 0.07, d: along ? bw + 0.06 : depth + 0.06, color: ctx.shade(wood, 1.4), mat: 'wood' });
+        ctx.box({ x: ccx, y: fy, z: ccz, w: along ? depth : bw, h: yy - 0.07, d: along ? bw : depth, color: wood, mat: 'wood' });
+        ctx.box({ x: ccx, y: fy + yy - 0.07, z: ccz, w: along ? depth + 0.06 : bw + 0.06, h: 0.07, d: along ? bw + 0.06 : depth + 0.06, color: ctx.shade(wood, 1.4), mat: 'wood' });
         var hx = (along ? depth : bw) / 2 + 0.05, hz = (along ? bw : depth) / 2 + 0.05;
         minX = Math.min(minX, ccx - hx); maxX = Math.max(maxX, ccx + hx); minZ = Math.min(minZ, ccz - hz); maxZ = Math.max(maxZ, ccz + hz);
       }
       var back = [st.x - f[0] * (step * (rows - 1) + 0.55), st.z - f[1] * (step * (rows - 1) + 0.55)];
       var along2 = Math.abs(f[0]) > 0.5;
-      ctx.box({ x: back[0], y: 0, z: back[1], w: along2 ? 0.2 : width + 0.2, h: y0 + ystep * (rows - 1) + 0.45, d: along2 ? width + 0.2 : 0.2, color: ctx.shade(wood, 0.8), mat: 'wood' });
-      ctx.aoDecal({ x0: minX, x1: maxX, z0: minZ, z1: maxZ, y: 0, pad: 0.3 });
-      ctx.addCollider({ x0: minX, x1: maxX, z0: minZ, z1: maxZ });
+      ctx.box({ x: back[0], y: fy, z: back[1], w: along2 ? 0.2 : width + 0.2, h: y0 + ystep * (rows - 1) + 0.45, d: along2 ? width + 0.2 : 0.2, color: ctx.shade(wood, 0.8), mat: 'wood' });
+      ctx.aoDecal({ x0: minX, x1: maxX, z0: minZ, z1: maxZ, y: fy, pad: 0.3 });
+      var stc = { x0: minX, x1: maxX, z0: minZ, z1: maxZ };
+      if (st.fy !== undefined) { stc.y0 = st.fy - 0.1; stc.y1 = st.fy + 1.6; }
+      ctx.addCollider(stc);
       S_.candleStands.push({ i: i, bounds: { minX: minX, maxX: maxX, minZ: minZ, maxZ: maxZ } });
     };
 

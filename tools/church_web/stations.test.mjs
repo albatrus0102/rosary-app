@@ -12,8 +12,9 @@ const { churches } = loadChurches();
 const mk = (c) => { const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }); return { L, S: Stations.create(L) }; };
 
 // main.js 의 걷기와 같은 물리(관성 + moveCircle)로 경로를 따라간다. {ok, t, pos, stuck}
+// 여러 층 성당(layout.levels)은 main.js 처럼 발 높이(fy)를 따라간다(moveCircle 의 y, floorY 의 yRef). 한 층은 두 인자를 무시해 예전과 같다.
 function simulate(L, S, from, path, target) {
-  const me = { x: from.x, z: from.z, vx: 0, vz: 0 }, p = { x: 0, z: 0 }, out = {};
+  const me = { x: from.x, z: from.z, vx: 0, vz: 0, fy: L.floorY(from.x, from.z, from.y) }, p = { x: 0, z: 0 }, out = {};
   const w = S.startWalk(path, target, 'x');
   const dt = 1 / 30;
   let t = 0, stuck = 0;
@@ -24,8 +25,8 @@ function simulate(L, S, from, path, target) {
     const k = Math.min(1, dt * 12);
     me.vx += (out.vx - me.vx) * k; me.vz += (out.vz - me.vz) * k;
     p.x = me.x; p.z = me.z;
-    L.moveCircle(p, me.vx * dt, me.vz * dt);
-    me.x = p.x; me.z = p.z;
+    L.moveCircle(p, me.vx * dt, me.vz * dt, undefined, me.fy);
+    me.x = p.x; me.z = p.z; me.fy = L.floorY(me.x, me.z, me.fy);
     t += dt;
   }
   return { ok: false, t, pos: { x: me.x, z: me.z }, stuck };
@@ -41,24 +42,25 @@ for (const c of churches) {
     assert.deepEqual([st.entrance.x, st.entrance.z], [sp.x, sp.z]);
     assert.equal(st.candle.length, c.layout.candles.stands.length, 'one candle station per stand');
     for (const k of st.candle) {
-      assert.ok(S.free(k.x, k.z), 'candle approach collides');
-      assert.ok(S.isReachable(k.x, k.z), 'candle approach unreachable');
-      assert.notEqual(L.nearestCandleSlot(k.x, k.z, null), null, 'no slot in reach at approach');
+      // k.y: 여러 층 성당의 스테이션 층(한 층 성당은 undefined → 예전 호출과 같다)
+      assert.ok(S.free(k.x, k.z, k.y), 'candle approach collides');
+      assert.ok(S.isReachable(k.x, k.z, k.y), 'candle approach unreachable');
+      assert.notEqual(L.nearestCandleSlot(k.x, k.z, null, undefined, k.y), null, 'no slot in reach at approach');
       const d = Math.hypot(k.x - k.stand.x, k.z - k.stand.z);
       assert.ok(d >= 0.5 && d <= 1.9, 'approach distance ' + d);
     }
     // 제대: 축 위의 닿는 점이고, 그 앞(제대 쪽)으로 더 걸을 수 없다
     const a = st.altar;
-    assert.ok(S.free(a.x, a.z) && S.isReachable(a.x, a.z), 'altar free+reachable');
+    assert.ok(S.free(a.x, a.z, a.y) && S.isReachable(a.x, a.z, a.y), 'altar free+reachable');
     assert.ok(Math.abs(a.x - sp.x) < 1.3, 'altar near the nave axis x=' + a.x);
     assert.ok(Math.abs(a.yaw - (c.layout.seatGroups[0].yaw || 0)) < 1e-9, 'altar faces the seat direction');
     assert.ok(a.z < sp.z - 15, 'altar is far from the entrance, z=' + a.z);
     // 축을 따라 한 칸(0.25m) 더 가면 막힌다(= 가장 먼 지점)
     if (a.how === 'axis') {
       const f = Logic.fwd(a.yaw), nx = a.x + f[0] * 0.25, nz = a.z + f[1] * 0.25;
-      assert.ok(!S.free(nx, nz) || nz < c.layout.bounds.z0 || nz > c.layout.bounds.z1, 'altar is the farthest axis point');
+      assert.ok(!S.free(nx, nz, a.y) || nz < c.layout.bounds.z0 || nz > c.layout.bounds.z1, 'altar is the farthest axis point');
     }
-    assert.equal(st.font.length, 0, 'no fonts unless the layout lists them');
+    assert.equal(st.font.length, (c.layout.fonts || []).length, 'no fonts unless the layout lists them');
   });
 
   test(`paths ${c.id}: spawn reaches every station and the walk arrives`, () => {
@@ -105,7 +107,7 @@ for (const c of churches) {
     assert.equal(n, L.seats.length);
     // 좌석 도착 지점에서 nearSeat 가 그 좌석(또는 같은 줄 이웃)을 가리킨다
     const seat = S.nearestFreeSeat(sp, {});
-    assert.equal(L.nearestSeat(seat.x, seat.z, {}), seat.id);
+    assert.equal(L.nearestSeat(seat.x, seat.z, {}, undefined, seat.y), seat.id);
     // 한 곳에서 가장 가까운 좌석들이 차 있으면 다른 좌석을 고른다
     const taken = {};
     for (let i = 0; i < 6; i++) { const s2 = S.nearestFreeSeat(sp, taken); taken[s2.id] = 1; }

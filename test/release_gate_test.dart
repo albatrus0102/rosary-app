@@ -89,7 +89,11 @@ void main() {
         ChurchSelectScreen.pendingConsentIds,
         ReleaseGate.pendingConsentChurchIds,
       );
-      expect(ReleaseGate.pendingConsentChurchIds, {'danggogae', 'yeouido'});
+      expect(ReleaseGate.pendingConsentChurchIds, {
+        'danggogae',
+        'yeouido',
+        'assisi',
+      });
       for (final id in ReleaseGate.pendingConsentChurchIds) {
         expect(ChurchSelectScreen.availableIds.contains(id), _dev, reason: id);
         expect(ChurchSelectScreen.releaseIds, isNot(contains(id)));

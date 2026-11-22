@@ -407,6 +407,16 @@ ADAPTERS.yeouido = {
     { zone: 'lobby_front', test: (e) => e.z > 21 && e.x < -10.5, key: (e) => 'lobbyFront' + (e.z < 24.5 ? '1' : (e.z < 27.5 ? '2' : '3')) }
   ]
 };
+// ---- 아시시 상부 성당 (ch_assisi.js): 입구 = 동(+z), 제대·후진 = 서(-z), +x = 북(제대를 볼 때 오른쪽), -x = 남. 60%. 하부 성당·묘소에는 창이 없다(어스름 — assisi.md §3-4)
+ADAPTERS.assisi = {
+  axes: { altar: '-z (서)', entrance: '+z (동)', plusX: '북(오른쪽)', minusX: '남(왼쪽)', summary: '입구 +z(동, 위 광장 파사드) → 제대 -z(서). 상부 성당만 창이 있다(바닥 y 10.2).' },
+  rules: [
+    { zone: 'rose', test: (e) => e.shape === 'circle', key: () => 'rose' },
+    { zone: 'nave', test: (e) => Math.abs(Math.abs(e.x) - 3.9) < 0.4 && e.z > 0, side: NS('N'), prefix: 'nave', always: true },
+    { zone: 'transept', test: (e) => Math.abs(Math.abs(e.x) - 9.0) < 0.4, key: (e) => 'trans' + (e.x > 0 ? 'N' : 'S') },
+    { zone: 'apse', test: (e) => e.z < -8, sort: (a, b2) => b2.x - a.x, key: (e, i) => 'apse_' + (i + 1) }
+  ]
+};
 ADAPTERS.basic = {
   axes: { altar: '-z', entrance: '+z', plusX: '오른쪽 R(방위 없음)', minusX: '왼쪽 L(방위 없음)',
     summary: '입구 +z → 제대 -z. 가상의 본당이라 방위가 없다(제대를 볼 때 오른쪽 R = +x, 왼쪽 L = -x).' },

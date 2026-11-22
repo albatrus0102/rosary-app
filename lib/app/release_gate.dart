@@ -24,12 +24,17 @@ abstract final class ReleaseGate {
   /// 풀리는 조건: 사용자가 결제 내역으로 유료 플랜·목소리 종류 확인(또는 유료로 재생성) + 주교회의 회신에서 합성 음성 허용.
   static const bool aiVoiceClips = showAll;
 
-  // ── 2. 동의 전 성당(당고개·여의도동) ──────────────────────────────────────────────────
+  // ── 2. 동의 전 성당(당고개·여의도동·아시시) ──────────────────────────────────────────────────
   /// 숨기는 이유: 성지·본당·서울대교구의 서면 동의 전이다(법률 검토 M6, 3D 실내 모형 = 2차적저작물 판례).
   /// 목록에는 '준비 중'으로만 보이고 들어갈 수 없다(여의도동의 임시 그리스도상도 그 안이라 함께 숨는다).
-  /// 풀리는 조건: 당고개 — 성지·서울대교구(·설계자) 서면 동의, 여의도동 — 본당·서울대교구 동의.
+  /// 풀리는 조건: 당고개 — 성지·서울대교구(·설계자) 서면 동의, 여의도동 — 본당·서울대교구 동의,
+  /// 아시시 — 대성당(사크로 콘벤토 쿠스토디아) 동의(docs/legal/church_permission/08_Assisi_consent_request.md).
   /// 동의를 받으면 해당 id 를 이 집합에서 빼고 `ChurchSelectScreen.releaseIds` 에 넣는다.
-  static const Set<String> pendingConsentChurchIds = {'danggogae', 'yeouido'};
+  static const Set<String> pendingConsentChurchIds = {
+    'danggogae',
+    'yeouido',
+    'assisi',
+  };
 
   /// [releaseIds]에 더해 지금 빌드에서 열리는 성당 id.
   static Set<String> openChurchIds(Set<String> releaseIds) =>

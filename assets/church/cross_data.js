@@ -103,7 +103,8 @@
    "florence": "mosler",
    "myeongdong": "fugel_munich",
    "danggogae": "tiepolo",
-   "yeouido": "fugel"
+   "yeouido": "fugel",
+   "assisi": "fugel"
   },
   "packs": {
    "fugel": {

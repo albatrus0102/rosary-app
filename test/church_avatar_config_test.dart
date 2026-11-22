@@ -6,7 +6,9 @@ import 'dart:ui' show Color;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/church/church_catalog.dart';
+import 'package:rosary_app/church/church_select_screen.dart' show churchStyleById;
 import 'package:rosary_app/church/church_constants.dart';
 
 void main() {
@@ -330,6 +332,7 @@ void main() {
         'stpaul',
         'milan',
         'florence',
+        'assisi',
         'myeongdong',
         'danggogae',
         'yeouido',
@@ -366,6 +369,7 @@ void main() {
         'stpaul',
         'milan',
         'florence',
+        'assisi',
         'myeongdong',
         'danggogae',
         'yeouido',
@@ -414,6 +418,28 @@ void main() {
       }
     });
 
+    test('아시시 성 프란치스코 대성당: 대성당·이탈리아·1253·60%, 세 층과 색 면 대체를 밝힌다', () {
+      final a = ChurchCatalog.byId['assisi']!;
+      expect(a.nameKo, '아시시 성 프란치스코 대성당');
+      expect(a.kind, '대성당');
+      expect(a.group, '이탈리아');
+      expect(a.builtYear, 1253);
+      expect(a.scalePercent, 60);
+      expect(a.wave, 1);
+      expect(a.facts, hasLength(4));
+      expect(a.modelNote, contains('실제 아시시 성 프란치스코 대성당과 같지 않습니다'));
+      expect(a.modelNote, contains('상부 성당·하부 성당·지하 묘소'));
+      // 벽화·유리는 색 면·그림 없는 색 조각으로 대신하고, 평면은 줄이거나 옮겼다는 것을 정확히 밝힌다
+      expect(a.modelNote, contains('전기 28장면을 비롯한 벽화와 궁륭 그림은 옮기지 않고'));
+      expect(a.modelNote, contains('그림 없는 색 면으로 대신했습니다'));
+      expect(a.modelNote, contains('스테인드글라스는 실제 창의 그림을 옮기지 않고'));
+      expect(a.modelNote, contains('평면은 단순하게 줄이거나 옮겼습니다'));
+      expect(a.modelNote, contains('승인한 모형이 아닙니다'));
+      expect(a.source, contains('basilica.sanfrancesco.org'));
+      expect(churchStyleById['assisi'], '고딕');
+      expect(ReleaseGate.pendingConsentChurchIds, contains('assisi'));
+    });
+
     test('3D 내부가 있는 성당은 모두 실제와 다른 점을 밝힌다(같지 않습니다 … 승인한 모형이 아닙니다)', () {
       // 웹 빌더(assets/church/ch_<id>.js)가 있는 성당 = 3D 내부가 있는 성당
       final built = [
@@ -428,6 +454,7 @@ void main() {
         'stpaul',
         'milan',
         'florence',
+        'assisi',
         'myeongdong',
         'danggogae',
         'yeouido',
