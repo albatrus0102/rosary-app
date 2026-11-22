@@ -16,6 +16,7 @@ import '../diag/diag_send_sheet.dart';
 import '../domain/stations_series.dart';
 import '../glass/glass_catalog.dart';
 import '../glass/glass_licenses_screen.dart';
+import 'app_intro.dart';
 import 'art_credits_screen.dart';
 import 'skin_picker.dart';
 import 'stations_sheet.dart';
@@ -33,7 +34,15 @@ class MoreScreen extends StatelessWidget {
     required this.onOpenStyles,
     required this.onOpenSettings,
     this.glassCatalog,
+    this.onOpenChurch,
+    this.onOpenToday,
   });
+
+  /// 사용법 다시 보기에서 '성당 안내'를 고르면 성당 탭으로 데려간다(안에 들어가 있으면 바로 시작한다).
+  final VoidCallback? onOpenChurch;
+
+  /// '묵주기도 화면 안내'를 고르면 오늘 탭으로 데려간다(기도 화면을 열면 안내가 나온다).
+  final VoidCallback? onOpenToday;
 
   final AppSettings settings;
 
@@ -60,6 +69,72 @@ class MoreScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 사용법 다시 보기: 어느 안내를 볼지 고른다. 고른 안내의 '마침' 표시를 지우고 다시 보여 준다.
+  Future<void> _chooseHelp(BuildContext context) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (key, icon, title, sub) in const [
+              ('app', Icons.waving_hand_outlined, '앱 소개', '로사리움이 무엇인지, 탭과 글자 크기'),
+              ('church', Icons.church_outlined, '성당 안내', '걷기·둘러보기·가기를 직접 해 봐요'),
+              (
+                'rosary',
+                Icons.radio_button_checked,
+                '묵주기도 화면 안내',
+                '묵주를 넘기고 기도하는 방법',
+              ),
+            ])
+              ListTile(
+                key: ValueKey('help-$key'),
+                minTileHeight: 72,
+                leading: Icon(icon),
+                title: Text(title),
+                subtitle: Text(sub),
+                onTap: () => Navigator.of(context).pop(key),
+              ),
+            const SizedBox(height: AppSpace.xs),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+    switch (choice) {
+      case 'app':
+        settings.appIntroDone = false;
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute<void>(
+            settings: const RouteSettings(name: 'app_intro'),
+            fullscreenDialog: true,
+            builder: (ctx) => AppIntroScreen(
+              settings: settings,
+              onFinish: () => Navigator.of(ctx).pop(),
+            ),
+          ),
+        );
+        // 끝까지 보지 않고 닫아도 첫 실행 때처럼 다시 나오지는 않는다.
+        settings.appIntroDone = true;
+      case 'church':
+        settings.churchTourDone = false;
+        _notify(context, '성당에 들어가면 안내가 시작돼요');
+        onOpenChurch?.call();
+      case 'rosary':
+        settings.prayerScreenTourDone = false;
+        settings.resetBeadSwipeHint();
+        _notify(context, '묵주기도 화면을 열면 안내가 나와요');
+        onOpenToday?.call();
+    }
+  }
+
+  void _notify(BuildContext context, String text) {
+    final m = ScaffoldMessenger.maybeOf(context);
+    m?.hideCurrentSnackBar();
+    m?.showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
@@ -166,6 +241,19 @@ class MoreScreen extends StatelessWidget {
                           );
                         },
                       ),
+                  ],
+                ),
+                const SectionHeader('도움말'),
+                _Group(
+                  children: [
+                    ListTile(
+                      key: const ValueKey('more-help'),
+                      leading: const Icon(Icons.help_outline),
+                      title: const Text('사용법 다시 보기'),
+                      subtitle: const Text('앱 소개 · 성당 안내 · 묵주기도 화면 안내'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => unawaited(_chooseHelp(context)),
+                    ),
                   ],
                 ),
                 const SectionHeader('정보'),

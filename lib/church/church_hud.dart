@@ -87,8 +87,12 @@ class ChurchStatusChip extends StatelessWidget {
     this.subtitle,
     this.onChangeChurch,
     this.onShowPresence,
+    this.onHelp,
     this.compact = false,
   });
+
+  /// 있으면 이름판 맨 오른쪽에 '사용법 다시 보기' 단추를 둔다(성당 첫 입장 안내를 다시 본다). 접힌 모습에서는 숨는다.
+  final VoidCallback? onHelp;
 
   /// 접힌 모습: 성당 이름 한 줄만(상태·부제 줄은 숨긴다. 스크린리더 라벨에는 그대로 들어간다).
   final bool compact;
@@ -235,6 +239,35 @@ class ChurchStatusChip extends StatelessWidget {
                   ),
                 ),
               ),
+              if (onHelp != null && !compact) ...[
+                VerticalDivider(
+                  width: 1,
+                  thickness: 1,
+                  indent: AppSpace.xs,
+                  endIndent: AppSpace.xs,
+                  color: scheme.outlineVariant,
+                ),
+                Tooltip(
+                  message: '사용법 다시 보기',
+                  child: Semantics(
+                    button: true,
+                    label: '사용법 다시 보기',
+                    excludeSemantics: true,
+                    child: InkWell(
+                      key: const ValueKey('hud-help'),
+                      onTap: onHelp,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Icon(
+                          Icons.help_outline,
+                          size: 22,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

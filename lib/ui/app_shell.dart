@@ -261,6 +261,8 @@ class _AppShellState extends State<AppShell> {
           onOpenStyles: _openStyles,
           onOpenSettings: _openSettings,
           glassCatalog: widget.glassCatalog,
+          onOpenChurch: () => _select(_church),
+          onOpenToday: () => _select(_today),
         ),
       ],
     );
@@ -363,13 +365,20 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  static const _destinations = [
-    _Dest('성당', Icons.church_outlined, Icons.church),
-    _Dest('오늘', Icons.self_improvement_outlined, Icons.self_improvement),
-    _Dest('기록', Icons.calendar_month_outlined, Icons.calendar_month),
-    _Dest('더보기', Icons.more_horiz, Icons.more_horiz),
-  ];
+  static const _destinations = appShellDestinations;
 }
+
+/// 네 탭(성당 · 오늘 · 기록 · 더보기)의 이름과 아이콘. 앱 소개 화면도 같은 값을 쓴다.
+const List<ShellDestination> appShellDestinations = [
+  ShellDestination('성당', Icons.church_outlined, Icons.church),
+  ShellDestination(
+    '오늘',
+    Icons.self_improvement_outlined,
+    Icons.self_improvement,
+  ),
+  ShellDestination('기록', Icons.calendar_month_outlined, Icons.calendar_month),
+  ShellDestination('더보기', Icons.more_horiz, Icons.more_horiz),
+];
 
 /// 레일 뒤 바탕(레일 테마의 표면, 하단 바와 같은 surfaceContainer). 레일 위아래의 안전 영역까지
 /// 같은 색으로 채운다.
@@ -455,8 +464,8 @@ class _RailDecor extends StatelessWidget {
   }
 }
 
-class _Dest {
-  const _Dest(this.label, this.icon, this.selectedIcon);
+class ShellDestination {
+  const ShellDestination(this.label, this.icon, this.selectedIcon);
 
   final String label;
   final IconData icon;
