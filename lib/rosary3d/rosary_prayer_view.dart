@@ -8,6 +8,7 @@ import '../domain/prayer_data.dart';
 import '../domain/prayer_mode.dart';
 import '../domain/rosary_sequence.dart';
 import '../domain/rosary_session.dart';
+import '../ui/widgets/swipe_hint.dart';
 import 'rosary_model.dart';
 import 'rosary_scene.dart';
 
@@ -51,7 +52,17 @@ class RosaryPrayerView extends StatefulWidget {
     required this.onNext,
     required this.onBack,
     this.onChangeRosary,
+    this.areaKey,
+    this.textToggleKey,
+    this.showSwipeHint = true,
   });
+
+  /// 묵주 영역(끌어서 넘기는 곳)과 기도문 펼치기 단추의 키: 기도 화면 첫 사용 안내가 위치를 잰다.
+  final GlobalKey? areaKey;
+  final GlobalKey? textToggleKey;
+
+  /// 아래로 내리기 안내를 얹을지(첫 사용 안내가 떠 있는 동안은 뺀다).
+  final bool showSwipeHint;
 
   /// 묵주 영역을 길게 누르면: 묵주 바꾸기(갤러리).
   final VoidCallback? onChangeRosary;
@@ -106,6 +117,8 @@ class _RosaryPrayerViewState extends State<RosaryPrayerView> {
       } else {
         widget.onBack();
       }
+      // 손가락으로 넘기는 법을 익혔는지 센다(성당 카드와 합쳐 두 번이면 안내가 사라진다).
+      _set.noteBeadSwipe();
     }
     // 넘기지 않았으면 제자리로(탄성), 넘겼으면 setStep 이 끌기 값을 지운다.
     widget.scene.setDrag(0, active: false);
@@ -143,41 +156,46 @@ class _RosaryPrayerViewState extends State<RosaryPrayerView> {
     final area = LayoutBuilder(
       builder: (context, c) {
         _areaH = c.maxHeight;
-        return Semantics(
-          key: const ValueKey('rosary-area'),
-          label: semantic,
-          onIncrease: _canGo(1) ? widget.onNext : null,
-          onDecrease: _canGo(-1) ? widget.onBack : null,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onVerticalDragStart: _onDragStart,
-            onVerticalDragUpdate: _onDragUpdate,
-            onVerticalDragEnd: _onDragEnd,
-            onLongPress: widget.onChangeRosary,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // 3D 는 터치를 받지 않는다(Flutter 가 제스처를 맡는다).
-                IgnorePointer(
-                  child: ExcludeSemantics(
-                    child: widget.scene.buildView(context),
-                  ),
-                ),
-                if (full)
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    top: 8,
-                    child: Text(
-                      _fullCaption(step),
-                      key: const ValueKey('rosary-full-caption'),
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: scheme.onSurface.withValues(alpha: 0.85),
-                      ),
+        return KeyedSubtree(
+          key: widget.areaKey,
+          child: Semantics(
+            key: const ValueKey('rosary-area'),
+            label: semantic,
+            onIncrease: _canGo(1) ? widget.onNext : null,
+            onDecrease: _canGo(-1) ? widget.onBack : null,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onVerticalDragStart: _onDragStart,
+              onVerticalDragUpdate: _onDragUpdate,
+              onVerticalDragEnd: _onDragEnd,
+              onLongPress: widget.onChangeRosary,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // 3D 는 터치를 받지 않는다(Flutter 가 제스처를 맡는다).
+                  IgnorePointer(
+                    child: ExcludeSemantics(
+                      child: widget.scene.buildView(context),
                     ),
                   ),
-              ],
+                  if (widget.showSwipeHint)
+                    Positioned.fill(child: BeadSwipeHint(settings: _set)),
+                  if (full)
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      top: 8,
+                      child: Text(
+                        _fullCaption(step),
+                        key: const ValueKey('rosary-full-caption'),
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: scheme.onSurface.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );
@@ -218,13 +236,16 @@ class _RosaryPrayerViewState extends State<RosaryPrayerView> {
           SizedBox(
             height: 48,
             child: Center(
-              child: TextButton.icon(
-                key: const ValueKey('rosary-text-toggle'),
-                style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
-                onPressed: () =>
-                    _set.rosaryTextExpanded = !_set.rosaryTextExpanded,
-                icon: Icon(open ? Icons.expand_more : Icons.expand_less),
-                label: Text(open ? '기도문 접기' : '기도문 펼치기'),
+              child: KeyedSubtree(
+                key: widget.textToggleKey,
+                child: TextButton.icon(
+                  key: const ValueKey('rosary-text-toggle'),
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  onPressed: () =>
+                      _set.rosaryTextExpanded = !_set.rosaryTextExpanded,
+                  icon: Icon(open ? Icons.expand_more : Icons.expand_less),
+                  label: Text(open ? '기도문 접기' : '기도문 펼치기'),
+                ),
               ),
             ),
           ),

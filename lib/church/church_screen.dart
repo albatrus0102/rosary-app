@@ -227,6 +227,9 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 시트에서 고른 신비: 다음에 만드는 기도 세션에 쓴다(없으면 오늘의 신비).
   MysterySet? _rosarySet;
 
+  /// '큰 화면'으로 고른 묵주기도: 자리에 앉아 기도 카드가 열리면(서서 하는 기도는 시작하면) 바로 전체 화면 기도를 연다.
+  bool _rosaryBig = false;
+
   /// 성모상 앞에서 서서 하는 묵주기도(좌석 없음). 서버는 앉은 사람의 기도만 받으므로 다른 사람에게는 보이지 않는다.
   bool _standPray = false;
 
@@ -927,6 +930,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       _setWakelock(true);
     }
     setState(() {});
+    if (!reseat && !_hidden) _openBigIfChosen();
   }
 
   ChurchPrayerController _createPrayer() {
@@ -1010,6 +1014,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (!_rosaryWalk || _mySeat != null || _pendingSeat != null) return;
     _rosaryWalk = false;
     _rosarySet = null;
+    _rosaryBig = false;
     _setRosary(false);
   }
 
@@ -1432,6 +1437,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     // 무엇을 골랐는지만 기록한다. 신비·기도 내용은 넘기지 않는다.
     Track.church('church_prayer_choice', widget.churchId, {
       'kind': pick.kind.name,
+      'big': pick.big,
     });
     switch (pick.kind) {
       case ChurchPrayerChoice.brief:
@@ -1441,7 +1447,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         }
         _emote(2);
       case ChurchPrayerChoice.rosary:
-        _startRosary(pick.mysterySet);
+        _startRosary(pick.mysterySet, big: pick.big);
     }
   }
 
@@ -1451,7 +1457,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 제대 앞에서는 서서 카드를 열지 않는 까닭: 서버는 앉아 있을 때만 기도 상태를 받아 주고(다른 사람에게 보이지
   /// 않는다), 기도 카드(자세 선택·일어나기·이어 하기)도 좌석을 전제로 하며, 제대 앞에 오래 서 있으면
   /// 다른 사람의 자리를 막는다.
-  void _startRosary(MysterySet? set) {
+  void _startRosary(MysterySet? set, {bool big = false}) {
     if (_mySeat != null || _pendingSeat != null) return;
     final standing = _near.station == 'altar' && _near.shrine;
     // 고른 신비가 하던 세션과 다르면(또는 이미 마쳤으면) 세션을 새로 만든다. 같으면 이어 한다.
@@ -1462,6 +1468,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       p.dispose();
     }
     _rosarySet = set;
+    _rosaryBig = big;
     unawaited(_scene.setJoystick(0, 0));
     if (standing) {
       _startStandingRosary();
@@ -1486,6 +1493,19 @@ class _ChurchScreenState extends State<ChurchScreen>
     _sendPraying(!p.finished);
     if (!_hidden) _setWakelock(true);
     setState(() {});
+    _openBigIfChosen();
+  }
+
+  /// '큰 화면'으로 시작한 묵주기도: 기도 카드가 열린 바로 다음 프레임에 전체 화면 기도를 연다(한 번만).
+  /// 돌아오면(성당으로) 그 자리의 작은 카드가 이어진다.
+  void _openBigIfChosen() {
+    if (!_rosaryBig) return;
+    _rosaryBig = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _disposed || _prayer == null) return;
+      if (_mySeat == null && !_standPray) return;
+      unawaited(_openFullScreenPrayer());
+    });
   }
 
   void _onSit() {
@@ -1567,6 +1587,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _autoPausedPrayer = false;
     _rosaryWalk = false;
     _rosarySet = null;
+    _rosaryBig = false;
     _setRosary(false);
     _farRetries = 0;
     _farRetryTimer?.cancel();

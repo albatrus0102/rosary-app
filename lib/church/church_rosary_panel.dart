@@ -11,6 +11,7 @@ import '../rosary3d/rosary_feedback.dart';
 import '../rosary3d/rosary_model.dart';
 import '../rosary3d/rosary_scene.dart';
 import '../ui/prayer_music_sheet.dart';
+import '../ui/widgets/swipe_hint.dart';
 import 'church_hud.dart';
 import 'church_prayer_card.dart';
 
@@ -342,13 +343,23 @@ class _ChurchRosaryPanelState extends State<ChurchRosaryPanel> {
               _areaH * 0.42,
               now: SchedulerBinding.instance.currentSystemFrameTimeStamp,
             );
-            if (dir != 0) _go(dir);
+            if (dir != 0 && _canGo(dir)) {
+              _go(dir);
+              // 손가락으로 넘기는 법을 익혔는지 센다(큰 화면과 합쳐 두 번이면 안내가 사라진다).
+              widget.settings.noteBeadSwipe();
+            }
             _scene.setDrag(0, active: false);
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: IgnorePointer(
-              child: ExcludeSemantics(child: _scene.buildView(context)),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                IgnorePointer(
+                  child: ExcludeSemantics(child: _scene.buildView(context)),
+                ),
+                BeadSwipeHint(settings: widget.settings, compact: true),
+              ],
             ),
           ),
         ),
