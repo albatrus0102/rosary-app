@@ -540,6 +540,7 @@
       }
       updateBeams(env);
       if (probes) probes.onEnv(env);
+      if (giFx) giFx.onEnv(env, tierCfg ? tierCfg[tier].gi : 1, look && look.giK !== undefined ? look.giK : 1);
       for (var hI = 0; hI < S.hourHooks.length; hI++) { try { S.hourHooks[hI](env); } catch (e) { /* ignore */ } }
     }
 
@@ -547,12 +548,16 @@
     var cb = S.cameraBounds || { x0: bnd.x0, x1: bnd.x1, z0: bnd.z0, z1: bnd.z1, yMax: 9 };
 
     // 구운 AO·바닥 AO 지도·반사 가림·반짝임 줄이기(ao_fx.js). cam_guard 가 재질을 잇기 전에 붙인다(프로그램 캐시 키 순서).
-    var aoFx = null;
+    var aoFx = null, giFx = null;
     if (aoDefer) {
       var aoMats = [];
       S.physMats.forEach(function (p) { if (aoMats.indexOf(p.m) < 0) aoMats.push(p.m); });
       items.forEach(function (it) { if (it.material && aoMats.indexOf(it.material) < 0) aoMats.push(it.material); });
+      // 빛 번짐(gi_fx.js, RENDER_GI.md): 높음·보통(TIERS.gi > 0). triIds(배치 → 메시 정점 대응)를 AO 와 같이 쓰므로 둘 다 붙인 뒤에 놓는다.
+      var giWant = !!root.ChurchGIFx && !!(tierCfg && tierCfg[tier].gi > 0) && !/[?&]gi=0/.test((root.location && root.location.search) || '');
+      if (giWant) items.forEach(function (it) { if (it.ao && it.group) it.group.children.forEach(function (m) { if (m.userData.triIds) m.userData.triUsers = 2; }); });
       try { aoFx = root.ChurchAOFx.attach({ id: id, items: items, mats: aoMats, aoOpts: S.aoOpts }); } catch (e) { if (root.console) console.warn('[church] aofx', e); aoFx = null; }
+      if (giWant && aoFx) { try { giFx = root.ChurchGIFx.attach({ id: id, items: items, mats: aoMats }); } catch (e) { if (root.console) console.warn('[church] gifx', e); giFx = null; } }
     }
     // 성당 안 반사 탐침(probe_fx.js, RENDER_V4.md §2): 금·청동·대리석·광택 재질의 거울 반사를 이 성당 안에서 찍은 큐브맵으로. low·감상실은 없음.
     var probes = null;
@@ -766,6 +771,7 @@
         if (camera) api.setSkyCenter(camera.position);
       },
       aoFx: aoFx,
+      giFx: giFx,
       probes: probes,
       // 반사 탐침: 첫 굽기 전인가(main.js 가 첫 프레임 뒤 한 번에 굽고 firstFrame 을 한 프레임 미룬다) / 그린 뒤 프레임마다 나눠 굽기
       probePending: function () { return !!(probes && probes.pending()); },
@@ -775,9 +781,10 @@
         return probes.step(renderer);
       },
       // 구운 AO 가 아직 붙지 않았는가(main.js 가 성당에 들어온 직후 잠깐(≤0.5초) 그리기를 미룬다: AO 없는 한 프레임이 번쩍이지 않게)
-      aoPending: function () { return !!(aoFx && aoFx.pending()); },
+      aoPending: function () { return !!(aoFx && aoFx.pending()) || !!(giFx && giFx.pending()); },
       dispose: function () {
         if (aoFx) aoFx.dispose();
+        if (giFx) giFx.dispose();
         if (probes) probes.dispose();
         if (shafts) shafts.dispose();
         disposeReflectors(); fb.dispose();

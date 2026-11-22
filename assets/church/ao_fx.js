@@ -51,7 +51,7 @@
   var F_SPECAA = '\n#if defined( USE_NORMALMAP ) || defined( USE_BUMPMAP )\n\t{ vec3 aaDx = dFdx( normal ), aaDy = dFdy( normal );\n' +
     '\t  float aaK = min( 0.5 * ( dot( aaDx, aaDx ) + dot( aaDy, aaDy ) ), 0.18 ) * uSpecAA;\n' +
     '\t  material.roughness = min( sqrt( material.roughness * material.roughness + aaK ), 1.0 ); }\n#endif\n';
-  var F_AO = '\n\t{ float aoV = 1.0 - vAOo;\n' +
+  var F_AO = '\n\t{ float aoV = 1.0 - vAOo; float aoFW = 0.0;\n' +
     '\t  if ( uFloorOn > 0.5 ) {\n' +
     '\t    vec3 aoUp = normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );\n' +
     '\t    if ( dot( geometryNormal, aoUp ) > 0.7 ) {\n' +
@@ -59,10 +59,11 @@
     '\t      if ( fuv.x > 0.0 && fuv.y > 0.0 && fuv.x < 1.0 && fuv.y < 1.0 ) {\n' +
     '\t        vec3 fs = texture2D( uFloorAO, fuv ).rgb;\n' +
     '\t        float fw = fs.b * ( 1.0 - smoothstep( 0.035, 0.07, abs( vAOW.y - ( uFloorH.x + fs.g * uFloorH.y ) ) ) );\n' +
-    '\t        aoV = mix( aoV, fs.r, fw );\n' +
+    '\t        aoV = mix( aoV, fs.r, fw ); aoFW = fw;\n' +
     '\t      }\n\t    }\n\t  }\n' +
     '\t  float aoT = clamp( mix( 1.0, aoV, uAOK ), 0.12, 1.0 );\n' +
     '\t  reflectedLight.indirectDiffuse *= aoT;\n' +
+    '\t  /*gifx*/\n' +   // 빛 번짐(gi_fx.js)이 이 자리에 간접 확산광 곱하기를 넣는다(aoFW = 바닥 지도 무게를 같이 쓴다)
     '\t  reflectedLight.directDiffuse *= mix( 1.0, aoT, uAODir );\n' +
     '\t  float aoNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n' +
     '\t  float aoSO = saturate( pow( aoNV + aoT, exp2( - 16.0 * material.roughness - 1.0 ) ) - 1.0 + aoT );\n' +
@@ -100,7 +101,8 @@
     group.children.forEach(function (m) {
       if (!m.isMesh) return;
       var g = m.geometry, n = g.attributes.position.count, a = new Uint8Array(n), ud = m.userData;
-      if (ud.triIds) { var ids = ud.triIds; for (var i = 0; i < ids.length; i++) { var s = ids[i] * 3; a[i * 3] = occ[s]; a[i * 3 + 1] = occ[s + 1]; a[i * 3 + 2] = occ[s + 2]; } ud.triIds = null; }
+      // triIds 는 빛 번짐(gi_fx.js)도 쓴다: 쓰는 쪽 수(triUsers, world.js 가 정함)만큼 다 쓴 뒤에 놓는다
+      if (ud.triIds) { var ids = ud.triIds; for (var i = 0; i < ids.length; i++) { var s = ids[i] * 3; a[i * 3] = occ[s]; a[i * 3 + 1] = occ[s + 1]; a[i * 3 + 2] = occ[s + 2]; } ud.triUsers = (ud.triUsers || 1) - 1; if (ud.triUsers <= 0) ud.triIds = null; }
       else if (ud.vRange) a.set(occ.subarray(ud.vRange[0], ud.vRange[0] + n));
       else return;
       g.setAttribute('aoOcc', new T.BufferAttribute(a, 1, true));
