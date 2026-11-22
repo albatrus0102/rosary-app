@@ -666,6 +666,43 @@ void main() {
       expect(h.scene.lastArgs('setAmbient'), {'on': true});
     });
 
+    testWidgets(
+      'footsteps follow the sound setting and the music volume (setSteps)',
+      (tester) async {
+        final h = await pumpChurch(tester);
+        await tester.pump();
+        expect(h.scene.lastArgs('setSteps'), {
+          'on': true,
+          'chant': false,
+          'vol': h.settings.prayerMusicVolume,
+        });
+        h.settings.prayerMusicVolume = 0.1;
+        await tester.pump();
+        expect(h.scene.lastArgs('setSteps'), {
+          'on': true,
+          'chant': false,
+          'vol': 0.1,
+        });
+        h.settings.churchAmbient = false;
+        await tester.pump();
+        expect(h.scene.lastArgs('setSteps')!['on'], false);
+        h.settings.churchAmbient = true;
+        await tester.pump();
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        await tester.pump();
+        expect(
+          h.scene.lastArgs('setSteps')!['on'],
+          false,
+          reason: '백그라운드에서는 발소리도 끈다',
+        );
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pump();
+        expect(h.scene.lastArgs('setSteps')!['on'], true);
+      },
+    );
+
     testWidgets('load error shows a retry state', (tester) async {
       setView(tester, const Size(400, 800));
       final settings = await loadSettings();

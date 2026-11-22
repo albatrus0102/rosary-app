@@ -39,6 +39,7 @@ import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
 import 'church_theme.dart';
 import 'church_touch_trace.dart';
+import 'church_tour.dart';
 import 'dev_glass.dart';
 import 'net/church_loads.dart';
 import 'net/church_net.dart';
@@ -213,6 +214,14 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   Timer? _hintTimer;
 
+  /// 성당 첫 입장 안내(직접 해 보며 따라하기). 도중에 나가면 완료로 치지 않아 다음 입장에서 처음부터 다시 한다.
+  late final ChurchTourController _tour = ChurchTourController(
+    settings: _settings,
+  );
+
+  /// 웹이 첫 장면을 그렸다(입장 화면 덮개가 걷히는 때). 안내는 그 뒤에 시작한다.
+  bool _firstFrame = false;
+
   String? _pendingSeat;
   String? _mySeat;
 
@@ -237,6 +246,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   bool _rosaryHeld = false;
 
   late bool _lastAmbient;
+  String _lastSteps = ''; // 마지막으로 웹에 보낸 발소리 설정(setSteps)
   late ChurchQuality _lastQuality;
   String _lastCamera = ''; // 마지막으로 웹에 보낸 카메라 설정(settings.churchCameraArgs)
   String _lastAvatar = '';
@@ -291,6 +301,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _net.state.addListener(_onNetState);
     _lastRosaryId = _settings.rosaryId;
     _settings.addListener(_onSettings);
+    _tour.addListener(_onTour);
     // 개발용 빌드: 터치 기록(기기 정보 한 번) + 성능 표시를 켜면 터치 진단 표시도 함께 뜬다.
     if (ChurchTouchTrace.on) {
       unawaited(ChurchTouchTrace.instance.collectDevice());
@@ -376,6 +387,8 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   void _onShown() {
+    // 다른 탭에서 '사용법 다시 보기'를 눌러 돌아왔으면 성당 안내를 시작한다.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStartTour());
     _idleNetTimer?.cancel();
     _idleNetTimer = null;
     _releaseTimer?.cancel();
@@ -552,6 +565,8 @@ class _ChurchScreenState extends State<ChurchScreen>
   void _maybeShowHint() {
     if (_disposed || !mounted || _hintVisible || _hintSeen) return;
     if (!_hintLoaded || !_sceneReady) return;
+    // 첫 입장 안내를 아직 마치지 않았으면 안내가 '가기'를 가르친다(말풍선이 겹쳐 뜨지 않게).
+    if (!_settings.churchTourDone) return;
     _hintSeen = true;
     _hintVisible = true;
     _hintTimer = Timer(_hintDuration, _hideHint);
@@ -566,6 +581,32 @@ class _ChurchScreenState extends State<ChurchScreen>
     } catch (e) {
       debugPrint('church hint flag save failed: $e');
     }
+  }
+
+  /// 첫 입장 안내를 시작해도 되는 때(장면이 보이고, 걸어 다니는 중이고, 아직 마치지 않았다)면 시작한다.
+  /// 안내가 '가기'를 가르치므로 처음 한 번 뜨는 '가기' 말풍선은 같이 뜨지 않게 이미 본 것으로 친다.
+  void _maybeStartTour() {
+    if (_disposed || !mounted || _tour.active || _settings.churchTourDone) {
+      return;
+    }
+    if (!_inited || !_firstFrame || _hidden || _sceneReleased) return;
+    _hintSeen = true;
+    _hideHint();
+    unawaited(_saveHintFlag());
+    _tour.start();
+  }
+
+  void _onTour() {
+    if (!mounted || _disposed) return;
+    setState(() {});
+  }
+
+  /// 메뉴의 '사용법 다시 보기': 성당 안내를 처음부터 다시 한다.
+  void _replayTour() {
+    _tour.abandon();
+    _settings.churchTourDone = false;
+    _maybeStartTour();
+    if (mounted) setState(() {});
   }
 
   void _hideHint() {
@@ -694,6 +735,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_inited || !_sceneReady || !_avatarReady || _disposed) return;
     if (!_resumeLoaded || _sceneReleased) return;
     _inited = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStartTour());
     _lastAvatar = _settings.churchAvatar.toJsonString();
     unawaited(
       _scene.init(
@@ -705,6 +747,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         church: widget.churchId,
       ),
     );
+    _syncSteps();
     // 이동 손잡이는 앱이 그린다: 웹은 화면 전체를 시점 회전·확대에 쓴다.
     unawaited(_scene.setAppStick());
     _lastCamera = _settings.churchCameraArgs.toString();
@@ -763,7 +806,9 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_disposed) return;
     switch (e) {
       case SceneFirstFrame():
-        break; // 입장 화면 덮개가 scene.firstFrame 으로 스스로 걷힌다
+        // 입장 화면 덮개는 scene.firstFrame 으로 스스로 걷힌다. 첫 입장 안내는 그 뒤에 시작한다.
+        _firstFrame = true;
+        _maybeStartTour();
       case SceneReady():
         _sceneReady = true;
         _inited = false;
@@ -799,6 +844,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       case ScenePosture():
         break; // 전환 완료 알림. 상태는 설정(prayerPosture)이 원본이다.
       case ScenePos():
+        _tour.onPos(e.x, e.z);
         _lastPos = (e.x, e.z, e.r);
         _catchUpTimer?.cancel();
         _catchUpTimer = null;
@@ -1205,10 +1251,24 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 성가가 울리고 멎을 때 오르간 패드만 맞춘다(빌드 중에 불릴 수 있어 setState 하지 않는다).
   void _onMusic() {
     if (_disposed) return;
+    _syncSteps();
     final ambient = _ambientOn;
     if (ambient == _lastAmbient) return;
     _lastAmbient = ambient;
     if (!_background) unawaited(_scene.setAmbient(on: ambient));
+  }
+
+  /// 발소리(docs/church/WALK_GAIT.md): 성당 소리 설정을 따르고(성삼일 침묵·백그라운드면 끔), 크기는 늘 음악보다 작게
+  /// 웹이 정한다 — 성가가 울리는지와 음악 음량 설정을 함께 보낸다(음량을 낮추면 발소리도 낮아진다).
+  void _syncSteps() {
+    if (_disposed || !_inited) return;
+    final on = _ambientWanted && !_background;
+    final chant = _music.audible;
+    final vol = _settings.prayerMusicVolume;
+    final key = '$on|$chant|$vol';
+    if (key == _lastSteps) return;
+    _lastSteps = key;
+    unawaited(_scene.setSteps(on: on, chant: chant, volume: vol));
   }
 
   late final PrayerMusic _music = PrayerMusic.of(_settings);
@@ -1230,6 +1290,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_disposed) return;
     _syncRosaryLook();
     _syncMusicHold();
+    _syncSteps();
     final ambient = _ambientOn;
     if (ambient != _lastAmbient) {
       _lastAmbient = ambient;
@@ -1250,6 +1311,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       _lastAvatar = avatar;
       unawaited(_scene.setAvatar(_settings.churchAvatar.toJson()));
     }
+    _maybeStartTour(); // 더보기에서 '사용법 다시 보기'를 눌렀으면(안내 안 마침으로 되돌림) 돌아왔을 때 시작한다.
     if (mounted) setState(() {});
   }
 
@@ -1279,6 +1341,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     } else if (_ambientOn) {
       unawaited(_scene.setAmbient(on: true));
     }
+    _syncSteps();
   }
 
   // --- 사용자 동작 ---
@@ -1288,6 +1351,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_sheetOpen) return;
     _hideHint();
     _sheetOpen = true;
+    _tour.onGoOpened();
     final ChurchGoChoice? target;
     try {
       target = await showChurchGoSheet(
@@ -1730,6 +1794,9 @@ class _ChurchScreenState extends State<ChurchScreen>
     unawaited(ChurchResumeState.clear());
     WidgetsBinding.instance.removeObserver(this);
     _settings.removeListener(_onSettings);
+    _tour.removeListener(_onTour);
+    _tour.abandon();
+    _tour.dispose();
     _music.removeListener(_onMusic);
     _syncMusicHold();
     _net.state.removeListener(_onNetState);
@@ -1818,7 +1885,12 @@ class _ChurchScreenState extends State<ChurchScreen>
             right: stickRight ? ChurchMoveZone.reserve - AppSpace.sm : 0,
           )
         : EdgeInsets.zero;
-    final collapsed = _hudCollapsed;
+    // 안내가 '가기'·메뉴를 가르치는 동안은 접힌 메뉴를 (저장은 그대로 두고) 펴서 보인다.
+    final tourNeedsMenu =
+        _tour.active &&
+        (_tour.current == ChurchTourStep.go ||
+            _tour.current == ChurchTourStep.menu);
+    final collapsed = _hudCollapsed && !tourNeedsMenu;
     final glassWin = _glassWindow;
     final statusChip = ListenableBuilder(
       listenable: Listenable.merge([_net.state, _net.count]),
@@ -1829,6 +1901,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         subtitle: _liturgy.chipLabel,
         onChangeChurch: widget.onChangeChurch,
         onShowPresence: _openPresence,
+        onHelp: _replayTour,
         compact: collapsed,
       ),
     );
@@ -1873,10 +1946,13 @@ class _ChurchScreenState extends State<ChurchScreen>
           if (walking)
             Positioned.fill(
               child: ChurchMoveZone(
-                hint: '손잡이를 누르고 끌면 걸어요',
+                hint: _tour.active ? null : '손잡이를 누르고 끌면 걸어요',
                 rightSide: stickRight,
                 insets: MediaQuery.paddingOf(context),
-                onChanged: (x, y) => unawaited(_scene.setJoystick(x, y)),
+                onChanged: (x, y) {
+                  _tour.onStick(x, y);
+                  unawaited(_scene.setJoystick(x, y));
+                },
                 // 손잡이 원의 실제 자리를 웹에 알린다(웹은 이 원 안만 이동 영역으로 쓴다).
                 onZone: (c, r) => unawaited(_scene.setStickZone(c.dx, c.dy, r)),
                 // 손잡이를 건드리면 자동 걷기가 끊기고, 짧은 탭은 웹 표식 누르기로 넘긴다.
@@ -1889,7 +1965,10 @@ class _ChurchScreenState extends State<ChurchScreen>
                   double dx = 0,
                   double dy = 0,
                   double k = 1,
-                }) => unawaited(_scene.appLook(on: on, dx: dx, dy: dy, k: k)),
+                }) {
+                  _tour.onLook(on: on, dx: dx, dy: dy);
+                  unawaited(_scene.appLook(on: on, dx: dx, dy: dy, k: k));
+                },
               ),
             ),
           if (!_sceneReleased)
@@ -2095,7 +2174,7 @@ class _ChurchScreenState extends State<ChurchScreen>
                   else if (!seatedOrPending) ...[
                     // 처음 한 번 뜨는 '가기' 안내: 위쪽(이름표·표식이 뜨는 곳)이 아니라 오른쪽 아래, 상황 버튼 바로 위에 둔다.
                     // 폭은 왼쪽 이동 안내(맨 왼쪽 140px)와 겹치지 않게 제한한다.
-                    if (_hintVisible && walking)
+                    if (_hintVisible && walking && !_tour.active)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Align(
@@ -2139,6 +2218,18 @@ class _ChurchScreenState extends State<ChurchScreen>
               ),
             ),
           ),
+          // 첫 입장 안내: 가르치는 자리와 손가락 그림 + 큰 안내 카드. 터치를 막지 않는다(카드 밖은 아래 화면으로 간다).
+          if (_tour.active && walking && !_hidden)
+            Positioned.fill(
+              child: ChurchTourOverlay(
+                controller: _tour,
+                settings: _settings,
+                scope: () => _themed,
+                stickRight: stickRight,
+                // 성가·기도 소리가 나는 중에는 안내를 읽지 않는다.
+                speakBlocked: () => _music.audible || _prayerActive,
+              ),
+            ),
         ],
       ),
     );

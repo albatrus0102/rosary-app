@@ -70,6 +70,14 @@ abstract final class Track {
   static void onboardingStep(String step) =>
       event('onboarding_step', {'step': step});
 
+  /// 첫 사용 안내: [tour] = app | church | rosary, [step]은 0부터의 단계 번호(글은 보내지 않는다).
+  static void tourStart(String tour) => event('tour_start', {'tour': tour});
+  static void tourStep(String tour, int step) =>
+      event('tour_step', {'tour': tour, 'step': step});
+  static void tourDone(String tour) => event('tour_done', {'tour': tour});
+  static void tourSkip(String tour, int step) =>
+      event('tour_skip', {'tour': tour, 'step': step});
+
   /// `guest_link{provider}`.
   static void guestLink(String provider) =>
       event('guest_link', {'provider': provider});

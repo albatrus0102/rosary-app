@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../app/settings.dart';
 import '../../app/theme.dart';
+import '../../app/track.dart';
+import 'guide_card.dart';
 import 'swipe_hint.dart';
 
 /// 첫 사용 안내(코치 마크)의 한 단계: 실제 화면의 [target] 위젯을 밝게 비추고 설명 글을 보인다.
@@ -34,10 +37,26 @@ class CoachStep {
 /// 버튼은 '다음' · '건너뛰기', 마지막 단계는 '시작해요'. 비출 수 있는 단계가 하나도 없으면 아무것도 그리지 않고
 /// [onClose]에 false(보이지 않았음)를 알린다. 한 번이라도 보였다면 마치든 건너뛰든 true.
 class CoachTour extends StatefulWidget {
-  const CoachTour({super.key, required this.steps, required this.onClose});
+  const CoachTour({
+    super.key,
+    required this.steps,
+    required this.onClose,
+    this.settings,
+    this.speakBlocked,
+    this.tourId,
+  });
+
+  /// 분석용 이름(tour_start·tour_step·tour_done·tour_skip 의 tour 값). 없으면 세지 않는다.
+  final String? tourId;
 
   final List<CoachStep> steps;
   final ValueChanged<bool> onClose;
+
+  /// 있으면 안내 글을 소리로 읽어 주고 스피커 단추를 둔다.
+  final AppSettings? settings;
+
+  /// 기도 소리(성가·선창 목소리)가 나는 중이면 true: 읽지 않는다.
+  final bool Function()? speakBlocked;
 
   @override
   State<CoachTour> createState() => _CoachTourState();
@@ -55,6 +74,7 @@ class _CoachTourState extends State<CoachTour> {
   bool _closed = false;
   int _cur = 0;
   Size? _lastSize;
+  bool _started = false;
 
   @override
   void initState() {
@@ -121,6 +141,11 @@ class _CoachTourState extends State<CoachTour> {
     final at = pos < 0 ? avail.length - 1 : pos;
     final step = shown[avail[at]]!;
     final last = at == avail.length - 1;
+    final id = widget.tourId;
+    if (!_started && id != null) {
+      _started = true;
+      Track.tourStart(id);
+    }
 
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -130,79 +155,30 @@ class _CoachTourState extends State<CoachTour> {
     );
     final below = size.height - hole.bottom >= hole.top;
 
-    final card = ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 420),
-      child: Semantics(
-        container: true,
-        liveRegion: true,
-        label: '사용법 ${at + 1}/${avail.length}. ${step.text}',
-        child: Material(
-          key: const ValueKey('coach-card'),
-          color: scheme.surfaceContainerHigh,
-          elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: AppShape.large),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpace.sm,
-              AppSpace.sm,
-              AppSpace.sm,
-              AppSpace.xs,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ExcludeSemantics(
-                  child: Text(
-                    '${at + 1} / ${avail.length}',
-                    key: const ValueKey('coach-count'),
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: scheme.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpace.xxs),
-                ExcludeSemantics(
-                  child: Text(
-                    step.text,
-                    key: const ValueKey('coach-text'),
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(height: AppSpace.xs),
-                Row(
-                  children: [
-                    if (!last)
-                      TextButton(
-                        key: const ValueKey('coach-skip'),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(64, 48),
-                        ),
-                        onPressed: () => _close(true),
-                        child: const Text('건너뛰기'),
-                      ),
-                    const Spacer(),
-                    FilledButton(
-                      key: const ValueKey('coach-next'),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(96, 48),
-                      ),
-                      onPressed: () {
-                        if (last) {
-                          _close(true);
-                        } else {
-                          setState(() => _cur = avail[at + 1]);
-                        }
-                      },
-                      child: Text(last ? '시작해요' : '다음'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    final card = GuideCard(
+      keyPrefix: 'coach',
+      counter: '${at + 1} / ${avail.length}',
+      text: step.text,
+      semanticsLabel: '사용법 ${at + 1}/${avail.length}. ${step.text}',
+      settings: widget.settings,
+      speakBlocked: widget.speakBlocked,
+      secondaryKey: const ValueKey('coach-skip'),
+      secondaryLabel: last ? null : '건너뛰기',
+      onSecondary: () {
+        if (id != null) Track.tourSkip(id, at);
+        _close(true);
+      },
+      primaryKey: const ValueKey('coach-next'),
+      primaryLabel: last ? '시작해요' : '다음',
+      onPrimary: () {
+        if (last) {
+          if (id != null) Track.tourDone(id);
+          _close(true);
+        } else {
+          if (id != null) Track.tourStep(id, at + 1);
+          setState(() => _cur = avail[at + 1]);
+        }
+      },
     );
 
     return BlockSemantics(

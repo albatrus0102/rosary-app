@@ -755,6 +755,11 @@ void main() {
       expect(m.audible, isTrue);
       expect(backends.last.playing, isTrue);
       expect(h.scene.lastArgs('setAmbient'), {'on': false});
+      expect(
+        h.scene.lastArgs('setSteps')!['chant'],
+        true,
+        reason: '성가가 울리면 발소리를 그보다 더 낮춘다(웹 stepGain)',
+      );
 
       h.settings.prayerMusicInChurch = false;
       await _settle(tester);

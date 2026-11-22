@@ -96,7 +96,7 @@ Future<void> _openScreen(
 }
 
 String _caption(WidgetTester tester) =>
-    tester.widget<Text>(find.byKey(const ValueKey('coach-text'))).data!;
+    tester.widget<Text>(find.byKey(const ValueKey('coach-text'))).data!.replaceAll('\u2060', '');
 
 String _count(WidgetTester tester) =>
     tester.widget<Text>(find.byKey(const ValueKey('coach-count'))).data!;

@@ -140,6 +140,7 @@
           var rec = list[i];
           if (!rec.view) {
             rec.view = acquire(rec.cfg);
+            if (rec.view.setGround) rec.view.setGround(logic && logic.multi ? function (x, z, y) { return logic.floorY(x, z, y + 0.2); } : null);   // 여러 층: 계단 단에 발을 디딘다
             rec.fresh = true;
             visible.push(rec);
           }
@@ -184,7 +185,7 @@
             var sp2 = Math.sqrt((x - pxx) * (x - pxx) + (z - pzz) * (z - pzz)) / Math.max(dt, 1e-3);
             if (rec.fresh) sp2 = 0;
             rec.speed += (sp2 - rec.speed) * Math.min(1, dt * 8);
-            walk = rec.speed > 0.35 ? Math.min(1, rec.speed / 3.2 + 0.2) : 0;
+            walk = rec.speed > 0.12 ? Math.min(1, rec.speed / 4.0) : 0;   // main.js 와 같은 뜻(속도/4.0). 다리는 아바타가 실제 이동량으로 움직인다(WALK_GAIT.md)
             // 여러 층: 서버는 x,z 만 보낸다 → 이전 높이(rec.fy)에서 걷기 규칙으로 따라간다(처음은 입구 층). 한 층이면 세 번째 인자를 무시한다
             if (logic && logic.multi && rec.fy === undefined) rec.fy = logic.floorY(logic.spawn.x, logic.spawn.z, logic.spawn.y === undefined ? null : logic.spawn.y);
             fl = logic ? logic.floorY(x, z, rec.fy) : 0;
@@ -233,6 +234,7 @@
         var sp0 = logic.spawn;
         for (i = 0; i < 2; i++) {
           var wv = new Av(rcfg(), {});
+          if (wv.setGround && logic.multi) wv.setGround(function (x, z, y) { return logic.floorY(x, z, y + 0.2); });
           var n = { av: wv, x: sp0.x + (i ? -1.4 : 1.4), z: sp0.z - 4 - i * 6, tx: 0, tz: 0, stuck: 0, lx: 0, lz: 0, pause: 0, fy: logic.floorY(sp0.x, sp0.z, sp0.y === undefined ? null : sp0.y) };
           n.lx = n.x; n.lz = n.z;
           wv.setPose(n.x, 0, n.z, 0); scene.add(wv.root); if (root.ChurchRenderUtil) root.ChurchRenderUtil.markCaster(wv.root); walkers.push(n);
@@ -254,7 +256,7 @@
           if (n.stuck > 1.2) { if (Math.hypot(n.x - n.lx, n.z - n.lz) < 0.3) { pick(n); } n.lx = n.x; n.lz = n.z; n.stuck = 0; }
           var yaw = Math.atan2(-dx, -dz), cur = n.av.root.rotation.y;
           var df = (yaw - cur) % (PI * 2); if (df > PI) df -= PI * 2; if (df < -PI) df += PI * 2;
-          n.av.setWalk(1);
+          n.av.setWalk(0.8 / 4.0);   // 0.8 m/s(위 sp). 예전 1 은 4 m/s 걸음이라 발이 몸보다 5배 빨리 돌았다
           n.av.setPose(n.x, n.fy, n.z, cur + df * Math.min(1, dt * 4));
           n.av.update(dt, t);
         }

@@ -738,6 +738,14 @@ abstract class ChurchSceneController {
   Future<void> setAmbient({required bool on}) =>
       _call('setAmbient', {'on': on});
 
+  /// 발소리: [on] 성당 소리(침묵·백그라운드면 false), [chant] 앱 성가가 울리는 중, [volume] 음악 음량 설정(0..1).
+  /// 웹이 크기를 늘 음악보다 작게 맞춘다(assets/church/audio.js stepGain, docs/church/WALK_GAIT.md).
+  Future<void> setSteps({
+    required bool on,
+    required bool chant,
+    required double volume,
+  }) => _call('setSteps', {'on': on, 'chant': chant, 'vol': volume});
+
   /// 카메라 설정(설정 > 성당 > 카메라): {autoZoom, dist, follow}. docs/church/CAMERA.md
   Future<void> setCamera(Map<String, Object> args) => _call('setCamera', args);
   Future<void> setHour(double hour) => _call('setHour', {'hour': hour});

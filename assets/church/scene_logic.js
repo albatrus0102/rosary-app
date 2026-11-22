@@ -7,7 +7,7 @@
   'use strict';
 
   var C = {
-    WALK_SPEED: 4.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
+    WALK_SPEED: 2.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
     SEAT_H: 0.45, BAND_NEAR: -0.62, BAND_FAR: 0.20, STAND_FWD: 0.72,
     // 여러 층(layout.levels, docs/church/interiors/assisi.md §엔진): 한 걸음에 오를 수 있는 높이, 몸이 차지하는 높이(충돌체 높이 범위와 견줌), 같은 층으로 치는 높이 차
     STEP: 0.45, BODY0: 0.15, BODY1: 1.7, SAME_LEVEL: 1.0

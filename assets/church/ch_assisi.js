@@ -7,7 +7,7 @@
      칸마다 아틀라스 한 칸 — 실제 그림을 넣을 자리) → 통로 턱(보기만) → 2연창(13세기풍 추상 모자이크 유리) → 리브 궁륭(입구부터 박사·별·중재자·별, 교차부 복음사가).
    - 하부 성당: 낮고 어두운 넓은 신랑 + 측면 경당 아치 + 가로 나르텍스(남쪽 끝 = 아래 광장 문) + 트란셉트 + 반원 후진, 파란 별 궁륭, 무덤 위 교황 제대.
      신랑 한가운데 두 줄 계단(양옆)이 내려가 한곳(층계참)에서 만나 기도방 → 둥근 묘소.
-     북쪽 트란셉트 서벽 문 → 후진 옆 계단(40단) → 테라스 복도 → 상부 성당 북쪽 트란셉트 서벽 문.
+     북쪽 트란셉트 서벽 문 → 후진 옆 계단(36단) → 테라스 복도 → 상부 성당 북쪽 트란셉트 서벽 문.
    - 지하 묘소: 하부 성당 주제대 바로 아래. 둥근 방 + 가운데 무덤 기둥(철 격자) + 모서리 벽감 4(네 동료) + 봉헌 등.
    권리(assisi.md §권리): 벽화·유리는 그리지 않는다(색면·추상 유리). 사진 질감은 사용자가 ChatGPT 로 만든 돌·별 궁륭·회벽(T-26~T-28)뿐. */
 (function () {
@@ -30,18 +30,18 @@
   var LVS = 2.4, LVR = 3.0;                  // 하부 궁륭 받침(바닥에서)·높이(정점 5.4m = 실제 약 9m)
   var CH = 2.0;                              // 경당 깊이
   // 묘소로 내려가는 두 줄 계단(신랑 한가운데, 양옆) → 층계참 → 기도방 → 둥근 방
-  var WELL = { x0: 1.25, x1: 2.35, zTop: 10.5, zBot: 4.2, n: 22 };
+  var WELL = { x0: 1.25, x1: 2.35, zTop: 4.2 + 18 * 0.38, zBot: 4.2, n: 18 };   // 18단(단 0.2 · 디딤 0.38 — 아바타 발 길이보다 길게: 발이 한 단에 다 놓인다)
   var LAND = { x: 2.35, z0: 2.0, z1: 4.2 }, PRAY = { x: 2.0, z0: -0.45, z1: 2.0 }, CRY = { x: 0, z: -3.75, r: 3.3, top: 3.2 };
   var TOMB = { hw: 0.75, h: 2.2 };
   // 하부 → 상부 계단(후진 옆 북쪽) · 테라스 복도
-  var STR = { x0: 4.0, x1: 5.8, z0: -7.6, n: 40, run: 0.3 }, TER = { x0: 6.2, x1: 8.6, z0: -21.8, z1: -19.6 }, UDOOR = { x0: 6.4, x1: 8.4 }, LDOOR = { x0: 4.0, x1: 5.8 };
-  STR.z1 = STR.z0 - STR.n * STR.run;   // -19.6
+  var STR = { x0: 4.0, x1: 5.8, z0: -7.6, n: 36, run: 0.38 }, TER = { x0: 6.2, x1: 8.6, z0: -7.6 - 36 * 0.38 - 2.2, z1: -7.6 - 36 * 0.38 }, UDOOR = { x0: 6.4, x1: 8.4 }, LDOOR = { x0: 4.0, x1: 5.8 };
+  STR.z1 = STR.z0 - STR.n * STR.run;   // -21.28
   var UAL = { x: 0, z: -1.6 }, LAL = { x: 0, z: -3.75 };   // 상부 주제대(1898년 교차부 앞으로), 하부 교황 제대(무덤 위)
 
   // (A) 레이아웃 — 순수 데이터
   var layout = {
     id: 'assisi', scalePercent: 60, ground: false,
-    bounds: { x0: -10.0, x1: 10.0, z0: -22.4, z1: 28.6 },
+    bounds: { x0: -10.0, x1: 10.0, z0: -24.0, z1: 28.6 },
     spawn: { x: 0, z: 26.3, r: 0, y: YU },
     // 여러 층(scene_logic levels): '가기' 시트의 층 줄 이름과 바로 가기 자리
     levels: [
@@ -236,7 +236,7 @@
       function colY(x0, z0, x1, z1, y0, y1) { ctx.addCollider({ x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1), y0: y0, y1: y1 }); }
       // 원(중심 cx,cz, 반지름 r) 안을 z 띠로 나눈 바닥 구역. s0..s1 = 쓸 z 범위(−1..1 = 지름 전체, −1..0 = −z 쪽 반원)
       function circleZones(cx, cz, r, s0, s1, y) {
-        var n = 10;
+        var n = 16;
         for (var q = 0; q < n; q++) {
           var t0 = s0 + (s1 - s0) * q / n, t1 = s0 + (s1 - s0) * (q + 1) / n, tm = Math.max(Math.abs(t0), Math.abs(t1));
           var hw = r * Math.sqrt(Math.max(0, 1 - tm * tm)) - 0.05;
@@ -674,7 +674,7 @@
       });
       ctx.renderSeats({ id: layout.id, seatGroups: layout.seatGroups.slice(2) }, 'bench', { surf: null, wood: 0x5a3a26, seat: 0x6a4530, back: 0x4e3220, kneelerColor: 0x4a3024 });
 
-      // --- 묘소로 내려가는 두 줄 계단(신랑 한가운데 양옆) — 우물 둘레 낮은 난간, 디딤 22단
+      // --- 묘소로 내려가는 두 줄 계단(신랑 한가운데 양옆) — 우물 둘레 낮은 난간, 디딤 18단
       level('L');
       var rise = (YL - YC) / WELL.n, run = (WELL.zTop - WELL.zBot) / WELL.n;
       [1, -1].forEach(function (sx) {
@@ -704,6 +704,7 @@
       zone(-LAND.x, LAND.x, LAND.z0, LAND.z1, YC); zone(-PRAY.x, PRAY.x, PRAY.z0, PRAY.z1, YC);
       // 둥근 방 바닥 구역: 원 안의 가로 띠들(네모 하나로 덮으면 모서리가 벽 밖 흙 속까지 '바닥'이 된다 — 카메라 공간·길 찾기가 그리로 샌다)
       circleZones(CRY.x, CRY.z, CRY.r, -1, 1, YC);
+      zone(-PRAY.x, PRAY.x, CRY.z + sqrt(CRY.r * CRY.r - PRAY.x * PRAY.x) - 0.1, PRAY.z0, YC);   // 기도방 → 둥근 방 입구(원 띠가 닿지 않는 호 앞)
       flr(cF, -LAND.x, LAND.x, LAND.z0, LAND.z1, YC); flr(cF, -PRAY.x, PRAY.x, PRAY.z0, PRAY.z1, YC);
       var NC = low ? 16 : 24;
       for (var cq = 0; cq < NC; cq++) { var c0 = cq * 2 * PI / NC, c1 = (cq + 1) * 2 * PI / NC; cF.addTris([CRY.x, YC, CRY.z, CRY.x + CRY.r * cos(c0), YC, CRY.z + CRY.r * sin(c0), CRY.x + CRY.r * cos(c1), YC, CRY.z + CRY.r * sin(c1)], 0xffffff, [CRY.x, YC + 5, CRY.z], { vary: 0 }); }
@@ -785,7 +786,7 @@
       ctx.candleStand(1, { wood: 0x3a2418 });
 
       // =================================================================== 하부 → 상부 계단(후진 옆 북쪽) + 테라스 복도
-      // 하부 북쪽 트란셉트 서벽 문(LDOOR) → 40단(단 0.165m, 디딤 0.3m) → 꼭대기 층계참 → 복도(상부 높이)를 따라 동쪽 → 상부 북쪽 트란셉트 서벽 문(UDOOR)
+      // 하부 북쪽 트란셉트 서벽 문(LDOOR) → 36단(단 0.183m, 디딤 0.38m) → 꼭대기 층계참 → 복도(상부 높이)를 따라 동쪽 → 상부 북쪽 트란셉트 서벽 문(UDOOR)
       ctx.setColliderRange(null);
       var srise = (YU - YL) / STR.n;
       zone(LDOOR.x0, LDOOR.x1, TZ0 - 0.6, TZ0, YL);
@@ -808,10 +809,10 @@
       ctx.boxAABB({ x0: TER.x0, x1: TER.x1, y0: top - 0.15, y1: top, z0: TER.z0, z1: TZ0 - 0.6, color: 0xe4d4c2, surf: 'as_stoneU' });
       col(STR.x0 - 0.6, TER.z0 - 0.6, STR.x0, TZ0 - 0.6); col(STR.x1, STR.z1, TER.x0, TZ0 - 0.6); col(TER.x1, TER.z0 - 0.6, TER.x1 + 0.6, TZ0 - 0.6); col(STR.x0 - 0.6, TER.z0 - 0.6, TER.x1 + 0.6, TER.z0);
       // 복도 옆 창 자리(테라스 — 실제는 회랑을 내려다보는 열린 테라스): 벽등 몇 개
-      [-10, -14, -18].forEach(function (z) { glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: TER.x1 - 0.02, y: YU + 2.0, z: z, vary: 0 }); glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: STR.x0 + 0.02, y: YL + 2.0 + (TZ0 - z) / (TZ0 - STR.z1) * (YU - YL), z: z, vary: 0 }); });
+      [-10, -14.5, -19].forEach(function (z) { glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: TER.x1 - 0.02, y: YU + 2.0, z: z, vary: 0 }); glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: STR.x0 + 0.02, y: YL + 2.0 + (TZ0 - z) / (TZ0 - STR.z1) * (YU - YL), z: z, vary: 0 }); });
 
       // 카메라: 맨 위 궁륭 아래까지(맨 아래층 묘소부터 상부 궁륭까지 한 공간 — cam_guard 여러 층)
-      ctx.setCameraBounds({ x0: -10.0, x1: 10.0, z0: -22.4, z1: 28.6, yMax: YU + VC - 0.3 });
+      ctx.setCameraBounds({ x0: -10.0, x1: 10.0, z0: -24.0, z1: 28.6, yMax: YU + VC - 0.3 });
       ctx.setColliderRange(null);
     }
   };

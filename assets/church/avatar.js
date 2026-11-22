@@ -1193,7 +1193,7 @@
   // 부드럽게 끊는다(0.25초에 팔을 원래 자세로). 기도 끝 성호경이었다면 기도 자세도 푼다.
   Avatar.prototype.cancelGesture = function () { if (SIGN_TL[this.emote] && !(this.abortT > 0)) this.abortT = 0.25; };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
-  Avatar.prototype.snapPose = function () { if (this.emote === 4 || this.emote === 5) { this.emote = -1; this.abortT = 0; if (!this.prayWant) { this.prayTarget = 0; this.prayStand = 0; } }  this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; };
+  Avatar.prototype.snapPose = function () { if (this.emote === 4 || this.emote === 5) { this.emote = -1; this.abortT = 0; if (!this.prayWant) { this.prayTarget = 0; this.prayStand = 0; } }  this.sitAmt = this.sitTarget; this.prayAmt = this.prayTarget; this.walkAmt = this.walkTarget; this.kneelLin = this.kneelTarget; this.kneelAmt = this.kneelTarget; this.rosaryAmt = this.rosaryTarget; if (this.gait) this.gait.ok = false; };   // 발도 새로 놓는다
   var KNEEL_DUR = 0.7, KNEEL_THIGH = 0.12, KNEEL_KNEE_R = 0.075, KNEEL_DEFAULT = { fwd: 1.22, y: 0.145, rail: true };
   // 무릎 꿇은 자세의 다리 각도와 관절 위치(순수 계산, 시험용으로도 공개). y = 무릎 받침 윗면 높이.
   // 반환: t1 허벅지, t2 종아리(허벅지 기준), hipY 고관절 높이, kneeY 무릎 관절 높이, hipBack 무릎에서 고관절까지 뒤로(m), shinBack 무릎에서 발목까지 뒤로(m)
@@ -1207,6 +1207,207 @@
   var LAP_T = [[0.095, -0.205, -0.19], [0.0, -1, 0]];   // 무릎 위 손목 목표(가슴 로컬)
   var KNEEL_FOOT = -1.45, KNEEL_HAND_Y = 0.115, KNEEL_HAND_Z = -0.30;   // 무릎 꿇을 때: 발목 각(발등 펴기), 등받이 윗단에 얹는 손목 목표(가슴 로컬)
 
+  // ------------------------------------------------------------------ 걸음(보행): 입력이 아니라 실제 이동량으로 발을 디딘다 (docs/church/WALK_GAIT.md)
+  // - 발마다 '디딤(stance)'과 '흔들기(swing)'가 있다. 디딘 발은 세계 좌표에 고정(뒤꿈치 → 발바닥 → 앞꿈치 순으로 구르는 받침점도 고정)이라 미끄러지지 않는다.
+  // - 걸음 위상은 움직인 거리 / 한 주기 보폭으로 나아간다. 벽에 막혀 안 움직이면 다리도 멈추고, 멈추거나 제자리에서 돌면 발을 고쳐 딛는다.
+  // - 보폭·디딤 비율은 속도의 함수(느리면 짧은 보폭 + 느린 걸음, 사람 보행 자료). 약 2.5 m/s 를 넘으면 사람은 걸어서 못 가므로 가벼운 잰걸음(체공 있음)으로 넘어간다.
+  // - 다리 각도는 발목 목표점으로 2관절 IK, 골반 높이는 두 다리가 닿는 높이(그래서 걸을 때 몸이 자연스럽게 오르내린다; 카메라는 루트를 따르므로 흔들리지 않는다).
+  var GAIT = {
+    REACH: (LEN_T + LEN_S) * 0.9995,
+    HEEL: [-0.075, 0.06], BALL: [-0.078, -0.21],   // 발목 기준 받침점 [y, z]: 뒤꿈치, 앞꿈치(발볼) — 밑창(avatar 신발) 윤곽 위의 점
+    TOE_Z: -0.25,                                 // 발끝(발목 기준 z)
+    TOE: 0.10,                                    // 발끝 바깥 벌림(rad; 옛 자세 0.12)
+    WIDTH0: 2 * HX, WIDTH: 0.13,                  // 서 있을 때 / 걸을 때 두 발 중심 간격(m)
+    JOG0: 99, JOG1: 100,                          // 잰걸음 끔(사용자 지시 2026-11-22 「성당에서 뛰는 거 아냐」, 최고 속도 2 m/s 빠른 걸음)
+    SETTLE: 1.25,                                 // 멈춰 서거나 제자리에서 돌 때 발을 고쳐 딛는 주기(주기/초)
+    TELE: 1.5,                                    // 한 번에 이보다 멀리 옮겨지면(순간 이동) 발을 새로 놓는다(m)
+    VMAX: 9                                       // 이보다 빠른 이동도 순간 이동으로 본다(m/s)
+  };
+  // 한 걸음 길이(m): 걷기는 사람 보행 자료(1.2 m/s 에서 0.68 m, 속도^0.55, 다리 길이로 0.80 m 까지), 잰걸음은 0.45·v^0.68
+  function stepLen(v, j) { var vv = Math.max(v, 0.02); return Math.max(0.11, lerp(Math.min(0.80, 0.68 * Math.pow(vv / 1.2, 0.55)), 0.45 * Math.pow(vv, 0.68), j)); }
+  function dutyOf(v, j) { return lerp(clamp(0.64 - 0.05 * v, 0.53, 0.63), 0.36, j); }   // 한 주기에서 발이 땅에 있는 비율
+  function minJerk(s) { return s * s * s * (10 + s * (-15 + 6 * s)); }
+  function wrapPI(a) { a = (a + PI) % TAU; if (a < 0) a += TAU; return a - PI; }
+  function frac(x) { return x - Math.floor(x); }
+  function stancePitch(us, hs, to) { if (us < 0.14) return hs * (1 - sm(us / 0.14)); if (us > 0.5) return -to * Math.pow(sm((us - 0.5) / 0.5), 1.4); return 0; }
+  // 디딘 자리(F: 발목 바로 밑 바닥 점 x,y,z + 발 방향 yaw)와 발 기울기 p(+ 발끝 듦: 뒤꿈치가 받침, - 뒤꿈치 듦: 앞꿈치가 받침) → 발목 세계 좌표
+  function ankleAt(F, p, out) {
+    var pv = p >= 0 ? GAIT.HEEL : GAIT.BALL, cy = Math.cos(p), sy = Math.sin(p);
+    var ly = -pv[0], lz = -pv[1], fy = pv[0] + ly * cy - lz * sy, fz = pv[1] + ly * sy + lz * cy;
+    out.x = F.x + fz * Math.sin(F.yaw); out.z = F.z + fz * Math.cos(F.yaw); out.y = F.y + ANKLE + fy;
+    return out;
+  }
+  // 기울기 p 일 때 발목 높이 기준 밑창의 가장 낮은 점(발끝·뒤꿈치)
+  function soleLow(p) { var c = Math.cos(p), s = Math.sin(p); return Math.min(-0.085 * c - GAIT.TOE_Z * s, -0.085 * c - 0.09 * s, -0.085 * c); }
+
+  function Gait() {
+    this.ok = false; this.px = 0; this.pz = 0; this.pyaw = 0; this.vx = 0; this.vz = 0; this.v = 0; this.rate = 0; this.ph = 0.05; this.settle = false; this.spin = 0;
+    this.f = [0, 1].map(function () { return { st: 1, x: 0, y: 0, z: 0, yaw: 0, tx: 0, ty: 0, tz: 0, tyaw: 0, sx: 0, sy: 0, sz: 0, sp: 0, syaw: 0, b: 0.6, ax: 0, ay: 0, az: 0, p: 0, ayaw: 0, u: 0 }; });
+    this.hx = 0; this.hy = HIPS_Y; this.yaw = 0; this.roll = 0; this.wi = 0; this.j = 0; this.uR = 0; this.sw = 0; this.ev = null;
+    this.leg = [{ t1: 0, t2: 0, psi: 0, gam: 0, q: new T.Quaternion() }, { t1: 0, t2: 0, psi: 0, gam: 0, q: new T.Quaternion() }];
+  }
+  var _A = { x: 0, y: 0, z: 0 }, _B = { x: 0, y: 0, z: 0 }, _T = { x: 0, y: 0, z: 0, yaw: 0 }, _gq = new T.Quaternion(), _gq2 = new T.Quaternion(), _gv = new T.Vector3(), _ge = new T.Euler();
+  // 계단(ground 가 있을 때): 발 밑창(뒤꿈치 ~ 발끝)이 한 단 위에 다 들어가는 자리로 디딜 곳을 앞뒤 ±0.2m 안에서 옮긴다.
+  // 그런 자리가 없으면 밑창 아래 바닥 가운데 높은 쪽에 디딘다(파묻히지 않게 — 뒤꿈치나 발끝이 단 끝 밖으로 조금 나간다).
+  var TREAD_OFF = [0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2];
+  Gait.prototype.footOnTread = function (F, ry) {
+    var fx = -Math.sin(F.tyaw), fz = -Math.cos(F.tyaw), g = this.ground, x0 = F.tx, z0 = F.tz, best = null;
+    for (var i = 0; i < TREAD_OFF.length && best === null; i++) {
+      var o = TREAD_OFF[i], x = x0 + fx * o, z = z0 + fz * o;
+      var yT = g(x + fx * 0.27, z + fz * 0.27, ry), yH = g(x - fx * 0.11, z - fz * 0.11, ry), yM = g(x + fx * 0.08, z + fz * 0.08, ry);
+      if (Math.abs(yT - yH) < 0.01 && Math.abs(yM - yH) < 0.01) best = { x: x, z: z, y: yH };
+    }
+    if (!best) best = { x: x0, z: z0, y: Math.max(g(x0 + fx * 0.27, z0 + fz * 0.27, ry), g(x0 - fx * 0.11, z0 - fz * 0.11, ry), g(x0, z0, ry)) };
+    F.tx = best.x; F.tz = best.z; F.ty = best.y;
+  };
+  // 발을 쉬는 자리(루트 옆)에 놓는다
+  Gait.prototype.restOf = function (k, rx, ry, rz, yaw, width, out) {
+    var side = k ? 1 : -1, lx = side * width / 2;
+    out.x = rx + lx * Math.cos(yaw); out.z = rz - lx * Math.sin(yaw); out.y = ry; out.yaw = yaw - side * GAIT.TOE;
+    return out;
+  };
+  Gait.prototype.reset = function (rx, ry, rz, yaw) {
+    for (var k = 0; k < 2; k++) {
+      var F = this.f[k];
+      this.restOf(k, rx, ry, rz, yaw, GAIT.WIDTH0, F); F.st = 1; F.p = 0;
+      ankleAt(F, 0, _A); F.ax = _A.x; F.ay = _A.y; F.az = _A.z; F.ayaw = F.yaw; F.u = frac(0.05 + (k ? 0 : 0.5));
+    }
+    this.px = rx; this.pz = rz; this.pyaw = yaw; this.vx = this.vz = this.v = 0; this.rate = 0; this.ph = 0.05; this.settle = false; this.ok = true;
+  };
+  // 한 프레임: 루트(rx,ry,rz,yaw)가 지난 프레임에서 옮겨 간 만큼 걷는다. active=false(앉기·무릎 꿇기)면 발을 쉬는 자리에 붙인다.
+  // t: 시각(s), ws: 서 있을 때 체중 이동(-1..1)
+  Gait.prototype.step = function (dt, rx, ry, rz, yaw, active, ws) {
+    var dx = rx - this.px, dz = rz - this.pz, d = Math.sqrt(dx * dx + dz * dz), dyaw = wrapPI(yaw - this.pyaw), k, F;
+    if (!this.ok || !active || d > GAIT.TELE || d > GAIT.VMAX * Math.max(dt, 1 / 60) || !(dt > 0)) { this.reset(rx, ry, rz, yaw); d = 0; dyaw = 0; dx = dz = 0; }
+    this.px = rx; this.pz = rz; this.pyaw = yaw;
+    var idt = 1 / Math.max(dt, 1e-3), kv = Math.min(1, dt * 14);
+    this.vx += (dx * idt - this.vx) * kv; this.vz += (dz * idt - this.vz) * kv;
+    var v = this.v = Math.sqrt(this.vx * this.vx + this.vz * this.vz);
+    var j = this.j = sm((v - GAIT.JOG0) / (GAIT.JOG1 - GAIT.JOG0)), wi = this.wi = clamp01(v / 1.6);
+    var L = stepLen(v, j), S = 2 * L, beta = dutyOf(v, j), width = lerp(GAIT.WIDTH0, GAIT.WIDTH, sm(v / 0.8));
+    // 발을 고쳐 디딜지: 거의 멈췄는데 발이 쉬는 자리에서 벗어나 있거나, 제자리에서 돌고 있다
+    this.spin += (Math.abs(dyaw) * idt - this.spin) * Math.min(1, dt * 10);
+    var off = false;
+    for (k = 0; k < 2; k++) {
+      F = this.f[k];
+      if (!F.st) { off = true; continue; }
+      this.restOf(k, rx, ry, rz, yaw, width, _B);
+      if ((F.x - _B.x) * (F.x - _B.x) + (F.z - _B.z) * (F.z - _B.z) > 0.0036 || Math.abs(wrapPI(F.yaw - _B.yaw)) > 0.3) off = true;
+    }
+    var still = v < 0.12;
+    if (still && (off || this.spin > 0.6)) this.settle = true;
+    var dph = active ? d / S : 0;
+    if (this.settle) dph = Math.max(dph, dt * GAIT.SETTLE);
+    if (dph > 0.45) { this.reset(rx, ry, rz, yaw); dph = 0; }
+    this.rate += (dph * idt - this.rate) * Math.min(1, dt * 8);
+    this.ph = frac(this.ph + dph);
+    var ia = sm(v / 1.1), hs = 0.24 * ia * (1 - 0.6 * j), to = 0.70 * ia + 0.15 * j;
+    var lift = 0.022 + 0.035 * sm(v / 1.5) + 0.09 * j;
+    var dirx, dirz;
+    if (v > 0.05) { dirx = this.vx / v; dirz = this.vz / v; } else { dirx = -Math.sin(yaw); dirz = -Math.cos(yaw); }
+    var ev = null, bothDown = true;
+    for (k = 0; k < 2; k++) {
+      F = this.f[k];
+      var u = frac(this.ph + (k ? 0 : 0.5)), side = k ? 1 : -1;
+      if (!F.st && u < F.u) {   // 착지(위상이 한 바퀴 돌았다): 지난 프레임에 정한 자리에 디딘다
+        F.st = 1; F.x = F.tx; F.y = F.ty; F.z = F.tz; F.yaw = F.tyaw;
+        ev = { side: side, v: v };
+      } else {
+        // 착지 예정 자리: 남은 흔들기 시간 뒤 루트 + 진행 방향으로 디딤 길이의 절반
+        var rem = Math.min(0.5, (1 - u) / Math.max(this.rate, 0.3));
+        this.restOf(k, rx + this.vx * rem, ry, rz + this.vz * rem, yaw, width, _B);
+        var reach = 0.5 * beta * S * 0.92 * clamp01(v / 0.3);
+        F.tx = _B.x + dirx * reach; F.tz = _B.z + dirz * reach; F.tyaw = _B.yaw;
+        // 디딜 자리의 바닥 높이: ground(x,z,루트 높이)가 있으면 그 자리 바닥(여러 층 성당의 계단 — 발이 단에 파묻히거나 뜨지 않게), 없으면 루트 높이(예전 그대로)
+        if (this.ground) this.footOnTread(F, ry); else F.ty = ry;
+        if (F.st && u >= beta && u > F.u && dph > 0) {          // 들어 올린다
+          F.st = 0; F.sx = F.ax; F.sy = F.ay; F.sz = F.az; F.sp = F.p; F.syaw = F.ayaw; F.b = beta;
+        }
+      }
+      F.u = u;
+      if (F.st) {
+        var us = clamp01(u / beta);
+        if (u >= beta) us = 1;
+        F.p = stancePitch(us, hs, to);
+        ankleAt(F, F.p, _A); F.ax = _A.x; F.ay = _A.y; F.az = _A.z; F.ayaw = F.yaw;
+      } else {
+        bothDown = false;
+        var s = clamp01((u - F.b) / (1 - F.b)), e = minJerk(s);
+        _T.x = F.tx; _T.y = F.ty; _T.z = F.tz; _T.yaw = F.tyaw;
+        ankleAt(_T, hs, _A);
+        F.p = lerp(F.sp, hs, sm(s / 0.75));
+        F.ax = lerp(F.sx, _A.x, e); F.az = lerp(F.sz, _A.z, e);
+        // 계단을 오를 때는 단 높이만큼 더 들어 올린다(발끝이 챌판에 걸리지 않게). ground 가 없으면 ty = 루트 높이라 예전과 같다
+        var up = this.ground ? Math.max(0, F.ty + ANKLE - F.sy) : 0;
+        F.ay = lerp(F.sy, _A.y, up > 0.02 ? Math.min(1, e * 1.6) : e) + (lift + up * 0.9) * Math.sin(PI * Math.pow(s, 0.8));
+        F.ayaw = F.syaw + wrapPI(F.tyaw - F.syaw) * e;
+        var floorY = Math.min(F.sy, _A.y) - ANKLE;   // 흔드는 발끝·뒤꿈치가 바닥을 파고들지 않게
+        var low = F.ay + soleLow(F.p);
+        if (low < floorY + 0.004) F.ay += floorY + 0.004 - low;
+        if (this.ground) {   // 계단: 흔드는 발의 밑창(뒤꿈치·가운데·발끝)이 그 아래 단에 들어가지 않게(내려갈 때 단 끝을 넘기 전에 내려앉지 않는다)
+          var gfx = -Math.sin(F.ayaw), gfz = -Math.cos(F.ayaw), gg = this.ground;
+          var gy = Math.max(gg(F.ax + gfx * 0.27, F.az + gfz * 0.27, ry), gg(F.ax - gfx * 0.11, F.az - gfz * 0.11, ry), gg(F.ax + gfx * 0.08, F.az + gfz * 0.08, ry)) + ANKLE;
+          low = F.ay + soleLow(F.p);
+          if (low < gy - ANKLE + 0.004) F.ay += gy - ANKLE + 0.004 - low;
+        }
+      }
+    }
+    if (this.settle && bothDown && !off && still) this.settle = false;
+    this.ev = ev;
+    // ---- 골반: 디딘 발 쪽으로 옆 이동, 다리를 따라 비틀림(어깨는 반대로), 흔드는 쪽이 조금 내려간다 ----
+    var uR = this.uR = this.f[1].u, gw = sm(wi * 3);
+    this.sw = Math.cos(TAU * uR);
+    var mid = TAU * (uR - beta / 2);
+    this.hx = (0.016 * Math.cos(mid) * (1 - j * 0.5)) * gw + 0.012 * ws;
+    this.yaw = (0.035 + 0.045 * wi) * this.sw * gw;
+    this.roll = 0.035 * Math.cos(mid) * gw * (1 - j * 0.5) - 0.03 * ws;
+    // 골반 높이: 기준 높이와 두 발목이 닿는 높이 중 낮은 쪽(잰걸음은 디딘 동안 무릎을 굽혀 더 낮춘다)
+    var bump = 0;
+    for (k = 0; k < 2; k++) if (this.f[k].st) bump = Math.max(bump, Math.sin(PI * clamp01(this.f[k].u / beta)));
+    var y0 = HIPS_Y - 0.001 - (0.006 * sm(v / 1.2) + 0.02 * sm((v - 1.2) / 1.0) + 0.03 * j) - (0.05 * j + 0.012 * ia * (1 - j)) * bump;
+    var cyw = Math.cos(yaw), syw = Math.sin(yaw), cps = Math.cos(this.yaw), sps = Math.sin(this.yaw), cr = Math.cos(this.roll), sr = Math.sin(this.roll);
+    var hy = y0;
+    for (k = 0; k < 2; k++) {
+      F = this.f[k]; side = k ? 1 : -1;
+      var ax = F.ax - rx, az = F.az - rz, lx = ax * cyw - az * syw, lz = ax * syw + az * cyw;
+      var jxr = side * HX * cr + 0.05 * sr, jy = side * HX * sr - (HIPS_Y - HIP_JOINT) * cr;
+      var jx = this.hx + jxr * cps, jz = -jxr * sps;
+      var hd2 = (lx - jx) * (lx - jx) + (lz - jz) * (lz - jz);
+      // 디딘 직후(디딤의 0~30%)에는 무릎을 조금 굽혀 받는다(하중 반응). 흔드는 발은 착지 직전에만 골반 높이를 잡는다(그 전에는 무릎을 더 굽힌다).
+      var uu = clamp01(F.u / beta), load = F.st && uu < 0.3 ? 0.012 * ia * (1 - j) * Math.sin(PI * uu / 0.3) : 0;
+      if (!F.st) load = -0.2 * (1 - sm((clamp01((F.u - F.b) / (1 - F.b)) - 0.75) / 0.25));
+      var hm = (F.ay - ry) + Math.sqrt(Math.max(0, GAIT.REACH * GAIT.REACH - hd2)) - jy - load;
+      if (hm < hy) hy = hm;
+    }
+    this.hy = Math.max(hy, 0.55);
+    // ---- 다리 IK(골반 기준) ----
+    _ge.set(0, this.yaw, this.roll, 'YXZ'); _gq.setFromEuler(_ge).invert();
+    for (k = 0; k < 2; k++) {
+      F = this.f[k]; side = k ? 1 : -1;
+      var bx = F.ax - rx, bz = F.az - rz;
+      _gv.set(bx * cyw - bz * syw - this.hx, F.ay - ry - this.hy, bx * syw + bz * cyw).applyQuaternion(_gq);
+      _gv.x -= side * HX; _gv.y -= HIP_JOINT - HIPS_Y;
+      var fy = wrapPI(F.ayaw - yaw), rel = wrapPI(fy - this.yaw) + side * GAIT.TOE;
+      var psi = clamp(0.8 * rel, -0.5, 0.5), cp = Math.cos(psi), sp = Math.sin(psi);
+      var X = _gv.x * cp - _gv.z * sp, Y = _gv.y, Z = _gv.x * sp + _gv.z * cp;
+      var dist = Math.sqrt(X * X + Y * Y + Z * Z), dc = clamp(dist, 0.2, LEN_T + LEN_S - 1e-4);
+      if (dc !== dist && dist > 1e-6) { X *= dc / dist; Y *= dc / dist; Z *= dc / dist; }
+      var ck = clamp((dc * dc - LEN_T * LEN_T - LEN_S * LEN_S) / (2 * LEN_T * LEN_S), -1, 1), kn = Math.acos(ck);
+      var P = LEN_T + LEN_S * ck, gam = Math.asin(clamp(X / P, -1, 1)), Q = P * Math.cos(gam), R = -LEN_S * Math.sin(kn), det = Q * Q + R * R;
+      var lg = this.leg[k];
+      lg.t1 = Math.atan2((R * Y - Q * Z) / det, (-Q * Y - R * Z) / det); lg.t2 = -kn; lg.psi = psi; lg.gam = gam;
+      // 발: 원하는 방향(골반 기준) = 골반⁻¹ · 발 yaw · 발 기울기, 발 뼈 로컬 = (허벅지·종아리)⁻¹ · 그것
+      _ge.set(F.p, fy, 0, 'YXZ'); lg.q.setFromEuler(_ge).premultiply(_gq);
+      _ge.set(lg.t1, psi, gam, 'YXZ'); _gq2.setFromEuler(_ge);
+      _ge.set(lg.t2, 0, 0, 'YXZ'); _gq2.multiply(_q3.setFromEuler(_ge)).invert();
+      lg.q.premultiply(_gq2);
+    }
+    return this;
+  };
+  // 발을 디딜 바닥 높이 함수(x, z, 루트 높이) → y. 여러 층 성당(계단이 층을 잇는 곳)에서 main.js·net_view.js 가 준다. null 이면 루트 높이(예전 그대로)
+  Avatar.prototype.setGround = function (fn) { var g = this.gait || (this.gait = new Gait()); g.ground = typeof fn === 'function' ? fn : null; };
+  Avatar.prototype.takeStep = function () { var g = this.gait, e = g && g.ev; if (g) g.ev = null; return e || null; };   // 이번 프레임에 디딘 발({side, v}) — main.js 가 발소리를 낸다
+
   Avatar.prototype.update = function (dt, t) {
     var k = Math.min(1, dt * 10);
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
@@ -1215,13 +1416,7 @@
     this.rosaryAmt += (this.rosaryTarget - this.rosaryAmt) * Math.min(1, dt * ROSARY.FADE);
     var kl = this.kneelLin, kt = this.kneelTarget;
     if (kl !== kt) { kl += (kt > kl ? 1 : -1) * dt / KNEEL_DUR; this.kneelLin = kl = clamp01(kt > this.kneelLin ? Math.min(kl, kt) : Math.max(kl, kt)); this.kneelAmt = sm(kl); }
-    var sa = this.sitAmt, w = this.walkAmt * (1 - sa), pa = this.prayAmt * Math.max(sa, this.prayStand || 0), ka = this.kneelAmt * sa;
-    // 걸음 속도: 보폭과 주기를 맞춰 발이 미끄러지지 않게(이동속도 ≈ 4.0*walkAmt m/s)
-    var A = (0.09 + 0.27 * w) * sm(w * 6);
-    if (w > 0.01) {
-      var vReal = 4.0 * w, stepLen = Math.max(0.25, 2 * 0.84 * Math.sin(Math.min(0.9, A)) * 0.95);
-      this.phase += dt * PI * vReal / stepLen;
-    }
+    var sa = this.sitAmt, pa = this.prayAmt * Math.max(sa, this.prayStand || 0), ka = this.kneelAmt * sa;
     var emoting = this.emote >= 0, eU = 0, eEnv = 0, sp = null, jw = 0;
     if (emoting) {
       this.emoteT += dt; eU = this.emoteT / EMOTE_DUR[this.emote];
@@ -1240,53 +1435,54 @@
       // 원거리 임포스터: 무릎 꿇으면 앉은 모양을 앞으로 옮기고 조금 올린다
       if (this.imp) this.imp.position.set(0, ka > 0.001 ? (kneelPose(this.kneelY).hipY - 0.529) * ka : 0, -ka * (this.kneelFwd + SEAT_BACK));
       this.shadow.visible = false;
+      if (this.gait) this.gait.ok = false;   // 다시 가까워지면 발을 새로 놓는다
       return;
     }
-    var bs = this.bones, ph = this.phase, thR = ph, thL = ph + PI;
-    var sR = Math.sin(thR);
+    var bs = this.bones;
     var br = Math.sin(t * 1.6 + this.off);          // 숨쉬기
-    var ws = Math.sin(t * 0.7 + this.off) * (1 - w) * (1 - sa);   // 체중 이동
 
-    // ---- 다리 각도(서기: 보행/대기, 앉기: 90도 굽힘) ----
-    function wrapA(a) { a = (a + PI) % TAU; if (a < 0) a += TAU; return a - PI; }
-    function kneeFlex(th, Kmax) { var d1 = wrapA(th + 0.4) / 0.95, d2 = wrapA(th - PI / 2 - 0.55) / 0.5; return 0.06 + Kmax * Math.exp(-d1 * d1) + 0.22 * w * Math.exp(-d2 * d2); }
-    var Kmax = 0.30 + 0.6 * w;
-    var hR = A * Math.sin(thR) + 0.03 * w, hL = A * Math.sin(thL) + 0.03 * w;
-    var kR = kneeFlex(thR, Kmax), kL = kneeFlex(thL, Kmax);
-    var relax = Math.max(0, ws) * 0.06, relaxL = Math.max(0, -ws) * 0.06;
-    kR += relax * (1 - w); kL += relaxL * (1 - w);
-    var t1R = lerp(hR, 1.45, sa), t1L = lerp(hL, 1.45, sa);
-    var t2R = lerp(-kR, -1.65, sa), t2L = lerp(-kL, -1.65, sa);
+    // ---- 걸음(실제 이동량으로; 앉기·무릎 꿇기 중에는 발을 쉬는 자리에 둔다) ----
+    var g = this.gait || (this.gait = new Gait()), rp = this.root.position;
+    var ws0 = Math.sin(t * 0.7 + this.off) * (1 - sa);
+    g.step(dt, rp.x, rp.y, rp.z, this.root.rotation.y, this.sitTarget === 0 && this.sitAmt < 0.02 && this.kneelAmt < 0.01, ws0 * (1 - g.wi));
+    var w = g.wi * (1 - sa), jg = g.j * (1 - sa), sR = g.sw * sm(w * 4), ph = TAU * g.uR;   // sR: 오른다리가 앞일 때 +1(서 있으면 0 — 팔은 가만히)
+    this.phase = ph;
+    var ws = ws0 * (1 - w);   // 체중 이동
+    var cw = sm(clamp01(sa * 4));   // 앉기·무릎 꿇기 쪽으로 넘어간 정도(1 이면 옛 계산 그대로)
+    var lR = g.leg[1], lL = g.leg[0];
+
+    // ---- 다리 각도(서기: IK 보행/대기, 앉기: 90도 굽힘) ----
+    var t1R = lerp(lR.t1, 1.45, sa), t1L = lerp(lL.t1, 1.45, sa);
+    var t2R = lerp(lR.t2, -1.65, sa), t2L = lerp(lL.t2, -1.65, sa);
     var KP = null;
     if (ka > 0.001) {   // 무릎 꿇기: 허벅지는 거의 수직, 종아리는 뒤로 눕고 발목은 바닥
       KP = kneelPose(this.kneelY);
       t1R = lerp(t1R, KP.t1, ka); t1L = lerp(t1L, KP.t1, ka); t2R = lerp(t2R, KP.t2, ka); t2L = lerp(t2L, KP.t2, ka);
     }
-    // 발 피치(바닥과 평행 + 걸을 때 앞꿈치 들기/발끝 뒤꿈치)
-    function footPitch(h, a, sw) { return (-0.5 * sm((-h / Math.max(a, 0.05) - 0.35) / 0.65) + 0.18 * sm((h / Math.max(a, 0.05) - 0.5) / 0.5)) * sw; }
-    var pR = footPitch(hR, A, w), pL = footPitch(hL, A, w);
-    var fR = pR - (t1R + t2R), fL = pL - (t1L + t2L);
+    // 발: 서 있으면 IK 가 정한 방향, 앉기·무릎 꿇기로 가면 옛 계산(바닥과 평행, 무릎 꿇으면 발등 펴기)
+    var fR = -(t1R + t2R), fL = -(t1L + t2L);
     if (KP) { fR = lerp(fR, KNEEL_FOOT, ka); fL = lerp(fL, KNEEL_FOOT, ka); }   // 발등을 펴서 발끝이 뒤로
-    // 골반 높이: 발이 바닥 아래로 가지 않도록(더 낮은 쪽 다리에 맞춤)
+    // 골반 높이: 서 있으면 두 발이 닿는 높이(IK), 앉기 쪽은 발이 바닥 아래로 가지 않도록(더 낮은 쪽 다리에 맞춤)
     var hjR = ANKLE + LEN_T * Math.cos(t1R) + LEN_S * Math.cos(t1R + t2R), hjL = ANKLE + LEN_T * Math.cos(t1L) + LEN_S * Math.cos(t1L + t2L);
     var hipJ = Math.max(hjR, hjL);
     var bob = Math.sin(t * 2.1 + this.off) * 0.0015;
     var hips = bs[B.hips];
     var hipZ = SEAT_BACK * sa;
     if (KP) hipZ = lerp(hipZ, -(this.kneelFwd - KP.hipBack), ka);   // 무릎이 무릎틀 중심 위에 오도록 몸을 앞으로
-    hips.position.set(0.012 * ws + 0.008 * w * sR * 0.0, hipJ + (HIPS_Y - HIP_JOINT) + bob, hipZ);
-    setE(bs[B.ulR], t1R, 0, -0.019 * ws + 0.05 * sa + (-0.02) * w * 0);
-    setE(bs[B.ulL], t1L, 0, -0.019 * ws - 0.05 * sa);
+    hips.position.set(g.hx * (1 - cw), lerp(g.hy, hipJ + (HIPS_Y - HIP_JOINT), cw) + bob, hipZ);
+    setE(bs[B.ulR], t1R, lR.psi * (1 - cw), lerp(lR.gam, 0.05, sa));
+    setE(bs[B.ulL], t1L, lL.psi * (1 - cw), lerp(lL.gam, -0.05, sa));
     setE(bs[B.llR], t2R, 0, 0); setE(bs[B.llL], t2L, 0, 0);
     setE(bs[B.ftR], fR, -0.12 * (1 - sa * 0.5), 0); setE(bs[B.ftL], fL, 0.12 * (1 - sa * 0.5), 0);
+    if (cw < 1) { bs[B.ftR].quaternion.slerp(lR.q, 1 - cw); bs[B.ftL].quaternion.slerp(lL.q, 1 - cw); }   // cw = 0(서 있음)이면 IK 발 방향 그대로
 
     // ---- 몸통 ----
-    var turn = 0.075 * (0.5 + w) * sR * w;
-    var lean = -0.04 * w;
+    var turn = g.yaw * (1 - cw);
+    var lean = -(0.06 * sm(w * 2) + 0.06 * jg);
     var hipsRy = turn, spineRy = -0.8 * turn, chestRy = -0.8 * turn;
     var spX = lerp(lean - 0.02, -0.02, sa) + (-0.10) * pa + (-0.40) * bow - 0.05 * jw;
     var chX = lerp(-0.012 + br * 0.006, -0.03, sa) + (-0.07) * pa + (-0.25) * bow;
-    setE(hips, 0, hipsRy, 0.0);
+    setE(hips, 0, hipsRy, g.roll * (1 - cw));
     var sk = sa * (1 - ka);
     // 아랫자락: 뒷자락(skirt)은 앉으면 좌석판 위로 접히고(원피스는 더 많이), 앞자락(ckL/ckR)은 허벅지를 따라간다.
     // 무릎 꿇으면 앞자락을 조금 뒤로 당겨 앞줄 등받이에 닿지 않게 한다.
@@ -1302,11 +1498,11 @@
     var nodv = 0;
     if (this.nod && pa > 0.5) { var ph2 = Math.sin(t * 0.55 + this.nodPh); nodv = ph2 > 0.93 ? (ph2 - 0.93) * 4 : 0; }
     var gaze = Math.sin(t * 0.37 + this.off) * Math.sin(t * 0.11 + this.off * 2) * (1 - pa);
-    setE(bs[B.neck], 0.02 - 0.20 * pa - 0.12 * bow - 0.14 * jw - nodv * 0.4, (gaze * 0.12) * (1 - w) - (hipsRy + spineRy + chestRy) * 0.0, Math.sin(ph * 0.5) * 0.03 * w);
+    setE(bs[B.neck], 0.02 - 0.20 * pa - 0.12 * bow - 0.14 * jw - nodv * 0.4, (gaze * 0.12) * (1 - w) - (hipsRy + spineRy + chestRy) * 0.0, Math.sin(ph) * 0.02 * w);
     setE(bs[B.head], -0.02 - 0.28 * pa - 0.10 * bow - 0.16 * jw - nodv * 0.6 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
 
     // ---- 팔 ----
-    var armA = 0.10 + 0.34 * w, elb = 0.20 + 0.30 * w + 0.04 * br, side, qs = this.qs;
+    var armA = 0.10 + 0.22 * w + 0.10 * jg, elb = 0.20 + 0.22 * w + 0.85 * jg + 0.04 * br, side, qs = this.qs;   // 팔 흔들기: 보통 걸음(1.2 m/s)에서 위팔 약 30°, 잰걸음은 팔꿈치를 굽힌다
     var weightL = sa, weightP = pa;
     for (side = -1; side <= 1; side += 2) {
       var ua = bs[side > 0 ? B.uaR : B.uaL], fa = bs[side > 0 ? B.faR : B.faL], ha = bs[side > 0 ? B.haR : B.haL];

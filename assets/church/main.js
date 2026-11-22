@@ -61,6 +61,7 @@
   // '가기' 메뉴의 성모상 줄 이름(shrine_places.go_ko, 기본 '성모상').
   function shrineGoLabel(id) { var P = root.ChurchShrinePlaces, p = P && P[id]; return (p && p.go_ko) || '성모상'; }
   var nearShrineNow = false;
+  function groundFn(logic) { return logic && logic.multi ? function (x, z, y) { return logic.floorY(x, z, y + 0.2); } : null; }
   // 여러 층 성당이면 pos·restored 에 발 높이 y 를 붙인다(이어 들어갈 때 같은 층으로). 한 층 성당의 이벤트 모양은 그대로
   function posEv(o) { if (App.logic && App.logic.multi && App.me && typeof App.me.fy === 'number') o.y = r2(App.me.fy); return o; }   // nearStation 이 고른 곳이 성모상 앞인가(제대 앞과 같은 'altar' 칩이지만 묵주기도를 서서 한다)
   function setNear(seat, candle, station) {
@@ -96,6 +97,8 @@
       return;
     }
     App.net.setLogic(w.logic); App.crowd.setLogic(w.logic);
+    // 여러 층 성당: 발을 디딜 바닥 = 그 자리의 지금 층 바닥(계단 단마다 발이 단 위에 놓인다). 한 층 성당은 예전처럼 루트 높이
+    if (App.meAv.setGround) App.meAv.setGround(groundFn(w.logic));
     if (App.place) App.place.load(w);   // 이 성당의 진본 사진 창을 비동기로 건다(없거나 못 읽으면 절차적 유리 그대로)
     var sp = w.layout.spawn;
     var me = App.me;
@@ -251,6 +254,7 @@
     if (!App.paused) return;
     App.paused = false;
     if (App.ambient) { try { root.ChurchAudio.setAmbient(true); } catch (e) { /* ignore */ } }
+    else { try { root.ChurchAudio.resume(); } catch (e) { /* ignore */ } }   // 오르간은 꺼져 있어도 발소리가 켜져 있으면 다시 깨운다
     kick();   // App.last 를 지금으로 맞추고 다시 그린다(멈춰 있던 시간만큼 건너뛰지 않는다)
   }
   // 새 장면(WebView 를 다시 만든 뒤)에 저장해 둔 상태를 적용한다. 좌석에 이미 누가 있으면 그 줄 통로에 세운다. → {e:'restored'}
@@ -423,6 +427,7 @@
     // 카메라 설정(설정 > 성당 > 카메라, docs/church/CAMERA.md): autoZoom(벽 피하기) · dist('near'|'normal'|'far') · follow(걸을 때 뒤로 정렬)
     setCamera: function (o) { applyCamCfg(o); },
     setAmbient: function (o) { App.ambient = !!o.on; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); },
+    setSteps: function (o) { root.ChurchAudio.setSteps(o || {}); },   // 발소리: {on, chant, vol} (audio.js setSteps)
     setHour: function (o) { if (App.world) App.world.setHour(+o.hour); },
     // 전례 시기 장식(SPEC §33): {season, color, week?, feast?, memorial?}. 장면을 시작하기 전에 와도 기억해 둔다.
     setLiturgy: function (o) { if (root.ChurchLiturgy) { root.ChurchLiturgy.set(o); kick(); } },
@@ -620,8 +625,8 @@
         App.turn.t -= dt; if (App.turn.t <= 0) App.turn = null;
       }
       me.speed = sp;
-      av.setWalk(Math.min(1, sp / 4.0 * 1.05));
-      if (sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5); } }
+      av.setWalk(Math.min(1, sp / 2.0 * 1.05));
+      if (!av.takeStep && sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5, sp); } }   // 발 디딤을 알려 주지 않는 아바타(glb)만 시간 간격으로
       // 여러 층: 지금 발 높이(me.fy)에서 한 걸음 안의 가장 높은 바닥 → 계단을 오르내리며 층이 바뀐다(한 층 성당은 예전과 같은 값)
       var fy = logic.floorY(me.x, me.z, me.fy);
       me.fy = fy;
@@ -668,6 +673,9 @@
     }
     av.setPose(me.x, me.y, me.z, me.yaw);
     av.update(dt, t);
+    // 발소리: 아바타가 실제로 발을 디딘 순간에(벽에 막혀 제자리면 나지 않는다). docs/church/WALK_GAIT.md
+    var stepEv = av.takeStep ? av.takeStep() : null;
+    if (stepEv) root.ChurchAudio.footstep(stepEv.side > 0, stepEv.v);
   }
 
   var tmpV = new T.Vector3(), spotO = { pitch: 0, D: 0, fwd: 0, up: 0 };
