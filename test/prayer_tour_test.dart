@@ -20,7 +20,7 @@ const _t2 = '지금 바칠 기도문이 여기 나와요';
 const _t2alt = '기도문 펼치기를 누르면 지금 바칠 기도문이 나와요';
 const _t3 = '묵주 전체를 보며 어디쯤인지 확인할 수 있어요';
 const _t4 = '기도문 글자 크기를 바꿀 수 있어요';
-const _t5 = '성가 듣기, 선창 음성 같은 설정은 여기에 있어요';
+const _t5 = '성가 듣기·선창 음성 설정은 여기 있어요';
 
 Future<AppSettings> _load({
   bool rosary = true,

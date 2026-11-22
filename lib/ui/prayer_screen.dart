@@ -893,7 +893,7 @@ class _PrayerScreenState extends State<PrayerScreen>
     ),
     CoachStep(target: _tourFullKey, text: '묵주 전체를 보며 어디쯤인지 확인할 수 있어요'),
     CoachStep(target: _tourSizeKey, text: '기도문 글자 크기를 바꿀 수 있어요'),
-    CoachStep(target: _tourMenuKey, text: '성가 듣기, 선창 음성 같은 설정은 여기에 있어요'),
+    CoachStep(target: _tourMenuKey, text: '성가 듣기·선창 음성 설정은 여기 있어요'),
   ];
 
   /// 안내를 닫는다. 한 번이라도 보였으면(마침·건너뛰기·뒤로 가기) 다음부터 처음 안내는 나오지 않는다.
