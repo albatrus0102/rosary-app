@@ -49,7 +49,7 @@
   }
 
   var METHODS = ['init', 'setJoystick', 'sit', 'stand', 'setPraying', 'setPrayerPosture', 'setRosary', 'setAvatar', 'setPeers', 'peerJoin', 'peerLeave', 'peerSnap',
-    'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setHour', 'setSolo', 'setQuality',
+    'peerSeat', 'peerStand', 'peerPraying', 'peerEmote', 'setCandles', 'lightCandle', 'setAmbient', 'setSteps', 'setHour', 'setSolo', 'setQuality',
     'emote', 'setSeatTaken', 'setChurch', 'walkTo', 'cancelWalk', 'tapAt',
     'viewWindow', 'endView', 'setViewLight', 'setViewTier', 'resetView',   // G1 창 감상(SPEC §22)
     'pause', 'resume', 'getState', 'restore',   // 보이지 않는 동안 일시정지·상태 복원

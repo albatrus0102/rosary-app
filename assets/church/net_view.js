@@ -183,7 +183,7 @@
             var sp2 = Math.sqrt((x - pxx) * (x - pxx) + (z - pzz) * (z - pzz)) / Math.max(dt, 1e-3);
             if (rec.fresh) sp2 = 0;
             rec.speed += (sp2 - rec.speed) * Math.min(1, dt * 8);
-            walk = rec.speed > 0.35 ? Math.min(1, rec.speed / 3.2 + 0.2) : 0;
+            walk = rec.speed > 0.12 ? Math.min(1, rec.speed / 4.0) : 0;   // main.js 와 같은 뜻(속도/4.0). 다리는 아바타가 실제 이동량으로 움직인다(WALK_GAIT.md)
             fl = logic ? logic.floorY(x, z) : 0;
             v.setSeated(false); v.setPray(false); if (v.kneelTarget) v.setKneel(false); if (v.rosaryTarget) v.setRosary(false);
             if (walk > 0) r = v.root.rotation.y + angDiff(v.root.rotation.y, r) * Math.min(1, dt * 12);
@@ -250,7 +250,7 @@
           if (n.stuck > 1.2) { if (Math.hypot(n.x - n.lx, n.z - n.lz) < 0.3) { pick(n); } n.lx = n.x; n.lz = n.z; n.stuck = 0; }
           var yaw = Math.atan2(-dx, -dz), cur = n.av.root.rotation.y;
           var df = (yaw - cur) % (PI * 2); if (df > PI) df -= PI * 2; if (df < -PI) df += PI * 2;
-          n.av.setWalk(1);
+          n.av.setWalk(0.8 / 4.0);   // 0.8 m/s(위 sp). 예전 1 은 4 m/s 걸음이라 발이 몸보다 5배 빨리 돌았다
           n.av.setPose(n.x, logic.floorY(n.x, n.z), n.z, cur + df * Math.min(1, dt * 4));
           n.av.update(dt, t);
         }

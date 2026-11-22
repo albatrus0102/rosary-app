@@ -237,6 +237,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   bool _rosaryHeld = false;
 
   late bool _lastAmbient;
+  String _lastSteps = ''; // 마지막으로 웹에 보낸 발소리 설정(setSteps)
   late ChurchQuality _lastQuality;
   String _lastCamera = ''; // 마지막으로 웹에 보낸 카메라 설정(settings.churchCameraArgs)
   String _lastAvatar = '';
@@ -704,6 +705,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         church: widget.churchId,
       ),
     );
+    _syncSteps();
     // 이동 손잡이는 앱이 그린다: 웹은 화면 전체를 시점 회전·확대에 쓴다.
     unawaited(_scene.setAppStick());
     _lastCamera = _settings.churchCameraArgs.toString();
@@ -1204,10 +1206,24 @@ class _ChurchScreenState extends State<ChurchScreen>
   /// 성가가 울리고 멎을 때 오르간 패드만 맞춘다(빌드 중에 불릴 수 있어 setState 하지 않는다).
   void _onMusic() {
     if (_disposed) return;
+    _syncSteps();
     final ambient = _ambientOn;
     if (ambient == _lastAmbient) return;
     _lastAmbient = ambient;
     if (!_background) unawaited(_scene.setAmbient(on: ambient));
+  }
+
+  /// 발소리(docs/church/WALK_GAIT.md): 성당 소리 설정을 따르고(성삼일 침묵·백그라운드면 끔), 크기는 늘 음악보다 작게
+  /// 웹이 정한다 — 성가가 울리는지와 음악 음량 설정을 함께 보낸다(음량을 낮추면 발소리도 낮아진다).
+  void _syncSteps() {
+    if (_disposed || !_inited) return;
+    final on = _ambientWanted && !_background;
+    final chant = _music.audible;
+    final vol = _settings.prayerMusicVolume;
+    final key = '$on|$chant|$vol';
+    if (key == _lastSteps) return;
+    _lastSteps = key;
+    unawaited(_scene.setSteps(on: on, chant: chant, volume: vol));
   }
 
   late final PrayerMusic _music = PrayerMusic.of(_settings);
@@ -1229,6 +1245,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (_disposed) return;
     _syncRosaryLook();
     _syncMusicHold();
+    _syncSteps();
     final ambient = _ambientOn;
     if (ambient != _lastAmbient) {
       _lastAmbient = ambient;
@@ -1278,6 +1295,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     } else if (_ambientOn) {
       unawaited(_scene.setAmbient(on: true));
     }
+    _syncSteps();
   }
 
   // --- 사용자 동작 ---
