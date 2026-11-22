@@ -53,6 +53,8 @@
     abs_tiburio: { ground: [0x2a5aa8, 0x3f74c0, 0x1e3a86, 0xe6b23c, 0xf0d890, 0xb8402a, 0xe8dcc0, 0x6b8ac0], ground2: [0x9c2431], border: [0x2a4f9a], robe: [], gold: 0xe6b23c, white: 0xe8dcc0, accent: [] },
     abs_marian: { ground: [0x2552b0, 0x2f66c4, 0x1d3f90, 0xe8b23a, 0xf2d27a, 0xe9e2cc, 0x7aa0d8], ground2: [0xb3242c], border: [0x1d3f90], robe: [], gold: 0xe8b23a, white: 0xe9e2cc, accent: [] },
     abs_pale: { ground: [0xe9d9a8, 0xcfdbe0, 0xf0ead8, 0xd3dcc6, 0xe3cf98, 0xc3d2da, 0xe8e0c8], ground2: [0xc9d6bd], border: [0xd8c898], robe: [], gold: 0xe3cf98, white: 0xf0ead8, accent: [] },
+    // 여의도동 로비 무지개 모티프 색유리 자리(작가 미확인): 사진의 색 분위기(위 파랑, 초록·노랑·주황, 맑은 칸)만 — 무지개 띠·구도는 옮기지 않는다
+    abs_yeouido_lobby: { ground: [0x2f62b4, 0x4a8fd6, 0x7cb6e4, 0x3f8a54, 0x6aa84a, 0xe2b640, 0xe08a3a, 0xeef1f0, 0x2a58a8, 0xd8e6ea], ground2: [0x1d3c86], border: [0x2a4f8a], robe: [], gold: 0xe2b640, white: 0xeef1f0, accent: [] },
     abs_yeouido: { ground: [0x2f62b4, 0x4a8fd6, 0x1d3c86, 0x7cb6e4, 0x2a58a8, 0xeef1f4, 0x3a70c0, 0xc83a4a, 0x2f62b4, 0x5a9ad8, 0xe7a0b8, 0x1d3c86], ground2: [0x1d3c86], border: [0x1d3c86], robe: [], gold: 0xe7a0b8, white: 0xeef1f4, accent: [] },
     // 우리 본당(가상): 한국 현대 본당 풍 — 색면 + 단순한 상징(창작)
     parish: { ground: [0x2a62b4, 0x3f82cc, 0x23887a, 0xd9a43a, 0x2a62b4, 0xb8383f, 0x76489f, 0x3f82cc, 0xd8d4c4], ground2: [0x1c3f8a], border: [0xd9a43a], robe: [], gold: 0xe9b83e, white: 0xf3efe0, accent: [0xc0393f] }
@@ -83,6 +85,7 @@
     alabaster: { pal: 'alabaster', body: 'alabaster', head: 'alabaster', disc: 'alabaster', variants: 3, era: '설화석고 판' },
     marian_abstract: { pal: 'abs_marian', body: 'abstract', head: 'abstract', disc: 'abstract', variants: 1, era: '저작권 존속 장미창 자리: 추상 방사 색면' },
     yeouido_abstract: { pal: 'abs_yeouido', body: 'abstract', head: 'abstract', disc: 'abstract', variants: 2, era: '현대 추상 색면(원작 구도 없음)' },
+    yeouido_lobby: { pal: 'abs_yeouido_lobby', body: 'abstract', head: 'abstract', disc: 'abstract', variants: 2, era: '현대 추상 색면(로비 색유리 벽 자리, 원작 구도 없음)' },
     parish: { pal: 'parish', body: 'parish', head: 'parish', disc: 'parish', variants: 5, era: '가상 본당 창작(색면 + 단순 상징)' }
   };
   var SIZE = { body: [1, 2], head: [1, 1], disc: [2, 2] };

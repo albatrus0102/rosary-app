@@ -176,16 +176,25 @@
       ctx.addCollider(footprint(p));   // 성상 받침 ~ 연못 바깥 테두리를 한 상자로 막는다
       return sh;
     }
-    // 봉헌초 받침(2단, 슬롯 높이 0.74 / 0.81 에 맞춤)
-    B(STAND_D - 0.07, 0, 0.70, 0.36, 1.12, 0.04, IRON, 'metal');
-    B(STAND_D - 0.14, 0, 0.74, 0.16, 1.12, 0.07, IRON, 'metal');
-    B(STAND_D - 0.07, -0.5, 0, 0.3, 0.05, 0.70, IRON, 'metal');
-    B(STAND_D - 0.07, 0.5, 0, 0.3, 0.05, 0.70, IRON, 'metal');
-    // 무릎틀(책상 + 방석)
-    B(1.0, 0, 0, 0.08, 0.9, 0.78, WOOD, 'wood');
-    B(1.02, 0, 0.78, 0.22, 0.96, 0.04, WOOD, 'wood');
-    B(1.2, 0, 0, 0.5, 0.9, 0.04, WOOD, 'wood');
-    B(1.3, 0, 0.04, 0.3, 0.86, 0.1, 0x7a2630);
+    // 봉헌초 받침(2단, 슬롯 높이 0.74 / 0.81 에 맞춤). stand 'wood': 같은 높이의 나무 받침(앞 몸통 + 뒤 한 단)
+    if (p.stand === 'wood') {
+      var WC = 0xb07a48;
+      B(STAND_D - 0.07, 0, 0, 0.42, 1.24, 0.74, WC, 'wood');
+      B(STAND_D - 0.07, 0, 0.74, 0.44, 1.28, 0.012, 0x8a5a34, 'wood');
+      B(STAND_D - 0.14, 0, 0.74, 0.16, 1.16, 0.07, WC, 'wood');
+    } else {
+      B(STAND_D - 0.07, 0, 0.70, 0.36, 1.12, 0.04, IRON, 'metal');
+      B(STAND_D - 0.14, 0, 0.74, 0.16, 1.12, 0.07, IRON, 'metal');
+      B(STAND_D - 0.07, -0.5, 0, 0.3, 0.05, 0.70, IRON, 'metal');
+      B(STAND_D - 0.07, 0.5, 0, 0.3, 0.05, 0.70, IRON, 'metal');
+    }
+    // 무릎틀(책상 + 방석). kneeler: false 면 놓지 않는다
+    if (p.kneeler !== false) {
+      B(1.0, 0, 0, 0.08, 0.9, 0.78, WOOD, 'wood');
+      B(1.02, 0, 0.78, 0.22, 0.96, 0.04, WOOD, 'wood');
+      B(1.2, 0, 0, 0.5, 0.9, 0.04, WOOD, 'wood');
+      B(1.3, 0, 0.04, 0.3, 0.86, 0.1, 0x7a2630);
+    }
     var fp = footprint(p);
     if (ctx.aoDecal) ctx.aoDecal({ x0: fp.x0, x1: fp.x1, z0: fp.z0, z1: fp.z1, y: y, pad: 0.25 });
     ctx.addCollider(fp);

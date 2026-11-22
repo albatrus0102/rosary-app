@@ -35,18 +35,21 @@ test('cross_data.js: 14 stations with roman numerals', () => {
 
 const rows = [];
 for (const c of churches) {
-  test(`way of the cross ${c.id}: 14 plaques on walls, free stand spots, walkable loop`, () => {
+  test(`way of the cross ${c.id}: 14 plaques on walls (or a gallery parapet), free stand spots, walkable loop`, () => {
     const { L, S, r } = derive(c);
     assert.equal(r.why, 'ok', JSON.stringify(r.counts));
     const P = r.plaques;
     assert.equal(P.length, 14);
     const st = S.stations();
+    // 높이를 직접 준 판(여의도동: 성가대석 난간의 부조 줄)은 벽이 아니라 머리 위 난간에 있다 — 서는 자리는 그 아래 바닥, 판 뒤 벽 검사 대신 높이 검사
+    const ov = c.layout.crossWay && c.layout.crossWay.plaques;
     P.forEach((p, i) => {
+      const elevated = !!(ov && ov[i] && ov[i].y !== undefined);
       assert.equal(p.n, i + 1); assert.equal(p.index, i);
       // 판 법선은 서는 자리 쪽(실내)을 본다, 판은 수평 법선
       const dx = p.stand.x - p.x, dz = p.stand.z - p.z, d = Math.hypot(dx, dz);
       assert.ok((dx * p.nx + dz * p.nz) / d > 0.85, `${p.n}처 판이 서는 자리를 보지 않음`);
-      assert.ok(d >= 1.2 && d <= 3.0, `${p.n}처 서는 거리 ${d.toFixed(2)}`);
+      assert.ok(d >= (elevated ? 0.4 : 1.2) && d <= 3.0, `${p.n}처 서는 거리 ${d.toFixed(2)}`);
       // 서는 자리는 충돌 없고 입구에서 닿는다
       assert.ok(S.free(p.stand.x, p.stand.z), `${p.n}처 서는 자리 충돌`);
       assert.ok(S.isReachable(p.stand.x, p.stand.z), `${p.n}처 서는 자리에 못 감`);
@@ -63,10 +66,13 @@ for (const c of churches) {
         const x = p.x - p.nx * k, z = p.z - p.nz * k, B = c.layout.bounds;
         if (insideCollider(L, x, z) || x <= B.x0 || x >= B.x1 || z <= B.z0 || z >= B.z1) backed = true;
       }
-      assert.ok(backed, `${p.n}처 판 뒤에 벽이 없음`);
-      // 높이: 바닥에서 액자 아래 1.35m
       const fy = L.floorY(p.stand.x, p.stand.z);
-      assert.ok(Math.abs(p.y - p.h / 2 - fy - WayCross.P.bottom) < 0.6, `${p.n}처 높이`);
+      if (elevated) assert.ok(p.y - fy > 2.4 && p.y - fy < 6, `${p.n}처 난간 높이 ${p.y - fy}`);
+      else {
+        assert.ok(backed, `${p.n}처 판 뒤에 벽이 없음`);
+        // 높이: 바닥에서 액자 아래 1.35m
+        assert.ok(Math.abs(p.y - p.h / 2 - fy - WayCross.P.bottom) < 0.6, `${p.n}처 높이`);
+      }
       // 촛불대·성수대·제대 앞 자리와 겹치지 않는다
       for (const o of [st.altar, ...st.candle, ...st.font]) {
         assert.ok(Math.hypot(o.x - p.stand.x, o.z - p.stand.z) >= 1.8, `${p.n}처가 다른 스테이션과 겹침`);
