@@ -1218,15 +1218,39 @@
     TOE_Z: -0.25,                                 // 발끝(발목 기준 z)
     TOE: 0.10,                                    // 발끝 바깥 벌림(rad; 옛 자세 0.12)
     WIDTH0: 2 * HX, WIDTH: 0.13,                  // 서 있을 때 / 걸을 때 두 발 중심 간격(m)
-    JOG0: 99, JOG1: 100,                          // 잰걸음 끔(사용자 지시 2026-11-22 「성당에서 뛰는 거 아냐」, 최고 속도 2 m/s 빠른 걸음)
+    JOG0: 99, JOG1: 100,                          // 잰걸음 끔(사용자 지시 2026-11-22 「성당에서 뛰는 거 아냐」) — 빠르게 가도 늘 걷는다(한 발은 늘 땅에)
+    V_TOP: 4.0, L_TOP: 1.05,                      // 최고 속도(scene_logic.js WALK_SPEED 와 같아야 한다 — 시험이 확인)와 그때 한 걸음(m)
+    PELVIS_FAST: 0.12,                            // 빠른 걸음에서 골반 비틀림 더하기(rad) — 경보처럼 골반을 돌려 보폭을 번다
+    FRONT: 0.37,                                  // 디딤 거리 가운데 골반 앞쪽 몫(발을 골반 앞 FRONT·디딤 거리에 딛고 뒤 (1 - FRONT) 에서 뗀다; 사람 약 0.4)
+    KNEE_FAST: 0.5,                               // 빠른 걸음에서 디딤 가운데 무릎을 더 굽힌다(rad) — 골반을 낮춰 긴 보폭에서도 덜 오르내리게
+    KNEE_MID: 0.12,                               // 디딤 가운데(다리가 골반 바로 아래) 무릎 굽힘 목표(rad, 약 7° — 디딘 다리 제약의 부드러운 최소 때문에 실제로는 약 12~18°; 사람 5~20°)
+    DS_MARGIN: 0.006,                             // 두 발 디딤 순간 골반을 닿는 높이보다 더 낮춘다(m) — 디딘 직후 무릎이 조금 굽어 받는다(하중 반응)
+    BOB_MIN: 0.012,                               // 걸을 때 골반 오르내림 최소(m)
+    SMIN: 0.008,                                  // 디딘 다리 닿는 높이 제약의 부드러운 최소 폭(m)
     SETTLE: 1.25,                                 // 멈춰 서거나 제자리에서 돌 때 발을 고쳐 딛는 주기(주기/초)
     TELE: 1.5,                                    // 한 번에 이보다 멀리 옮겨지면(순간 이동) 발을 새로 놓는다(m)
     VMAX: 9                                       // 이보다 빠른 이동도 순간 이동으로 본다(m/s)
   };
   // 한 걸음 길이(m): 걷기는 사람 보행 자료(1.2 m/s 에서 0.68 m, 속도^0.55, 다리 길이로 0.80 m 까지), 잰걸음은 0.45·v^0.68
-  function stepLen(v, j) { var vv = Math.max(v, 0.02); return Math.max(0.11, lerp(Math.min(0.80, 0.68 * Math.pow(vv / 1.2, 0.55)), 0.45 * Math.pow(vv, 0.68), j)); }
+  // 1.6 m/s 위(빠른 걸음)는 보폭을 L_TOP 까지 더 늘린다(최고 속도 V_TOP 에서 분당 V_TOP/L_TOP·60 걸음). 1.6 m/s 아래는 예전 그대로.
+  function stepLen(v, j) {
+    var vv = Math.max(v, 0.02), w = Math.min(0.80, 0.68 * Math.pow(vv / 1.2, 0.55)) + (GAIT.L_TOP - 0.80) * sm((vv - 1.6) / (GAIT.V_TOP - 1.6));
+    return Math.max(0.11, lerp(w, 0.45 * Math.pow(vv, 0.68), j));
+  }
+  function fastOf(v) { return sm((v - 1.6) / (GAIT.V_TOP - 1.6)); }   // 빠른 걸음(파워 워킹) 정도 0..1: 팔꿈치 굽힘·팔 흔들기·골반 비틀림이 커진다
+  function pelvisYawAmp(v, wi) { return 0.035 + 0.045 * wi + GAIT.PELVIS_FAST * fastOf(v); }
   function dutyOf(v, j) { return lerp(clamp(0.64 - 0.05 * v, 0.53, 0.63), 0.36, j); }   // 한 주기에서 발이 땅에 있는 비율
   function minJerk(s) { return s * s * s * (10 + s * (-15 + 6 * s)); }
+  // 흔드는 발의 앞뒤 진행: 떼는 쪽은 minJerk(부드럽게 출발), 닿는 쪽은 smoothstep — 닿기 직전 발이 몸보다 앞으로 넘쳐 나가는 길이가 minJerk 의 절반(사람의 「흔들기 되당김」 2~3cm).
+  // 넘치는 만큼 다리가 더 뻗어야 해서 골반이 더 내려가야 했다(옛 식: 한 걸음 5cm 넘침 → 다리가 못 닿아 IK 가 길이를 자르고 발이 떠 있다가 내리찍혔다).
+  // 골반 물결(0..1, 한 걸음에 한 번): 두 발 디딤 가운데((beta - 0.5)/2)에서 0, 디딘 발이 골반 바로 아래 오는 때(FRONT·beta)에서 1.
+  // 오르는 쪽과 내리는 쪽 길이가 달라도 양 끝에서 기울기 0(부드럽다). 꼭대기가 다리가 수직인 때와 어긋나면 디딘 다리 제약이 걸려 골반 가속도가 튄다.
+  function bobWave(u, beta) {
+    var c0 = (beta - 0.5) / 2, rise = Math.max(0.05, Math.min(0.45, GAIT.FRONT * beta - c0)), x = frac((u - c0) * 2) / 2;
+    var th = x < rise ? PI * x / rise : PI + PI * (x - rise) / (0.5 - rise);
+    return 0.5 - 0.5 * Math.cos(th);
+  }
+  function swingEase(s) { return sm(s); }
   function wrapPI(a) { a = (a + PI) % TAU; if (a < 0) a += TAU; return a - PI; }
   function frac(x) { return x - Math.floor(x); }
   function stancePitch(us, hs, to) { if (us < 0.14) return hs * (1 - sm(us / 0.14)); if (us > 0.5) return -to * Math.pow(sm((us - 0.5) / 0.5), 1.4); return 0; }
@@ -1237,27 +1261,33 @@
     out.x = F.x + fz * Math.sin(F.yaw); out.z = F.z + fz * Math.cos(F.yaw); out.y = F.y + ANKLE + fy;
     return out;
   }
+  // 루트 바로 앞 fwd(m)에 디딘 발(기울기 p)의 발목 자리(루트 기준: z 는 앞이 -). 골반 높이를 미리 계산할 때 쓴다.
+  var _SF = { x: 0, y: 0, z: 0, yaw: 0 };
+  function stanceAnkle(fwd, p, out) { _SF.z = -fwd; return ankleAt(_SF, p, out); }
+  // 부드러운 최소(두 값이 k 안으로 가까우면 둥글게 — 디딘 다리 제약이 걸리고 풀릴 때 골반 가속도가 튀지 않는다). 늘 min(a, b) 이하.
+  function smin(a, b, k) { var h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * 0.25; }
   // 기울기 p 일 때 발목 높이 기준 밑창의 가장 낮은 점(발끝·뒤꿈치)
   function soleLow(p) { var c = Math.cos(p), s = Math.sin(p); return Math.min(-0.085 * c - GAIT.TOE_Z * s, -0.085 * c - 0.09 * s, -0.085 * c); }
 
   function Gait() {
     this.ok = false; this.px = 0; this.pz = 0; this.pyaw = 0; this.vx = 0; this.vz = 0; this.v = 0; this.rate = 0; this.ph = 0.05; this.settle = false; this.spin = 0;
     this.f = [0, 1].map(function () { return { st: 1, x: 0, y: 0, z: 0, yaw: 0, tx: 0, ty: 0, tz: 0, tyaw: 0, sx: 0, sy: 0, sz: 0, sp: 0, syaw: 0, b: 0.6, ax: 0, ay: 0, az: 0, p: 0, ayaw: 0, u: 0 }; });
-    this.hx = 0; this.hy = HIPS_Y; this.yaw = 0; this.roll = 0; this.wi = 0; this.j = 0; this.uR = 0; this.sw = 0; this.ev = null;
+    this.hx = 0; this.hy = HIPS_Y; this.yaw = 0; this.roll = 0; this.wi = 0; this.j = 0; this.uR = 0; this.sw = 0; this.fs = 0; this.ev = null;
     this.leg = [{ t1: 0, t2: 0, psi: 0, gam: 0, q: new T.Quaternion() }, { t1: 0, t2: 0, psi: 0, gam: 0, q: new T.Quaternion() }];
   }
   var _A = { x: 0, y: 0, z: 0 }, _B = { x: 0, y: 0, z: 0 }, _T = { x: 0, y: 0, z: 0, yaw: 0 }, _gq = new T.Quaternion(), _gq2 = new T.Quaternion(), _gv = new T.Vector3(), _ge = new T.Euler();
   // 계단(ground 가 있을 때): 발 밑창(뒤꿈치 ~ 발끝)이 한 단 위에 다 들어가는 자리로 디딜 곳을 앞뒤 ±0.2m 안에서 옮긴다.
   // 그런 자리가 없으면 밑창 아래 바닥 가운데 높은 쪽에 디딘다(파묻히지 않게 — 뒤꿈치나 발끝이 단 끝 밖으로 조금 나간다).
+  // 뒤꿈치는 디딜 자리(발목 바로 밑 바닥 점) 뒤 0.17m 까지 본다 — 발끝을 들고(hs) 닿으면 발목이 2cm 뒤로 가고 뒤꿈치 끝이 발목 뒤 약 14cm 라서(옛 0.11 은 단 끝에 뒤꿈치가 걸렸다).
   var TREAD_OFF = [0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2];
   Gait.prototype.footOnTread = function (F, ry) {
     var fx = -Math.sin(F.tyaw), fz = -Math.cos(F.tyaw), g = this.ground, x0 = F.tx, z0 = F.tz, best = null;
-    for (var i = 0; i < TREAD_OFF.length && best === null; i++) {
-      var o = TREAD_OFF[i], x = x0 + fx * o, z = z0 + fz * o;
-      var yT = g(x + fx * 0.27, z + fz * 0.27, ry), yH = g(x - fx * 0.11, z - fz * 0.11, ry), yM = g(x + fx * 0.08, z + fz * 0.08, ry);
-      if (Math.abs(yT - yH) < 0.01 && Math.abs(yM - yH) < 0.01) best = { x: x, z: z, y: yH };
+    for (var i = -1; i < TREAD_OFF.length && best === null; i++) {   // -1: 지난 프레임에 고른 앞뒤 자리를 먼저(자리가 이리저리 바뀌지 않게)
+      var o = i < 0 ? (F.toff || 0) : TREAD_OFF[i], x = x0 + fx * o, z = z0 + fz * o;
+      var yT = g(x + fx * 0.27, z + fz * 0.27, ry), yH = g(x - fx * 0.17, z - fz * 0.17, ry), yM = g(x + fx * 0.08, z + fz * 0.08, ry);
+      if (Math.abs(yT - yH) < 0.01 && Math.abs(yM - yH) < 0.01) { best = { x: x, z: z, y: yH }; F.toff = o; }
     }
-    if (!best) best = { x: x0, z: z0, y: Math.max(g(x0 + fx * 0.27, z0 + fz * 0.27, ry), g(x0 - fx * 0.11, z0 - fz * 0.11, ry), g(x0, z0, ry)) };
+    if (!best) best = { x: x0, z: z0, y: Math.max(g(x0 + fx * 0.27, z0 + fz * 0.27, ry), g(x0 - fx * 0.17, z0 - fz * 0.17, ry), g(x0, z0, ry)) };
     F.tx = best.x; F.tz = best.z; F.ty = best.y;
   };
   // 발을 쉬는 자리(루트 옆)에 놓는다
@@ -1265,6 +1295,25 @@
     var side = k ? 1 : -1, lx = side * width / 2;
     out.x = rx + lx * Math.cos(yaw); out.z = rz - lx * Math.sin(yaw); out.y = ry; out.yaw = yaw - side * GAIT.TOE;
     return out;
+  };
+  // 골반(뼈 hips) 높이: 발목(루트 기준 lx 옆, lz 앞(-), 높이 ay)에 다리(길이 R)가 닿는 가장 높은 골반 높이. uRq >= 0 이면 그 위상의 골반 옆 이동·비틀림·기울기(미리 계산용), -1 이면 지금 값.
+  Gait.prototype.hipTop = function (side, lx, lz, ay, uRq, beta, wi, gw, j, R) {
+    var hx = this.hx, py = this.yaw, rl = this.roll;
+    if (uRq >= 0) { var md = TAU * (uRq - beta / 2); hx = 0.016 * Math.cos(md) * (1 - j * 0.5) * gw; py = pelvisYawAmp(this.v, wi) * Math.cos(TAU * uRq) * gw; rl = 0.035 * Math.cos(md) * gw * (1 - j * 0.5); }
+    var cr = Math.cos(rl), sr = Math.sin(rl), jxr = side * HX * cr + 0.05 * sr, jy = side * HX * sr - (HIPS_Y - HIP_JOINT) * cr;
+    var jx = hx + jxr * Math.cos(py), jz = -jxr * Math.sin(py), hd2 = (lx - jx) * (lx - jx) + (lz - jz) * (lz - jz);
+    return ay + Math.sqrt(Math.max(0, R * R - hd2)) - jy;
+  };
+  // 흔드는 발(발목 x,y,z, 방향, 기울기 p)의 밑창이 바닥(floorY + 4mm, 계단이면 밑창 아래 단 가운데 가장 높은 곳)보다 얼마나 아래인가(m, 음수면 떠 있다)
+  Gait.prototype.sinkOf = function (ax, ay, az, ayaw, p, floorY, ry) {
+    var low = ay + soleLow(p), d = floorY + 0.004 - low;
+    this._sg = -1e9;
+    if (this.ground) {   // 계단: 밑창(뒤꿈치·가운데·발끝)이 그 아래 단에 들어가지 않게(내려갈 때 단 끝을 넘기 전에 내려앉지 않는다) — this._sg 에 따로
+      var gfx = -Math.sin(ayaw), gfz = -Math.cos(ayaw), gg = this.ground;
+      var gy = Math.max(gg(ax + gfx * 0.27, az + gfz * 0.27, ry), gg(ax - gfx * 0.14, az - gfz * 0.14, ry), gg(ax + gfx * 0.08, az + gfz * 0.08, ry));   // 뒤꿈치 끝은 발목 뒤 약 11cm, 발끝을 들고 닿을 때 14cm
+      this._sg = gy + 0.004 - low;
+    }
+    return d;
   };
   Gait.prototype.reset = function (rx, ry, rz, yaw) {
     for (var k = 0; k < 2; k++) {
@@ -1284,6 +1333,7 @@
     this.vx += (dx * idt - this.vx) * kv; this.vz += (dz * idt - this.vz) * kv;
     var v = this.v = Math.sqrt(this.vx * this.vx + this.vz * this.vz);
     var j = this.j = sm((v - GAIT.JOG0) / (GAIT.JOG1 - GAIT.JOG0)), wi = this.wi = clamp01(v / 1.6);
+    this.fs = fastOf(v) * (1 - j);
     var L = stepLen(v, j), S = 2 * L, beta = dutyOf(v, j), width = lerp(GAIT.WIDTH0, GAIT.WIDTH, sm(v / 0.8));
     // 발을 고쳐 디딜지: 거의 멈췄는데 발이 쉬는 자리에서 벗어나 있거나, 제자리에서 돌고 있다
     this.spin += (Math.abs(dyaw) * idt - this.spin) * Math.min(1, dt * 10);
@@ -1301,8 +1351,9 @@
     if (dph > 0.45) { this.reset(rx, ry, rz, yaw); dph = 0; }
     this.rate += (dph * idt - this.rate) * Math.min(1, dt * 8);
     this.ph = frac(this.ph + dph);
-    var ia = sm(v / 1.1), hs = 0.24 * ia * (1 - 0.6 * j), to = 0.70 * ia + 0.15 * j;
-    var lift = 0.022 + 0.035 * sm(v / 1.5) + 0.09 * j;
+    var ia = sm(v / 1.1), hs = 0.24 * ia * (1 - 0.6 * j), to = 0.70 * ia + 0.15 * j + 0.30 * this.fs;   // 빠른 걸음은 발을 더 세워 뗀다(뒤에 남은 다리가 펴지며 무릎이 튀지 않게)
+    var lift = 0.014 + 0.018 * sm(v / 1.5) + 0.09 * j, liftE = 0.04 * sm(v / 1.5) + 0.03 * fastOf(v), liftS = 0.022 + 0.035 * sm(v / 1.5);
+    if (this.settle) lift = Math.max(lift, 0.03);   // 멈춰 서거나 제자리에서 돌 때 고쳐 딛는 발은 3cm 는 든다(보이게)   // 흔드는 발 가운데에서 더 드는 높이(옛 0.022 + 0.035: 흔들 때 밑창이 11cm 까지 올라 「행진」처럼 보였다)
     var dirx, dirz;
     if (v > 0.05) { dirx = this.vx / v; dirz = this.vz / v; } else { dirx = -Math.sin(yaw); dirz = -Math.cos(yaw); }
     var ev = null, bothDown = true;
@@ -1316,12 +1367,15 @@
         // 착지 예정 자리: 남은 흔들기 시간 뒤 루트 + 진행 방향으로 디딤 길이의 절반
         var rem = Math.min(0.5, (1 - u) / Math.max(this.rate, 0.3));
         this.restOf(k, rx + this.vx * rem, ry, rz + this.vz * rem, yaw, width, _B);
-        var reach = 0.5 * beta * S * 0.92 * clamp01(v / 0.3);
+        var reach = GAIT.FRONT * beta * S * clamp01(v / 0.3);
         F.tx = _B.x + dirx * reach; F.tz = _B.z + dirz * reach; F.tyaw = _B.yaw;
         // 디딜 자리의 바닥 높이: ground(x,z,루트 높이)가 있으면 그 자리 바닥(여러 층 성당의 계단 — 발이 단에 파묻히거나 뜨지 않게), 없으면 루트 높이(예전 그대로)
         if (this.ground) this.footOnTread(F, ry); else F.ty = ry;
-        if (F.st && u >= beta && u > F.u && dph > 0) {          // 들어 올린다
-          F.st = 0; F.sx = F.ax; F.sy = F.ay; F.sz = F.az; F.sp = F.p; F.syaw = F.ayaw; F.b = beta;
+        // 들어 올린다(디딤이 끝났다). 빠르게 출발할 때(보폭이 디딘 뒤에 커진다) 디딘 발이 골반 뒤로 너무 멀어지면(닿을 수 없게 되기 전에) 일찍 뗀다
+        // (다른 발이 디뎌 있을 때만 — 늘 한 발은 땅에. 멈출 때 보폭이 줄어도 멀쩡한 발을 떼지 않게 0.8m 아래로는 보지 않는다)
+        var over = F.st && dph > 0 && u > 0.2 && this.f[1 - k].st && ((F.x - rx) * dirx + (F.z - rz) * dirz) < -Math.max(0.8, (1 - GAIT.FRONT) * beta * S + 0.12);
+        if (F.st && ((u >= beta && u > F.u && dph > 0) || over)) {
+          F.st = 0; F.sx = F.ax; F.sy = F.ay; F.sz = F.az; F.sp = F.p; F.syaw = F.ayaw; F.b = Math.min(beta, u);
         }
       }
       F.u = u;
@@ -1332,24 +1386,29 @@
         ankleAt(F, F.p, _A); F.ax = _A.x; F.ay = _A.y; F.az = _A.z; F.ayaw = F.yaw;
       } else {
         bothDown = false;
-        var s = clamp01((u - F.b) / (1 - F.b)), e = minJerk(s);
+        var stair = this.ground && Math.abs(F.ty - F.y) > 0.02;   // 계단: 디딜 단 높이가 지금 단과 다르다 — 예전 흔들기(minJerk, 높이도 함께, 더 높이)
+        var s = clamp01((u - F.b) / (1 - F.b)), e = stair ? minJerk(s) : swingEase(s);
         _T.x = F.tx; _T.y = F.ty; _T.z = F.tz; _T.yaw = F.tyaw;
         ankleAt(_T, hs, _A);
         F.p = lerp(F.sp, hs, sm(s / 0.75));
         F.ax = lerp(F.sx, _A.x, e); F.az = lerp(F.sz, _A.z, e);
         // 계단을 오를 때는 단 높이만큼 더 들어 올린다(발끝이 챌판에 걸리지 않게). ground 가 없으면 ty = 루트 높이라 예전과 같다
         var up = this.ground ? Math.max(0, F.ty + ANKLE - F.sy) : 0;
-        F.ay = lerp(F.sy, _A.y, up > 0.02 ? Math.min(1, e * 1.6) : e) + (lift + up * 0.9) * Math.sin(PI * Math.pow(s, 0.8));
+        // 높이(사람 흔들기): 떼자마자 무릎을 굽혀 발목이 조금 더 올라가고(뒤에 남은 다리가 짧아져 닿는다), 흔들기 가운데까지 착지 높이로 내려와
+        // 발끝이 바닥을 스치듯 지나간 뒤(lift 만큼만 더 든다), 닿을 때는 거의 수평으로 들어온다. 계단을 오를 때(up)는 예전처럼 일찍 들어 올린다.
+        // 계단(디딜 단 높이가 지금 단과 다르다)은 예전 길(높이도 앞뒤 진행과 함께, 더 높이 든다) — 내려갈 때 단 끝을 넘기 전에 내려앉지 않게
+        var eY = up > 0.02 ? Math.min(1, e * 1.6) : stair ? e : minJerk(clamp01((s - 0.12) / 0.5));
+        F.ay = lerp(F.sy, _A.y, eY) + ((stair ? liftS : lift) + up * 0.9) * Math.sin(PI * Math.pow(s, 0.8)) + liftE * Math.sin(PI * clamp01(s / 0.6));
         F.ayaw = F.syaw + wrapPI(F.tyaw - F.syaw) * e;
-        var floorY = Math.min(F.sy, _A.y) - ANKLE;   // 흔드는 발끝·뒤꿈치가 바닥을 파고들지 않게
-        var low = F.ay + soleLow(F.p);
-        if (low < floorY + 0.004) F.ay += floorY + 0.004 - low;
-        if (this.ground) {   // 계단: 흔드는 발의 밑창(뒤꿈치·가운데·발끝)이 그 아래 단에 들어가지 않게(내려갈 때 단 끝을 넘기 전에 내려앉지 않는다)
-          var gfx = -Math.sin(F.ayaw), gfz = -Math.cos(F.ayaw), gg = this.ground;
-          var gy = Math.max(gg(F.ax + gfx * 0.27, F.az + gfz * 0.27, ry), gg(F.ax - gfx * 0.11, F.az - gfz * 0.11, ry), gg(F.ax + gfx * 0.08, F.az + gfz * 0.08, ry)) + ANKLE;
-          low = F.ay + soleLow(F.p);
-          if (low < gy - ANKLE + 0.004) F.ay += gy - ANKLE + 0.004 - low;
-        }
+        // 흔드는 발끝·뒤꿈치가 바닥(계단이면 그 아래 단)을 파고들지 않게 올린다. soleLow 는 디딘 발의 받침점 모형보다 조금 낮게 잡으므로
+        // 떼는 순간(흔들기 시작)과 닿는 순간(착지 자리)의 「모형 차이」만큼은 봐준다 — 옛 식은 떼자마자 발이 4.5cm 튀어 오르고 착지 직전 2~3cm 떠 있다가 한 프레임에 「철썩」 내려앉았다.
+        var floorY = Math.min(F.sy, _A.y) - ANKLE;
+        // 바닥(평면) 몫은 모형 차이만큼 봐주고, 계단 단(ground) 몫은 평면에서 봐준 만큼까지만(계단을 지날 때는 하나도 봐주지 않는다 — 단 끝에 파묻히지 않게)
+        var dNow = this.sinkOf(F.ax, F.ay, F.az, F.ayaw, F.p, floorY, ry), gNow = this._sg;
+        var d0 = Math.max(0, this.sinkOf(F.sx, F.sy, F.sz, F.syaw, F.sp, floorY, ry)), d1 = Math.max(0, this.sinkOf(_A.x, _A.y, _A.z, F.tyaw, hs, floorY, ry));
+        var allow = stair ? 0 : lerp(d0, d1, e);
+        var dUp = Math.max(dNow - allow, gNow - allow);
+        if (dUp > 0) F.ay += dUp;
       }
     }
     if (this.settle && bothDown && !off && still) this.settle = false;
@@ -1359,25 +1418,48 @@
     this.sw = Math.cos(TAU * uR);
     var mid = TAU * (uR - beta / 2);
     this.hx = (0.016 * Math.cos(mid) * (1 - j * 0.5)) * gw + 0.012 * ws;
-    this.yaw = (0.035 + 0.045 * wi) * this.sw * gw;
+    this.yaw = pelvisYawAmp(v, wi) * this.sw * gw;
     this.roll = 0.035 * Math.cos(mid) * gw * (1 - j * 0.5) - 0.03 * ws;
-    // 골반 높이: 기준 높이와 두 발목이 닿는 높이 중 낮은 쪽(잰걸음은 디딘 동안 무릎을 굽혀 더 낮춘다)
-    var bump = 0;
-    for (k = 0; k < 2; k++) if (this.f[k].st) bump = Math.max(bump, Math.sin(PI * clamp01(this.f[k].u / beta)));
-    var y0 = HIPS_Y - 0.001 - (0.006 * sm(v / 1.2) + 0.02 * sm((v - 1.2) / 1.0) + 0.03 * j) - (0.05 * j + 0.012 * ia * (1 - j)) * bump;
+    // 골반 높이(2026-11-22 2차, WALK_GAIT.md §6): 사람처럼 디딘 다리가 골반 바로 아래 올 때(디딤 가운데) 가장 높고, 두 발이 다 닿을 때(두 발 디딤) 가장 낮은
+    // 매끄러운 물결(걸음마다 한 번). 가장 낮은 높이는 그 속도의 보폭으로 두 발 디딤 순간 두 다리가 실제로 닿는 높이(미리 계산)라서, 흔드는 발이 닿기 직전에
+    // 골반이 뚝 떨어지지 않는다(옛 식: 흔드는 다리를 착지 직전 0.05초에만 따져 골반이 4.7cm 떨어지고 발이 2 m/s 로 내리찍혔다). 디딘 다리는 늘 닿도록 부드러운 최소(smin)로 막는다.
     var cyw = Math.cos(yaw), syw = Math.sin(yaw), cps = Math.cos(this.yaw), sps = Math.sin(this.yaw), cr = Math.cos(this.roll), sr = Math.sin(this.roll);
-    var hy = y0;
+    var yHi = HIPS_Y - 0.001, yLo = yHi;
+    if (gw > 0.001) {
+      var wd2 = width / 2, R0 = GAIT.REACH, kMid = (GAIT.KNEE_MID + GAIT.KNEE_FAST * this.fs) * sm(v / 0.6), rMid = Math.sqrt(LEN_T * LEN_T + LEN_S * LEN_S + 2 * LEN_T * LEN_S * Math.cos(kMid)) * 0.9995;
+      yHi = Math.min(yHi, this.hipTop(1, wd2, 0, ANKLE, GAIT.FRONT * beta, beta, wi, gw, j, rMid));
+      // 물결이 지나야 할 점들: 두 발 디딤(오른발이 막 닿은 uR = 0 부터 왼발이 떨어지는 uR = beta - 0.5 까지)과 흔드는 오른발이 닿기 직전(앞으로 뻗은 다리 — 몸은 아직 뒤에 있다).
+      // 그 위상에서 두 다리가 닿는 골반 높이 h 를 미리 계산하고, 물결 lerp(yLo, yHi, cB) 가 그 아래로 지나가도록 yLo 를 고른다.
+      var reach0 = GAIT.FRONT * beta * S, need = yHi - GAIT.BOB_MIN * sm(v / 1.0), q, uq, hq, cq;
+      for (q = 0; q < 5; q++) {
+        if (q < 3) {
+          uq = (beta - 0.5) * q / 2;
+          stanceAnkle(reach0 - uq * S, stancePitch(uq / beta, hs, to), _A);
+          hq = this.hipTop(1, wd2, _A.z, _A.y, uq, beta, wi, gw, j, R0) - GAIT.DS_MARGIN;
+        } else {
+          var sq = q === 3 ? 0.86 : 0.94, dq = (1 - sq) * (1 - beta);
+          uq = 1 - dq;
+          stanceAnkle(reach0 + (dq - (1 - swingEase(sq))) * S, hs, _A);
+          hq = this.hipTop(1, wd2, _A.z, _A.y + lift * Math.sin(PI * Math.pow(sq, 0.8)), uq, beta, wi, gw, j, R0);
+        }
+        var uL = frac(uq + 0.5);
+        stanceAnkle(reach0 - uL * S, stancePitch(uL / beta, hs, to), _A);
+        hq = Math.min(hq, this.hipTop(-1, -wd2, _A.z, _A.y, uq, beta, wi, gw, j, R0) - (q < 3 ? GAIT.DS_MARGIN : 0));
+        cq = bobWave(uq, beta);
+        if (cq < 0.98) need = Math.min(need, (hq - yHi * cq) / (1 - cq));
+      }
+      yLo = lerp(yHi, need, gw);
+    }
+    var cB = bobWave(uR, beta);   // 0: 두 발 디딤 가운데, 1: 디딘 발이 골반 바로 아래
+    var hy = lerp(yLo, yHi, cB);
     for (k = 0; k < 2; k++) {
       F = this.f[k]; side = k ? 1 : -1;
-      var ax = F.ax - rx, az = F.az - rz, lx = ax * cyw - az * syw, lz = ax * syw + az * cyw;
-      var jxr = side * HX * cr + 0.05 * sr, jy = side * HX * sr - (HIPS_Y - HIP_JOINT) * cr;
-      var jx = this.hx + jxr * cps, jz = -jxr * sps;
-      var hd2 = (lx - jx) * (lx - jx) + (lz - jz) * (lz - jz);
-      // 디딘 직후(디딤의 0~30%)에는 무릎을 조금 굽혀 받는다(하중 반응). 흔드는 발은 착지 직전에만 골반 높이를 잡는다(그 전에는 무릎을 더 굽힌다).
-      var uu = clamp01(F.u / beta), load = F.st && uu < 0.3 ? 0.012 * ia * (1 - j) * Math.sin(PI * uu / 0.3) : 0;
-      if (!F.st) load = -0.2 * (1 - sm((clamp01((F.u - F.b) / (1 - F.b)) - 0.75) / 0.25));
-      var hm = (F.ay - ry) + Math.sqrt(Math.max(0, GAIT.REACH * GAIT.REACH - hd2)) - jy - load;
-      if (hm < hy) hy = hm;
+      // 디딘 다리는 늘 닿아야 한다. 흔드는 다리는 착지 직전(마지막 15%)에만 — 보통은 위 물결이 이미 그 높이라 걸리지 않는다(안전망).
+      var sw01 = F.st ? 1 : sm((clamp01((F.u - F.b) / (1 - F.b)) - 0.85) / 0.15);
+      if (sw01 <= 0) continue;
+      var ax = F.ax - rx, az = F.az - rz;
+      var hm = this.hipTop(side, ax * cyw - az * syw, ax * syw + az * cyw, F.ay - ry, -1, beta, wi, gw, j, GAIT.REACH) + 0.2 * (1 - sw01);
+      hy = smin(hy, hm, GAIT.SMIN);
     }
     this.hy = Math.max(hy, 0.55);
     // ---- 다리 IK(골반 기준) ----
@@ -1478,7 +1560,8 @@
 
     // ---- 몸통 ----
     var turn = g.yaw * (1 - cw);
-    var lean = -(0.06 * sm(w * 2) + 0.06 * jg);
+    var fs = g.fs * (1 - sa);   // 빠른 걸음(파워 워킹): 몸을 조금 더 숙이고, 팔꿈치를 굽혀 크게 흔든다
+    var lean = -(0.06 * sm(w * 2) + 0.06 * jg + 0.03 * fs);
     var hipsRy = turn, spineRy = -0.8 * turn, chestRy = -0.8 * turn;
     var spX = lerp(lean - 0.02, -0.02, sa) + (-0.10) * pa + (-0.40) * bow - 0.05 * jw;
     var chX = lerp(-0.012 + br * 0.006, -0.03, sa) + (-0.07) * pa + (-0.25) * bow;
@@ -1502,7 +1585,7 @@
     setE(bs[B.head], -0.02 - 0.28 * pa - 0.10 * bow - 0.16 * jw - nodv * 0.6 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
 
     // ---- 팔 ----
-    var armA = 0.10 + 0.22 * w + 0.10 * jg, elb = 0.20 + 0.22 * w + 0.85 * jg + 0.04 * br, side, qs = this.qs;   // 팔 흔들기: 보통 걸음(1.2 m/s)에서 위팔 약 30°, 잰걸음은 팔꿈치를 굽힌다
+    var armA = 0.10 + 0.22 * w + 0.10 * jg + 0.12 * fs, elb = 0.20 + 0.22 * w + 0.85 * jg + 0.95 * fs + 0.04 * br, side, qs = this.qs;   // 팔 흔들기: 보통 걸음(1.2 m/s)에서 위팔 약 30°, 잰걸음은 팔꿈치를 굽힌다
     var weightL = sa, weightP = pa;
     for (side = -1; side <= 1; side += 2) {
       var ua = bs[side > 0 ? B.uaR : B.uaL], fa = bs[side > 0 ? B.faR : B.faL], ha = bs[side > 0 ? B.haR : B.haL];
@@ -1611,7 +1694,7 @@
 
   root.ChurchAvatar = {
     _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
-    Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK,
+    Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK, GAIT_V_TOP: GAIT.V_TOP,
     ROSARY: ROSARY, rosaryGeometry: getRosaryGeo, rosaryParts: getRosaryParts, normRosaryLook: normRosaryLook, HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM,
     SIGN: { TL: SIGN_TL, DUR: EMOTE_DUR, phase: signPhase }, kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값

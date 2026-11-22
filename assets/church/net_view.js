@@ -2,6 +2,7 @@
 (function (root) {
   'use strict';
   var T = root.THREE, Av = root.ChurchAvatar.Avatar;
+  function walkTop() { return (root.ChurchLogic && root.ChurchLogic.C && root.ChurchLogic.C.WALK_SPEED) || 4.0; }   // main.js 와 같은 최고 속도(scene_logic WALK_SPEED)
   var MAX_VISIBLE = 80, DELAY = 200;
   var PI = Math.PI;
 
@@ -185,7 +186,7 @@
             var sp2 = Math.sqrt((x - pxx) * (x - pxx) + (z - pzz) * (z - pzz)) / Math.max(dt, 1e-3);
             if (rec.fresh) sp2 = 0;
             rec.speed += (sp2 - rec.speed) * Math.min(1, dt * 8);
-            walk = rec.speed > 0.12 ? Math.min(1, rec.speed / 4.0) : 0;   // main.js 와 같은 뜻(속도/4.0). 다리는 아바타가 실제 이동량으로 움직인다(WALK_GAIT.md)
+            walk = rec.speed > 0.12 ? Math.min(1, rec.speed / walkTop()) : 0;   // main.js 와 같은 뜻(속도 / WALK_SPEED). 다리는 아바타가 실제 이동량으로 움직인다(WALK_GAIT.md)
             // 여러 층: 서버는 x,z 만 보낸다 → 이전 높이(rec.fy)에서 걷기 규칙으로 따라간다(처음은 입구 층). 한 층이면 세 번째 인자를 무시한다
             if (logic && logic.multi && rec.fy === undefined) rec.fy = logic.floorY(logic.spawn.x, logic.spawn.z, logic.spawn.y === undefined ? null : logic.spawn.y);
             fl = logic ? logic.floorY(x, z, rec.fy) : 0;
@@ -194,7 +195,9 @@
             if (walk > 0) r = v.root.rotation.y + angDiff(v.root.rotation.y, r) * Math.min(1, dt * 12);
           }
           v.setWalk(walk);
-          v.setPose(x, rec.seat ? fl : (v.root.position.y + (fl - v.root.position.y) * Math.min(1, dt * 14)), z, r);
+          var bmx = x - v.root.position.x, bmz = z - v.root.position.z, bmd = Math.sqrt(bmx * bmx + bmz * bmz), flB = fl;
+          if (!rec.seat && logic && logic.bodyY && bmd > 1e-4 && bmd < 0.5) flB = logic.bodyY(x, z, fl, bmx / bmd, bmz / bmd);   // 계단은 비탈처럼(main.js 와 같다)
+          v.setPose(x, rec.seat ? fl : (v.root.position.y + (flB - v.root.position.y) * Math.min(1, dt * 14)), z, r);
           if (rec.fresh) { rec.fresh = false; if (!rec.seat) { v.root.position.y = fl; v.snapPose(); } }
           v.update(dt, t);
         }
@@ -256,8 +259,10 @@
           if (n.stuck > 1.2) { if (Math.hypot(n.x - n.lx, n.z - n.lz) < 0.3) { pick(n); } n.lx = n.x; n.lz = n.z; n.stuck = 0; }
           var yaw = Math.atan2(-dx, -dz), cur = n.av.root.rotation.y;
           var df = (yaw - cur) % (PI * 2); if (df > PI) df -= PI * 2; if (df < -PI) df += PI * 2;
-          n.av.setWalk(0.8 / 4.0);   // 0.8 m/s(위 sp). 예전 1 은 4 m/s 걸음이라 발이 몸보다 5배 빨리 돌았다
-          n.av.setPose(n.x, n.fy, n.z, cur + df * Math.min(1, dt * 4));
+          n.av.setWalk(0.8 / walkTop());   // 0.8 m/s(위 sp). 예전 1 은 4 m/s 걸음이라 발이 몸보다 5배 빨리 돌았다
+          if (n.y === undefined) n.y = n.fy;
+          n.y += ((logic.bodyY ? logic.bodyY(n.x, n.z, n.fy, dx / d, dz / d) : n.fy) - n.y) * Math.min(1, dt * 14);   // 계단은 비탈처럼(main.js 와 같다)
+          n.av.setPose(n.x, n.y, n.z, cur + df * Math.min(1, dt * 4));
           n.av.update(dt, t);
         }
       }

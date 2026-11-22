@@ -1,6 +1,6 @@
 // 걸음 접촉 시트: node tools/church_web/gait_sheet.mjs <outDir> [assets 폴더=assets/church] [이름 접두=after]
 // 코드로 그린 아바타를 빈 바닥(10cm 격자)에서 걷게 하고 한 주기를 8장으로 옆·앞에서 찍는다(카메라는 몸을 따라가므로 디딘 발이 격자에 붙어 있으면 미끄러지지 않는 것).
-// 속도: 1.2 m/s(조이스틱 0.3), 4.0 m/s(조이스틱 1.0). 결과: <outDir>/<접두>_<side|front>_<속도>.png
+// 속도: 1.2 m/s(보통 걸음), 2.0 m/s, 4.0 m/s(최고 속도 — 빠른 걸음). 결과: <outDir>/<접두>_<side|front>_<속도>.png
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -39,7 +39,7 @@ const errors = []; page.on('pageerror', (e) => errors.push(e.message));
 await page.goto('file://' + pagePath);
 await page.waitForFunction(() => window.ChurchAvatar && window.run);
 // 한 주기 길이: 옛 코드는 phase 2π, 새 코드는 gait.ph 1 바퀴. 둘 다 phase(라디안)를 읽어 2π 를 8칸으로 나눈다.
-const cases = [['1.2', 1.2], ['4.0', 4.0]];
+const cases = [['1.2', 1.2], ['2.0', 2.0], ['4.0', 4.0]];
 const files = [];
 for (const [name, v] of cases) for (const view of ['side', 'front']) {
   const imgs = await page.evaluate(([v, view]) => {
