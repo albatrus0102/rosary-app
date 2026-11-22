@@ -433,6 +433,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Track.setting('dynamic_color');
           },
         ),
+        // 앱 전체 글자 크기: 메뉴·안내까지 모두 바뀐다. 아래 '글자 크기'는 기도문만 바꾼다.
+        ListTile(
+          key: const ValueKey('settings-app-text-scale-title'),
+          leading: const Icon(Icons.text_increase),
+          title: const Text('글자 크기 (앱 전체)'),
+          subtitle: const Text('메뉴와 안내 글자까지 모두 바뀌어요'),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: SegmentedButton<double>(
+            key: const ValueKey('settings-app-text-scale'),
+            showSelectedIcon: false,
+            style: SegmentedButton.styleFrom(minimumSize: const Size(0, 48)),
+            segments: const [
+              ButtonSegment(value: 1.0, label: Text('보통')),
+              ButtonSegment(value: 1.2, label: Text('크게')),
+              ButtonSegment(value: 1.4, label: Text('아주 크게')),
+            ],
+            selected: {settings.appTextScale},
+            onSelectionChanged: (v) {
+              settings.appTextScale = v.first;
+              Track.setting('app_text_scale');
+            },
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Column(

@@ -7,7 +7,7 @@
   'use strict';
 
   var C = {
-    WALK_SPEED: 4.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
+    WALK_SPEED: 2.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
     SEAT_H: 0.45, BAND_NEAR: -0.62, BAND_FAR: 0.20, STAND_FWD: 0.72
   };
   // 신자석(긴 의자) 기하. u = 좌석 중심에서 제대 쪽(f)으로 잰 거리(m), y = 바닥에서의 높이(m). SPEC §28.

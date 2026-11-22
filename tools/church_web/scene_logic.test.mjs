@@ -206,12 +206,12 @@ test('floor height and joystick velocity', () => {
   assert.equal(L.floorY(0, 0), 0);
   const o = {};
   L.joyToVelocity(0, 1, 0, o);
-  assert.ok(Math.abs(o.vz + 4.0) < 1e-9 && Math.abs(o.vx) < 1e-9);
+  assert.ok(Math.abs(o.vz + L.C.WALK_SPEED) < 1e-9 && Math.abs(o.vx) < 1e-9);
   assert.ok(Math.abs(o.yaw) < 1e-9);
   L.joyToVelocity(1, 0, 0, o); // 오른쪽
-  assert.ok(Math.abs(o.vx - 4.0) < 1e-9);
+  assert.ok(Math.abs(o.vx - L.C.WALK_SPEED) < 1e-9);
   L.joyToVelocity(0, 1, Math.PI / 2, o); // 카메라가 -x를 봄
-  assert.ok(Math.abs(o.vx + 4.0) < 1e-9);
+  assert.ok(Math.abs(o.vx + L.C.WALK_SPEED) < 1e-9);
 });
 
 test('candleSlots: 원형(ring) 배치 — 동심원, 전역 번호 이어짐, 직사각 배치는 그대로', () => {

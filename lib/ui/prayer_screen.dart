@@ -849,6 +849,11 @@ class _PrayerScreenState extends State<PrayerScreen>
                       key: ValueKey('prayer-tour-$_tourRun'),
                       steps: _tourSteps(),
                       onClose: _closeTour,
+                      tourId: 'rosary',
+                      settings: _settings,
+                      // 성가·선창 목소리가 나는 중에는 안내를 읽지 않는다.
+                      speakBlocked: () =>
+                          _music.audible || (_voice?.isSpeaking.value ?? false),
                     ),
                   ),
               ],

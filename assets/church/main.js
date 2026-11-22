@@ -244,6 +244,7 @@
     if (!App.paused) return;
     App.paused = false;
     if (App.ambient) { try { root.ChurchAudio.setAmbient(true); } catch (e) { /* ignore */ } }
+    else { try { root.ChurchAudio.resume(); } catch (e) { /* ignore */ } }   // 오르간은 꺼져 있어도 발소리가 켜져 있으면 다시 깨운다
     kick();   // App.last 를 지금으로 맞추고 다시 그린다(멈춰 있던 시간만큼 건너뛰지 않는다)
   }
   // 새 장면(WebView 를 다시 만든 뒤)에 저장해 둔 상태를 적용한다. 좌석에 이미 누가 있으면 그 줄 통로에 세운다. → {e:'restored'}
@@ -413,6 +414,7 @@
     // 카메라 설정(설정 > 성당 > 카메라, docs/church/CAMERA.md): autoZoom(벽 피하기) · dist('near'|'normal'|'far') · follow(걸을 때 뒤로 정렬)
     setCamera: function (o) { applyCamCfg(o); },
     setAmbient: function (o) { App.ambient = !!o.on; if (!App.paused) root.ChurchAudio.setAmbient(App.ambient); },
+    setSteps: function (o) { root.ChurchAudio.setSteps(o || {}); },   // 발소리: {on, chant, vol} (audio.js setSteps)
     setHour: function (o) { if (App.world) App.world.setHour(+o.hour); },
     // 전례 시기 장식(SPEC §33): {season, color, week?, feast?, memorial?}. 장면을 시작하기 전에 와도 기억해 둔다.
     setLiturgy: function (o) { if (root.ChurchLiturgy) { root.ChurchLiturgy.set(o); kick(); } },
@@ -609,8 +611,8 @@
         App.turn.t -= dt; if (App.turn.t <= 0) App.turn = null;
       }
       me.speed = sp;
-      av.setWalk(Math.min(1, sp / 4.0 * 1.05));
-      if (sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5); } }
+      av.setWalk(Math.min(1, sp / 2.0 * 1.05));
+      if (!av.takeStep && sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5, sp); } }   // 발 디딤을 알려 주지 않는 아바타(glb)만 시간 간격으로
       var fy = logic.floorY(me.x, me.z);
       me.y += (fy - me.y) * Math.min(1, dt * 14);
       // pos 이벤트
@@ -655,6 +657,9 @@
     }
     av.setPose(me.x, me.y, me.z, me.yaw);
     av.update(dt, t);
+    // 발소리: 아바타가 실제로 발을 디딘 순간에(벽에 막혀 제자리면 나지 않는다). docs/church/WALK_GAIT.md
+    var stepEv = av.takeStep ? av.takeStep() : null;
+    if (stepEv) root.ChurchAudio.footstep(stepEv.side > 0, stepEv.v);
   }
 
   var tmpV = new T.Vector3(), spotO = { pitch: 0, D: 0, fwd: 0, up: 0 };

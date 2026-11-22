@@ -100,11 +100,14 @@ Future<AppSettings> loadSettings({
   bool avatarChosen = true,
   // 앱의 기본값은 '접힘'이지만, 대부분의 시험은 도구 줄을 눌러야 하므로 기본으로 펼쳐 둔다.
   bool hudCollapsed = false,
+  // 첫 입장 안내(성당 투어)는 기본 '이미 마침'(flutter_test_config). 시험하는 파일만 false 로 둔다.
+  bool churchTourDone = true,
 }) async {
   SharedPreferences.setMockInitialValues({});
   final s = await AppSettings.load();
   s.churchAvatarChosen = avatarChosen;
   s.churchHudCollapsed = hudCollapsed;
+  s.churchTourDone = churchTourDone;
   return s;
 }
 
@@ -132,9 +135,13 @@ Future<ChurchHarness> pumpChurch(
   double textScale = 1.0,
   Widget Function(BuildContext, dynamic, dynamic)? prayerScreenBuilder,
   bool hudCollapsed = false,
+  bool churchTourDone = true,
 }) async {
   setView(tester, size);
-  final settings = await loadSettings(hudCollapsed: hudCollapsed);
+  final settings = await loadSettings(
+    hudCollapsed: hudCollapsed,
+    churchTourDone: churchTourDone,
+  );
   final net = FakeChurchNet();
   final scene = FakeChurchSceneController();
   await tester.pumpWidget(

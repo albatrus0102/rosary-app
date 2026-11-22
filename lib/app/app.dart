@@ -8,11 +8,28 @@ import '../auth/auth_gate.dart';
 import '../backup/backup_ui.dart';
 import '../diag/diag_send_sheet.dart';
 import '../diag/diag_sources.dart';
+import '../ui/app_intro.dart';
 import '../ui/app_shell.dart';
 import '../ui/skin_picker.dart';
 import 'app_services.dart';
 import 'settings.dart';
 import 'theme.dart';
+
+/// 앱 전체 글자 크기([AppSettings.appTextScale])를 기기의 글자 크기 위에 곱한다.
+/// 곱한 값이 [maxAppTextScale]을 넘지 않게 눌러서 화면이 깨지지 않게 한다(기기 값이 이미 그보다 크면 그대로 둔다).
+@visibleForTesting
+MediaQueryData scaledForApp(MediaQueryData data, double appScale) {
+  if (appScale == 1.0) return data;
+  final system = data.textScaler.scale(100) / 100;
+  final target = (system * appScale).clamp(
+    system,
+    system > maxAppTextScale ? system : maxAppTextScale,
+  );
+  return data.copyWith(textScaler: TextScaler.linear(target.toDouble()));
+}
+
+/// 앱 전체 글자 배율의 상한(기기 글자 크기와 곱한 뒤).
+const double maxAppTextScale = 2.0;
 
 class RosaryApp extends StatefulWidget {
   /// [services]가 없으면 네트워크·디스크를 쓰지 않는 기본 묶음(로그인 없음)으로 연다.
@@ -127,9 +144,15 @@ class _RosaryAppState extends State<RosaryApp> with WidgetsBindingObserver {
                     value: AppTheme.systemOverlayStyle(
                       Theme.of(context).brightness,
                     ),
-                    child: SkinPreviewHost(
-                      settings: settings,
-                      child: child ?? const SizedBox.shrink(),
+                    child: MediaQuery(
+                      data: scaledForApp(
+                        MediaQuery.of(context),
+                        settings.appTextScale,
+                      ),
+                      child: SkinPreviewHost(
+                        settings: settings,
+                        child: child ?? const SizedBox.shrink(),
+                      ),
                     ),
                   ),
               navigatorObservers: [
@@ -144,7 +167,13 @@ class _RosaryAppState extends State<RosaryApp> with WidgetsBindingObserver {
                 child: BackupOfferWatcher(
                   service: services.backup,
                   // 예상하지 못한 오류가 나면 실행마다 한 번 「문제가 생겼어요 · 기록 보내기」.
-                  child: DiagErrorWatcher(child: AppShell(settings: settings)),
+                  child: DiagErrorWatcher(
+                    // 첫 실행이면 첫 탭 전에 앱 소개(동의 화면을 마친 뒤).
+                    child: AppIntroGate(
+                      settings: settings,
+                      child: AppShell(settings: settings),
+                    ),
+                  ),
                 ),
               ),
             );

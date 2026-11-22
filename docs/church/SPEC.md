@@ -86,7 +86,8 @@ peerJoin({peer}) peerLeave({id}) peerSnap({p:[[id,x,z,r,st],...]})
 peerSeat({id,seat}) peerStand({id}) peerPraying({id,on,ms}) peerEmote({id,e})
 setCandles({candles:[{slot,until,intention}]})   // 전체 교체
 lightCandle({slot,until,intention})
-setAmbient({on})  setHour({hour})  setSolo({on})  setQuality({quality})  setPerfHud({on})   // §34
+setAmbient({on})  setSteps({on, chant, vol})  setHour({hour})  setSolo({on})  setQuality({quality})  setPerfHud({on})   // §34
+// setSteps: 발소리 켜기(성당 소리 설정)·성가가 울리는지·음악 음량 설정 — 크기는 늘 음악보다 작게(docs/church/WALK_GAIT.md §4)
 emote({e})
 ```
 - 내 아바타 위치는 웹이 권위(클라이언트 측 이동). Flutter가 `pos`를 받아 서버로 보낸다(5Hz 제한).

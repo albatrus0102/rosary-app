@@ -52,6 +52,11 @@ abstract final class AnalyticsEvents {
     'stats_open': EventSpec(ConsentKinds.usage, {'range'}),
     // UX 개편(R1): 온보딩·기록·알림·노베나·위젯. 값은 열거형·숫자·bool만.
     'onboarding_step': EventSpec(ConsentKinds.usage, {'step'}),
+    // 첫 사용 안내(앱 소개·성당·묵주기도 화면): tour = app|church|rosary, step = 0부터의 번호. 글은 보내지 않는다.
+    'tour_start': EventSpec(ConsentKinds.usage, {'tour'}),
+    'tour_step': EventSpec(ConsentKinds.usage, {'tour', 'step'}),
+    'tour_done': EventSpec(ConsentKinds.usage, {'tour'}),
+    'tour_skip': EventSpec(ConsentKinds.usage, {'tour', 'step'}),
     'guest_link': EventSpec(ConsentKinds.usage, {'provider'}),
     'prayed_today': EventSpec(ConsentKinds.usage, {'kind'}),
     'reminder_change': EventSpec(ConsentKinds.usage, {'kind', 'on', 'hour'}),
