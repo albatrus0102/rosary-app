@@ -285,6 +285,7 @@ class _HudBarButton extends StatelessWidget {
     required this.onPressed,
     this.tooltip,
     this.emphasized = false,
+    this.width,
   });
 
   final IconData icon;
@@ -293,16 +294,31 @@ class _HudBarButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool emphasized;
 
+  /// 좁은 화면에서 도구 줄이 정한 항목 폭(48dp 이상). null 이면 기본 폭([ChurchHudStyle.barItemSize]).
+  /// 이 폭에서는 표시기와 라벨이 함께 줄어든다(라벨은 [FittedBox]로 글자 크기만 줄인다).
+  final double? width;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final w = width;
+    final pad = w == null ? AppSpace.xxs : 2.0;
+    final indicatorW = w == null ? 48.0 : (w - pad * 2).clamp(32.0, 48.0);
+    final labelText = Text(
+      label,
+      maxLines: 1,
+      style: text.labelMedium?.copyWith(color: scheme.onSurface),
+    );
     final button = TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        minimumSize: ChurchHudStyle.barItemSize,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.xxs,
+        minimumSize: w == null
+            ? ChurchHudStyle.barItemSize
+            : Size(w, ChurchHudStyle.barItemSize.height),
+        maximumSize: w == null ? null : Size(w, double.infinity),
+        padding: EdgeInsets.symmetric(
+          horizontal: pad,
           vertical: AppSpace.xxs,
         ),
         shape: const RoundedRectangleBorder(
@@ -320,7 +336,7 @@ class _HudBarButton extends StatelessWidget {
               shape: AppShape.full,
             ),
             child: SizedBox(
-              width: 48,
+              width: indicatorW,
               height: 28,
               child: Icon(
                 icon,
@@ -332,11 +348,10 @@ class _HudBarButton extends StatelessWidget {
           const SizedBox(height: 2),
           MediaQuery.withClampedTextScaling(
             maxScaleFactor: ChurchHudStyle.labelMaxScale,
-            child: Text(
-              label,
-              maxLines: 1,
-              style: text.labelMedium?.copyWith(color: scheme.onSurface),
-            ),
+            // 좁은 폭: 라벨이 항목 폭보다 길면 글자만 줄인다(항목·터치 타깃은 그대로).
+            child: w == null
+                ? labelText
+                : FittedBox(fit: BoxFit.scaleDown, child: labelText),
           ),
         ],
       ),
@@ -372,8 +387,36 @@ class ChurchTopActions extends StatelessWidget {
 
   static const emoteLabels = ['인사', '성호경', '고개 숙임'];
 
+  /// 항목 폭의 하한(M3 터치 타깃 48dp).
+  static const double minItemWidth = 48;
+
+  /// 줄 안 항목(소리·아바타·인사·가기) 말고 고정 폭: 좌우 안쪽 여백 + 구분선 + 접기 단추.
+  double _fixedWidth() =>
+      AppSpace.xs * 2 +
+      (onGo != null ? AppSpace.xs + 1 : 0) +
+      (onCollapse != null ? 48 : 0);
+
+  /// 줄이 [maxWidth] 안에 들어가게 하는 항목 폭. 기본 폭으로 들어가면 null(예전 그대로).
+  /// 320dp 폰처럼 좁으면 항목을 똑같이 줄이되 48dp 아래로는 줄이지 않는다(라벨 글자는 [_HudBarButton]이 줄인다).
+  double? itemWidthFor(double maxWidth) {
+    if (!maxWidth.isFinite) return null;
+    final n = onGo != null ? 4 : 3;
+    final full = _fixedWidth() + n * ChurchHudStyle.barItemSize.width;
+    if (maxWidth >= full) return null;
+    final w = ((maxWidth - _fixedWidth()) / n).floorToDouble();
+    return w < minItemWidth ? minItemWidth : w;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 넓은 화면(이름판 옆)에서는 폭 제한이 없고, 폰 폭(이름판 아래 오른쪽)에서는 남은 폭 안에 들어가야 한다.
+    return LayoutBuilder(
+      builder: (context, constraints) =>
+          _buildBar(context, itemWidthFor(constraints.maxWidth)),
+    );
+  }
+
+  Widget _buildBar(BuildContext context, double? itemW) {
     final scheme = Theme.of(context).colorScheme;
     final go = onGo;
     return Material(
@@ -397,12 +440,14 @@ class ChurchTopActions extends StatelessWidget {
                     ? Icons.volume_up_outlined
                     : Icons.volume_off_outlined,
                 label: '소리',
+                width: itemW,
               ),
               _HudBarButton(
                 tooltip: '아바타 편집',
                 onPressed: onEditAvatar,
                 icon: Icons.face_outlined,
                 label: '아바타',
+                width: itemW,
               ),
               PopupMenuButton<int>(
                 tooltip: '인사',
@@ -420,6 +465,7 @@ class ChurchTopActions extends StatelessWidget {
                         ?.showButtonMenu(),
                     icon: Icons.waving_hand_outlined,
                     label: '인사',
+                    width: itemW,
                   ),
                 ),
               ),
@@ -431,7 +477,11 @@ class ChurchTopActions extends StatelessWidget {
                   endIndent: AppSpace.xs,
                   color: scheme.outlineVariant,
                 ),
-                ChurchGoButton(key: const ValueKey('go-button'), onPressed: go),
+                ChurchGoButton(
+                  key: const ValueKey('go-button'),
+                  onPressed: go,
+                  width: itemW,
+                ),
               ],
               if (onCollapse != null)
                 Semantics(
@@ -523,9 +573,12 @@ class ChurchHudMenuButton extends StatelessWidget {
 /// '가기' 항목(지도 핀 선 아이콘 + 라벨): 촛불 봉헌대·제대 앞·빈 자리·입구로 바로 걸어간다.
 /// 도구 줄의 마지막 칸이며, 가장 자주 쓰는 길이라 금색 표시기로 강조한다.
 class ChurchGoButton extends StatelessWidget {
-  const ChurchGoButton({super.key, required this.onPressed});
+  const ChurchGoButton({super.key, required this.onPressed, this.width});
 
   final VoidCallback onPressed;
+
+  /// 좁은 도구 줄의 항목 폭([_HudBarButton.width]). null 이면 기본 폭.
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -534,6 +587,7 @@ class ChurchGoButton extends StatelessWidget {
       icon: Icons.place_outlined,
       label: '가기',
       emphasized: true,
+      width: width,
     );
   }
 }

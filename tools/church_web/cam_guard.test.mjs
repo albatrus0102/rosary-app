@@ -33,14 +33,14 @@ function camAt(env, me, yaw, pitch, zoom, useGuard) {
     const rig = Guard.createRig(), O = {}, I = { mx: me.x, fy, mz: me.z, yaw, pitch, D, cb, guard, auto: true };
     rig.solve(I, 1 / 30, O); rig.solve(I, 1 / 30, O);
     if (O.fpOn) return null;   // 1인칭(정말 막힌 곳): 카메라는 머리 자리
-    return [O.x, Math.min(cb.yMax, Math.max(0.7, O.y)), O.z];
+    return [O.x, Math.min(cb.yMax, Math.max(env.L.multi ? me.y + 0.7 : 0.7, O.y)), O.z];   // main.js 와 같은 카메라 바닥(여러 층은 그 층 바닥 + 0.7)
   }
   let reach = 1;
   if (dx > 1e-4) reach = Math.min(reach, (cb.x1 - me.x) / (dx * Math.cos(pitch) * D)); else if (dx < -1e-4) reach = Math.min(reach, (cb.x0 - me.x) / (dx * Math.cos(pitch) * D));
   if (dz > 1e-4) reach = Math.min(reach, (cb.z1 - me.z) / (dz * Math.cos(pitch) * D)); else if (dz < -1e-4) reach = Math.min(reach, (cb.z0 - me.z) / (dz * Math.cos(pitch) * D));
   reach = Math.max(0.3, Math.min(1, reach));
   const ch = Math.cos(pitch) * D * reach, cv = Math.sin(pitch) * D * reach;
-  return [Math.max(cb.x0, Math.min(cb.x1, me.x + dx * ch)), Math.min(cb.yMax, Math.max(0.7, fy + cv)), Math.max(cb.z0, Math.min(cb.z1, me.z + dz * ch))];
+  return [Math.max(cb.x0, Math.min(cb.x1, me.x + dx * ch)), Math.min(cb.yMax, Math.max(env.L.multi ? me.y + 0.7 : 0.7, fy + cv)), Math.max(cb.z0, Math.min(cb.z1, me.z + dz * ch))];
 }
 
 // 카메라가 면에 붙었나(0.25m 선 6방향)

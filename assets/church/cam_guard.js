@@ -25,6 +25,23 @@
       PX0 = b.x0 - pad; PZ0 = b.z0 - pad; PNX = Math.ceil((b.x1 - b.x0 + 2 * pad) / PC); PNZ = Math.ceil((b.z1 - b.z0 + 2 * pad) / PC);
       PM = PL.map(function () { return new Uint8Array(PNX * PNZ); });
     }
+    // 걷는 바닥 지도(여러 층, o.floorsAt = logic.floorsAt): 칸마다 걷는 바닥 구역 높이들(계단 디딤·단 포함, 칸당 최대 FK). 카메라 자리는 머리 → 카메라 선이
+    // 그 사람 바닥이 아닌 걷는 바닥(위층 판뿐 아니라 계단 디딤 — 겹친 계단에서 위 계단, 계단식 성가대석 단)을 지나면 안 된다(partCross).
+    // 층 칸막이 지도는 층 바닥 높이의 수평면만 알아 겹친 두 계단 사이(아래 계단 → 위 계단 너머)로 카메라가 올라가곤 했다(여의도동, 2026-11-22).
+    // 칸 가운데와 네 귀의 바닥을 합친다(판 가장자리 칸도 빠지지 않게 — 보수적으로)
+    var FK = 8, FM = null;
+    if (PL && o.floorsAt) {
+      FM = new Float32Array(PNX * PNZ * FK).fill(NaN);
+      var FO = [[0.5, 0.5], [0.02, 0.02], [0.98, 0.02], [0.02, 0.98], [0.98, 0.98]];
+      for (var fk = 0; fk < PNZ; fk++) for (var fi = 0; fi < PNX; fi++) {
+        var fl0 = [];
+        for (var fo = 0; fo < FO.length; fo++) {
+          var fl1 = o.floorsAt(PX0 + (fi + FO[fo][0]) * PC, PZ0 + (fk + FO[fo][1]) * PC) || [];
+          for (var fq0 = 0; fq0 < fl1.length; fq0++) if (fl0.indexOf(fl1[fq0]) < 0) fl0.push(fl1[fq0]);
+        }
+        for (var fq = 0; fq < fl0.length && fq < FK; fq++) FM[(fk * PNX + fi) * FK + fq] = fl0[fq];
+      }
+    }
     function partMark(v, y) {
       for (var li = 0; li < PL.length; li++) {
         if (y < PL[li] - 0.45 || y > PL[li] + 0.2) continue;
@@ -174,6 +191,28 @@
         if ((ay < h) === (by < h)) continue;
         var t2 = (h - ay) / (by - ay), i = Math.floor((ax + (bx - ax) * t2 - PX0) / PC), k = Math.floor((az + (bz - az) * t2 - PZ0) / PC);
         if (i >= 0 && k >= 0 && i < PNX && k < PNZ && PM[li][k * PNX + i]) return true;
+      }
+      // 걷는 바닥 지도: 0.1m 간격으로 선을 따라가며 칸의 바닥 높이를 지나는지 본다. 그 사람 바닥(머리 − 1.0) 근처(±0.55)는 뺀다(서 있는 계단 단·이웃 단 몇 개)
+      if (FM) {
+        // 카메라가 선 칸: 그 사람 바닥보다 1m 넘게 높은 걷는 바닥 위에 서면 다른 층이다(우물·계단 띠 같은 구멍으로 올라가 위층 바닥 위에 선 경우 — 여의도동 아래 계단 → 2층 로비)
+        var ei = Math.floor((bx - PX0) / PC), ek = Math.floor((bz - PZ0) / PC);
+        if (ei >= 0 && ek >= 0 && ei < PNX && ek < PNZ) {
+          for (var fe = 0; fe < FK; fe++) { var fv = FM[(ek * PNX + ei) * FK + fe]; if (fv !== fv) break; if (fv > ay && fv < by) return true; }
+        }
+        // 칸(0.4m) 가운데의 바닥 높이로 보므로 계단처럼 칸 안에서 높이가 바뀌는 곳은 한 단(±0.2m) 여유를 두고 본다
+        var dxs = bx - ax, dys = by - ay, dzs = bz - az, n = Math.max(1, Math.ceil(Math.max(Math.sqrt(dxs * dxs + dzs * dzs), Math.abs(dys)) / 0.1)), own = ay - 1.0, py = ay;
+        for (var sI = 1; sI <= n; sI++) {
+          var u = sI / n, qx = ax + dxs * u, qy = ay + dys * u, qz = az + dzs * u, ci = Math.floor((qx - PX0) / PC), ck = Math.floor((qz - PZ0) / PC);
+          if (ci >= 0 && ck >= 0 && ci < PNX && ck < PNZ) {
+            var base = (ck * PNX + ci) * FK, lo = Math.min(py, qy) - 0.2, hi = Math.max(py, qy) + 0.2;
+            for (var fq2 = 0; fq2 < FK; fq2++) {
+              var fh = FM[base + fq2];
+              if (fh !== fh) break;
+              if (fh > lo && fh <= hi && Math.abs(fh - own) > 0.55) return true;
+            }
+          }
+          py = qy;
+        }
       }
       return false;
     };
@@ -570,7 +609,7 @@
     // 시점 번호 oi = pi * NYw + yi. pi 0 = 사용자 pitch, 1.. = 올림, 그다음 = 내림. yi 0 = 사용자 yaw, 1.. = 좌우로 돈 것.
     function optPitch(pi, user) {
       if (pi === 0) return user;
-      if (pi <= RIG.pitchUp.length) { var u = RIG.pitchUp[pi - 1]; return u > user + 0.05 ? u : -1; }
+      if (pi <= RIG.pitchUp.length) { var u = RIG.pitchUp[pi - 1]; return u > user + 0.05 && u <= pMaxCur ? u : -1; }
       var dn = RIG.pitchDown[pi - 1 - RIG.pitchUp.length]; return dn < user - 0.05 ? dn : -1;
     }
     // 올린 시점의 목표 거리: 카메라가 아바타 가슴 위 hMax 보다 높이 날지 않게(사용자 거리·최소 거리 사이)
@@ -579,7 +618,7 @@
       return Math.min(D, Math.max(curMin, RIG.hMax / Math.sin(p)));
     }
     function optYaw(yi) { return yi === 0 ? 0 : RIG.yawOff[yi - 1]; }
-    var ev = { A: 0, c: 0 }, curMin = RIG.minD;
+    var ev = { A: 0, c: 0 }, curMin = RIG.minD, pMaxCur = 9;
     function evalOpt(oi, I, yaw0, D) {
       var pi = (oi / NYw) | 0, yi = oi % NYw, p = optPitch(pi, I.pitch);
       if (p < 0) { ev.A = 0; ev.c = 1e9; return ev; }
@@ -593,6 +632,8 @@
     // I: {mx,fy,mz, yaw,pitch, D(목표 거리), cb, guard, auto, minD}. O 에 {x,y,z, pitch, dist, lift, fwd, yaw, fp, opt} 를 쓴다(할당 0).
     s.solve = function (I, dt, O) {
       var D = I.D, auto = I.auto !== false, yaw0 = I.yaw, sp = auto && I.guard ? I.guard.space || null : null;
+      // 올림 상한(성당 카메라 상자 pitchMax — 좁은 계단 홀에서 거의 바로 위로 올라가 내려다보지 않게). 없으면 RIG.pitchUp 전부
+      pMaxCur = I.pitchMax !== undefined ? I.pitchMax : (I.cb && I.cb.pitchMax !== undefined ? I.cb.pitchMax : 9);
       // 걷는 곳이 카메라 상자 밖이면(익랑 끝) 상자 없이 공간 격자만
       var cb0 = I.cb, inCb = cb0 && I.mx >= cb0.x0 && I.mx <= cb0.x1 && I.mz >= cb0.z0 && I.mz <= cb0.z1;
       Q.sp = sp; Q.cb = auto && (inCb || !sp) ? cb0 : null;
@@ -730,6 +771,7 @@
       o2.levelLow = lo;
       o2.levelYs = (logic.levels || []).map(function (L) { return L.y; }).filter(function (y) { return y > lo + 0.12; });
       o2.levelBase = function (x, z, y) { return logic.floorY(x, z, y + (logic.C.STEP || 0.45)); };
+      o2.floorsAt = logic.floorsAt;
       o2.walkFloors = function (x, z) {
         var fl = logic.floorsAt(x, z), out = [];
         for (var i = 0; i < fl.length; i++) { p.x = x; p.z = z; if (!logic.moveCircle(p, 0, 0, undefined, fl[i]) && logic.floorY(x, z, fl[i]) === fl[i]) out.push(fl[i]); }

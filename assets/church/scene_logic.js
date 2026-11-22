@@ -52,7 +52,7 @@
             z: G.origin.z + G.dz * r + (G.dzIdx || 0) * i,
             yaw: G.yaw || 0
           });
-          if (G.y !== undefined) out[out.length - 1].fy = G.y;   // 여러 층: 그 줄이 놓인 바닥 높이(층)
+          if (G.y !== undefined) out[out.length - 1].fy = G.y + (G.rowDy || 0) * r;   // 여러 층: 그 줄이 놓인 바닥 높이(층). rowDy = 계단식 줄(성가대석)이 줄마다 오르는 높이
         }
       }
     }
@@ -178,15 +178,15 @@
     // levels 가 없는 성당(한 층)은 예전 그대로(아래 함수들이 yRef·y 인자를 무시한다).
     var multi = !!(layout.levels && layout.levels.length);
     var ground = layout.ground !== false;
-    var groupY = {};
-    for (i = 0; i < layout.seatGroups.length; i++) if (layout.seatGroups[i].y !== undefined) groupY[layout.seatGroups[i].g] = layout.seatGroups[i].y;
+    var groupY = {}, groupDy = {};
+    for (i = 0; i < layout.seatGroups.length; i++) if (layout.seatGroups[i].y !== undefined) { groupY[layout.seatGroups[i].g] = layout.seatGroups[i].y; groupDy[layout.seatGroups[i].g] = layout.seatGroups[i].rowDy || 0; }
 
     var keep = [];   // 출입 금지 구역(reverence.js): setColliders 로 다시 지어도 남는다
     function rebuild(list) {
       colliders.length = 0;
       for (var q = 0; q < bands.length; q++) {
         var bc = { k: 0, x0: bands[q].x0, x1: bands[q].x1, z0: bands[q].z0, z1: bands[q].z1 };
-        if (multi && groupY[bands[q].g] !== undefined) { bc.y0 = groupY[bands[q].g] - 0.05; bc.y1 = groupY[bands[q].g] + 1.1; }   // 신자석 줄은 그 층에서만 막는다
+        if (multi && groupY[bands[q].g] !== undefined) { var by = groupY[bands[q].g] + groupDy[bands[q].g] * Math.max(0, bands[q].row); bc.y0 = by - 0.05; bc.y1 = by + 1.1; }   // 신자석 줄은 그 층(계단식 줄은 그 줄의 단)에서만 막는다
         colliders.push(bc);
       }
       for (q = 0; q < list.length; q++) colliders.push(normCollider(list[q]));

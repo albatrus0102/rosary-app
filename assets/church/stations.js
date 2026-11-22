@@ -503,9 +503,13 @@
       }
       return seen;
     }
+    // 굵은 격자(CELLS[0])에서 그 높이의 열린 마디가 가까이 없으면(계단식 성가대석 줄 사이처럼 0.5m 칸보다 좁은 곳) 고운 격자로 다시 본다
     function isReachable(x, z, y) {
-      var g = getGrid(CELLS[0]), r = reachGrid(g), m = nearestOpen(g, x, z, y === undefined ? null : y, 2);
-      return m >= 0 && !!r[m];
+      for (var ci0 = 0; ci0 < CELLS.length; ci0++) {
+        var g = getGrid(CELLS[ci0]), m = nearestOpen(g, x, z, y === undefined ? null : y, 2);
+        if (m >= 0) return !!reachGrid(g)[m];
+      }
+      return false;
     }
     // a → b 직선을 걸을 수 있나(걷기 규칙으로 높이를 따라가며, 끝 높이가 b 의 층과 같아야 한다)
     function lineClear(a, b) {
