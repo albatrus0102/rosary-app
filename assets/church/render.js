@@ -82,6 +82,15 @@
     obj.userData.dynamic = true;
   }
 
+  // 화질 단계 표(RENDER_V3.md §1). 무거운 것은 전부 여기 단계 뒤에 둔다. low 는 예전 비용 그대로(후처리·그림자·구운 AO 없음).
+  //  msaa: 장면 렌더 타깃 표본 수 · ssao: 반해상도 SSAO · bloomDiv: 블룸 사슬 해상도 나눗수(1 = 1/2 부터, 2 = 1/4 부터, 0 = 블룸 없음)
+  //  reflect: 바닥 거울 반사 · shadow: 해 그림자 맵 · aoBake: 미리 구운 AO(정점 + 바닥 지도, ao_fx.js) · aoK: 구운 AO 세기(high 는 SSAO 와 겹쳐 조금 약하게)
+  //  specAA: 법선 지도 반짝임 줄이기 · maxDpr: 화소 비율 상한 · pace: 고주사율(90Hz 이상) 화면에서 못 따라가면 절반 주기로 고정(main.js)
+  var TIERS = {
+    high: { msaa: 4, ssao: true, bloomDiv: 1, reflect: true, shadow: true, aoBake: true, aoK: 1.0, specAA: 1, maxDpr: 2, pace: true },
+    mid: { msaa: 2, ssao: false, bloomDiv: 2, reflect: false, shadow: true, aoBake: true, aoK: 1.25, specAA: 1, maxDpr: 2, pace: true },
+    low: { msaa: 0, ssao: false, bloomDiv: 0, reflect: false, shadow: false, aoBake: false, aoK: 0, specAA: 0, maxDpr: 1.5, pace: true }
+  };
   function tierOf(q) { return q === 'low' ? 'low' : (q === 'mid' ? 'mid' : 'high'); }
 
   function create(canvas, opts) {
@@ -153,8 +162,8 @@
     }
     function ensureComposer() {
       if (R.composer || !X.EffectComposer || !curScene) return;
-      var hiT = R.tier === 'high';
-      var rt = new T.WebGLRenderTarget(Math.round(W * PR), Math.round(H * PR), { type: T.HalfFloatType, format: T.RGBAFormat, samples: (gl2 && !/[?&]msaa=0/.test(root.location ? root.location.search : '')) ? (hiT ? 4 : 2) : 0 });
+      var TC = TIERS[R.tier];
+      var rt = new T.WebGLRenderTarget(Math.round(W * PR), Math.round(H * PR), { type: T.HalfFloatType, format: T.RGBAFormat, samples: (gl2 && !/[?&]msaa=0/.test(root.location ? root.location.search : '')) ? TC.msaa : 0 });
       try { rt.depthTexture = new T.DepthTexture(Math.round(W * PR), Math.round(H * PR), T.UnsignedIntType); } catch (e) { /* 16비트 깊이로 폴백 */ }
       var c = new X.EffectComposer(renderer, rt);
       // renderTarget2 는 rt 의 복제인데, three r149 의 복제 깊이 질감은 같은 GL 질감(Source)을 공유한다.
@@ -164,7 +173,7 @@
       rpass = new X.RenderPass(curScene, curCam);
       c.addPass(rpass);
       var search = root.location ? root.location.search : '';
-      if (hiT && X.SSAOPass && !/[?&]ao=0/.test(search)) {
+      if (TC.ssao && X.SSAOPass && !/[?&]ao=0/.test(search)) {
         ssao = new X.SSAOPass(curScene, curCam, aoW(), aoH());
         ssao.kernelRadius = 0.9; ssao.minDistance = 0.00015; ssao.maxDistance = 0.0035;
         // (2026-11) SSAOPass 는 원래 장면 전체를 자기 beautyRenderTarget 에 한 번 더 그리고(바닥 반사도 다시 돈다) RenderPass 결과를 버렸다.
@@ -230,7 +239,7 @@
       if (X.UnrealBloomPass) {
         bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92);
         // 보통(mid): 블룸 사슬을 한 단계 더 작게(1/4 해상도부터). 높음은 예전 그대로(1/2). addPass 가 곧바로 setSize 를 부르므로 그 전에 바꾼다.
-        if (!hiT) { var bs = bloom.setSize.bind(bloom); bloom.setSize = function (w, h) { bs(Math.max(2, Math.round(w / 2)), Math.max(2, Math.round(h / 2))); }; }
+        if (TC.bloomDiv > 1) { var bs = bloom.setSize.bind(bloom); bloom.setSize = function (w, h) { bs(Math.max(2, Math.round(w / 2)), Math.max(2, Math.round(h / 2))); }; }
         c.addPass(bloom);
         if (postMerge) {
           // 밝은 부분 추출 = 예전 셰이더(LuminosityHighPass) × AO. 마지막 '입력 위에 더하기' 패스는 하지 않는다(최종 패스가 tBloom 을 읽는다).
@@ -407,6 +416,6 @@
     return R;
   }
 
-  root.ChurchRender = { create: create, tierOf: tierOf };
+  root.ChurchRender = { create: create, tierOf: tierOf, TIERS: TIERS };
   root.ChurchRenderUtil = root.ChurchRenderUtil || { markCaster: markCaster };
 })(typeof window !== 'undefined' ? window : this);

@@ -1,5 +1,5 @@
 // 헤드리스(swiftshader) 프레임 비용 비교 — 사본 여러 개(커밋별 assets/church)를 같은 시점·같은 조건에서 잰다. `node --test` 밖.
-// 사용: node tools/church_web/perf_compare.mjs --roots a=/path/assets/church,b=/path2 [--churches stpeter,florence,milan] [--size 360x800]
+// 사용: node tools/church_web/perf_compare.mjs --roots a=/path/assets/church,b=/path2 [--churches stpeter,florence,milan] [--size 360x800] [--solo 0]
 //       [--frames 30] [--quality high|mid|low] [--json out.json] [--passes]
 //       --passes: 첫 사본·첫 성당의 신랑 시점에서 패스를 하나씩 끄고(또는 예전처럼 매 프레임 그림자) 잰다 → 패스별 상대 비용 표.
 // 값: 프레임 시간 중앙값/90%(ms, gl.readPixels 로 GPU 완료까지), draw call, 삼각형, 상주 텍스처 수·추정 MB(장면 재질의 map 류 + 렌더 타깃 제외), 지오메트리 수.
@@ -26,7 +26,7 @@ const PASSES = {
 };
 export { PASSES };
 
-export async function measure(browser, rootDir, id, { size = '360x800', frames = 30, quality = 'high', passes = null } = {}) {
+export async function measure(browser, rootDir, id, { size = '360x800', frames = 30, quality = 'high', passes = null, solo = '1' } = {}) {
   const [W, H] = size.split('x').map(Number);
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   const errors = [];
@@ -36,7 +36,7 @@ export async function measure(browser, rootDir, id, { size = '360x800', frames =
     window.requestAnimationFrame = (cb) => { q.push(cb); return q.length; };
     window.__step = (n, dtMs) => { for (let i = 0; i < n; i++) { const cbs = q.splice(0); tNow = (tNow || performance.now()) + dtMs; cbs.forEach((cb) => cb(tNow)); } };
   });
-  await page.goto('file://' + rootDir + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality, solo: '1', hideui: '1' }));
+  await page.goto('file://' + rootDir + '/test.html?' + new URLSearchParams({ church: id, autotier: '0', msaa: '0', quality, solo, hideui: '1' }));
   await page.waitForFunction(() => window.__church && window.__church.world && window.__church.R, null, { timeout: 180000, polling: 500 });
   await page.waitForTimeout(1500);
   await page.waitForFunction(() => !window.__church.place || window.__church.place.debug().pending === 0, null, { timeout: 120000, polling: 250 }).catch(() => {});
@@ -102,7 +102,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (a[i] === '--roots') roots = a[++i].split(',').map((s) => s.split('='));
     else if (a[i] === '--churches') o.churches = a[++i].split(','); else if (a[i] === '--size') o.size = a[++i];
     else if (a[i] === '--frames') o.frames = +a[++i]; else if (a[i] === '--quality') o.quality = a[++i]; else if (a[i] === '--json') json = a[++i];
-    else if (a[i] === '--passes') o.passes = true;
+    else if (a[i] === '--passes') o.passes = true; else if (a[i] === '--solo') o.solo = a[++i];   // --solo 0: 배경 신자(무작위) 없이 — draw call·삼각형을 사본끼리 똑같이 견준다
   }
   const launch = () => chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   let browser = await launch();

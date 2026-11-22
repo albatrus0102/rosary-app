@@ -69,7 +69,10 @@
     // 성당별 룩 프리셋(looks.js, LOOK_DEV.md): 조명 배율·톤·블룸·먼지
     var look = root.ChurchLooks ? root.ChurchLooks.get(id) : null, lookV = {};
 
-    var ctx = root.ChurchKit.createContext({ layout: layout, quality: low ? 'low' : 'high' });
+    // 미리 구운 AO(ao_fx.js, RENDER_V3.md §2): 높음·보통의 성당(감상실 제외)은 정점 색에 근사 AO 를 굽지 않고 ao_<성당>.js 를 붙인다
+    var tierCfg = root.ChurchRender && root.ChurchRender.TIERS ? root.ChurchRender.TIERS : null;
+    var aoDefer = !low && !builder.viewing && !!root.ChurchAOFx && !!(tierCfg ? tierCfg[tier].aoBake : true);
+    var ctx = root.ChurchKit.createContext({ layout: layout, quality: low ? 'low' : 'high', aoDefer: aoDefer });
     ctx.view = opts.view || null;   // 감상실(ch_glass) 매개변수: 창 크기·빛 상태(GlassView 가 소유)
     var S = ctx._;
     var ret = null;
@@ -92,6 +95,7 @@
     var shadowCasters = [];
     items.forEach(function (it) {
       var grp = it.batch.build(it.material, it.name, { cast: it.cast, receive: it.receive, spatial: true });
+      it.group = grp;
       if (it.decal) grp.children.forEach(function (m) { m.renderOrder = 3; });
       if (it.name === 'glass' || it.name === 'glow') grp.children.forEach(function (m) { m.renderOrder = 1; });
       if (it.name === 'glassRefl' || it.name === 'aodecal') grp.userData.noAO = true;
@@ -506,6 +510,21 @@
     var stand0 = (layout.candles && layout.candles.stands && layout.candles.stands[0]) || null;
     var cb = S.cameraBounds || { x0: bnd.x0, x1: bnd.x1, z0: bnd.z0, z1: bnd.z1, yMax: 9 };
 
+    // 구운 AO·바닥 AO 지도·반사 가림·반짝임 줄이기(ao_fx.js). cam_guard 가 재질을 잇기 전에 붙인다(프로그램 캐시 키 순서).
+    var aoFx = null;
+    if (aoDefer) {
+      var aoMats = [];
+      S.physMats.forEach(function (p) { if (aoMats.indexOf(p.m) < 0) aoMats.push(p.m); });
+      items.forEach(function (it) { if (it.material && aoMats.indexOf(it.material) < 0) aoMats.push(it.material); });
+      try { aoFx = root.ChurchAOFx.attach({ id: id, items: items, mats: aoMats, aoOpts: S.aoOpts }); } catch (e) { if (root.console) console.warn('[church] aofx', e); aoFx = null; }
+    }
+    function applyAOTier() {
+      if (!aoFx) return;
+      var tc = tierCfg ? tierCfg[tier] : null, u = aoFx.uniforms;
+      u.uAOK.value = (tc ? tc.aoK : 1) * (look && look.aoK !== undefined ? look.aoK : 1);
+      u.uAODir.value = look && look.aoDir !== undefined ? look.aoDir : 0.6;
+      u.uSpecAA.value = tc ? tc.specAA : 1;
+    }
     var api = {
       id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9 },
@@ -540,6 +559,7 @@
         beamMat.needsUpdate = true;
         api.shadowDirty = true;
         if (dust) dust.visible = hi && !api.viewMode;
+        applyAOTier();
         if (env && env.sunDir) applyEnv();
       },
       // 창 감상 모드(G-07): 그림자·바닥 반사·안개·먼지·빛줄기를 끈다(사진 창 색을 바꾸지 않게, 정지 시 그리지 않게).
@@ -665,7 +685,11 @@
         for (var h2 = 0; h2 < S.updateHooks.length; h2++) S.updateHooks[h2](dt, t);
         if (camera) api.setSkyCenter(camera.position);
       },
+      aoFx: aoFx,
+      // 구운 AO 가 아직 붙지 않았는가(main.js 가 성당에 들어온 직후 잠깐(≤0.5초) 그리기를 미룬다: AO 없는 한 프레임이 번쩍이지 않게)
+      aoPending: function () { return !!(aoFx && aoFx.pending()); },
       dispose: function () {
+        if (aoFx) aoFx.dispose();
         disposeReflectors(); fb.dispose();
         var texs = new Set();
         function texOf(m) {

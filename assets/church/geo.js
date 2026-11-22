@@ -198,6 +198,7 @@
       g.computeBoundingSphere();
       var mesh = new T.Mesh(g, material);
       mesh.castShadow = !!opts.cast; mesh.receiveShadow = opts.receive !== false;
+      mesh.userData.vRange = [s, e];   // 배치 정점 s..e-1 (미리 구운 AO 를 나중에 붙일 때 ao_fx.js 가 쓴다)
       group.add(mesh);
     }
     group.userData.vertexCount = total;
@@ -236,6 +237,7 @@
       g.computeBoundingSphere();
       var mesh = new T.Mesh(g, material);
       mesh.castShadow = !!opts.cast; mesh.receiveShadow = opts.receive !== false;
+      mesh.userData.triIds = ids.subarray(c[0], c[1]);   // 이 덩어리의 배치 삼각형 번호(ao_fx.js 가 미리 구운 AO 를 붙인 뒤 놓는다)
       group.add(mesh);
     });
   }

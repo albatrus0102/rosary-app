@@ -64,7 +64,7 @@ test('render: three tiers, low has no composer, glass pixels keep the alpha-0 pa
   assert.match(r, /renderer\.shadowMap\.needsUpdate = !!shadowNow;/);
   assert.match(r, /if \(R\._inAux\) return;/);
   assert.match(r, /c\.renderTarget2\.depthTexture = new T\.DepthTexture/);
-  assert.match(r, /if \(hiT && X\.SSAOPass/);   // mid 는 SSAO 없음
+  assert.match(r, /if \(TC\.ssao && X\.SSAOPass/);   // mid 는 SSAO 없음(단계 표 TIERS.mid.ssao = false, render_tiers.test.mjs)
   const m = read('main.js');
   assert.match(m, /function setQMode\(q\) \{ App\.qMode = q === 'low' \|\| q === 'mid' \|\| q === 'high' \? q : 'auto';/);
   assert.match(m, /function autoOn\(\) \{ return App\.qMode === 'auto'/);

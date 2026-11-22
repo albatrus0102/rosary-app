@@ -14,6 +14,10 @@
   };
   root.__church = App;
 
+  // 프레임 박자(frame_pace.js, RENDER_V3.md §5): dt 를 vsync 배수로 맞추고, 90Hz 이상 화면에서 못 따라가면 절반 주기로 고정한다. ?pace=0 이면 끔.
+  var Pace = root.ChurchFramePace ? root.ChurchFramePace.create({ enabled: qs.pace !== '0' }) : { div: 1, frames: 0, tick: function () { this.frames++; }, work: function () {}, snap: function (r) { return r; } };
+  App.pace = Pace;
+
   function wrap(a) { while (a > PI) a -= PI * 2; while (a < -PI) a += PI * 2; return a; }
   // 화질 방식: App.qMode = 'auto'|'high'|'mid'|'low', App.quality = 실제 단계('high'|'mid'|'low'). 자동만 느릴 때 단계를 내린다.
   function setQMode(q) { App.qMode = q === 'low' || q === 'mid' || q === 'high' ? q : 'auto'; App.quality = App.qMode === 'auto' ? 'high' : App.qMode; }
@@ -22,7 +26,10 @@
 
   function viewing() { return !!(App.view && App.view.active); }
   // 창 감상 중에는 기기 화소 비율(최대 3, low 는 1.5)까지 올린다(GLASS_APP_PLAN §4.6: 정지 시 그리지 않으므로 부하가 오히려 적다)
-  function pixelRatio() { var d = root.devicePixelRatio || 1; return Math.min(d, App.quality === 'low' ? 1.5 : (viewing() ? 3 : 2)); }
+  function pixelRatio() {
+    var d = root.devicePixelRatio || 1, TT = root.ChurchRender && root.ChurchRender.TIERS, tc = TT ? TT[App.quality === 'low' ? 'low' : (App.quality === 'mid' ? 'mid' : 'high')] : null;
+    return Math.min(d, App.quality === 'low' ? (tc ? tc.maxDpr : 1.5) : (viewing() ? 3 : (tc ? tc.maxDpr : 2)));
+  }
   function resize() {
     if (!App.renderer) return;
     var w = root.innerWidth || 360, h = root.innerHeight || 640;
@@ -73,6 +80,7 @@
     if (App.cross) App.cross.clear();   // 십자가의 길 14처 판(SPEC §32)
     if (App.liturgy) App.liturgy.detach();   // 전례 시기 장식(SPEC §33)
     if (App.world) { App.world.dispose(); App.world = null; }
+    App.aoHoldT = 0;
     if (App.view) App.view.unpark();
     var w = root.ChurchWorld.create(App.scene, { church: id, quality: App.R.tier, hour: App.hourInit, renderer: App.renderer, view: vopts && vopts.view });
     if (App.R.envTex) w.setEnvironment(App.R.envTex);
@@ -805,10 +813,14 @@
     App.lastNow = now;
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
     App.frameCount = (App.frameCount || 0) + 1;
+    var tcP = App.R && root.ChurchRender && root.ChurchRender.TIERS ? root.ChurchRender.TIERS[App.R.tier] : null;
+    Pace.tick(now, !App.maxFrames && !(tcP && !tcP.pace));
     // 앉아서 가만히 기도하는 동안은 한 프레임 걸러 그린다(약 30fps; 성능 표시·시험 프레임 제한 중에는 끔).
     // 화면은 거의 정지라 차이가 보이지 않고, 발열·배터리를 줄여 다시 걸을 때의 열 제한 버벅임을 막는다. 끌기·일어서기 즉시 60fps.
-    if (App.idleSkip && (App.frameCount & 1)) { App.frames++; requestAnimationFrame(loop); return; }
-    var raw = (now - App.last) / 1000, dt = Math.min(0.05, raw);
+    // 고주사율(90Hz 이상) 화면에서 매 vsync 를 못 따라가면 절반 주기로 고정한다(Pace: 들쭉날쭉한 70~90fps 보다 고른 60fps 가 부드럽다).
+    var div = (App.idleSkip ? 2 : 1) * Pace.div;
+    if (div > 1 && (Pace.frames % div)) { App.frames++; requestAnimationFrame(loop); return; }
+    var raw = Pace.snap((now - App.last) / 1000), dt = Math.min(0.05, raw);
     App.last = now; App.t += dt;
     // 창 감상: 필요할 때만 그린다(입력·활강·페이드·빛 바꾸기). 할 일이 없으면 rAF 를 멈추고 kick() 이 다시 깨운다.
     if (App.view && (App.view.active || App.view.parked)) {
@@ -820,6 +832,11 @@
     }
     requestAnimationFrame(loop);
     if (!App.world) return;
+    // 성당에 들어온 직후 구운 AO(ao_<성당>.js)가 붙기 전에는 그리지 않는다(최대 0.5초, 그 사이 화면은 직전 그림): AO 없는 프레임이 번쩍이지 않게
+    if (App.world.aoPending && App.world.aoPending()) {
+      var pn = performance.now(); if (!App.aoHoldT) App.aoHoldT = pn;
+      if (pn - App.aoHoldT < 500) return;
+    }
     var PH = root.ChurchPerfHud && root.ChurchPerfHud.on ? root.ChurchPerfHud : null, tj = PH ? performance.now() : 0;
     App.ctl.setMoveZone(App.me.mode === 'walk');
     updateMe(dt, App.t);
@@ -841,7 +858,9 @@
     if (App.R.setGrade) App.R.setGrade(App.world.env.grade);   // 성당 룩(looks.js): 걷기 프로필의 보정·블룸
     App.idleSkip = !PH && !App.maxFrames && qs.idle !== '0' && App.me.mode === 'seated' && !App.walkSt && !App.ctl.dragging && App.t - App.ctl.lastDragT > 2 && App.sitF > 0.98 && !(App.meAv && App.meAv.kneelLin !== App.meAv.kneelTarget);
     var gq = PH ? PH.gpuBegin() : null, tr = PH ? performance.now() : 0;
+    var tw0 = performance.now();
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
+    Pace.work(performance.now() - tw0);
     if (PH) { PH.gpuEnd(gq); PH.frame(raw, performance.now() - tj, performance.now() - tr); }
     if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }   // 앱의 입장 화면을 걷는 신호
     // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).

@@ -80,7 +80,7 @@
     var S_ = ctx._ = {
       colliders: [], zones: [], lights: [], glows: [], flames: [], beams: [], hourHooks: [], updateHooks: [],
       cameraBounds: null, sky: { outside: false }, thumb: null, candleStands: [], lamps: [],
-      walls: [], windows: [], roses: [], glassSlots: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {},
+      walls: [], windows: [], roses: [], glassSlots: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {}, aoDefer: !!opts.aoDefer,
       lampSlots: [], batches: B_, planes: [], floorRects: []
     };
 
@@ -1502,10 +1502,14 @@
       dropCoveredTops();
       var items = [];
       var opts = S_.aoOpts;
+      // AO: 'low' 와 미리 구운 AO 가 없는 경우는 예전처럼 정점 색에 근사 AO(bakeAO)를 곱한다.
+      // aoDefer(높음·보통, world.js 가 켬)이면 색은 그대로 두고 ao_fx.js 가 ao_<성당>.js(ao_bake.mjs 로 광선 추적한 값)를 aoBake 속성으로 붙인다
+      // (간접광·환경 반사에 곱하고 직사광에는 일부만 — 햇빛 든 자리가 까맣게 죽지 않게). 구운 값이 맞지 않으면 같은 근사 AO 를 속성으로 넣는다.
       function addItem(name, batch, material, cast, receive, ao) {
         if (!batch.p.length) return;
-        if (ao && S_.aoOn) batch.bakeAO(opts);
-        items.push({ name: name, batch: batch, material: material, cast: cast, receive: receive });
+        var it = { name: name, batch: batch, material: material, cast: cast, receive: receive, ao: !!(ao && S_.aoOn) };
+        if (it.ao && !S_.aoDefer) batch.bakeAO(opts);
+        items.push(it);
       }
       addItem('solid', B_.solid, mats.solid, true, true, true);
       addItem('gloss', B_.gloss, mats.gloss, true, true, true);
