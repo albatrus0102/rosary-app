@@ -209,6 +209,10 @@ abstract final class BackupRegistry {
     PrefSpec('churchRosaryBig', _b, '성당 묵주기도: 마지막에 고른 화면(큰/작은)', type: _bool),
     PrefSpec('beadSwipeLearned', _b, '묵주 내리기 안내를 익힌 횟수', type: _int),
     PrefSpec('prayerScreenTourDone', _b, '기도 화면 첫 사용 안내를 마침', type: _bool),
+    PrefSpec('appIntroDone', _b, '앱 소개(첫 실행 안내)를 마침', type: _bool),
+    PrefSpec('churchTourDone', _b, '성당 첫 입장 안내를 마침', type: _bool),
+    PrefSpec('guideTtsOn', _b, '안내 글을 소리로 읽기', type: _bool, label: '안내 읽어 주기'),
+    PrefSpec('appTextScale', _b, '앱 전체 글자 크기 배율', type: _dbl, label: '글자 크기(앱 전체)'),
     PrefSpec('church_id', _b, '마지막으로 고른 성당', type: _str, label: '성당'),
     PrefSpec('church_favorites', _b, '즐겨찾는 성당', type: _list, label: '즐겨찾는 성당'),
     PrefSpec(

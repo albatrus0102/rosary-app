@@ -180,6 +180,14 @@ class AppSettings extends ChangeNotifier {
         _prefs.getInt(_kBeadSwipeLearned) ?? defaultBeadSwipeLearned;
     _prayerScreenTourDone =
         _prefs.getBool(_kPrayerScreenTourDone) ?? defaultPrayerScreenTourDone;
+    _appIntroDone = _prefs.getBool(_kAppIntroDone) ?? defaultAppIntroDone;
+    _churchTourDone =
+        _prefs.getBool(_kChurchTourDone) ?? defaultChurchTourDone;
+    _guideTtsOn = _prefs.getBool(_kGuideTtsOn) ?? true;
+    final storedScale = _prefs.getDouble(_kAppTextScale);
+    _appTextScale = appTextScaleChoices.contains(storedScale)
+        ? storedScale!
+        : 1.0;
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
     _prayerView = _enumByName(
       PrayerView.values,
@@ -484,6 +492,10 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchRosaryBig = 'churchRosaryBig';
   static const _kBeadSwipeLearned = 'beadSwipeLearned';
   static const _kPrayerScreenTourDone = 'prayerScreenTourDone';
+  static const _kAppIntroDone = 'appIntroDone';
+  static const _kChurchTourDone = 'churchTourDone';
+  static const _kGuideTtsOn = 'guideTtsOn';
+  static const _kAppTextScale = 'appTextScale';
   static const _kChurchId = 'church_id';
   static const _kChurchFavorites = 'church_favorites';
 
@@ -554,6 +566,10 @@ class AppSettings extends ChangeNotifier {
   late bool _churchRosaryBig;
   late int _beadSwipeLearned;
   late bool _prayerScreenTourDone;
+  late bool _appIntroDone;
+  late bool _churchTourDone;
+  late bool _guideTtsOn;
+  late double _appTextScale;
   late String _churchId;
   late Set<String> _churchFavorites;
 
@@ -935,6 +951,13 @@ class AppSettings extends ChangeNotifier {
   static int defaultBeadSwipeLearned = 0;
   static bool defaultPrayerScreenTourDone = false;
 
+  /// 첫 실행 앱 소개·성당 첫 안내를 마친 것으로 칠지(시험은 true 로 둔다. flutter_test_config).
+  static bool defaultAppIntroDone = false;
+  static bool defaultChurchTourDone = false;
+
+  /// 앱 전체 글자 크기 배율의 선택지: 보통 · 크게 · 아주 크게.
+  static const List<double> appTextScaleChoices = [1.0, 1.2, 1.4];
+
   /// 손가락으로 묵주를 넘긴 횟수(목표 [beadSwipeGoal]에서 멈춘다).
   int get beadSwipeLearned => _beadSwipeLearned;
 
@@ -965,6 +988,31 @@ class AppSettings extends ChangeNotifier {
     _kPrayerScreenTourDone,
     () => _prayerScreenTourDone = v,
   );
+
+  /// 앱 소개(첫 실행 안내 화면)를 마쳤거나 건너뛰었는지.
+  bool get appIntroDone => _appIntroDone;
+  set appIntroDone(bool v) =>
+      _setBool(v, _appIntroDone, _kAppIntroDone, () => _appIntroDone = v);
+
+  /// 성당 첫 입장 안내(직접 해 보며 따라하기)를 마쳤거나 그만 봤는지.
+  bool get churchTourDone => _churchTourDone;
+  set churchTourDone(bool v) =>
+      _setBool(v, _churchTourDone, _kChurchTourDone, () => _churchTourDone = v);
+
+  /// 안내 글을 기기 목소리로 읽어 줄지(기본 켜짐).
+  bool get guideTtsOn => _guideTtsOn;
+  set guideTtsOn(bool v) =>
+      _setBool(v, _guideTtsOn, _kGuideTtsOn, () => _guideTtsOn = v);
+
+  /// 앱 전체 글자 크기 배율(1.0 보통 · 1.2 크게 · 1.4 아주 크게). 기도문 글자 크기와는 따로다.
+  double get appTextScale => _appTextScale;
+  set appTextScale(double v) {
+    final next = appTextScaleChoices.contains(v) ? v : 1.0;
+    if (next == _appTextScale) return;
+    _appTextScale = next;
+    _prefs.setDouble(_kAppTextScale, next);
+    notifyListeners();
+  }
 
   /// 마지막으로 고른 성당 id(카탈로그에 없으면 'basic').
   String get churchId => _churchId;
