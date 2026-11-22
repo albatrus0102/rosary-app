@@ -90,7 +90,7 @@ export function buildBVH(tris, fn, two) {
   return { nodes: new Float32Array(box), meta: new Int32Array(meta), idx, tris, fn, two };
 }
 
-/** 가장 가까운 앞면(또는 양면) 교차 거리(없으면 -1). 뒷면에 닿은 것은 건너뛴다. backHit: [0] 에 가장 가까운 뒷면 거리를 적는다(없으면 Infinity). */
+/** 가장 가까운 앞면(또는 양면) 교차 거리(없으면 -1). 뒷면에 닿은 것은 건너뛴다. backHit: [0] 에 가장 가까운 뒷면 거리(없으면 Infinity), [1] 에 맞은 앞면 삼각형 번호(없으면 -1)를 적는다. */
 export function makeTracer(bvh) {
   const { nodes, meta, idx, tris, fn, two } = bvh;
   const stack = new Int32Array(128);
@@ -128,7 +128,7 @@ export function makeTracer(bvh) {
         best = tt; hit = t;
       }
     }
-    if (backHit) backHit[0] = back;
+    if (backHit) { backHit[0] = back; backHit[1] = hit; }   // [1]: 맞은 삼각형 번호(빛 번짐 굽기 gi_bake.mjs 가 그 면의 색·밝기를 읽는다)
     return hit >= 0 ? best : -1;
   };
 }

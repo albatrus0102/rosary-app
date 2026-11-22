@@ -19,14 +19,15 @@
      aoK aoDir 미리 구운 AO(ao_fx.js) 세기 배율·직사광에 곱하는 몫(0 = 간접광만, 1 = 전부). 높음·보통만.
      (RENDER_V4.md) shaftK  부드러운 빛줄기 세기(shaft_fx.js, high·mid; beamK 가 정하는 해 세기에 곱한다 — 공기 속 빛의 '보이는 정도')
                     moteK   빛줄기 속 먼지 밝기(실제 햇살 속 먼지처럼 겨우 보이게) · prbK  반사 탐침(probe_fx.js) 세기 배율
-                    bloomKnee 블룸 임계의 부드러운 어깨 폭(0 = 예전 딱 끊김, 사진의 밝은 부분 번짐처럼 서서히) */
+                    bloomKnee 블룸 임계의 부드러운 어깨 폭(0 = 예전 딱 끊김, 사진의 밝은 부분 번짐처럼 서서히)
+     (RENDER_GI.md) giK  미리 구운 빛 번짐(gi_fx.js) 세기 배율(0 = 끔). 높음·보통만. 전체 밝기는 바꾸지 않고 곳마다의 색·밝기 변화만 키운다/줄인다. */
 (function (root) {
   'use strict';
   var DEFAULT = {
     keyK: 1, keyTint: 0xffffff, keyTintK: 0, ambK: 1, ambTint: 0xffffff, ambTintK: 0, expK: 1, envK: 1, lampK: 1, candleK: 1, beamK: 1,
     fogTint: 0xffffff, fogTintK: 0, dust: 90, dustK: 1, dustNight: 0,
     sat: 0.94, warm: 0.03, vig: 0.16, con: 0, bloomT: 0.92, bloomS: 0.3, bloomR: 0.55, midBloomS: 0.8, reflK: 1, aoK: 1, aoDir: 0.6,
-    shaftK: 1, moteK: 1, prbK: 1, bloomKnee: 0.3,
+    shaftK: 1, moteK: 1, prbK: 1, bloomKnee: 0.3, giK: 1,
     glassK: 1.8, photoK: 3.0, photoWin: {},
     night: { glassK: 1.3, photoK: 2.0 }   // 밤: 바깥 빛이 없으니 낮보다 약하게(실내등 대비 은은하게)
   };

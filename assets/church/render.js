@@ -121,9 +121,9 @@
   //  shafts·shaftK·fxDiv·motes: 부드러운 빛줄기(그림자 맵·깊이로 가림)·세기·fx 패스 해상도 나눗수·먼지 입자 수(shaft_fx.js, §3)
   //  dof: 피사계 심도 세기(기도·성상 앞에서만, §5) · haze: 불꽃 위 아지랑이 세기(움직임 줄이기면 0, §6)
   var TIERS = {
-    high: { msaa: 4, ssao: true, bloomDiv: 1, reflect: true, shadow: true, aoBake: true, aoK: 1.0, specAA: 1, maxDpr: 2, pace: true, probes: 2, probeRes: 128, probeMix: 0.75, probeDesat: 0.25, shafts: true, shaftK: 1, fxDiv: 2, motes: 640, dof: 0.6, haze: 1 },
-    mid: { msaa: 2, ssao: false, bloomDiv: 2, reflect: false, shadow: true, aoBake: true, aoK: 1.25, specAA: 1, maxDpr: 2, pace: true, probes: 1, probeRes: 64, probeMix: 0.7, probeDesat: 0.25, shafts: true, shaftK: 0.9, fxDiv: 4, motes: 220, dof: 0.45, haze: 0.6 },
-    low: { msaa: 0, ssao: false, bloomDiv: 0, reflect: false, shadow: false, aoBake: false, aoK: 0, specAA: 0, maxDpr: 1.5, pace: true, probes: 0, probeRes: 0, shafts: false, shaftK: 0, fxDiv: 0, motes: 0, dof: 0, haze: 0 }
+    high: { msaa: 4, ssao: true, bloomDiv: 1, reflect: true, shadow: true, aoBake: true, aoK: 1.0, gi: 1, specAA: 1, maxDpr: 2, pace: true, probes: 2, probeRes: 128, probeMix: 0.75, probeDesat: 0.25, shafts: true, shaftK: 1, fxDiv: 2, motes: 640, dof: 0.6, haze: 1 },
+    mid: { msaa: 2, ssao: false, bloomDiv: 2, reflect: false, shadow: true, aoBake: true, aoK: 1.25, gi: 1, specAA: 1, maxDpr: 2, pace: true, probes: 1, probeRes: 64, probeMix: 0.7, probeDesat: 0.25, shafts: true, shaftK: 0.9, fxDiv: 4, motes: 220, dof: 0.45, haze: 0.6 },
+    low: { msaa: 0, ssao: false, bloomDiv: 0, reflect: false, shadow: false, aoBake: false, aoK: 0, gi: 0, specAA: 0, maxDpr: 1.5, pace: true, probes: 0, probeRes: 0, shafts: false, shaftK: 0, fxDiv: 0, motes: 0, dof: 0, haze: 0 }
   };
   function tierOf(q) { return q === 'low' ? 'low' : (q === 'mid' ? 'mid' : 'high'); }
 
