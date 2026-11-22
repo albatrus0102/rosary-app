@@ -1,6 +1,6 @@
 # 성당 렌더링 부드러움·스테인드글라스 대량 투입 대비 (작업 D, 2026-11-15)
 
-관련 문서: [PERF.md](PERF.md)(측정 프로토콜·이전 결과), [LOOK_DEV_HANDOFF.md](LOOK_DEV_HANDOFF.md), [GLASS_ALL_CHURCHES_PLAN.md](GLASS_ALL_CHURCHES_PLAN.md), [MILAN_55_PLACEMENT.md](MILAN_55_PLACEMENT.md).
+관련 문서: [RENDER_V3.md](RENDER_V3.md)(2026-11-22 구운 AO·화질 단계 표·프레임 박자 — §7 '베이크 조명' 보류를 정점·바닥 AO 로 일부 해소), [PERF.md](PERF.md)(측정 프로토콜·이전 결과), [LOOK_DEV_HANDOFF.md](LOOK_DEV_HANDOFF.md), [GLASS_ALL_CHURCHES_PLAN.md](GLASS_ALL_CHURCHES_PLAN.md), [MILAN_55_PLACEMENT.md](MILAN_55_PLACEMENT.md).
 원칙(사용자): 해상도·화질을 낮추지 않는다(동적 해상도는 최후 안전장치), 엔진은 바꾸지 않는다(three.js r149 + Flutter WebView), 텍스처는 앞으로 크게 늘어난다.
 
 **측정 환경의 한계.** 이 문서의 ms 는 헤드리스 Chromium + SwiftShader(CPU 소프트웨어 GL, 4코어, 다른 작업과 함께 돌아 부하 평균 10~12)에서 잰 **상대값**이다. 실제 휴대폰 GPU 의 fps 를 뜻하지 않는다.
