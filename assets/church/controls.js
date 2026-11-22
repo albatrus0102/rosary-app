@@ -214,7 +214,7 @@
     ctl.pointerCount = countAll;
     return ctl;
   }
-  function wrapA(a) { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; }
+  function wrapA(a) { if (!(a > -1e9 && a < 1e9)) return 0; var T2 = Math.PI * 2; a = (a + Math.PI) % T2; if (a < 0) a += T2; return a - Math.PI; }   // 반복 없이(큰 값에서 끝나지 않던 while 대신)
   // 걸을 때 카메라가 아바타 뒤로 천천히 도는 '자동 따라가기' 한 프레임(main.js updateCamera). 돌린 양(라디안)을 돌려준다.
   // 사용자가 시점을 끄는 동안은 절대 돌리지 않는다: 웹 손가락(dragging)이든 앱이 대신 읽는 손가락(extLook)이든 같다.
   // s: { follow(설정 '걸을 때 뒤로 따라가기'), walkSt(자동 걷기 중), seated, spot(자리 시점 중), t(초), meYaw, speed(m/s), dt }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,7 @@ import '../app/prayer_music.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
+import '../diag/diag_recorder.dart';
 import '../domain/prayer_data.dart';
 import '../domain/rosary_session.dart';
 import '../domain/stations_series.dart';
@@ -37,6 +39,7 @@ import 'church_prayer_choice_sheet.dart';
 import 'church_presence_sheet.dart';
 import 'church_resume_state.dart';
 import 'church_scene_controller.dart';
+import 'church_scene_watchdog.dart';
 import 'church_theme.dart';
 import 'church_touch_trace.dart';
 import 'church_tour.dart';
@@ -260,6 +263,23 @@ class _ChurchScreenState extends State<ChurchScreen>
   bool _perfBanner = false;
   Timer? _perfBannerTimer;
 
+  // --- 장면 멎음 감시(church_scene_watchdog.dart, yeouido.md §9.9) ---
+  // 감시 시계는 1초 박자(_watchTick)로 센다: 벽시계를 쓰지 않아 기기가 잠들었다 깬 시간·시험의 가짜 시간과 어긋나지 않는다
+  int _watchMs = 0;
+  late final ChurchSceneWatchdog _watch = ChurchSceneWatchdog(
+    clock: () => DateTime.fromMillisecondsSinceEpoch(_watchMs),
+  );
+  Timer? _watchTimer;
+
+  /// 멎음 까닭(띠를 보인다). null 이면 정상.
+  String? _stall;
+  int _selfHeals = 0; // 이번 멎음에서 스스로 고쳐 본 수(재개 다시 보내기·웹뷰 다시 붙이기)
+  int _viewEpoch = 0; // 웹뷰(플랫폼 뷰)를 다시 붙일 때마다 +1
+  bool _viewDetached = false;
+  bool _appWasHidden = false;
+  int? _framesAtShow; // 보이기 시작할 때 그린 프레임 수(재개 뒤 첫 박동 기록용)
+  bool _hbLogged = true;
+
   // 분석(church_exit): 들어온 시각과 앉아 있던 시간.
   DateTime? _enteredAt;
 
@@ -298,6 +318,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     _lastAvatar = _settings.churchAvatar.toJsonString();
     _sceneSub = _scene.events.listen(_onScene);
     _netSub = _net.events.listen(_onNet);
+    _watchTimer = Timer.periodic(const Duration(seconds: 1), (_) => _watchTick());
     _net.state.addListener(_onNetState);
     _lastRosaryId = _settings.rosaryId;
     _settings.addListener(_onSettings);
@@ -365,6 +386,7 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _onHidden() {
     _hiddenAt = DateTime.now();
+    Diag.crumb('church_life', {'op': 'pause', 'app': _appHidden});
     _markSat(false);
     _catchUpTimer?.cancel();
     _catchUpTimer = null;
@@ -387,6 +409,16 @@ class _ChurchScreenState extends State<ChurchScreen>
   }
 
   void _onShown() {
+    Diag.crumb('church_life', {'op': 'resume', 'app': _appWasHidden});
+    _framesAtShow = _watch.frames;
+    _hbLogged = false;
+    // 앱이 백그라운드에서 돌아왔다: 웹뷰(플랫폼 뷰)를 다시 붙인다. 안드로이드에서 앱이 뒤로 가며 메모리를 줄이면(memory_pressure)
+    // 화면 합성 표면이 풀린 채 돌아와 웹 장면이 살아 있어도 그림이 마지막 장면에서 멎을 수 있다(2026-11-23 여의도동 제보의 오류 기록:
+    // 일시정지 → memory_pressure → 재개 뒤 JS 오류 0·장면은 응답). 같은 웹뷰를 새 표면에 다시 붙이면 다시 그린다(장면·상태는 그대로).
+    if (_appWasHidden) {
+      _appWasHidden = false;
+      _reattachView('resume');
+    }
     // 다른 탭에서 '사용법 다시 보기'를 눌러 돌아왔으면 성당 안내를 시작한다.
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStartTour());
     _idleNetTimer?.cancel();
@@ -855,6 +887,19 @@ class _ChurchScreenState extends State<ChurchScreen>
         _onRestored(e);
       case ScenePerf():
         _onPerf(e);
+      case SceneHeartbeat():
+        _onHeartbeat(e);
+      case SceneGl():
+        _watch.gl(lost: e.lost);
+        Diag.data('church_gl', {'lost': e.lost});
+      case SceneLife():
+        // pause/resume 이 웹에 닿았다는 답(오류 기록 발자취): 그때 그리기 고리가 돌던 중인가, 마지막 고리 뒤 ms, 그린 프레임 수
+        Diag.crumb('church_life_ack', {
+          's': e.state,
+          'raf': e.raf,
+          'age': e.age,
+          'f': e.frames,
+        });
       case SceneGlassNear():
         _ensureGlassCatalog();
         if (e.id != _glassNearId) setState(() => _glassNearId = e.id);
@@ -902,6 +947,108 @@ class _ChurchScreenState extends State<ChurchScreen>
 
   void _openGlassInfo(GlassWindow w) {
     unawaited(showGlassInfoSheet(_themed, w));
+  }
+
+  void _onHeartbeat(SceneHeartbeat e) {
+    _watch.beat(frames: e.frames, state: e.state);
+    // 보이기 시작한 뒤 첫 박동(2초 지난 것): 재개 뒤 그리기가 다시 도는지 오류 기록에 남긴다(다음 제보에서 원인을 가를 수 있게)
+    final at = _framesAtShow;
+    if (!_hbLogged && _hiddenAt == null && at != null) {
+      _hbLogged = true;
+      Diag.crumb('church_hb', {
+        'st': e.state,
+        'f': e.frames,
+        'df': at < 0 ? -1 : e.frames - at,
+        'age': e.age,
+        'err': e.errors,
+        'heal': e.heals,
+      });
+    }
+    if (_stall != null && _watch.check() == null && e.state == 'run') {
+      Diag.crumb('church_stall_end', {'why': _stall});
+      setState(() {
+        _stall = null;
+        _selfHeals = 0;
+      });
+    }
+  }
+
+  /// 1초마다: 장면이 그려야 하는데 멎었나(박동 끊김·그린 수 그대로·WebGL 잃음·보이는데 일시정지/숨음).
+  void _watchTick() {
+    if (_disposed || !mounted) return;
+    _watchMs += 1000;
+    final running =
+        !_hidden &&
+        !_sceneReleased &&
+        !_viewDetached &&
+        _inited &&
+        _firstFrame &&
+        _scene.loadState.value == SceneLoad.ready;
+    _watch.expect(running);
+    final why = _watch.check();
+    if (why == null || _stall != null) return;
+    // 먼저 스스로 고쳐 본다(두 번까지): 웹이 일시정지에 남았으면 재개를 다시, 웹뷰가 숨었다고 알면 다시 붙인다
+    if ((why == 'paused' || why == 'hidden' || why == 'frozen') &&
+        _selfHeals < 2) {
+      _selfHeals++;
+      Diag.data('church_stall_heal', {'why': why, 'n': _selfHeals});
+      if (why == 'paused') {
+        unawaited(_scene.resume());
+      } else {
+        _reattachView(why);
+      }
+      _watch.expect(false);
+      return;
+    }
+    DiagRecorder.instance.add(
+      src: 'church',
+      type: 'scene_stall',
+      message: 'scene stalled: $why',
+      extra: {
+        'church': widget.churchId,
+        'why': why,
+        'st': _watch.state,
+        'f': _watch.frames,
+        'heals': _selfHeals,
+      },
+    );
+    setState(() => _stall = why);
+  }
+
+  /// 같은 웹뷰를 새 플랫폼 뷰(합성 표면)에 다시 붙인다: 한 프레임 떼었다가 새 키로 붙인다(떼기와 붙이기가 같은 프레임이면 안드로이드에서
+  /// '이미 부모가 있다'로 실패할 수 있다). 웹 장면·상태는 그대로다. 안드로이드만.
+  void _reattachView(String why) {
+    if (_disposed || !mounted || _sceneReleased || _viewDetached) return;
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    Diag.crumb('church_view_reattach', {'why': why});
+    setState(() => _viewDetached = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_disposed || !mounted) return;
+      setState(() {
+        _viewDetached = false;
+        _viewEpoch++;
+      });
+    });
+  }
+
+  /// 멎음 띠의 '다시 불러오기': 장면(WebView)을 새로 만들어 마지막으로 기억한 자리에서 잇는다(돌아왔을 때 죽은 장면을 되살리는 길과 같다).
+  void _reloadStalledScene() {
+    Diag.crumb('church_stall_reload', {'why': _stall});
+    final scene = _scene;
+    setState(() {
+      _stall = null;
+      _selfHeals = 0;
+    });
+    _watch.expect(false);
+    if (!_canRecreateScene) {
+      unawaited(scene.reload());
+      return;
+    }
+    _sceneSub?.cancel();
+    _sceneSub = null;
+    if (_ownsScene) scene.dispose();
+    _recreateScene();
+    if (mounted) setState(() {});
   }
 
   /// 성능 표본(C-04). 입장 직후 첫 표본이 너무 느리면 간단 모드를 '권한다'(강제하지 않는다).
@@ -1323,6 +1470,7 @@ class _ChurchScreenState extends State<ChurchScreen>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached;
+    if (_appHidden) _appWasHidden = true;
     _syncVisibility();
     if (bg == _background) return;
     _background = bg;
@@ -1784,6 +1932,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     }
     _liturgy.dispose();
     _perfBannerTimer?.cancel();
+    _watchTimer?.cancel();
     _hintTimer?.cancel();
     _glassTapTimer?.cancel();
     _idleNetTimer?.cancel();
@@ -1933,10 +2082,11 @@ class _ChurchScreenState extends State<ChurchScreen>
         fit: StackFit.expand,
         children: [
           // 오래 보이지 않아 장면을 놓았으면(돌아오는 순간 새로 만든다) 빈 바탕만 둔다.
-          if (!_sceneReleased)
+          if (!_sceneReleased && !_viewDetached)
             Positioned.fill(
               child: KeyedSubtree(
-                key: ObjectKey(_scene),
+                // _viewEpoch: 앱 재개·멎음 때 같은 웹뷰를 새 플랫폼 뷰에 다시 붙인다(_reattachView)
+                key: ValueKey<(Object, int)>((_scene, _viewEpoch)),
                 child: _scene.buildView(context),
               ),
             ),
@@ -2122,6 +2272,22 @@ class _ChurchScreenState extends State<ChurchScreen>
                             key: ValueKey('cross-chip-none'),
                           ),
                   ),
+                  if (_stall != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: ChurchHudStyle.panelMaxWidth,
+                          ),
+                          child: ChurchStallBanner(
+                            key: const ValueKey('stall-banner'),
+                            onReload: _reloadStalledScene,
+                          ),
+                        ),
+                      ),
+                    ),
                   if (_perfBanner)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),

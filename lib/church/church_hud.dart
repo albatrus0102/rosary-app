@@ -1312,6 +1312,48 @@ class _RenderCircleHit extends RenderProxyBox {
   }
 }
 
+/// 장면 멎음 안내(2026-11-23): 화면이 보이는데 3D 장면이 3초 넘게 그려지지 않을 때(church_scene_watchdog.dart) 뜬다.
+/// 누르면 장면을 새로 불러와 마지막으로 기억한 자리에서 잇는다. 작은 띠 — 느린 기기 안내와 같은 모양.
+class ChurchStallBanner extends StatelessWidget {
+  const ChurchStallBanner({super.key, required this.onReload});
+
+  final VoidCallback onReload;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Material(
+      color: ChurchHudStyle.surface(scheme),
+      elevation: ChurchHudStyle.elevation,
+      shape: ChurchHudStyle.chip(scheme),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpace.sm,
+          AppSpace.xs,
+          AppSpace.xs,
+          AppSpace.xs,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                '성당 화면이 멈췄어요.',
+                style: text.bodyMedium?.copyWith(color: scheme.onSurface),
+              ),
+            ),
+            TextButton(
+              onPressed: onReload,
+              style: TextButton.styleFrom(minimumSize: const Size(64, 48)),
+              child: const Text('다시 불러오기'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// 느린 기기 안내(C-04, Q8): 입장 직후 평균 fps가 낮을 때 떠서 간단 모드를 '권한다'.
 /// 화면을 가리지 않는 작은 띠이며, 아무것도 강제하지 않는다.
 class ChurchPerfBanner extends StatelessWidget {

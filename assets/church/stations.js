@@ -168,7 +168,7 @@
       }
       if (t !== s && came[t] < 0) return null;
       var out = [], c = t;
-      while (c >= 0) { out.push(c); if (c === s) break; c = came[c]; }
+      while (c >= 0 && out.length <= came.length) { out.push(c); if (c === s) break; c = came[c]; }   // 상한: 길 되짚기가 고리를 돌지 않게
       out.reverse();
       return out;
     }
@@ -545,7 +545,7 @@
       }
       if (t !== s && came[t] < 0) return null;
       var out = [], c = t;
-      while (c >= 0) { out.push(c); if (c === s) break; c = came[c]; }
+      while (c >= 0 && out.length <= came.length) { out.push(c); if (c === s) break; c = came[c]; }   // 상한: 길 되짚기가 고리를 돌지 않게
       out.reverse();
       return out;
     }
