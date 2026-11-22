@@ -625,12 +625,14 @@
         App.turn.t -= dt; if (App.turn.t <= 0) App.turn = null;
       }
       me.speed = sp;
-      av.setWalk(Math.min(1, sp / 2.0 * 1.05));
+      av.setWalk(Math.min(1, sp / logic.C.WALK_SPEED * 1.05));   // 걸음 값 = 속도 / 최고 속도(scene_logic WALK_SPEED). 다리는 실제 이동량으로 움직인다
       if (!av.takeStep && sp > 0.6) { App.stepT -= dt; if (App.stepT <= 0) { App.stepT = 0.42; root.ChurchAudio.footstep(Math.random() < 0.5, sp); } }   // 발 디딤을 알려 주지 않는 아바타(glb)만 시간 간격으로
       // 여러 층: 지금 발 높이(me.fy)에서 한 걸음 안의 가장 높은 바닥 → 계단을 오르내리며 층이 바뀐다(한 층 성당은 예전과 같은 값)
       var fy = logic.floorY(me.x, me.z, me.fy);
       me.fy = fy;
-      me.y += (fy - me.y) * Math.min(1, dt * 14);
+      // 몸 높이는 계단을 비탈처럼(scene_logic bodyY — 단마다 몸·카메라가 툭툭 오르지 않게). 카메라는 이 루트를 따른다(골반 오르내림이 아니다)
+      var byT = sp > 0.05 && logic.bodyY ? logic.bodyY(me.x, me.z, fy, me.vx / sp, me.vz / sp) : fy;
+      me.y += (byT - me.y) * Math.min(1, dt * 14);
       // pos 이벤트
       var moving = sp > 0.05;
       if (moving) {

@@ -51,7 +51,7 @@ export function runScenario(dir, scen) {
     const px = body.x, pz = body.z;
     const walkV = scen.step(body, dt, t, av);   // 몸을 옮기고 setWalk 에 줄 값을 돌려준다
     av.setWalk(walkV);
-    av.setPose(body.x, 0, body.z, body.yaw);
+    av.setPose(body.x, body.y || 0, body.z, body.yaw);
     av.update(dt, t);
     av.root.updateMatrixWorld(true);
     // 발 밑창(같은 물질점의 이전 위치와 비교)
@@ -63,13 +63,17 @@ export function runScenario(dir, scen) {
       const pv = prev[k];
       const vel = pv ? Math.hypot(pts[lo][0] - pv[lo][0], pts[lo][2] - pv[lo][2]) / dt : 0;
       const fw = new T.Vector3(0, 0, -1).transformDirection(b.matrixWorld);
-      feet.push({ y: pts[lo][1], vel, pts, yaw: Math.atan2(-fw.x, -fw.z) });
+      const gf = av.gait && av.gait.f ? av.gait.f[k] : null;
+      // ikErr: 발목 뼈가 걸음이 정한 발목 자리(gait.f[k].ax/ay/az)에서 떨어진 거리(m) — 다리가 닿지 않아 IK 가 길이를 자르면 커진다
+      b.getWorldPosition(v3);
+      const ikErr = gf && gf.ax !== undefined ? Math.hypot(v3.x - gf.ax, v3.y - gf.ay, v3.z - gf.az) : 0;
+      feet.push({ y: pts[lo][1], vel, vy: pv ? (pts[lo][1] - pv[lo][1]) / dt : 0, pts, yaw: Math.atan2(-fw.x, -fw.z), pitch: Math.asin(Math.max(-1, Math.min(1, fw.y))), st: gf ? gf.st : (pts[lo][1] < 0.012 ? 1 : 0), ikErr });
       prev[k] = pts;
     }
     const wp = (bi) => { av.bones[bi].getWorldPosition(v3); return [v3.x, v3.y, v3.z]; };
     const J = {}; for (const n of ['hips', 'chest', 'neck', 'head', 'ulL', 'llL', 'ftL', 'ulR', 'llR', 'ftR', 'uaL', 'faL', 'uaR', 'faR']) J[n] = wp(BI[n]);
     const hq = av.bones[BI.hips].quaternion; const hipsYaw = 2 * Math.atan2(hq.y, hq.w);
-    frames.push({ t, dt, bodyV: Math.hypot(body.x - px, body.z - pz) / dt, x: body.x, z: body.z, yaw: body.yaw, feet, J, hipsYaw, walkTarget: walkV });
+    frames.push({ t, dt, bodyV: Math.hypot(body.x - px, body.z - pz) / dt, x: body.x, y: body.y || 0, z: body.z, yaw: body.yaw, feet, J, hipsYaw, walkTarget: walkV });
     t += dt; i++;
   }
   return frames;
@@ -268,4 +272,96 @@ export function remoteWalker(joy, walkOf) {
 /** 혼자 모드 배경 신자(net_view.js createCrowd): 0.8 m/s 로 걷는다. walkVal = setWalk 에 주는 값. */
 export function crowdWalker(walkVal) {
   return (me, dt) => { me.z -= 0.8 * dt; me.yaw = 0; return walkVal; };
+}
+
+// ------------------------------------------------------------------ 「터덜거림」 측정(2026-11-22 2차, docs/church/WALK_GAIT.md §6)
+/** 일정 속도로 곧게 걷는 몸(main.js 관성 dt*12 과 같다). v(t) -> m/s. 조이스틱 상한과 상관없이 같은 속도로 옛 코드·새 코드를 비교할 때 쓴다. */
+export function speedWalker(v) {
+  const vf = typeof v === 'function' ? v : () => v;
+  return (me, dt, t) => {
+    const k = Math.min(1, dt * 12);
+    me.vz += (-vf(t) - me.vz) * k; me.vx = 0;
+    me.z += me.vz * dt; me.yaw = 0;
+    return Math.min(1, Math.abs(me.vz) / Logic.C.WALK_SPEED * 1.05);
+  };
+}
+/** 매끄러움 수치(정상 보행 구간):
+ *  hipBob/headBob(m): 골반·머리 세계 높이의 폭(루트 높이를 뺀 값), bobPhase: 골반이 가장 높은 때가 한 걸음(디딤→다음 디딤)의 어디인가(0..1, 사람은 디딤 가운데 ≈ 0.4~0.6),
+ *  footSnapDps: 디딘 발 기울기(발등 방향의 pitch) 변화 속도 최대(°/s — 뒤꿈치 닿고 발바닥이 바닥에 「철썩」 닿는 빠르기), landPitchDeg: 닿는 순간 발끝 든 각,
+ *  kneeMid: 디딘 다리가 골반 바로 아래 올 때 무릎 굽힘 평균(°), flightFrames: 두 발이 다 떠 있는 프레임 수(gait 상태와 밑창 높이 둘 다),
+ *  acc: 관절별 프레임 간 가속도 최대(m/s², 두 번 차분), jerk: 가속도의 프레임 간 변화 최대(m/s³) — 디딘 발 바꿈·IK 닿는 길이 자르기에서 튀면 커진다. */
+export function smoothStats(frames, from, to) {
+  const F = frames.filter((f) => f.t >= from && f.t <= to);
+  const hy = F.map((f) => f.J.hips[1] - f.y), hd = F.map((f) => f.J.head[1] - f.y);
+  const mx = (a) => Math.max(...a), mn = (a) => Math.min(...a);
+  const strikes = [];
+  for (let i = 1; i < F.length; i++) for (const k of [0, 1]) if (F[i].feet[k].st && !F[i - 1].feet[k].st) strikes.push({ i, k });
+  const phases = [], landPitch = [];
+  for (let s = 0; s + 1 < strikes.length; s++) {
+    const a = strikes[s].i, b = strikes[s + 1].i; if (b - a < 4) continue;
+    let best = a; for (let i = a; i < b; i++) if (hy[i] > hy[best]) best = i;
+    phases.push((best - a) / (b - a));
+  }
+  for (const s of strikes) landPitch.push(F[s.i].feet[s.k].pitch * 180 / Math.PI);
+  // 닿기 직전 0.05초(3프레임) 동안 흔드는 발(밑창 가장 낮은 점)이 내려오는 속도 최대(m/s) — 크면 발을 「쿵」 내려찍는다(사람 뒤꿈치는 닿을 때 0.1~0.4 m/s)
+  let strikeVy = 0;
+  for (const s of strikes) for (let i = s.i; i >= 0 && F[s.i].t - F[i].t <= 0.05; i--) strikeVy = Math.max(strikeVy, -F[i].feet[s.k].vy);
+  // 걸음 수(분당): gait 디딤 순간 사이 시간으로(밑창 높이로 세는 postureStats.cadence 보다 덜 흔들린다)
+  const cadence = strikes.length > 2 ? (strikes.length - 1) / (F[strikes[strikes.length - 1].i].t - F[strikes[0].i].t) * 60 : 0;
+  let ikErr = 0;
+  for (const f of F) for (const k of [0, 1]) ikErr = Math.max(ikErr, f.feet[k].ikErr || 0);
+  // 발바닥 닿기(뒤꿈치 닿은 뒤 0.15초 안): 디딘 발 기울기 변화 속도 최대(°/s) — 「철썩」. 뒤꿈치 들어 떼기(앞꿈치로 구르기)는 빼고 따로(pushDps)
+  let snap = 0, push = 0, flightSt = 0, flightGeo = 0;
+  const since = [1e9, 1e9];
+  for (let i = 1; i < F.length; i++) {
+    for (const k of [0, 1]) {
+      if (F[i].feet[k].st && !F[i - 1].feet[k].st) since[k] = 0; else since[k] += F[i].dt;
+      if (!(F[i].feet[k].st && F[i - 1].feet[k].st)) continue;
+      const r = Math.abs(F[i].feet[k].pitch - F[i - 1].feet[k].pitch) / F[i].dt * 180 / Math.PI;
+      if (since[k] < 0.15) snap = Math.max(snap, r); else push = Math.max(push, r);
+    }
+    if (!F[i].feet[0].st && !F[i].feet[1].st) flightSt++;
+    if (F[i].feet[0].y - F[i].y > 0.012 && F[i].feet[1].y - F[i].y > 0.012) flightGeo++;
+  }
+  const kneeMid = [];
+  const fwdOf = (f, p) => { const dx = p[0] - f.x, dz = p[2] - f.z, c = Math.cos(f.yaw), s = Math.sin(f.yaw); return -(dx * s + dz * c); };
+  for (const f of F) for (const k of [0, 1]) {
+    if (!f.feet[k].st) continue;
+    const u = f.J[k ? 'ulR' : 'ulL'], l = f.J[k ? 'llR' : 'llL'], a = f.J[k ? 'ftR' : 'ftL'];
+    if (Math.abs(fwdOf(f, a) - fwdOf(f, u)) < 0.04) kneeMid.push(180 - ang(u, l, a));
+  }
+  const acc = {}, jerk = {};
+  for (const n of ['hips', 'head', 'chest', 'llL', 'llR', 'ftL', 'ftR', 'faL', 'faR']) {
+    let am = 0, jm = 0, pa = null;
+    for (let i = 1; i + 1 < F.length; i++) {
+      const p0 = F[i - 1].J[n], p1 = F[i].J[n], p2 = F[i + 1].J[n], d0 = F[i].dt, d1 = F[i + 1].dt;
+      const y0 = p0[1] - F[i - 1].y, y1 = p1[1] - F[i].y, y2 = p2[1] - F[i + 1].y;   // 루트 높이(계단)를 뺀다
+      const v0 = [(p1[0] - p0[0]) / d0, (y1 - y0) / d0, (p1[2] - p0[2]) / d0], v1 = [(p2[0] - p1[0]) / d1, (y2 - y1) / d1, (p2[2] - p1[2]) / d1];
+      const a = [0, 1, 2].map((q) => (v1[q] - v0[q]) * 2 / (d0 + d1));
+      am = Math.max(am, Math.hypot(...a));
+      if (pa) jm = Math.max(jm, Math.hypot(a[0] - pa[0], a[1] - pa[1], a[2] - pa[2]) / d1);
+      pa = a;
+    }
+    acc[n] = am; jerk[n] = jm;
+  }
+  const avg = (a) => a.reduce((s, v) => s + v, 0) / (a.length || 1);
+  return {
+    hipBob: mx(hy) - mn(hy), headBob: mx(hd) - mn(hd), bobPhase: avg(phases), footSnapDps: snap, landPitchDeg: avg(landPitch),
+    kneeMid: avg(kneeMid), kneeMidN: kneeMid.length, flightFrames: flightSt, flightGeoFrames: flightGeo, frames: F.length, acc, jerk, strikeVy, ikErr, cadence, pushDps: push
+  };
+}
+/** main.js updateCamera 의 높이: 보는 점 fy = me.y + 1.0(루트 — 골반이 아니다), 카메라 위치는 1 - exp(-dt·7) 로 따라간다(평지 리그는 거리·각도가 일정).
+ *  rootY(frame) = 그 프레임의 me.y. 돌려주는 값: 카메라 높이 폭(m), 프레임 간 높이 가속도 최대(m/s²). */
+export function cameraTrack(frames, from, to, rootY = (f) => f.y) {
+  let cy = null, pv = null, ymin = 1e9, ymax = -1e9, am = 0, py = null;
+  for (const f of frames) {
+    const target = rootY(f) + 1.0;
+    if (cy === null) cy = target;
+    cy += (target - cy) * (1 - Math.exp(-f.dt * 7));
+    if (f.t < from || f.t > to) { py = cy; pv = null; continue; }
+    ymin = Math.min(ymin, cy); ymax = Math.max(ymax, cy);
+    if (py !== null) { const v = (cy - py) / f.dt; if (pv !== null) am = Math.max(am, Math.abs(v - pv) / f.dt); pv = v; }
+    py = cy;
+  }
+  return { range: ymax - ymin, accMax: am };
 }

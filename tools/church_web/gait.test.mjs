@@ -4,13 +4,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { loadChurches } from './church_harness.mjs';
-import { runScenario, slipStats, postureStats, legMotion, turnStats, glbSlip, loadAvatar, joyWalker, autoWalker, remoteWalker, crowdWalker } from './gait_lib.mjs';
-import { loadAudio, stepLevels } from './footstep_levels.mjs';
+import fs from 'node:fs';
+import { runScenario, slipStats, postureStats, smoothStats, cameraTrack, legMotion, turnStats, glbSlip, loadAvatar, joyWalker, autoWalker, remoteWalker, crowdWalker, speedWalker, ASSETS } from './gait_lib.mjs';
+import { loadAudio, stepLevels, stepTimbres } from './footstep_levels.mjs';
 const require = createRequire(import.meta.url);
 const Logic = require('../../assets/church/scene_logic.js');
 const Stations = require('../../assets/church/stations.js');
 
-const WS = Logic.C.WALK_SPEED;   // 조이스틱 끝까지 = WS m/s (2026-11-22부터 2.0 — 성당에서는 뛰지 않는다)
+const WS = Logic.C.WALK_SPEED;   // 조이스틱 끝까지 = WS m/s (2026-11-22: 4.0 → 2.0 → 사용자 「지난 번 고치기 전 속도 유지」로 4.0. 뛰지 않고 빠르게 걷는다)
 const J = (v) => v / WS;          // 원하는 속도(m/s) → 조이스틱 크기
 const SLIP_MAX = 0.05;   // 디딘 발 미끄러짐 / 몸 속도 (고치기 전 0.38~0.56, 배경 신자 5.25)
 const straight = (m, dur = 5) => runScenario(undefined, { dur, step: joyWalker(null, () => ({ x: 0, y: m })) });
@@ -24,8 +25,9 @@ test('조이스틱 0.2/0.5/1.0: 디딘 발이 바닥에 붙어 있다(미끄러�
 });
 
 test('보행 자세: 사람 보행 범위(걸음 수·보폭·무릎·팔·몸통·골반·발 폭)', () => {
-  const p = postureStats(straight(J(1.2)), 1.5, 5);   // 1.2 m/s: 보통 걸음
-  assert.ok(p.cadence > 95 && p.cadence < 120, 'cadence/min ' + p.cadence);
+  const fr12 = straight(J(1.2)), p = postureStats(fr12, 1.5, 5);   // 1.2 m/s: 보통 걸음
+  const cad = smoothStats(fr12, 1.5, 5).cadence;   // 걸음 수는 디딤 순간 사이 시간으로(밑창 높이로 세면 착지 직전 낮게 스치는 발을 두 번 셀 수 있다)
+  assert.ok(cad > 95 && cad < 120, 'cadence/min ' + cad);
   assert.ok(p.strideOverH > 0.7 && p.strideOverH < 0.9, 'stride/height ' + p.strideOverH);
   assert.ok(p.kneeSwingMax > 55 && p.kneeSwingMax < 78, 'swing knee ' + p.kneeSwingMax);
   assert.ok(p.kneeLoad > 10 && p.kneeLoad < 25, 'loading knee ' + p.kneeLoad);
@@ -35,25 +37,26 @@ test('보행 자세: 사람 보행 범위(걸음 수·보폭·무릎·팔·몸�
   assert.ok(p.lean > 2 && p.lean < 5, 'trunk lean ' + p.lean);
   assert.ok(p.pelvisRange > 5 && p.pelvisRange < 12, 'pelvis rotation ' + p.pelvisRange);
   assert.ok(p.widthMin > 0.08 && p.widthAvg < 0.16, 'step width ' + p.widthAvg);
-  assert.ok(p.bob > 0.015 && p.bob < 0.06, 'hip bob ' + p.bob);
+  assert.ok(p.bob > 0.02 && p.bob < 0.04, 'hip bob ' + p.bob);   // 사람 몸 중심 2~4cm(고치기 전 5.0cm)
   assert.ok(p.minFootY > -0.025, 'feet do not sink ' + p.minFootY);
   // 느리면 보폭도 짧고 걸음도 느리다
   const slow = postureStats(straight(J(0.8)), 1.5, 5), fast = postureStats(straight(J(2.0)), 1.5, 5);
   assert.ok(slow.stepLen < p.stepLen && p.stepLen < fast.stepLen, 'stride grows with speed');
-  assert.ok(slow.cadence < p.cadence && p.cadence < fast.cadence, 'cadence grows with speed');
+  const cadOf = (v) => smoothStats(straight(J(v)), 1.5, 5).cadence;
+  assert.ok(cadOf(0.8) < cad && cad < cadOf(2.0), 'cadence grows with speed');
 });
 
 test('출발·정지: 약 0.3초에 걸쳐 걷기 시작하고, 멈추면 발을 모으고 다리가 선다', () => {
-  const fr = runScenario(undefined, { dur: 3.5, step: joyWalker(null, (t) => ({ x: 0, y: t < 2 ? 1 : 0 })) });
+  const fr = runScenario(undefined, { dur: 4.0, step: joyWalker(null, (t) => ({ x: 0, y: t < 2 ? 1 : 0 })) });
   assert.ok(slipStats(fr, 0, 0.6).ratio < SLIP_MAX, 'start slip');
-  assert.ok(slipStats(fr, 2, 3.5).ratio < SLIP_MAX, 'stop slip');
+  assert.ok(slipStats(fr, 2, 4.0).ratio < SLIP_MAX, 'stop slip');
   // 몸(main.js 관성)은 약 0.25초에 거의 다 빨라지고, 다리는 실제 이동을 따라 같은 시각에 빨라진다(입력이 아니라 이동량)
   const at = (t) => fr.find((f) => f.t >= t);
   assert.ok(at(0.03).bodyV < 0.5 * WS && at(0.3).bodyV > 0.9 * WS, 'body ramp');
   const legs = runScenario(undefined, { dur: 0.6, step: joyWalker(null, () => ({ x: 0, y: 1 })) });
   const strikes = postureStats(legs, 0, 0.6).cadence * 0.6 / 60;
   assert.ok(strikes >= 1, 'first step within 0.6 s');
-  assert.ok(legMotion(fr, 3.0, 3.5) < 0.02, 'legs still after stop');
+  assert.ok(legMotion(fr, 3.3, 4.0) < 0.02, 'legs still after stop');   // 4 m/s 에서 멈추면 1m 벌어진 발을 두 걸음에 모은다(약 1.2초)
   const end = fr[fr.length - 1];
   assert.ok(end.feet[0].y < 0.012 && end.feet[1].y < 0.012, 'both feet down at the end');
 });
@@ -130,4 +133,89 @@ test('발소리: 늘 음악보다 작다(성가·오르간·음량 설정 전 �
   // 소리 설정을 따른다: 꺼져 있으면(또는 컨텍스트가 없으면) 소리를 만들지 않는다
   A.setSteps({ on: false, chant: false, vol: 0.3 });
   assert.doesNotThrow(() => A.footstep(true, 1.2));
+});
+
+// ------------------------------------------------------------------ 2026-11-22 2차: 「터덜거림」과 빠른 걸음(WALK_GAIT.md §6)
+// 고치기 전(같은 시나리오, 1.2 m/s): 골반이 닿기 직전 0.05초에 4.7cm 뚝 떨어지고(골반 가속도 101 m/s²), 흔드는 발이 닿을 다리가 못 미쳐(IK 4.1cm 모자람)
+// 떠 있다가 1.9 m/s 로 내리찍혔다. 골반 가장 높은 때가 한 걸음의 0.91(닿기 직전 — 사람은 디딤 가운데 0.4~0.6), 오르내림 5.0cm.
+const at = (v, dur = 6) => runScenario(undefined, { dur, step: speedWalker(v) });
+test('터덜거림: 골반은 디딤 가운데 가장 높고 매끄럽게 오르내린다(2~4cm), 발은 사뿐히 닿는다(1.2 m/s)', () => {
+  const s = smoothStats(at(1.2), 2, 6);
+  assert.ok(s.hipBob > 0.02 && s.hipBob < 0.04, 'hip bob ' + s.hipBob);
+  assert.ok(s.bobPhase > 0.3 && s.bobPhase < 0.65, 'bob phase ' + s.bobPhase);
+  assert.ok(s.kneeMid > 5 && s.kneeMid < 20, 'mid-stance knee ' + s.kneeMid);
+  assert.ok(s.strikeVy < 0.4, 'heel strike vertical speed ' + s.strikeVy);
+  assert.ok(s.ikErr < 0.01, 'leg reaches its target ' + s.ikErr);
+  assert.ok(s.footSnapDps < 300, 'foot-flat rate ' + s.footSnapDps);
+  assert.ok(s.acc.hips < 10 && s.acc.head < 10, 'pelvis/head accel ' + s.acc.hips);
+});
+test('흔들림 없음: 0.4~4 m/s 모든 속도에서 프레임 사이 관절 가속도가 튀지 않고 IK 가 닿는다', () => {
+  // 고치기 전 1.2 m/s: 골반 101, 발목 169 m/s²(디딜 때 「툭」), 4 m/s: 골반 103, 발목 332
+  for (const [v, hip, ankle] of [[0.4, 8, 60], [0.8, 8, 60], [1.2, 10, 70], [2.0, 16, 110], [3.0, 26, 170], [WS, 35, 220]]) {
+    const s = smoothStats(at(v), 2, 6);
+    assert.ok(s.acc.hips < hip, `${v}: hips ${s.acc.hips}`);
+    assert.ok(Math.max(s.acc.ftL, s.acc.ftR) < ankle, `${v}: ankle ${Math.max(s.acc.ftL, s.acc.ftR)}`);
+    assert.ok(Math.max(s.acc.llL, s.acc.llR) < 2 * ankle, `${v}: knee ${Math.max(s.acc.llL, s.acc.llR)}`);
+    assert.ok(s.ikErr < 0.01, `${v}: ik ${s.ikErr}`);
+    assert.ok(s.strikeVy < 0.6, `${v}: strike ${s.strikeVy}`);
+    assert.ok(s.bobPhase > 0.3 && s.bobPhase < 0.65, `${v}: bob phase ${s.bobPhase}`);
+  }
+});
+test(`빠른 걸음(최고 ${WS} m/s): 뛰지 않는다 — 한 발은 늘 땅에, 경보 걸음 수·보폭, 골반 오르내림 ≤ 7cm, 미끄러짐 < 5%`, () => {
+  const fr = straight(1.0, 6), s = smoothStats(fr, 2, 6), p = postureStats(fr, 2, 6);
+  assert.ok(s.frames > 200);
+  assert.equal(s.flightFrames, 0, 'both feet in swing');
+  assert.equal(s.flightGeoFrames, 0, 'both soles off the floor');
+  for (const f of fr.filter((g) => g.t > 2)) assert.ok(f.feet[0].st || f.feet[1].st, 'a foot planted at ' + f.t);
+  // 사람 경보(약 4 m/s)는 분당 190~200걸음·한 걸음 1.2m 이지만 다리 0.8m 인 이 아바타는 1.2m 걸음이면 골반이 12~16cm 오르내린다 — 1.05m·분당 약 228걸음
+  assert.ok(s.cadence > 200 && s.cadence < 245, 'cadence ' + s.cadence);
+  const L = s.speedLen = WS / (s.cadence / 60);
+  assert.ok(L > 0.95 && L < 1.15, 'step ' + L);
+  assert.ok(s.hipBob < 0.07, 'hip bob ' + s.hipBob);
+  assert.ok(slipStats(fr, 2, 6).ratio < SLIP_MAX, 'slip');
+  assert.ok(p.armRange > 40, 'arm swing ' + p.armRange);
+  // 가운데 속도들도 늘 걷는다
+  for (const v of [2.0, 2.5, 3.0, 3.5]) { const q = smoothStats(at(v), 2, 6); assert.equal(q.flightFrames + q.flightGeoFrames, 0, 'flight at ' + v); }
+  // 낮은 속도는 그대로(고치기 전과 같은 보폭·걸음 수: 0.8 m/s 88, 1.2 m/s 106 걸음/분)
+  assert.ok(Math.abs(smoothStats(at(0.8), 2, 6).cadence - 88.3) < 2 && Math.abs(smoothStats(at(1.2), 2, 6).cadence - 105.9) < 2, 'low speeds unchanged');
+});
+test('최고 속도 상수 하나: scene_logic WALK_SPEED = avatar.js 걸음 최고 속도 = 자동 걷기(stations) = main.js·net_view.js·avatar_glb.js 걸음 값 기준', () => {
+  const { A } = loadAvatar();
+  assert.equal(A.GAIT_V_TOP, WS);
+  const src = (f) => fs.readFileSync(ASSETS + '/' + f, 'utf8');
+  assert.match(src('main.js'), /av\.setWalk\(Math\.min\(1, sp \/ logic\.C\.WALK_SPEED \* 1\.05\)\)/);
+  assert.doesNotMatch(src('net_view.js'), /\/ 4\.0\b|\/ 2\.0\b/);
+  assert.match(src('avatar_glb.js'), /walkMax: \(root\.ChurchLogic && root\.ChurchLogic\.C && root\.ChurchLogic\.C\.WALK_SPEED\) \|\| 4\.0/);
+  const { churches } = loadChurches({ only: ['myeongdong'] }), c = churches[0];
+  const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }), S = Stations.create(L), st = S.stations().altar;
+  const me = { x: c.layout.spawn.x, z: c.layout.spawn.z }, w = S.startWalk(S.findPath(me, st), st, 'altar'), out = {};
+  S.stepWalk(w, me, 1 / 60, out);
+  assert.ok(Math.abs(out.speed - WS) < 1e-9, 'walkTo speed ' + out.speed);
+});
+test('카메라는 골반이 아니라 루트(몸 위치)를 따른다: 평지에서 걸어도 카메라 높이가 오르내리지 않는다', () => {
+  const src = fs.readFileSync(ASSETS + '/main.js', 'utf8');
+  assert.match(src, /var fy = me\.y \+ 1\.0 \+ sf \* \(0\.45 - 0\.2\);/, '카메라 보는 점 = 루트 높이(me.y)');
+  assert.doesNotMatch(src.slice(src.indexOf('function updateCamera'), src.indexOf('function myTagRect')), /bones|hips/, '카메라가 뼈를 읽지 않는다');
+  for (const v of [1.2, WS]) {
+    const fr = at(v), c = cameraTrack(fr, 2, 6), s = smoothStats(fr, 2, 6);
+    assert.ok(c.range < 1e-9 && c.accMax < 1e-6, 'camera vertical ' + JSON.stringify(c));
+    assert.ok(s.hipBob > 0.01, 'the hips do bob (camera ignores it)');
+  }
+});
+test('발소리: 가볍고 짧은 돌바닥 「톡」 — 200 Hz 아래 에너지 < 10%, 울림(-20 dB) ≤ 25 ms, 길이 ≤ 100 ms, 6가지로 다르게', () => {
+  // 고치기 전: 200 Hz 아래 19~52%, 무게중심 315~367 Hz, -20 dB 까지 30~55 ms, -40 dB 꼬리 115~130 ms, 길이 160 ms(낮은 사인 「툭」)
+  const A = loadAudio(), T = stepTimbres(A);
+  for (const t of T) {
+    assert.ok(t.lowFrac < 0.1, 'low energy ' + t.lowFrac);
+    assert.ok(t.centroidHz > 900, 'centroid ' + t.centroidHz);
+    assert.ok(t.decay20_ms <= 25, 'decay ' + t.decay20_ms);
+    assert.ok(t.tail40_ms <= 90 && t.len_ms <= 100, 'length ' + t.tail40_ms + ' ' + t.len_ms);
+  }
+  const six = A.synthSteps(44100, 6);
+  for (let a = 0; a < 6; a++) for (let b = a + 1; b < 6; b++) { let d = 0; for (let i = 0; i < 2000; i++) d += Math.abs(six[a][i] - six[b][i]); assert.ok(d > 50, 'variants differ ' + a + b); }
+  // 같은 표본을 잇달아 내지 않는다(기계적으로 들리지 않게)
+  assert.match(fs.readFileSync(ASSETS + '/audio.js', 'utf8'), /k = \(A\.stepIdx \+ 1 \+ Math\.floor\(Math\.random\(\) \* \(nb - 1\)\)\) % nb/);
+  // 귀로 느끼는 크기(A 가중 에너지)가 옛 발소리보다 작다: 표본 차이 + STEP_TRIM_DB
+  const avg = T.reduce((q, t) => q + t.aExpDb, 0) / T.length;
+  assert.ok(avg + A.LEVELS.STEP_TRIM_DB < -31.0, 'A-weighted energy (old avg -31.0 dB) ' + (avg + A.LEVELS.STEP_TRIM_DB));
 });

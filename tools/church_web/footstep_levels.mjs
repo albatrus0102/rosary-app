@@ -66,6 +66,36 @@ export function stepLevels(A) {
   return A.synthSteps(44100, 4).map((d) => { const s = rmsStats(d, 44100); let e = 0; for (const x of d) e += x * x; return { len_ms: Math.round(d.length / 44.1), peakDb: s.peakDb, rmsDb: dB(Math.sqrt(e / d.length)) }; });
 }
 
+// 발소리 표본 하나의 소리 결(「터덜」 진단, WALK_GAIT.md §6): 200 Hz 아래 에너지 몫, 스펙트럼 무게중심(Hz), 소리 길이, 최고점에서 -20/-40 dB 로 줄기까지(ms, 5ms RMS 포락선)
+function fftMag2(x) {   // 실수 신호 → |X|² (길이는 2의 거듭제곱으로 0 채움)
+  let n = 1; while (n < x.length) n <<= 1;
+  const re = new Float64Array(n), im = new Float64Array(n); re.set(x);
+  for (let i = 1, j = 0; i < n; i++) { let b = n >> 1; for (; j & b; b >>= 1) j ^= b; j ^= b; if (i < j) { [re[i], re[j]] = [re[j], re[i]]; } }
+  for (let len = 2; len <= n; len <<= 1) {
+    const a = -2 * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+    for (let i = 0; i < n; i += len) { let cr = 1, ci = 0; for (let k = 0; k < len / 2; k++) { const p = i + k, q = p + len / 2, tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr; re[q] = re[p] - tr; im[q] = im[p] - ti; re[p] += tr; im[p] += ti; const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr; } }
+  }
+  const m = new Float64Array(n / 2); for (let i = 0; i < n / 2; i++) m[i] = re[i] * re[i] + im[i] * im[i];
+  return { m, df: 1 };
+}
+export function stepTimbre(d, rate) {
+  const { m } = fftMag2(d), n = m.length * 2, df = rate / n;
+  let tot = 0, low = 0, cen = 0, aw = 0;
+  // A 가중(IEC 61672): 귀가 실제로 느끼는 크기 — 같은 최고값이라도 1~4 kHz 소리가 100~300 Hz 소리보다 크게 들린다
+  const Aw = (f) => { const f2 = f * f, r = (12194 ** 2 * f2 * f2) / ((f2 + 20.6 ** 2) * Math.sqrt((f2 + 107.7 ** 2) * (f2 + 737.9 ** 2)) * (f2 + 12194 ** 2)); return r * r * 1.2589 ** 2; };
+  for (let i = 1; i < m.length; i++) { tot += m[i]; cen += m[i] * i * df; aw += m[i] * Aw(i * df); if (i * df < 200) low += m[i]; }
+  const w = Math.max(1, Math.round(rate * 0.005)), env = [];
+  for (let i = 0; i + w <= d.length; i += w) { let s = 0; for (let j = i; j < i + w; j++) s += d[j] * d[j]; env.push(Math.sqrt(s / w)); }
+  let pk = 0; for (let i = 1; i < env.length; i++) if (env[i] > env[pk]) pk = i;
+  // decay20_ms: 최고점(뒤꿈치)에서 처음으로 -20 dB 아래로 떨어지기까지(울림 길이), tail40_ms: 최고점부터 마지막으로 -40 dB 위에 있던 때까지(앞꿈치·끌림까지 들리는 길이)
+  const thr = (db) => env[pk] * Math.pow(10, -db / 20);
+  let first = env.length; for (let i = pk; i < env.length; i++) if (env[i] < thr(20)) { first = i; break; }
+  let last = pk; for (let i = pk; i < env.length; i++) if (env[i] >= thr(40)) last = i;
+  // aExpDb: 최고값 1(0 dBFS)일 때 A 가중 소리 에너지(dB, Σ x_A² / 표본율 — 짧은 소리끼리 크기 비교). 파스발: Σ|X|²·2 / N = Σ x²
+  return { aExpDb: 10 * Math.log10(Math.max(1e-12, aw * 2 / n / rate)), lowFrac: low / tot, centroidHz: cen / tot, len_ms: d.length / rate * 1000, decay20_ms: (first - pk) * w / rate * 1000, tail40_ms: (last - pk + 1) * w / rate * 1000 };
+}
+export function stepTimbres(A, rate = 44100) { return A.synthSteps(rate, 4).map((d) => stepTimbre(d, rate)); }
+
 if (process.argv[1] && process.argv[1].endsWith('footstep_levels.mjs')) {
   const ji = process.argv.indexOf('--json');
   const A = loadAudio();

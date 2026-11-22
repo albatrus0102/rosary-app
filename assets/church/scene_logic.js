@@ -7,7 +7,9 @@
   'use strict';
 
   var C = {
-    WALK_SPEED: 2.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
+    // WALK_SPEED: 조이스틱 끝·자동 걷기(「가기」, stations.js) 속도(m/s). 2026-11-22 사용자 「지난 번 고치기 전 속도 유지해줘, 지금은 너무 느려」 → 4.0(2.0 에서 되돌림).
+    // 뛰지는 않는다: avatar.js 는 이 속도까지 늘 걷는다(경보처럼 한 발은 늘 땅에, docs/church/WALK_GAIT.md §6). main.js·net_view.js·avatar_glb.js 가 이 값을 읽는다.
+    WALK_SPEED: 4.0, RADIUS: 0.3, SEAT_REACH: 1.3, CANDLE_REACH: 1.8,
     SEAT_H: 0.45, BAND_NEAR: -0.62, BAND_FAR: 0.20, STAND_FWD: 0.72,
     // 여러 층(layout.levels, docs/church/interiors/assisi.md §엔진): 한 걸음에 오를 수 있는 높이, 몸이 차지하는 높이(충돌체 높이 범위와 견줌), 같은 층으로 치는 높이 차
     STEP: 0.45, BODY0: 0.15, BODY1: 1.7, SAME_LEVEL: 1.0
@@ -207,6 +209,19 @@
       addKeepOut: function (c) { var n = normCollider(c); n.keep = true; keep.push(n); colliders.push(n); return n; },
       // 바닥 높이. yRef(여러 층만): 그 높이(발)에서 한 걸음(STEP) 안으로 오를 수 있는 가장 높은 바닥 — 계단을 오르내리면 층이 저절로 바뀐다.
       // yRef 없이 부르면(또는 한 층 성당) 예전처럼 그 자리의 가장 높은 바닥(바닥 0 포함).
+      // 몸(루트) 높이 목표(2026-11-22 2차, WALK_GAIT.md §6): 발 높이 fy 에 걷는 방향 앞뒤 0.45m 안 바닥을 섞어 계단을 비탈처럼 오르내린다.
+      // 예전에는 단 높이(계단 바닥)를 그대로 × dt·14 로 따라가 단마다 몸·카메라가 0.07초에 15cm 씩 「툭」 올랐다(루트 높이 가속도 150 m/s²).
+      // (dx, dz): 걷는 방향 단위 벡터(멈춰 있으면 0 → fy 그대로). 발은 아바타가 단 위에 따로 디딘다(avatar.js setGround).
+      bodyY: function (x, z, fy, dx, dz) {
+        if (!(dx || dz)) return fy;
+        var sum = fy, n = 1, y, o, k;
+        for (k = 1; k <= 3; k++) for (o = -1; o <= 1; o += 2) {   // 앞뒤 0.15·0.3·0.45m(단 세 개쯤) 바닥의 평균 — 한 단을 넘을 때 목표가 단 높이의 1/7 씩만 바뀐다
+          y = L.floorY(x + dx * 0.15 * k * o, z + dz * 0.15 * k * o, fy);
+          if (Math.abs(y - fy) > 0.5) return fy;   // 다른 층·높은 턱이 끼면 섞지 않는다
+          sum += y; n++;
+        }
+        return sum / n;
+      },
       floorY: function (x, z, yRef) {
         var q, zn;
         if (!multi || yRef === undefined || yRef === null) {

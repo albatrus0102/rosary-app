@@ -1,15 +1,16 @@
 /* audio.js — WebAudio 합성 소리: 파이프오르간풍 패드(느린 화음 + 합성 잔향), 발소리, 촛불 종소리.
    오르간·종소리는 setAmbient(true) 이후에만 소리가 난다. 사용자 제스처 전에는 AudioContext 를 resume 하지 못할 수 있어 제스처 시 다시 시도한다.
    발소리(docs/church/WALK_GAIT.md §소리): 아바타가 발을 디딜 때(avatar.js takeStep) 아주 작게. 앱이 setSteps({on, chant, vol})로 켜고
-   (성당 소리 설정·성삼일 침묵을 따른다), 크기는 늘 음악보다 작다 — 음악이 울리면 그 음악의 평소 크기(RMS)보다 18 dB, 없으면 12 dB 아래이고
-   음악 음량 설정(vol)을 따라 내려간다(stepGain). 소리 자료는 파일 없이 처음 한 번 합성한다(돌바닥 4가지). */
+   (성당 소리 설정·성삼일 침묵을 따른다), 짧고 가벼운 돌바닥 「톡」(낮은 쿵 없음, 90 ms), 크기는 늘 음악보다 작다 — 음악이 울리면 그 음악의 평소 크기(RMS)보다 18 dB, 없으면 12 dB 아래이고
+   음악 음량 설정(vol)을 따라 내려간다(stepGain). 소리 자료는 파일 없이 처음 한 번 합성한다(돌바닥 6가지). */
 (function (root) {
   'use strict';
   var Ctx = root.AudioContext || root.webkitAudioContext;
   var A = { on: false, ctx: null, master: null, wet: null, timer: 0, chordIdx: 0, noiseBuf: null, lastStep: 0, steps: { on: null, chant: false, vol: 0.3 }, stepBufs: null, stepBus: null, stepIdx: 0 };
   // 크기 기준(dBFS, tools/church_web/footstep_levels.mjs 로 잰 값). CHANT: 앱 성가 4곡(assets/music) 중 가장 작은 곡의 평균(RMS),
   // ORGAN: 이 파일의 오르간 패드가 화음을 유지하는 동안의 출력 RMS. 발소리 표본은 최고값 1(0 dBFS)로 만든다.
-  var LEVELS = { CHANT_RMS_DB: -21.3, ORGAN_RMS_DB: -38.5, MUSIC_MARGIN_DB: 18, QUIET_MARGIN_DB: 12, VOL_DEFAULT: 0.3 };
+  // STEP_TRIM_DB: 2026-11-22 2차 — 새 발소리(1~2 kHz 「톡」)는 같은 최고값이면 옛 저음 「툭」보다 귀에 약 1 dB 크게 들려(A 가중 에너지) 3 dB 더 낮춘다.
+  var LEVELS = { CHANT_RMS_DB: -21.3, ORGAN_RMS_DB: -38.5, MUSIC_MARGIN_DB: 18, QUIET_MARGIN_DB: 12, VOL_DEFAULT: 0.3, STEP_TRIM_DB: -3 };
   A.LEVELS = LEVELS;
   function db(x) { return 20 * Math.log(Math.max(x, 1e-6)) / Math.LN10; }
   // 발소리 최고값(선형 이득). s = {organ: 오르간 패드가 울리나, chant: 앱 성가가 울리나, vol: 음악 음량 설정 0..1}
@@ -19,27 +20,32 @@
     else if (s.organ) ref = LEVELS.ORGAN_RMS_DB + Math.min(0, db(vol / LEVELS.VOL_DEFAULT));  // 오르간(음량 고정): 설정을 낮추면 함께 내려가고 올려도 오르간보다 커지지 않는다
     else ref = LEVELS.CHANT_RMS_DB + db(vol);                                               // 음악이 없으면 음량 설정을 기준으로
     var margin = s.chant || s.organ ? LEVELS.MUSIC_MARGIN_DB : LEVELS.QUIET_MARGIN_DB;
-    return Math.pow(10, (ref - margin) / 20);
+    return Math.pow(10, (ref - margin + LEVELS.STEP_TRIM_DB) / 20);
   };
-  // 발소리 합성(순수 계산, 시험에서도 부른다): 부드러운 신발이 돌바닥을 딛는 소리 — 낮은 '툭'(뒤꿈치) + 짧은 고음 마찰 + 작은 앞꿈치 소리.
-  // 최고값 1 로 맞춘 Float32Array 를 n 개(조금씩 다르게) 돌려준다.
+  // 발소리 합성(순수 계산, 시험에서도 부른다): 부드러운 신발이 돌바닥을 가볍게 딛는 소리 — 짧은 뒤꿈치 「톡」(1.2~2.4 kHz 띠 잡음 + 400 Hz 언저리의 아주 짧은 몸통)
+  // + 35~55 ms 뒤 더 작은 앞꿈치 소리(2.5~4 kHz) + 아주 옅은 끌림. 250 Hz 높은 통과로 낮은 「쿵」을 걷어 낸다.
+  // 옛 소리(2026-11-22 1차)는 95~128 Hz 사인 「툭」이 30 ms 감쇠로 길게 울려 200 Hz 아래 에너지가 19~52%, -20 dB 까지 75~95 ms, 길이 160 ms 라 「터덜」 거렸다(WALK_GAIT.md §6).
+  // 최고값 1 로 맞춘 Float32Array 를 n 개(조금씩 다르게) 돌려준다. 길이 90 ms.
   A.synthSteps = function (rate, n) {
     var out = [], seed = 12345;
     function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647 * 2 - 1; }
-    for (var v = 0; v < (n || 4); v++) {
-      var len = Math.floor(rate * 0.16), d = new Float32Array(len), i;
-      var f0 = 95 + v * 11, fc = 1700 + v * 260, toe = Math.floor(rate * (0.055 + v * 0.008));
-      // 공진 필터(2극) 상태
-      var r = Math.exp(-Math.PI * 900 / rate), cw = Math.cos(2 * Math.PI * fc / rate), y1 = 0, y2 = 0;
-      var r2 = Math.exp(-Math.PI * 260 / rate), cw2 = Math.cos(2 * Math.PI * 420 / rate), z1 = 0, z2 = 0;
+    function u01() { return rnd() * 0.5 + 0.5; }
+    function reso(fc, bw) { var r = Math.exp(-Math.PI * bw / rate); return { r: r, c: 2 * r * Math.cos(2 * Math.PI * fc / rate), g: 1 - r, y1: 0, y2: 0 }; }
+    function run(f, x) { var y = f.g * x + f.c * f.y1 - f.r * f.r * f.y2; f.y2 = f.y1; f.y1 = y; return y; }
+    for (var v = 0; v < (n || 6); v++) {
+      var len = Math.floor(rate * 0.09), d = new Float32Array(len), i;
+      var fh = 1200 + 1200 * u01(), ft = 2500 + 1500 * u01(), fb = 330 + 160 * u01();
+      var toe = Math.floor(rate * (0.035 + 0.02 * u01())), toeA = 0.28 + 0.15 * u01(), scuff = 0.05 + 0.05 * u01();
+      var Rh = reso(fh, 1400), Rt = reso(ft, 1800), Rb = reso(fb, 220), Rs = reso(1800, 2600);
+      var hpY = 0, hpX = 0, hpA = Math.exp(-2 * Math.PI * 250 / rate);   // 1극 높은 통과 250 Hz
       for (i = 0; i < len; i++) {
         var t = i / rate, x = rnd();
-        var hi = (1 - r) * x + 2 * r * cw * y1 - r * r * y2; y2 = y1; y1 = hi;
-        var mid = (1 - r2) * x + 2 * r2 * cw2 * z1 - r2 * r2 * z2; z2 = z1; z1 = mid;
-        var heel = Math.exp(-t / 0.018) * Math.min(1, t / 0.002);
-        var tt = (i - toe) / rate, toeEnv = tt > 0 ? 0.45 * Math.exp(-tt / 0.012) * Math.min(1, tt / 0.0015) : 0;
-        var thump = Math.sin(2 * Math.PI * f0 * t) * Math.exp(-t / 0.03) * Math.min(1, t / 0.004);
-        d[i] = 0.9 * thump + 2.2 * mid * (heel + toeEnv) + 1.4 * hi * (heel * 0.6 + toeEnv);
+        var eh = Math.exp(-t / 0.007) * Math.min(1, t / 0.0008);
+        var tt = (i - toe) / rate, et = tt > 0 ? toeA * Math.exp(-tt / 0.006) * Math.min(1, tt / 0.0008) : 0;
+        var es = scuff * Math.exp(-t / 0.02) * Math.min(1, t / 0.004);
+        var y = 3.0 * run(Rh, x) * eh + 3.2 * run(Rt, x) * et + 0.6 * run(Rb, x) * Math.exp(-t / 0.004) + 1.5 * run(Rs, x) * es;
+        var hp = hpA * (hpY + y - hpX); hpX = y; hpY = hp;
+        d[i] = hp;
       }
       var pk = 0; for (i = 0; i < len; i++) pk = Math.max(pk, Math.abs(d[i]));
       for (i = 0; i < len; i++) d[i] /= pk || 1;
@@ -78,7 +84,7 @@
       A.noiseBuf = nb;
       // 발소리: 오르간(master)과 따로 바로 출력으로(오르간이 꺼져 있어도 들리게). 크기는 stepGain 이 소리마다 정한다.
       A.stepBus = c.createGain(); A.stepBus.gain.value = 1; A.stepBus.connect(c.destination);
-      A.stepBufs = A.synthSteps(c.sampleRate, 4).map(function (d) { var b = c.createBuffer(1, d.length, c.sampleRate); b.getChannelData(0).set(d); return b; });
+      A.stepBufs = A.synthSteps(c.sampleRate, 6).map(function (d) { var b = c.createBuffer(1, d.length, c.sampleRate); b.getChannelData(0).set(d); return b; });
     } catch (e) { A.ctx = null; return false; }
     return true;
   }
@@ -131,11 +137,12 @@
   A.footstep = function (alt, v) {
     if (!stepsOn() || !A.ctx || A.ctx.state !== 'running' || !A.stepBufs) return;
     var c = A.ctx, s = c.createBufferSource();
-    A.stepIdx = (A.stepIdx + 1 + (Math.random() < 0.5 ? 1 : 0)) % A.stepBufs.length;
-    s.buffer = A.stepBufs[(A.stepIdx + (alt ? 2 : 0)) % A.stepBufs.length];
-    s.playbackRate.value = 0.94 + Math.random() * 0.1;
+    // 같은 표본을 잇달아 내지 않는다(기계적으로 들리지 않게): 6개 가운데 지난번과 다른 것, 재생 속도 ±6%, 크기 −2.5~0 dB
+    var nb = A.stepBufs.length, k = (A.stepIdx + 1 + Math.floor(Math.random() * (nb - 1))) % nb;
+    A.stepIdx = k; s.buffer = A.stepBufs[k];
+    s.playbackRate.value = 0.94 + Math.random() * 0.12;
     var sp = v === undefined ? 1.2 : +v, soft = 0.55 + 0.45 * Math.min(1, Math.max(0, sp / 1.4));   // 천천히 걸으면 살살
-    var g = c.createGain(); g.gain.value = A.stepGain({ organ: A.on, chant: A.steps.chant, vol: A.steps.vol }) * soft * (0.8 + Math.random() * 0.2);
+    var g = c.createGain(); g.gain.value = A.stepGain({ organ: A.on, chant: A.steps.chant, vol: A.steps.vol }) * soft * (0.75 + Math.random() * 0.25);
     s.connect(g); g.connect(A.stepBus); s.start();
   };
   A.chime = function () {
