@@ -239,7 +239,7 @@ const Map<ChurchTourStep, (String, String)> churchTourTexts = {
   ChurchTourStep.go: ('가기', '가기를 누르면 촛불 봉헌대나 제대 앞으로 저절로 걸어가요.'),
   ChurchTourStep.context: (
     '할 수 있는 일',
-    '제대 앞이나 자리, 촛불대 가까이 가면 오른쪽 아래에 할 수 있는 단추가 나타나요.',
+    '제대 앞이나 자리, 촛불대 가까이 가면 오른쪽 아래에 할 수 있는 단추가 나타나요. 자리에 앉은 뒤에는 묵주기도 시작을 고를 수 있어요.',
   ),
   ChurchTourStep.menu: ('메뉴', '메뉴에서 성당 바꾸기, 사용법 다시 보기를 할 수 있어요.'),
 };

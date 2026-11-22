@@ -955,11 +955,25 @@ class _ChurchScreenState extends State<ChurchScreen>
     // 장면을 새로 만들어 같은 자리에 다시 앉힌 경우(복원)는 새로 앉은 것이 아니다:
     // 기록하지 않고, 기도 카드의 상태(진행·쉬는 중)도 그대로 둔다.
     final reseat = _mySeat != null && _prayer != null && _prayerActive;
+    // 묵주기도 하러 걸어온 자리(또는 묵주를 든 채 복원된 자리)만 바로 기도를 시작한다.
+    // 그냥 앉은 것은 앉기만 한다: 시작은 앉은 줄의 '묵주기도 시작'이 한다.
+    final startPrayer = _rosaryWalk || _rosaryHeld;
     if (_mySeat == null) Track.church('church_sit', widget.churchId);
     if (!_hidden) _markSat(true);
     _mySeat = seat.isEmpty ? (_pendingSeat ?? '') : seat;
     _pendingSeat = null;
     _rosaryWalk = false; // 자리에 왔다. 이제부터 묵주는 기도 상태를 따른다(_sendPraying).
+    if (!reseat && !startPrayer) {
+      // 앉기만: 타이머·성가·묵주·기도 상태 알림 없이, 저장해 둔 자세만 적용한다.
+      if (_kneel) unawaited(_scene.setPrayerPosture(kneel: true));
+      setState(() {});
+      return;
+    }
+    _beginSeatedPrayer(reseat: reseat);
+  }
+
+  /// 앉은 자리에서 묵주기도를 시작한다(복원이면 [reseat]: 진행·쉬는 상태를 그대로 둔다).
+  void _beginSeatedPrayer({required bool reseat}) {
     final p = _prayer ??= _createPrayer();
     if (!reseat) p.start();
     _wasFinished = p.finished;
@@ -979,6 +993,21 @@ class _ChurchScreenState extends State<ChurchScreen>
     setState(() {});
     if (!reseat && !_hidden) _openBigIfChosen();
   }
+
+  /// 앉은 줄의 '묵주기도 시작': 기도하기 시트와 같은 신비(이어 하던 것 → 저장된 진행분 → 홈에서 고른 신비)로
+  /// 시작하고, 큰 화면/작은 화면은 마지막에 고른 설정을 따른다.
+  void _startRosaryFromSitBar() {
+    if (_disposed || !mounted || _mySeat == null || _prayerActive) return;
+    final p = _prayer;
+    final set = p != null && !p.finished && p.session.index > 0
+        ? p.mysterySet
+        : (_settings.savedPrayer?.mysterySet ?? _settings.mysterySet);
+    _prepareRosarySession(set, big: _settings.churchRosaryBig);
+    _beginSeatedPrayer(reseat: false);
+  }
+
+  /// 앉은 줄의 '일어나기'.
+  void _standFromSitBar() => _standUp(tellScene: true);
 
   ChurchPrayerController _createPrayer() {
     final p = ChurchPrayerController(
@@ -1452,7 +1481,7 @@ class _ChurchScreenState extends State<ChurchScreen>
     if (e.kind == 'cross' && _mySeat == null && _pendingSeat == null) {
       unawaited(_openCross(e.index + 1));
     }
-    // 묵주기도 하러 온 자리: 바로 앉는다(앉으면 묵주기도 카드가 열린다). 자리가 없으면 그만둔다.
+    // 묵주기도 하러 온 자리: 바로 앉는다(이 길로 앉으면 묵주기도 카드가 열린다). 자리가 없으면 그만둔다.
     if (e.kind == 'seat' && _rosaryWalk) {
       if (_near.seat != null && _mySeat == null && _pendingSeat == null) {
         _onSit();
@@ -1531,15 +1560,7 @@ class _ChurchScreenState extends State<ChurchScreen>
   void _startRosary(MysterySet? set, {bool big = false}) {
     if (_mySeat != null || _pendingSeat != null) return;
     final standing = _near.station == 'altar' && _near.shrine;
-    // 고른 신비가 하던 세션과 다르면(또는 이미 마쳤으면) 세션을 새로 만든다. 같으면 이어 한다.
-    final p = _prayer;
-    if (p != null && (p.finished || (set != null && p.mysterySet != set))) {
-      _prayer = null;
-      p.removeListener(_onPrayerChanged);
-      p.dispose();
-    }
-    _rosarySet = set;
-    _rosaryBig = big;
+    _prepareRosarySession(set, big: big);
     unawaited(_scene.setJoystick(0, 0));
     if (standing) {
       _startStandingRosary();
@@ -1552,6 +1573,18 @@ class _ChurchScreenState extends State<ChurchScreen>
     } else {
       unawaited(_scene.walkTo(ChurchGoTarget.seat.kind));
     }
+  }
+
+  /// 고른 신비가 하던 세션과 다르면(또는 이미 마쳤으면) 세션을 새로 만들도록 비운다. 같으면 이어 한다.
+  void _prepareRosarySession(MysterySet? set, {required bool big}) {
+    final p = _prayer;
+    if (p != null && (p.finished || (set != null && p.mysterySet != set))) {
+      _prayer = null;
+      p.removeListener(_onPrayerChanged);
+      p.dispose();
+    }
+    _rosarySet = set;
+    _rosaryBig = big;
   }
 
   /// 성모상 앞에서 서서 하는 묵주기도: 자리로 가지 않고 선 채 손을 모으고 기도 카드를 연다.
@@ -1960,15 +1993,11 @@ class _ChurchScreenState extends State<ChurchScreen>
                   if (_walkKind != null) _cancelWalk();
                 },
                 onTap: (p) => unawaited(_scene.tapAt(p.dx, p.dy)),
-                onLook: ({
-                  bool? on,
-                  double dx = 0,
-                  double dy = 0,
-                  double k = 1,
-                }) {
-                  _tour.onLook(on: on, dx: dx, dy: dy);
-                  unawaited(_scene.appLook(on: on, dx: dx, dy: dy, k: k));
-                },
+                onLook:
+                    ({bool? on, double dx = 0, double dy = 0, double k = 1}) {
+                      _tour.onLook(on: on, dx: dx, dy: dy);
+                      unawaited(_scene.appLook(on: on, dx: dx, dy: dy, k: k));
+                    },
               ),
             ),
           if (!_sceneReleased)
@@ -2170,6 +2199,20 @@ class _ChurchScreenState extends State<ChurchScreen>
                               onEnd: _endPrayer,
                               onFullScreen: _openFullScreenPrayer,
                             ),
+                    )
+                  else if (_mySeat != null)
+                    // 앉기만 한 상태: 묵주기도는 사용자가 고른다(시작 | 일어나기).
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: ChurchHudStyle.panelMaxWidth,
+                      ),
+                      child: ChurchSeatedBar(
+                        key: const ValueKey('seated-bar'),
+                        settings: _settings,
+                        onStartRosary: _startRosaryFromSitBar,
+                        onStand: _standFromSitBar,
+                        onPosture: _setPosture,
+                      ),
                     )
                   else if (!seatedOrPending) ...[
                     // 처음 한 번 뜨는 '가기' 안내: 위쪽(이름표·표식이 뜨는 곳)이 아니라 오른쪽 아래, 상황 버튼 바로 위에 둔다.

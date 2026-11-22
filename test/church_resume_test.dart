@@ -181,6 +181,9 @@ Future<void> _sitDown(
   await _p(tester);
   scene.emit(SceneSeated(seat));
   await _p(tester);
+  // 앉기만으로는 기도가 시작되지 않는다: 앉은 줄에서 묵주기도를 시작한다.
+  await tester.tap(find.byKey(const ValueKey('seated-bar-start')));
+  await _p(tester);
 }
 
 /// 가짜 장면·접속의 이벤트는 비동기로 전달된다: 전달 → 다시 그리기까지 두 번 돌린다.
@@ -835,7 +838,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('앱이 종료됐다가 다시 들어오면 저장해 둔 자리에서 시작한다(같은 성당·30분 안)', (
+    testWidgets('앱이 종료됐다가 다시 들어오면 저장해 둔 자리에서 시작한다(같은 성당·30분 안, 앉기만 했으면 앉기만)', (
       tester,
     ) async {
       await _startAnalytics();
@@ -846,6 +849,7 @@ void main() {
         r: 0.1,
         seat: 'L03-2',
         kneel: true,
+        rosary: false,
         camYaw: 0.4,
         camPitch: 0.3,
         camZoom: 1.1,
@@ -861,6 +865,52 @@ void main() {
       );
       expect(scene.calls.first.$1, 'init');
       expect(scene.lastArgs('restore'), saved.toSceneArgs());
+      net.goOnline(1);
+      net.emit(_welcome());
+      await _p(tester);
+      scene.emit(const SceneSeated('L03-2'));
+      scene.emit(const SceneRestored(seat: 'L03-2', x: -5.2, z: -3.95));
+      await _p(tester);
+      expect(find.byType(ChurchPrayerCard), findsNothing);
+      expect(find.byKey(const ValueKey('seated-bar')), findsOneWidget);
+      expect(net.sits, ['L03-2']);
+      // 새로 들어온 것이므로 입장·앉기를 한 번씩 기록한다.
+      expect(_events('church_enter'), hasLength(1));
+      expect(_events('church_sit'), hasLength(1));
+      await tester.pump(const Duration(seconds: 10));
+      Analytics.debugReset();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('앱이 종료됐다가 다시 들어오면 저장해 둔 자리에서 시작한다(묵주를 들고 있었으면 기도 카드가 다시 열린다)', (
+      tester,
+    ) async {
+      await _startAnalytics();
+      final saved = ChurchResumeState(
+        churchId: 'basic',
+        x: -5.2,
+        z: -3.95,
+        r: 0.1,
+        seat: 'L03-2',
+        kneel: true,
+        rosary: true,
+        camYaw: 0.4,
+        camPitch: 0.3,
+        camZoom: 1.1,
+        camLook: 0.2,
+        savedAtMs: DateTime.now().millisecondsSinceEpoch - 60 * 1000,
+      );
+      final visible = ValueNotifier(true);
+      addTearDown(visible.dispose);
+      final (_, net, scene) = await _pumpScreen(
+        tester,
+        visible,
+        prefs: {ChurchResumeState.prefsKey: saved.encode()},
+      );
+      expect(scene.calls.first.$1, 'init');
+      // 묵주를 들고 있었으면 내 묵주 모습('look')이 함께 간다.
+      expect(scene.lastArgs('restore'), containsPair('rosary', 1));
+      expect(scene.lastArgs('restore'), containsPair('seat', 'L03-2'));
       net.goOnline(1);
       net.emit(_welcome());
       await _p(tester);

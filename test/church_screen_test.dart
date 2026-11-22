@@ -48,6 +48,9 @@ Future<void> _sit(WidgetTester tester, ChurchHarness h) async {
   await tester.pump();
   h.scene.emit(const SceneSeated('L03-2'));
   await tester.pump();
+  // 앉기만으로는 기도가 시작되지 않는다: 앉은 줄에서 묵주기도를 시작한다.
+  await tester.tap(find.byKey(const ValueKey('seated-bar-start')));
+  await tester.pump();
 }
 
 void main() {
@@ -380,6 +383,8 @@ void main() {
       await tester.tap(find.text('앉기'));
       await tester.pump();
       h.scene.emit(const SceneSeated('L03-2'));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('seated-bar-start')));
       await tester.pump();
       expect(h.settings.savedPrayer?.stepIndex, 1);
       expect(find.text('이전'), findsOneWidget);

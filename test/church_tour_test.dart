@@ -225,7 +225,7 @@ void main() {
       expect(_t(tester, _count), '4 / 5');
       expect(
         _t(tester, _text),
-        '제대 앞이나 자리, 촛불대 가까이 가면 오른쪽 아래에 할 수 있는 단추가 나타나요.',
+        '제대 앞이나 자리, 촛불대 가까이 가면 오른쪽 아래에 할 수 있는 단추가 나타나요. 자리에 앉은 뒤에는 묵주기도 시작을 고를 수 있어요.',
       );
       // 단추가 없는 자리여도 나타날 자리를 보인다.
       expect(find.byKey(const ValueKey('tour-hand')), findsOneWidget);

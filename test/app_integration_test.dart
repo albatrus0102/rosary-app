@@ -557,6 +557,9 @@ void main() {
       await tester.pump();
       scene.emit(const SceneSeated('L03-2'));
       await tester.pump();
+      // 앉기만으로는 기도가 시작되지 않는다: 앉은 줄에서 묵주기도를 시작한다.
+      await tester.tap(find.byKey(const ValueKey('seated-bar-start')));
+      await tester.pump();
 
       final total = _nextsForOneDecade(today);
       await _nexts(tester, 3); // 카드에서

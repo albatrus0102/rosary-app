@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../app/settings.dart';
 import '../app/theme.dart';
 import 'church_touch_trace.dart';
 import 'net/church_net.dart';
@@ -317,10 +318,7 @@ class _HudBarButton extends StatelessWidget {
             ? ChurchHudStyle.barItemSize
             : Size(w, ChurchHudStyle.barItemSize.height),
         maximumSize: w == null ? null : Size(w, double.infinity),
-        padding: EdgeInsets.symmetric(
-          horizontal: pad,
-          vertical: AppSpace.xxs,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: pad, vertical: AppSpace.xxs),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
@@ -1369,6 +1367,103 @@ class ChurchPerfBanner extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 앉기만 한 상태의 아래 줄: 앉아 있는 동안 사용자가 고른다 - '묵주기도 시작' | '일어나기'.
+/// 자세(앉아서 | 무릎 꿇고)도 여기서 바꿀 수 있다. 앉기만으로는 기도 시간·성가·묵주·기도 상태 알림이 없다.
+class ChurchSeatedBar extends StatelessWidget {
+  const ChurchSeatedBar({
+    super.key,
+    required this.settings,
+    required this.onStartRosary,
+    required this.onStand,
+    required this.onPosture,
+  });
+
+  final AppSettings settings;
+  final VoidCallback onStartRosary;
+  final VoidCallback onStand;
+  final ValueChanged<PrayerPosture> onPosture;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: ChurchHudStyle.surface(scheme),
+      shape: ChurchHudStyle.plaque(scheme),
+      clipBehavior: Clip.antiAlias,
+      elevation: ChurchHudStyle.elevation,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpace.sm),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              '앉아 있어요. 묵주기도는 원할 때 시작해요.',
+              key: const ValueKey('seated-bar-note'),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpace.xs),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SegmentedButton<PrayerPosture>(
+                key: const ValueKey('seated-bar-posture'),
+                showSelectedIcon: false,
+                style: SegmentedButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpace.xs),
+                ),
+                segments: const [
+                  ButtonSegment(
+                    value: PrayerPosture.sit,
+                    label: Text('앉아서', softWrap: false),
+                    icon: Icon(Icons.event_seat_outlined, size: 18),
+                    tooltip: '앉아서',
+                  ),
+                  ButtonSegment(
+                    value: PrayerPosture.kneel,
+                    label: Text('무릎 꿇고', softWrap: false),
+                    icon: Icon(Icons.airline_seat_legroom_reduced, size: 18),
+                    tooltip: '무릎 꿇고',
+                  ),
+                ],
+                selected: {settings.prayerPosture},
+                onSelectionChanged: (s) => onPosture(s.first),
+              ),
+            ),
+            const SizedBox(height: AppSpace.xs),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    key: const ValueKey('seated-bar-start'),
+                    onPressed: onStartRosary,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                    ),
+                    icon: const Icon(Icons.self_improvement_outlined),
+                    label: const Text('묵주기도 시작', softWrap: false),
+                  ),
+                ),
+                const SizedBox(width: AppSpace.xs),
+                OutlinedButton.icon(
+                  key: const ValueKey('seated-bar-stand'),
+                  onPressed: onStand,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 48),
+                  ),
+                  icon: const Icon(Icons.north_east),
+                  label: const Text('일어나기', softWrap: false),
+                ),
+              ],
             ),
           ],
         ),

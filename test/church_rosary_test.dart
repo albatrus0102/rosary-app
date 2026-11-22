@@ -722,7 +722,7 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
     });
 
-    testWidgets('앉기(시트 없이): the rosary card opens as before, with the rosary', (
+    testWidgets('앉기(시트 없이): sits only; 묵주기도 시작 opens the card with the rosary', (
       tester,
     ) async {
       final h = await pumpChurch(tester, size: const Size(360, 800));
@@ -732,6 +732,12 @@ void main() {
       await tester.pump();
       expect(_rosaryCalls(h), isEmpty);
       h.scene.emit(const SceneSeated('L03-2'));
+      await _settle(tester);
+      // 앉기만: 카드·묵주 없음, 앉은 줄이 뜬다.
+      expect(find.byType(ChurchPrayerCard), findsNothing);
+      expect(_rosaryCalls(h), isEmpty);
+      expect(find.byKey(const ValueKey('seated-bar')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('seated-bar-start')));
       await _settle(tester);
       expect(find.byType(ChurchPrayerCard), findsOneWidget);
       expect(_rosaryCalls(h), [true]);
