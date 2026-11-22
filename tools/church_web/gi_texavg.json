@@ -1,4 +1,28 @@
 {
+ "tex_assisi_fresco.jpg": {
+  "len": 350220,
+  "rgb": [
+   0.7091,
+   0.3932,
+   0.1934
+  ]
+ },
+ "tex_assisi_stone.jpg": {
+  "len": 334084,
+  "rgb": [
+   0.6893,
+   0.5587,
+   0.4681
+  ]
+ },
+ "tex_assisi_vault.jpg": {
+  "len": 399344,
+  "rgb": [
+   0.0389,
+   0.0775,
+   0.2352
+  ]
+ },
  "tex_brick_grey.jpg": {
   "len": 194768,
   "rgb": [
