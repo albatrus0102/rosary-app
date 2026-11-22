@@ -175,6 +175,11 @@ class AppSettings extends ChangeNotifier {
       _prefs.getString(_kChurchPrayerChoice),
       ChurchPrayerChoice.brief,
     );
+    _churchRosaryBig = _prefs.getBool(_kChurchRosaryBig) ?? false;
+    _beadSwipeLearned =
+        _prefs.getInt(_kBeadSwipeLearned) ?? defaultBeadSwipeLearned;
+    _prayerScreenTourDone =
+        _prefs.getBool(_kPrayerScreenTourDone) ?? defaultPrayerScreenTourDone;
     _mysterySet = mysterySetForWeekday(DateTime.now().weekday);
     _prayerView = _enumByName(
       PrayerView.values,
@@ -476,6 +481,9 @@ class AppSettings extends ChangeNotifier {
   static const _kChurchStickRight = 'church_stick_right';
   static const _kPrayerPosture = 'prayerPosture';
   static const _kChurchPrayerChoice = 'churchPrayerChoice';
+  static const _kChurchRosaryBig = 'churchRosaryBig';
+  static const _kBeadSwipeLearned = 'beadSwipeLearned';
+  static const _kPrayerScreenTourDone = 'prayerScreenTourDone';
   static const _kChurchId = 'church_id';
   static const _kChurchFavorites = 'church_favorites';
 
@@ -543,6 +551,9 @@ class AppSettings extends ChangeNotifier {
   late bool _churchStickRight;
   late PrayerPosture _prayerPosture;
   late ChurchPrayerChoice _churchPrayerChoice;
+  late bool _churchRosaryBig;
+  late int _beadSwipeLearned;
+  late bool _prayerScreenTourDone;
   late String _churchId;
   late Set<String> _churchFavorites;
 
@@ -907,6 +918,53 @@ class AppSettings extends ChangeNotifier {
     _prefs.setString(_kChurchPrayerChoice, v.name);
     notifyListeners();
   }
+
+  /// 성당에서 묵주기도를 시작할 때 마지막으로 고른 화면: true면 큰 화면(전체 화면 기도), false면 작은 화면(성당 카드).
+  bool get churchRosaryBig => _churchRosaryBig;
+  set churchRosaryBig(bool v) => _setBool(
+    v,
+    _churchRosaryBig,
+    _kChurchRosaryBig,
+    () => _churchRosaryBig = v,
+  );
+
+  /// 손가락으로 묵주를 아래로 내려 넘긴다는 것을 익히는 데 필요한 횟수(성당 카드와 큰 화면을 합쳐 센다).
+  static const int beadSwipeGoal = 2;
+
+  /// 새 설치의 '손가락으로 내려 넘기기' 익힌 횟수와 기도 화면 안내의 마침 여부(시험은 test/flutter_test_config.dart 가 돌린다).
+  static int defaultBeadSwipeLearned = 0;
+  static bool defaultPrayerScreenTourDone = false;
+
+  /// 손가락으로 묵주를 넘긴 횟수(목표 [beadSwipeGoal]에서 멈춘다).
+  int get beadSwipeLearned => _beadSwipeLearned;
+
+  /// 아래로 내리기 안내를 아직 보여 줄지.
+  bool get beadSwipeHintVisible => _beadSwipeLearned < beadSwipeGoal;
+
+  /// 묵주를 끌어서 넘기는 데 성공했을 때 부른다.
+  void noteBeadSwipe() {
+    if (_beadSwipeLearned >= beadSwipeGoal) return;
+    _beadSwipeLearned++;
+    _prefs.setInt(_kBeadSwipeLearned, _beadSwipeLearned);
+    notifyListeners();
+  }
+
+  /// '사용법 보기': 안내를 다시 보이게 한다.
+  void resetBeadSwipeHint() {
+    if (_beadSwipeLearned == 0) return;
+    _beadSwipeLearned = 0;
+    _prefs.setInt(_kBeadSwipeLearned, 0);
+    notifyListeners();
+  }
+
+  /// 기도 화면의 첫 사용 안내(코치 마크)를 마쳤거나 건너뛰었는지.
+  bool get prayerScreenTourDone => _prayerScreenTourDone;
+  set prayerScreenTourDone(bool v) => _setBool(
+    v,
+    _prayerScreenTourDone,
+    _kPrayerScreenTourDone,
+    () => _prayerScreenTourDone = v,
+  );
 
   /// 마지막으로 고른 성당 id(카탈로그에 없으면 'basic').
   String get churchId => _churchId;

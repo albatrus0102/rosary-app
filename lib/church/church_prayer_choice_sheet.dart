@@ -9,9 +9,12 @@ import '../domain/prayer_data.dart';
 /// 성당 '기도하기' 시트에서 고른 것: 종류와(묵주기도라면) 바칠 신비.
 @immutable
 class ChurchPrayerPick {
-  const ChurchPrayerPick(this.kind, [this.mysterySet]);
+  const ChurchPrayerPick(this.kind, [this.mysterySet, this.big = false]);
 
   final ChurchPrayerChoice kind;
+
+  /// 묵주기도를 큰 화면(전체 화면 기도)으로 바칠지. false면 성당 안 작은 카드. 성당 밖에서는 늘 false.
+  final bool big;
 
   /// [ChurchPrayerChoice.rosary]일 때 바칠 신비. 잠시 기도하기면 null.
   final MysterySet? mysterySet;
@@ -20,6 +23,8 @@ class ChurchPrayerPick {
 /// 제대 앞 '기도하기' 시트(SPEC §32): '잠시 기도하기' | '묵주기도 하기'. 고르면 바로 닫히며 돌려준다(닫으면 null).
 ///
 /// 지난번에 고른 항목([AppSettings.churchPrayerChoice], 기본은 잠시 기도하기)을 강조한다.
+/// 성당 안([inChurch])에서는 '묵주기도 하기' 칸 안에 '작은 화면 | 큰 화면' 단추가 있고, 지난번 고른 화면을
+/// 강조한다([AppSettings.churchRosaryBig]). 칸 윗부분을 누르면 지난번 화면으로 바친다.
 /// 묵주기도의 신비는 이어 하던 것([resumeSet]) → 저장된 진행분 → 홈에서 고른 신비(기본은 오늘의 신비) 순으로
 /// 미리 골라 두고, '신비 바꾸기'로 바꿀 수 있다.
 Future<ChurchPrayerPick?> showChurchPrayerChoiceSheet(
@@ -92,6 +97,15 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
     return name;
   }
 
+  /// 묵주기도를 고른다. 성당 안에서 고른 화면은 기억해 두었다가 다음에 강조한다.
+  void _pickRosary({required bool big}) {
+    final inChurch = widget.inChurch;
+    if (inChurch) widget.settings.churchRosaryBig = big;
+    Navigator.of(
+      context,
+    ).pop(ChurchPrayerPick(ChurchPrayerChoice.rosary, _set, inChurch && big));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -118,7 +132,7 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
             child: Text('어떻게 기도할까요?', style: theme.textTheme.titleMedium),
           ),
           _ChoiceTile(
-            key: const ValueKey('pray-brief'),
+            rowKey: const ValueKey('pray-brief'),
             selected: last == ChurchPrayerChoice.brief,
             semanticsLabel: '잠시 기도하기, $_briefLine',
             leading: Icon(
@@ -134,7 +148,7 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
           ),
           const SizedBox(height: AppSpace.xs),
           _ChoiceTile(
-            key: const ValueKey('pray-rosary'),
+            rowKey: const ValueKey('pray-rosary'),
             selected: last == ChurchPrayerChoice.rosary,
             semanticsLabel: '묵주기도 하기, $_mysteryLine',
             leading: _RosaryThumb(style: widget.settings.rosaryStyle),
@@ -142,9 +156,13 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
             subtitle: widget.inChurch
                 ? '$_mysteryLine\n가까운 자리에 앉아 묵주를 들고 바쳐요'
                 : '$_mysteryLine\n묵주알을 한 알씩 넘기며 바쳐요',
-            onTap: () =>
-                Navigator.of(context)
-                    .pop(ChurchPrayerPick(ChurchPrayerChoice.rosary, _set)),
+            onTap: () => _pickRosary(big: widget.settings.churchRosaryBig),
+            footer: widget.inChurch
+                ? _ModeButtons(
+                    big: widget.settings.churchRosaryBig,
+                    onPick: (big) => _pickRosary(big: big),
+                  )
+                : null,
           ),
           // 신비 바꾸기: 평소에는 한 줄(글자 단추)만 차지하고, 누르면 네 신비 칩이 펼쳐진다.
           Align(
@@ -194,7 +212,8 @@ class _ChurchPrayerChoiceSheetState extends State<ChurchPrayerChoiceSheet> {
 /// 시트의 한 항목: 큰 터치 영역(최소 72dp), 지난번에 고른 항목은 `secondaryContainer`로 강조한다.
 class _ChoiceTile extends StatelessWidget {
   const _ChoiceTile({
-    super.key,
+    this.rowKey,
+    this.footer,
     required this.selected,
     required this.semanticsLabel,
     required this.leading,
@@ -203,6 +222,11 @@ class _ChoiceTile extends StatelessWidget {
     required this.onTap,
   });
 
+  /// 눌리는 윗줄(아이콘·제목·설명)의 키. [footer] 단추는 이 줄 밖이라 칸 전체를 누르는 시험이 단추를 건드리지 않는다.
+  final Key? rowKey;
+
+  /// 윗줄 아래에 붙는 단추 줄(묵주기도의 '작은 화면 | 큰 화면').
+  final Widget? footer;
   final bool selected;
   final String semanticsLabel;
   final Widget leading;
@@ -218,67 +242,189 @@ class _ChoiceTile extends StatelessWidget {
     final fgSub = selected
         ? scheme.onSecondaryContainer
         : scheme.onSurfaceVariant;
-    return Semantics(
-      container: true,
-      button: true,
-      selected: selected,
-      label: semanticsLabel,
-      onTap: onTap,
-      excludeSemantics: true,
-      child: Material(
-        color: selected
-            ? scheme.secondaryContainer
-            : scheme.surfaceContainerHighest,
-        shape: AppShape.largeBorder,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 72),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpace.sm,
-                vertical: AppSpace.xs + AppSpace.xxs,
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Center(child: leading),
+    return Material(
+      color: selected
+          ? scheme.secondaryContainer
+          : scheme.surfaceContainerHighest,
+      shape: AppShape.largeBorder,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            container: true,
+            button: true,
+            selected: selected,
+            label: semanticsLabel,
+            onTap: onTap,
+            excludeSemantics: true,
+            child: InkWell(
+              key: rowKey,
+              onTap: onTap,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 72),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpace.sm,
+                    vertical: AppSpace.xs + AppSpace.xxs,
                   ),
-                  const SizedBox(width: AppSpace.sm),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: fg,
-                          ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Center(child: leading),
+                      ),
+                      const SizedBox(width: AppSpace.sm),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: fg,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: fgSub,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: fgSub,
-                          ),
-                        ),
+                      ),
+                      if (selected) ...[
+                        const SizedBox(width: AppSpace.xs),
+                        Icon(Icons.check, color: fg),
                       ],
-                    ),
+                    ],
                   ),
-                  if (selected) ...[
-                    const SizedBox(width: AppSpace.xs),
-                    Icon(Icons.check, color: fg),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
-        ),
+          if (footer != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.sm,
+                0,
+                AppSpace.sm,
+                AppSpace.sm,
+              ),
+              child: footer,
+            ),
+        ],
       ),
+    );
+  }
+}
+
+/// '묵주기도 하기' 칸 안의 화면 고르기: 작은 화면(성당을 보며) | 큰 화면(묵주기도 화면에서). 지난번 것을 강조한다.
+class _ModeButtons extends StatelessWidget {
+  const _ModeButtons({required this.big, required this.onPick});
+
+  final bool big;
+  final ValueChanged<bool> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _ModeButton(
+              key: const ValueKey('pray-rosary-small'),
+              selected: !big,
+              title: '작은 화면',
+              subtitle: '성당을 보며 바쳐요',
+              onTap: () => onPick(false),
+            ),
+          ),
+          const SizedBox(width: AppSpace.xs),
+          Expanded(
+            child: _ModeButton(
+              key: const ValueKey('pray-rosary-big'),
+              selected: big,
+              title: '큰 화면',
+              subtitle: '묵주기도 화면에서 바쳐요',
+              onTap: () => onPick(true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeButton extends StatelessWidget {
+  const _ModeButton({
+    super.key,
+    required this.selected,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    // 글자색은 버튼 전경색(채움: onPrimary, 윤곽: 칸 위 글자색)과 같게 직접 준다(테마 글꼴 스타일의 색이 덮지 않도록).
+    final fg = selected ? scheme.onPrimary : scheme.onSecondaryContainer;
+    final child = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleSmall?.copyWith(color: fg),
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodySmall?.copyWith(color: fg),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+    const padding = EdgeInsets.symmetric(
+      horizontal: AppSpace.xs,
+      vertical: AppSpace.xs,
+    );
+    const size = Size(48, 56);
+    return Semantics(
+      selected: selected,
+      child: selected
+          ? FilledButton(
+              onPressed: onTap,
+              style: FilledButton.styleFrom(
+                minimumSize: size,
+                padding: padding,
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
+              ),
+              child: child,
+            )
+          : OutlinedButton(
+              onPressed: onTap,
+              style: OutlinedButton.styleFrom(
+                minimumSize: size,
+                padding: padding,
+                foregroundColor: scheme.onSecondaryContainer,
+                side: BorderSide(color: scheme.outline),
+              ),
+              child: child,
+            ),
     );
   }
 }

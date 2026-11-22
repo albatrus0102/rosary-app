@@ -334,8 +334,9 @@ void main() {
         find.textContaining('오늘의 신비: ${_today.koreanName}'),
         findsOneWidget,
       );
+      // 키는 눌리는 윗줄(InkWell)에 있고, 칸 바탕은 그 가장 가까운 Material.
       Material tile(Key k) => tester.widget<Material>(
-        find.descendant(of: find.byKey(k), matching: find.byType(Material)),
+        find.ancestor(of: find.byKey(k), matching: find.byType(Material)).first,
       );
       final scheme = AppTheme.light().colorScheme;
       expect(tile(_brief).color, scheme.secondaryContainer);
@@ -918,7 +919,7 @@ void main() {
       });
     });
 
-    testWidgets('analytics: church_prayer_choice{church, kind} only', (
+    testWidgets('analytics: church_prayer_choice{church, kind, big} only', (
       tester,
     ) async {
       final uploader = FakeEventUploader();
@@ -950,7 +951,7 @@ void main() {
       await tester.tap(find.byKey(_brief));
       await _settle(tester);
       expect(events(), [
-        {'church': 'basic', 'kind': 'brief'},
+        {'church': 'basic', 'kind': 'brief', 'big': false},
       ]);
       h.scene.emit(const SceneNear());
       await _settle(tester);
@@ -961,7 +962,11 @@ void main() {
       await _settle(tester);
       await tester.tap(find.byKey(_rosary));
       await _settle(tester);
-      expect(events().last, {'church': 'basic', 'kind': 'rosary'});
+      expect(events().last, {
+        'church': 'basic',
+        'kind': 'rosary',
+        'big': false,
+      });
       Analytics.debugReset(); // 남은 전송 타이머를 정리한다
     });
   });

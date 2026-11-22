@@ -206,6 +206,9 @@ abstract final class BackupRegistry {
     ),
     PrefSpec('prayerPosture', _b, '앉아/무릎 꿇고', type: _str, label: '기도 자세'),
     PrefSpec('churchPrayerChoice', _b, '마지막 기도하기 선택', type: _str),
+    PrefSpec('churchRosaryBig', _b, '성당 묵주기도: 마지막에 고른 화면(큰/작은)', type: _bool),
+    PrefSpec('beadSwipeLearned', _b, '묵주 내리기 안내를 익힌 횟수', type: _int),
+    PrefSpec('prayerScreenTourDone', _b, '기도 화면 첫 사용 안내를 마침', type: _bool),
     PrefSpec('church_id', _b, '마지막으로 고른 성당', type: _str, label: '성당'),
     PrefSpec('church_favorites', _b, '즐겨찾는 성당', type: _list, label: '즐겨찾는 성당'),
     PrefSpec(

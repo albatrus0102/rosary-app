@@ -33,6 +33,7 @@ import 'prayer_music_sheet.dart';
 import 'widgets/prayer_actions.dart';
 import 'widgets/prayer_background.dart';
 import 'widgets/prayer_bead_strip.dart';
+import 'widgets/coach_tour.dart';
 import 'widgets/prayer_text_view.dart';
 import 'widgets/rosary_map.dart';
 import 'widgets/rosary_map_sheet.dart';
@@ -148,6 +149,18 @@ class _PrayerScreenState extends State<PrayerScreen>
 
   AppSettings get _settings => widget.settings;
 
+  // 첫 사용 안내(코치 마크): 처음 열 때 한 번, 메뉴 '사용법 보기'로 다시. 떠 있는 동안 뒤로 가기는 안내부터 닫는다.
+  bool _tourOpen = false;
+  int _tourRun = 0;
+  final GlobalKey _tourAreaKey = GlobalKey(debugLabel: 'tour-area');
+  final GlobalKey _tourTextKey = GlobalKey(debugLabel: 'tour-text');
+  final GlobalKey _tourTextToggleKey = GlobalKey(
+    debugLabel: 'tour-text-toggle',
+  );
+  final GlobalKey _tourFullKey = GlobalKey(debugLabel: 'tour-full');
+  final GlobalKey _tourSizeKey = GlobalKey(debugLabel: 'tour-size');
+  final GlobalKey _tourMenuKey = GlobalKey(debugLabel: 'tour-menu');
+
   /// 배경 성가(기본 꺼짐). 이 화면이 열려 있는 동안 붙잡고, 목소리가 나올 때는 낮춘다.
   late final PrayerMusic _music = PrayerMusic.of(_settings);
   MusicHold? _musicHold;
@@ -159,6 +172,7 @@ class _PrayerScreenState extends State<PrayerScreen>
     _ownsSession = widget.session == null;
     _session =
         widget.session ?? RosarySession(buildRosarySequence(widget.mysterySet));
+    _tourOpen = !_settings.prayerScreenTourDone && !_session.isFinished;
     var resumed = false;
     if (_ownsSession &&
         widget.initialIndex > 0 &&
@@ -201,8 +215,7 @@ class _PrayerScreenState extends State<PrayerScreen>
             ? 'low'
             : 'high';
       scene.setStep(_session.index, animate: false);
-      _fb = widget.rosaryFeedback ??
-          (DeviceRosaryFeedback()..preload());
+      _fb = widget.rosaryFeedback ?? (DeviceRosaryFeedback()..preload());
       _fbLast = _session.index;
       _session.addListener(_onRosaryStep);
       _settings.addListener(_onRosarySettings);
@@ -786,37 +799,59 @@ class _PrayerScreenState extends State<PrayerScreen>
         final finished = _session.isFinished;
         final rosary = _rosaryMode && !finished;
         final page = PopScope(
-          canPop: finished || widget.returnToChurch,
+          canPop: !_tourOpen && (finished || widget.returnToChurch),
           onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) _confirmExit();
+            if (didPop) return;
+            // 첫 사용 안내가 떠 있으면 뒤로 가기는 안내부터 닫는다.
+            if (_tourOpen) {
+              _closeTour(true);
+            } else {
+              _confirmExit();
+            }
           },
           child: Scaffold(
             backgroundColor: rosary
                 ? rosaryBackdropColor(_settings.rosaryBackdrop)
                 : null,
             // 기도 배경 그림(설정 '기도 배경 그림', 기본 켬): 그 단의 성화를 낮은 대비로 맨 아래에 깐다.
-            body: PrayerBackground(
-              enabled: _settings.prayerBackground && !finished && !_rosaryMode,
-              art: visibleMysteryArtFor(
-                widget.mysterySet,
-                _session.current.decade,
-              ),
-              child: SafeArea(
-                child: finished
-                    ? Column(
-                        children: [
-                          _clampChrome(
-                            _PrayerHeader(
-                              title: widget.mysterySet.koreanName,
-                              returnToChurch: widget.returnToChurch,
-                              onBack: () => Navigator.of(context).maybePop(),
-                            ),
-                          ),
-                          Expanded(child: _buildFinished(context)),
-                        ],
-                      )
-                    : _buildPrayer(context),
-              ),
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: PrayerBackground(
+                    enabled:
+                        _settings.prayerBackground && !finished && !_rosaryMode,
+                    art: visibleMysteryArtFor(
+                      widget.mysterySet,
+                      _session.current.decade,
+                    ),
+                    child: SafeArea(
+                      child: finished
+                          ? Column(
+                              children: [
+                                _clampChrome(
+                                  _PrayerHeader(
+                                    title: widget.mysterySet.koreanName,
+                                    returnToChurch: widget.returnToChurch,
+                                    onBack: () =>
+                                        Navigator.of(context).maybePop(),
+                                  ),
+                                ),
+                                Expanded(child: _buildFinished(context)),
+                              ],
+                            )
+                          : _buildPrayer(context),
+                    ),
+                  ),
+                ),
+                if (_tourOpen && !finished)
+                  Positioned.fill(
+                    child: CoachTour(
+                      key: ValueKey('prayer-tour-$_tourRun'),
+                      steps: _tourSteps(),
+                      onClose: _closeTour,
+                    ),
+                  ),
+              ],
             ),
           ),
         );
@@ -841,6 +876,40 @@ class _PrayerScreenState extends State<PrayerScreen>
     } else if (delta < 0) {
       _session.back();
     }
+  }
+
+  /// 첫 사용 안내의 단계. 화면에 없는 위젯의 단계는 안내가 알아서 건너뛴다.
+  List<CoachStep> _tourSteps() => [
+    CoachStep(
+      target: _tourAreaKey,
+      text: '묵주를 아래로 내리면 다음 기도, 위로 올리면 이전 기도예요',
+      showFinger: true,
+    ),
+    CoachStep(
+      target: _tourTextKey,
+      text: '지금 바칠 기도문이 여기 나와요',
+      altTarget: _tourTextToggleKey,
+      altText: '기도문 펼치기를 누르면 지금 바칠 기도문이 나와요',
+    ),
+    CoachStep(target: _tourFullKey, text: '묵주 전체를 보며 어디쯤인지 확인할 수 있어요'),
+    CoachStep(target: _tourSizeKey, text: '기도문 글자 크기를 바꿀 수 있어요'),
+    CoachStep(target: _tourMenuKey, text: '성가 듣기, 선창 음성 같은 설정은 여기에 있어요'),
+  ];
+
+  /// 안내를 닫는다. 한 번이라도 보였으면(마침·건너뛰기·뒤로 가기) 다음부터 처음 안내는 나오지 않는다.
+  void _closeTour(bool shown) {
+    if (!_tourOpen) return;
+    if (shown) _settings.prayerScreenTourDone = true;
+    if (mounted) setState(() => _tourOpen = false);
+  }
+
+  /// 메뉴 '사용법 보기': 안내를 다시 열고 아래로 내리기 안내도 다시 보이게 한다.
+  void _replayGuide() {
+    _settings.resetBeadSwipeHint();
+    setState(() {
+      _tourRun++;
+      _tourOpen = true;
+    });
   }
 
   void _restartPrayer() {
@@ -874,6 +943,8 @@ class _PrayerScreenState extends State<PrayerScreen>
         togglePrayerMusic(context, _settings);
       case _PrayerMenu.musicOptions:
         unawaited(showPrayerMusicSheet(context, _settings));
+      case _PrayerMenu.guide:
+        _replayGuide();
     }
   }
 
@@ -890,7 +961,8 @@ class _PrayerScreenState extends State<PrayerScreen>
       navigator.pushReplacement(
         MaterialPageRoute<void>(
           settings: const RouteSettings(name: 'stats'),
-          builder: (_) => SettingsStatsScreen(store: services.stats, settings: _settings),
+          builder: (_) =>
+              SettingsStatsScreen(store: services.stats, settings: _settings),
         ),
       ),
     );
@@ -1051,19 +1123,29 @@ class _PrayerScreenState extends State<PrayerScreen>
           value: _PrayerMenu.musicOptions,
           child: Text('성가 고르기 · 음량'),
         ),
+        const PopupMenuItem(
+          key: ValueKey('prayer-menu-guide'),
+          value: _PrayerMenu.guide,
+          child: Text('사용법 보기'),
+        ),
         const PopupMenuItem(value: _PrayerMenu.end, child: Text('기도 끝내기')),
       ],
       onMenu: _onMenu,
+      textSizeKey: _tourSizeKey,
+      menuKey: _tourMenuKey,
       menuFocusNode: _menuFocus,
       extra: _scene == null
           ? null
-          : IconButton(
-              key: const ValueKey('rosary-full-toggle'),
-              tooltip: _scene!.fullView ? '손안의 묵주로' : '전체 묵주 보기',
-              isSelected: _scene!.fullView,
-              icon: const Icon(Icons.radio_button_checked_outlined),
-              selectedIcon: const Icon(Icons.adjust),
-              onPressed: _toggleFullView,
+          : KeyedSubtree(
+              key: _tourFullKey,
+              child: IconButton(
+                key: const ValueKey('rosary-full-toggle'),
+                tooltip: _scene!.fullView ? '손안의 묵주로' : '전체 묵주 보기',
+                isSelected: _scene!.fullView,
+                icon: const Icon(Icons.radio_button_checked_outlined),
+                selectedIcon: const Icon(Icons.adjust),
+                onPressed: _toggleFullView,
+              ),
             ),
     );
 
@@ -1079,11 +1161,14 @@ class _PrayerScreenState extends State<PrayerScreen>
             listenable: scene,
             builder: (_, _) => header,
           ),
-          textView: text,
+          textView: KeyedSubtree(key: _tourTextKey, child: text),
           actions: actions,
           onNext: _advance,
           onBack: _session.back,
           onChangeRosary: _openGallery,
+          areaKey: _tourAreaKey,
+          textToggleKey: _tourTextToggleKey,
+          showSwipeHint: !_tourOpen,
         ),
       );
     }
@@ -1098,7 +1183,9 @@ class _PrayerScreenState extends State<PrayerScreen>
               onOpenMap: _openMap,
               focusNode: _stripFocus,
             ),
-            Expanded(child: text),
+            Expanded(
+              child: KeyedSubtree(key: _tourTextKey, child: text),
+            ),
             actions,
           ],
         ),
@@ -1115,7 +1202,10 @@ class _PrayerScreenState extends State<PrayerScreen>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(flex: 5, child: text),
+                Expanded(
+                  flex: 5,
+                  child: KeyedSubtree(key: _tourTextKey, child: text),
+                ),
                 Expanded(
                   flex: 4,
                   child: Padding(
@@ -1174,7 +1264,7 @@ class _PrayerScreenState extends State<PrayerScreen>
   }
 }
 
-enum _PrayerMenu { map, shortPrayers, end, gallery, music, musicOptions }
+enum _PrayerMenu { map, shortPrayers, end, gallery, music, musicOptions, guide }
 
 /// 고정 48dp 머리줄: 뒤로, 제목(+부제), 글자 크기, ⋮.
 class _PrayerHeader extends StatelessWidget {
@@ -1188,7 +1278,13 @@ class _PrayerHeader extends StatelessWidget {
     this.menuFocusNode,
     this.extra,
     this.returnToChurch = false,
+    this.textSizeKey,
+    this.menuKey,
   });
+
+  /// 첫 사용 안내가 글자 크기·메뉴 단추의 위치를 재는 키.
+  final GlobalKey? textSizeKey;
+  final GlobalKey? menuKey;
 
   /// 성당에서 연 화면: 뒤로 단추 대신 아이콘+글자 '성당으로'.
   final bool returnToChurch;
@@ -1267,23 +1363,29 @@ class _PrayerHeader extends StatelessWidget {
           ),
           ?extra,
           if (onTextSize != null)
-            IconButton(
-              key: const ValueKey('prayer-text-size'),
-              tooltip: '글자 크기',
-              icon: const Icon(Icons.text_fields),
-              onPressed: onTextSize,
+            KeyedSubtree(
+              key: textSizeKey,
+              child: IconButton(
+                key: const ValueKey('prayer-text-size'),
+                tooltip: '글자 크기',
+                icon: const Icon(Icons.text_fields),
+                onPressed: onTextSize,
+              ),
             ),
           if (menuBuilder != null)
             // 묵주 전체 보기를 메뉴에서 열었다 닫으면 포커스가 이 단추로 돌아온다.
-            Focus(
-              focusNode: menuFocusNode,
-              skipTraversal: true,
-              child: PopupMenuButton<_PrayerMenu>(
-                key: const ValueKey('prayer-menu'),
-                tooltip: '메뉴',
-                icon: const Icon(Icons.more_vert),
-                onSelected: onMenu,
-                itemBuilder: menuBuilder!,
+            KeyedSubtree(
+              key: menuKey,
+              child: Focus(
+                focusNode: menuFocusNode,
+                skipTraversal: true,
+                child: PopupMenuButton<_PrayerMenu>(
+                  key: const ValueKey('prayer-menu'),
+                  tooltip: '메뉴',
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: onMenu,
+                  itemBuilder: menuBuilder!,
+                ),
               ),
             ),
           if (onTextSize == null && menuBuilder == null)

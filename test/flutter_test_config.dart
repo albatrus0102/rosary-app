@@ -6,5 +6,9 @@ import 'package:rosary_app/app/settings.dart';
 /// 새 묵주 화면(T-81) 테스트는 설정에서 [PrayerView.rosary]를 직접 고른다.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   AppSettings.defaultPrayerView = PrayerView.classic;
+  // 반복 애니메이션(손가락 안내)과 첫 사용 안내는 기존 시험의 pumpAndSettle 을 막으므로 기본은 '이미 익힘'.
+  // 안내를 시험하는 파일은 SharedPreferences 에 값을 직접 넣는다(beadSwipeLearned, prayerScreenTourDone).
+  AppSettings.defaultBeadSwipeLearned = AppSettings.beadSwipeGoal;
+  AppSettings.defaultPrayerScreenTourDone = true;
   await testMain();
 }
