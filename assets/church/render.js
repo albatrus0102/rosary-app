@@ -33,23 +33,49 @@
     '  float dw = 1.0 / (1e-5 + abs(texture2D(tDH, q).x - df) * 400.0); float ww = bw * dw + 1e-6; s += texture2D(tAO, q).r * ww; w += ww; }\n' +
     ' return s / w; }\n';
   function aoUniforms() { return { tAO: { value: null }, tDF: { value: null }, tDH: { value: null }, halfRes: { value: new T.Vector2(1, 1) }, bilat: { value: 1 }, aoOn: { value: 0 } }; }
+  // RENDER_V4 §4·§5: 피사계 심도(먼 배경만 흐리게 — 초점 거리의 1.35배부터 3.2배까지 서서히, 앞쪽은 흐리지 않는다)와 불꽃 위 아지랑이(아주 작은 굴절 흔들림).
+  var FX_GLSL = '#include <packing>\nuniform sampler2D tFx; uniform float fxOn; uniform sampler2D tDepthF; uniform vec2 uNF; uniform sampler2D tDof; uniform float dofOn; uniform vec3 uDof;\n' +
+    'uniform vec4 uHaze[4]; uniform float hazeOn; uniform float uTime; uniform float uAspect;\n' +
+    'float dofCoc(vec2 uv){ float z = -perspectiveDepthToViewZ(texture2D(tDepthF, uv).x, uNF.x, uNF.y); return smoothstep(uDof.x * 1.35, uDof.x * 3.2, z) * uDof.y; }\n' +
+    // 불꽃 하나: 화면 (x, y) 바로 위, 크기 z(화면 높이 비율), 세기 w. 불꽃 위 0.3~3배 높이의 좁은 기둥에서만, 0.5~1화소 흔들린다.
+    'vec2 hazeOff(vec2 uv){ vec2 o = vec2(0.0); for (int i = 0; i < 4; i++) { vec4 h = uHaze[i]; if (h.w <= 0.0) continue;\n' +
+    '  vec2 d = uv - h.xy; d.x *= uAspect; float yy = d.y / h.z, xx = d.x / (h.z * 0.5);\n' +
+    '  float m = exp(-xx * xx) * smoothstep(0.3, 1.0, yy) * (1.0 - smoothstep(1.8, 3.4, yy)); if (m < 0.01) continue;\n' +
+    '  float ph = yy * 5.0 - uTime * 4.2; o += m * h.w * h.z * vec2(0.022 * sin(ph + 1.7 * sin(xx * 2.3 + uTime * 1.3)), 0.012 * cos(ph * 0.83)); }\n' +
+    ' return o; }\n';
+  // 피사계 심도 흐림(반해상도 1패스, 12+1 표본 원반). 초점 안(가까운) 표본은 무게 0 → 초점 맞은 아바타·성상이 배경으로 번지지 않는다.
+  var DOF_SHADER = {
+    uniforms: { tDiffuse: { value: null }, tDepthF: { value: null }, uNF: { value: null }, uDof: { value: null }, uPx: { value: null } },   // 벡터 값은 패스를 만들 때(THREE 가 실린 뒤)
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: '#include <packing>\nuniform sampler2D tDiffuse; uniform sampler2D tDepthF; uniform vec2 uNF; uniform vec3 uDof; uniform vec2 uPx; varying vec2 vUv;\n' +
+      'float cocAt(vec2 uv){ float z = -perspectiveDepthToViewZ(texture2D(tDepthF, uv).x, uNF.x, uNF.y); return smoothstep(uDof.x * 1.35, uDof.x * 3.2, z); }\n' +
+      'void main(){ vec3 acc = texture2D(tDiffuse, vUv).rgb; float wsum = 1.0;\n' +
+      ' for (int i = 0; i < 12; i++) { float a = float(i) * 2.39996 + 0.5; float r = sqrt((float(i) + 0.5) / 12.0) * 2.6;\n' +
+      '  vec2 q = vUv + vec2(cos(a), sin(a)) * r * uPx; float w = cocAt(q) + 0.02; acc += texture2D(tDiffuse, q).rgb * w; wsum += w; }\n' +
+      ' gl_FragColor = vec4(acc / wsum, 1.0); }'
+  };
   var FINAL_SHADER = {
     uniforms: { tDiffuse: { value: null }, vignette: { value: 0.16 }, sat: { value: 0.94 }, warm: { value: 0.03 }, uExposure: { value: 1 }, curve: { value: 0 }, glassOn: { value: 1 }, con: { value: 0 },
-      tAO: { value: null }, tDF: { value: null }, tDH: { value: null }, halfRes: { value: null }, bilat: { value: 1 }, aoOn: { value: 0 }, tBloom: { value: null }, bloomOn: { value: 0 }, bloomView: { value: 0 } },
+      tAO: { value: null }, tDF: { value: null }, tDH: { value: null }, halfRes: { value: null }, bilat: { value: 1 }, aoOn: { value: 0 }, tBloom: { value: null }, bloomOn: { value: 0 }, bloomView: { value: 0 },
+      // RENDER_V4: fx(빛줄기·먼지, 반·¼ 해상도 가산) · 피사계 심도(먼 배경만, 반해상도 흐림) · 불꽃 위 아지랑이(화면 영역 4곳)
+      tFx: { value: null }, fxOn: { value: 0 }, tDepthF: { value: null }, uNF: { value: null }, tDof: { value: null }, dofOn: { value: 0 }, uDof: { value: null },
+      uHaze: { value: null }, hazeOn: { value: 0 }, uTime: { value: 0 }, uAspect: { value: 1 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: 'uniform sampler2D tDiffuse; uniform float vignette; uniform float sat; uniform float warm; uniform float uExposure; uniform float curve; uniform float glassOn; uniform float con; varying vec2 vUv;\n' +
-      'uniform sampler2D tBloom; uniform float bloomOn; uniform float bloomView;\n' + AO_GLSL +
+      'uniform sampler2D tBloom; uniform float bloomOn; uniform float bloomView;\n' + AO_GLSL + FX_GLSL +
       'vec3 acesFit(vec3 v){ vec3 a = v * (v + 0.0245786) - 0.000090537; vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081; return a / b; }\n' +
       'vec3 acesTM(vec3 c){ const mat3 I = mat3(vec3(0.59719, 0.07600, 0.02840), vec3(0.35458, 0.90834, 0.13383), vec3(0.04823, 0.01566, 0.83777));\n' +
       ' const mat3 O = mat3(vec3(1.60475, -0.10208, -0.00327), vec3(-0.53108, 1.10813, -0.07276), vec3(-0.07367, -0.00605, 1.07602));\n' +
       ' c *= uExposure / 0.6; c = I * c; c = acesFit(c); c = O * c; return clamp(c, 0.0, 1.0); }\n' +
       NEUTRAL_GLSL +
       'vec3 glassTM(vec3 c){ float p = max(c.r, max(c.g, c.b)); if (p <= 1.0) return c; float w = 1.0 - 1.0 / (1.0 + 0.6 * (p - 1.0)); return mix(c / p, vec3(1.0), w); }\n' +
-      'void main(){ vec4 s = texture2D(tDiffuse, vUv);\n' +
+      'void main(){ vec2 uv = vUv; if (hazeOn > 0.5) uv += hazeOff(vUv); vec4 s = texture2D(tDiffuse, uv);\n' +
+      ' if (dofOn > 0.5) s.rgb = mix(s.rgb, texture2D(tDof, vUv).rgb, dofCoc(vUv));\n' +
       // 예전 AO 합성: rgb × mix(1, AO, 알파) (사진 창 화소 = 알파 0 은 AO 없음)
       ' s.rgb *= mix(1.0, aoAt(vUv), clamp(s.a, 0.0, 1.0));\n' +
       // 예전 블룸 더하기(혼합 상태를 식으로): 걷기 = rgb += 블룸·블룸알파·대상 알파(사진 창에는 번지지 않음, 알파 그대로), 감상 = rgb += 블룸·블룸알파, 알파 += 블룸알파²
       ' if (bloomOn > 0.5) { vec4 t = texture2D(tBloom, vUv); vec3 ad = t.rgb * t.a; if (bloomView > 0.5) { s.rgb += ad; s.a += t.a * t.a; } else s.rgb += ad * s.a; }\n' +
+      ' if (fxOn > 0.5) s.rgb += texture2D(tFx, vUv).rgb;\n' +
       ' vec3 c = s.rgb; float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); vec3 g = mix(vec3(l), c, sat); g *= vec3(1.0 + warm, 1.0, 1.0 - warm);\n' +
       ' float d = distance(vUv, vec2(0.5)); g *= 1.0 - vignette * smoothstep(0.3, 0.9, d);\n' +
       ' vec3 sc = curve > 0.5 ? neutralTM(g * uExposure) : acesTM(g);\n' +
@@ -59,6 +85,10 @@
       '#include <encodings_fragment>\n}'
   };
 
+  function FINAL_LITE() {
+    var f = FINAL_SHADER.fragmentShader.replace("if (hazeOn > 0.5) uv += hazeOff(vUv);", '').replace(" if (dofOn > 0.5) s.rgb = mix(s.rgb, texture2D(tDof, vUv).rgb, dofCoc(vUv));\n", '');
+    return { uniforms: FINAL_SHADER.uniforms, vertexShader: FINAL_SHADER.vertexShader, fragmentShader: f };
+  }
   function b64ToBuf(b64) {
     var bin = atob(b64), n = bin.length, u = new Uint8Array(n);
     for (var i = 0; i < n; i++) u[i] = bin.charCodeAt(i);
@@ -86,17 +116,30 @@
   //  msaa: 장면 렌더 타깃 표본 수 · ssao: 반해상도 SSAO · bloomDiv: 블룸 사슬 해상도 나눗수(1 = 1/2 부터, 2 = 1/4 부터, 0 = 블룸 없음)
   //  reflect: 바닥 거울 반사 · shadow: 해 그림자 맵 · aoBake: 미리 구운 AO(정점 + 바닥 지도, ao_fx.js) · aoK: 구운 AO 세기(high 는 SSAO 와 겹쳐 조금 약하게)
   //  specAA: 법선 지도 반짝임 줄이기 · maxDpr: 화소 비율 상한 · pace: 고주사율(90Hz 이상) 화면에서 못 따라가면 절반 주기로 고정(main.js)
+  //  probes·probeRes: 성당 안 반사 탐침 수·큐브 한 면 크기(probe_fx.js, RENDER_V4.md §2; 성당을 지을 때의 단계 크기로 고정)
+  //  probeMix·probeDesat: 거울 반사 중 탐침 몫(나머지는 예전 HDRI — 금이 어두운 실내에서 구리색으로 죽지 않게)·탐침 색 바래기
+  //  shafts·shaftK·fxDiv·motes: 부드러운 빛줄기(그림자 맵·깊이로 가림)·세기·fx 패스 해상도 나눗수·먼지 입자 수(shaft_fx.js, §3)
+  //  dof: 피사계 심도 세기(기도·성상 앞에서만, §5) · haze: 불꽃 위 아지랑이 세기(움직임 줄이기면 0, §6)
   var TIERS = {
-    high: { msaa: 4, ssao: true, bloomDiv: 1, reflect: true, shadow: true, aoBake: true, aoK: 1.0, specAA: 1, maxDpr: 2, pace: true },
-    mid: { msaa: 2, ssao: false, bloomDiv: 2, reflect: false, shadow: true, aoBake: true, aoK: 1.25, specAA: 1, maxDpr: 2, pace: true },
-    low: { msaa: 0, ssao: false, bloomDiv: 0, reflect: false, shadow: false, aoBake: false, aoK: 0, specAA: 0, maxDpr: 1.5, pace: true }
+    high: { msaa: 4, ssao: true, bloomDiv: 1, reflect: true, shadow: true, aoBake: true, aoK: 1.0, specAA: 1, maxDpr: 2, pace: true, probes: 2, probeRes: 128, probeMix: 0.75, probeDesat: 0.25, shafts: true, shaftK: 1, fxDiv: 2, motes: 640, dof: 0.6, haze: 1 },
+    mid: { msaa: 2, ssao: false, bloomDiv: 2, reflect: false, shadow: true, aoBake: true, aoK: 1.25, specAA: 1, maxDpr: 2, pace: true, probes: 1, probeRes: 64, probeMix: 0.7, probeDesat: 0.25, shafts: true, shaftK: 0.9, fxDiv: 4, motes: 220, dof: 0.45, haze: 0.6 },
+    low: { msaa: 0, ssao: false, bloomDiv: 0, reflect: false, shadow: false, aoBake: false, aoK: 0, specAA: 0, maxDpr: 1.5, pace: true, probes: 0, probeRes: 0, shafts: false, shaftK: 0, fxDiv: 0, motes: 0, dof: 0, haze: 0 }
   };
   function tierOf(q) { return q === 'low' ? 'low' : (q === 'mid' ? 'mid' : 'high'); }
+
+  // 화면 전체 삼각형 하나(three examples 의 FullScreenQuad 와 같은 일, 정점 셰이더는 clip 좌표를 그대로 쓴다)
+  function fsQuad(mat) {
+    var g = new T.BufferGeometry();
+    g.setAttribute('position', new T.Float32BufferAttribute([-1, 3, 0, -1, -1, 0, 3, -1, 0], 3));
+    g.setAttribute('uv', new T.Float32BufferAttribute([0, 2, 0, 0, 2, 0], 2));
+    var m = new T.Mesh(g, mat); m.frustumCulled = false;
+    return { mesh: m, cam: new T.OrthographicCamera(-1, 1, 1, -1, 0, 1) };
+  }
 
   function create(canvas, opts) {
     opts = opts || {};
     var R = { tier: tierOf(opts.quality), autoTier: opts.autoTier !== false, composer: null, envTex: null, frameMs: 0, sampleT: 0, sampleN: 0, tierChanged: null, exposure: 1,
-      resScale: 1, stats: { shadowRenders: 0, reflectRenders: 0, frames: 0 } };
+      resScale: 1, stats: { shadowRenders: 0, reflectRenders: 0, frames: 0, fxDraws: 0, dofDraws: 0 } };
     var renderer = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
     R.renderer = renderer;
     renderer.outputEncoding = T.sRGBEncoding;
@@ -131,6 +174,9 @@
 
     // ---- 후처리 ----
     var W = 800, H = 450, PR = 1, curScene = null, curCam = null, ssao = null, bloom = null, finalPass = null, rpass = null;
+    var curWorld = null, fxRT = null, dofRT = null, _cc = new T.Color();
+    R.dof = { focus: 3, amount: 0 };   // main.js 가 채운다(초점 거리 m, 0..1)
+    R.haze = [];                         // world.js 가 채운다: [{x, y(화면 0..1), size, k}] 최대 4
     // SSAO 는 반해상도(AO 는 흐린 신호라 화면 차이는 거의 없고, 법선 패스·AO 셰이더 비용이 1/4). ?aofull=1 이면 예전처럼 전해상도.
     var aoDiv = /[?&]aofull=1/.test(root.location ? root.location.search : '') ? 1 : 2;
     function aoW() { return Math.max(2, Math.round(W * PR / aoDiv)); }
@@ -236,6 +282,44 @@
         try { ssao.beautyRenderTarget.setSize(1, 1); ssao.beautyRenderTarget.setSize = function () {}; } catch (e) { /* ignore */ }
         c.addPass(ssao);
       }
+      // RENDER_V4 §3: fx 패스 — 부드러운 빛줄기·먼지(world.fx.scene)를 반(high)·¼(mid) 해상도 HalfFloat 에 가산으로 그린다.
+      // 장면 깊이(readBuffer.depthTexture)·해 그림자 맵으로 가리므로 장면 패스에서는 빼고, 최종 패스가 더한다(블룸에는 들어가지 않는다 = 빛줄기가 번져 뿌옇게 되지 않는다).
+      if (TC.fxDiv) {
+        fxRT = new T.WebGLRenderTarget(2, 2, { type: gl2 ? T.HalfFloatType : T.UnsignedByteType, format: T.RGBAFormat, depthBuffer: false, stencilBuffer: false, generateMipmaps: false });
+        c.addPass({ enabled: true, needsSwap: false, clear: false, renderToScreen: false,
+          setSize: function (w, h) { fxRT.setSize(Math.max(2, Math.round(w / TC.fxDiv)), Math.max(2, Math.round(h / TC.fxDiv))); },
+          render: function (r, wb, rb) {
+            var fw = curWorld && curWorld.fx;
+            if (!fw || !fw.active() || R.profile !== 'walk') return;
+            fw.prepare(curCam, rb.depthTexture || null, fxRT.width, fxRT.height);
+            var oac = r.autoClear; r.getClearColor(_cc); var oca = r.getClearAlpha();
+            r.autoClear = false; r.setRenderTarget(fxRT); r.setClearColor(0x000000, 0); r.clear(true, false, false);
+            r.render(fw.scene, curCam);
+            r.setClearColor(_cc, oca); r.autoClear = oac;
+            R.stats.fxDraws++;
+            finalPass.uniforms.fxOn.value = 1;
+          },
+          dispose: function () { fxRT.dispose(); } });
+      }
+      // RENDER_V4 §5: 피사계 심도 — 기도·성상 앞처럼 멈춰 바라볼 때만(R.dof.amount > 0). 반해상도 흐림 1패스, 걷는 동안은 0(패스 건너뜀)
+      if (TC.dof) {
+        dofRT = new T.WebGLRenderTarget(2, 2, { type: gl2 ? T.HalfFloatType : T.UnsignedByteType, format: T.RGBAFormat, depthBuffer: false, stencilBuffer: false, generateMipmaps: false });
+        var dofMat = new T.ShaderMaterial(DOF_SHADER), dofQuad = fsQuad(dofMat);
+        dofMat.uniforms.uNF.value = new T.Vector2(0.3, 700); dofMat.uniforms.uDof.value = new T.Vector3(3, 0, 0); dofMat.uniforms.uPx.value = new T.Vector2(1, 1);
+        dofMat.depthTest = false; dofMat.depthWrite = false;
+        c.addPass({ enabled: true, needsSwap: false, clear: false, renderToScreen: false,
+          setSize: function (w, h) { dofRT.setSize(Math.max(2, Math.round(w / 2)), Math.max(2, Math.round(h / 2))); },
+          render: function (r, wb, rb) {
+            if (!(R.dof.amount > 0.003) || R.profile !== 'walk' || !rb.depthTexture) return;
+            var u = dofMat.uniforms;
+            u.tDiffuse.value = rb.texture; u.tDepthF.value = rb.depthTexture; u.uNF.value.set(curCam.near, curCam.far);
+            u.uDof.value.set(R.dof.focus, R.dof.amount, 0); u.uPx.value.set(1 / dofRT.width, 1 / dofRT.height);
+            r.setRenderTarget(dofRT); r.render(dofQuad.mesh, dofQuad.cam);
+            R.stats.dofDraws++;
+            var fu = finalPass.uniforms; fu.dofOn.value = 1; fu.tDof.value = dofRT.texture; fu.uDof.value.set(R.dof.focus, R.dof.amount * TC.dof, 0);
+          },
+          dispose: function () { dofRT.dispose(); dofMat.dispose(); dofQuad.mesh.geometry.dispose(); } });
+      }
       if (X.UnrealBloomPass) {
         bloom = new X.UnrealBloomPass(new T.Vector2(W, H), 0.3, 0.55, 0.92);
         // 보통(mid): 블룸 사슬을 한 단계 더 작게(1/4 해상도부터). 높음은 예전 그대로(1/2). addPass 가 곧바로 setSize 를 부르므로 그 전에 바꾼다.
@@ -261,8 +345,14 @@
           mc.needsUpdate = true;
         }
       }
-      finalPass = new X.ShaderPass(FINAL_SHADER);
+      finalPass = new X.ShaderPass(/[?&]v4fs=0/.test(root.location ? root.location.search : '') ? FINAL_LITE() : FINAL_SHADER);   // ?v4fs=0: 측정용(심도·아지랑이 코드를 뺀 최종 패스)
       finalPass.material.toneMapped = false;
+      (function () {
+        var fu = finalPass.uniforms;
+        fu.uNF.value = new T.Vector2(0.3, 700); fu.uDof.value = new T.Vector3(3, 0, 0); fu.uHaze.value = [new T.Vector4(), new T.Vector4(), new T.Vector4(), new T.Vector4()];
+        var fr = finalPass.render.bind(finalPass);
+        finalPass.render = function (r, wb, rb, dt, mask) { fu.tDepthF.value = rb.depthTexture || null; if (!rb.depthTexture) fu.dofOn.value = 0; return fr(r, wb, rb, dt, mask); };
+      })();
       // AO 유니폼은 최종 패스·블룸 추출이 같은 객체를 나눠 쓴다(SSAO 패스가 프레임마다 채운다)
       ['tAO', 'tDF', 'tDH', 'halfRes', 'bilat', 'aoOn'].forEach(function (k) { finalPass.uniforms[k] = aoU[k]; if (bloomHP) bloomHP.uniforms[k] = aoU[k]; });
       c.addPass(finalPass);
@@ -275,7 +365,8 @@
       if (ssao && ssao.dispose) ssao.dispose();
       if (bloom && bloom.dispose) bloom.dispose();
       if (bloomHP) bloomHP.dispose();
-      R.composer = null; ssao = bloom = finalPass = rpass = bloomHP = null; aoU.aoOn.value = 0;
+      if (fxRT) fxRT.dispose(); if (dofRT) dofRT.dispose();
+      R.composer = null; ssao = bloom = finalPass = rpass = bloomHP = fxRT = dofRT = null; aoU.aoOn.value = 0;
     }
 
     R.resize = function (w, h, pr) {
@@ -321,11 +412,20 @@
       if (R.profile !== 'walk') return;
       if (!g) { applyProfile(); return; }
       if (finalPass) { var u = finalPass.uniforms; u.sat.value = g.sat; u.warm.value = g.warm; u.vignette.value = g.vig; u.con.value = g.con; }
-      if (bloom) { bloom.threshold = g.bloomT; bloom.strength = g.bloomS * (R.tier === 'mid' ? g.midBloomS : 1); bloom.radius = g.bloomR; }
+      if (bloom) {
+        bloom.threshold = g.bloomT; bloom.strength = g.bloomS * (R.tier === 'mid' ? g.midBloomS : 1); bloom.radius = g.bloomR;
+        // RENDER_V4 §8: 임계 아래로 부드러운 어깨(사진의 하이라이트 번짐) — 예전 0.01 은 딱 끊겨 얼룩졌다
+        if (bloomHP && g.bloomKnee !== undefined) bloomHP.uniforms.smoothWidth.value = Math.max(0.01, g.bloomKnee);
+      }
     };
     R.setProfile = function (p, o) { R.profile = p === 'view' ? 'view' : 'walk'; R.profileOpts = o || {}; applyProfile(); };
     R.passes = function () { return { ssao: !!(ssao && ssao.enabled), bloom: !!(bloom && bloom.enabled), curve: finalPass ? finalPass.uniforms.curve.value : -1, tier: R.tier }; };
     // 시험·측정용(perf_compare.mjs): 패스 켜고 끄기
+    // 측정용(perf_compare.mjs): v4 가 더한 렌더 타깃 메모리(MB) — fx(빛줄기) · 심도 흐림
+    R.v4Mem = function () {
+      var mb = function (rt, bpp) { return rt ? rt.width * rt.height * bpp / 1048576 : 0; };
+      return { fxMB: +mb(fxRT, gl2 ? 8 : 4).toFixed(2), dofMB: +mb(dofRT, gl2 ? 8 : 4).toFixed(2) };
+    };
     R._dbg = function () { return { ssao: ssao, bloom: bloom, finalPass: finalPass, rpass: rpass, composer: R.composer }; };
 
     // ---- 그림자 맵 캐시: 정적 성당만 그린다. 움직이는 물체(markCaster 로 표시한 아바타 등)는 그리는 동안만 castShadow 를 끈다 ----
@@ -372,7 +472,8 @@
 
     // 매 프레임: 렌더 + 프레임 시간 평균(3초)으로 자동 하향. 반환: 단계가 바뀌었으면 새 단계 문자열
     R.render = function (scene, camera, dt, world) {
-      curScene = scene; curCam = camera;
+      curScene = scene; curCam = camera; curWorld = world || null;
+      var TC0 = TIERS[R.tier];
       renderer.info.reset();
       var t0 = performance.now();
       var shadowNow = renderer.shadowMap.enabled && (R.shadowDirty || (world && world.shadowDirty) || R.shadowEveryFrame);
@@ -389,6 +490,14 @@
           aoU.aoOn.value = 0;   // SSAO 패스가 이번 프레임에 돌면 1 로 채운다
           fu.bloomOn.value = postMerge && bloom && bloom.enabled ? 1 : 0; fu.bloomView.value = R.profile === 'view' ? 1 : 0;
           fu.tBloom.value = bloom ? bloom.renderTargetsHorizontal[0].texture : null;
+          fu.fxOn.value = 0; fu.dofOn.value = 0; fu.tFx.value = fxRT ? fxRT.texture : null;   // fx·심도 패스가 이번 프레임에 돌면 1
+          fu.uNF.value.set(camera.near, camera.far); fu.uTime.value = (fu.uTime.value + (dt || 0)) % 1000; fu.uAspect.value = W / Math.max(1, H);
+          var hz = TC0.haze ? R.haze : null, hn = 0;
+          for (var hi = 0; hi < 4; hi++) {
+            var hv = fu.uHaze.value[hi], h0 = hz && hz[hi];
+            if (h0 && h0.k > 0.01) { hv.set(h0.x, h0.y, h0.size, h0.k * TC0.haze); hn++; } else hv.set(0, 0, 1, 0);
+          }
+          fu.hazeOn.value = hn && R.profile === 'walk' ? 1 : 0;
         }
         R.composer.render(dt);
       } else {

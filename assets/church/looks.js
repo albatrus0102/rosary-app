@@ -16,13 +16,17 @@
      glassK    절차적 색유리 밝기 배율(HDR: 1 넘으면 톤매핑·블룸으로 빛난다)
      photoK    사진 창·개발용 시안 밝기 이득(채도 유지형: c·k/(1+(k-1)·max(c)) → 밝은 곳은 1 에서 멈춰 하얗게 타지 않는다)
      photoWin  창 id 별 photoK 추가 배율(예: 성 베드로 비둘기 창). 유리 밝기는 이 세 값(+ night)만 고치면 된다.
-     aoK aoDir 미리 구운 AO(ao_fx.js) 세기 배율·직사광에 곱하는 몫(0 = 간접광만, 1 = 전부). 높음·보통만. */
+     aoK aoDir 미리 구운 AO(ao_fx.js) 세기 배율·직사광에 곱하는 몫(0 = 간접광만, 1 = 전부). 높음·보통만.
+     (RENDER_V4.md) shaftK  부드러운 빛줄기 세기(shaft_fx.js, high·mid; beamK 가 정하는 해 세기에 곱한다 — 공기 속 빛의 '보이는 정도')
+                    moteK   빛줄기 속 먼지 밝기(실제 햇살 속 먼지처럼 겨우 보이게) · prbK  반사 탐침(probe_fx.js) 세기 배율
+                    bloomKnee 블룸 임계의 부드러운 어깨 폭(0 = 예전 딱 끊김, 사진의 밝은 부분 번짐처럼 서서히) */
 (function (root) {
   'use strict';
   var DEFAULT = {
     keyK: 1, keyTint: 0xffffff, keyTintK: 0, ambK: 1, ambTint: 0xffffff, ambTintK: 0, expK: 1, envK: 1, lampK: 1, candleK: 1, beamK: 1,
     fogTint: 0xffffff, fogTintK: 0, dust: 90, dustK: 1, dustNight: 0,
     sat: 0.94, warm: 0.03, vig: 0.16, con: 0, bloomT: 0.92, bloomS: 0.3, bloomR: 0.55, midBloomS: 0.8, reflK: 1, aoK: 1, aoDir: 0.6,
+    shaftK: 1, moteK: 1, prbK: 1, bloomKnee: 0.3,
     glassK: 1.8, photoK: 3.0, photoWin: {},
     night: { glassK: 1.3, photoK: 2.0 }   // 밤: 바깥 빛이 없으니 낮보다 약하게(실내등 대비 은은하게)
   };
@@ -69,7 +73,7 @@
       else { var keep = qm[1].split(','); for (var lk in LOOKS) if (keep.indexOf(lk) < 0) delete LOOKS[lk]; }   // 'off' 는 어떤 id 도 아니므로 전부 지워진다
     }
   } catch (e) { /* ignore */ }
-  var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS', 'glassK', 'photoK'];
+  var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'candleK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS', 'glassK', 'photoK', 'bloomKnee'];
 
   function get(id) {
     var src = LOOKS[id] || {}, out = {}, k;
