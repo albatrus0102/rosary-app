@@ -209,7 +209,7 @@
       for (var bi = 0; bi < nB; bi++) {
         var e = beamList[bi], b = e.b, nx = e.nx, nz = e.nz, ux = nz, uz = -nx;
         var dx, dy, dz, vis;
-        if (b.dome) {
+        if (b.dome && !softOn) {
           var al = 1.05; dx = nx * Math.cos(al); dz = nz * Math.cos(al); dy = -Math.sin(al); vis = env.beam * 0.85;
         } else {
           Lv.set(-env.sunDir[0], -env.sunDir[1], -env.sunDir[2]).normalize();
@@ -248,10 +248,20 @@
       }
       if (beamMesh) { beamMesh.geometry.attributes.position.needsUpdate = true; beamMesh.geometry.attributes.color.needsUpdate = true; }
       if (patchMesh) { patchMesh.geometry.attributes.position.needsUpdate = true; patchMesh.geometry.attributes.color.needsUpdate = true; }
+      if (shafts && softOn) shafts.updateMotes();
+    }
+    // 부드러운 빛줄기·먼지(shaft_fx.js, RENDER_V4.md §3): high·mid 는 같은 판 기하를 render.js fx 패스(그림자 맵·깊이로 가림)에서 그린다. low 는 위의 가산 판 그대로.
+    var shafts = null, softOn = false, reducedMotion = false;
+    try { reducedMotion = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { reducedMotion = false; }
+    if (beamMesh && root.ChurchShafts && tierCfg && !builder.viewing && !/[?&]shafts=0/.test((root.location && root.location.search) || '')) {
+      var mN = tierCfg[tier].motes || 0;
+      if (look && !(look.dust > 0)) mN = 0;
+      try { shafts = root.ChurchShafts.create({ geometry: beamMesh.geometry, profile: noiseTex, nMotes: low ? 0 : Math.max(mN, tierCfg.high.motes || 0), rng: G.rng(93) }); } catch (e) { if (root.console) console.warn('[church] shafts', e); shafts = null; }
+      if (shafts) shafts.reduced = reducedMotion;
     }
 
     // ---- 먼지 ----
-    var dustN = low ? 0 : (look ? look.dust : 90), dustPos = new Float32Array(dustN * 3), dustSeed = [], drnd = G.rng(91);
+    var dustN = (low || shafts) ? 0 : (look ? look.dust : 90), dustPos = new Float32Array(dustN * 3), dustSeed = [], drnd = G.rng(91);
     for (i = 0; i < dustN; i++) {
       dustSeed.push([drnd() * 6.28, drnd() * 6.28, 0.2 + drnd() * 0.4]);
       dustPos[i * 3] = bnd.x0 * 0.7 + drnd() * (bnd.x1 - bnd.x0) * 0.7; dustPos[i * 3 + 1] = 1.2 + drnd() * 5; dustPos[i * 3 + 2] = bnd.z0 * 0.8 + drnd() * (bnd.z1 - bnd.z0) * 0.8;
@@ -357,7 +367,32 @@
       cupGlow.setX(s, 1); cupGlow.needsUpdate = true;
       candles.instanceMatrix.needsUpdate = true; candles.instanceColor.needsUpdate = true;
       flameAt(s, slots[s].x, slots[s].z, slotY0[s], false);
+      // 촛불을 막 켠 순간(RENDER_V4 §7): 0.4초 동안 그 자리 둘레가 따뜻하게 밝아진다(봉헌대 점광원 세기 +60% 봉우리 + 그 컵의 자체발광). 화면 번쩍임이 아니다.
+      if (fresh && isNew && !fl0) { flare.s = s; flare.t0 = clockT; flare.on = true; }
     }
+    var flare = { s: -1, t0: -99, on: false, e: 0 };
+    // 불꽃 위 아지랑이(RENDER_V4 §6): 카메라 5m 안, 화면 안에 있는 불꽃 가운데 가까운 4개 → render.js 최종 패스가 그 위 좁은 기둥만 아주 조금 흔든다. 움직임 줄이기·low 면 없음
+    var hazeOut = [{ x: 0, y: 0, size: 0, k: 0 }, { x: 0, y: 0, size: 0, k: 0 }, { x: 0, y: 0, size: 0, k: 0 }, { x: 0, y: 0, size: 0, k: 0 }], hazeD = [9, 9, 9, 9], hzV = new T.Vector3();
+    function hazeTry(cam, x, y, z, tf) {
+      var dx = x - cam.position.x, dy = y - cam.position.y, dz = z - cam.position.z, d2 = dx * dx + dy * dy + dz * dz;
+      if (d2 > 25) return;
+      var d = Math.sqrt(d2), slot = -1;
+      for (var q = 0; q < 4; q++) if (d < hazeD[q] && (slot < 0 || hazeD[q] > hazeD[slot])) slot = q;
+      if (slot < 0) return;
+      hzV.set(x, y, z).project(cam);
+      if (hzV.z > 1 || hzV.x < -1.1 || hzV.x > 1.1 || hzV.y < -1.1 || hzV.y > 1.0) return;
+      var o = hazeOut[slot];
+      hazeD[slot] = d; o.x = hzV.x * 0.5 + 0.5; o.y = hzV.y * 0.5 + 0.5;
+      o.size = 0.09 * tf / (d * 2 * Math.tan(cam.fov * PI / 360));   // 불꽃 위 9cm 를 화면 높이 비율로
+      o.k = 1 - Math.max(0, Math.min(1, (d - 2.5) / 2.5));
+    }
+    function updateHaze(cam) {
+      for (var q = 0; q < 4; q++) { hazeD[q] = 9; hazeOut[q].k = 0; }
+      if (reducedMotion || tier === 'low' || api.viewMode) return;
+      for (var ls in lit) { var si = +ls; if (slots[si].float) continue; hazeTry(cam, slots[si].x, slotY0[si] + 0.42, slots[si].z, 1); }
+      for (var q2 = 0; q2 < altarFlames.length; q2++) { var hf = altarFlames[q2]; if (hf.visible) hazeTry(cam, hf.x, hf.y + 0.08 * hf.scale, hf.z, hf.scale || 1); }
+    }
+    function flareEnv(e) { return e < 0 ? 0 : (e < 0.07 ? e / 0.07 : Math.exp(-(e - 0.07) / 0.12)); }
     function unlightSlot(s) {
       if (!lit[s]) return;
       var oc = lit[s].color;   // 다 탄 컵은 유리색을 그대로 두되 어둡게(안쪽 불빛 없음)
@@ -504,6 +539,7 @@
         gl.k = gl.kind === 'always' ? 1 : (gl.kind === 'lamp' ? Math.max(0.25, env.lamp) : 1);
       }
       updateBeams(env);
+      if (probes) probes.onEnv(env);
       for (var hI = 0; hI < S.hourHooks.length; hI++) { try { S.hourHooks[hI](env); } catch (e) { /* ignore */ } }
     }
 
@@ -517,6 +553,19 @@
       S.physMats.forEach(function (p) { if (aoMats.indexOf(p.m) < 0) aoMats.push(p.m); });
       items.forEach(function (it) { if (it.material && aoMats.indexOf(it.material) < 0) aoMats.push(it.material); });
       try { aoFx = root.ChurchAOFx.attach({ id: id, items: items, mats: aoMats, aoOpts: S.aoOpts }); } catch (e) { if (root.console) console.warn('[church] aofx', e); aoFx = null; }
+    }
+    // 성당 안 반사 탐침(probe_fx.js, RENDER_V4.md §2): 금·청동·대리석·광택 재질의 거울 반사를 이 성당 안에서 찍은 큐브맵으로. low·감상실은 없음.
+    var probes = null;
+    var prbPlaces = root.ChurchProbePlaces && root.ChurchProbePlaces[id];
+    if (!low && !builder.viewing && root.ChurchProbes && prbPlaces && tierCfg && tierCfg[tier].probes > 0 && !/[?&]probe=0/.test((root.location && root.location.search) || '')) {
+      try {
+        probes = root.ChurchProbes.create({ scene: scene, keep: [world, sky], places: prbPlaces, tier: tier, tiers: tierCfg, see: null });
+        var prbMats = [];
+        S.physMats.forEach(function (p) { if (prbMats.indexOf(p.m) < 0) prbMats.push(p.m); });
+        items.forEach(function (it) { if (it.material && prbMats.indexOf(it.material) < 0) prbMats.push(it.material); });
+        // 재질 배율 = 그 재질의 환경 반사 배율(kit 의 envK: 금 1.6·대리석 1.3 …, applyEnv 전 envMapIntensity) × 성당 룩 prbK. 시간대 envK 는 곱하지 않는다(탐침은 그 시각의 실내를 찍은 것)
+        prbMats.forEach(function (m) { if (probes.wants(m)) probes.patch(m, (m.envMapIntensity || 1) * (look && look.prbK !== undefined ? look.prbK : 1)); });
+      } catch (e) { if (root.console) console.warn('[church] probes', e); probes = null; }
     }
     function applyAOTier() {
       if (!aoFx) return;
@@ -542,7 +591,7 @@
       })(),
       reflectorCount: function () { return reflectors.length; },
       hour: function () { return curHour; },
-      setHour: function (h) { curHour = ((h % 24) + 24) % 24; shForce = true; applyEnv(); },
+      setHour: function (h) { curHour = ((h % 24) + 24) % 24; shForce = true; if (probes) { probes.resetEnvKey(); probes.markDirty('hour', true); } applyEnv(); },
       // PMREM 환경 텍스처 연결
       setEnvironment: function (tex) { envTex = tex; scene.environment = tex; },
       // 'high' | 'mid' | 'low' 전환: 그림자(high·mid)·바닥 반사(high)·코팅(high·mid)·먼지(high·mid) on/off
@@ -557,9 +606,13 @@
           p.m.needsUpdate = true;
         }
         beamMat.needsUpdate = true;
+        softOn = !!shafts && !!(tierCfg && tierCfg[tier].shafts);
+        if (beamMesh) beamMesh.visible = !softOn && !api.viewMode;
+        if (shafts && shafts.motes) shafts.motes.geometry.setDrawRange(0, Math.min(shafts.nMotes, tierCfg[tier].motes || 0));
         api.shadowDirty = true;
         if (dust) dust.visible = hi && !api.viewMode;
         applyAOTier();
+        if (probes) probes.setTier(tier);
         if (env && env.sunDir) applyEnv();
       },
       // 창 감상 모드(G-07): 그림자·바닥 반사·안개·먼지·빛줄기를 끈다(사진 창 색을 바꾸지 않게, 정지 시 그리지 않게).
@@ -571,7 +624,7 @@
         if (on) disposeReflectors(); else if (tier === 'high') buildReflectors(renderer);
         if (dust) dust.visible = !on && tier !== 'low';
         api.shadowDirty = true;
-        if (beamMesh) beamMesh.visible = !on;
+        if (beamMesh) beamMesh.visible = !on && !softOn;
         if (patchMesh) patchMesh.visible = !on;
         if (env && env.sunDir) applyEnv();
       },
@@ -615,7 +668,17 @@
       isMine: function (s) { return lit[s] ? lit[s].mine : 0; },
       mineLabelVisible: function () { return !!(labelSp && labelSp.visible); },
       flameBatch: fb,
-      setReducedMotion: function (b) { fb.setReducedMotion(!!b); },
+      setReducedMotion: function (b) { fb.setReducedMotion(!!b); reducedMotion = !!b; if (shafts) shafts.reduced = !!b; },
+      reducedMotion: function () { return reducedMotion; },
+      // fx 패스(render.js): 부드러운 빛줄기·먼지. active() 가 거짓이면 패스를 건너뛴다(밤·감상·low)
+      haze: hazeOut,
+      flare: flare,
+      fx: {
+        active: function () { return !!(shafts && softOn && !api.viewMode && shafts.visibleWork() && env.beam > 0.001); },
+        scene: shafts ? shafts.scene : null,
+        prepare: function (cam, depthTex, w, h) { shafts.setShadow(dirLight); shafts.prepare(cam, depthTex, w, h); }
+      },
+      shafts: shafts,
       isLit: function (s) { return !!lit[s]; },
       litCount: function () { return litCount; },
       setHighlight: function (seatId, slot) {
@@ -664,9 +727,26 @@
         }
         var cl = Math.min(60, 8 + litCount * 1.2) * (candleLight.userData.k === undefined ? 1 : candleLight.userData.k);
         candleLight.intensity = litCount ? cl : 0;
+        if (flare.on) {
+          var fe = flareEnv(t - flare.t0), fs3 = flare.s;
+          if (t - flare.t0 > 0.6 || !lit[fs3]) { flare.on = false; fe = 0; if (lit[fs3]) { cupGlow.setX(fs3, 1); cupGlow.needsUpdate = true; } }
+          else {
+            // 점광원은 봉헌대 앞(1m) 그대로 두고 세기만 올린다(초 쪽으로 옮기면 봉헌대 앞면이 뒤에서 비쳐 오히려 어두워졌다 — 화면 비교)
+            candleLight.intensity += 0.6 * cl * fe;
+            cupGlow.setX(fs3, 1 + 1.4 * fe); cupGlow.needsUpdate = true;
+          }
+          flare.e = fe;
+        }
+        if (camera) updateHaze(camera);
         if (bLight) bLight.intensity = (S.lights[0].intensity || 1) * 22 * (bLight.userData.k === undefined ? 1 : bLight.userData.k);
         var bk = 0.85 + 0.15 * Math.sin(clock * 0.6);
-        if (beamMesh) { beamMat.opacity = bk * (tier !== 'low' ? 0.8 : 1); beamMesh.visible = !api.viewMode; }
+        if (beamMesh) { beamMat.opacity = bk * (tier !== 'low' ? 0.8 : 1); beamMesh.visible = !api.viewMode && !softOn; }
+        if (shafts) {
+          shafts.setTime(clock);
+          var tcs = tierCfg[tier] || {};
+          shafts.shaftK = (look && look.shaftK !== undefined ? look.shaftK : 1) * (tcs.shaftK || 0);
+          shafts.moteK = shafts.reduced ? 0 : (look && look.moteK !== undefined ? look.moteK : 1) * (tcs.motes ? 1 : 0);
+        }
         if (patchMesh) patchMat.opacity = (tier !== 'low' ? 0.7 : 1) * bk;
         dust.material.opacity = api.viewMode ? 0 : Math.min(1, env.beam * 0.7 * (env.dustK || 1) + (env.dustNight || 0) * env.night);
         if (dustN && dust.material.opacity > 0.02) {
@@ -686,10 +766,20 @@
         if (camera) api.setSkyCenter(camera.position);
       },
       aoFx: aoFx,
+      probes: probes,
+      // 반사 탐침: 첫 굽기 전인가(main.js 가 첫 프레임 뒤 한 번에 굽고 firstFrame 을 한 프레임 미룬다) / 그린 뒤 프레임마다 나눠 굽기
+      probePending: function () { return !!(probes && probes.pending()); },
+      probeStep: function (renderer) {
+        if (!probes || api.viewMode) return false;
+        if (probes.pending()) { probes.bakeNow(renderer); return true; }
+        return probes.step(renderer);
+      },
       // 구운 AO 가 아직 붙지 않았는가(main.js 가 성당에 들어온 직후 잠깐(≤0.5초) 그리기를 미룬다: AO 없는 한 프레임이 번쩍이지 않게)
       aoPending: function () { return !!(aoFx && aoFx.pending()); },
       dispose: function () {
         if (aoFx) aoFx.dispose();
+        if (probes) probes.dispose();
+        if (shafts) shafts.dispose();
         disposeReflectors(); fb.dispose();
         var texs = new Set();
         function texOf(m) {
@@ -710,6 +800,7 @@
         if (dirLight.shadow && dirLight.shadow.map) dirLight.shadow.map.dispose();
       }
     };
+    if (probes && api.camGuard) probes.setSee(function () { return api.camGuard.see; });
     applyEnv();
     api.setTier(tier, opts.renderer);
     return api;

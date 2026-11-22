@@ -854,6 +854,18 @@
     if (App.cross) App.cross.update(dt, App.me, App.camera);
     if (App.liturgy) App.liturgy.update(dt, App.t);
     if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
+    // RENDER_V4 §5 피사계 심도: 앉아·무릎 꿇고 기도하거나, 성모상 앞에서(또는 서서 기도하며) 1.2초 넘게 멈춰 있을 때만 먼 배경을 살짝 흐린다(초점 = 아바타). 걷는 동안은 0.
+    if (App.R.dof) {
+      var dm = App.me.mode, stillHere = dm === 'walk' && !App.walkSt && (App.near.shrine || App.standPray) && Math.abs(App.me.vx || 0) + Math.abs(App.me.vz || 0) < 0.05;
+      App.dofStill = stillHere ? (App.dofStill || 0) + dt : 0;
+      var dofWant = qs.dof !== '0' && (dm === 'seated' || dm === 'sitting' || App.dofStill > 1.2) ? 1 : 0;
+      App.dofA = (App.dofA || 0) + (dofWant - (App.dofA || 0)) * Math.min(1, dt / (dofWant ? 0.9 : 0.3));
+      if (App.dofA < 0.002) App.dofA = 0;
+      var avp = App.meAv.root.position, cpos = App.camera.position;
+      var fdx = avp.x - cpos.x, fdy = avp.y + 1.1 - cpos.y, fdz = avp.z - cpos.z;
+      App.R.dof.focus = Math.max(1.2, Math.sqrt(fdx * fdx + fdy * fdy + fdz * fdz)); App.R.dof.amount = App.dofA;
+    }
+    if (App.world.haze) App.R.haze = App.world.haze;
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     if (App.R.setGrade) App.R.setGrade(App.world.env.grade);   // 성당 룩(looks.js): 걷기 프로필의 보정·블룸
     App.idleSkip = !PH && !App.maxFrames && qs.idle !== '0' && App.me.mode === 'seated' && !App.walkSt && !App.ctl.dragging && App.t - App.ctl.lastDragT > 2 && App.sitF > 0.98 && !(App.meAv && App.meAv.kneelLin !== App.meAv.kneelTarget);
@@ -861,8 +873,18 @@
     var tw0 = performance.now();
     var chg = App.R.render(App.scene, App.camera, dt, App.world);
     Pace.work(performance.now() - tw0);
+    // 반사 탐침(probe_fx.js): 성당에 들어와 처음 그린 뒤(그림자 맵·AO 가 준비된 뒤) 한 번에 굽는다 — 입장 화면이 아직 덮고 있으므로 firstFrame 을 한 프레임 미룬다.
+    // 그 뒤에는 시간대가 크게 바뀔 때만 프레임마다 한 면씩(멈칫 없음). 사진 창이 다 올라오면 한 번 더(반사에 진본 창이 비치게).
+    var prbFirst = App.world.probePending && App.world.probePending();
+    if (App.world.probeStep) {
+      if (App.place && App.world.probes && !App.world.prbPhotos && (prbFirst || App.t - (App.prbCheckT || 0) > 1)) {
+        App.prbCheckT = App.t;
+        try { if (App.place.debug().pending === 0) { App.world.prbPhotos = true; if (!prbFirst) App.world.probes.markDirty('photos', true); } } catch (e) { App.world.prbPhotos = true; }
+      }
+      try { App.world.probeStep(App.renderer); } catch (e) { if (console && console.warn) console.warn('[church] probe', e); }
+    }
     if (PH) { PH.gpuEnd(gq); PH.frame(raw, performance.now() - tj, performance.now() - tr); }
-    if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }   // 앱의 입장 화면을 걷는 신호
+    if (!App.firstFramePosted && !prbFirst) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }   // 앱의 입장 화면을 걷는 신호
     // perf(C-04): fps = 구간 평균(순간값이 아님), tier = 화질 단계, sat = 앉아 있었는지. a:1 은 자동 하향 알림(fps 가 순간값이라 평균에서 뺀다).
     var seatedNow = App.me.mode === 'seated' ? 1 : 0;
     if (chg) { App.quality = chg; post({ e: 'perf', fps: Math.round(1 / Math.max(raw, 0.001)), tier: App.R.tier, sat: seatedNow, a: 1 }); }
