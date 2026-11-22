@@ -4,6 +4,7 @@ import 'package:rosary_app/app/app.dart';
 import 'package:rosary_app/app/guide_voice.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/backup/backup_registry.dart';
+import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/ui/app_intro.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -56,7 +57,7 @@ void main() {
       expect(_t('로사리움은 묵주기도를 함께 바치는 곳이에요.'), findsOneWidget);
       expect(
         tester.widget<Text>(_count).data,
-        '1 / 4',
+        '1 / 5',
       );
       // 큰 단추 56dp, 건너뛰기 있음, 쪽 표시
       expect(tester.getSize(_next).height, greaterThanOrEqualTo(56));
@@ -67,14 +68,14 @@ void main() {
       expect(find.byKey(const ValueKey('intro-art-image')), findsOneWidget);
     });
 
-    testWidgets('네 쪽을 지나 시작해요를 누르면 첫 탭이 나오고 다시 안 나온다', (tester) async {
+    testWidgets('다섯 쪽을 지나 시작해요를 누르면 첫 탭이 나오고 다시 안 나온다', (tester) async {
       _size(tester);
       final settings = await _settings();
       await tester.pumpWidget(RosaryApp(settings));
       await tester.pump();
       // 2쪽: 네 탭과 실제 아이콘
       await _page(tester);
-      expect(tester.widget<Text>(_count).data, '2 / 4');
+      expect(tester.widget<Text>(_count).data, '2 / 5');
       for (final tab in ['성당', '오늘', '기록', '더보기']) {
         expect(find.byKey(ValueKey('intro-tab-$tab')), findsOneWidget);
       }
@@ -88,7 +89,10 @@ void main() {
         _t('성당에서는 걸어 다니며 초를 켜고 자리에 앉아 기도해요.'),
         findsOneWidget,
       );
-      // 4쪽: 글자 크기
+      // 4쪽: 세례명(건너뛸 수 있다)
+      await _page(tester);
+      expect(_t('세례명이 있으면 골라 주세요'), findsOneWidget);
+      // 5쪽: 글자 크기
       await _page(tester);
       expect(_t('글씨를 크게 볼까요?'), findsOneWidget);
       for (final l in ['보통', '크게', '아주 크게']) {
@@ -141,7 +145,7 @@ void main() {
       final settings = await _settings();
       await tester.pumpWidget(RosaryApp(settings));
       await tester.pump();
-      for (var i = 0; i < 3; i++) {
+      for (var i = 0; i < 4; i++) {
         await _page(tester);
       }
       Finder sample() => find.byKey(const ValueKey('intro-sample'));
@@ -178,14 +182,83 @@ void main() {
       final settings = await _settings({'appTextScale': 1.4});
       await tester.pumpWidget(RosaryApp(settings));
       await tester.pump();
-      for (var i = 0; i < 4; i++) {
+      for (var i = 0; i < 5; i++) {
         expect(tester.takeException(), isNull, reason: 'page $i');
         // 단추는 화면 안에 있다
         final r = tester.getRect(_next);
         expect(r.bottom, lessThanOrEqualTo(640));
         expect(r.height, greaterThanOrEqualTo(56));
-        if (i < 3) await _page(tester);
+        if (i < 4) await _page(tester);
       }
+    });
+
+    testWidgets('성당 쪽에 가상 공간이라는 한 줄이 있다', (tester) async {
+      _size(tester);
+      final settings = await _settings();
+      await tester.pumpWidget(RosaryApp(settings));
+      await tester.pump();
+      await _page(tester);
+      await _page(tester);
+      expect(_t(virtualChurchNote), findsOneWidget);
+      // 320dp 아주 크게에서도 넘치지 않는다
+      _size(tester, const Size(320, 568));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(voice.spoken.last, contains('가상의 공간'));
+    });
+
+    testWidgets('세례명 쪽: 건너뛰면 아무것도 바뀌지 않고, 고르면 아바타에 저장된다', (tester) async {
+      _size(tester);
+      final settings = await _settings();
+      final before = settings.churchAvatar;
+      await tester.pumpWidget(RosaryApp(settings));
+      await tester.pump();
+      for (var i = 0; i < 3; i++) {
+        await _page(tester);
+      }
+      expect(tester.widget<Text>(_count).data, '4 / 5');
+      expect(_t('고른 이름은 성당에서 내 아바타 이름으로도 써요.'), findsOneWidget);
+      final later = find.byKey(const ValueKey('intro-name-later'));
+      expect(tester.getSize(later).height, greaterThanOrEqualTo(48));
+      // 나중에: 다음 쪽(글자 크기)으로 넘어가고 아무것도 저장하지 않는다.
+      await tester.tap(later);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(tester.widget<Text>(_count).data, '5 / 5');
+      expect(settings.churchNameChosen, isFalse);
+      expect(settings.churchAvatar, before);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('church_name_chosen'), isFalse);
+    });
+
+    testWidgets('세례명 고르기: 골라진 이름이 아바타 설정에 저장되고 화면에 보인다', (tester) async {
+      _size(tester);
+      final settings = await _settings();
+      await tester.pumpWidget(RosaryApp(settings));
+      await tester.pump();
+      for (var i = 0; i < 3; i++) {
+        await _page(tester);
+      }
+      await tester.tap(find.byKey(const ValueKey('intro-name-pick')));
+      await tester.pumpAndSettle();
+      final idx = popularBaptismalIndices(settings.churchAvatar.gender).first;
+      await tester.tap(find.byKey(ValueKey('name-popular-$idx')));
+      await tester.pumpAndSettle();
+      expect(settings.churchNameChosen, isTrue);
+      expect(settings.churchAvatar.name, idx);
+      // 아바타의 나머지(피부·머리·옷)는 그대로, 고른 표시는 켜지지 않는다.
+      expect(settings.churchAvatarChosen, isFalse);
+      expect(find.byKey(const ValueKey('intro-name-chosen')), findsOneWidget);
+      expect(_t(baptismalNameOf(idx)), findsOneWidget);
+      expect(find.byKey(const ValueKey('intro-name-later')), findsNothing);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('church_name_chosen'), isTrue);
+      // 다시 열면 지금 이름이 미리 골라져 있고, 닫으면 그대로다.
+      await tester.tap(find.byKey(const ValueKey('intro-name-pick')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('닫기'));
+      await tester.pumpAndSettle();
+      expect(settings.churchAvatar.name, idx);
     });
 
     testWidgets('쪽마다 글을 읽어 주고 스피커로 끈다', (tester) async {
@@ -244,8 +317,9 @@ void main() {
   });
 
   group('백업 등록부(새 첫 사용 안내 설정)', () {
-    test('앱 소개·성당 안내·읽어 주기·글자 크기 배율이 설정으로 실린다', () {
+    test('앱 소개·성당 안내·읽어 주기·글자 크기 배율·소개에서 고른 세례명 표시가 설정으로 실린다', () {
       const expected = {
+        'church_name_chosen': PrefType.boolean,
         'appIntroDone': PrefType.boolean,
         'churchTourDone': PrefType.boolean,
         'guideTtsOn': PrefType.boolean,

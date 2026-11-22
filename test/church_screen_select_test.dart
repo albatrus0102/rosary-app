@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/church/church_catalog.dart';
+import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
 import 'package:rosary_app/church/church_select_screen.dart';
 import 'package:rosary_app/church/church_tab.dart';
@@ -56,6 +57,40 @@ Finder _card(String id) => find.byKey(ValueKey('church-card-$id'));
 
 void main() {
   _modelNoteLayoutTests();
+  testWidgets('every church card has a virtual badge that explains itself', (
+    tester,
+  ) async {
+    final holder = AppSettingsHolder();
+    await _pumpSelect(tester, holder: holder);
+    final badges = find.byWidgetPredicate(
+      (w) => w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('virtual-'),
+    );
+    final cards = find.byWidgetPredicate(
+      (w) => w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('church-card-'),
+    );
+    expect(cards, findsWidgets);
+    expect(badges, findsNWidgets(tester.widgetList(cards).length));
+    final badge = badges.first;
+    expect(find.descendant(of: badge, matching: find.text('가상')), findsOneWidget);
+    expect(find.bySemanticsLabel('가상 성당'), findsWidgets);
+    final size = tester.getSize(badge);
+    expect(size.height, greaterThanOrEqualTo(48));
+    expect(size.width, greaterThanOrEqualTo(48));
+    await tester.tap(badge);
+    await tester.pump();
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w is Text &&
+            w.data?.replaceAll('\u2060', '') == virtualChurchNote,
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('renders group headers and one card per catalog church', (
     tester,
   ) async {

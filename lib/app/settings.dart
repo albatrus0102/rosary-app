@@ -142,6 +142,7 @@ class AppSettings extends ChangeNotifier {
       _prefs.setString(_kChurchAvatar, _churchAvatar.toJsonString());
     }
     _churchAvatarChosen = _prefs.getBool(_kChurchAvatarChosen) ?? false;
+    _churchNameChosen = _prefs.getBool(_kChurchNameChosen) ?? false;
     _churchAmbient = _prefs.getBool(_kChurchAmbient) ?? true;
     _churchId = ChurchCatalog.resolve(_prefs.getString(_kChurchId)).id;
     _churchFavorites = {
@@ -479,6 +480,7 @@ class AppSettings extends ChangeNotifier {
   static const _kResumeAt = 'resume_at';
   static const _kChurchAvatar = 'church_avatar';
   static const _kChurchAvatarChosen = 'church_avatar_chosen';
+  static const _kChurchNameChosen = 'church_name_chosen';
   static const _kChurchAmbient = 'church_ambient';
   static const _kChurchQuality = 'church_quality';
   static const _kChurchPerfHud = 'church_perf_hud';
@@ -553,6 +555,7 @@ class AppSettings extends ChangeNotifier {
   late MysterySet _mysterySet;
   late AvatarConfig _churchAvatar;
   late bool _churchAvatarChosen;
+  late bool _churchNameChosen;
   late bool _churchAmbient;
   late ChurchQuality _churchQuality;
   late bool _churchPerfHud;
@@ -857,6 +860,10 @@ class AppSettings extends ChangeNotifier {
   /// 아바타 편집기에서 한 번이라도 저장했는지.
   bool get churchAvatarChosen => _churchAvatarChosen;
 
+  /// 앱 소개에서 세례명을 미리 골랐는지. 참이면 [churchAvatar]의 이름이 그 이름이고, 첫 성당
+  /// 입장의 아바타 설정 화면이 그 이름을 미리 골라 둔다(피부·머리·옷은 그대로 묻는다).
+  bool get churchNameChosen => _churchNameChosen;
+
   /// 성당 배경음(환경음) 켜기.
   bool get churchAmbient => _churchAmbient;
 
@@ -1049,6 +1056,13 @@ class AppSettings extends ChangeNotifier {
     if (v == _churchAvatarChosen) return;
     _churchAvatarChosen = v;
     _prefs.setBool(_kChurchAvatarChosen, v);
+    notifyListeners();
+  }
+
+  set churchNameChosen(bool v) {
+    if (v == _churchNameChosen) return;
+    _churchNameChosen = v;
+    _prefs.setBool(_kChurchNameChosen, v);
     notifyListeners();
   }
 

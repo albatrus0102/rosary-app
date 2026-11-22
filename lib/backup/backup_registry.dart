@@ -178,6 +178,7 @@ abstract final class BackupRegistry {
       label: '아바타',
     ),
     PrefSpec('church_avatar_chosen', _b, '아바타를 정했음', type: _bool),
+    PrefSpec('church_name_chosen', _b, '앱 소개에서 세례명을 골랐음', type: _bool),
     PrefSpec('church_ambient', _b, '성당 환경음', type: _bool, label: '성당 소리'),
     PrefSpec('church_quality', _b, '성당 화질', type: _str, label: '성당 화질'),
     PrefSpec(

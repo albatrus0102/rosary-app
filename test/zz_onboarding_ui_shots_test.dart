@@ -14,7 +14,9 @@ import 'package:rosary_app/app/app.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/church/church_scene_controller.dart';
+import 'package:rosary_app/church/church_constants.dart';
 import 'package:rosary_app/church/church_screen.dart';
+import 'package:rosary_app/church/church_select_screen.dart';
 import 'package:rosary_app/ui/more_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -209,15 +211,24 @@ void main() {
     await nextPage();
     await _shot(t, 'intro_2_tabs');
     await nextPage();
-    await _shot(t, 'intro_3_church');
+    await _shot(t, 'intro_3_church_virtual');
     await nextPage();
-    await _shot(t, 'intro_4_text_size_normal');
+    await _shot(t, 'intro_4_name_empty');
+    await t.tap(find.byKey(const ValueKey('intro-name-pick')));
+    await _settleArt(t);
+    await _shot(t, 'intro_4_name_picker');
+    final idx = popularBaptismalIndices(settings.churchAvatar.gender).first;
+    await t.tap(find.byKey(ValueKey('name-popular-$idx')));
+    await _settleArt(t);
+    await _shot(t, 'intro_4_name_chosen');
+    await nextPage();
+    await _shot(t, 'intro_5_text_size_normal');
     await t.tap(find.byKey(const ValueKey('intro-size-1')));
     await _pumpFor(t, 400);
-    await _shot(t, 'intro_4_text_size_large');
+    await _shot(t, 'intro_5_text_size_large');
     await t.tap(find.byKey(const ValueKey('intro-size-2')));
     await _pumpFor(t, 400);
-    await _shot(t, 'intro_4_text_size_xlarge');
+    await _shot(t, 'intro_5_text_size_xlarge');
   });
 
   testWidgets('app intro small phone, large text', (t) async {
@@ -231,11 +242,41 @@ void main() {
     );
     await _settleArt(t);
     await _shot(t, 'intro_small_1');
-    for (var i = 2; i <= 4; i++) {
+    for (var i = 2; i <= 5; i++) {
       await t.tap(find.byKey(const ValueKey('intro-next')));
       await _settleArt(t);
       await _shot(t, 'intro_small_$i');
+      if (i == 4) {
+        await _shot(t, 'intro_small_4');
+        await t.ensureVisible(find.byKey(const ValueKey('intro-name-pick')));
+        await t.pump();
+        await t.tap(find.byKey(const ValueKey('intro-name-pick')));
+        await _settleArt(t);
+        await _shot(t, 'intro_small_4_picker');
+        await t.tap(find.byType(ListTile).first);
+        await _settleArt(t);
+        await _shot(t, 'intro_small_4_chosen');
+      }
     }
+  });
+
+  testWidgets('church select with virtual badges', (t) async {
+    _phone(t);
+    final settings = await _load({});
+    await t.pumpWidget(
+      _app(
+        ChurchSelectScreen(settings: settings, onEnter: (_) {}),
+        settings,
+      ),
+    );
+    await _settleArt(t);
+    await _shot(t, 'select_badges');
+    await t.tap(find.byWidgetPredicate(
+      (w) => w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('virtual-'),
+    ).first);
+    await _pumpFor(t, 400);
+    await _shot(t, 'select_badge_note');
   });
 
   // --- 성당 안내 ---

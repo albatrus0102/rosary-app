@@ -164,6 +164,35 @@ void main() {
     expect(settings.churchAvatarChosen, isTrue);
   });
 
+  testWidgets('first entry keeps the name chosen in the app intro', (
+    tester,
+  ) async {
+    _view(tester, const Size(360, 800));
+    final settings = await _settings();
+    final idx = baptismalIndexOf('요셉');
+    expect(idx, greaterThanOrEqualTo(0));
+    settings.churchAvatar = settings.churchAvatar.copyWith(name: idx);
+    settings.churchNameChosen = true;
+    final opened = await _open(
+      tester,
+      settings,
+      firstEntry: true,
+      random: Random(5),
+    );
+    // 세례명 칸에 미리 골라져 있고(고칠 수 있다), 나머지는 그대로 물어본다.
+    expect(find.text('요셉'), findsWidgets);
+    for (final t in ['성별', '머리 모양', '머리색', '피부색']) {
+      expect(find.text(t), findsWidgets, reason: t);
+    }
+    expect(settings.churchAvatarChosen, isFalse);
+    await tester.tap(find.byKey(const ValueKey('avatar-confirm')));
+    await tester.pumpAndSettle();
+    final result = opened.result as AvatarConfig;
+    expect(result.name, idx);
+    expect(result.gender, avatarMale, reason: '남성 이름이면 성별도 맞춘다');
+    expect(settings.churchAvatarChosen, isTrue);
+  });
+
   testWidgets('gender switch changes the hair choices and keeps the name', (
     tester,
   ) async {

@@ -6,6 +6,9 @@ import '../app/prayer_music.dart';
 import '../app/settings.dart';
 import '../app/theme.dart';
 import '../app/track.dart';
+import '../church/avatar/baptismal_name_picker.dart';
+import '../church/church_constants.dart' as church_constants;
+import '../church/church_constants.dart' show defaultBaptismalNameIndex;
 import '../stats/text_fit.dart';
 import 'app_shell.dart';
 import 'widgets/guide_card.dart';
@@ -45,6 +48,9 @@ abstract final class AppIntroArt {
       'assets/images/onboarding/onboarding_1_welcome.webp';
   static const String church =
       'assets/images/onboarding/onboarding_2_church.webp';
+
+  /// 세례명 쪽은 아직 그림이 없어 큰 아이콘을 쓴다.
+  static const String? baptismalName = null;
   static const String textSize =
       'assets/images/onboarding/onboarding_3_textsize.webp';
 }
@@ -61,13 +67,16 @@ class AppIntroScreen extends StatefulWidget {
   final VoidCallback onFinish;
 
   /// 쪽 수. 시험이 쓴다.
-  static const int pageCount = 4;
+  static const int pageCount = 5;
 
   static const double headlineSize = 32;
   static const double bodySize = 22;
 
   /// 글자 크기 고르기에서 보여 주는 예시 문장.
   static const String sampleSentence = '은총이 가득하신 마리아님, 기뻐하소서.';
+
+  /// 성당 쪽 아래에 보이는, 앱 속 성당이 가상 공간임을 밝히는 한 줄.
+  static const String virtualChurchNote = church_constants.virtualChurchNote;
 
   @override
   State<AppIntroScreen> createState() => _AppIntroScreenState();
@@ -102,7 +111,15 @@ class _AppIntroScreenState extends State<AppIntroScreen> {
           '오늘에서는 오늘의 묵주기도를 바로 시작해요. 기록에서는 기도한 날과 시간을 볼 수 있어요. '
           '더보기에서는 설정과 사용법을 찾아요.',
     ),
-    _IntroPage('성당 안에서는', '성당에서는 걸어 다니며 초를 켜고 자리에 앉아 기도해요.'),
+    _IntroPage(
+      '성당 안에서는',
+      '성당에서는 걸어 다니며 초를 켜고 자리에 앉아 기도해요. '
+          '${AppIntroScreen.virtualChurchNote}',
+    ),
+    _IntroPage(
+      '세례명이 있으면 골라 주세요',
+      '고른 이름은 성당에서 내 아바타 이름으로도 써요. 나중에 골라도 괜찮아요.',
+    ),
     _IntroPage('글씨를 크게 볼까요?', '보통, 크게, 아주 크게 중에서 편한 크기를 골라 주세요.'),
   ];
 
@@ -229,12 +246,19 @@ class _AppIntroScreenState extends State<AppIntroScreen> {
                             title: _pages[2].title,
                             child: _bodyText(
                               '성당에서는 걸어 다니며 초를 켜고 자리에 앉아 기도해요.',
+                              note: AppIntroScreen.virtualChurchNote,
                             ),
+                          ),
+                          _pageFrame(
+                            icon: Icons.badge_outlined,
+                            art: AppIntroArt.baptismalName,
+                            title: _pages[3].title,
+                            child: _namePicker(context),
                           ),
                           _pageFrame(
                             icon: Icons.text_increase,
                             art: AppIntroArt.textSize,
-                            title: _pages[3].title,
+                            title: _pages[4].title,
                             child: _sizePicker(context),
                           ),
                         ],
@@ -332,11 +356,24 @@ class _AppIntroScreenState extends State<AppIntroScreen> {
     height: 1.5,
   );
 
-  Widget _bodyText(String text, {String? extra}) {
+  Widget _bodyText(String text, {String? extra, String? note}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(keepAll(text), textAlign: TextAlign.center, style: _bodyStyle),
+        if (note != null) ...[
+          const SizedBox(height: AppSpace.sm),
+          Text(
+            keepAll(note),
+            key: const ValueKey('intro-virtual-note'),
+            textAlign: TextAlign.center,
+            style: _bodyStyle.copyWith(
+              fontSize: 19,
+              height: 1.45,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
         if (extra != null) ...[
           const SizedBox(height: AppSpace.xs),
           Text(keepAll(extra), textAlign: TextAlign.center, style: _bodyStyle),
@@ -392,6 +429,83 @@ class _AppIntroScreenState extends State<AppIntroScreen> {
           ),
       ],
     );
+  }
+
+  /// 세례명 고르기 쪽. 고르면 바로 아바타 설정에 저장하고(이름 쪽 표시만 켠다), 건너뛰면 아무것도
+  /// 바꾸지 않는다. 이름 자체는 기록하지 않는다.
+  Widget _namePicker(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = widget.settings;
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, _) {
+        final chosen = settings.churchNameChosen;
+        final avatar = settings.churchAvatar;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (chosen) ...[
+              Card.filled(
+                key: const ValueKey('intro-name-chosen'),
+                color: scheme.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpace.sm),
+                  child: Semantics(
+                    label: '고른 세례명 ${avatar.nameText}',
+                    excludeSemantics: true,
+                    child: Text(
+                      keepAll(avatar.nameText),
+                      textAlign: TextAlign.center,
+                      style: _bodyStyle.copyWith(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: scheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpace.sm),
+            ],
+            FilledButton.tonal(
+              key: const ValueKey('intro-name-pick'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(64),
+                textStyle: _bodyStyle.copyWith(fontWeight: FontWeight.w700),
+              ),
+              onPressed: () => _pickName(context),
+              child: Text(chosen ? '이름 바꾸기' : '세례명 고르기'),
+            ),
+            const SizedBox(height: AppSpace.sm),
+            _bodyText('고른 이름은 성당에서 내 아바타 이름으로도 써요.'),
+            if (!chosen) ...[
+              const SizedBox(height: AppSpace.xs),
+              TextButton(
+                key: const ValueKey('intro-name-later'),
+                style: GuideStyle.secondaryButton(context),
+                onPressed: _next,
+                child: const Text('나중에'),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _pickName(BuildContext context) async {
+    final settings = widget.settings;
+    final avatar = settings.churchAvatar;
+    final picked = await showBaptismalNamePicker(
+      context,
+      gender: avatar.gender,
+      selected: settings.churchNameChosen
+          ? avatar.name
+          : defaultBaptismalNameIndex,
+    );
+    if (picked == null || !mounted) return;
+    settings.churchAvatar = avatar.copyWith(name: picked);
+    settings.churchNameChosen = true;
   }
 
   Widget _sizePicker(BuildContext context) {
