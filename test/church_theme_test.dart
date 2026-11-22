@@ -281,6 +281,53 @@ void main() {
     });
   });
 
+  // 온보딩 작업이 찾은 결함(2026-11-22): 320dp 폭 폰에서 펼친 도구 줄(소리·아바타·인사·가기·접기)이 9px 넘쳤다.
+  // 도구 줄은 남은 폭에 맞춰 항목을 똑같이 줄이고(48dp 아래로는 줄이지 않는다) 라벨 글자만 줄인다 — 항목은 하나도 빼지 않는다.
+  group('좁은 폰(320dp)에서 펼친 도구 줄', () {
+    for (final scale in const [1.0, 1.3, 2.0]) {
+      testWidgets('넘치지 않고 다섯 항목이 모두 48dp 이상: x$scale', (tester) async {
+        const size = Size(320, 640);
+        final h = await pumpChurch(tester, size: size, textScale: scale);
+        h.net.goOnline(3);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(tester.takeException(), isNull, reason: 'RenderFlex 넘침 없음');
+        final bar = tester.getRect(find.byType(ChurchTopActions));
+        expect(bar.left, greaterThanOrEqualTo(-0.5));
+        expect(bar.right, lessThanOrEqualTo(size.width + 0.5));
+        for (final tip in ['소리 끄기', '아바타 편집', '인사', '메뉴 접기']) {
+          final r = tester.getRect(find.byTooltip(tip));
+          expect(r.width, greaterThanOrEqualTo(48), reason: tip);
+          expect(r.height, greaterThanOrEqualTo(48), reason: tip);
+          expect(r.right, lessThanOrEqualTo(bar.right + 0.5), reason: tip);
+        }
+        final go = tester.getRect(find.byKey(const ValueKey('go-button')));
+        expect(go.shortestSide, greaterThanOrEqualTo(48));
+        expect(go.right, lessThanOrEqualTo(bar.right + 0.5));
+        for (final label in ['소리', '아바타', '인사', '가기']) {
+          expect(find.text(label), findsWidgets, reason: label);
+        }
+        await tester.pump(const Duration(seconds: 7));
+      });
+    }
+
+    test('항목 폭: 넓으면 기본 폭(null), 좁으면 남은 폭에 맞춰 줄이되 48dp 아래로는 줄이지 않는다', () {
+      final bar = ChurchTopActions(
+        ambientOn: true,
+        onToggleAmbient: () {},
+        onEditAvatar: () {},
+        onEmote: (_) {},
+        onGo: () {},
+        onCollapse: () {},
+      );
+      expect(bar.itemWidthFor(double.infinity), isNull);
+      expect(bar.itemWidthFor(400), isNull);
+      // 320dp 폰: 화면 320 − 좌우 여백 32 = 288 → 항목 53(4 × 53 + 고정 73 = 285)
+      expect(bar.itemWidthFor(288), 53);
+      expect(bar.itemWidthFor(200), ChurchTopActions.minItemWidth);
+    });
+  });
+
   group('HUD 겹침 검사(폰·큰 폰·태블릿 가로·글자 2배)', () {
     for (final size in const [
       Size(360, 800),

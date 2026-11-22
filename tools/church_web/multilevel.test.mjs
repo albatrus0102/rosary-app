@@ -160,3 +160,25 @@ test('한 층 성당: levels 가 없으면 yRef·y 인자를 무시한다(예전
   assert.deepEqual(L.floorsAt(0, -4), [0.6]);
   assert.equal(Stations.create(L).multi, undefined);
 });
+
+// 계단식 줄(rowDy, 2026-11-22 여의도동 성가대석): 줄마다 바닥이 rowDy 만큼 오른다 — 좌석 바닥(fy)·앉는 높이·줄 충돌 띠 높이 범위가 그 줄의 단
+test('여러 층: 계단식 줄(rowDy) — 줄마다 좌석 바닥과 줄 띠의 높이 범위가 한 단씩 오른다', () => {
+  const zones = [{ x0: -6, x1: 6, z0: -10, z1: 10, y: 0 }];
+  for (let r = 0; r < 3; r++) zones.push({ x0: -6, x1: 6, z0: -2 + 1.6 * r, z1: -0.4 + 1.6 * r, y: 3 + 0.3 * (r + 1) });
+  const layout = {
+    id: 'tiers', scalePercent: 100, ground: false, bounds: { x0: -6, x1: 6, z0: -10, z1: 10 }, spawn: { x: 0, z: -8, r: 0, y: 0 },
+    levels: [{ id: 'A', label_ko: '아래', y: 0, go: { x: 0, z: -8 } }, { id: 'B', label_ko: '위', y: 3, go: { x: 0, z: -3 } }],
+    seatGroups: [{ g: 'T', rows: 3, perRow: 2, origin: { x: -0.35, z: -1.15 }, dx: 0.7, dz: 1.6, rowDx: 0, yaw: 0, y: 3.3, rowDy: 0.3, frontal: false }],
+    candles: { stands: [] }
+  };
+  const L = Logic.create(layout, { zones, colliders: [] });
+  for (const s of L.seats) {
+    assert.ok(Math.abs(L.seatFloor(s.id) - (3.3 + 0.3 * s.row)) < 1e-9, s.id);
+    assert.ok(Math.abs(L.seatPos(s.id).y - (3.75 + 0.3 * s.row)) < 1e-9, s.id);
+  }
+  const band = (r) => L.colliders.find((c) => c.z0 <= -1.15 + 1.6 * r && c.z1 >= -1.15 + 1.6 * r);
+  for (let r = 0; r < 3; r++) { const b = band(r); assert.ok(Math.abs(b.y0 - (3.25 + 0.3 * r)) < 1e-9 && Math.abs(b.y1 - (4.4 + 0.3 * r)) < 1e-9, '줄 ' + r + ' 띠 ' + b.y0 + '..' + b.y1); }
+  // 줄 띠는 그 단의 사람만 막는다: 그 밑(아래층 0)은 지나간다
+  assert.equal(L.moveCircle({ x: 0, z: -1.15 + 1.6 + 0.3 }, 0, 0, undefined, 0), false);
+  assert.equal(L.moveCircle({ x: 0, z: -1.15 + 1.6 + 0.3 }, 0, 0, undefined, 3.6), true);
+});

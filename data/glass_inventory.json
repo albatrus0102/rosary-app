@@ -156,18 +156,18 @@
    "gaps": 0
   },
   "yeouido": {
-   "openings": 8,
+   "openings": 13,
    "stained": 0,
-   "protected": 5,
+   "protected": 7,
    "unverified": 0,
-   "plain": 3,
+   "plain": 6,
    "alabaster": 0,
    "hanji": 0,
    "virtual": 0,
    "notWindow": 0,
    "photo": 0,
-   "gen": 5,
-   "plainModel": 3,
+   "gen": 7,
+   "plainModel": 6,
    "cells": 0,
    "hanjiModel": 0,
    "gaps": 0
@@ -8774,6 +8774,101 @@
     "model": {
      "release": "gen:yeouido_abstract",
      "dev": "gen:yeouido_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobby1fGlass1",
+    "zone": "lobby1f_glass",
+    "shape": "rect",
+    "size": "2.40×3.20",
+    "real": {
+     "kind": "stained_protected",
+     "what": "1층 로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가, 붉은·호박·파랑·검정 띠의 추상)",
+     "era": "2024",
+     "src": "interiors/yeouido.md §4.1·§9.8"
+    },
+    "model": {
+     "release": "gen:yeouido_lobby",
+     "dev": "gen:yeouido_lobby",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobby1fGlass2",
+    "zone": "lobby1f_glass",
+    "shape": "rect",
+    "size": "2.40×3.20",
+    "real": {
+     "kind": "stained_protected",
+     "what": "1층 로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가, 붉은·호박·파랑·검정 띠의 추상)",
+     "era": "2024",
+     "src": "interiors/yeouido.md §4.1·§9.8"
+    },
+    "model": {
+     "release": "gen:yeouido_lobby",
+     "dev": "gen:yeouido_lobby",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobby1fFront1",
+    "zone": "lobby1f_front",
+    "shape": "rect",
+    "size": "2.60×3.55",
+    "real": {
+     "kind": "clear",
+     "what": "1층 로비 유리 정면(맑은 유리 — 실제 모양 미확인)",
+     "era": "",
+     "src": "interiors/yeouido.md §9.8"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobby1fFront2",
+    "zone": "lobby1f_front",
+    "shape": "rect",
+    "size": "2.60×3.55",
+    "real": {
+     "kind": "clear",
+     "what": "1층 로비 유리 정면(맑은 유리 — 실제 모양 미확인)",
+     "era": "",
+     "src": "interiors/yeouido.md §9.8"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lobby1fFront3",
+    "zone": "lobby1f_front",
+    "shape": "rect",
+    "size": "2.60×3.55",
+    "real": {
+     "kind": "clear",
+     "what": "1층 로비 유리 정면(맑은 유리 — 실제 모양 미확인)",
+     "era": "",
+     "src": "interiors/yeouido.md §9.8"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
      "fallback": null
     },
     "ok": true,

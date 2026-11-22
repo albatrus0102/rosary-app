@@ -398,11 +398,15 @@ ADAPTERS.danggogae = {
   ]
 };
 // 여의도동(2026-11-22 개정): 피어와 드럼 사이의 키 큰 현대 색유리 2 + 로비(성당 문 밖) 색유리 벽 3폭(2024 최영심 작품 자리 — 추상) + 로비 유리 정면 3폭(맑은 유리).
+// 3차: 1층 로비 색유리 2폭 + 1층 유리 정면 3폭(바닥 −4.2, 창 아래 끝 y < 0).
 // 옆벽 슬릿 창·경사 천장 천창은 창 개구부(kit.window)가 아니라 빌더의 빛나는 판이라 목록에 없다(yeouido.md §4.1).
 ADAPTERS.yeouido = {
   axes: { altar: '-z', entrance: '+z', plusX: '오른쪽 R', minusX: '왼쪽 L', summary: '입구 +z → 제대 -z. 로비는 뒷벽 밖 z 21.5…30.5.' },
   rules: [
     { zone: 'front', test: (e) => e.z < -9, side: Lr, prefix: 'front', always: false, key: (e) => 'front' + (e.x < 0 ? 'L' : 'R') },
+    // 1층 로비(2026-11-22 3차, 바닥 −4.2): 안쪽 끝 벽 색유리 2폭(최영심 2024 1층 작품 자리 — 추상) + 거리 쪽 유리 정면 3폭(맑은 유리)
+    { zone: 'lobby1f_glass', test: (e) => e.y < 0 && e.z > 30, key: (e) => 'lobby1fGlass' + (e.x < -7 ? '1' : '2') },
+    { zone: 'lobby1f_front', test: (e) => e.y < 0 && e.z > 21 && e.x < -10.5, key: (e) => 'lobby1fFront' + (e.z < 24.5 ? '1' : (e.z < 27.5 ? '2' : '3')) },
     { zone: 'lobby_glass', test: (e) => e.z > 30, key: (e) => 'lobbyGlass' + (e.x < -8 ? '1' : (e.x < -5 ? '2' : '3')) },
     { zone: 'lobby_front', test: (e) => e.z > 21 && e.x < -10.5, key: (e) => 'lobbyFront' + (e.z < 24.5 ? '1' : (e.z < 27.5 ? '2' : '3')) }
   ]

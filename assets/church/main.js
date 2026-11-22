@@ -740,7 +740,7 @@
       rigI.mx = mx; rigI.fy = fy; rigI.mz = mz; rigI.yaw = ctl.yaw; rigI.pitch = pitch; rigI.D = D * capR; rigI.cb = cb; rigI.guard = gd; rigI.auto = CC.auto;
       rigI.minD = 2.8 - 0.5 * sf;
       App.rig.solve(rigI, dt, rigO);
-      cx = rigO.x; cyv = Math.min(cb.yMax, Math.max(0.7, rigO.y)); cz = rigO.z;
+      cx = rigO.x; cyv = Math.min(cb.yMax, Math.max(App.logic && App.logic.multi && typeof me.fy === 'number' ? me.fy + 0.7 : 0.7, rigO.y)); cz = rigO.z;   // 카메라 바닥: 바닥 위 0.7m(여러 층은 그 층 바닥 — 1층 로비가 0 아래인 여의도동)
       dx = Math.sin(rigO.yaw); dz = Math.cos(rigO.yaw);
     } else {
       var ch0 = Math.cos(pitch) * D, cv0 = Math.sin(pitch) * D;

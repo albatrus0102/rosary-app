@@ -102,6 +102,8 @@ const REAL = {
   yeouido(o) {
     if (/^front/.test(o.key)) return R('stained_protected', '정면 키 큰 현대 색유리(작가 미확인)', '현대', 'interiors/yeouido.md §4.1');
     if (/^lobbyGlass/.test(o.key)) return R('stained_protected', '로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가)', '2024', 'interiors/yeouido.md §4.1');
+    if (/^lobby1fGlass/.test(o.key)) return R('stained_protected', '1층 로비 전면 색유리(최영심 빅토리아, 2024 — 생존 작가, 붉은·호박·파랑·검정 띠의 추상)', '2024', 'interiors/yeouido.md §4.1·§9.8');
+    if (/^lobby1fFront/.test(o.key)) return R('clear', '1층 로비 유리 정면(맑은 유리 — 실제 모양 미확인)', '', 'interiors/yeouido.md §9.8');
     if (/^lobbyFront/.test(o.key)) return R('clear', '로비 유리 정면(맑은 유리, 밖은 밝은 빛)', '', 'interiors/yeouido.md §2.5');
     return R('plain', '창(실물 미확인 — 옅은 빛 유리로 둠)', '', 'interiors/yeouido.md §6.3');
   }

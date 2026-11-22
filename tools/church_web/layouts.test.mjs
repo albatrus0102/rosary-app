@@ -11,7 +11,8 @@ test('at least basic is registered', () => { assert.ok(layouts.find((l) => l.id 
 for (const lay of layouts) {
   test(`layout ${lay.id}: seats valid`, () => {
     assert.match(lay.id, /^[a-z]+$/);
-    assert.ok(lay.seats.length >= 60 && lay.seats.length <= 200 || lay.id === 'basic' && lay.seats.length === 144, 'seat count ' + lay.seats.length);
+    // 상한 300: 여의도동 270(신랑 140 + 성가대석 두 덩이 130 — 여러 층으로 성가대석 왼쪽 큰 덩이를 열었다, 2026-11-22)
+    assert.ok(lay.seats.length >= 60 && lay.seats.length <= 300 || lay.id === 'basic' && lay.seats.length === 144, 'seat count ' + lay.seats.length);
     const ids = new Set();
     const b = lay.bounds;
     for (const s of lay.seats) {
