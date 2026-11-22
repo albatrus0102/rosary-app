@@ -9,3 +9,8 @@
 
 프롬프트와 규격: docs/church/TEXTURE_PROMPTS.md (T-26~T-28은 2026-11-22 대화에서 받은 것).
 권리: 사용자가 ChatGPT로 생성(이용 권한은 ChatGPT 이용약관).
+
+## 다시 받은 것(나이 구분 없음, 2026-11-22)
+- onboarding_1_hands2_A·B: 묵주 든 손(매끈한 손). 고른 것: A(펼친 두 손).
+- onboarding_2_church2_A·B: 성당(젊은이·가족, 뒷모습). 고른 것: B(따뜻한 빛, 가족이 함께).
+- onboarding_3_magnifier_A·B: 글씨 크기 장(돋보기, 사람 없음). 고른 것: B. 안경판(onboarding_3_textsize_*)은 예비.
