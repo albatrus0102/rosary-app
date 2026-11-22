@@ -246,9 +246,20 @@
           return pts.map(function (p) { return [cu + (p[0] - cu) * k, cv + (p[1] - cv) * k]; });
         }
         function circle(cu, cv, rr, n) { var pts = [], i; for (i = 0; i < n; i++) pts.push([cu + cos(i / n * PI * 2) * rr, cv + sin(i / n * PI * 2) * rr]); return pts; }
+        // 무늬 유리 양식(glass_gen.js, docs/church/GLASS_INVENTORY.md §명동): 후진 = 1898 프랑스 공방풍 메달리온, 익랑 끝 = 인물 층,
+        // 측랑 = 꽃무늬 무늬창, 고측창·익랑 윗창·종탑 = 색 무늬창, 문 위 반월창 = 중립 추상(이남규 1989 창은 옮기지 않는다)
+        var gStyle = o.glass || ({ medal: 'myeongdong_medal', twin: 'myeongdong_flower', tymp: 'myeongdong_tymp' })[o.style] || 'myeongdong_clere';
+        var styled = !!(ctx.stained && ctx.glassStyleOk && ctx.glassStyleOk(gStyle)), gSeed = o.seed || 1, gBeam = null;
+        function styledLancet(us, hw, yy0, hh, rs, lights) {
+          var f = pf(hw, rs), head = [], nn = 10, i;
+          for (i = 0; i <= nn; i++) { var u = hw - 2 * hw * i / nn; head.push([us + u, yy0 + hh + f(u)]); }
+          return (gBeam = ctx.stained({ P: function (u, v) { return P(u, v, 0.006); }, hint: hintP, u0: us - hw, u1: us + hw, v0: yy0, v1: yy0 + hh, head: head, lights: lights || 1,
+            style: gStyle, seed: gSeed++, modH: hh > 0 ? 0 : 1, refl: !!o.refl, key: o.key }));
+        }
         // 한 개의 첨두창 칸: 납틀 배경 + 색 칸들
         function lancet(us, hw, yy0, hh, rs, colorFn, cols) {
           poly(lancetOutline(us, hw, yy0, hh, rs, 8), C.glassLead, 0, 0);
+          if (styled) { styledLancet(us, hw, yy0, hh, rs, hw > 0.9 ? 2 : 1); return; }
           var rows = max(2, Math.round(hh / (o.rowH || 0.5))), i, j;
           cols = cols || (hw > 0.5 ? 3 : 2);
           for (j = 0; j < rows; j++) for (i = 0; i < cols; i++) {
@@ -284,7 +295,8 @@
           lancet(w / 4, hw, y0, hR, hw * 1.35, function (i, j, c, rw) { return tapestry(c - 1 - i, j + 1, c, rw); }, 2);
           var oc = [0, y0 + hR + hw * 1.35 + 0.1], orad = w * 0.17;
           poly(circle(oc[0], oc[1], orad * 1.05, 14), C.glassLead, 0, 0);
-          for (var q = 0; q < 6; q++) {
+          if (styled) ctx.stainedDisc({ P: function (u, v) { return P(u, v, 0.006); }, hint: hintP, cu: oc[0], cv: oc[1], r: orad, style: gStyle, seed: gSeed, seg: 16, refl: !!o.refl, key: o.key });
+          for (var q = 0; !styled && q < 6; q++) {
             var a0 = q / 6 * PI * 2, a1 = (q + 1) / 6 * PI * 2;
             poly(shrink([[oc[0], oc[1]], [oc[0] + cos(a0) * orad, oc[1] + sin(a0) * orad], [oc[0] + cos((a0 + a1) / 2) * orad * 1.0, oc[1] + sin((a0 + a1) / 2) * orad * 1.0], [oc[0] + cos(a1) * orad, oc[1] + sin(a1) * orad]], 0.88), q % 2 ? pickc(JEW.red, r) : pickc(JEW.amber, r), 0.006);
           }
@@ -295,7 +307,7 @@
             if (i === 0 || i === cols - 1) return pickc(JEW.amber, r);
             return ((i + j) % 5 === 0) ? pickc(JEW.red, r) : pickc(JEW.blue, r);
           }, 3);
-          var meds = o.figure ? [0.12, 0.88] : [0.17, 0.46, 0.75], mr = w * 0.33;
+          var meds = styled ? [] : (o.figure ? [0.12, 0.88] : [0.17, 0.46, 0.75]), mr = w * 0.33;
           meds.forEach(function (mf, mi) {
             var cv = y0 + hR * mf, cc = [pickc(JEW.red, r), pickc(JEW.cream, r), pickc(JEW.green, r), pickc(JEW.purple, r)][(mi + (o.seed || 0)) % 4];
             poly(circle(0, cv, mr, 16), C.glassLead, 0.009, 0);
@@ -306,7 +318,7 @@
             poly(circle(0, cv + mr * 0.38, mr * 0.16, 8), pickc(JEW.skin, r), 0.018, 0.02);
             poly(circle(0, cv + mr * 0.38, mr * 0.27, 10), pickc(JEW.amber, r), 0.015);
           });
-          if (o.figure) {   // 가운데 창: 붉은 옷의 큰 인물(색 면)
+          if (o.figure && !styled) {   // 가운데 창: 붉은 옷의 큰 인물(색 면)
             var fv = y0 + hR * 0.5;
             poly(circle(0, fv + 1.0, 0.36, 14), pickc(JEW.amber, r), 0.016);
             poly([[-0.46, fv - 1.3], [0.46, fv - 1.3], [0.3, fv + 0.62], [-0.3, fv + 0.62]], pickc(JEW.red, r), 0.02);
@@ -321,6 +333,7 @@
           var lead = [[-w / 2, y0], [w / 2, y0]];
           for (ti = 1; ti < 12; ti++) { var lu = w / 2 - w * ti / 12; lead.push([lu, y0 + tf(lu)]); }
           poly(lead, C.glassLead, 0, 0);
+          if (styled) { styledLancet(0, w / 2 - 0.03, y0, 0, rise - 0.035, 1); tn = -1; }
           for (ti = 0; ti <= tn; ti++) {
             var tu = -ta + 2 * ta * ti / tn, tp = [tu, max(tc[1], y0 + tf(tu) - 0.035)];
             tOut.push(tp); tMid.push([tc[0] + (tp[0] - tc[0]) * 0.58, tc[1] + (tp[1] - tc[1]) * 0.58]); tInn.push([tc[0] + (tp[0] - tc[0]) * 0.22, tc[1] + (tp[1] - tc[1]) * 0.22]);
@@ -329,19 +342,19 @@
             poly(shrink([tMid[ti], tMid[ti + 1], tOut[ti + 1], tOut[ti]], 0.9), pickc(PALE[ti % 2], r), 0.006, 0.04);
             poly(shrink([tInn[ti], tInn[ti + 1], tMid[ti + 1], tMid[ti]], 0.88), pickc(PALE[2 + ti % 2], r), 0.006, 0.04);
           }
-          poly(shrink(tInn.concat([tc]), 0.86), pickc(PALE[0], r), 0.006, 0.04);
+          if (!styled) poly(shrink(tInn.concat([tc]), 0.86), pickc(PALE[0], r), 0.006, 0.04);
         } else {                         // 단일 첨두창
           lancet(0, w / 2 - 0.02, y0, hR, rise - 0.02, tapestry, w > 1.25 ? 3 : 2);
         }
         if (o.beam) {
           var pw = P(0, y0 + hR * 0.5, 0), pn = P(0, 0, 1), p0 = P(0, 0, 0);
-          ctx.addWindowBeam({ x: pw[0], y: pw[1], z: pw[2], face: [pn[0] - p0[0], pn[2] - p0[2]], w: w * 0.8 * (o.beamK || 1), h: hR * 0.9, colors: [0x2457b5, 0xe0a93c, 0xb52a30], reach: o.beam });
+          ctx.addWindowBeam({ x: pw[0], y: pw[1], z: pw[2], face: [pn[0] - p0[0], pn[2] - p0[2]], w: w * 0.8 * (o.beamK || 1), h: hR * 0.9, colors: gBeam || [0x2457b5, 0xe0a93c, 0xb52a30], reach: o.beam });
         }
       }
       // 창 구멍 + 유리를 한 번에: 구멍은 slab 의 holes 에 넣고, 유리는 벽 바깥쪽(두께의 1/3)에 놓는다
-      function glazeInSlab(slabDef, h, inS, style, seed, beam, figure, refl, beamK) {
+      function glazeInSlab(slabDef, h, inS, style, seed, beam, figure, refl, beamK, glassStyle) {
         var d = inS > 0 ? slabDef.dA + 0.2 : slabDef.dB - 0.2;
-        windowGlass({ M: slabDef.map, d: d, inS: inS, uc: h.uc, y0: h.y0, w: h.w, hRect: h.y1 - h.y0, rise: h.rise, style: style, seed: seed, beam: beam, beamK: beamK, figure: figure, refl: refl });
+        windowGlass({ M: slabDef.map, d: d, inS: inS, uc: h.uc, y0: h.y0, w: h.w, hRect: h.y1 - h.y0, rise: h.rise, style: style, seed: seed, beam: beam, beamK: beamK, figure: figure, refl: refl, glass: glassStyle });
       }
 
       // ---------- 늑골 궁륭 ----------
@@ -532,7 +545,7 @@
           }
         });
         // 종탑 2층 창: 2연 첨두 + 원창(저녁 햇빛이 신랑으로 든다). 오르간 가운데 탑이 아래쪽을 가린다(실제와 같다).
-        glazeInSlab(up, tw, -1, 'twin', 5, 14);
+        glazeInSlab(up, tw, -1, 'twin', 5, 14, false, false, undefined, 'myeongdong_clere');   // 종탑 창: 도상 미확인 → 색 무늬창
       })();
 
       // ---------- 측랑 바깥벽(회반죽 + 회색 벽돌 창틀: 2연 첨두 + 원창) ----------
@@ -565,7 +578,7 @@
         var M = mapX(-25), u0 = s > 0 ? 4.5 : -9.0, u1 = s > 0 ? 9.0 : -4.5, uc = s * 6.75, RY = 6.6, RR = 0.7;
         var rh = holeCircle(uc, RY, RR);
         slab({ map: M, dA: -0.9, dB: 0, u0: u0, u1: u1, top: function () { return 9.5; }, holes: [rh], step: 3, faceA: [[0, 30, mOut]], faceB: [[0, 30, mPl]], rev: mGrey });
-        ctx.rose({ x: uc, y: RY, z: -25.32, face: [0, 1], r: RR - 0.04, petals: 6, seed: 21 + (s > 0 ? 1 : 0), beam: false, frame: false });
+        ctx.rose({ x: uc, y: RY, z: -25.32, face: [0, 1], r: RR - 0.04, petals: 6, seed: 21 + (s > 0 ? 1 : 0), beam: false, frame: false, glass: 'myeongdong_flower' });
         // 장미창 둘레 벽돌 테(두께 있는 고리) + 6엽 돌 살
         var n = 20, i, zr = [0, 0];
         for (i = 0; i < n; i++) {
@@ -594,7 +607,7 @@
         var defE = { map: Me, dA: s > 0 ? 0 : -0.9, dB: s > 0 ? 0.9 : 0, u0: -15, u1: -6, top: function (u) { return SPR + fe(u + 10.5); }, holes: hs, step: 0.8,
           faceA: s > 0 ? inner : [[0, 30, mOut]], faceB: s > 0 ? [[0, 30, mOut]] : inner, rev: mGrey };
         slab(defE);
-        hs.forEach(function (h, i) { glazeInSlab(defE, h, s > 0 ? -1 : 1, 'tapestry', 90 + i * 7 + (s > 0 ? 9 : 0), 11); surround(Me, h, 0.09, 0, s > 0 ? -0.03 : 0.03, true); });
+        hs.forEach(function (h, i) { glazeInSlab(defE, h, s > 0 ? -1 : 1, 'tapestry', 90 + i * 7 + (s > 0 ? 9 : 0), 11, false, false, undefined, 'myeongdong_figure'); surround(Me, h, 0.09, 0, s > 0 ? -0.03 : 0.03, true); });
         // 끝벽 몰딩: 걸레받이 + 세 창 아래 창대 띠(회색 벽돌)
         mBox(mGrey, Me, -15, -6, 0, 0.5, 0, s > 0 ? -0.07 : 0.07);
         mBox(mGrey, Me, -15, -6, 5.32, 5.5, 0, s > 0 ? -0.08 : 0.08);

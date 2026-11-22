@@ -210,8 +210,9 @@
       var GLASS_WARM = [0xf8eed2, 0xf1e2b8, 0xfff5dc, 0xe9d9a8];
       var GLASS_STAIN = [0x2f5db0, 0xc0392b, 0xe6b52e, 0x2f5db0, 0x3a8a5a, 0xe6b52e, 0x7a3fa0];
       var GLASS_SOFT = [0xf3e6c4, 0xe9d7a6, 0x4f72b0, 0xb5574a, 0xf6edd6, 0xd9b45a, 0x5e8f6c, 0xefe2bc];   // 밝은 호박·크림 바탕에 보석 색 몇 칸
+      // 정면 창 3: 그림 유리 기록이 없다(GLASS_ALL_CHURCHES_PLAN §5.3) → 절차 생성 '옅은 호박빛 격자 유리 + 색 테두리'(glass_gen clear_warm). 색 칸 격자(자리표시 모양)는 쓰지 않는다
       function winAt(o) {  // 벽 중심면에 유리창 + 틀
-        var a = { x: o.x, y: o.sill, z: o.z, face: o.face, w: o.w, h: o.h, top: o.top || 'round', pattern: o.pattern || 'lancet', colors: o.colors || GLASS_PALE, seed: o.seed || 3, frame: true, beam: !!o.beam, beamReach: o.reach || 9 };
+        var a = { x: o.x, y: o.sill, z: o.z, face: o.face, w: o.w, h: o.h, top: o.top || 'round', pattern: o.pattern || 'lancet', colors: o.colors || GLASS_PALE, seed: o.seed || 3, frame: true, beam: !!o.beam, beamReach: o.reach || 9, glass: o.glass };
         ctx.window(a);
       }
 
@@ -636,9 +637,9 @@
       wallOpen({ axis: 'z', n0: ZE, n1: ZE + 1.0, u0: -XO - 1.0, u1: XO + 1.0, y0: 0, y1: HC, color: STU, sillStone: MARB, sillIn: 0.1,
         wins: [{ c: 0, sill: 7.2, w: 3.2, h: 3.4, top: 'round' }, { c: -3.8, sill: 7.2, w: 1.3, h: 2.6, top: 'round' }, { c: 3.8, sill: 7.2, w: 1.3, h: 2.6, top: 'round' }] });
       // 정면 창 3: 예전 'grid'(0.4 m 색 격자 — 기하 자리표시 같다는 사용자 의견)를 다른 창과 같은 'lancet'(큰 칸) + 부드러운 보석 색으로
-      winAt({ x: 0, z: ZE + 0.5, sill: 7.2, w: 3.2, h: 3.4, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, seed: 3, beam: false, reach: 12 });
-      winAt({ x: -3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, seed: 4 });
-      winAt({ x: 3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, seed: 5 });
+      winAt({ x: 0, z: ZE + 0.5, sill: 7.2, w: 3.2, h: 3.4, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, glass: 'clear_warm', seed: 3, beam: false, reach: 12 });
+      winAt({ x: -3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, glass: 'clear_warm', seed: 4 });
+      winAt({ x: 3.8, z: ZE + 0.5, sill: 7.2, w: 1.3, h: 2.6, top: 'round', face: [0, -1], pattern: 'lancet', colors: GLASS_SOFT, glass: 'clear_warm', seed: 5 });
       [[0, 2.4, 4.7], [-7.97, 1.7, 3.8], [7.97, 1.7, 3.8], [-12, 1.7, 3.4], [12, 1.7, 3.4]].forEach(function (d) {
         var dx = d[0], dw = d[1], dh = d[2], zz = ZE, holy = dx === 12, pc = holy ? 0xb9934a : 0x7b6140;   // x=+12: 성문(밝은 청동 판 + 문 위 십자가)
         B(dx - dw / 2 - 0.25, dx - dw / 2, 0, dh + 0.25, zz - 0.1, zz + 0.05, MARB); B(dx + dw / 2, dx + dw / 2 + 0.25, 0, dh + 0.25, zz - 0.1, zz + 0.05, MARB);
@@ -982,7 +983,7 @@
         ctx.mesh(gw, matApseWall);
         wins.forEach(function (deg, i) {
           var a = deg * PI / 180, rr = R + 0.35;
-          winAt({ x: cx + rr * Math.cos(a), z: cz - rr * Math.sin(a), sill: wsill, w: 1.0, h: whead - wsill - 0.5, top: 'pointed', face: [-Math.cos(a), Math.sin(a)], seed: 60 + i, colors: GLASS_STAIN, pattern: 'lancet' });
+          winAt({ x: cx + rr * Math.cos(a), z: cz - rr * Math.sin(a), sill: wsill, w: 1.0, h: whead - wsill - 0.5, top: 'pointed', face: [-Math.cos(a), Math.sin(a)], seed: 60 + i, colors: GLASS_STAIN, pattern: 'lancet', glass: 'clear' });   // 실제: 희고 옅은 유리 + 격자 납틀(그림 없음, GLASS_ALL_CHURCHES_PLAN §5.3) → 무색 격자 유리
         });
         // 반돔(모자이크, 정면 투영 UV)
         var seg = Q(48), rings = Q(16), dp = [], du = [], di = [];

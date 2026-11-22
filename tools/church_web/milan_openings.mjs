@@ -15,7 +15,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
-const assets = path.resolve(here, '../../assets/church');
+const assets = process.env.CHURCH_ASSETS ? path.resolve(process.env.CHURCH_ASSETS) : path.resolve(here, '../../assets/church');   // CHURCH_ASSETS: 다른 사본(전/후 비교)
 const art = path.resolve(here, '../../art/glass_milan55');
 const BACK = 0x2c241f, SCALE = 0.47;
 
@@ -51,9 +51,9 @@ const ZONE_PREFIX = [['aisle', 'aisle'], ['trWest', 'transept_west_wall'], ['trE
   ['cfLower', 'counterfacade_lower'], ['cfUpper', 'counterfacade_upper'], ['clere', 'clerestory'], ['tiburio', 'tiburio'], ['amb', 'ambulatory'], ['chap', 'transept_chapel']];
 const zoneOfKey = (key) => { const z = ZONE_PREFIX.find((p) => key.startsWith(p[0])); return z ? z[1] : null; };
 
-export const CORE = ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'];
+export const CORE = ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'glass_gen.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'];
 /** 샌드박스에 assets/church 의 파일을 차례로 싣는다(시험 공용) */
-export function runFiles(sb, files) { for (const f of files) vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f }); return sb; }
+export function runFiles(sb, files) { for (const f of files) { if (f === 'glass_gen.js' && !fs.existsSync(path.join(assets, f))) continue; vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f }); } return sb; }   // glass_gen.js 가 없는 옛 사본(전/후 비교)도 돈다
 
 /** 밀라노 빌더를 돌려 개구부 목록을 돌려준다. opts.search: '?photoglass=0' 등 */
 export function measureMilan(opts = {}) {
@@ -149,7 +149,8 @@ export function measureMilan(opts = {}) {
   out.sort((a, b2) => order.indexOf(a.zone) - order.indexOf(b2.zone) || a.key.localeCompare(b2.key));
   return { colliders: S.colliders.slice(), zones: S.zones.slice(), glassTriangles: glassTris.reduce((n, t) => n + t.length / 9, 0), stats: ctx.stats,
     anchors: anchors.map((a) => ({ key: a.key, kind: a.kind, x: r3(a.x), y: r3(a.y), z: r3(a.z), nx: r3(a.nx) + 0, nz: r3(a.nz) + 0, yawDeg: r2(a.yaw * 180 / Math.PI), w: r3(a.w), h: r3(a.h), sill: r3(a.sill), spring: r3(a.spring), apex: r3(a.apex), lights: a.lights, photoH: r3(a.photoH) })),
-    layout: b.layout, consts: { ...L, zk: Array.from({ length: 14 }, (_, k) => r3(zk(k))) }, openings: out, glassSlots: slots, beams: (S.beams || []).length };
+    layout: b.layout, consts: { ...L, zk: Array.from({ length: 14 }, (_, k) => r3(zk(k))) }, openings: out, glassSlots: slots, beams: (S.beams || []).length,
+    glassUse: (S.glassUse || []).map((u) => ({ key: u.key, style: u.style, kind: u.kind, at: u.at ? u.at.map(r3) : null })) };
 }
 
 // ---- 55행 대조 ----

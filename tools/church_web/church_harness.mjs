@@ -50,7 +50,7 @@ export function loadChurches(opts = {}) {
   }
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
   // photos(앱과 같은 지오메트리): scan3d.js 도 싣는다 — 실물 스캔 성상을 세우면 대체 도형(절차 십자가 등)을 그리지 않는다.
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', ...(opts.photos ? ['scan3d.js'] : []), 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', ...(opts.photos ? ['scan3d.js'] : []), 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'glass_gen.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
   fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort().forEach(run);
   const out = [];
   for (const id of Object.keys(sb.ChurchBuilders)) {

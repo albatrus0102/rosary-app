@@ -1087,7 +1087,8 @@
       openWall({ F: FE, u0: -XA, u1: XA, y0: Y_SPLIT, y1: Y_TOP, t: 0.6, color: 0xdccfae,
         holes: [winHole(-4.2, 9.6, 1.0, 2.2), winHole(4.2, 9.6, 1.0, 2.2), { u: 0, w: 2 * ROSE_R + 0.08, yb: ROSE_Y, h: 0, top: 'circle' }] });
       [-4.2, 4.2].forEach(function (x, i) { mkWindow(FE, -x, 9.6, 1.0, 2.2, 'round', 200 + i * 2, true, 0.28, 12); var h = winHole(-x, 9.6, 1.0, 2.2); ctx.arch({ x: x, y: h.yb + h.h, z: Z_E - 0.05, span: h.w + 0.05, rise: h.w / 2, axis: 'x', t: 0.16, depth: 0.12, color: GOLD }); });
-      ctx.rose({ x: 0, y: ROSE_Y, z: Z_E + 0.3, face: [0, -1], r: ROSE_R, petals: 12, colors: GL, seed: 201, frame: false, beam: true, beamReach: 12 });
+      ctx.rose({ x: 0, y: ROSE_Y, z: Z_E + 0.3, face: [0, -1], r: ROSE_R, petals: 12, colors: GL, seed: 201, frame: false, beam: true, beamReach: 12,
+        glass: 'marian_abstract' });   // 실제: 하이날 1995 장미창(저작권 존속) → 인물·상징 없는 추상 방사 색면(원작 구도를 옮기지 않는다)
       for (var rk = 0; rk < 24; rk++) {   // 원형 창 둘레 금 몰딩
         var ra0 = 2 * PI * rk / 24, ra1 = 2 * PI * (rk + 1) / 24, rr = ROSE_R + 0.13;
         MET.addBeam([Math.cos(ra0) * rr, ROSE_Y + Math.sin(ra0) * rr, Z_E - 0.05], [Math.cos(ra1) * rr, ROSE_Y + Math.sin(ra1) * rr, Z_E - 0.05], 0.16, 0.12, GOLD);

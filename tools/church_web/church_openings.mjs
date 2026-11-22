@@ -23,7 +23,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
-const assets = path.resolve(here, '../../assets/church');
+const assets = process.env.CHURCH_ASSETS ? path.resolve(process.env.CHURCH_ASSETS) : path.resolve(here, '../../assets/church');   // CHURCH_ASSETS: 다른 사본(전/후 비교)
 
 // church_harness.mjs / milan_openings.mjs 와 같은 가짜 canvas 샌드박스
 function makeSandbox() {
@@ -79,15 +79,18 @@ const KIND_KO = { stained: '절차적 색유리', warm: '절차적 옅은 호박
 export function measureRaw(id, opts = {}) {
   const sb = makeSandbox();
   if (opts.search) sb.location.search = opts.search;
-  const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_' + id + '.js'].forEach(run);
+  const run = (f) => { if (f === 'glass_gen.js' && !fs.existsSync(path.join(assets, f))) return; vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f }); };
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'glass_gen.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_' + id + '.js'].forEach(run);
   const b = sb.ChurchBuilders[id];
   if (!b) throw new Error('빌더 없음: ' + id);
   const ctx = sb.ChurchKit.createContext({ layout: b.layout, quality: opts.quality || 'low' });
   const tris = [];   // 손으로 지은 유리 삼각형 {v:[9], col, hint}
   const glassAdd = ctx.glass.addTris.bind(ctx.glass);
   ctx.glass.addTris = function (verts, color, hint, o) {
-    for (let i = 0; i + 8 < verts.length; i += 9) tris.push({ v: Array.prototype.slice.call(verts, i, i + 9), col: Array.isArray(color) ? null : color, hint: hint ? Array.from(hint) : null });
+    // 색: 숫자(hex) 또는 THREE.Color(빌더가 G.toColor 로 넘김) → hex. 정점별 색 배열은 첫 색만(옅음/색유리 판정용)
+    const hx = (c) => (c == null ? null : (typeof c === 'number' ? c : (c.getHex ? c.getHex() : null)));
+    const col = Array.isArray(color) ? hx(color[0]) : hx(color);
+    for (let i = 0; i + 8 < verts.length; i += 9) tris.push({ v: Array.prototype.slice.call(verts, i, i + 9), col, hint: hint ? Array.from(hint) : null });
     return glassAdd(verts, color, hint, o);
   };
   let glassObjs = 0;
@@ -178,17 +181,21 @@ export function measure(id, opts = {}) {
     const F = wn.F, rs = rise(wn.top, wn.w), H = wn.h + rs;
     out.push({ src: 'kit.window', shape: wn.top === 'pointed' ? 'pointed' : (wn.top === 'round' || wn.top === 'trefoil' ? 'round' : 'rect'), top: wn.top, pattern: wn.pattern,
       x: wn.x, y: wn.y + H / 2, z: wn.z, nx: F.nx, nz: F.nz, w: wn.w, h: H, sill: wn.y, spring: wn.y + wn.h, apex: wn.y + H, rise: rs,
-      colors: wn.colors || null, painted: !!wn.painted, photo: wn.photo ? wn.photo.win : null, photoSlot: wn.photo ? wn.photo.slot + '[' + wn.photo.index + ']' : null, beam: wn.beam !== false });
+      colors: wn.colors || null, painted: !!wn.painted, glass: wn.glass ? [wn.glass] : null, photo: wn.photo ? wn.photo.win : null, photoSlot: wn.photo ? wn.photo.slot + '[' + wn.photo.index + ']' : null, beam: wn.beam !== false });
   }
   for (const rs of S.roses) {
     const F = rs.F;
     out.push({ src: 'kit.rose', shape: 'circle', pattern: 'rose' + (rs.petals || 12), x: rs.x, y: rs.y, z: rs.z, nx: F.nx, nz: F.nz, w: rs.r * 2, h: rs.r * 2, sill: rs.y - rs.r, spring: rs.y, apex: rs.y + rs.r, rise: rs.r,
-      colors: rs.colors || null, photo: rs.photo ? rs.photo.win : null, photoSlot: rs.photo ? rs.photo.slot + '[' + rs.photo.index + ']' : null, beam: !!rs.beam });
+      colors: rs.colors || null, glass: rs.glass ? [rs.glass] : null, photo: rs.photo ? rs.photo.win : null, photoSlot: rs.photo ? rs.photo.slot + '[' + rs.photo.index + ']' : null, beam: !!rs.beam });
   }
   const ad = ADAPTERS[id] || {};
   const custom = clusterTris(raw.tris, ad.cluster || {});
+  const uses = (S.glassUse || []).filter((u) => u.at);
   for (const c of custom) {
     c.shape = shapeOfCustom(c);
+    // 빌더가 손으로 지은 창에 건 절차 생성 무늬(ctx.stained·stainedDisc, glass_gen.js): 무늬 판 가운데가 이 묶음 안에 있으면 그 양식
+    const gs = uses.filter((u) => Math.abs(u.at[1] - c.y) <= c.h / 2 + 0.3 && Math.hypot(u.at[0] - c.x, u.at[2] - c.z) <= c.w / 2 + 0.3 && Math.abs((u.at[0] - c.x) * c.nx + (u.at[2] - c.z) * c.nz) < 0.25);
+    if (gs.length) c.glass = [...new Set(gs.map((u) => u.style))];
     // 키트 장미창 뒤에 빌더가 덧댄 납틀·살(같은 자리의 손 지은 유리)은 같은 창이므로 따로 세지 않는다
     if (out.some((k) => k.src !== 'custom' && Math.hypot(k.x - c.x, k.y - c.y, k.z - c.z) < 0.35 && Math.abs(k.w - c.w) < 0.4)) continue;
     out.push(c);
@@ -202,7 +209,7 @@ export function measure(id, opts = {}) {
       m.x = g.reduce((a, o) => a + o.x, 0) / n; m.z = g.reduce((a, o) => a + o.z, 0) / n; m.y = (m.sill + m.apex) / 2;
       let nx = g.reduce((a, o) => a + o.nx, 0), nz = g.reduce((a, o) => a + o.nz, 0); const l = Math.hypot(nx, nz) || 1; m.nx = nx / l; m.nz = nz / l;
       m.spring = Math.min(...g.map((o) => o.spring)); m.rise = m.apex - m.spring; m.tris = g.reduce((a, o) => a + (o.tris || 0), 0); m.parts = n;
-      m.area = g.reduce((a, o) => a + (o.area || 0), 0); m.fill = m.area / Math.max(1e-6, m.w * m.h); m.shape = n > 1 ? 'round' : m.shape;
+      m.area = g.reduce((a, o) => a + (o.area || 0), 0); m.glass = [...new Set(g.flatMap((o) => o.glass || []))]; if (!m.glass.length) m.glass = null; m.fill = m.area / Math.max(1e-6, m.w * m.h); m.shape = n > 1 ? 'round' : m.shape;
       const cs = []; g.forEach((o) => (o.colors || []).forEach((c) => { if (!cs.includes(c)) cs.push(c); })); m.colors = cs;
       keep.push(m);
     }
@@ -224,8 +231,8 @@ export function measure(id, opts = {}) {
       x: r3(o.x), y: r3(o.y), z: r3(o.z), nx: r3(o.nx), nz: r3(o.nz), yawDeg: o.horiz ? null : yawOf(o.nx, o.nz),
       w: r3(o.w), h: r3(o.h), sill: r3(o.sill), spring: r3(o.spring), apex: r3(o.apex), rise: r3(o.rise), aspect: r3(o.w / o.h),
       realW: r2(o.w / scale), realH: r2(o.h / scale), realSill: r2(o.sill / scale),
-      palette: pk, colors: (o.colors || []).slice(0, 6).map(hex), photo: o.photo || null, photoSlot: o.photoSlot || null,
-      glassNow: o.photo ? '사진 슬롯 ' + o.photo + ' (' + o.photoSlot + ')' : KIND_KO[pk] + (o.pattern ? ' · ' + o.pattern : ''),
+      palette: pk, colors: (o.colors || []).slice(0, 6).map(hex), photo: o.photo || null, photoSlot: o.photoSlot || null, glass: o.glass || null,
+      glassNow: o.photo ? '사진 슬롯 ' + o.photo + ' (' + o.photoSlot + ')' : (o.glass ? '절차 생성 무늬 ' + o.glass.join('+') : KIND_KO[pk] + (o.pattern ? ' · ' + o.pattern : '')),
       tris: o.tris || null, fill: o.fill ? r2(o.fill) : null
     });
   }
@@ -382,6 +389,22 @@ ADAPTERS.stpaul = {
 };
 
 // ---- 우리 본당 (ch_basic.js): 가상의 본당(실제 건물 없음). 입구 +z, 제대 -z. 방위는 정해져 있지 않다 → 좌(L, -x)/우(R, +x)만 쓴다. 100%.
+// 당고개(지하 성당): 옆벽 한지 유리화 빛 상자 28판 = 줄(란셋)마다 아래 직사각 판 + 위 뾰족 아치 판. 빌더가 ctx.window(painted)로 자리만 등록한다.
+ADAPTERS.danggogae = {
+  axes: { altar: '-z', entrance: '+z', plusX: '오른쪽 R', minusX: '왼쪽 L', summary: '입구 +z → 제대 -z(지하 성당, 바깥 창 없음 — 뒤에서 불 밝힌 한지 빛 상자).' },
+  rules: [
+    { zone: 'hanji_lower', test: (e) => e.shape === 'rect', side: Lr, prefix: 'hanjiLow', always: true },
+    { zone: 'hanji_upper', test: (e) => e.shape === 'pointed', side: Lr, prefix: 'hanjiTop', always: true }
+  ]
+};
+// 여의도동: 옆벽 위 좁은 창 12(실물 미확인 — 옅은 빛 유리) + 피어와 드럼 사이의 키 큰 현대 색유리 2
+ADAPTERS.yeouido = {
+  axes: { altar: '-z', entrance: '+z', plusX: '오른쪽 R', minusX: '왼쪽 L', summary: '입구 +z → 제대 -z.' },
+  rules: [
+    { zone: 'front', test: (e) => e.z < -9, side: Lr, prefix: 'front', always: false, key: (e) => 'front' + (e.x < 0 ? 'L' : 'R') },
+    { zone: 'side', test: (e) => near(Math.abs(e.x), 11, 0.6), side: Lr, prefix: 'side', always: true }
+  ]
+};
 ADAPTERS.basic = {
   axes: { altar: '-z', entrance: '+z', plusX: '오른쪽 R(방위 없음)', minusX: '왼쪽 L(방위 없음)',
     summary: '입구 +z → 제대 -z. 가상의 본당이라 방위가 없다(제대를 볼 때 오른쪽 R = +x, 왼쪽 L = -x).' },

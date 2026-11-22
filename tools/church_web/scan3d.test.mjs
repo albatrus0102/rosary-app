@@ -25,7 +25,7 @@ function sandbox({ head = true, packs = [], failLoad = [] } = {}) {
   sb.location = { search: '' }; sb.navigator = { userAgent: 'node' }; sb.Image = function () {};
   vm.createContext(sb);
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scan3d.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scan3d.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'glass_gen.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
   packs.forEach((k) => run('scan3d_' + k + '.js'));
   failLoad.forEach((k) => { sb.ChurchArt.scans3d[k].load = () => Promise.reject(new Error('test: decode failed')); });
   return { sb, run };

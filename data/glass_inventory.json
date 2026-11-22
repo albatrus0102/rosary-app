@@ -1,0 +1,8995 @@
+{
+ "generated": "tools/church_web/glass_inventory.mjs",
+ "assets": "assets/church",
+ "summary": {
+  "basic": {
+   "openings": 13,
+   "stained": 0,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 0,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 13,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 13,
+   "plainModel": 0,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "stpeter": {
+   "openings": 64,
+   "stained": 1,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 59,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 4,
+   "photo": 1,
+   "gen": 0,
+   "plainModel": 63,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "lateran": {
+   "openings": 33,
+   "stained": 0,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 33,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 7,
+   "plainModel": 26,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "maggiore": {
+   "openings": 68,
+   "stained": 0,
+   "protected": 1,
+   "unverified": 0,
+   "plain": 67,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 1,
+   "plainModel": 67,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "stpaul": {
+   "openings": 55,
+   "stained": 0,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 0,
+   "alabaster": 55,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 42,
+   "gen": 13,
+   "plainModel": 0,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "milan": {
+   "openings": 78,
+   "stained": 57,
+   "protected": 15,
+   "unverified": 1,
+   "plain": 0,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 5,
+   "photo": 1,
+   "gen": 72,
+   "plainModel": 5,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "florence": {
+   "openings": 57,
+   "stained": 44,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 13,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 3,
+   "gen": 54,
+   "plainModel": 0,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "myeongdong": {
+   "openings": 53,
+   "stained": 35,
+   "protected": 1,
+   "unverified": 17,
+   "plain": 0,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 53,
+   "plainModel": 0,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  },
+  "danggogae": {
+   "openings": 28,
+   "stained": 0,
+   "protected": 0,
+   "unverified": 0,
+   "plain": 0,
+   "alabaster": 0,
+   "hanji": 28,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 0,
+   "plainModel": 0,
+   "cells": 0,
+   "hanjiModel": 28,
+   "gaps": 0
+  },
+  "yeouido": {
+   "openings": 14,
+   "stained": 0,
+   "protected": 2,
+   "unverified": 0,
+   "plain": 12,
+   "alabaster": 0,
+   "hanji": 0,
+   "virtual": 0,
+   "notWindow": 0,
+   "photo": 0,
+   "gen": 2,
+   "plainModel": 12,
+   "cells": 0,
+   "hanjiModel": 0,
+   "gaps": 0
+  }
+ },
+ "churches": {
+  "basic": [
+   {
+    "key": "entrance_rose",
+    "zone": "entrance",
+    "shape": "circle",
+    "size": "2.60×2.60",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "entrance_transom",
+    "zone": "entrance",
+    "shape": "round",
+    "size": "3.60×1.90",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_rose",
+    "zone": "sanctuary",
+    "shape": "circle",
+    "size": "3.00×3.00",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b1",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b2",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b3",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b4",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b5",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b1",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b2",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b3",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b4",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b5",
+    "zone": "side",
+    "shape": "pointed",
+    "size": "1.90×3.27",
+    "real": {
+     "kind": "virtual",
+     "what": "가상의 본당(실제 창 없음) — 창작 무늬",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §7"
+    },
+    "model": {
+     "release": "gen:parish",
+     "dev": "gen:parish",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "stpeter": [
+   {
+    "key": "gloria",
+    "zone": "gloria",
+    "shape": "ellipse",
+    "size": "1.73×2.50",
+    "real": {
+     "kind": "stained",
+     "what": "성령의 비둘기",
+     "era": "1657–66 베르니니",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "photo:dove_stpeter",
+     "dev": "photo:dove_stpeter",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "entrance_door_light",
+    "zone": "door_light",
+    "shape": "round",
+    "size": "2.60×5.25",
+    "real": {
+     "kind": "not_window",
+     "what": "창이 아닌 빛 면(문 바깥빛·경당 벽 안 빛)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.2"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_upper",
+    "zone": "facade",
+    "shape": "round",
+    "size": "3.00×2.73",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b1",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b2",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b3",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b4",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b5",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b6",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyN_b7",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b1",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b2",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b3",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b4",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b5",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b6",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleSkyS_b7",
+    "zone": "aisle_skylight",
+    "shape": "horizontal",
+    "size": "0.90×0.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelLightN_b1",
+    "zone": "chapel_light",
+    "shape": "rect",
+    "size": "1.00×2.40",
+    "real": {
+     "kind": "not_window",
+     "what": "창이 아닌 빛 면(문 바깥빛·경당 벽 안 빛)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.2"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelLightS_b1",
+    "zone": "chapel_light",
+    "shape": "rect",
+    "size": "1.00×2.40",
+    "real": {
+     "kind": "not_window",
+     "what": "창이 아닌 빛 면(문 바깥빛·경당 벽 안 빛)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.2"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelLightS_b2",
+    "zone": "chapel_light",
+    "shape": "rect",
+    "size": "1.00×2.40",
+    "real": {
+     "kind": "not_window",
+     "what": "창이 아닌 빛 면(문 바깥빛·경당 벽 안 빛)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.2"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_NE",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_NE_2",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_NW",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_NW_2",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_SE",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_SE_2",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_SW",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "lantern_SW_2",
+    "zone": "lantern",
+    "shape": "rect",
+    "size": "1.01×1.90",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_01",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_02",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_03",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_04",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_05",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_06",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_07",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_08",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_09",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_10",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_11",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_12",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_13",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_14",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_15",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_16",
+    "zone": "drum",
+    "shape": "rect",
+    "size": "1.73×3.80",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunN_b1",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunN_b2",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunN_b3",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunN_b4",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunS_b1",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunS_b2",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunS_b3",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveLunS_b4",
+    "zone": "nave_lunette",
+    "shape": "round",
+    "size": "2.40×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunN_b1",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunN_b2",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunN_b3",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunN_b4",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunS_b1",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunS_b2",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunS_b3",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trLunS_b4",
+    "zone": "transept_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apseLunN_b1",
+    "zone": "apse_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apseLunN_b2",
+    "zone": "apse_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apseLunS_b1",
+    "zone": "apse_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apseLunS_b2",
+    "zone": "apse_lunette",
+    "shape": "round",
+    "size": "2.20×2.46",
+    "real": {
+     "kind": "clear",
+     "what": "무색 유리 격자(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §3.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "lateran": [
+   {
+    "key": "facade_center",
+    "zone": "facade",
+    "shape": "round",
+    "size": "3.20×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear_warm",
+     "dev": "gen:clear_warm",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_N",
+    "zone": "facade",
+    "shape": "round",
+    "size": "1.30×3.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear_warm",
+     "dev": "gen:clear_warm",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_S",
+    "zone": "facade",
+    "shape": "round",
+    "size": "1.30×3.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear_warm",
+     "dev": "gen:clear_warm",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b1",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b2",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b3",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "2.80×3.40",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b4",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b5",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b1",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b2",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b3",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "2.80×3.40",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b4",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b5",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.80×2.90",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBackN_inner",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBackN_outer",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBackS_inner",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBackS_outer",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_b1",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.10×2.95",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_b2",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.10×2.95",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_b1",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.10×2.95",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_b2",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.10×2.95",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trFrontN_inner",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trFrontN_outer",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trFrontS_inner",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trFrontS_outer",
+    "zone": "transept",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "choirN_b1",
+    "zone": "choir",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "choirN_b2",
+    "zone": "choir",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "choirS_b1",
+    "zone": "choir",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "choirS_b2",
+    "zone": "choir",
+    "shape": "round",
+    "size": "1.50×3.15",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w1",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.00×2.62",
+    "real": {
+     "kind": "clear",
+     "what": "희고 옅은 유리 + 격자 납틀(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear",
+     "dev": "gen:clear",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w2",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.00×2.62",
+    "real": {
+     "kind": "clear",
+     "what": "희고 옅은 유리 + 격자 납틀(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear",
+     "dev": "gen:clear",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w3",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.00×2.62",
+    "real": {
+     "kind": "clear",
+     "what": "희고 옅은 유리 + 격자 납틀(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear",
+     "dev": "gen:clear",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w4",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.00×2.62",
+    "real": {
+     "kind": "clear",
+     "what": "희고 옅은 유리 + 격자 납틀(그림 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §5.3"
+    },
+    "model": {
+     "release": "gen:clear",
+     "dev": "gen:clear",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "maggiore": [
+   {
+    "key": "facade_center",
+    "zone": "facade",
+    "shape": "circle",
+    "size": "3.60×3.60",
+    "real": {
+     "kind": "stained_protected",
+     "what": "장미창 — 교회의 어머니 성모",
+     "era": "1995 하이날",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "gen:marian_abstract",
+     "dev": "gen:marian_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_L",
+    "zone": "facade",
+    "shape": "round",
+    "size": "1.00×2.70",
+    "real": {
+     "kind": "plain",
+     "what": "정면의 다른 창(확인 못 함 — 그림 유리 기록 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.4"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_R",
+    "zone": "facade",
+    "shape": "round",
+    "size": "1.00×2.70",
+    "real": {
+     "kind": "plain",
+     "what": "정면의 다른 창(확인 못 함 — 그림 유리 기록 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.4"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facadeAisleL",
+    "zone": "facade_aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "정면의 다른 창(확인 못 함 — 그림 유리 기록 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.4"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facadeAisleR",
+    "zone": "facade_aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "정면의 다른 창(확인 못 함 — 그림 유리 기록 없음)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.4"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b1",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b2",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b3",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b4",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b5",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b6",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b7",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b8",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b9",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_b10",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b1",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b2",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b3",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b4",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b5",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b6",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b7",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b8",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b9",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_b10",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.00×2.60",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b1",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b2",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b3",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b4",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b5",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b6",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_b7",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b1",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b2",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b3",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b4",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b5",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b6",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_b7",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "0.90×1.25",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w1",
+    "zone": "apse",
+    "shape": "round",
+    "size": "0.60×2.50",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w2",
+    "zone": "apse",
+    "shape": "round",
+    "size": "0.60×2.50",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w3",
+    "zone": "apse",
+    "shape": "round",
+    "size": "0.60×2.50",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w4",
+    "zone": "apse",
+    "shape": "round",
+    "size": "0.60×2.50",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_w5",
+    "zone": "apse",
+    "shape": "round",
+    "size": "0.60×2.50",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b1",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "3.08×1.54",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b2",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b3",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b4",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b5",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b6",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "3.08×1.54",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b7",
+    "zone": "chapel",
+    "shape": "horizontal",
+    "size": "1.56×1.56",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b8",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b9",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b10",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b11",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelL_b12",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "3.08×1.54",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b1",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "3.08×1.54",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b2",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b3",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b4",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b5",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b6",
+    "zone": "chapel",
+    "shape": "horizontal",
+    "size": "1.56×1.56",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b7",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "3.08×1.54",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b8",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b9",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b10",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b11",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "1.00×1.71",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapelR_b12",
+    "zone": "chapel",
+    "shape": "round",
+    "size": "3.08×1.54",
+    "real": {
+     "kind": "plain",
+     "what": "그림 유리 없음(무색·옅은 유리)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §4.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "stpaul": [
+   {
+    "key": "facade_center",
+    "zone": "facade",
+    "shape": "round",
+    "size": "2.20×4.30",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_N",
+    "zone": "facade",
+    "shape": "round",
+    "size": "1.80×3.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_S",
+    "zone": "facade",
+    "shape": "round",
+    "size": "1.80×3.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b1",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b2",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b3",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b4",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b5",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b6",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b7",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b8",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b9",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b10",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b11",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b1",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b2",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b3",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b4",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b5",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b6",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b7",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b8",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b9",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b10",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.95",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b11",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "1.50×2.88",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b1",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b2",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b3",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b4",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b5",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b6",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b7",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b8",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b9",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b10",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b1",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b2",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b3",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b4",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b5",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b6",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b7",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b8",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b9",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.53",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_1",
+     "dev": "photo:alabaster_stpaul_1",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b10",
+    "zone": "clerestory",
+    "shape": "round",
+    "size": "1.32×2.60",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "photo:alabaster_stpaul_2",
+     "dev": "photo:alabaster_stpaul_2",
+     "fallback": "gen:alabaster"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_b1",
+    "zone": "transept_end",
+    "shape": "round",
+    "size": "1.60×4.10",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_b2",
+    "zone": "transept_end",
+    "shape": "round",
+    "size": "1.60×4.10",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_b3",
+    "zone": "transept_end",
+    "shape": "round",
+    "size": "1.60×4.10",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_b1",
+    "zone": "transept_end",
+    "shape": "round",
+    "size": "1.60×4.10",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_b2",
+    "zone": "transept_end",
+    "shape": "round",
+    "size": "1.60×4.10",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_b3",
+    "zone": "transept_end",
+    "shape": "round",
+    "size": "1.60×4.10",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBack_w1",
+    "zone": "transept_back",
+    "shape": "round",
+    "size": "1.20×4.00",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBack_w2",
+    "zone": "transept_back",
+    "shape": "round",
+    "size": "1.20×4.00",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBack_w3",
+    "zone": "transept_back",
+    "shape": "round",
+    "size": "1.20×4.00",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trBack_w4",
+    "zone": "transept_back",
+    "shape": "round",
+    "size": "1.20×4.00",
+    "real": {
+     "kind": "alabaster",
+     "what": "설화석고 판(1891 폭발로 색유리 소실 뒤)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §6.3"
+    },
+    "model": {
+     "release": "gen:alabaster",
+     "dev": "gen:alabaster",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "milan": [
+   {
+    "key": "aisleN_b1",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V39 다윗 임금의 생애",
+     "era": "1939–47 카르피",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b2",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V38 15~19세기 패널 모음",
+     "era": "15~19세기",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b3",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V37 성 미카엘과 악마들의 전투",
+     "era": "1939–47 부파(1956 사망 — 2026년 말까지 보호)",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b4",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V36 네 관 쓴 순교 성인",
+     "era": "1567–69",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b5",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V35 성모의 영광",
+     "era": "1565–67",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b6",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V34 성녀 헬레나·십자가 발견",
+     "era": "1570–77",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b7",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×5.80",
+    "real": {
+     "kind": "stained",
+     "what": "V33 성 요셉의 생애",
+     "era": "1576–1657",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b8",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×5.80",
+    "real": {
+     "kind": "stained",
+     "what": "V32 성 암브로시오의 생애",
+     "era": "1888–95 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b1",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V01 성 요한 사도의 생애",
+     "era": "1473–78 de Mottis",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b2",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V02 구약 이야기(옛 패널 모음)",
+     "era": "1417–1548",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b3",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V03 구약 이야기",
+     "era": "1417–1548",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b4",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V04 구약 이야기",
+     "era": "1417–1548",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b5",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V05 신약 이야기(포파풍)",
+     "era": "15세기 말~16세기 전반",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b6",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×7.80",
+    "real": {
+     "kind": "stained",
+     "what": "V06 성 엘리지오의 생애",
+     "era": "1480–86",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b7",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×5.80",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V07 복자 페라리·슈스터 추기경",
+     "era": "1988 하이날",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b8",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.75×5.80",
+    "real": {
+     "kind": "stained",
+     "what": "V08 성녀 아녜스·테클라·눈의 성모",
+     "era": "1897–1905 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.1·3.5"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trWestN",
+    "zone": "transept_west_wall",
+    "shape": "pointed",
+    "size": "1.41×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V31 사도들(입상)·성모 대관",
+     "era": "1567",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_saints16",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_saints16",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trWestS",
+    "zone": "transept_west_wall",
+    "shape": "pointed",
+    "size": "1.41×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V09 성 제르바시오·프로타시오",
+     "era": "1846–49 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_east",
+    "zone": "transept_end",
+    "shape": "pointed",
+    "size": "1.66×9.00",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V26 성 카롤로 보로메오의 생애",
+     "era": "1910 벨트라미·부파 외(부파 보호 기간)",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndN_west",
+    "zone": "transept_end",
+    "shape": "pointed",
+    "size": "1.66×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V30 시에나의 성녀 카타리나",
+     "era": "1562–67",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_east",
+    "zone": "transept_end",
+    "shape": "pointed",
+    "size": "1.66×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V14 알렉산드리아의 성녀 카타리나",
+     "era": "1549–57",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndS_west",
+    "zone": "transept_end",
+    "shape": "pointed",
+    "size": "1.66×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V10 성 야고보의 생애",
+     "era": "1562–66",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapN_c",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "1.02×7.69",
+    "real": {
+     "kind": "stained",
+     "what": "V28 성모의 생애",
+     "era": "1842–47 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapN_e",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "1.02×7.69",
+    "real": {
+     "kind": "stained",
+     "what": "V27 성모의 생애",
+     "era": "1842–47 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapN_upper",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "3.60×6.70",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "북익랑 경당 위 큰 창(번호 미확인)",
+     "era": "미확인",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapN_w",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "1.02×7.69",
+    "real": {
+     "kind": "stained",
+     "what": "V29 성모의 생애",
+     "era": "1842–47 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapS_c",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "1.02×7.69",
+    "real": {
+     "kind": "stained",
+     "what": "V12 성 요한 보노의 영광",
+     "era": "1838–42 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapS_e",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "1.02×7.69",
+    "real": {
+     "kind": "stained",
+     "what": "V13 성 요한 보노",
+     "era": "1838–42 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapS_upper",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "3.60×6.70",
+    "real": {
+     "kind": "stained",
+     "what": "V12bis 구세주 그리스도와 성인들",
+     "era": "1838–42 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "chapS_w",
+    "zone": "transept_chapel",
+    "shape": "pointed",
+    "size": "1.02×7.69",
+    "real": {
+     "kind": "stained",
+     "what": "V11 성 요한 보노",
+     "era": "1838–42 베르티니",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEastN",
+    "zone": "transept_east_wall",
+    "shape": "pointed",
+    "size": "1.66×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V25 다마스쿠스의 성 요한",
+     "era": "1479–89",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEastS",
+    "zone": "transept_east_wall",
+    "shape": "pointed",
+    "size": "1.66×9.00",
+    "real": {
+     "kind": "stained",
+     "what": "V15 투르의 성 마르티노",
+     "era": "1570–17세기 초",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_narr",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_narr",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_center",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "4.80×9.10",
+    "real": {
+     "kind": "stained",
+     "what": "V20 요한 묵시록(라차 창)",
+     "era": "1416–1545; 하부 1834–38",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_narr + photo:milan_apse_lower(아래 일부)",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 photo:milan_apse_lower(아래 일부)",
+     "fallback": "gen:milan_narr"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_north",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "3.50×8.10",
+    "real": {
+     "kind": "stained",
+     "what": "V21 구약 이야기",
+     "era": "1835–65 베르티니 공방",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_apse19",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_apse19",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_south",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "3.50×8.10",
+    "real": {
+     "kind": "stained",
+     "what": "V19 신약 이야기",
+     "era": "1838–65 베르티니 공방",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_apse19",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_apse19",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfDoor_c",
+    "zone": "counterfacade_door",
+    "shape": "pointed",
+    "size": "2.70×6.50",
+    "real": {
+     "kind": "not_window",
+     "what": "정문 문짝(나무)",
+     "era": "",
+     "src": "MILAN_GLASS_RESEARCH.md §3.6"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfDoor_n1",
+    "zone": "counterfacade_door",
+    "shape": "pointed",
+    "size": "2.00×5.30",
+    "real": {
+     "kind": "not_window",
+     "what": "정문 문짝(나무)",
+     "era": "",
+     "src": "MILAN_GLASS_RESEARCH.md §3.6"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfDoor_n2",
+    "zone": "counterfacade_door",
+    "shape": "pointed",
+    "size": "2.00×5.30",
+    "real": {
+     "kind": "not_window",
+     "what": "정문 문짝(나무)",
+     "era": "",
+     "src": "MILAN_GLASS_RESEARCH.md §3.6"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfDoor_s1",
+    "zone": "counterfacade_door",
+    "shape": "pointed",
+    "size": "2.00×5.30",
+    "real": {
+     "kind": "not_window",
+     "what": "정문 문짝(나무)",
+     "era": "",
+     "src": "MILAN_GLASS_RESEARCH.md §3.6"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfDoor_s2",
+    "zone": "counterfacade_door",
+    "shape": "pointed",
+    "size": "2.00×5.30",
+    "real": {
+     "kind": "not_window",
+     "what": "정문 문짝(나무)",
+     "era": "",
+     "src": "MILAN_GLASS_RESEARCH.md §3.6"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfLower_c",
+    "zone": "counterfacade_lower",
+    "shape": "pointed",
+    "size": "1.61×3.61",
+    "real": {
+     "kind": "stained",
+     "what": "V45 성모 승천",
+     "era": "1834–54",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfLower_n1",
+    "zone": "counterfacade_lower",
+    "shape": "pointed",
+    "size": "1.16×2.91",
+    "real": {
+     "kind": "stained",
+     "what": "V41 주교로 뽑히는 성 암브로시오",
+     "era": "1855",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfLower_n2",
+    "zone": "counterfacade_lower",
+    "shape": "pointed",
+    "size": "1.16×2.91",
+    "real": {
+     "kind": "stained",
+     "what": "V40 성녀 테클라의 순교",
+     "era": "1860",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfLower_s1",
+    "zone": "counterfacade_lower",
+    "shape": "pointed",
+    "size": "1.16×2.91",
+    "real": {
+     "kind": "stained",
+     "what": "V42 오리아 영지를 파는 성 카롤로",
+     "era": "1855",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfLower_s2",
+    "zone": "counterfacade_lower",
+    "shape": "pointed",
+    "size": "1.16×2.91",
+    "real": {
+     "kind": "stained",
+     "what": "V43 성 미카엘(추정)",
+     "era": "19세기",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_bertini",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_bertini",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfUpper_c",
+    "zone": "counterfacade_upper",
+    "shape": "pointed",
+    "size": "1.55×4.64",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V47 삼위일체",
+     "era": "1955 하이날",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfUpper_n1",
+    "zone": "counterfacade_upper",
+    "shape": "pointed",
+    "size": "1.19×2.70",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V44 교회(Ecclesia)",
+     "era": "1955 하이날",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "cfUpper_s1",
+    "zone": "counterfacade_upper",
+    "shape": "pointed",
+    "size": "1.19×2.70",
+    "real": {
+     "kind": "stained_protected",
+     "what": "V46 시나고가",
+     "era": "1955 하이날",
+     "src": "MILAN_GLASS_RESEARCH.md §3.2~3.6"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b01",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b02",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b03",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b04",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b05",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b06",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b07",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b08",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b09",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b12",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereN_b13",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b01",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b02",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b03",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b04",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b05",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b06",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b07",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b08",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b09",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b12",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereS_b13",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.10×4.10",
+    "real": {
+     "kind": "stained",
+     "what": "고창 장식 유리(서사 없음)",
+     "era": "1950년대 초",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_deco",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_deco",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_000",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_045",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_090",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_135",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_180",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_225",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_270",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tiburio_315",
+    "zone": "tiburio",
+    "shape": "pointed",
+    "size": "1.50×2.45",
+    "real": {
+     "kind": "stained_protected",
+     "what": "티부리오: 제2차 바티칸 공의회 연작",
+     "era": "1968",
+     "src": "MILAN_GLASS_RESEARCH.md §4(f)"
+    },
+    "model": {
+     "release": "gen:milan_abstract",
+     "dev": "dev 시안(dev/devglass.js)이 앞을 덮음 · 뒤는 gen:milan_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "florence": [
+   {
+    "key": "facade_center",
+    "zone": "facade",
+    "shape": "circle",
+    "size": "3.00×3.00",
+    "real": {
+     "kind": "stained",
+     "what": "성모 승천(오쿨루스)",
+     "era": "1404–05 기베르티",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "photo:oculus_florence_ghiberti_1",
+     "dev": "photo:oculus_florence_ghiberti_1",
+     "fallback": "gen:florence_oculus"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_N",
+    "zone": "facade",
+    "shape": "circle",
+    "size": "2.00×2.00",
+    "real": {
+     "kind": "stained",
+     "what": "옥좌의 성 라우렌시오 / 성 스테파노(좌우 미확정)",
+     "era": "1412–15 기베르티",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_S",
+    "zone": "facade",
+    "shape": "circle",
+    "size": "2.00×2.00",
+    "real": {
+     "kind": "stained",
+     "what": "옥좌의 성 라우렌시오 / 성 스테파노(좌우 미확정)",
+     "era": "1412–15 기베르티",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b1",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b2",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b3",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "stained",
+     "what": "측랑 이련창 성인들(3~4단)",
+     "era": "1394–96",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_gothic",
+     "dev": "gen:florence_gothic",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleN_b4",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "stained",
+     "what": "측랑 이련창 성인들(3~4단)",
+     "era": "1394–96",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_gothic",
+     "dev": "gen:florence_gothic",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b1",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b2",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b3",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "stained",
+     "what": "측랑 이련창 성인들(3~4단)",
+     "era": "1394–96",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_gothic",
+     "dev": "gen:florence_gothic",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleS_b4",
+    "zone": "aisle",
+    "shape": "pointed",
+    "size": "1.30×4.84",
+    "real": {
+     "kind": "stained",
+     "what": "측랑 이련창 성인들(3~4단)",
+     "era": "1394–96",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_gothic",
+     "dev": "gen:florence_gothic",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcN_b1",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcN_b2",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcN_b3",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcN_b4",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcS_b1",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcS_b2",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcS_b3",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "naveOcS_b4",
+    "zone": "nave_oculus",
+    "shape": "circle",
+    "size": "1.90×1.90",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_E",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "성모 대관(도나텔로)",
+     "era": "1433–37",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "photo:oculus_florence_donatello",
+     "dev": "photo:oculus_florence_donatello",
+     "fallback": "gen:florence_oculus"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_N",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "드럼 오쿨루스(주님 승천·겟세마니·성전 봉헌·성탄·부활·십자가에서 내려지심 — 면 미확정)",
+     "era": "1443–45",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_NE",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "드럼 오쿨루스(주님 승천·겟세마니·성전 봉헌·성탄·부활·십자가에서 내려지심 — 면 미확정)",
+     "era": "1443–45",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "photo:oculus_florence_ghiberti_2",
+     "dev": "photo:oculus_florence_ghiberti_2",
+     "fallback": "gen:florence_oculus"
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_NW",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "드럼 오쿨루스(주님 승천·겟세마니·성전 봉헌·성탄·부활·십자가에서 내려지심 — 면 미확정)",
+     "era": "1443–45",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_S",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "드럼 오쿨루스(주님 승천·겟세마니·성전 봉헌·성탄·부활·십자가에서 내려지심 — 면 미확정)",
+     "era": "1443–45",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_SE",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "드럼 오쿨루스(주님 승천·겟세마니·성전 봉헌·성탄·부활·십자가에서 내려지심 — 면 미확정)",
+     "era": "1443–45",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_SW",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "stained",
+     "what": "드럼 오쿨루스(주님 승천·겟세마니·성전 봉헌·성탄·부활·십자가에서 내려지심 — 면 미확정)",
+     "era": "1443–45",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_oculus",
+     "dev": "gen:florence_oculus",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "drum_W",
+    "zone": "drum",
+    "shape": "circle",
+    "size": "1.60×1.60",
+    "real": {
+     "kind": "plain",
+     "what": "ICCD 그림 창 44점에 없음(무도상 유리, 종류 미확인)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3·1.4"
+    },
+    "model": {
+     "release": "gen:florence_plain",
+     "dev": "gen:florence_plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_c1",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_c2",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_c3",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_c4",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_c5",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_c1",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_c2",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_c3",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_c4",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_c5",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_c1",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_c2",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_c3",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_c4",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_c5",
+    "zone": "tribune_chapel",
+    "shape": "pointed",
+    "size": "0.80×2.78",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 경당 창: 봉헌 성인 + 성인 둘",
+     "era": "1439–43 기베르티(3점 1890–1906 재제작)",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_u1",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_u2",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_u3",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_u4",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribE_u5",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_u1",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_u2",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_u3",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_u4",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribN_u5",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_u1",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_u2",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_u3",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_u4",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "tribS_u5",
+    "zone": "tribune_upper",
+    "shape": "pointed",
+    "size": "0.86×2.67",
+    "real": {
+     "kind": "stained",
+     "what": "트리부나 윗창: 예언자·구약의 임금·성조",
+     "era": "1434–42",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §1.3"
+    },
+    "model": {
+     "release": "gen:florence_saints",
+     "dev": "gen:florence_saints",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "myeongdong": [
+   {
+    "key": "facade_tower",
+    "zone": "facade",
+    "shape": "round",
+    "size": "2.53×6.38",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "facade_tympanum",
+    "zone": "facade",
+    "shape": "round",
+    "size": "2.40×1.30",
+    "real": {
+     "kind": "stained_protected",
+     "what": "제44차 세계 성체대회 기념(추상 색면 + 성체)",
+     "era": "1989 이남규",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3·2.6"
+    },
+    "model": {
+     "release": "gen:myeongdong_tymp",
+     "dev": "gen:myeongdong_tymp",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleEndL_rose",
+    "zone": "aisle_end",
+    "shape": "circle",
+    "size": "1.32×1.32",
+    "real": {
+     "kind": "stained",
+     "what": "측랑 끝 작은 장미창(동쪽은 대칭 추정)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleEndR_rose",
+    "zone": "aisle_end",
+    "shape": "circle",
+    "size": "1.32×1.32",
+    "real": {
+     "kind": "stained",
+     "what": "측랑 끝 작은 장미창(동쪽은 대칭 추정)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_C",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.46×8.18",
+    "real": {
+     "kind": "stained",
+     "what": "묵주기도 15단(창마다 세 장면, 배열 미확인)",
+     "era": "1898 무렵 제스타 공방",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_medal",
+     "dev": "gen:myeongdong_medal",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_L1",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.26×7.78",
+    "real": {
+     "kind": "stained",
+     "what": "묵주기도 15단(창마다 세 장면, 배열 미확인)",
+     "era": "1898 무렵 제스타 공방",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_medal",
+     "dev": "gen:myeongdong_medal",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_L2",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.26×7.78",
+    "real": {
+     "kind": "stained",
+     "what": "묵주기도 15단(창마다 세 장면, 배열 미확인)",
+     "era": "1898 무렵 제스타 공방",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_medal",
+     "dev": "gen:myeongdong_medal",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_R1",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.26×7.78",
+    "real": {
+     "kind": "stained",
+     "what": "묵주기도 15단(창마다 세 장면, 배열 미확인)",
+     "era": "1898 무렵 제스타 공방",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_medal",
+     "dev": "gen:myeongdong_medal",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "apse_R2",
+    "zone": "apse",
+    "shape": "pointed",
+    "size": "1.26×7.78",
+    "real": {
+     "kind": "stained",
+     "what": "묵주기도 15단(창마다 세 장면, 배열 미확인)",
+     "era": "1898 무렵 제스타 공방",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_medal",
+     "dev": "gen:myeongdong_medal",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndL",
+    "zone": "transept_end",
+    "shape": "pointed",
+    "size": "3.66×9.03",
+    "real": {
+     "kind": "stained",
+     "what": "성탄과 동방 박사들의 경배",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_figure",
+     "dev": "gen:myeongdong_figure",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trEndR",
+    "zone": "transept_end",
+    "shape": "pointed",
+    "size": "3.66×9.03",
+    "real": {
+     "kind": "stained",
+     "what": "예수님과 열두 사도",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_figure",
+     "dev": "gen:myeongdong_figure",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trInL_back",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.16×4.38",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trInL_front",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.16×4.38",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trInR_back",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.16×4.38",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trInR_front",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.16×4.38",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trUpL_back",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.36×3.98",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trUpL_front",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.36×3.98",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trUpR_back",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.36×3.98",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "trUpR_front",
+    "zone": "transept_upper",
+    "shape": "pointed",
+    "size": "1.36×3.98",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_n1",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_n2",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_n3",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_n4",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_n5",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_n6",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_n1",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_n2",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_n3",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_n4",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_n5",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_n6",
+    "zone": "aisle",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained",
+     "what": "신자석 무늬창(\"꽃 모양\", 인물 없음)",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_s1",
+    "zone": "aisle_chancel",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleL_s2",
+    "zone": "aisle_chancel",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_s1",
+    "zone": "aisle_chancel",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "aisleR_s2",
+    "zone": "aisle_chancel",
+    "shape": "round",
+    "size": "2.13×4.08",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_flower",
+     "dev": "gen:myeongdong_flower",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n0",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n1",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n2",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n3",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n4",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n5",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_n6",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n0",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n1",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n2",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n3",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n4",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n5",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_n6",
+    "zone": "clerestory",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained",
+     "what": "고측창 무늬 색유리",
+     "era": "1898 무렵",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.3"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_s1",
+    "zone": "clerestory_chancel",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereL_s2",
+    "zone": "clerestory_chancel",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_s1",
+    "zone": "clerestory_chancel",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "clereR_s2",
+    "zone": "clerestory_chancel",
+    "shape": "pointed",
+    "size": "1.06×4.48",
+    "real": {
+     "kind": "stained_unverified",
+     "what": "도상 미확인(같은 성당의 무늬창으로 봄)",
+     "era": "",
+     "src": "GLASS_ALL_CHURCHES_PLAN.md §2.4"
+    },
+    "model": {
+     "release": "gen:myeongdong_clere",
+     "dev": "gen:myeongdong_clere",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "danggogae": [
+   {
+    "key": "hanjiLowL_b1",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowL_b2",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowL_b3",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowL_b4",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowL_b5",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowL_b6",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowL_b7",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b1",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b2",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b3",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b4",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b5",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b6",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiLowR_b7",
+    "zone": "hanji_lower",
+    "shape": "rect",
+    "size": "0.50×1.90",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b1",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b2",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b3",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b4",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b5",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b6",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopL_b7",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b1",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b2",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b3",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b4",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b5",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b6",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "hanjiTopR_b7",
+    "zone": "hanji_upper",
+    "shape": "pointed",
+    "size": "0.50×0.91",
+    "real": {
+     "kind": "hanji",
+     "what": "한지 유리화 빛 상자(작가 미확인, 2011)",
+     "era": "2011",
+     "src": "interiors/danggogae.md §6.4"
+    },
+    "model": {
+     "release": "hanji",
+     "dev": "hanji",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ],
+  "yeouido": [
+   {
+    "key": "frontL",
+    "zone": "front",
+    "shape": "rect",
+    "size": "1.00×6.40",
+    "real": {
+     "kind": "stained_protected",
+     "what": "정면 키 큰 현대 색유리(작가 미확인)",
+     "era": "현대",
+     "src": "interiors/yeouido.md §4.1"
+    },
+    "model": {
+     "release": "gen:yeouido_abstract",
+     "dev": "gen:yeouido_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "frontR",
+    "zone": "front",
+    "shape": "rect",
+    "size": "1.00×6.40",
+    "real": {
+     "kind": "stained_protected",
+     "what": "정면 키 큰 현대 색유리(작가 미확인)",
+     "era": "현대",
+     "src": "interiors/yeouido.md §4.1"
+    },
+    "model": {
+     "release": "gen:yeouido_abstract",
+     "dev": "gen:yeouido_abstract",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b1",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b2",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b3",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b4",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b5",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideL_b6",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b1",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b2",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b3",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b4",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b5",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   },
+   {
+    "key": "sideR_b6",
+    "zone": "side",
+    "shape": "rect",
+    "size": "0.80×5.00",
+    "real": {
+     "kind": "plain",
+     "what": "옆벽 위 창(실물 미확인 — 옅은 빛 유리로 둠)",
+     "era": "",
+     "src": "interiors/yeouido.md §6.3"
+    },
+    "model": {
+     "release": "plain",
+     "dev": "plain",
+     "fallback": null
+    },
+    "ok": true,
+    "gap": null
+   }
+  ]
+ }
+}

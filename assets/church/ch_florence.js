@@ -190,13 +190,23 @@
       // key 체계는 tools/church_web/church_openings.mjs 의 피렌체 어댑터와 같다(devglass.test.mjs 가 둘을 대조한다). 플래그와 무관하게 늘 내보낸다.
       var ANCH = [];
       if (ctx._) ctx._.glassAnchors = ANCH;
+      // 유리 양식(glass_gen.js, docs/church/GLASS_INVENTORY.md §피렌체): ICCD 의 그림 창 44점 자리는 시대 양식의 창작 무늬,
+      // 그림 창이 아닌 11곳(신랑 둥근 고창 8·측랑 1·2칸 4… 중 모델에 있는 것, 드럼 서쪽)은 그림 없는 옅은 장식 유리. 사진 창 자리는 사진이 덮는다(대역).
+      function florenceGlass(key) {
+        if (/^naveOc/.test(key) || /^aisle[NS]_b[12]$/.test(key) || key === 'drum_W') return 'florence_plain';
+        if (/^aisle[NS]_b[34]$/.test(key)) return 'florence_gothic';
+        if (/^drum_|^facade_/.test(key)) return 'florence_oculus';
+        return 'florence_saints';   // 트리부나 경당 창·윗창
+      }
       function gWin(key, o) {
+        if (!o.glass) { o.glass = florenceGlass(key); o.key = key; }
         var sp = ctx.window(o), F = sp.F, rise = o.top === 'pointed' ? o.w * 0.72 : (o.top === 'round' || o.top === 'trefoil' ? o.w / 2 : 0), gd = 0.04;
         ANCH.push({ key: key, kind: 'glass', x: o.x + F.nx * gd, y: o.y + (o.h + rise) / 2, z: o.z + F.nz * gd, nx: F.nx, nz: F.nz, yaw: Math.atan2(F.nx, F.nz),
           w: o.w, h: o.h + rise, sill: o.y, spring: o.y + o.h, apex: o.y + o.h + rise, lights: o.w > 1.5 ? 3 : 2, photoH: 0, shape: 'pointed' });
         return sp;
       }
       function gRose(key, o) {
+        if (!o.glass) { o.glass = florenceGlass(key); o.key = key; }
         var sp = ctx.rose(o), F = sp.F, gd = 0.04;
         ANCH.push({ key: key, kind: 'glass', x: o.x + F.nx * gd, y: o.y, z: o.z + F.nz * gd, nx: F.nx, nz: F.nz, yaw: Math.atan2(F.nx, F.nz),
           w: o.r * 2, h: o.r * 2, sill: o.y - o.r, spring: o.y, apex: o.y + o.r, lights: 1, photoH: 0, shape: 'circle', photo: o.photo ? o.photo.win : null });

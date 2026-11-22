@@ -296,7 +296,8 @@
         ctx.wall({ x0: s * RB, z0: ZF - 0.25, x1: s * (HW + 0.5), z1: ZF - 0.25, h: H, t: 0.5, surf: 'yd_conc', color: 0xa8a396, collide: false, plinth: false, crown: false });
         // 둘레 공간 천장 위(드럼 바깥 ~ 둘레 공간 끝): 정면 벽이 드럼에 닿는다
         ctx.boxAABB({ x0: s < 0 ? -RB : RD, x1: s < 0 ? -RD : RB, z0: ZF - 0.5, z1: ZF, y0: YP, y1: H, surf: 'yd_conc', color: 0xa8a396 });
-        ctx.window({ x: s * FWIN.x, z: ZF, y: FWIN.sill, face: [0, 1], w: FWIN.w, h: FWIN.h, top: 'flat', pattern: 'lancet', colors: GLASS_FRONT, frame: true, frameColor: 0x58554e, beam: false, seed: s < 0 ? 511 : 523 });
+        ctx.window({ x: s * FWIN.x, z: ZF, y: FWIN.sill, face: [0, 1], w: FWIN.w, h: FWIN.h, top: 'flat', pattern: 'lancet', colors: GLASS_FRONT, frame: true, frameColor: 0x58554e, beam: false, seed: s < 0 ? 511 : 523,
+          glass: 'yeouido_abstract', glassMod: FWIN.h / 3 });   // 현대 색유리(작가 미확인, 저작권 존속으로 봄): 사진의 색 분위기만 따른 추상 색면(구도·선을 옮기지 않는다)
         ctx.addCollider({ x0: s < 0 ? -HW : RB, x1: s < 0 ? -RB : HW, z0: ZF - RB, z1: ZF });   // 정면 벽 뒤(둘레 공간 바깥 모서리)
       });
       // 뒷벽(입구, 홈 줄 콘크리트)

@@ -46,7 +46,7 @@
         ctx.box({ x: cx, y: 2.4, z: cz, w: 1.7, h: 1.6, d: 0.19, ry: ry, surf: 'wood_dark', color: 0xd8c0b0 });
         ctx.sphere({ x: cx, y: 1.9, z: cz, r: 0.07, color: GOLD, w: 10, h: 8 });
       });
-      ctx.window({ x: 0, y: 4.9, z: ZF, face: [0, -1], w: 3.6, h: 0.1, top: 'round', pattern: 'solid', seed: 17, frame: true, beam: false, painted: true });
+      ctx.window({ x: 0, y: 4.9, z: ZF, face: [0, -1], w: 3.6, h: 0.1, top: 'round', pattern: 'solid', seed: 17, frame: true, beam: false, painted: true, glass: 'parish' });
 
       // 박공(원통 궁륭 양 끝 채움)
       var pts = ChurchKit.profilePts('round', W, RISE, 24);
@@ -55,8 +55,8 @@
         for (var i = 0; i < pts.length - 1; i++) tris.push(pts[i][0], WH, g[0], pts[i + 1][0], WH, g[0], pts[i][0], WH + pts[i][1], g[0], pts[i + 1][0], WH, g[0], pts[i + 1][0], WH + pts[i + 1][1], g[0], pts[i][0], WH + pts[i][1], g[0]);
         ctx.surfBatch(WS).addTris(tris, 0xffffff, [0, 7, g[0] + g[1] * 3]);
       });
-      ctx.rose({ x: 0, y: 8.3, z: Z0 + 0.02, face: [0, 1], r: 1.5, petals: 12, seed: 5, beam: false });
-      ctx.rose({ x: 0, y: 8.4, z: ZF - 0.02, face: [0, -1], r: 1.3, petals: 10, seed: 9, beam: false });
+      ctx.rose({ x: 0, y: 8.3, z: Z0 + 0.02, face: [0, 1], r: 1.5, petals: 12, seed: 5, beam: false, glass: 'parish' });
+      ctx.rose({ x: 0, y: 8.4, z: ZF - 0.02, face: [0, -1], r: 1.3, petals: 10, seed: 9, beam: false, glass: 'parish' });
 
       // 징두리(어두운 나무 패널) + 몰딩
       [-1, 1].forEach(function (s) {
@@ -87,8 +87,8 @@
 
       // ----- 창: 벽에 뚫린 진짜 개구부 + 스테인드글라스 + 창살 -----
       [-14, -7, 0, 7, 14].forEach(function (z, i) {
-        ctx.window({ x: -W, z: z, y: 3.0, face: [1, 0], w: 1.9, h: 1.9, top: 'pointed', seed: 11 + i, beamReach: 11 });
-        ctx.window({ x: W, z: z, y: 3.0, face: [-1, 0], w: 1.9, h: 1.9, top: 'pointed', seed: 31 + i, beamReach: 11 });
+        ctx.window({ x: -W, z: z, y: 3.0, face: [1, 0], w: 1.9, h: 1.9, top: 'pointed', seed: 11 + i, beamReach: 11, glass: 'parish' });
+        ctx.window({ x: W, z: z, y: 3.0, face: [-1, 0], w: 1.9, h: 1.9, top: 'pointed', seed: 31 + i, beamReach: 11, glass: 'parish' });
       });
 
       // ----- 성소 -----

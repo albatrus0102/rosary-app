@@ -62,7 +62,7 @@ function slim(o) {   // 호출 인자에서 숫자·짧은 문자열·짧은 배
 export function measureStructure(id, opts = {}) {
   const sb = makeSandbox();
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_' + id + '.js'].forEach(run);
+  ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'glass_gen.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js', 'ch_' + id + '.js'].forEach(run);
   const b = sb.ChurchBuilders[id];
   if (!b) throw new Error('빌더 없음: ' + id);
   const ctx = sb.ChurchKit.createContext({ layout: b.layout, quality: opts.quality || 'low' });

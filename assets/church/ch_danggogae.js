@@ -456,6 +456,31 @@
       })();
       var pfW = KIT.profileFn('pointed', WIN.w / 2, WIN.rise), archPts = KIT.profilePts('pointed', WIN.w / 2, WIN.rise, low ? 6 : 8);
       var DP = 0.055, DL0 = 0.058, DL1 = 0.076, DF = 0.092, hw = WIN.w / 2, FT = 0.045, LT = 0.016;
+      // 물들인 한지 조각 면: 볼록 다각형(u, v)을 무작위 직선으로 n 번 거듭 잘라(격자 아님) 조각마다 옅은 염색 빛(HDR)을 준다.
+      // 조각 가운데가 밝고 가장자리(겹친 종이 끝)가 조금 짙다. 같은 한지 배치·같은 재질이라 draw call 은 그대로.
+      var HANJI_TINTS = [0xffc964, 0xffd27a, 0xf2a85a, 0xb9cc8e, 0xe8a49a, 0xa9b6d2, 0xf6d38c, 0xd8b07a, 0xc9c08a];   // 호박·감물·쑥·잇꽃·쪽 같은 옅은 천연 염색 빛
+      function hanjiPieces(P, hintP, poly, y0, seed, n) {
+        var r = G.rng(seed * 7 + 3), out = [];
+        (function cut(pl, d) {
+          var x0 = 1e9, x1 = -1e9, v0 = 1e9, v1 = -1e9, k;
+          pl.forEach(function (p) { x0 = min(x0, p[0]); x1 = max(x1, p[0]); v0 = min(v0, p[1]); v1 = max(v1, p[1]); });
+          if (d <= 0 || (x1 - x0) * (v1 - v0) < 0.035) { out.push(pl); return; }
+          var cx = x0 + (x1 - x0) * (0.3 + r() * 0.4), cy = v0 + (v1 - v0) * (0.3 + r() * 0.4), an = ((v1 - v0) > (x1 - x0) ? 0 : PI / 2) + (r() - 0.5) * 1.3, dx = Math.cos(an), dy = Math.sin(an), A = [], B = [];
+          for (k = 0; k < pl.length; k++) {
+            var p = pl[k], q = pl[(k + 1) % pl.length], sp = (p[0] - cx) * dy - (p[1] - cy) * dx, sq = (q[0] - cx) * dy - (q[1] - cy) * dx;
+            if (sp >= 0) A.push(p); else B.push(p);
+            if ((sp >= 0) !== (sq >= 0)) { var t = sp / (sp - sq), m = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; A.push(m); B.push(m); }
+          }
+          if (A.length < 3 || B.length < 3) { out.push(pl); return; }
+          cut(A, d - 1); cut(B, d - 1);
+        })(poly, n);
+        out.forEach(function (pl) {
+          var tint = HANJI_TINTS[Math.floor(r() * HANJI_TINTS.length)], cI = hdr(tint, HK * (0.62 + r() * 0.1)), cE = hdr(tint, HK * 0.42), cu = 0, cv = 0, k;
+          pl.forEach(function (p) { cu += p[0] / pl.length; cv += p[1] / pl.length; });
+          var c0 = P(cu, y0 + cv, DP);
+          for (k = 0; k < pl.length; k++) { var a = pl[k], b = pl[(k + 1) % pl.length]; hanji.addTris([].concat(c0, P(a[0], y0 + a[1], DP), P(b[0], y0 + b[1], DP)), [cI, cE, cE], hintP); }
+        });
+      }
       function lancet(s, zc, seed) {
         var xw = s * HW, face = [-s, 0];
         ctx.window({ x: xw, z: zc, y: WIN.sill, face: face, w: WIN.w, h: WIN.h, top: 'flat', pattern: 'solid', colors: [0xf2b84a], frame: false, beam: false, painted: true, seed: seed });
@@ -463,22 +488,21 @@
         function P(u, y, d) { return [xw - s * d, y, zc + u]; }
         var hintP = [xw - s * 5, 2, zc];
         function bar(u0, u1, y0, y1, d0, d1, col) { ctx.boxAABB({ x0: min(xw - s * d0, xw - s * d1), x1: max(xw - s * d0, xw - s * d1), z0: zc + min(u0, u1), z1: zc + max(u0, u1), y0: y0, y1: y1, color: col, mat: 'wood', vary: 0.03 }); }
-        // 아래 판(직사각)
+        // 아래 판(직사각): 가장자리 띠(짙은 호박) + 가운데는 '물들인 한지 조각을 겹쳐 붙인' 추상 면(docs/church/GLASS_INVENTORY.md §당고개).
+        // 실제 성지 유리화(작가 미확인, 저작권 존속)의 상징·매화 구도는 옮기지 않는다 — 조각 모양은 창마다 무작위, 색은 옅은 천연 염색 빛만.
         var us = [-hw, -hw + 0.11, hw - 0.11, hw], vs = [0, 0.15, WIN.h - 0.15, WIN.h], i, j;
         for (j = 0; j < 3; j++) for (i = 0; i < 3; i++) {
+          if (i === 1 && j === 1) continue;   // 가운데 칸은 아래 조각 면으로
           var cs = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].map(function (q) { return (q[0] === 0 || q[0] === 3 || q[1] === 0 || q[1] === 3) ? cEd : cIn; });
           var pa = P(us[i], WIN.sill + vs[j], DP), pb = P(us[i + 1], WIN.sill + vs[j], DP), pc = P(us[i + 1], WIN.sill + vs[j + 1], DP), pd = P(us[i], WIN.sill + vs[j + 1], DP);
           hanji.addTris([].concat(pa, pb, pc, pa, pc, pd), [cs[0], cs[1], cs[2], cs[0], cs[2], cs[3]], hintP);
         }
+        hanjiPieces(P, hintP, [[us[1], vs[1]], [us[2], vs[1]], [us[2], vs[2]], [us[1], vs[2]]], WIN.sill, seed, 5);
         // 위 판(뾰족 아치): 가운데에서 부채꼴
         var y2 = WIN.sill2, poly = [[-hw, 0], [hw, 0], [hw, WIN.h2]];
         for (i = archPts.length - 2; i >= 1; i--) poly.push([archPts[i][0], WIN.h2 + archPts[i][1]]);
         poly.push([-hw, WIN.h2]);
-        var cen = P(0, y2 + WIN.h2 * 0.75, DP);
-        for (i = 0; i < poly.length; i++) {
-          var q0 = poly[i], q1 = poly[(i + 1) % poly.length];
-          hanji.addTris([].concat(cen, P(q0[0], y2 + q0[1], DP), P(q1[0], y2 + q1[1], DP)), [cIn, cEd, cEd], hintP);
-        }
+        hanjiPieces(P, hintP, poly, y2, seed + 50, 3);
         // 틀(짙은 나무): 벽 면에서 9cm 나와 한지 판 가장자리를 가린다
         var ya = WIN.sill, yb = WIN.sill + WIN.h;
         bar(-hw - FT, -hw, ya - FT, yb + FT, 0, DF, C.frame); bar(hw, hw + FT, ya - FT, yb + FT, 0, DF, C.frame);

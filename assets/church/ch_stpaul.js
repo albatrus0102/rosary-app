@@ -141,7 +141,8 @@
       function win(W, u, h, nsign, o) {
         o = o || {};
         var p = WP(W, u, 0, 0);
-        ctx.window({ x: p[0], y: h.yb, z: p[2], face: W.axis === 'z' ? [nsign, 0] : [0, nsign], w: h.hw * 2, h: h.ys - h.yb, top: 'round', pattern: o.pattern || 'lancet', colors: o.colors || ALAB, seed: o.seed || 3, frame: false, beam: !!o.beam, beamReach: o.reach || 12, photo: h.photo || null });
+        ctx.window({ x: p[0], y: h.yb, z: p[2], face: W.axis === 'z' ? [nsign, 0] : [0, nsign], w: h.hw * 2, h: h.ys - h.yb, top: 'round', pattern: o.pattern || 'lancet', colors: o.colors || ALAB, seed: o.seed || 3, frame: false, beam: !!o.beam, beamReach: o.reach || 12, photo: h.photo || null,
+          glass: 'alabaster', glassTint: 0xf0b878 });   // 전부 설화석고 판(그림 유리 0): 사진 창 자리는 사진이 덮고, 나머지는 절차 생성 설화석고 결
       }
 
       // ---------- 질감 ----------

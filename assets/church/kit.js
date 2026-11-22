@@ -77,11 +77,15 @@
     var solid = ctx.solid = B_.solid, glass = ctx.glass = B_.glass, glow = ctx.glow = B_.glow;
     ctx.gloss = B_.gloss; ctx.woodB = B_.wood; ctx.metalB = B_.metal; ctx.outsideB = B_.outside;
     var decalB = new G.Batch(19); decalB.enableUV(1, 1);
+    // 절차 생성 스테인드글라스(glass_gen.js, docs/church/GLASS_INVENTORY.md): 유리 배치에 UV 를 켜고, 무늬 칸(tile)을 쓰는 삼각형 범위를 적어 둔다.
+    // _prepare 에서 성당 하나의 칸을 아틀라스 한 장에 그리고 UV 를 그 칸으로 옮긴다. 무늬 없는 유리(납틀 뒷판·옅은 유리)는 UV −1 = 질감 무시.
+    var GGen = root.ChurchGlassGen || null, gTiles = {}, gRanges = [], gUse = [];
+    if (GGen) B_.glass.enableUV(1, 1);
     var S_ = ctx._ = {
       colliders: [], zones: [], lights: [], glows: [], flames: [], beams: [], hourHooks: [], updateHooks: [],
       cameraBounds: null, sky: { outside: false }, thumb: null, candleStands: [], lamps: [],
       walls: [], windows: [], roses: [], glassSlots: [], floors: [], surfBatches: {}, physMats: [], items: [], aoOn: true, aoOpts: {}, aoDefer: !!opts.aoDefer,
-      lampSlots: [], batches: B_, planes: [], floorRects: []
+      lampSlots: [], batches: B_, planes: [], floorRects: [], glassTiles: gTiles, glassUse: gUse, glassAtlas: null
     };
 
     // ---- 질감/사진 ----
@@ -345,6 +349,107 @@
       S_.glassSlots.push(s);
       return s;
     };
+    // ---- 절차 생성 스테인드글라스 칸 ----
+    // gKey: 양식·부분(body|head|disc)·변주 → 칸 이름(등록). gAdd: 칸 안 좌표(0..1) UV 로 유리 삼각형을 넣고 범위를 적는다.
+    var G_GAIN = 1.0;   // 납선·물감 선이 덮는 몫만큼 밝혀 예전 색유리와 비슷한 평균 밝기(룩의 glassK 로 최종 조절)
+    function gKey(style, part, variant) {
+      var st = GGen.STYLES[style], nv = Math.max(1, (part === 'body' ? st.variants : (part === 'head' ? st.heads : st.discs)) || 1), v = (((variant | 0) % nv) + nv) % nv, k = style + '|' + part + '|' + v;
+      if (!gTiles[k]) gTiles[k] = { style: style, part: part, variant: v };
+      return k;
+    }
+    function gAdd(verts, uvs, key, col, hint, refl) {
+      var U = B_.glass.u, n0 = U.length;
+      glass.addTris(verts, col, hint, { vary: 0.03, uvs: uvs });
+      if (U.length > n0) gRanges.push([n0, U.length, key]);
+      if (refl !== false) B_.glassRefl.addTris(verts, 0xffffff, hint, { vary: 0 });
+    }
+    function gCol(o, k) { var c = G.toColor(o.tint === undefined ? 0xffffff : o.tint).clone(); return c.multiplyScalar(G_GAIN * (o.gain || 1) * (k || 1)); }
+    // 창 하나(직사각 몸통 + 아치 머리)를 무늬 유리로 채운다. 반환: 빛줄기 색 3개.
+    // o = {P(u, v) → [x,y,z] 유리 평면 위 점, hint, u0, u1, v0(창턱), v1(기공선), head:[[u,v]…](기공선 오른쪽 끝 → 아치 → 왼쪽 끝, 생략 가능),
+    //      lights(세로 칸 수, 칸마다 무늬 한 줄), style, seed, modH(모듈 높이; 가로 창살과 맞춘다), tint, gain, refl, key(창 이름: 목록용)}
+    ctx.stained = function (o) {
+      var style = o.style, i, k;
+      var bodyOk = GGen && GGen.has(style);
+      if (!bodyOk) {   // glass_gen 이 없을 때(도구·옛 페이지): 양식 평균색 한 장(예전 색유리와 같은 경로)
+        var fc = G.toColor(0x7d8fb8), pts = [[o.u0, o.v0], [o.u1, o.v0], [o.u1, o.v1]].concat(o.head ? o.head.slice(1, -1) : []).concat([[o.u0, o.v1]]), cu = (o.u0 + o.u1) / 2, cvv = (o.v0 + o.v1) / 2, c0 = o.P(cu, cvv), vv = [];
+        for (i = 0; i < pts.length; i++) { var pa = o.P(pts[i][0], pts[i][1]), pb = o.P(pts[(i + 1) % pts.length][0], pts[(i + 1) % pts.length][1]); vv.push(c0[0], c0[1], c0[2], pa[0], pa[1], pa[2], pb[0], pb[1], pb[2]); }
+        glass.addTris(vv, fc, o.hint, { vary: 0.05 });
+        return [0xfff1c0, 0xe8d8b0, 0xd8c8a0];
+      }
+      var lights = Math.max(1, o.lights | 0 || 1), lw = (o.u1 - o.u0) / lights, H = o.v1 - o.v0, seed = o.seed | 0;
+      var mh = o.modH > 0 ? o.modH : lw * 2, n = Math.max(1, Math.round(H / mh)); mh = H / n;
+      var colB = gCol(o), colT = gCol(o, 1.08), apex = o.v1;
+      if (o.head) o.head.forEach(function (p) { if (p[1] > apex) apex = p[1]; });
+      gUse.push({ key: o.key || null, style: style, kind: 'window', lights: lights, mods: n, w: o.u1 - o.u0, h: apex - o.v0, at: o.P((o.u0 + o.u1) / 2, (o.v0 + apex) / 2) });
+      // 변주 고르기: 인물·무늬 창은 좌우 짝(가운데를 두고 거울)으로 같은 무늬, 위로 갈수록 다음 변주(같은 인물이 층마다 되풀이되지 않게).
+      // 추상 색면은 거울을 쓰지 않는다(거울 대칭이 만화경처럼 보인다) — 빛마다 다른 변주.
+      var abs = GGen.STYLES[style].body === 'abstract' || GGen.STYLES[style].body === 'parish';
+      for (i = 0; H > 1e-4 && i < lights; i++) {   // 몸통이 없는 창(반월창: 아치뿐)은 머리 칸만
+        var ua = o.u0 + lw * i, ub = ua + lw, mir = !abs && i % 2 === 1, U0 = mir ? 1 : 0, U1 = mir ? 0 : 1;
+        for (k = 0; k < n; k++) {
+          var key = gKey(style, 'body', abs ? seed + i * 2 + k : seed + (i >> 1) + k);
+          var vb = o.v0 + mh * k, vt = vb + mh, A = o.P(ua, vb), B = o.P(ub, vb), C = o.P(ub, vt), D = o.P(ua, vt);
+          var cA = k === n - 1 ? colT : colB;
+          gAdd([A[0], A[1], A[2], B[0], B[1], B[2], C[0], C[1], C[2], A[0], A[1], A[2], C[0], C[1], C[2], D[0], D[1], D[2]], [U0, 0, U1, 0, U1, 1, U0, 0, U1, 1, U0, 1], key, [colB, colB, cA, colB, cA, cA], o.hint, o.refl);
+        }
+      }
+      if (o.head && o.head.length > 1 && apex > o.v1 + 1e-4) {
+        var hk = gKey(style, 'head', seed), cu2 = (o.u0 + o.u1) / 2, cc = o.P(cu2, o.v1), W = o.u1 - o.u0, R = apex - o.v1, hv = [], hu = [], hcols = [];
+        for (i = 0; i < o.head.length - 1; i++) {
+          var p0 = o.head[i], p1 = o.head[i + 1], q0 = o.P(p0[0], p0[1]), q1 = o.P(p1[0], p1[1]);
+          hv.push(cc[0], cc[1], cc[2], q0[0], q0[1], q0[2], q1[0], q1[1], q1[2]);
+          hu.push(0.5, 0, (p0[0] - o.u0) / W, (p0[1] - o.v1) / R, (p1[0] - o.u0) / W, (p1[1] - o.v1) / R);
+          hcols.push(colT, colT, colT);
+        }
+        gAdd(hv, hu, hk, hcols, o.hint, o.refl);
+      }
+      return GGen.beam(style);
+    };
+    // 원창(장미창·오쿨루스) 하나. o = {P(u, v), hint, cu, cv, r, style, seed, seg, tint, gain, refl, key}
+    ctx.stainedDisc = function (o) {
+      if (!GGen || !GGen.has(o.style)) return null;
+      var key = gKey(o.style, 'disc', o.seed | 0), seg = o.seg || 40, c = o.P(o.cu, o.cv), vv = [], uu = [], col = gCol(o), cols = [];
+      gUse.push({ key: o.key || null, style: o.style, kind: 'disc', w: o.r * 2, h: o.r * 2, at: c });
+      for (var i = 0; i < seg; i++) {
+        var a0 = i / seg * PI * 2, a1 = (i + 1) / seg * PI * 2, p0 = o.P(o.cu + Math.cos(a0) * o.r, o.cv + Math.sin(a0) * o.r), p1 = o.P(o.cu + Math.cos(a1) * o.r, o.cv + Math.sin(a1) * o.r);
+        vv.push(c[0], c[1], c[2], p0[0], p0[1], p0[2], p1[0], p1[1], p1[2]);
+        uu.push(0.5, 0.5, 0.5 + Math.cos(a0) * 0.5, 0.5 + Math.sin(a0) * 0.5, 0.5 + Math.cos(a1) * 0.5, 0.5 + Math.sin(a1) * 0.5);
+        cols.push(col, col, col);
+      }
+      gAdd(vv, uu, key, cols, o.hint, o.refl);
+      return GGen.beam(o.style);
+    };
+    ctx.glassStyleOk = function (style) { return !!(GGen && GGen.has(style)); };
+    // _prepare: 칸을 아틀라스 한 장에 그리고 유리 배치 UV 를 옮긴다(무늬 없는 삼각형은 −1). 재질 하나·draw call 그대로.
+    function finishGlassAtlas() {
+      var U = B_.glass.u;
+      if (!U) return;
+      var keys = Object.keys(gTiles), flag = new Uint8Array(U.length >> 1), i, j;
+      if (keys.length && GGen) {
+        var A = GGen.atlas(gTiles, { unit: low ? 128 : 256 });
+        for (i = 0; i < gRanges.length; i++) {
+          var rg = gRanges[i], rc = A.rects[rg[2]];
+          if (!rc) continue;
+          for (j = rg[0]; j < rg[1]; j += 2) { U[j] = rc[0] + U[j] * (rc[2] - rc[0]); U[j + 1] = rc[1] + U[j + 1] * (rc[3] - rc[1]); flag[j >> 1] = 1; }
+        }
+        if (A.canvas && A.canvas.getContext) {
+          var tx = new T.CanvasTexture(A.canvas);
+          tx.encoding = T.sRGBEncoding; tx.anisotropy = 4; tx.wrapS = tx.wrapT = T.ClampToEdgeWrapping;
+          tx.generateMipmaps = true; tx.minFilter = T.LinearMipmapLinearFilter; tx.magFilter = T.LinearFilter;
+          // 올린 뒤에는 CPU 쪽 캔버스를 놓는다(glass_place 의 먼 창 아틀라스와 같은 방식)
+          tx.onUpdate = function () { try { A.canvas.width = A.canvas.height = 1; } catch (e) { /* ignore */ } };
+          mats.glass.map = tx;
+          // 무늬 없는 유리(UV −1)는 질감을 곱하지 않는다(납틀 뒷판·옅은 유리·한지 빛이 예전 색 그대로)
+          mats.glass.onBeforeCompile = function (sh) {
+            sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#ifdef USE_MAP\n\tvec4 sampledDiffuseColor = texture2D( map, vUv );\n\tdiffuseColor *= vUv.x > -0.5 ? sampledDiffuseColor : vec4( 1.0 );\n#endif');
+          };
+          mats.glass.customProgramCacheKey = function () { return 'glassAtlas'; };
+          mats.glass.needsUpdate = true;
+        }
+        S_.glassAtlas = { w: A.w, h: A.h, unit: A.unit, tiles: A.tiles, mb: Math.round(A.mb * 10) / 10, ms: A.ms || 0, uses: gUse.length };
+      }
+      for (i = 0; i < flag.length; i++) if (!flag[i]) { U[i * 2] = -1; U[i * 2 + 1] = -1; }
+    }
     ctx.setAO = function (o) { if (o === false) S_.aoOn = false; else { S_.aoOn = true; S_.aoOpts = o || {}; } };
     ctx.addLight = function (o) {
       if (S_.lights.length >= 1) { if (root.console) console.warn('[church] only one builder point light allowed; ignored'); return null; }
@@ -830,7 +935,15 @@
       }
       B_.glow.addTris(vb, 0x0b0807, hint, { vary: 0 });
       var beamColors = [];
-      for (var ci = 0; ci < cells.length; ci++) {
+      // 무늬 유리(o.glass = glass_gen 양식): 세로 칸(cols)마다 무늬 한 줄, 가로 창살(rows)에 모듈 끝을 맞춘다. 아치 머리는 트레이서리 칸.
+      var styled = !!(o.glass && GGen && GGen.has(o.glass));
+      if (styled) {
+        var rh = h / rows, lwv = w / cols, km = Math.max(1, Math.round(lwv * 2 / rh));
+        var headPts = null;
+        if (archPts) { headPts = []; for (i = archPts.length - 1; i >= 0; i--) headPts.push([archPts[i][0], h + archPts[i][1]]); if (headPts[0][0] < headPts[headPts.length - 1][0]) headPts.reverse(); }
+        beamColors = ctx.stained({ P: function (u, v) { return P(u, v, gd); }, hint: hint, u0: -w / 2, u1: w / 2, v0: 0, v1: h, head: headPts, lights: cols, style: o.glass, seed: o.seed || 1, modH: o.glassMod || (pattern === 'solid' ? 0 : rh * km), tint: o.glassTint, key: o.key }).slice();
+      }
+      for (var ci = 0; !styled && ci < cells.length; ci++) {
         var poly = shrinkPoly(cells[ci], 0.92);
         var pick2 = colors[Math.floor(rand2() * colors.length)];
         var col = G.toColor(pick2);
@@ -883,6 +996,7 @@
       function P(u, v, d) { return [o.x + F.ux * u + F.nx * (d || 0), o.y + v, o.z + F.uz * u + F.nz * (d || 0)]; }
       var hint = P(0, 0, 2);
       var seg = 40, vb = [], i;
+      var styledR = !!(o.glass && GGen && GGen.has(o.glass));
       for (i = 0; i < seg; i++) {
         var a0 = i / seg * PI * 2, a1 = (i + 1) / seg * PI * 2, c = P(0, 0, off * 0.5), b = P(Math.cos(a0) * r, Math.sin(a0) * r, off * 0.5), d = P(Math.cos(a1) * r, Math.sin(a1) * r, off * 0.5);
         vb.push(c[0], c[1], c[2], b[0], b[1], b[2], d[0], d[1], d[2]);
@@ -894,12 +1008,17 @@
         glass.addTris(v, col, hint, { vary: 0.1 });
         B_.glassRefl.addTris(v, 0xffffff, hint, { vary: 0 });
       }
-      for (i = 0; i < pet; i++) {
+      var roseBeam = null;
+      if (styledR) {
+        // 무늬 유리(원창): 아틀라스의 원 칸 하나를 부채꼴로 편다
+        roseBeam = ctx.stainedDisc({ P: function (u, v) { return P(u, v, off); }, hint: hint, cu: 0, cv: 0, r: r * 0.97, style: o.glass, seed: o.seed || 2, seg: Q(40), tint: o.glassTint, key: o.key });
+      }
+      for (i = 0; !styledR && i < pet; i++) {
         var pa = i / pet * PI * 2 + 0.05, pb = (i + 1) / pet * PI * 2 - 0.05;
         ringCell(r * 0.66, r * 0.95, pa, pb, G.toColor(colors[Math.floor(rand2() * colors.length)]));
         ringCell(r * 0.3, r * 0.6, pa, pb, G.toColor(colors[Math.floor(rand2() * colors.length)]));
       }
-      for (i = 0; i < 8; i++) ringCell(0, r * 0.24, i / 8 * PI * 2, (i + 1) / 8 * PI * 2 - 0.02, G.toColor(colors[(i * 3) % colors.length]));
+      for (i = 0; !styledR && i < 8; i++) ringCell(0, r * 0.24, i / 8 * PI * 2, (i + 1) / 8 * PI * 2 - 0.02, G.toColor(colors[(i * 3) % colors.length]));
       if (o.frame !== false) {
         var wallAng = Math.atan2(F.nx, F.nz), fc = o.frameColor === undefined ? 0xd8cdb8 : o.frameColor;
         for (i = 0; i < 24; i++) {
@@ -909,7 +1028,7 @@
           B_.solid.add(Geo.boxC(), fc, { x: pp[0], y: pp[1], z: pp[2], q: qf, sx: r * PI * 2 / 24 * 1.1, sy: 0.18, sz: 0.14, flat: true });
         }
       }
-      if (o.beam) ctx.addWindowBeam({ x: o.x, y: o.y, z: o.z, face: [F.nx, F.nz], w: r * 1.6, h: r * 1.6, colors: colors.slice(0, 3), reach: o.beamReach });
+      if (o.beam) ctx.addWindowBeam({ x: o.x, y: o.y, z: o.z, face: [F.nx, F.nz], w: r * 1.6, h: r * 1.6, colors: roseBeam || colors.slice(0, 3), reach: o.beamReach });
     }
 
     // ---- 벽 생성(창 구멍) ----
@@ -1500,6 +1619,7 @@
       S_.windows.forEach(buildWindow);
       S_.roses.forEach(buildRose);
       dropCoveredTops();
+      finishGlassAtlas();
       var items = [];
       var opts = S_.aoOpts;
       // AO: 'low' 와 미리 구운 AO 가 없는 경우는 예전처럼 정점 색에 근사 AO(bakeAO)를 곱한다.

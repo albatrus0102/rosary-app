@@ -81,6 +81,24 @@
     var H_PIER = 11.28, SP_N = 14.66, Y_N = 21.8, SP_I = 11.28, SP_O = 7.9, R_AIS = 3.38, R_NAVE = Y_N - SP_N;
     var GOLD = 0xc9a24a, WALNUT = 0x4a3223;
     var PAL_HI = [0xb3171f, 0x2556b8, 0xb3171f, 0x1d3f9a, 0x2556b8, 0xe0a323, 0x7a1a2e, 0x1d3f9a, 0xe0a323, 0x2f8f55, 0x6b3fa6, 0xb3171f];
+    // 창마다 유리 양식(glass_gen.js, docs/church/GLASS_INVENTORY.md §밀라노). 실제 창 프로그램(MILAN_GLASS_RESEARCH.md §3)의 시대·짜임만 따르고,
+    // 그림은 특정 창을 옮기지 않은 창작 무늬다. 저작권이 살아 있는 자리(V07·V44·V46·V47 하이날, V39 카르피, V37·V26 부파 공동, 1968 티부리오)는 추상 색면.
+    // aisleS_bk = Vk, aisleN_bk = V(40−k), 익랑·경당·후진·정문 안쪽은 §4(a)(b) 대응표.
+    var MILAN_GLASS = {
+      aisleS_b7: 'milan_abstract', aisleS_b8: 'milan_bertini', aisleN_b8: 'milan_bertini', aisleN_b3: 'milan_abstract', aisleN_b1: 'milan_abstract',
+      trWestS: 'milan_bertini', trWestN: 'milan_saints16', trEndN_east: 'milan_abstract',
+      chapS_c: 'milan_bertini', chapS_e: 'milan_bertini', chapS_w: 'milan_bertini', chapN_c: 'milan_bertini', chapN_e: 'milan_bertini', chapN_w: 'milan_bertini', chapS_upper: 'milan_bertini', chapN_upper: 'milan_bertini',
+      apse_south: 'milan_apse19', apse_north: 'milan_apse19', apse_center: 'milan_narr',
+      cfUpper_c: 'milan_abstract', cfUpper_n1: 'milan_abstract', cfUpper_s1: 'milan_abstract'
+    };
+    function milanGlass(key) {
+      if (!key) return 'milan_deco';                       // 안쪽 측랑 위 고창(키 없음): 1950년대 장식 유리
+      if (MILAN_GLASS[key]) return MILAN_GLASS[key];
+      if (/^cfLower_/.test(key)) return 'milan_bertini';   // V40~V43·V45: 19세기
+      if (/^clere/.test(key)) return 'milan_deco';
+      if (/^tiburio_/.test(key)) return 'milan_abstract';   // 1968 티부리오(저작권 존속)
+      return 'milan_narr';                                 // 측랑·익랑의 15~16세기 서사 창
+    }
     var PAL_APSE = [0xb3171f, 0x1a46a8, 0xb3171f, 0x1a46a8, 0x2552b8, 0xe8a926, 0x9a1630, 0x1a46a8, 0xf0b93a, 0xb3171f, 0x6d1426, 0xd7ccb0, 0x2c8a4e, 0xe8a926];
     var HASP = !!(ctx.hasPhoto && ctx.hasPhoto('stone_grey') && ctx.surfBatch);
     var STONE = 0x948a80, STONE_L = 0xaaa096, STONE_D = 0x6a625a, PINKST = 0xa08f87, WALLC = HASP ? 0xe6dfd8 : 0x857c73;
@@ -682,6 +700,7 @@
         GL.addTris(vv, C(col), PF(F, 0, sill + h * 0.5, -3), { vary: 0.08 }); if (RF) RF.addTris(vv, 0xffffff, PF(F, 0, sill + h * 0.5, -3), { vary: 0 });
       }
       var beamCols = [];
+      var gStyle = win.door ? null : milanGlass(o.key), styled = !!(gStyle && ctx.stained && ctx.glassStyleOk && ctx.glassStyleOk(gStyle));
       var lw = win.w / lights, li, rj;
       var GROUND = [0x1a3f9a, 0xa81a2a], ACCENT = [0xe8a926, 0xf0e3b0, 0x2c8a4e, 0xf0b93a, 0xd7ccb0, 0xb86a1e];
       for (li = 0; li < lights; li++) for (rj = 0; rj < rows; rj++) {
@@ -689,14 +708,21 @@
         var cc;
         if (win.door) cc = (rj + li) % 2 ? 0x4e3425 : 0x5b3d2a;
         else cc = pick();   // 예전 medal(파랑·빨강 바둑판 + 팔각 메달리온)은 '이상한 도형'이라 없앴다: 모든 창이 같은 보석색 칸
-        if (beamCols.length < 3 && rnd() < 0.3 && !win.door) beamCols.push(cc);
-        cell([[u0, v0], [u1, v0], [u1, v1], [u0, v1]], cc);
+        if (beamCols.length < 3 && rnd() < 0.3 && !win.door) beamCols.push(cc);   // rnd() 소비는 예전과 같게(뒤의 배치가 같은 난수를 받는다)
+        if (!styled) cell([[u0, v0], [u1, v0], [u1, v1], [u0, v1]], cc);
       }
       // 아치부 부채꼴 칸
       var top = sill + h, ar = [], cA = [0, top + rise * 0.2], f = pf(a, rise), m = 12;
       for (i = 0; i <= m; i++) { var u = a - 2 * a * i / m; ar.push([u, top + f(u)]); }
-      for (i = 0; i < m; i++) cell([cA, ar[i], ar[i + 1]], pick());
-      cell([cA, [-a, top], [a, top]], pick());
+      if (styled) {
+        // 무늬 유리: 빛(세로 칸)마다 한 줄, 아치 머리는 트레이서리 칸. 사진 창이 아래를 덮는 창은 그 위부터.
+        var lwS = win.w / lights, nMod = Math.max(1, Math.round((h - phH) / (lwS * 2.1)));
+        beamCols = ctx.stained({ P: function (uu, vv) { return PF(F, uu, vv, gd); }, hint: PF(F, 0, sill + h * 0.5, -3), u0: -a, u1: a, v0: sill + phH, v1: top, head: ar, lights: lights,
+          style: gStyle, seed: win.seed || 1, modH: (h - phH) / nMod, key: o.key }).slice();
+      } else {
+        for (i = 0; i < m; i++) cell([cA, ar[i], ar[i + 1]], pick());
+        cell([cA, [-a, top], [a, top]], pick());
+      }
       // 중간 문설주 + 가로대
       var stoneC = tone(base, 1.12);
       for (li = 1; li < lights; li++) { var mu = -a + lw * li; mullion(F, mu, sill + phH, top + rise * 0.2, dg - 0.02, 0.1, stoneC); }
@@ -946,11 +972,17 @@
       var bk = []; // 뒷판
       for (i = 1; i < G.length - 1; i++) { var p0 = PF(F, 0, c[1], dg + 0.04), p1 = PF(F, G[i][0], G[i][1], dg + 0.04), p2 = PF(F, G[i + 1][0], G[i + 1][1], dg + 0.04); bk.push(p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]); }
       S.addTris(bk, 0x2c241f, hintG, { vary: 0 });
-      for (var r = 0; r < rows; r++) cellP([[-a, sill + h * r / rows], [a, sill + h * r / rows], [a, sill + h * (r + 1) / rows], [-a, sill + h * (r + 1) / rows]], pal[Math.floor(wr() * pal.length)]);
       var f = pf(a, rise), cA = [0, top + rise * 0.2], ar = [];
       for (i = 0; i <= 6; i++) { var u = a - 2 * a * i / 6; ar.push([u, top + f(u)]); }
-      for (i = 0; i < 6; i++) cellP([cA, ar[i], ar[i + 1]], pal[Math.floor(wr() * pal.length)]);
-      cellP([cA, [-a, top], [a, top]], pal[Math.floor(wr() * pal.length)]);
+      var pStyle = milanGlass(win.key);
+      if (ctx.stained && ctx.glassStyleOk && ctx.glassStyleOk(pStyle)) {
+        // 고창(1950년대 장식 유리): 가운데 문설주 양쪽 두 빛
+        ctx.stained({ P: function (uu, vv) { return PF(F, uu, vv, gd); }, hint: hintG, u0: -a, u1: a, v0: sill, v1: top, head: ar, lights: 2, style: pStyle, seed: win.seed || 5, modH: h, key: win.key });
+      } else {
+        for (var r = 0; r < rows; r++) cellP([[-a, sill + h * r / rows], [a, sill + h * r / rows], [a, sill + h * (r + 1) / rows], [-a, sill + h * (r + 1) / rows]], pal[Math.floor(wr() * pal.length)]);
+        for (i = 0; i < 6; i++) cellP([cA, ar[i], ar[i + 1]], pal[Math.floor(wr() * pal.length)]);
+        cellP([cA, [-a, top], [a, top]], pal[Math.floor(wr() * pal.length)]);
+      }
       mullion(F, 0, sill, top + rise * 0.2, dg - 0.02, 0.08, tone(base, 1.12));
     }
 
