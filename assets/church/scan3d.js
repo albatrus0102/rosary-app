@@ -12,10 +12,20 @@
   var PACKS = {
     pieta: { kind: 'marble', churches: ['stpeter'], label: '피에타(미켈란젤로)' },
     crucifix: { kind: 'color', churches: ['basic', 'florence', 'light', 'myeongdong', 'stpaul'], label: '십자고상' },
-    st_peter: { kind: 'marble', churches: ['lateran', 'stpaul'], label: '성 베드로 상' },
-    st_paul: { kind: 'marble', churches: ['lateran', 'stpaul'], label: '성 바오로 상' },
+    st_peter: { kind: 'marble', churches: ['lateran', 'light', 'stpaul'], label: '성 베드로 상' },
+    st_paul: { kind: 'marble', churches: ['lateran', 'light', 'stpaul'], label: '성 바오로 상' },
     angel: { kind: 'marble', churches: ['myeongdong'], label: '천사상' }
   };
+  // 개발용 빌드에만 있는 묶음(가상 성당 「빛의 성당」 — ReleaseGate.unreleasedChurchIds): assets/church/light/ 에 두고(tools/release_hidden_assets.txt —
+  // 배포 APK 에는 없다) 그 성당이 쓸 때만 그 폴더에서 읽는다. 앱 묶음 예산(PACKS, scan3d.test)과 따로 센다(light.test 가 이 표·파일·출처를 본다).
+  // 원본·검수: art/statue_handoff/packs/ (docs/church/STATUE_SOURCES.md §10). rotY = 묶음의 정면 보정(도, §10 「정면 각도」).
+  var DEV_PACKS = {
+    st_jude: { kind: 'marble', dir: 'light/', churches: ['light'], label: '사도 유다 타대오 상', rotY: 45 },
+    apostle_clay: { kind: 'color', dir: 'light/', churches: ['light'], label: '앉은 사도상(점토)' },
+    angel_kneeling_stronsdorf: { kind: 'marble', dir: 'light/', churches: ['light'], label: '무릎 꿇은 천사상' },
+    madonna_kruzlowa: { kind: 'colorWarm', dir: 'light/', churches: ['light'], label: '성모자상(채색 목조)' }
+  };
+  function packDef(key) { return PACKS[key] || DEV_PACKS[key] || null; }
   var LOD_K = 4, LOD_MIN = 5;
   // 재질(T-80 2차): 흰 대리석은 무광(거칠기 0.68 — 0.5 는 '녹은 플라스틱' 같은 번들거림), 스스로 밝히기(emissive) 없음, 환경광은 낮게.
   // 고르게 비추는 환경광·반구광만으로는 얼굴·주름의 굴곡이 지워진다 → 성상 재질에만 '열쇠 빛'(key)을 셰이더로 더한다:
@@ -25,7 +35,9 @@
   var MAT = {
     marble: { color: 0xc6c0b6, roughness: 0.68, metalness: 0, envMapIntensity: 0.3, key: { dir: [-0.45, 0.75, 0.62], color: 0xfff3e2, intensity: 1.0, wrap: 0.25 } },
     marbleLit: { color: 0xd8d2c8, roughness: 0.66, metalness: 0, envMapIntensity: 0.22, key: { dir: [-0.5, 0.72, 0.62], color: 0xfff1dc, intensity: 3.2, wrap: 0.2 } },
-    color: { vertexColors: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.7 }
+    color: { vertexColors: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.7 },
+    // colorWarm: 금박 채색 목조(빛의 성당 메달 홀 성모자상) — 따뜻한 열쇠 빛을 더해 금박·채색이 벽감 안에서도 읽히게
+    colorWarm: { vertexColors: true, roughness: 0.5, metalness: 0, envMapIntensity: 0.9, key: { dir: [-0.35, 0.7, 0.7], color: 0xffd9a0, intensity: 1.5, wrap: 0.3 } }
   };
   // 열쇠 빛 셰이더 조각: 정점에서 지역 방향을 시야 공간으로(modelViewMatrix — 거울 성상은 빛도 거울), 조각에서 람베르트(wrap)로 더한다.
   function keyLight(m, key) {
@@ -56,7 +68,7 @@
     if (packOf(key)) return Promise.resolve(packOf(key));
     if (!loading[key]) {
       loading[key] = new Promise(function (res, rej) {
-        var sc = document.createElement('script'); sc.src = 'scan3d_' + key + '.js'; sc.async = true;
+        var sc = document.createElement('script'); sc.src = ((packDef(key) && packDef(key).dir) || '') + 'scan3d_' + key + '.js'; sc.async = true;
         sc.onload = function () { var p = packOf(key); if (p && p.load) res(p); else { delete loading[key]; rej(new Error('scan3d ' + key)); } };
         sc.onerror = function () { delete loading[key]; rej(new Error('scan3d load ' + key)); };
         document.head.appendChild(sc);
@@ -89,11 +101,12 @@
   // o: key, x, y(바닥), z, ry(지역 +Z 가 바라볼 쪽, 라디안), h(높이 m; 없으면 묶음 높이), mirror(좌우 뒤집기), mat(재질 종류 바꾸기: MAT 의 키),
   //    backAt(선택: 모형 뒷면을 기준점 뒤 이 거리에 맞춘다 — 벽에 붙는 십자고상), lodFar(선택), name
   function place(ctx, o, onFail) {
-    if (!o || !PACKS[o.key] || !able(ctx)) return false;
-    var T = root.THREE, st = state(ctx), mat = material(ctx, o.mat || PACKS[o.key].kind);
+    var def = o && packDef(o.key);
+    if (!def || !able(ctx)) return false;
+    var T = root.THREE, st = state(ctx), mat = material(ctx, o.mat || def.kind);
     var lod = new T.LOD(); lod.name = o.name || ('scan3d_' + o.key); lod.visible = false;
     lod.userData.noCam = true; lod.userData.noAO = true; lod.userData.scan3d = o.key;
-    lod.rotation.y = o.ry || 0;
+    lod.rotation.y = (o.ry || 0) + (def.rotY || 0) * Math.PI / 180;
     var up = lod.update;
     lod.update = function (cam) {
       if (reflCam(lod, cam)) { for (var i = 0; i < lod.levels.length; i++) lod.levels[i].object.visible = false; return; }
@@ -121,7 +134,7 @@
     }).catch(bad);
     return true;
   }
-  var S = { PACKS: PACKS, LOD_K: LOD_K, LOD_MIN: LOD_MIN, MAT: MAT, place: place, able: able, material: material };
+  var S = { PACKS: PACKS, DEV_PACKS: DEV_PACKS, LOD_K: LOD_K, LOD_MIN: LOD_MIN, MAT: MAT, place: place, able: able, material: material };
   root.ChurchScan3D = S;
   if (typeof module === 'object' && module.exports) module.exports = S;
 })(typeof window !== 'undefined' ? window : this);

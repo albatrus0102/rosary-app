@@ -55,17 +55,24 @@
     if (r <= PLAN.R_BACK + 2) return 'Z5';
     return x < 0 ? 'Z6' : 'Z7';
   }
-  // 그 구역에 있을 때 그리는 구역(문·아치로 이어져 보이는 곳). 로툰다 묶음(Z4·Z5·Z5b)은 한 팩
+  // 그 구역에 있을 때 그리는 구역(문·아치로 이어져 보이는 곳). 로툰다 묶음(Z4·Z5·Z5b)은 한 팩.
+  // 구슬 회랑(Z2)에서는 메달 홀 두 문(반폭 4.6 · 4)과 회랑 통로(반폭 4) 너머로 로툰다 가운데·제단만 보인다 — 경당 고리(Z5)는 그 시야 밖이라 그리지 않는다.
+  // 다만 영광송 방(z < 96.5, 반폭 8)에서는 두 문을 비스듬히 꿰는 시선이 경당 고리(x −40, z −46 쪽)까지 닿으므로 Z2s(경당 고리 포함)를 쓴다.
   var R_GRP = ['Z4', 'Z5', 'Z5b'];
   var VISIBLE = {
-    Z1: ['Z1', 'Z2', 'Z3'], Z2: ['Z1', 'Z2', 'Z3'].concat(R_GRP), Z3: ['Z1', 'Z2', 'Z3'].concat(R_GRP),
+    Z1: ['Z1', 'Z2', 'Z3'], Z2: ['Z1', 'Z2', 'Z3', 'Z4', 'Z5b'], Z2s: ['Z1', 'Z2', 'Z3'].concat(R_GRP), Z3: ['Z1', 'Z2', 'Z3'].concat(R_GRP),
     Z4: ['Z2', 'Z3'].concat(R_GRP), Z5: ['Z2', 'Z3'].concat(R_GRP), Z5b: ['Z3'].concat(R_GRP), Z6: R_GRP, Z7: R_GRP
   };
 
   // ---- 레이아웃(순수 자료) ----
+  // 회중석(참고 c2): 제대를 둘러싼 부채꼴 네 묶음 — 줄마다 제대 쪽 점 PEW_C 에서 같은 거리(동심원 띠), 묶음마다 PEW_C 를 바라본다.
+  // 가운데 통로(폭 3 m 이상)는 서문 → 제대 앞 걷는 길. 바닥 묵주 상감(반지름 27) 안쪽에 들어간다.
+  var PEW_C = { x: 0, z: -36 };
   var seatGroups = [];
-  [['L', -5.5, -0.95], ['R', 5.5, 0.95]].forEach(function (g) {
-    seatGroups.push({ g: g[0], rows: 14, perRow: 6, origin: { x: g[1], z: -17 }, dx: g[2], dz: 1.7, rowDx: 0, yaw: 0 });
+  [['A', -16, 6, 16], ['B', 16, 6, 16], ['C', -37, 4, 20], ['D', 37, 4, 20]].forEach(function (g) {
+    var y = g[1] * D2R, n = g[2], R0 = g[3], sy = Math.sin(y), cy = Math.cos(y), ex = cy, ez = -sy, half = (n - 1) / 2 * 0.95;
+    seatGroups.push({ g: g[0], rows: 8, perRow: n, origin: { x: +(PEW_C.x + R0 * sy - ex * half).toFixed(3), z: +(PEW_C.z + R0 * cy - ez * half).toFixed(3) },
+      dx: +(0.95 * ex).toFixed(4), dzIdx: +(0.95 * ez).toFixed(4), dz: +(1.6 * cy).toFixed(4), rowDx: +(1.6 * sy).toFixed(4), yaw: y });
   });
   // 경당마다 봉헌초 받침(4칸 × 2줄): 경당 오른쪽(시계 반대 쪽) 벽 앞, 경당 축을 바라본다
   var stands = CHAPELS.map(function (c) {
@@ -73,6 +80,10 @@
     var lx = 3.4, lz = -51.2;   // 모듈 좌표(θ=0 경당: 축이 -z)
     return { x: lx * ca + lz * sa, z: -lx * sa + lz * ca, slots: 8, cols: 4, pitch: 0.3, step: 0.28, ystep: 0.22, y0: 0.95, reach: 1.6, face: [-ca, sa] };
   });
+  // 메달 홀 금빛 벽감 양옆 봉헌초 받침 둘(참고 c_medal_hall_madonna): 벽감(북벽 x −11.5) 앞, 벽감 축(z 68.5)에서 ±3.1 m(성모 기도 자리 받침과 3 m 넘게 — shrine.test), 홀 가운데(+x)를 바라본다
+  var medalStands = [];
+  [-1, 1].forEach(function (sg) { medalStands.push({ x: -10.35, z: 68.5 + sg * 3.1, slots: 12, cols: 4, pitch: 0.24, step: 0.24, ystep: 0.26, y0: 0.82, reach: 1.6, face: [1, 0] }); });
+  stands.push.apply(stands, medalStands);
   var layout = {
     id: 'light', scalePercent: 100, fictional: true,
     walkSpeed: 1.1,   // 이 성당만: 순례 걸음(문 → 제단 약 3분). 다른 성당은 scene_logic WALK_SPEED(4.0) 그대로
@@ -110,6 +121,7 @@
       if (kind === 'stone') b.enableUV(tileL, tileL);
       else if (kind === 'floor') b.enableUV(tileF, tileF);
       else if (kind === 'gold' && goldUV) b.enableUV(1, 1);
+      else if (kind === 'star') b.enableUV(4.5, 4.5);
       return b;
     }
     var Z = {};
@@ -180,6 +192,56 @@
     }
     function addSeg(ax, az, bx, bz, r) { ctx.addCollider({ ax: ax, az: az, bx: bx, bz: bz, r: r || 0.6 }); }
 
+    // ---- 2단계 꾸밈 도우미(참고 c2·c4·c6·interior_three_levels: 굽도리·띠돌림·처마·붙은 기둥·막힌 아케이드·바닥 무늬) ----
+    // 벽 안쪽 면의 선분 a→b, 안쪽 법선 (nx,nz). o: plinth(기본 켬) · string(띠돌림 높이) · cornice(처마 높이) · shafts([선분 위 거리]) · shaftTop
+    function trims(zone, ax, az, bx, bz, nx, nz, o) {
+      var s = B(zone, 'stone'), gd = B(zone, 'gold');
+      var dx = bx - ax, dz = bz - az, L = Math.sqrt(dx * dx + dz * dz);
+      function strip(b, y0, y1, d, col) { var ox = nx * d / 2, oz = nz * d / 2; segBox(b, ax + ox, az + oz, bx + ox, bz + oz, y0, y1, d, col); }
+      if (o.plinth !== false) { strip(s, 0, 0.5, 0.16, STONE_D); strip(s, 0.5, 0.62, 0.22, STONE_W); }
+      if (o.string) { strip(s, o.string, o.string + 0.3, 0.24, STONE_W); strip(gd, o.string + 0.3, o.string + 0.36, 0.1, GOLD); strip(s, o.string - 0.12, o.string, 0.14, STONE_D); }
+      if (o.cornice) { strip(s, o.cornice - 0.5, o.cornice, 0.36, STONE_W); strip(gd, o.cornice - 0.58, o.cornice - 0.5, 0.12, GOLD); }
+      (o.shafts || []).forEach(function (u) {
+        var px = ax + dx * u / L + nx * 0.2, pz = az + dz * u / L + nz * 0.2, top = o.shaftTop || o.string || 6;
+        cylAt(s, px, pz, 0.62, top - 0.62 - 0.5, 0.17, 0.17, 10, STONE_W);
+        cylAt(gd, px, pz, top - 0.5, 0.5, 0.19, 0.32, 10, GOLD);
+        cylAt(s, px, pz, 0.5, 0.14, 0.26, 0.26, 10, STONE_W);
+      });
+    }
+    // 막힌 뾰족 아치(벽에 붙은 얕은 아케이드): 가운데 (cx,cz), 가로 단위 (ux,uz), 안쪽 법선 (nx,nz), 반폭 a, 바닥 y0, 아치 시작 sp, 꼭대기 ap.
+    // 안은 별 궁륭 판(파란 바탕 금별), 둘레는 금 테 + 양옆 가는 돌기둥
+    function blindArch(zone, cx, cz, ux, uz, nx, nz, a, y0, sp, ap, plain) {
+      var st = plain ? B(zone, 'stone') : B(zone, 'star'), gd = B(zone, 'gold'), s = B(zone, 'stone'), k, n = 6;
+      var fx = cx + nx * 0.03, fz = cz + nz * 0.03;
+      for (k = 0; k < n; k++) {
+        var u0 = -a + 2 * a * k / n, u1 = -a + 2 * a * (k + 1) / n, top = sp + Math.min(archY(u0, a, ap - sp), archY(u1, a, ap - sp));
+        st.addQuad([fx + ux * u0, y0, fz + uz * u0], [fx + ux * u1, y0, fz + uz * u1], [fx + ux * u1, top, fz + uz * u1], [fx + ux * u0, top, fz + uz * u0], plain ? STONE_D : STARV, [fx + nx * 4, (y0 + top) / 2, fz + nz * 4]);
+      }
+      if (!plain) archRing(gd, cx + nx * 0.1, cz + nz * 0.1, ux, uz, a + 0.04, sp, ap + 0.04, 0, 0.14, GOLD, 6);
+      archRing(s, cx + nx * 0.05, cz + nz * 0.05, ux, uz, a + 0.2, sp, ap + 0.2, 0, 0.2, STONE_W, 6);
+      // 양옆 가는 기둥(사각) + 기둥머리 — 삼각형을 아끼려고 상자로
+      [-1, 1].forEach(function (sd) {
+        var px = cx + ux * sd * (a + 0.1) + nx * 0.12, pz = cz + uz * sd * (a + 0.1) + nz * 0.12;
+        s.add(Geo.box(), STONE_W, { x: px, y: y0, z: pz, sx: 0.18, sy: sp - y0 - 0.25, sz: 0.18, ry: Math.atan2(-uz, ux), flat: true, vary: 0.02 });
+        (plain ? s : gd).add(Geo.box(), plain ? STONE_W : GOLD, { x: px, y: sp - 0.25, z: pz, sx: 0.3, sy: 0.25, sz: 0.3, ry: Math.atan2(-uz, ux), flat: true, vary: 0 });
+      });
+    }
+    // 위층 막힌 아케이드 줄(참고 c6·interior_three_levels 의 2층 회랑): 선분 a→b 를 따라 반폭 a 아치를 n 개
+    function arcadeRow(zone, ax, az, bx, bz, nx, nz, n, y0, sp, ap) {
+      var dx = bx - ax, dz = bz - az, L = Math.sqrt(dx * dx + dz * dz), ux = dx / L, uz = dz / L, w = L / n;
+      for (var i = 0; i < n; i++) blindArch(zone, ax + ux * w * (i + 0.5), az + uz * w * (i + 0.5), ux, uz, nx, nz, w / 2 - 0.28, y0, sp, ap, true);
+      var s = B(zone, 'stone'); segBox(s, ax + nx * 0.15, az + nz * 0.15, bx + nx * 0.15, bz + nz * 0.15, y0 - 0.25, y0, 0.3, STONE_W);
+    }
+    // 무늬 바닥: [x0,x1]×[z0,z1] 를 칸 sz 로 겹치지 않게 깐다. fn(cx,cz,i,j) → 색(대리석 질감에 곱해진다)
+    function floorTiles(b, x0, x1, z0, z1, sz, fn) {
+      var nx = Math.max(1, Math.round((x1 - x0) / sz)), nz = Math.max(1, Math.round((z1 - z0) / sz)), wx = (x1 - x0) / nx, wz = (z1 - z0) / nz;
+      for (var i = 0; i < nx; i++) for (var j = 0; j < nz; j++) {
+        var a = x0 + i * wx, c = z0 + j * wz;
+        b.addQuad([a, 0, c], [a + wx, 0, c], [a + wx, 0, c + wz], [a, 0, c + wz], fn(a + wx / 2, c + wz / 2, i, j), [a + wx / 2, 5, c + wz / 2], { vary: 0.012 });
+      }
+    }
+    var M_CREAM = 0xffffff, M_GREY = 0xc9ccd3, M_RED = 0xb4646a, M_BLUE = 0x7f93bf, M_GOLD = 0xe7c47a;
+
     // ===== 캔버스 질감(글자·상징 없음): 별 궁륭, 금 모자이크, 창 자리표시 =====
     function canvasTex(w, h, draw, rep) {
       var c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -190,15 +252,33 @@
       return t;
     }
     var starRng = ctx.rng(77);
-    var starTex = canvasTex(256, 256, function (g, w, h) {
-      g.fillStyle = '#1b2a63'; g.fillRect(0, 0, w, h);
-      for (var i = 0; i < 26; i++) {
-        var x = starRng() * w, y = starRng() * h, r = 2 + starRng() * 3;
-        g.fillStyle = '#e8c56a'; g.beginPath();
-        for (var k = 0; k < 10; k++) { var a = k * Math.PI / 5 - Math.PI / 2, rr = k % 2 ? r * 0.42 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
-        g.closePath(); g.fill();
-      }
-    }, [1, 1]);
+    // 별 궁륭 타일(참고 c2·c3·c4·c6: 짙은 군청 바탕에 금별) — 이음매 없이 반복(가장자리 별은 반대편에도 그린다). 궁륭 'star' 묶음(4.5 m 타일)·돔·메달 홀 돔이 함께 쓴다
+    function starTile(n, rMin, rMax) {
+      return canvasTex(256, 256, function (g, w, h) {
+        var gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#203479'); gr.addColorStop(0.5, '#1a2b6a'); gr.addColorStop(1, '#22377e');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        for (var i = 0; i < 700; i++) { g.fillStyle = starRng() < 0.5 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,20,0.06)'; g.fillRect(starRng() * w, starRng() * h, 2 + starRng() * 4, 2 + starRng() * 4); }
+        function star(x, y, r) {
+          [[0, 0], [w, 0], [-w, 0], [0, h], [0, -h]].forEach(function (o) {
+            var cx = x + o[0], cy = y + o[1];
+            if (cx < -r || cx > w + r || cy < -r || cy > h + r) return;
+            g.fillStyle = '#b8892c'; g.beginPath();
+            for (var k = 0; k < 10; k++) { var a = k * Math.PI / 5 - Math.PI / 2, rr = k % 2 ? r * 0.45 : r * 1.08; g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr + 0.6); }
+            g.closePath(); g.fill();
+            g.fillStyle = '#f2cf6e'; g.beginPath();
+            for (k = 0; k < 10; k++) { var a2 = k * Math.PI / 5 - Math.PI / 2, r2 = k % 2 ? r * 0.4 : r; g.lineTo(cx + Math.cos(a2) * r2, cy + Math.sin(a2) * r2); }
+            g.closePath(); g.fill();
+          });
+        }
+        var gs = Math.round(Math.sqrt(n)), cell = w / gs;
+        for (var j = 0; j < gs; j++) for (var i2 = 0; i2 < gs; i2++) star((i2 + 0.2 + starRng() * 0.6) * cell, (j + 0.2 + starRng() * 0.6) * cell, rMin + starRng() * (rMax - rMin));
+        for (i = 0; i < 40; i++) { g.fillStyle = 'rgba(242,207,110,0.7)'; g.beginPath(); g.arc(starRng() * w, starRng() * h, 1 + starRng(), 0, 7); g.fill(); }
+      }, [1, 1]);
+    }
+    var starTex = starTile(16, 7, 11);
+    // 궁륭 묶음 재질: 별 타일 × 정점 색(흰색 = 타일 그대로, 칸마다 조금씩 다른 밝기)
+    MAT.star = new T.MeshStandardMaterial({ map: starTex, vertexColors: true, roughness: 0.72, metalness: 0, envMapIntensity: 0.45 });
+    var STARV = 0xffffff;
     var mosaicRng = ctx.rng(91);
     function mosaicTex(kind) {
       return canvasTex(256, 256, function (g, w, h) {
@@ -296,11 +376,26 @@
       archRing(gd, 0, FZ - 0.02, 1, 0, 3.1, 7.5, 10.6, 0, 0.22, GOLD, 10);
       [-1, 1].forEach(function (sg) { w.add(Geo.box(), WOOD, { x: sg * 3.9, y: 0, z: FZ - 1.4, sx: 3.0, sy: 7.4, sz: 0.16, ry: sg * 1.25, vary: 0.02 }); ctx.addCollider({ x0: sg > 0 ? 3 : -4.4, x1: sg > 0 ? 4.4 : -3, z0: FZ - 2.9, z1: FZ }); });
     })();
+    var entryNiches = [];
+    // 스캔 성상(LOD)은 ctx.root 에 붙는다 — 구역 묶음으로 옮겨 그 구역이 안 보일 때 함께 숨긴다(먼 구역의 원거리 LOD 도 그리지 않게)
+    function toZone(zone, fn) {
+      var r = ctx.root, n0 = r ? r.children.length : 0;
+      fn();
+      if (!r) return;
+      r.children.slice(n0).filter(function (o) { return o.userData && o.userData.scan3d; }).forEach(function (o) { Z[zone].group.add(o); });
+    }
     (function entryHall() {
       var s = B('Z1', 'stone'), f = B('Z1', 'floor'), p = B('Z1', 'paint'), gd = B('Z1', 'gold');
       var H = E.wallH, h = E.half, cz = (E.crossZ0 + E.crossZ1) / 2, ch = (E.crossZ1 - E.crossZ0) / 2;
-      floorQuad(f, -h, h, E.z0, E.z1, 0, MARBLE);
-      floorQuad(f, -E.crossHalf, -h, E.crossZ0, E.crossZ1, 0, MARBLE); floorQuad(f, h, E.crossHalf, E.crossZ0, E.crossZ1, 0, MARBLE);
+      // 바닥(참고 c6): 크림·회청 대리석 바둑판 + 벽 따라 붉은 대리석 띠, 교차부는 큰 칸
+      var entryFloor = function (cx2, cz2, i, j) {
+        var inCross = cz2 > E.crossZ0 && cz2 < E.crossZ1, edge = inCross ? (cz2 < E.crossZ0 + 0.9 || cz2 > E.crossZ1 - 0.9 || Math.abs(cx2) > E.crossHalf - 0.9) : Math.abs(cx2) > h - 0.9;
+        if (edge) return M_RED;
+        if (inCross && Math.abs(cx2) < h) return Math.hypot(cx2, cz2 - 159) < 4.5 ? M_CREAM : ((i + j) % 2 ? M_GREY : M_CREAM);
+        return (i + j) % 2 ? M_GREY : M_CREAM;
+      };
+      floorTiles(f, -h, h, E.crossZ1, E.z1, 1.5, entryFloor); floorTiles(f, -h, h, E.z0, E.crossZ0, 1.6, entryFloor);
+      floorTiles(f, -E.crossHalf, E.crossHalf, E.crossZ0, E.crossZ1, 1.5, entryFloor);
       // 벽(두께 1, 선이 두께 가운데)
       [-1, 1].forEach(function (sg) {
         boxA(s, sg * h, sg * (h + 1), 0, H, E.crossZ1, E.z1, STONE);
@@ -313,28 +408,47 @@
         ctx.addCollider({ x0: sg > 0 ? h : -E.crossHalf - 1, x1: sg > 0 ? E.crossHalf + 1 : -h, z0: E.crossZ1, z1: E.crossZ1 + 1 });
         ctx.addCollider({ x0: sg > 0 ? h : -E.crossHalf - 1, x1: sg > 0 ? E.crossHalf + 1 : -h, z0: E.crossZ0 - 1, z1: E.crossZ0 });
         ctx.addCollider({ x0: sg > 0 ? E.crossHalf : -E.crossHalf - 1, x1: sg > 0 ? E.crossHalf + 1 : -E.crossHalf, z0: E.crossZ0 - 1, z1: E.crossZ1 + 1 });
-        // 사도 벽감 12(가로대 양쪽 팔의 벽: 각 팔 6) — 1단계는 빈 벽감(조각은 2단계)
+        // 사도 벽감 12(가로대 양쪽 팔의 벽: 각 팔 6, 참고 c6). 별 궁륭 판 + 금 테 + 돌 닫집, 받침 위 성상(있는 스캔만) 또는 돌 방패
         for (var k = 0; k < 3; k++) {
           var nx2 = sg * (h + 4 + k * 6.3);
           [[E.crossZ1, -1], [E.crossZ0, 1]].forEach(function (wz) {
-            var zz = wz[0] + wz[1] * 0.02;
-            archRing(gd, nx2, zz, 1, 0, 1.1, 4.2, 5.6, 0, 0.14, GOLD, 8);
-            boxA(p, nx2 - 1.0, nx2 + 1.0, 1.1, 4.2, zz - 0.01, zz + 0.01, 0x3a3550);
-            boxA(s, nx2 - 0.8, nx2 + 0.8, 0, 1.1, wz[0] + wz[1] * 0.5 - 0.5, wz[0] + wz[1] * 0.5 + 0.5, STONE_D);
+            var zz = wz[0], n = wz[1];
+            blindArch('Z1', nx2, zz, 1, 0, 0, n, 1.1, 1.1, 4.4, 5.9);
+            boxA(s, nx2 - 0.8, nx2 + 0.8, 0, 1.1, zz + n * 0.5 - 0.5, zz + n * 0.5 + 0.5, STONE_D);
+            boxA(gd, nx2 - 0.84, nx2 + 0.84, 1.06, 1.12, zz + n * 0.52 - 0.52, zz + n * 0.52 + 0.52, GOLD);
+            // 닫집(작은 박공 + 꼭지): 아치 위
+            s.addTris([nx2 - 1.35, 5.9, zz + n * 0.22, nx2 + 1.35, 5.9, zz + n * 0.22, nx2, 7.3, zz + n * 0.22], STONE_W, [nx2, 6.4, zz + n * 5]);
+            gd.addBeam([nx2 - 1.35, 5.9, zz + n * 0.25], [nx2, 7.3, zz + n * 0.25], 0.1, 0.08, GOLD); gd.addBeam([nx2, 7.3, zz + n * 0.25], [nx2 + 1.35, 5.9, zz + n * 0.25], 0.1, 0.08, GOLD);
+            [-1.35, 1.35].forEach(function (o) { gd.add(Geo.cyl(4, 0.05), GOLD, { x: nx2 + o, y: 5.6, z: zz + n * 0.2, sx: 0.14, sy: 1.4, sz: 0.14, vary: 0 }); });
+            entryNiches.push({ x: nx2, z: zz + n * 0.5, n: n, sg: sg, k: k });
           });
         }
+        // 벽 꾸밈: 세로 팔 긴 벽(붙은 기둥 + 띠돌림 + 처마), 가로대 끝벽, 가로대 옆벽(벽감 사이 기둥)
+        var nIn = -sg;
+        trims('Z1', sg * h, E.crossZ1, sg * h, E.z1, nIn, 0, { string: 6.8, cornice: H, shafts: [4.5, 9, 13.5], shaftTop: H - 0.6 });
+        trims('Z1', sg * h, E.z0, sg * h, E.crossZ0, nIn, 0, { string: 6.8, cornice: H, shafts: [4], shaftTop: H - 0.6 });
+        trims('Z1', sg * E.crossHalf, E.crossZ0, sg * E.crossHalf, E.crossZ1, nIn, 0, { string: 6.8, cornice: H, shafts: [4.5, 13.5], shaftTop: H - 0.6 });
+        blindArch('Z1', sg * (E.crossHalf - 0.02), (E.crossZ0 + E.crossZ1) / 2, 0, 1, nIn, 0, 2.2, 0.62, 4.8, 6.6);
+        arcadeRow('Z1', sg * h, E.crossZ1 + 0.4, sg * h, E.z1 - 0.4, nIn, 0, 6, 9.6, 12.4, 13.8);
+        arcadeRow('Z1', sg * E.crossHalf, E.crossZ0 + 0.4, sg * E.crossHalf, E.crossZ1 - 0.4, nIn, 0, 5, 9.6, 12.4, 13.8);
+        [[E.crossZ1, -1], [E.crossZ0, 1]].forEach(function (wz) { arcadeRow('Z1', sg * (h + 0.4), wz[0], sg * (E.crossHalf - 0.4), wz[0], 0, wz[1], 7, 9.6, 12.4, 13.8); });
+        [[E.crossZ1, -1], [E.crossZ0, 1]].forEach(function (wz) {
+          trims('Z1', sg * h, wz[0], sg * E.crossHalf, wz[0], 0, wz[1], { plinth: false, string: 6.8, cornice: H, shafts: [3.6, 9.9, 16.2], shaftTop: H - 0.6 });
+        });
       });
+      [[-h, -3.4], [3.4, h]].forEach(function (xr) { trims('Z1', xr[0], E.z1, xr[1], E.z1, 0, -1, { string: 6.8, cornice: H }); trims('Z1', xr[0] < 0 ? -h : 4.4, E.z0, xr[0] < 0 ? -4.4 : h, E.z0, 0, 1, { cornice: H }); });
       // 뒷벽(구슬 회랑 쪽, 가운데 통로 반폭 4 · 높이 10)
       archWall(s, 0, E.z0 - 0.5, 1, 0, h + 1, H + E.rise + 1, 1, 4, 7.4, 10, STONE, 8);
       ctx.addCollider({ x0: -h - 1, x1: -4, z0: E.z0 - 1, z1: E.z0 }); ctx.addCollider({ x0: 4, x1: h + 1, z0: E.z0 - 1, z1: E.z0 });
       // 궁륭: 세로 팔·가로대 원통(뾰족) + 교차부 교차 궁륭(두 원통 중 높은 쪽)
       var VB = function (u) { return H + archY(u, h, E.rise); };
-      ceilGrid(p, 10, 6, function (u, v) { var x = -h + 2 * h * u, z = E.crossZ1 + (E.z1 - E.crossZ1) * v; return [x, VB(x), z]; }, 0xe8dcc6);
-      ceilGrid(p, 10, 3, function (u, v) { var x = -h + 2 * h * u, z = E.z0 + (E.crossZ0 - E.z0) * v; return [x, VB(x), z]; }, 0xe8dcc6);
+      p = B('Z1', 'star');   // 궁륭 칸 = 별 궁륭(참고 c6)
+      ceilGrid(p, 10, 6, function (u, v) { var x = -h + 2 * h * u, z = E.crossZ1 + (E.z1 - E.crossZ1) * v; return [x, VB(x), z]; }, STARV);
+      ceilGrid(p, 10, 3, function (u, v) { var x = -h + 2 * h * u, z = E.z0 + (E.crossZ0 - E.z0) * v; return [x, VB(x), z]; }, STARV);
       [-1, 1].forEach(function (sg) {
-        ceilGrid(p, 6, 10, function (u, v) { var x = sg * (h + (E.crossHalf - h) * u), z = E.crossZ0 + 2 * ch * v; return [x, VB(z - cz), z]; }, 0xe8dcc6, false);
+        ceilGrid(p, 6, 10, function (u, v) { var x = sg * (h + (E.crossHalf - h) * u), z = E.crossZ0 + 2 * ch * v; return [x, VB(z - cz), z]; }, STARV, false);
       });
-      ceilGrid(p, 12, 12, function (u, v) { var x = -h + 2 * h * u, z = E.crossZ0 + 2 * ch * v; return [x, Math.max(VB(x), VB(z - cz)), z]; }, 0xe8dcc6);
+      ceilGrid(p, 12, 12, function (u, v) { var x = -h + 2 * h * u, z = E.crossZ0 + 2 * ch * v; return [x, Math.max(VB(x), VB(z - cz)), z]; }, STARV);
       // 교차부 대각 리브(금)
       for (var k = 0; k < 12; k++) {
         var t0 = -1 + k / 6, t1 = -1 + (k + 1) / 6;
@@ -342,12 +456,47 @@
           gd.addBeam([t0 * h, VB(t0 * h) - 0.15, cz + d * t0 * h], [t1 * h, VB(t1 * h) - 0.15, cz + d * t1 * h], 0.35, 0.3, GOLD);
         });
       }
-      // 큰 십자고상(정거장 3): 교차부 한가운데 받침 위
-      boxA(s, -1.4, 1.4, 0, 1.2, 155.6, 158.4, STONE_D);
-      ctx.addCollider({ x: 0, z: 157, r: 1.9 });
-      ctx.crucifix({ x: 0, y: 1.2, z: 157, h: 5.2, ry: 0, scan: true });
+      // 가로 띠 리브(금): 세로 팔·가로대 원통 궁륭을 가로지른다
+      function ribX(z) { for (var q = 0; q < 10; q++) { var u0 = -h + 2 * h * q / 10, u1 = -h + 2 * h * (q + 1) / 10; gd.addBeam([u0, VB(u0) - 0.18, z], [u1, VB(u1) - 0.18, z], 0.4, 0.45, GOLD); } }
+      function ribZ(x) { for (var q = 0; q < 10; q++) { var w0 = -ch + 2 * ch * q / 10, w1 = -ch + 2 * ch * (q + 1) / 10; gd.addBeam([x, VB(w0) - 0.18, cz + w0], [x, VB(w1) - 0.18, cz + w1], 0.4, 0.45, GOLD); } }
+      [E.crossZ1 + 0.2, 177, E.z1 - 0.3, E.crossZ0 - 0.2, E.z0 + 0.3].forEach(ribX);
+      [-1, 1].forEach(function (sg) { ribZ(sg * (h + 0.2)); ribZ(sg * 19.5); ribZ(sg * (E.crossHalf - 0.3)); });
+      for (k = 0; k < 24; k++) { var r0 = k / 24 * Math.PI * 2, r1 = (k + 1) / 24 * Math.PI * 2; gd.addBeam([Math.cos(r0) * 1.4, H + E.rise - 0.1, cz + Math.sin(r0) * 1.4], [Math.cos(r1) * 1.4, H + E.rise - 0.1, cz + Math.sin(r1) * 1.4], 0.3, 0.3, GOLD); }
+      // 큰 채색 십자고상(정거장 3, 참고 c6): 교차부 위에 사슬로 매단다 — 채색 목조 스캔(CC0) + 뒤의 채색 판 십자가(붉은 바탕·금 테, 그림·글자 없음).
+      // 바로 아래 낮은 팔각 돌 단(걸어 들어가지 않는다)
+      var CY = 4.6, CH = 5.4, czc = 157, bz = czc - CH * 0.03 - 0.06;
+      for (k = 0; k < 8; k++) {
+        var o0 = (k + 0.5) / 8 * Math.PI * 2, o1 = (k + 1.5) / 8 * Math.PI * 2;
+        s.addQuad([Math.sin(o0) * 2.3, 0.45, czc + Math.cos(o0) * 2.3], [Math.sin(o1) * 2.3, 0.45, czc + Math.cos(o1) * 2.3], [Math.sin(o1) * 2.3, 0, czc + Math.cos(o1) * 2.3], [Math.sin(o0) * 2.3, 0, czc + Math.cos(o0) * 2.3], STONE_W, [Math.sin(o0 + 0.39) * 9, 0.2, czc + Math.cos(o0 + 0.39) * 9]);
+        s.addTris([0, 0.45, czc, Math.sin(o0) * 2.3, 0.45, czc + Math.cos(o0) * 2.3, Math.sin(o1) * 2.3, 0.45, czc + Math.cos(o1) * 2.3], STONE_W, [0, 5, czc]);
+        gd.addBeam([Math.sin(o0) * 2.32, 0.46, czc + Math.cos(o0) * 2.32], [Math.sin(o1) * 2.32, 0.46, czc + Math.cos(o1) * 2.32], 0.05, 0.06, GOLD);
+      }
+      ctx.addCollider({ x: 0, z: czc, r: 2.5 });
+      toZone('Z1', function () { ctx.crucifix({ x: 0, y: CY, z: czc, h: CH, ry: 0, scan: true }); });
+      (function board() {
+        var cb = B('Z1', 'paint'), RED = 0x8e2a2a, bw = CH * 0.085, ay = CY + CH * 0.79, aw = CH * 0.4, ah = CH * 0.075, t = 0.08;
+        [[0.0, RED, 0], [0.07, GOLD, -t]].forEach(function (L) {
+          var e = L[0], col = L[1], dz = L[2], bb = col === GOLD ? gd : cb;
+          boxA(bb, -bw - e, bw + e, CY - 0.25 - e, CY + CH + 0.1 + e, bz - t + dz, bz + dz, col);
+          boxA(bb, -aw - e, aw + e, ay - ah - e, ay + ah + e, bz - t + dz, bz + dz, col);
+          [[-aw, ay], [aw, ay], [0, CY + CH + 0.1]].forEach(function (q) { boxA(bb, q[0] - 0.42 - e, q[0] + 0.42 + e, q[1] - 0.42 - e, q[1] + 0.42 + e, bz - t + dz, bz + dz, col); });
+        });
+        // 사슬 넷: 가로대 끝·꼭대기에서 교차부 궁륭 꼭대기로
+        [[-aw, ay + 0.4], [aw, ay + 0.4]].forEach(function (q) { gd.addBeam([q[0], q[1], bz - 0.1], [q[0] * 0.25, H + E.rise - 0.3, czc], 0.05, 0.05, 0x5c4a2e); });
+        gd.addBeam([0, CY + CH + 0.5, bz - 0.1], [0, H + E.rise - 0.3, czc], 0.06, 0.06, 0x5c4a2e);
+      })();
       // 성수반(정거장 5)
       ctx.holyFont({ x: 5, z: 178.3, ry: 0 });
+      // 사도상(있는 실물 스캔만, 참고 c6): 입구에서 정면으로 보이는 가로대 앞벽(z 150, +z 를 바라봄) 안쪽 두 칸씩 — 베드로·바오로·유다 타대오·앉은 사도.
+      // 나머지 여덟 칸은 빈 벽감에 돌 방패(문양·글자 없음). 남이 만든 AI 3D 는 쓰지 않는다
+      var APOSTLES = { '-1,0,1': { key: 'st_peter', h: 2.45 }, '1,0,1': { key: 'st_paul', h: 2.45 }, '-1,1,1': { key: 'st_jude', h: 2.3 }, '1,1,1': { key: 'apostle_clay', h: 1.75 } };
+      entryNiches.forEach(function (nn) {
+        var a = APOSTLES[nn.sg + ',' + nn.k + ',' + nn.n];
+        if (a) { toZone('Z1', function () { ctx.scan({ key: a.key, x: nn.x, y: 1.12, z: nn.z, ry: nn.n > 0 ? 0 : Math.PI, h: a.h, lodFar: 9 }, null); }); return; }
+        var zf = nn.z - nn.n * 0.5 + nn.n * 0.06, sh = [[-0.55, 3.6], [0.55, 3.6], [0.55, 2.7], [0, 2.1], [-0.55, 2.7]];
+        s.addTris([nn.x + sh[0][0], sh[0][1], zf, nn.x + sh[1][0], sh[1][1], zf, nn.x + sh[2][0], sh[2][1], zf, nn.x + sh[0][0], sh[0][1], zf, nn.x + sh[2][0], sh[2][1], zf, nn.x + sh[4][0], sh[4][1], zf, nn.x + sh[4][0], sh[4][1], zf, nn.x + sh[2][0], sh[2][1], zf, nn.x + sh[3][0], sh[3][1], zf], STONE_W, [nn.x, 3, zf + nn.n * 5]);
+        for (var q = 0; q < 5; q++) { var A0 = sh[q], A1 = sh[(q + 1) % 5]; gd.addBeam([nn.x + A0[0], A0[1], zf + nn.n * 0.02], [nn.x + A1[0], A1[1], zf + nn.n * 0.02], 0.07, 0.05, GOLD); }
+      });
     })();
     // 장미창(정면, 지름 10 m): 안쪽 면과 바깥 면에 하나씩(바깥은 거울상 UV — 밖에서 봐도 바로 보인다)
     var rose = { r: 5, y: 15.5, z: E.z1 };
@@ -376,19 +525,37 @@
     ];
     var mosaicMeshes = {};
     (function gallery() {
-      var s = B('Z2', 'stone'), f = B('Z2', 'floor'), p = B('Z2', 'paint'), gd = B('Z2', 'gold');
-      floorQuad(f, -8, 8, 80, 141, 0, MARBLE);
+      var s = B('Z2', 'stone'), f = B('Z2', 'floor'), p = B('Z2', 'star'), gd = B('Z2', 'gold');
+      // 바닥: 가운데 회청 띠 + 양옆 붉은 줄, 방마다 가운데 둥근 무늬(모자이크 원판 바로 아래) — 크림 바둑판
+      floorTiles(f, -8, 8, 80, 141, 1.0, function (x, z, i, j) {
+        var ax = Math.abs(x);
+        if (ax > 2.0 && ax < 2.6) return M_RED;
+        if (ax <= 2.0) return (i + j) % 2 ? M_BLUE : M_GREY;
+        return (i + j) % 2 ? M_GREY : M_CREAM;
+      });
       ROOMS.forEach(function (R) {
         var cz = (R.z0 + R.z1) / 2, hz = (R.z1 - R.z0) / 2;
         [-1, 1].forEach(function (sg) {
           boxA(s, sg * R.half, sg * (R.half + 1), 0, R.H, R.z0, R.z1, STONE);
           ctx.addCollider({ x0: sg > 0 ? R.half : -R.half - 1, x1: sg > 0 ? R.half + 1 : -R.half, z0: R.z0, z1: R.z1 });
         });
-        // 돛 궁륭(네 벽에서 시작해 가운데가 오른다)
+        // 돛 궁륭(네 벽에서 시작해 가운데가 오른다): 별 궁륭 + 대각·테두리 금 리브
+        var SV = function (x, z) { var ex = x / R.half, ez = (z - cz) / hz; return R.H + R.rise * (1 - ex * ex) * (1 - ez * ez); };
         ceilGrid(p, 10, 10, function (u, v) {
-          var x = -R.half + 2 * R.half * u, z = R.z0 + 2 * hz * v, ex = x / R.half, ez = (z - cz) / hz;
-          return [x, R.H + R.rise * (1 - ex * ex) * (1 - ez * ez), z];
-        }, 0xe9dfca);
+          var x = -R.half + 2 * R.half * u, z = R.z0 + 2 * hz * v;
+          return [x, SV(x, z), z];
+        }, STARV);
+        for (var q = 0; q < 10; q++) {
+          var t0 = -1 + q / 5, t1 = -1 + (q + 1) / 5;
+          [1, -1].forEach(function (d) { gd.addBeam([t0 * R.half, SV(t0 * R.half, cz + d * t0 * hz) - 0.15, cz + d * t0 * hz], [t1 * R.half, SV(t1 * R.half, cz + d * t1 * hz) - 0.15, cz + d * t1 * hz], 0.28, 0.3, GOLD); });
+        }
+        // 벽 꾸밈: 굽도리 · 띠돌림 · 처마, 모서리 붙은 기둥, 막힌 아케이드(큰 방 셋 · 작은 방 하나)
+        [-1, 1].forEach(function (sg) {
+          var wx = sg * R.half, nIn = -sg, len = R.z1 - R.z0;
+          trims('Z2', wx, R.z0, wx, R.z1, nIn, 0, { string: 7.2, cornice: R.H, shafts: [0.45, len - 0.45], shaftTop: R.H - 0.5 });
+          var nA = R.half > 6 ? 3 : 1, w = (len - 1.4) / nA;
+          for (var a = 0; a < nA; a++) blindArch('Z2', wx, R.z0 + 0.7 + w * (a + 0.5), 0, 1, nIn, 0, Math.min(1.9, w / 2 - 0.35), 0.62, 4.6, 6.6);
+        });
         // 가운데 모자이크 원판(자리: 그림은 light/gpack_light.js 의 mosaic_<key> 가 있으면 그것)
         var rr = R.half * 0.42;
         var mm = new T.Mesh(new T.CircleGeometry(rr, 36), new T.MeshStandardMaterial({ map: mosaicTex(R.key), roughness: 0.45, metalness: 0.35, emissive: 0x5a4210, emissiveIntensity: 0.25 }));
@@ -407,7 +574,7 @@
       // 잇는 통로(반폭 4, 높이 10 + 원통)
       [[123.5, 125.5], [96, 98.5]].forEach(function (c) {
         [-1, 1].forEach(function (sg) { boxA(s, sg * 4, sg * 5, 0, 10, c[0], c[1], STONE); ctx.addCollider({ x0: sg > 0 ? 4 : -5, x1: sg > 0 ? 5 : -4, z0: c[0], z1: c[1] }); });
-        ceilGrid(p, 6, 2, function (u, v) { var x = -4 + 8 * u; return [x, 7.4 + archY(x, 4, 2.6), c[0] + (c[1] - c[0]) * v]; }, 0xe0d4be);
+        ceilGrid(p, 6, 2, function (u, v) { var x = -4 + 8 * u; return [x, 7.4 + archY(x, 4, 2.6), c[0] + (c[1] - c[0]) * v]; }, STARV);
       });
       // 영광송 방 남쪽 끝(메달 홀 쪽) 벽
       archWall(s, 0, 80, 1, 0, 9, 21, 1, 4, 7.4, 10, STONE, 8);
@@ -417,13 +584,72 @@
     // =====================================================================
     // Z3 메달 홀(성모 경당): 둥근 방(반지름 11.5), 파란 별 돔. 성모상은 shrine_places.js(light) 가 모신다
     // =====================================================================
-    var M = PLAN.MEDAL;
+    var M = PLAN.MEDAL, medalMesh = null;
     (function medal() {
       var s = B('Z3', 'stone'), f = B('Z3', 'floor'), p = B('Z3', 'paint'), gd = B('Z3', 'gold');
-      var N = 32, Rw = M.r + 0.5, H = 14;
-      for (var x0 = -12; x0 < 12; x0 += 4) floorQuad(f, x0, x0 + 4, M.cz - 12, M.cz + 12, 0, MARBLE);
-      // 바닥 무늬(메달: 열두 별 고리 — 글자 없음)
-      for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; p.add(Geo.cyl(5, 1), 0x8a6a35, { x: Math.cos(a) * 3.2, y: 0.01, z: M.cz + Math.sin(a) * 3.2, sx: 0.32, sy: 0.02, sz: 0.32, vary: 0 }); }
+      var N = 32, Rw = M.r + 0.5, H = 14, k;
+      // 바닥(참고 c7): 가운데 메달 원판(열두 별·장미·백합 — 사용자 그림 light/medal_floor.webp, 개발용 빌드만; 없으면 같은 배치의 단순 무늬) +
+      // 붉은 대리석 고리 + 크림·회청 부채꼴 띠. 원판 자리(반지름 5.4)는 바닥 판을 비운다(겹쳐 깜박이지 않게)
+      var MR = 5.4, FS = 48;
+      for (k = 0; k < FS; k++) {
+        var f0 = k / FS * Math.PI * 2, f1 = (k + 1) / FS * Math.PI * 2;
+        [[MR - 0.04, 6.0, M_RED], [6.0, 8.8, k % 2 ? M_GREY : M_CREAM], [8.8, 9.2, M_GOLD], [9.2, 12.2, k % 2 ? M_CREAM : M_GREY]].forEach(function (rg) {
+          f.addQuad([Math.sin(f0) * rg[0], 0, M.cz + Math.cos(f0) * rg[0]], [Math.sin(f1) * rg[0], 0, M.cz + Math.cos(f1) * rg[0]], [Math.sin(f1) * rg[1], 0, M.cz + Math.cos(f1) * rg[1]], [Math.sin(f0) * rg[1], 0, M.cz + Math.cos(f0) * rg[1]], rg[2], [0, 5, M.cz], { vary: 0.01 });
+        });
+      }
+      var medalCanvas = canvasTex(256, 256, function (g, w, h) {
+        g.fillStyle = '#e9e2d6'; g.fillRect(0, 0, w, h);
+        g.fillStyle = '#9b2f36'; g.beginPath(); g.arc(w / 2, h / 2, w * 0.49, 0, 7); g.fill();
+        g.fillStyle = '#efe6d2'; g.beginPath(); g.arc(w / 2, h / 2, w * 0.45, 0, 7); g.fill();
+        g.fillStyle = '#20357c'; g.beginPath(); g.arc(w / 2, h / 2, w * 0.31, 0, 7); g.fill();
+        for (var i = 0; i < 12; i++) { var a = i / 12 * Math.PI * 2, x = w / 2 + Math.cos(a) * w * 0.25, y = h / 2 + Math.sin(a) * w * 0.25; g.fillStyle = '#e8c25c'; g.beginPath(); for (var q = 0; q < 10; q++) { var b = q * Math.PI / 5 - Math.PI / 2, rr = q % 2 ? 4 : 9; g.lineTo(x + Math.cos(b) * rr, y + Math.sin(b) * rr); } g.closePath(); g.fill(); }
+      });
+      medalMesh = new T.Mesh(new T.CircleGeometry(MR, 64), new T.MeshStandardMaterial({ map: medalCanvas, roughness: 0.32, metalness: 0, envMapIntensity: 0.3 }));
+      medalMesh.rotation.x = -Math.PI / 2; medalMesh.position.set(0, 0.002, M.cz); medalMesh.receiveShadow = true; medalMesh.name = 'light_medal_floor';
+      Z.Z3.group.add(medalMesh); ctx.stats.meshes++;
+      // 금빛 고딕 벽감(참고 c_medal_hall_madonna): 북벽(x −11.5) 가운데, 받침 턱 0.95 m 위에 성모자상(shrine_places light — 실물 스캔).
+      // 별 궁륭 판 + 금 아치 · 금 기둥 둘 · 첨탑 · 금 박공(안은 별 판) · 꽃병 둘(장미·백합)
+      (function niche() {
+        var NX = -11.36, ZC = M.cz, st = B('Z3', 'star'), y0 = 0.95, sp = 3.65, ap = 4.95;
+        boxA(s, -11.5, -10.3, 0, y0, ZC - 1.35, ZC + 1.35, STONE_W);
+        boxA(gd, -11.5, -10.25, y0 - 0.04, y0, ZC - 1.4, ZC + 1.4, GOLD);
+        boxA(gd, -10.3, -10.27, 0.2, 0.75, ZC - 1.1, ZC + 1.1, 0xb8903f);
+        ctx.addCollider({ x0: -11.6, x1: -10.15, z0: ZC - 1.5, z1: ZC + 1.5 });
+        blindArch('Z3', NX, ZC, 0, 1, 1, 0, 1.15, y0, sp, ap);
+        [-1, 1].forEach(function (sd) {
+          var zz = ZC + sd * 1.42;
+          boxA(gd, -11.42, -10.98, 0, 5.25, zz - 0.17, zz + 0.17, GOLD);
+          boxA(gd, -11.0, -10.94, 0.3, 5.1, zz - 0.07, zz + 0.07, 0xf0cf72);
+          gd.add(Geo.cyl(4, 0.02), GOLD, { x: -11.2, y: 5.25, z: zz, sx: 0.24, sy: 1.9, sz: 0.24, ry: Math.PI / 4, vary: 0 });
+          gd.add(Geo.sph(6, 4), 0xf0cf72, { x: -11.2, y: 7.2, z: zz, s: 0.09, vary: 0 });
+          [-0.55, 0.55].forEach(function (o) { gd.add(Geo.cyl(4, 0.02), GOLD, { x: -11.15, y: 4.9, z: zz + o * sd * -1, sx: 0.1, sy: 0.9, sz: 0.1, ry: Math.PI / 4, vary: 0 }); });
+        });
+        var gx = -10.96;
+        gd.addTris([gx, ap - 0.1, ZC - 1.6, gx, ap - 0.1, ZC + 1.6, gx, 6.9, ZC], GOLD, [gx + 5, 5.6, ZC]);
+        st.addTris([gx + 0.02, ap + 0.05, ZC - 1.05, gx + 0.02, ap + 0.05, ZC + 1.05, gx + 0.02, 6.35, ZC], STARV, [gx + 5, 5.6, ZC]);
+        gd.addBeam([gx + 0.04, ap - 0.1, ZC - 1.6], [gx + 0.04, 6.9, ZC], 0.12, 0.1, 0xf0cf72); gd.addBeam([gx + 0.04, 6.9, ZC], [gx + 0.04, ap - 0.1, ZC + 1.6], 0.12, 0.1, 0xf0cf72);
+        gd.add(Geo.cyl(4, 0.02), GOLD, { x: -11.0, y: 6.8, z: ZC, sx: 0.16, sy: 1.3, sz: 0.16, ry: Math.PI / 4, vary: 0 });
+        // 꽃병 둘(금) + 장미(붉은·흰)와 백합 — 성상 양옆 턱 위
+        var fl = B('Z3', 'paint'), fr = ctx.rng(33);
+        [-1, 1].forEach(function (sd) {
+          var vz = ZC + sd * 0.88, vx = -10.7;
+          cylAt(gd, vx, vz, y0, 0.32, 0.1, 0.15, 10, GOLD);
+          for (var q = 0; q < 14; q++) {
+            var a = fr() * Math.PI * 2, rr = 0.05 + fr() * 0.17, yy = y0 + 0.42 + fr() * 0.36;
+            var col = q < 3 ? 0x3d6b33 : (q % 3 === 0 ? 0xf3efe2 : 0xa8222e);
+            fl.add(Geo.sph(6, 4), col, { x: vx + Math.cos(a) * rr * 0.7, y: yy, z: vz + Math.sin(a) * rr, s: q < 3 ? 0.06 : 0.075, vary: 0.05 });
+          }
+          [0, 1].forEach(function (q) { fl.add(Geo.cyl(5, 1.6), 0xf6f3ea, { x: vx + 0.03, y: y0 + 0.75 + q * 0.08, z: vz + (q ? 0.08 : -0.07), sx: 0.05, sy: 0.16, sz: 0.05, vary: 0 }); });
+        });
+        // 봉헌초 받침 둘(층층 쇠 선반 — 칸은 layout.candles, 초는 코어가 그린다)
+        medalStands.forEach(function (sd2) {
+          var IRON = 0x2a2522;
+          for (var r = 0; r < 3; r++) boxA(fl, sd2.x - 0.14 - r * 0.24, sd2.x + 0.14 - r * 0.24, sd2.y0 + r * 0.26 - 0.06, sd2.y0 + r * 0.26 - 0.02, sd2.z - 0.52, sd2.z + 0.52, IRON);
+          [-0.5, 0.5].forEach(function (o) { boxA(fl, sd2.x - 0.66, sd2.x + 0.12, 0, 0.04, sd2.z + o - 0.03, sd2.z + o + 0.03, IRON); boxA(fl, sd2.x - 0.04, sd2.x + 0.02, 0, sd2.y0, sd2.z + o - 0.03, sd2.z + o + 0.03, IRON); boxA(fl, sd2.x - 0.56, sd2.x - 0.5, 0, sd2.y0 + 0.52, sd2.z + o - 0.03, sd2.z + o + 0.03, IRON); });
+          ctx.addCollider({ x0: sd2.x - 0.7, x1: sd2.x + 0.2, z0: sd2.z - 0.6, z1: sd2.z + 0.6 });
+        });
+        ctx.addGlow({ x: -10.55, y: 2.0, z: ZC, size: 2.6, color: 0xffcf8a, kind: 'always' });
+      })();
       for (k = 0; k < N; k++) {
         var a0 = (k / N) * Math.PI * 2, a1 = ((k + 1) / N) * Math.PI * 2, am = (a0 + a1) / 2;
         var mx = Math.sin(am) * Rw, mz = M.cz + Math.cos(am) * Rw;
@@ -432,17 +658,26 @@
         segBox(s, ax, az, bx, bz, 0, H, 1.0, STONE);
         addSeg(ax, az, bx, bz, 0.5);
       }
+      // 벽 꾸밈: 굽도리·띠돌림·처마(조각마다), 대각 네 자리에 막힌 뾰족 아케이드(별 판)
+      var Rmid = Rw * Math.cos(Math.PI / N) - 0.5, Rin = Rmid / Math.cos(Math.PI / N);   // 조각 벽 안쪽 면(가운데 Rmid, 꼭짓점 Rin)
+      for (k = 0; k < N; k++) {
+        var c0 = (k / N) * Math.PI * 2, c1 = ((k + 1) / N) * Math.PI * 2, cm = (c0 + c1) / 2;
+        if (Math.abs(Math.sin(cm) * Rw) < 4.6) continue;
+        trims('Z3', Math.sin(c0) * Rin, M.cz + Math.cos(c0) * Rin, Math.sin(c1) * Rin, M.cz + Math.cos(c1) * Rin, -Math.sin(cm), -Math.cos(cm), { plinth: k !== 23 && k !== 24, string: 10.3, cornice: H });
+        if (k % 8 === 4) blindArch('Z3', Math.sin(cm) * Rmid, M.cz + Math.cos(cm) * Rmid, Math.cos(cm), -Math.sin(cm), -Math.sin(cm), -Math.cos(cm), 0.95, 0.62, 5.6, 7.4);
+      }
       // 문 위 상인방(돔 아래 벽)
       [1, -1].forEach(function (d) { boxA(s, -4.6, 4.6, 10, H, M.cz + d * (Rw - 0.5) - 0.5, M.cz + d * (Rw - 0.5) + 0.5, STONE); archRing(gd, 0, M.cz + d * (Rw - 1.02), 1, 0, 4, 7.4, 10, 0, 0.25, GOLD, 8); });
       // 돔(반구, 안쪽): 파란 바탕 금별
       var dg = new T.SphereGeometry(M.r, low ? 24 : 36, low ? 8 : 12, 0, Math.PI * 2, 0, Math.PI / 2);
-      var dm = new T.Mesh(dg, new T.MeshStandardMaterial({ map: starTex, roughness: 0.8, side: T.BackSide }));
+      var mt = starTex.clone(); mt.needsUpdate = true; mt.wrapS = mt.wrapT = T.RepeatWrapping; mt.repeat.set(10, 3);
+      var dm = new T.Mesh(dg, new T.MeshStandardMaterial({ map: mt, roughness: 0.75, side: T.BackSide }));
       dm.position.set(0, H, M.cz); dm.castShadow = true; Z.Z3.group.add(dm);
       for (k = 0; k < 64; k++) { var b0 = k / 64 * Math.PI * 2, b1 = (k + 1) / 64 * Math.PI * 2; gd.addBeam([Math.sin(b0) * (M.r - 0.1), H, M.cz + Math.cos(b0) * (M.r - 0.1)], [Math.sin(b1) * (M.r - 0.1), H, M.cz + Math.cos(b1) * (M.r - 0.1)], 0.35, 0.3, GOLD); }
       // 로툰다 쪽 짧은 통로(서문, 반폭 4)
       [-1, 1].forEach(function (sg) { boxA(s, sg * 4, sg * 5, 0, 12, 54.4, 57.6, STONE); ctx.addCollider({ x0: sg > 0 ? 4 : -5, x1: sg > 0 ? 5 : -4, z0: 54.4, z1: 57.6 }); });
       boxA(p, -4, 4, 12, 12.3, 54.4, 57.6, 0xe0d4be);
-      floorQuad(f, -4, 4, 54, 57.6, 0, MARBLE);
+      floorTiles(f, -4, 4, 54, 57.6, 1.0, function (x, z, i, j) { return Math.abs(x) > 3.2 ? M_RED : ((i + j) % 2 ? M_GREY : M_CREAM); });
     })();
 
     // =====================================================================
@@ -451,21 +686,35 @@
     (function rotunda() {
       var s = B('Z4', 'stone'), f = B('Z4', 'floor'), p = B('Z4', 'paint'), gd = B('Z4', 'gold'), gl = B('Z4', 'glow');
       var RS = low ? 48 : 72, k, i;
-      // 바닥: 원판(반지름 57.6) — 부채꼴 띠
+      // 바닥(참고 c8 — 십자가 없는 판, 2026-11-24): 부채꼴 대리석 띠 + 반지름 28.4~28.9 청금 대리석 고리 + 가운데 여덟 갈래 별(금 넷·청 넷).
+      // 밟는 바닥이므로 십자가·성화는 넣지 않는다(1단계의 늘어진 줄·십자가 상감은 뺐다)
+      var RINGS = [[0, 6.6, function (kk) { return M_CREAM; }], [6.6, 7.0, function () { return M_GOLD; }], [7.0, 20, function (kk) { return kk % 2 ? M_GREY : M_CREAM; }],
+        [20, 28.4, function (kk) { return kk % 2 ? M_CREAM : M_GREY; }], [28.4, 28.9, function () { return 0x4a68b0; }], [28.9, 42, function (kk) { return kk % 2 ? M_GREY : M_CREAM; }], [42, PLAN.R_BACK, function () { return MARBLE; }]];
       for (k = 0; k < RS; k++) {
         var a0 = k / RS * Math.PI * 2, a1 = (k + 1) / RS * Math.PI * 2;
-        [[0, 20], [20, 42], [42, PLAN.R_BACK]].forEach(function (rr, ri) {
-          var c = ri === 1 ? 0xf2ece2 : MARBLE;
+        RINGS.forEach(function (rr) {
+          var c = rr[2](k);
+          if (rr[0] === 0) { f.addTris([0, 0, 0, Math.sin(a0) * rr[1], 0, Math.cos(a0) * rr[1], Math.sin(a1) * rr[1], 0, Math.cos(a1) * rr[1]], c, [0, 5, 0], { vary: 0.01 }); return; }
           f.addQuad([Math.sin(a0) * rr[0], 0, Math.cos(a0) * rr[0]], [Math.sin(a1) * rr[0], 0, Math.cos(a1) * rr[0]], [Math.sin(a1) * rr[1], 0, Math.cos(a1) * rr[1]], [Math.sin(a0) * rr[1], 0, Math.cos(a0) * rr[1]], c, [0, 5, 0], { vary: 0.01 });
         });
       }
-      // 바닥의 묵주(정거장 46): 반지름 27 고리에 구슬 55(작은 50 + 큰 5), 입구 쪽 늘어진 줄 4알(큰 1·작은 3) — 59알(고리 55 + 줄 4) + 십자가
+      // 여덟 갈래 별(가운데): 금 넷(긴 갈래, 동서남북) 위에 청 넷(짧은 갈래, 대각) — 바닥보다 2 cm 높은 상감 판(겹쳐 깜박이지 않게 높이를 나눈다)
+      var sf = B('Z4', 'floor');
+      [[0, 6.2, 1.05, M_GOLD, 0.024], [45, 4.3, 0.8, 0x5574bf, 0.016]].forEach(function (S) {
+        for (var q = 0; q < 4; q++) {
+          var th0 = (S[0] + q * 90) * D2R, tip = [Math.sin(th0) * S[1], S[4], Math.cos(th0) * S[1]];
+          [-1, 1].forEach(function (sd) {
+            var ta = th0 + sd * Math.PI / 4, side = [Math.sin(ta) * S[2], S[4], Math.cos(ta) * S[2]];
+            sf.addTris([0, S[4], 0, tip[0], tip[1], tip[2], side[0], side[1], side[2]], new T.Color(S[3]).multiplyScalar(sd > 0 ? 1 : 0.86), [0, 5, 0]);
+          });
+        }
+      });
+      // 바닥의 묵주(정거장 46): 반지름 27 닫힌 고리에 청동 구슬 55(작은 50 + 큰 5) — 큰 구슬은 테두리 고리 하나 더
       for (i = 0; i < 55; i++) {
         var big = i % 11 === 0, th = 180 + (i + 0.5) * 360 / 55, q = P(27, th);
-        p.add(Geo.cyl(10, 1), 0x8a6a35, { x: q.x, y: 0.005, z: q.z, sx: big ? 0.42 : 0.22, sy: 0.02, sz: big ? 0.42 : 0.22, vary: 0 });
+        gd.add(Geo.cyl(12, 1), 0xa87a3c, { x: q.x, y: 0, z: q.z, sx: big ? 0.48 : 0.24, sy: 0.022, sz: big ? 0.48 : 0.24, vary: 0.04 });
+        if (big) gd.add(Geo.cyl(16, 1), 0x7d5a2a, { x: q.x, y: 0, z: q.z, sx: 0.6, sy: 0.012, sz: 0.6, vary: 0 });
       }
-      for (i = 0; i < 4; i++) p.add(Geo.cyl(10, 1), 0x8a6a35, { x: 0, y: 0.005, z: 28.6 + i * 1.5, sx: i === 3 ? 0.42 : 0.22, sy: 0.02, sz: i === 3 ? 0.42 : 0.22, vary: 0 });
-      boxA(p, -0.08, 0.08, 0.005, 0.03, 35.2, 37.6, 0x8a6a35); boxA(p, -0.7, 0.7, 0.005, 0.03, 35.9, 36.1, 0x8a6a35);
       // 기둥 12(설계 θ = 15 + 30k)
       for (k = 0; k < 12; k++) {
         var pc = P(PLAN.R_DOME, 15 + 30 * k);
@@ -474,6 +723,13 @@
         cylAt(gd, pc.x, pc.z, PLAN.ARCADE_SPRING - 1.2, 1.2, PLAN.PIER_R, PLAN.PIER_R + 0.5, 16, GOLD);
         cylAt(s, pc.x, pc.z, PLAN.ARCADE_SPRING - 1.2 - 0.8, 0.8, PLAN.PIER_R + 0.1, PLAN.PIER_R + 0.1, 16, STONE);
         ctx.addCollider({ x: pc.x, z: pc.z, r: PLAN.PIER_R + 0.35 });
+        // 묶음 기둥(붙은 가는 기둥 넷) + 가운데 쪽 금빛 벽감(별 판, 참고 c2 — 성상은 두지 않는다: 폰 예산)
+        var pa = (15 + 30 * k) * D2R, cx0 = Math.sin(pa), cz0 = Math.cos(pa);
+        [-80, -40, 40, 80].forEach(function (dg) {
+          var b = pa + dg * D2R; cylAt(s, pc.x - Math.sin(b) * PLAN.PIER_R, pc.z - Math.cos(b) * PLAN.PIER_R, 0.8, PLAN.ARCADE_SPRING - 2.0, 0.32, 0.32, 10, STONE_W);
+        });
+        var nr = PLAN.R_DOME - PLAN.PIER_R - 0.03;
+        blindArch('Z4', -cx0 * nr, -cz0 * nr, cz0, -cx0, cx0, cz0, 0.62, 4.2, 7.4, 8.6);
       }
       // 아케이드 벽(반지름 30, 21 → 36): 기둥 사이 뾰족 아치
       for (k = 0; k < 12; k++) {
@@ -495,16 +751,33 @@
         [A, Bp].forEach(function (pp, ii) { var sg2 = ii ? -1 : 1; segBox(s, pp.x, pp.z, pp.x + ux * sg2 * PLAN.PIER_R, pp.z + uz * sg2 * PLAN.PIER_R, y0s, yTop, tW, STONE); });
         archRing(gd, mx, mz, ux, uz, a, y0s, apex, -tW / 2 - 0.05, 0.35, GOLD, 10);
       }
+      // 아케이드 위(31.6 → 35.4): 칸마다 막힌 작은 뾰족 아치 넷(별 판 · 금 테) — 참고 interior_three_levels 의 2층 회랑
+      for (k = 0; k < 12; k++) {
+        var tb = (15 + 30 * k + 15) * D2R, tR = PLAN.R_DOME - 0.8;
+        for (var ti = -1; ti <= 1; ti += 1) {
+          var ang = tb + ti * 6.6 * D2R, tx = -Math.sin(ang) * tR, tz = -Math.cos(ang) * tR;
+          blindArch('Z4', tx, tz, Math.cos(ang), -Math.sin(ang), Math.sin(ang), Math.cos(ang), 1.25, 32.0, 34.0, 35.5);
+        }
+      }
+      for (k = 0; k < RS; k++) { var e0b = k / RS * Math.PI * 2, e1b = (k + 1) / RS * Math.PI * 2; s.addBeam([Math.sin(e0b) * 29.05, 31.75, Math.cos(e0b) * 29.05], [Math.sin(e1b) * 29.05, 31.75, Math.cos(e1b) * 29.05], 0.35, 0.4, STONE_W); gd.addBeam([Math.sin(e0b) * 29.4, PLAN.DRUM_Y1, Math.cos(e0b) * 29.4], [Math.sin(e1b) * 29.4, PLAN.DRUM_Y1, Math.cos(e1b) * 29.4], 0.45, 0.6, GOLD); }
       // 처마 돌림띠(36)
       for (k = 0; k < RS; k++) { var c0 = k / RS * Math.PI * 2, c1 = (k + 1) / RS * Math.PI * 2; gd.addBeam([Math.sin(c0) * 29.4, PLAN.DRUM_Y0, Math.cos(c0) * 29.4], [Math.sin(c1) * 29.4, PLAN.DRUM_Y0, Math.cos(c1) * 29.4], 0.5, 0.6, GOLD); }
       // 주보랑 궁륭(고리 반원통: r 42 에서 21 → r 30 에서 32.4): 파란 칠
-      var ambN = low ? 48 : 72;
+      var ambN = low ? 48 : 72, amb = B('Z4', 'star');
+      // 주보랑 궁륭의 가로 리브(금): 기둥마다 바깥 경당 쪽으로
+      for (k = 0; k < 24; k++) {
+        var rb0 = (15 + 15 * k) * D2R;
+        for (j = 0; j < 6; j++) {
+          var ra0 = 30 + 12 * j / 6, ra1 = 30 + 12 * (j + 1) / 6, ha0 = 21 + 11.4 * Math.sin(Math.PI / 2 * (6 - j) / 6) - 0.15, ha1 = 21 + 11.4 * Math.sin(Math.PI / 2 * (6 - j - 1) / 6) - 0.15;
+          gd.addBeam([Math.sin(rb0) * ra0, ha0, Math.cos(rb0) * ra0], [Math.sin(rb0) * ra1, ha1, Math.cos(rb0) * ra1], 0.32, 0.35, GOLD);
+        }
+      }
       for (k = 0; k < ambN; k++) {
         var e0 = k / ambN * Math.PI * 2, e1 = (k + 1) / ambN * Math.PI * 2;
         for (j = 0; j < 6; j++) {
           // 바깥(경당 쪽 r 42, 21 m)에서 안쪽(기둥 아케이드 r 30, 32.4 m — 아치 꼭대기 31.3 보다 높게)으로 오르는 반원통: 아치 너머로 하늘이 보이지 않는다
           var r0 = 30 + 12 * j / 6, r1 = 30 + 12 * (j + 1) / 6, h0 = 21 + 11.4 * Math.sin(Math.PI / 2 * (6 - j) / 6), h1 = 21 + 11.4 * Math.sin(Math.PI / 2 * (6 - j - 1) / 6);
-          p.addQuad([Math.sin(e0) * r0, h0, Math.cos(e0) * r0], [Math.sin(e1) * r0, h0, Math.cos(e1) * r0], [Math.sin(e1) * r1, h1, Math.cos(e1) * r1], [Math.sin(e0) * r1, h1, Math.cos(e0) * r1], j === 2 || j === 3 ? BLUE : BLUE_D, [0, 0, 0], { vary: 0.03 });
+          amb.addQuad([Math.sin(e0) * r0, h0, Math.cos(e0) * r0], [Math.sin(e1) * r0, h0, Math.cos(e1) * r0], [Math.sin(e1) * r1, h1, Math.cos(e1) * r1], [Math.sin(e0) * r1, h1, Math.cos(e0) * r1], j < 2 ? 0xe6e6f0 : STARV, [0, 0, 0], { vary: 0.03 });
         }
       }
       // 드럼(반지름 30, 36 → 44)
@@ -528,7 +801,24 @@
         gl.add(Geo.sph(8, 6), new T.Color(big2 ? 0xffe2a6 : 0xffd890).multiplyScalar(big2 ? 2.2 : 1.7), { x: gq.x, y: RY - (big2 ? 0.9 : 0.55), z: gq.z, s: big2 ? 0.55 : 0.28, vary: 0 });
         if (big2) gd.add(Geo.cyl(6, 0.6), GOLD, { x: gq.x, y: RY - 1.6, z: gq.z, sx: 0.45, sy: 0.7, sz: 0.45, vary: 0 });
       }
-      for (k = 0; k < 10; k++) { var cq = P(15, k * 36), tq = P(4, k * 36); gd.addBeam([cq.x, RY, cq.z], [tq.x, PLAN.DOME_APEX - 2, tq.z], 0.07, 0.07, 0x6b5a3a); }
+      // (참고 c9) 아래 고리 + 두 고리를 잇는 금 격자, 큰 등 다섯은 육각 등롱(금 살 · 빛나는 심지 · 위아래 뿔), 사슬은 가운데 금관(높이 50)으로 모인다
+      var RY2 = RY - 0.95;
+      for (k = 0; k < 110; k++) { var h0 = k / 110 * Math.PI * 2, h1 = (k + 1) / 110 * Math.PI * 2; gd.addBeam([Math.sin(h0) * 15, RY2, Math.cos(h0) * 15], [Math.sin(h1) * 15, RY2, Math.cos(h1) * 15], 0.22, 0.3, GOLD); }
+      for (k = 0; k < 110; k++) { var lq = k / 110 * Math.PI * 2; gd.addBeam([Math.sin(lq) * 15, RY2, Math.cos(lq) * 15], [Math.sin(lq + 0.0285) * 15, RY, Math.cos(lq + 0.0285) * 15], 0.06, 0.06, GOLD); }
+      for (k = 0; k < 5; k++) {
+        var lp = P(15, 180 + k * 72), ly0 = RY - 2.6, lh = 1.6;
+        for (var e = 0; e < 6; e++) { var ea = e / 6 * Math.PI * 2; gd.addBeam([lp.x + Math.sin(ea) * 0.55, ly0, lp.z + Math.cos(ea) * 0.55], [lp.x + Math.sin(ea) * 0.55, ly0 + lh, lp.z + Math.cos(ea) * 0.55], 0.07, 0.07, GOLD); }
+        gd.add(Geo.cyl(6, 0.05), GOLD, { x: lp.x, y: ly0 + lh, z: lp.z, sx: 0.72, sy: 0.9, sz: 0.72, vary: 0 });
+        gd.add(Geo.cyl(6, 0.05), GOLD, { x: lp.x, y: ly0, z: lp.z, sx: 0.66, sy: 0.6, sz: 0.66, rx: Math.PI, vary: 0 });
+        gd.add(Geo.cyl(6, 1), GOLD, { x: lp.x, y: ly0 + lh - 0.08, z: lp.z, sx: 0.66, sy: 0.12, sz: 0.66, vary: 0 });
+        gl.add(Geo.cyl(6, 1), new T.Color(0xffe0a0).multiplyScalar(2.0), { x: lp.x, y: ly0 + 0.1, z: lp.z, sx: 0.4, sy: lh - 0.3, sz: 0.4, vary: 0 });
+        gd.addBeam([lp.x, ly0 + lh + 0.9, lp.z], [lp.x, RY + 0.2, lp.z], 0.06, 0.06, GOLD);
+      }
+      var CROWN = 50;
+      for (k = 0; k < 24; k++) { var w0 = k / 24 * Math.PI * 2, w1 = (k + 1) / 24 * Math.PI * 2; gd.addBeam([Math.sin(w0) * 1.6, CROWN, Math.cos(w0) * 1.6], [Math.sin(w1) * 1.6, CROWN, Math.cos(w1) * 1.6], 0.5, 0.25, GOLD); }
+      gd.add(Geo.cyl(10, 0.3), GOLD, { x: 0, y: CROWN - 1.2, z: 0, sx: 1.5, sy: 1.2, sz: 1.5, vary: 0 });
+      for (k = 0; k < 10; k++) { var cq = P(15, k * 36), tq = P(1.6, k * 36); gd.addBeam([cq.x, RY, cq.z], [tq.x, CROWN, tq.z], 0.07, 0.07, 0x6b5a3a); }
+      gd.addBeam([0, CROWN, 0], [0, PLAN.DOME_APEX - 1, 0], 0.12, 0.12, 0x6b5a3a);
       ctx.addGlow({ x: 0, y: RY - 1, z: 0, size: 34, color: 0xffd58a, kind: 'lamp' });
     })();
     // 돔(반구 안쪽, 반지름 30, 44 → 74): 파란 바탕 금별 + 열두 리브(금, 자오선) + 열두 갈래 별(지그재그 리브) — 리브는 한 갈래를 12번 돌린 InstancedMesh
@@ -536,7 +826,7 @@
     (function dome() {
       var Rd = PLAN.R_DOME - 0.05, segW = low ? 48 : 72, segH = low ? 12 : 18, th0 = Math.asin(3.2 / Rd);
       var dg = new T.SphereGeometry(Rd, segW, segH, 0, Math.PI * 2, th0, Math.PI / 2 - th0);
-      var dt = starTex.clone(); dt.needsUpdate = true; dt.wrapS = dt.wrapT = T.RepeatWrapping; dt.repeat.set(12, 4);
+      var dt = starTex.clone(); dt.needsUpdate = true; dt.wrapS = dt.wrapT = T.RepeatWrapping; dt.repeat.set(30, 7);
       domeMesh = new T.Mesh(dg, new T.MeshStandardMaterial({ map: dt, roughness: 0.75, side: T.BackSide, envMapIntensity: 0.6 }));
       domeMesh.position.set(0, PLAN.DRUM_Y1, 0); domeMesh.castShadow = true; Z.Z4.group.add(domeMesh);
       // 리브 한 갈래(로컬: 방위 0 = -z 쪽)
@@ -567,6 +857,14 @@
         drumWin.setMatrixAt(k, m4);
       }
       drumWin.frustumCulled = false; Z.Z4.group.add(drumWin); ctx.stats.meshes++;
+      // 드럼 창 금 테(한 테를 50번 — 같은 행렬, draw call 1)
+      var fb = newBatch('gold', 6);
+      archRing(fb, 0, 0.06, 1, 0, 0.74, 3.85, 4.68, 0, 0.12, GOLD, 6);
+      fb.addBeam([-0.74, 0, 0.06], [-0.74, 3.85, 0.06], 0.12, 0.12, GOLD); fb.addBeam([0.74, 0, 0.06], [0.74, 3.85, 0.06], 0.12, 0.12, GOLD); fb.addBeam([-0.8, -0.05, 0.1], [0.8, -0.05, 0.1], 0.14, 0.3, STONE_W);
+      var fg = fb.build(MAT.gold, 'light_drum_frames').children[0].geometry, drumFrame = new T.InstancedMesh(fg, MAT.gold, 50);
+      for (k = 0; k < 50; k++) { drumWin.getMatrixAt(k, m4); drumFrame.setMatrixAt(k, m4); }
+      drumFrame.frustumCulled = false; Z.Z4.group.add(drumFrame); ctx.stats.meshes++;
+      stats.instTris += fg.attributes.position.count / 3 * 50;
     })();
     ctx.renderSeats(layout, 'bench');
     ctx.addLight({ x: 0, y: 24, z: -6, color: 0xffd9a8, intensity: 1.0, distance: 64, kind: 'lamp' });
@@ -576,7 +874,7 @@
     // =====================================================================
     var chapelInst = [], partInst = [];
     (function ring() {
-      var sb = newBatch('stone', 21), pb = newBatch('paint', 22), gb = newBatch('gold', 23), wb = newBatch('paint', 24);
+      var sb = newBatch('stone', 21), pb = newBatch('star', 22), gb = newBatch('gold', 23), wb = newBatch('paint', 24), cpb = newBatch('paint', 27);
       var hw = function (r) { return r * Math.tan(6.5 * D2R); };
       var zBack = -(PLAN.R_BACK - PLAN.WALL_T / 2), zIn = -PLAN.WIN_PLANE;   // 뒷벽 가운데선, 안쪽 면
       // 뒷벽(창 구멍 없이 판 — 창 그림은 앞에 붙는다) + 창 둘레 돌 틀
@@ -589,16 +887,33 @@
       archRing(gb, 0, zIn + 0.36, 1, 0, WW / 2 + 0.55, top - rise, top + 0.55, 0, 0.12, GOLD, 10);
       // 창 아래 돌 선반(제대 아님 — 무릎틀과 봉헌초만 둔다) + 빈 청동판 자리
       boxA(sb, -2.2, 2.2, 0, 1.05, zIn, zIn + 0.6, STONE_D);
-      boxA(wb, -0.8, 0.8, 1.35, 2.35, zIn - 0.0, zIn + 0.05, 0x6e5530);   // 빈 청동판 자리(그림·글자 없음)
+      boxA(gb, -0.8, 0.8, 1.35, 2.35, zIn - 0.0, zIn + 0.05, 0x7c5c30);   // 빈 청동판(그림·글자 없음, 참고 c4)
+      boxA(sb, -1.0, 1.0, 1.2, 1.35, zIn, zIn + 0.12, STONE_W); boxA(sb, -1.0, 1.0, 2.35, 2.5, zIn, zIn + 0.12, STONE_W);
+      boxA(sb, -1.0, -0.8, 1.35, 2.35, zIn, zIn + 0.12, STONE_W); boxA(sb, 0.8, 1.0, 1.35, 2.35, zIn, zIn + 0.12, STONE_W);
+      boxA(sb, -2.25, 2.25, 1.0, 1.12, zIn, zIn + 0.68, STONE_W);   // 선반 윗판 돌림
+      // 창 양옆 가는 돌기둥 + 금 기둥머리(참고 c4)
+      [-1, 1].forEach(function (sd) {
+        var cxw = sd * (WW / 2 + 0.78);
+        cylAt(sb, cxw, zIn + 0.28, sill - 0.55, top - rise - sill + 0.15, 0.16, 0.16, 6, STONE_W);
+        cylAt(gb, cxw, zIn + 0.28, top - rise - 0.4, 0.4, 0.18, 0.3, 6, GOLD);
+      });
       // 입구(반지름 42) 위 벽과 뾰족 아치(반폭 4.2, 시작 11, 꼭대기 15.2)
       var zm = -(PLAN.R_AMB - 0.4), mw = hw(PLAN.R_AMB) + 0.2;
       archWall(sb, 0, zm, 1, 0, mw, PLAN.CHAPEL_H, 0.8, 4.3, 11, 15.4, STONE, 10);
       archRing(gb, 0, zm, 1, 0, 4.3, 11, 15.4, 0.45, 0.22, GOLD, 10);
+      // 조각한 아치(참고 c4): 돌 몰딩 고리 둘 + 돌 장미 9송이(로툰다 쪽 면), 아치 받침 기둥머리
+      archRing(sb, 0, zm, 1, 0, 4.75, 11, 15.85, 0.5, 0.4, STONE_W, 8);
+      archRing(sb, 0, zm, 1, 0, 3.95, 11, 15.0, 0.42, 0.3, STONE_W, 8);
+      for (var ro = 0; ro < 9; ro++) {
+        var ru = -4.35 + 8.7 * (ro + 0.5) / 9, ry = 11 + archY(ru, 4.35, 4.4);
+        sb.add(Geo.cyl(6, 0.55), STONE_W, { x: ru, y: ry, z: zm + 0.6, sx: 0.24, sy: 0.16, sz: 0.24, rx: Math.PI / 2, vary: 0.03 });
+      }
+      [-1, 1].forEach(function (sd) { cylAt(gb, sd * 4.45, zm + 0.45, 10.4, 0.6, 0.3, 0.42, 8, GOLD); cylAt(sb, sd * 4.45, zm + 0.45, 0, 10.4, 0.26, 0.26, 8, STONE_W); });
       // 천장: 뾰족 원통 궁륭(축 방향, 16 → 20.2) — 칸이 넓어지는 쐐기라 폭을 따라 넓힌다 + 위 덮개
       ceilGrid(pb, 8, 6, function (u, v) {
         var z = -(PLAN.R_AMB - 0.2) - (PLAN.R_BACK - PLAN.R_AMB - 0.4) * v, half = -z * Math.tan(6.5 * D2R) - 0.45, x = -half + 2 * half * u;
         return [x, 16 + archY(x, half, 4.2), z];
-      }, BLUE);
+      }, STARV);
       [-1, 1].forEach(function (d) {
         for (var k = 0; k < 6; k++) {
           var v0 = k / 6, v1 = (k + 1) / 6, z0 = -(PLAN.R_AMB) - (PLAN.R_BACK - PLAN.R_AMB) * v0, z1 = -(PLAN.R_AMB) - (PLAN.R_BACK - PLAN.R_AMB) * v1;
@@ -606,9 +921,11 @@
           gb.addBeam([x0, 16 + archY(x0, -z0 * Math.tan(6.5 * D2R) - 0.45, 4.2) - 0.12, z0], [x1, 16 + archY(x1, -z1 * Math.tan(6.5 * D2R) - 0.45, 4.2) - 0.12, z1], 0.22, 0.2, GOLD);
         }
       });
-      pb.addQuad([-hw(PLAN.R_AMB) - 1, PLAN.CHAPEL_H, -PLAN.R_AMB + 0.5], [hw(PLAN.R_AMB) + 1, PLAN.CHAPEL_H, -PLAN.R_AMB + 0.5], [hw(PLAN.R_BACK) + 1, PLAN.CHAPEL_H, -PLAN.R_BACK], [-hw(PLAN.R_BACK) - 1, PLAN.CHAPEL_H, -PLAN.R_BACK], 0x3a3446, [0, 0, -50]);
+      cpb.addQuad([-hw(PLAN.R_AMB) - 1, PLAN.CHAPEL_H, -PLAN.R_AMB + 0.5], [hw(PLAN.R_AMB) + 1, PLAN.CHAPEL_H, -PLAN.R_AMB + 0.5], [hw(PLAN.R_BACK) + 1, PLAN.CHAPEL_H, -PLAN.R_BACK], [-hw(PLAN.R_BACK) - 1, PLAN.CHAPEL_H, -PLAN.R_BACK], 0x3a3446, [0, 0, -50]);
       // 무릎틀(둘이 쓰는 나무 틀): 반지름 53
       boxA(wb, -1.1, 1.1, 0, 0.18, -53.25, -52.75, WOOD);
+      boxA(cpb, -1.02, 1.02, 0.18, 0.25, -53.2, -52.8, 0x7a2630);   // 붉은 방석
+      boxA(cpb, -1.0, 1.0, 0.86, 0.9, -53.98, -53.57, 0x7a2630);   // 팔걸이 덮개
       boxA(wb, -1.1, 1.1, 0.75, 0.88, -53.95, -53.6, WOOD);
       [-1.05, 1.05].forEach(function (x) { boxA(wb, x - 0.05, x + 0.05, 0, 0.88, -53.95, -52.75, WOOD); });
       // 봉헌초 받침(로컬 x 3.4, z -51.2; 칸은 layout.candles — 초는 코어가 그린다): 두 단 선반 + 철 받침
@@ -620,22 +937,41 @@
       // 칸막이 모듈(로컬: θ=0 방향 반지름 42 → 57.6, 두께 1.1) + 입구 쪽 붙은 기둥
       var qb = newBatch('stone', 25), qg = newBatch('gold', 26);
       boxA(qb, -0.55, 0.55, 0, PLAN.CHAPEL_H, -PLAN.R_BACK, -PLAN.R_AMB, STONE);
+      // 칸막이 양면: 굽도리 · 띠돌림(11) · 처마(16) + 금 줄
+      [-1, 1].forEach(function (sd) {
+        var x0 = sd * 0.55, x1 = sd * 0.72, x2 = sd * 0.62;
+        boxA(qb, Math.min(x0, x1), Math.max(x0, x1), 0, 0.5, -PLAN.R_BACK + 0.6, -PLAN.R_AMB - 0.5, STONE_D);
+        boxA(qb, Math.min(x0, x1), Math.max(x0, x1), 10.7, 11.0, -PLAN.R_BACK + 0.6, -PLAN.R_AMB - 0.5, STONE_W);
+        boxA(qb, Math.min(x0, sd * 0.85), Math.max(x0, sd * 0.85), 15.6, 16.0, -PLAN.R_BACK + 0.6, -PLAN.R_AMB - 0.5, STONE_W);
+        boxA(qg, Math.min(x0, x2), Math.max(x0, x2), 11.0, 11.06, -PLAN.R_BACK + 0.6, -PLAN.R_AMB - 0.5, GOLD);
+      });
       qb.add(Geo.cyl(14, 1), STONE_W, { x: 0, y: 0, z: -PLAN.R_AMB, sx: 0.75, sy: 11, sz: 0.75, flat: false, vary: 0.02 });
       qg.add(Geo.cyl(12, 1.25), GOLD, { x: 0, y: 10.4, z: -PLAN.R_AMB, sx: 0.78, sy: 0.6, sz: 0.78, vary: 0 });
 
       var m4 = new T.Matrix4();
+      // 한 모듈을 묶음(신비 넷)마다 InstancedMesh 하나로 — 묶음마다 경계 구를 주어 시야 밖 묶음은 통째로 건너뛴다(그리기 호출은 종류 × 4)
       function inst(batch, mat, n, name, list, angles) {
         var g = batch.build(mat, name).children[0].geometry;
-        var im = new T.InstancedMesh(g, mat, n);
-        for (var k = 0; k < n; k++) { m4.makeRotationY(angles[k] * D2R); im.setMatrixAt(k, m4); }
-        im.frustumCulled = false; im.castShadow = mat !== MAT.glow; im.receiveShadow = true;
-        Z.Z5.group.add(im); ctx.stats.meshes++; list.push(im);
+        g.computeBoundingSphere();
+        var lb = g.boundingSphere, per = Math.ceil(n / 4);
+        for (var c0 = 0; c0 < n; c0 += per) {
+          var cnt = Math.min(per, n - c0), gi = new T.BufferGeometry();
+          Object.keys(g.attributes).forEach(function (an) { gi.setAttribute(an, g.attributes[an]); });
+          if (g.index) gi.setIndex(g.index);
+          var im = new T.InstancedMesh(gi, mat, cnt), ctr = new T.Vector3(), pts = [];
+          for (var k = 0; k < cnt; k++) { m4.makeRotationY(angles[c0 + k] * D2R); im.setMatrixAt(k, m4); var pc = lb.center.clone().applyMatrix4(m4); pts.push(pc); ctr.add(pc); }
+          ctr.multiplyScalar(1 / cnt);
+          var rad = 0; pts.forEach(function (pc) { rad = Math.max(rad, pc.distanceTo(ctr) + lb.radius); });
+          gi.boundingSphere = new T.Sphere(ctr, rad); im.boundingSphere = gi.boundingSphere.clone();
+          im.frustumCulled = true; im.castShadow = mat !== MAT.glow; im.receiveShadow = true; im.name = name + '_' + (c0 / per);
+          Z.Z5.group.add(im); ctx.stats.meshes++; list.push(im);
+        }
         stats.instTris += g.attributes.position.count / 3 * n;
-        return im;
       }
       var cAng = CHAPELS.map(function (c) { return c.theta; });
       inst(sb, MAT.stone, 20, 'light_chapel_stone', chapelInst, cAng);
-      inst(pb, MAT.paint, 20, 'light_chapel_paint', chapelInst, cAng);
+      inst(pb, MAT.star, 20, 'light_chapel_vault', chapelInst, cAng);
+      inst(cpb, MAT.paint, 20, 'light_chapel_paint', chapelInst, cAng);
       inst(gb, MAT.gold, 20, 'light_chapel_gold', chapelInst, cAng);
       inst(wb, MAT.wood, 20, 'light_chapel_wood', chapelInst, cAng);
       inst(qb, MAT.stone, PARTITIONS.length, 'light_partition', partInst, PARTITIONS);
@@ -730,34 +1066,74 @@
         apseWins.push({ key: aw[0], mesh: m, x: x, z: z });
       });
       // 반돔(후진 위, 시작 25): 금 모자이크 빛
-      var hd = new T.SphereGeometry(PLAN.APSE_R + 0.1, 32, 10, Math.PI / 2, Math.PI, 0, Math.PI / 2);
+      var hd = new T.SphereGeometry(PLAN.APSE_R + 0.1, 32, 10, Math.PI, Math.PI, 0, Math.PI / 2);   // φ π→2π = 후진 쪽(z ≤ 0) 반쪽(1단계는 x ≥ 0 반쪽이라 왼쪽 위로 하늘이 보였다)
       var hdm = new T.Mesh(hd, new T.MeshStandardMaterial({ map: mosaicTex('apse'), color: 0xffe7b0, roughness: 0.4, metalness: 0.4, side: T.BackSide, emissive: 0x3a2a08, emissiveIntensity: 0.3 }));
       hdm.position.set(0, 25, PLAN.APSE_C); hdm.castShadow = true; Z.Z5b.group.add(hdm);
       // 제단 칸 궁륭(반지름 42 → 후진, 시작 25 → 38) + 앞 벽
-      ceilGrid(p, 10, 4, function (u, v) { var x = -14.6 + 29.2 * u, z = -(PLAN.R_AMB - 0.5) + (PLAN.APSE_C + 0.4 + PLAN.R_AMB - 0.5) * v; return [x, 25 + archY(x, 14.6, 13), z]; }, BLUE);
+      ceilGrid(B('Z5b', 'star'), 10, 4, function (u, v) { var x = -14.6 + 29.2 * u, z = -(PLAN.R_AMB - 0.5) + (PLAN.APSE_C + 0.4 + PLAN.R_AMB - 0.5) * v; return [x, 25 + archY(x, 14.6, 13), z]; }, STARV);
+      for (k = 0; k < 10; k++) { var su0 = -14.6 + 29.2 * k / 10, su1 = -14.6 + 29.2 * (k + 1) / 10; [-(PLAN.R_AMB - 0.6), -50].forEach(function (zr) { gd.addBeam([su0, 25 + archY(su0, 14.6, 13) - 0.2, zr], [su1, 25 + archY(su1, 14.6, 13) - 0.2, zr], 0.45, 0.5, GOLD); }); }
       boxA(s, -15, 15, PLAN.CHAPEL_H - 0.3, 39, -(PLAN.R_AMB - 0.2), -(PLAN.R_AMB - 1.2), STONE);
+      // 궁륭 끝 반달벽(별 판): 뾰족 궁륭 단면과 후진 반돔(반지름 13.1) 사이 — 1단계에서 이 틈으로 하늘이 보였다
+      var lun = B('Z5b', 'star'), LZ = PLAN.APSE_C + 0.45, LR = PLAN.APSE_R + 0.1;
+      for (k = 0; k < 20; k++) {
+        var lu0 = -14.6 + 29.2 * k / 20, lu1 = -14.6 + 29.2 * (k + 1) / 20;
+        var lb0 = 25 + Math.sqrt(Math.max(0, LR * LR - lu0 * lu0)) - 0.3, lb1 = 25 + Math.sqrt(Math.max(0, LR * LR - lu1 * lu1)) - 0.3;
+        lun.addQuad([lu0, lb0, LZ], [lu1, lb1, LZ], [lu1, 25 + archY(lu1, 14.6, 13) + 0.2, LZ], [lu0, 25 + archY(lu0, 14.6, 13) + 0.2, LZ], STARV, [0, 30, 0]);
+      }
+      for (k = 0; k < 24; k++) { var la0 = k / 24 * Math.PI, la1 = (k + 1) / 24 * Math.PI; gd.addBeam([-Math.cos(la0) * LR, 25 + Math.sin(la0) * LR, LZ + 0.1], [-Math.cos(la1) * LR, 25 + Math.sin(la1) * LR, LZ + 0.1], 0.4, 0.3, GOLD); }
       // 제대(단 위 한 단 더) + 금빛 닫집(꼰 기둥 넷)
       boxA(f, -4.2, 4.2, SY, SY + 0.45, -43.6, -36.4, 0xf4efe6);
       boxA(f, -4.6, 4.6, SY, SY + 0.22, -44, -36, 0xf4efe6);
       ctx.floorZone({ x0: -4.2, x1: 4.2, z0: -43.6, z1: -36.4, y: SY + 0.45 });
       ctx.altar({ x: 0, z: -40, y: SY + 0.45, w: 3.2, d: 1.3, h: 1.04, style: 'block', candles: 6, flowers: true });
-      ctx.baldachin({ x: 0, z: -40, y: SY + 0.45, w: 6.4, d: 6.0, h: 8.5, canopyH: 2.6, style: 'twisted', gold: GOLD, cross: true });
+      // 금빛 고딕 닫집(참고 c2·high_altar): 묶음 금 기둥 넷 · 네 면 뾰족 아치 + 박공(안은 별 판) · 모서리 첨탑 · 가운데 팔각 첨탑과 작은 금 십자가
+      (function gothicCanopy() {
+        var y0 = SY + 0.45, hx = 3.1, hz = 2.9, cz = -40, sp = y0 + 4.6, ap = y0 + 6.2, gt = y0 + 8.8, st2 = B('Z5b', 'star');
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (c) {
+          var px = c[0] * hx, pz = cz + c[1] * hz;
+          boxA(gd, px - 0.22, px + 0.22, y0, ap, pz - 0.22, pz + 0.22, GOLD);
+          [[0.24, 0], [-0.24, 0], [0, 0.24], [0, -0.24]].forEach(function (o) { cylAt(gd, px + o[0], pz + o[1], y0, sp - y0, 0.07, 0.07, 6, 0xf0cf72); });
+          gd.add(Geo.cyl(4, 0.02), GOLD, { x: px, y: ap, z: pz, sx: 0.36, sy: 3.4, sz: 0.36, ry: Math.PI / 4, vary: 0 });
+          gd.add(Geo.sph(6, 4), 0xf0cf72, { x: px, y: ap + 3.45, z: pz, s: 0.12, vary: 0 });
+          ctx.addCollider({ x: px, z: pz, r: 0.4 });
+        });
+        // 네 면: (가운데, 가로 단위, 반폭, 바깥 법선)
+        [[0, cz + hz, 1, 0, hx, 0, 1], [0, cz - hz, 1, 0, hx, 0, -1], [hx, cz, 0, 1, hz, 1, 0], [-hx, cz, 0, 1, hz, -1, 0]].forEach(function (F) {
+          var fx = F[0], fz = F[1], ux = F[2], uz = F[3], a = F[4] - 0.25, nx = F[5], nz = F[6];
+          archRing(gd, fx, fz, ux, uz, a, sp, ap, 0, 0.32, GOLD, 10);
+          archRing(gd, fx + nx * 0.06, fz + nz * 0.06, ux, uz, a - 0.3, sp + 0.1, ap - 0.35, 0, 0.1, 0xf0cf72, 10);
+          gd.addTris([fx - ux * (a + 0.3), ap - 0.2, fz - uz * (a + 0.3), fx + ux * (a + 0.3), ap - 0.2, fz + uz * (a + 0.3), fx, gt, fz], GOLD, [fx + nx * 5, ap, fz + nz * 5]);
+          st2.addTris([fx - ux * (a - 0.5) + nx * 0.03, ap + 0.05, fz - uz * (a - 0.5) + nz * 0.03, fx + ux * (a - 0.5) + nx * 0.03, ap + 0.05, fz + uz * (a - 0.5) + nz * 0.03, fx + nx * 0.03, gt - 1.0, fz + nz * 0.03], STARV, [fx + nx * 5, ap, fz + nz * 5]);
+          gd.addBeam([fx - ux * (a + 0.3) + nx * 0.05, ap - 0.2, fz - uz * (a + 0.3) + nz * 0.05], [fx + nx * 0.05, gt, fz + nz * 0.05], 0.14, 0.12, 0xf0cf72);
+          gd.addBeam([fx + nx * 0.05, gt, fz + nz * 0.05], [fx + ux * (a + 0.3) + nx * 0.05, ap - 0.2, fz + uz * (a + 0.3) + nz * 0.05], 0.14, 0.12, 0xf0cf72);
+          gd.add(Geo.cyl(4, 0.02), GOLD, { x: fx, y: gt - 0.1, z: fz, sx: 0.16, sy: 0.9, sz: 0.16, ry: Math.PI / 4, vary: 0 });
+        });
+        // 닫집 아래 천장(별 판, 아래를 향함) + 지붕 판
+        st2.addQuad([-hx, ap - 0.15, cz - hz], [hx, ap - 0.15, cz - hz], [hx, ap - 0.15, cz + hz], [-hx, ap - 0.15, cz + hz], STARV, [0, 0, cz]);
+        boxA(gd, -hx - 0.3, hx + 0.3, ap - 0.15, ap + 0.15, cz - hz - 0.3, cz + hz + 0.3, GOLD);
+        gd.add(Geo.cyl(8, 0.03), GOLD, { x: 0, y: ap + 0.15, z: cz, sx: 1.6, sy: gt + 2.2 - ap, sz: 1.6, vary: 0 });
+        boxA(gd, -0.05, 0.05, gt + 2.3, gt + 3.1, cz - 0.05, cz + 0.05, 0xf0cf72); boxA(gd, -0.25, 0.25, gt + 2.75, gt + 2.85, cz - 0.05, cz + 0.05, 0xf0cf72);
+      })();
       // 고딕 장식벽(첨탑 줄) + 감실 + 성체등 + 십자고상
       var RZ = -50.6;
       boxA(s, -8.2, 8.2, SY, SY + 2.2, RZ - 0.8, RZ + 0.5, STONE_W);
       boxA(gd, -7.8, 7.8, SY + 2.2, SY + 11, RZ - 0.6, RZ - 0.3, 0xb8903f);
       for (k = -3; k <= 3; k++) {
         var cx = k * 2.2;
-        boxA(p, cx - 0.75, cx + 0.75, SY + 3.0, SY + 7.4, RZ - 0.29, RZ - 0.27, 0x7d1d2a);
-        archRing(gd, cx, RZ - 0.26, 1, 0, 0.8, SY + 7.4, SY + 8.6, 0, 0.12, GOLD, 6);
+        blindArch('Z5b', cx, RZ - 0.28, 1, 0, 0, 1, 0.78, SY + 2.9, SY + 7.2, SY + 8.6);
         cylAt(gd, cx + 1.1, RZ - 0.15, SY + 2.2, 8.8, 0.09, 0.09, 6, GOLD);
-        gd.add(Geo.cyl(4, 0.02), GOLD, { x: cx, y: SY + 11, z: RZ - 0.45, sx: 0.5, sy: k === 0 ? 5.5 : 3.2, sz: 0.4, vary: 0 });
+        gd.addTris([cx - 0.95, SY + 8.5, RZ - 0.12, cx + 0.95, SY + 8.5, RZ - 0.12, cx, SY + 10.4, RZ - 0.12], 0xe2b85a, [cx, SY + 9, RZ + 5]);
+        gd.add(Geo.cyl(4, 0.02), GOLD, { x: cx, y: SY + 10.3, z: RZ - 0.3, sx: 0.3, sy: k === 0 ? 5.6 : 3.4, sz: 0.3, ry: Math.PI / 4, vary: 0 });
+        gd.add(Geo.cyl(4, 0.02), GOLD, { x: cx + 1.1, y: SY + 11, z: RZ - 0.3, sx: 0.2, sy: 2.2, sz: 0.2, ry: Math.PI / 4, vary: 0 });
       }
       ctx.tabernacle({ x: 0, z: RZ + 0.75, y: SY + 2.2, ry: 0, lamp: true });
       ctx.crucifix({ x: 0, y: SY + 11.8, z: RZ - 0.1, h: 3.4, ry: 0 });
       ctx.addCollider({ x0: -8.3, x1: 8.3, z0: RZ - 0.9, z1: RZ + 0.6 });
-      // 천사(제대 옆 무릎 꿇은 조각 대신 단순한 촛대 한 쌍)
-      [-5.5, 5.5].forEach(function (x) { cylAt(gd, x, -40, SY, 2.0, 0.16, 0.06, 8, GOLD); ctx.addFlame({ x: x, y: SY + 2.15, z: -40, scale: 1.4 }); });
+      // 경배 천사 둘(실물 스캔 — 무릎 꿇은 천사, 1826 슈트론스도르프): 닫집 양옆에서 제대를 향해 반쯤 돌아 무릎 꿇는다. 촛대 한 쌍은 바깥으로
+      [-1, 1].forEach(function (sd) {
+        toZone('Z5b', function () { ctx.scan({ key: 'angel_kneeling_stronsdorf', x: sd * 4.6, y: SY, z: -39.2, ry: -sd * 1.05, mirror: sd > 0, h: 1.75 }, null); });
+        cylAt(gd, sd * 6.6, -40, SY, 2.0, 0.16, 0.06, 8, GOLD); ctx.addFlame({ x: sd * 6.6, y: SY + 2.15, z: -40, scale: 1.4 });
+      });
     })();
 
     // =====================================================================
@@ -825,6 +1201,17 @@
         aw.mesh.material.map = at; aw.mesh.material.needsUpdate = true;
       });
       Object.keys(mosaicMeshes).forEach(function (k) { var n = pk.near[k]; var mt = n && texFromURI(k, n.src); if (mt) { mosaicMeshes[k].material.map = mt; mosaicMeshes[k].material.needsUpdate = true; } });
+      // 메달 홀 바닥 원판(사용자 그림, 개발용 빌드의 light/ 폴더에만 있다)
+      if (medalMesh && typeof Image !== 'undefined' && document.head) {
+        var useMedal = function () {
+          if (disposed || !window.ChurchLightMedalFloor) return;
+          var mi = new Image();
+          mi.onload = function () { if (disposed) return; var t = new T.Texture(mi); if (T.SRGBColorSpace !== undefined) t.colorSpace = T.SRGBColorSpace; else t.encoding = T.sRGBEncoding; t.anisotropy = 4; t.needsUpdate = true; medalMesh.material.map = t; medalMesh.material.needsUpdate = true; nearTex.medal_floor = t; };
+          mi.src = window.ChurchLightMedalFloor;
+        };
+        if (window.ChurchLightMedalFloor) useMedal();
+        else { var ms = document.createElement('script'); ms.src = 'light/medal_floor.js'; ms.onload = useMedal; document.head.appendChild(ms); }
+      }
       lastNearKey = '';
     }
     // 그림 팩은 이 성당에 들어올 때만 읽는다(출시 빌드에는 없다 → 자리표시 유리 그대로)
@@ -863,7 +1250,7 @@
       });
       // 가까운 8칸에서 빠진 질감은 놓는다(GPU 에서 내림) — 상주 질감 상한
       Object.keys(nearTex).forEach(function (k) {
-        if (k === '__far' || k === 'rose_marian' || /^apse_|^mosaic_/.test(k)) return;
+        if (k === '__far' || k === 'rose_marian' || k === 'medal_floor' || /^apse_|^mosaic_/.test(k)) return;
         if (want.indexOf(k) < 0) { nearTex[k].dispose(); delete nearTex[k]; }
       });
     }
@@ -887,27 +1274,28 @@
       if (zt > 0 || !camera) return;
       zt = 0.2;
       var cp = camera.position;
-      setZone(zoneOf(cp.x, cp.z));
+      var zn0 = zoneOf(cp.x, cp.z);
+      setZone(zn0 === 'Z2' && cp.z < 96.5 ? 'Z2s' : zn0);
       if (Z.Z5.group.visible) updateNear(cp.x, cp.z);
       // 가까운 창 판은 그림을 다 읽은 뒤에만 보인다(읽는 동안은 뒤의 먼 창 아틀라스가 보인다 — 검은 판이 번쩍이지 않게)
       for (var q = 0; q < nearPool.length; q++) { var nm2 = nearPool[q]; nm2.visible = !!(nm2.userData.key && nm2.material.map && nm2.material.map.image); }
     });
 
     // ===== 묶음 → 메쉬 =====
-    var castKinds = { stone: true, paint: true, floor: false, gold: true, glow: false };
+    var castKinds = { stone: true, paint: true, floor: false, gold: true, glow: false, star: true };
     ZONES.forEach(function (id) {
       var zz = Z[id];
       Object.keys(zz.b).forEach(function (kind) {
         var bt = zz.b[kind];
         if (!bt.p.length) return;
-        var grp = bt.build(MAT[kind], 'light_' + id + '_' + kind, { cast: castKinds[kind], receive: kind !== 'glow' });
+        var grp = bt.build(MAT[kind], 'light_' + id + '_' + kind, { cast: castKinds[kind], receive: kind !== 'glow', spatial: true });   // 큰 묶음은 공간 덩어리로(시야 밖 덩어리는 그리지 않는다)
         grp.children.forEach(function (m) { zz.group.add(m); ctx.stats.meshes++; });
         stats.tris[id] = (stats.tris[id] || 0) + bt.p.length / 9;
       });
     });
     ctx.setCameraBounds({ x0: -58.4, x1: 58.4, z0: -71, z1: 207, yMax: 78 });   // yMax: 그림자 상자도 이 높이까지 덮는다(돔·궁륭이 해를 가리게)
     // 시험·측정용 공개 값
-    ChurchBuilders.light.runtime = { zones: Z, stats: stats, setZone: setZone, zoneOf: zoneOf, nearPool: nearPool, farMesh: farMesh, chapelInst: chapelInst, partInst: partInst, updateNear: updateNear, dispose: function () { disposed = true; } };
+    ChurchBuilders.light.runtime = { zones: Z, stats: stats, mats: MAT, setZone: setZone, zoneOf: zoneOf, nearPool: nearPool, farMesh: farMesh, chapelInst: chapelInst, partInst: partInst, updateNear: updateNear, dispose: function () { disposed = true; } };
   }
 
   ChurchBuilders.light = {

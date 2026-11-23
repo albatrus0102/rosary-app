@@ -11,7 +11,9 @@
   var P = {
     basic: { x: -11.7, z: -12.3, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '왼쪽 벽 맨 앞(성소 계단 아래). 성소 위 기존 성모상 앞은 전례 장식(구유 등) 동선과 겹쳐 쓰지 않음' },
     // 빛의 성당(가상): 메달 홀(성모 경당) 북쪽 벽. 앱 공용 3D 성모상은 자리표시 — 이 성당 전용 성상(사용자 그림 → 3D)은 2단계
-    light: { x: -10.9, z: 68.5, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '메달 홀(묵주의 메달 자리) 북쪽 벽 앞. 설계 시안 C 정거장 11' },
+    // 2단계(2026-11-24): 빌더(ch_light.js)가 금빛 고딕 벽감(참고 c_medal_hall_madonna)을 짓고, 그 턱(altar_h) 위에 실물 스캔 성모자상(크루즐로바의 성모, 1410년경 채색 목조,
+    // CC BY 4.0 — light/scan3d_madonna_kruzlowa.js, 개발용 빌드만)을 모신다(scan). 스캔을 못 읽으면 앱 공용 Meshy 성모상(mesh)·그림 성상(img)이 예비.
+    light: { x: -9.9, z: 68.5, yaw: 90, kind: 'existing', scan: 'madonna_kruzlowa', scan_h: 1.75, altar_d: -0.95, altar_h: 0.95, img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '메달 홀(묵주의 메달 자리) 북쪽 벽의 금빛 고딕 벽감 앞. 설계 시안 C 정거장 11' },
     myeongdong: { x: -13.2, z: -8.0, yaw: 90, kind: 'mary', img: 'hanbok_rosary', label_ko: '성모상 앞', note: '기존 성모상(후진 제대 뒤, z -29)은 걷기 경계 밖이라 왼쪽 익랑 끝 벽에 따로 모심' },
     lateran: { x: -13.6, z: -4.6, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '왼쪽 바깥 측랑 앞쪽 벽' },
     stpaul: { x: -16.9, z: -11.5, yaw: 90, kind: 'mary', img: 'immaculate_blue', mesh: 'mary_meshy', label_ko: '성모상 앞', note: '왼쪽 익랑 쪽 벽' },

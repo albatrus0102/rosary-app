@@ -186,7 +186,14 @@
       var ms = meshSpot(p);
       if (!(m3 && meshStatue(ctx, p, f, ms.x, ms.z, ms.y, relief)) && !relief()) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
     }
-    if (p.kind === 'existing' && p.img && p.altar_h) {   // 제대 위 성모상(성 베드로): 뒤 제단화 앞, 제대 윗면에 받침 + 입체 성모상
+    if (p.kind === 'existing' && p.scan && p.altar_h) {   // 실물 스캔 성상(빛의 성당 메달 홀 — 크루즐로바 성모자상): 빌더가 지은 벽감 턱 위. 못 세우면 아래 Meshy/그림 성상
+      var adS = p.altar_d || -0.9, spS = { x: p.x + f[0] * adS, z: p.z + f[1] * adS, img: p.img };
+      var fallS = function () {
+        var m3s = p.mesh && meshable(ctx), reliefS = function () { return p.img && imageStatue(ctx, spS, f, y + p.altar_h + 0.08); };
+        if (!(m3s && meshStatue(ctx, p, f, spS.x, spS.z, y + p.altar_h, reliefS)) && !reliefS()) ctx.statue({ x: spS.x, z: spS.z, y: y + p.altar_h + 0.08, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: 'mary', halo: true });
+      };
+      if (!(ctx.scan && ctx.scan({ key: p.scan, x: spS.x, y: y + p.altar_h, z: spS.z, ry: Math.atan2(f[0], f[1]), h: p.scan_h || 1.7, name: 'shrine_scan_' + p.scan }, fallS))) { /* ctx.scan 이 예비를 이미 그렸다 */ }
+    } else if (p.kind === 'existing' && p.img && p.altar_h) {   // 제대 위 성모상(성 베드로): 뒤 제단화 앞, 제대 윗면에 받침 + 입체 성모상
       var ad = p.altar_d || -0.9, sp = { x: p.x + f[0] * ad, z: p.z + f[1] * ad, img: p.img };
       var m3 = p.mesh && meshable(ctx), sy = y + p.altar_h + (m3 ? 0 : 0.08), relief = function () { return imageStatue(ctx, sp, f, y + p.altar_h + 0.08); };
       if (!m3) B(ad, 0, p.altar_h, 0.5, 0.62, 0.08, STONE, 'gloss');   // 3D 성상은 제 받침(팔각)을 제대 윗면에 바로 얹는다

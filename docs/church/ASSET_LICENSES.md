@@ -268,6 +268,19 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 - 조각 자체: 모두 작가 사후 70년이 지난 15~18세기 작품(피에타 1498–99). 대용은 실제 작품 이름을 붙이지 않는다.
 - 스캔을 못 읽으면 예전 그림(피에타 사진 판 — 위 '성당 안 진본 성화')이나 절차 생성 상이 그 자리에 선다.
 
+## 빛의 성당(가상)에 넣은 스캔 4점 — 스케치팹 (2026-11-24)
+
+아래 대기 묶음 중 넷을 `assets/church/light/scan3d_<키>.js` 로 복사해 빛의 성당에서 쓴다(그 성당에 들어갈 때만 `light/` 에서 읽는다 — `assets/church/scan3d.js` `DEV_PACKS`). 앱 표기: '성화 · 음악 출처' → '성당 안 성상(3D 스캔)'(`lib/domain/art_credits.dart`), `licenses/STATUE_SCANS.md`.
+
+| 키 | 쓰는 곳 | 만든이 | 라이선스 | 원본 |
+|---|---|---|---|---|
+| `madonna_kruzlowa` | 메달 홀 금빛 벽감 성모자상(정점 색 + 따뜻한 열쇠 빛) | Virtual Museums of Małopolska | CC BY 4.0 | https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec |
+| `angel_kneeling_stronsdorf` | 제단 양옆 경배 천사 2 | noe-3d.at | CC BY-NC 4.0 | https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c |
+| `st_jude` | 십자가 전실 사도 벽감(정면 보정 y 45°) | noe-3d.at | CC BY-NC 4.0 | https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa |
+| `apostle_clay` | 십자가 전실 사도 벽감(앉은 사도) | Germanisches Nationalmuseum | CC BY 4.0 | https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb |
+
+메달 홀 바닥 원판 `assets/church/light/medal_floor.js`(data URI, 640px)는 사용자 그림 `art/light_cathedral/ref/c7_medal_hall_floor.webp`를 줄인 것.
+
 ## 성상 3D 스캔 대기 묶음 — 스케치팹 (2026-11-23 추가, 앱 미사용)
 
 `art/statue_handoff/packs/scan3d_<키>.js` 14개(각 209–216KB, 합계 ≈ 3.0MB) — 앱(`assets/church/`)에는 아직 넣지 않았다. 원본 glb 는 저장소에 없다(스케치팹 API 로 받아 저장소 밖에서 줄이고 지움).

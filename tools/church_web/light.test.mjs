@@ -196,3 +196,28 @@ test('성능 예산(지오메트리): 구역 묶음 + 인스턴스 삼각형이 
   assert.ok(zoneTris + st.instTris < 170000, `삼각형 ${zoneTris} + 인스턴스 ${st.instTris}`);
   assert.ok(light.colliders.length < 300, '충돌체 ' + light.colliders.length);
 });
+
+test('스캔 성상(light/ — 사도·경배 천사·메달 홀 성모자): 표 = 파일, 출처 표기(앱·licenses·ASSET_LICENSES), 묶음 예산, 빌더가 쓰는 자리', () => {
+  const Scan = require('../../assets/church/scan3d.js');
+  const keys = Object.keys(Scan.DEV_PACKS).sort();
+  const files = fs.readdirSync(path.join(assets, 'light')).filter((f) => /^scan3d_[a-z_]+\.js$/.test(f)).map((f) => f.slice(7, -3)).sort();
+  assert.deepEqual(files, keys);
+  const repo = path.resolve(here, '../..'), read = (p) => fs.readFileSync(path.join(repo, p), 'utf8');
+  const src = read('assets/church/ch_light.js') + read('assets/church/shrine_places.js');
+  for (const k of keys) {
+    const d = Scan.DEV_PACKS[k];
+    assert.equal(d.dir, 'light/'); assert.deepEqual(Array.from(d.churches), ['light']);
+    assert.ok(!Scan.PACKS[k], k + ' 는 앱 공용 표(PACKS)와 겹치지 않는다');
+    const body = fs.readFileSync(path.join(assets, 'light', 'scan3d_' + k + '.js'), 'utf8');
+    assert.ok(body.length <= 230 * 1024, k + ' ' + body.length);
+    const url = (body.match(/https:\/\/sketchfab\.com\/3d-models\/[0-9a-f]{32}/) || [])[0];
+    assert.ok(url, k + ' 원본 주소');
+    for (const f of ['lib/domain/art_credits.dart', 'licenses/STATUE_SCANS.md', 'docs/church/ASSET_LICENSES.md']) assert.ok(read(f).includes(url), `${f} 에 ${url}`);
+    assert.ok(src.includes("'" + k + "'"), k + ' 를 빛의 성당이 쓴다');
+  }
+  // 메달 홀 성모상: 실물 스캔(크루즐로바), 예비는 앱 공용 Meshy 성모상
+  const Places = require('../../assets/church/shrine_places.js');
+  assert.equal(Places.light.scan, 'madonna_kruzlowa'); assert.equal(Places.light.mesh, 'mary_meshy'); assert.equal(Places.light.kind, 'existing');
+  // 바닥에 십자가를 두지 않는다(로툰다 묵주 상감 1단계 판의 늘어진 줄·십자가 제거 — 사용자 지시)
+  assert.doesNotMatch(read('assets/church/ch_light.js'), /35\.9, 36\.1, 0x8a6a35/);
+});

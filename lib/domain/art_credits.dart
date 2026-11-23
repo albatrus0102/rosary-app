@@ -236,7 +236,7 @@ const List<ArtCredit> statueScanCredits = [
     license: 'Public domain (Public Domain Mark 1.0, https://creativecommons.org/publicdomain/mark/1.0/)',
   ),
   ArtCredit(
-    use: '십자고상(우리 본당 · 피렌체 대성당 · 명동대성당 · 성 바오로 대성전 십자가 경당) — 그 성당의 실제 십자고상이 아닌 대용',
+    use: '십자고상(우리 본당 · 피렌체 대성당 · 명동대성당 · 성 바오로 대성전 십자가 경당 · 빛의 성당 십자가 전실) — 그 성당의 실제 십자고상이 아닌 대용',
     credit: '"“Crucified Christ” from St. Jadwiga’s hospital"(채색 목조 십자고상, 비에치 지방 박물관 AH/1273). '
         '스캔: Virtual Museums of Małopolska (Museum of the Biecz Land). '
         '출처: https://sketchfab.com/3d-models/crucified-christ-from-st-jadwigas-hospital-d2404e52b2d144e18f0621903c98c06a. '
@@ -244,7 +244,7 @@ const List<ArtCredit> statueScanCredits = [
     license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
   ),
   ArtCredit(
-    use: '성 베드로 상(라테라노 대성전 신랑 벽감 · 성 바오로 대성전 계단 옆) — 대용',
+    use: '성 베드로 상(라테라노 대성전 신랑 벽감 · 성 바오로 대성전 계단 옆 · 빛의 성당 십자가 전실 사도 벽감) — 대용',
     credit: '"Saint Peter"(17세기 중반 크라쿠프 금박 목조상, 티니에츠 베네딕도회 수도원 박물관 RZ/13/2012). '
         '스캔: Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec). '
         '출처: https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751. '
@@ -252,7 +252,7 @@ const List<ArtCredit> statueScanCredits = [
     license: 'CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)',
   ),
   ArtCredit(
-    use: '성 바오로 상(라테라노 대성전 신랑 벽감 · 성 바오로 대성전 계단 옆) — 대용',
+    use: '성 바오로 상(라테라노 대성전 신랑 벽감 · 성 바오로 대성전 계단 옆 · 빛의 성당 십자가 전실 사도 벽감) — 대용',
     credit: '"Saint Paul the Apostle"(17세기 중반 크라쿠프 금박 목조상, 티니에츠 베네딕도회 수도원 박물관 RZ/12/2012). '
         '스캔: Virtual Museums of Małopolska (Museum of the Benedictine Abbey in Tyniec). '
         '출처: https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca. '
@@ -265,6 +265,39 @@ const List<ArtCredit> statueScanCredits = [
         '스캔: noe-3d.at. '
         '출처: https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b. '
         '변경: 축소·재질 변경(삼각형 453,628 → 30,000, 흰 대리석 재질을 입힘, 오른쪽 상은 좌우를 뒤집음).',
+    license: 'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)',
+  ),
+  // 빛의 성당(앱이 지은 가상의 성당) — 2026-11-24. 근거: docs/church/STATUE_SOURCES.md §10, 묶음 assets/church/light/scan3d_<키>.js
+  ArtCredit(
+    use: '빛의 성당(가상) 메달 홀 금빛 벽감의 성모자상 — 크루즐로바의 성모(실물 스캔, 가상 성당에 모신 것)',
+    credit: '"Madonna of Krużlowa"(크루즐로바의 성모, 1410년경 채색 목조, 아름다운 양식). '
+        '스캔: Virtual Museums of Małopolska. '
+        '출처: https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec. '
+        '변경: 축소·재질 변경(삼각형 564,120 → 26,000, 질감을 정점 색으로 바꿈, 진열장은 뺌).',
+    license: 'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)',
+  ),
+  ArtCredit(
+    use: '빛의 성당(가상) 제단 양옆 경배 천사 2(오른쪽은 좌우 반전) — 대용',
+    credit: '"Engel"(슈트론스도르프 흑사병 기둥의 무릎 꿇은 천사 석상, 1826, 오스트리아). '
+        '스캔: noe-3d.at. '
+        '출처: https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c. '
+        '변경: 축소·재질 변경(삼각형 567,806 → 36,000, 흰 대리석 재질을 입힘).',
+    license: 'CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/)',
+  ),
+  ArtCredit(
+    use: '빛의 성당(가상) 십자가 전실 사도 벽감 — 사도 유다 타대오 상(대용)',
+    credit: '"Hl. Judas Thaddäus"(사도 유다 타대오 석상, 18세기 전반, 클라인슈바인바르트). '
+        '스캔: noe-3d.at. '
+        '출처: https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa. '
+        '변경: 축소·재질 변경(삼각형 594,962 → 36,000, 흰 대리석 재질을 입힘).',
+    license: 'CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/)',
+  ),
+  ArtCredit(
+    use: '빛의 성당(가상) 십자가 전실 사도 벽감 — 앉은 사도상(대용)',
+    credit: '"Nürnberger Tonapostel, um 1420 / Pl.O.234"(뉘른베르크 점토 사도상, 1420년경). '
+        '스캔: Germanisches Nationalmuseum. '
+        '출처: https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb. '
+        '변경: 축소·재질 변경(삼각형 630,083 → 26,000, 질감을 정점 색으로 바꿈).',
     license: 'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)',
   ),
 ];

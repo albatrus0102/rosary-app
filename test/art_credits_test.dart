@@ -42,7 +42,7 @@ void main() {
   });
 
   test('성상 3D 스캔: 제목 · 만든이 · 원본 주소 · 라이선스 · 축소·재질 변경', () {
-    expect(statueScanCredits.length, 5);
+    expect(statueScanCredits.length, 9);
     for (final c in statueScanCredits) {
       expect(c.credit, contains('스캔: '), reason: c.use);
       expect(c.credit, contains('출처: https://'), reason: c.use);
@@ -57,6 +57,11 @@ void main() {
       'https://sketchfab.com/3d-models/saint-peter-9e6b4da152f64fa1b4b0613a57318751',
       'https://sketchfab.com/3d-models/saint-paul-the-apostle-2195c3c0b9a140628e938ddb146d00ca',
       'https://sketchfab.com/3d-models/engel-668dcbf72a7243e491f540a6a575213b',
+      // 빛의 성당(가상) — assets/church/light/scan3d_<키>.js
+      'https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec',
+      'https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c',
+      'https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa',
+      'https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb',
     ]) {
       expect(urls, contains(u));
     }
@@ -64,14 +69,24 @@ void main() {
     final pieta = statueScanCredits.firstWhere((c) => c.credit.contains('KAS115'));
     expect(pieta.use, contains('피에타(미켈란젤로)'));
     expect(pieta.license, contains('Public Domain Mark 1.0'));
-    for (final c in statueScanCredits.where((c) => c != pieta)) {
+    // 빛의 성당 메달 홀 성모자상은 그 작품(크루즐로바의 성모)의 스캔을 가상 성당에 모신 것 — 실제 이름 그대로
+    final kruzlowa = statueScanCredits.firstWhere((c) => c.credit.contains('Krużlowa'));
+    expect(kruzlowa.use, contains('크루즐로바의 성모'));
+    for (final c in statueScanCredits.where((c) => c != pieta && c != kruzlowa)) {
       expect(c.use, contains('대용'), reason: c.use);
       expect(c.use, isNot(contains('아르놀포')), reason: c.use);
     }
-    // CC BY(천사): 저작자 표시 의무
-    final by = statueScanCredits.where((c) => c.license.contains('CC BY')).toList();
-    expect(by.length, 1);
-    expect(by.single.credit, contains('noe-3d.at'));
-    expect(by.single.license, contains('https://creativecommons.org/licenses/by/4.0/'));
+    // CC BY · CC BY-NC: 저작자 표시 의무(만든이·라이선스 주소). CC BY-NC 는 앱이 비상업일 때만(licenses/STATUE_SCANS.md)
+    final by = statueScanCredits.where((c) => c.license.startsWith('CC BY 4.0')).toList();
+    expect(by.length, 3);
+    for (final c in by) {
+      expect(c.license, contains('https://creativecommons.org/licenses/by/4.0/'));
+    }
+    final nc = statueScanCredits.where((c) => c.license.startsWith('CC BY-NC')).toList();
+    expect(nc.length, 2);
+    for (final c in nc) {
+      expect(c.credit, contains('noe-3d.at'));
+      expect(c.license, contains('https://creativecommons.org/licenses/by-nc/4.0/'));
+    }
   });
 }
