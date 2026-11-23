@@ -687,7 +687,8 @@
     av.update(dt, t);
     // 발소리: 아바타가 실제로 발을 디딘 순간에(벽에 막혀 제자리면 나지 않는다). docs/church/WALK_GAIT.md
     var stepEv = av.takeStep ? av.takeStep() : null;
-    if (stepEv) root.ChurchAudio.footstep(stepEv.side > 0, stepEv.v);
+    // 실제로 닿은 때(이 프레임보다 lag 초 앞) + 한 프레임에 낸다 → 걸음 간격이 프레임 경계와 상관없이 고르다(절뚝거리는 소리 없음)
+    if (stepEv) root.ChurchAudio.footstep(stepEv.side > 0, stepEv.v, Math.max(0, dt - (stepEv.lag || 0)));
   }
 
   var tmpV = new T.Vector3(), spotO = { pitch: 0, D: 0, fwd: 0, up: 0 };
