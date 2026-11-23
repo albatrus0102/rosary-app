@@ -2010,7 +2010,10 @@
     "far": 4996
    },
    "face_check": "art/statue_handoff/packs/checks/st_peter_enthroned.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"San Pietro in cattedra\" by Daniele Madella — CC BY 4.0 — https://sketchfab.com/3d-models/2e11ebf282d24879a0a8f4960ac23363 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf01_st_peter_enthroned.glb",
+   "front_note": "묶음 +Z 가 3/4 쪽 — 놓을 때 y축 약 45° 더 돌림(q45 렌더가 정면)"
   },
   {
    "id": "02",
@@ -2058,7 +2061,10 @@
     "far": 5000
    },
    "face_check": "art/statue_handoff/packs/checks/angel_kneeling.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Engel\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/bd6261224279427685fd1c486e3c4240 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf03_angel_kneeling_lanzendorf.glb",
+   "front_note": "묶음 +Z 가 3/4 쪽 — 놓을 때 y축 약 45° 더 돌림(q45 렌더가 정면)"
   },
   {
    "id": "04",
@@ -2087,7 +2093,9 @@
     "far": 4997
    },
    "face_check": "art/statue_handoff/packs/checks/st_paul_stone.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Paulus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/7455a9981c7a46c4992d88c8caa78521 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf04_st_paul_mistelbach.glb"
   },
   {
    "id": "05",
@@ -2154,7 +2162,9 @@
     "far": 4998
    },
    "face_check": "art/statue_handoff/packs/checks/st_helena.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Helena\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/15a4ee895e5447e09f8ea980df03fefd — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf07_st_helena_heiligenkreuz.glb"
   },
   {
    "id": "08",
@@ -2220,8 +2230,10 @@
     "near": 25996,
     "far": 3996
    },
-   "face_check": "art/statue_handoff/packs/checks/crucifix_gothic.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "face_check": "art/statue_handoff/packs/checks/crucifix_gothic.jpg — 머리를 깊이 숙인 원작 자세라 가시관·턱선만 보임(원본과 같은 모양)",
+   "placed_in_app": false,
+   "pack_attribution": "\"Gothic crucifix\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/35fde9ce3c734d29ab8813072732d27a — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf10_gothic_crucifix_miechow.glb"
   },
   {
    "id": "11",
@@ -2252,7 +2264,9 @@
     "far": 3998
    },
    "face_check": "art/statue_handoff/packs/checks/madonna_kruzlowa.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Madonna of Krużlowa\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf11_madonna_kruzlowa.glb"
   },
   {
    "id": "12",
@@ -2283,7 +2297,9 @@
     "far": 4998
    },
    "face_check": "art/statue_handoff/packs/checks/angel_kneeling_stronsdorf.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Engel\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf12_angel_kneeling_stronsdorf.glb"
   },
   {
    "id": "13",
@@ -2314,7 +2330,9 @@
     "far": 5000
    },
    "face_check": "art/statue_handoff/packs/checks/st_joseph_child.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Josef\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf13_st_joseph_wolkersdorf.glb"
   },
   {
    "id": "14",
@@ -2345,7 +2363,9 @@
     "far": 4998
    },
    "face_check": "art/statue_handoff/packs/checks/st_francis.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Franziskus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf14_st_francis_heiligenkreuz.glb"
   },
   {
    "id": "15",
@@ -2376,7 +2396,9 @@
     "far": 3999
    },
    "face_check": "art/statue_handoff/packs/checks/apostle_clay.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Nürnberger Tonapostel, um 1420 | Pl.O.234\" by Germanisches Nationalmuseum — CC BY 4.0 — https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf15_nuremberg_clay_apostle.glb"
   },
   {
    "id": "16",
@@ -2428,7 +2450,9 @@
     "far": 5000
    },
    "face_check": "art/statue_handoff/packs/checks/st_teresa.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Theresia\" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf17_st_teresa_heiligenkreuz.glb"
   },
   {
    "id": "18",
@@ -2459,7 +2483,9 @@
     "far": 4998
    },
    "face_check": "art/statue_handoff/packs/checks/st_joseph_lily.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Joseph\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf18_st_joseph_heiligenkreuz.glb"
   },
   {
    "id": "19",
@@ -2490,7 +2516,9 @@
     "far": 4999
    },
    "face_check": "art/statue_handoff/packs/checks/madonna_levoca.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Madona Sculpture\" by jan.zachar — CC BY 4.0 — https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf19_madonna_levoca.glb"
   },
   {
    "id": "20",
@@ -2521,7 +2549,10 @@
     "far": 4998
    },
    "face_check": "art/statue_handoff/packs/checks/st_jude.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
-   "placed_in_app": false
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Judas Thaddäus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf20_st_jude_thaddeus.glb",
+   "front_note": "묶음 +Z 가 3/4 쪽 — 놓을 때 y축 약 45° 더 돌림(q45 렌더가 정면)"
   }
  ],
  "not_found": [

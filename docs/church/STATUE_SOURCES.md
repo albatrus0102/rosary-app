@@ -432,7 +432,7 @@ draw call 은 그대로(피에타 close 81 → 80, 나머지 같음), 삼각형�
 (옮길 때 `scan3d.js` PACKS · `lib/domain/art_credits.dart` · `licenses/STATUE_SCANS.md` 에도 넣어야 시험이 통과한다).
 
 얼굴 확인: 헤드리스 Chromium(중립 회색 배경, 무광 재질, 왼쪽 위 앞 열쇠 빛)에서 정면·45°·얼굴 근접 정면·45° 를 찍었다(`art/statue_handoff/packs/checks/<키>.jpg`).
-14점 모두 눈·코·입이 읽힌다. 바오로·유다·두 요셉·슈트론스도르프 천사는 얼굴이 무르게 보여 **원본(줄이기 전) 얼굴을 같은 카메라로** 찍어 비교했다 — 원본도 같은 모양(야외 사암의 풍화·스캔 해상도)이고 단순화가 지운 곳은 없다.
+13점은 눈·코·입이 읽힌다. 고딕 십자고상(10)은 원작대로 머리를 깊이 숙여 정면·45° 근접에서는 가시관과 턱선만 보인다(모양은 원본과 같음 — 확인 불가가 아니라 원작의 자세). 바오로·유다·두 요셉·슈트론스도르프 천사는 얼굴이 무르게 보여 **원본(줄이기 전) 얼굴을 같은 카메라로** 찍어 비교했다 — 원본도 같은 모양(야외 사암의 풍화·스캔 해상도)이고 단순화가 지운 곳은 없다.
 란첸도르프 천사는 1차에서 얼굴 구가 머리카락 윗부분을 비켜 각이 졌다 → 구를 키워(r 0.11 → 0.13) 다시 만들었다.
 
 | 번호 | 키 | 모델 | 만든이 | 라이선스 | 내용 | 원본 → 근거리 / 원거리 삼각형 | 묶음 | 얼굴 |
@@ -441,12 +441,12 @@ draw call 은 그대로(피에타 close 81 → 80, 나머지 같음), 삼각형�
 | 03 | `angel_kneeling` | Engel | noe-3d.at | CC BY-NC 4.0 | 무릎 꿇고 합장한 천사(18세기 초, 마리아 란첸도르프 갈바리아) — 제대·감실 옆 천사 대용, 흰 대리석 재질. | 444,854 → 36,000 / 5,000 | 212KB | 얼굴 읽힘 (`checks/angel_kneeling.jpg`) |
 | 04 | `st_paul_stone` | Hl. Paulus | noe-3d.at | CC BY-NC 4.0 | 성 바오로 입상(1724, 미스텔바흐 성당 계단, 금속 후광 포함) — 흰 대리석 재질. | 784,094 → 35,997 / 4,997 | 211KB | 얼굴 읽힘 (`checks/st_paul_stone.jpg`) |
 | 07 | `st_helena` | Hl. Helena | noe-3d.at | CC BY-NC 4.0 | 성녀 헬레나(십자가, 1731년 이후 하일리겐크로이츠 사암상) — 대용, 흰 대리석 재질. | 536,653 → 35,990 / 4,998 | 210KB | 얼굴 읽힘 (`checks/st_helena.jpg`) |
-| 10 | `crucifix_gothic` | Gothic crucifix | Virtual Museums of Małopolska | CC BY 4.0 | 고딕 십자고상(16세기 초, 1771 금박 보완, 미에후프 성묘 대성당) — 아치형 배경판째, 뒷면 평평: 벽·제대 뒤. 정점 색. | 287,022 → 25,996 / 3,996 | 213KB | 얼굴 읽힘 (`checks/crucifix_gothic.jpg`) |
+| 10 | `crucifix_gothic` | Gothic crucifix | Virtual Museums of Małopolska | CC BY 4.0 | 고딕 십자고상(16세기 초, 1771 금박 보완, 미에후프 성묘 대성당) — 아치형 배경판째, 뒷면 평평: 벽·제대 뒤. 정점 색. | 287,022 → 25,996 / 3,996 | 213KB | 얼굴은 숙여 가시관 아래(원작 자세) (`checks/crucifix_gothic.jpg`) |
 | 11 | `madonna_kruzlowa` | Madonna of Krużlowa | Virtual Museums of Małopolska | CC BY 4.0 | 크루즐로바의 성모(1410년경 채색 목조, 아름다운 양식) — 진열장은 뺐다(keepMat). 정점 색. | 564,120 → 26,000 / 3,998 | 214KB | 얼굴 읽힘 (`checks/madonna_kruzlowa.jpg`) |
 | 12 | `angel_kneeling_stronsdorf` | Engel | noe-3d.at | CC BY-NC 4.0 | 무릎 꿇은 천사(1826, 슈트론스도르프 흑사병 기둥) — 제대 양옆 경배 천사, 흰 대리석 재질. | 567,806 → 35,993 / 4,998 | 212KB | 얼굴 읽힘 (`checks/angel_kneeling_stronsdorf.jpg`) |
 | 13 | `st_joseph_child` | Hl. Josef | noe-3d.at | CC BY-NC 4.0 | 아기 예수를 안은 성 요셉(1727, 볼커스도르프 성당 계단) — 흰 대리석 재질. | 622,794 → 35,998 / 5,000 | 212KB | 얼굴 읽힘 (`checks/st_joseph_child.jpg`) |
 | 14 | `st_francis` | Hl. Franziskus | noe-3d.at | CC BY-NC 4.0 | 아시시의 성 프란치스코(십자가, 18세기 전반 하일리겐크로이츠 십자가의 길) — 흰 대리석 재질. | 621,322 → 35,987 / 4,998 | 211KB | 얼굴 읽힘 (`checks/st_francis.jpg`) |
-| 15 | `apostle_clay` | Nürnberger Tonapostel, um 1420 | Pl.O.234 | Germanisches Nationalmuseum | CC BY 4.0 | 앉은 사도(뉘른베르크 점토 사도상, 1420년경) — 정점 색(구운 점토). | 630,083 → 25,991 / 3,999 | 216KB | 얼굴 읽힘 (`checks/apostle_clay.jpg`) |
+| 15 | `apostle_clay` | Nürnberger Tonapostel, um 1420 / Pl.O.234 | Germanisches Nationalmuseum | CC BY 4.0 | 앉은 사도(뉘른베르크 점토 사도상, 1420년경) — 정점 색(구운 점토). | 630,083 → 25,991 / 3,999 | 216KB | 얼굴 읽힘 (`checks/apostle_clay.jpg`) |
 | 17 | `st_teresa` | Hl. Theresia | noe-3d.at | CC BY 4.0 | 아빌라의 성녀 데레사(18세기 전반, 요제프 슈니처, 하일리겐크로이츠) — 흰 대리석 재질. | 496,782 → 35,999 / 5,000 | 211KB | 얼굴 읽힘 (`checks/st_teresa.jpg`) |
 | 18 | `st_joseph_lily` | Hl. Joseph | noe-3d.at | CC BY-NC 4.0 | 백합을 든 성 요셉(18세기 전반, 요제프 슈니처 작으로 전함, 하일리겐크로이츠) — 흰 대리석 재질. | 651,768 → 35,997 / 4,998 | 213KB | 얼굴 읽힘 (`checks/st_joseph_lily.jpg`) |
 | 19 | `madonna_levoca` | Madona Sculpture | jan.zachar | CC BY 4.0 | 왕관 쓴 성모상(후기 고딕, 슬로바키아 레보차, 연도 미상 — 후기 고딕 양식) — 흰 대리석 재질. | 375,409 → 35,996 / 4,999 | 209KB | 얼굴 읽힘 (`checks/madonna_levoca.jpg`) |
@@ -456,6 +456,8 @@ draw call 은 그대로(피에타 close 81 → 80, 나머지 같음), 삼각형�
 - 01 성 베드로 좌상: 사진측량 스캔이 **앞면만 있는 껍질**(뒷면이 열림) — 벽감·벽 앞에만 세운다. 원래 계획(청동 좌상 대용)대로라면 어두운 청동 재질을 따로 정한다.
 - 10 고딕 십자고상: 십자가가 아치형 배경판(제단 감실)에 붙은 채 스캔됨 — 판째 쓰고 뒷면은 평평(벽·제대 뒤). 그리스도의 얼굴은 원작대로 깊이 숙여 가시관 아래에 있다.
 - 11 크루즐로바 성모: 박물관 진열장(벽·받침·안내판)이 함께 스캔돼 있어 재질 이름으로 성상만 읽었다(`keepMat: defaultMat.004`, 도구에 새로 넣은 설정). 아기 예수는 원작대로 나체(아기) — 성인 나체상 기준과는 다르다고 보아 받음.
+- **정면 각도(놓을 때 보정):** 01 성 베드로 좌상·03 란첸도르프 천사·20 유다 타대오는 묶음의 +Z 가 3/4 쪽이고 **45° 렌더(`q45`)가 정면**이다 — 자리에 놓을 때 y축으로 약 45° 더 돌린다(묶음을 다시 만들 때는 원본을 다시 받아 `rot` 을 고친다). 19 레보차 성모·07 헬레나는 몸을 조금 튼 원작 자세.
+- 01 성 베드로 좌상: 만든이 표기는 스케치팹 계정 이름 「Daniele Madella」(설명: 사진 측량 Paolo Saglia) — 앱 문구에는 둘 다 적어도 된다.
 - 15 점토 사도: 앉은 상(높이 약 1m, 받침·의자 포함).
 - 19 레보차 성모: 스케치팹 설명에 연도가 없고 「후기 고딕 양식」만 있다(§9 표와 같음).
 

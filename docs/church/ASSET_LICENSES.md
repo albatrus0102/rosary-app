@@ -284,7 +284,7 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 | art/statue_handoff/packs/scan3d_angel_kneeling_stronsdorf.js | https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c | noe-3d.at | CC BY-NC 4.0 | Engel — 축소·흰 대리석 재질. 앱 미사용(대기) |
 | art/statue_handoff/packs/scan3d_st_joseph_child.js | https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274 | noe-3d.at | CC BY-NC 4.0 | Hl. Josef — 축소·흰 대리석 재질. 앱 미사용(대기) |
 | art/statue_handoff/packs/scan3d_st_francis.js | https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f | noe-3d.at | CC BY-NC 4.0 | Hl. Franziskus — 축소·흰 대리석 재질. 앱 미사용(대기) |
-| art/statue_handoff/packs/scan3d_apostle_clay.js | https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb | Germanisches Nationalmuseum | CC BY 4.0 | Nürnberger Tonapostel, um 1420 | Pl.O.234 — 축소·정점 색. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_apostle_clay.js | https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb | Germanisches Nationalmuseum | CC BY 4.0 | Nürnberger Tonapostel, um 1420 / Pl.O.234 — 축소·정점 색. 앱 미사용(대기) |
 | art/statue_handoff/packs/scan3d_st_teresa.js | https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67 | noe-3d.at | CC BY 4.0 | Hl. Theresia — 축소·흰 대리석 재질. 앱 미사용(대기) |
 | art/statue_handoff/packs/scan3d_st_joseph_lily.js | https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68 | noe-3d.at | CC BY-NC 4.0 | Hl. Joseph — 축소·흰 대리석 재질. 앱 미사용(대기) |
 | art/statue_handoff/packs/scan3d_madonna_levoca.js | https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb | jan.zachar | CC BY 4.0 | Madona Sculpture — 축소·흰 대리석 재질. 앱 미사용(대기) |
