@@ -16,6 +16,8 @@
       { g: 'AL', rows: 5, perRow: 4, origin: { x: -1.5, z: -27.5 }, dx: -0.7, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.5, 0.5] },
       { g: 'AR', rows: 5, perRow: 4, origin: { x: 1.5, z: -27.5 }, dx: 0.7, dz: 1.9, rowDx: 0, yaw: 0, pad: [0.5, 0.5] }
     ],
+    // 성수대(빌더의 holyFont 와 같은 자리: x = ±(hw(28.6) - 0.5) = ±4.159, z = 28.6). 선언해야 스테이션·「성호 긋기」 단추가 생긴다.
+    fonts: [{ x: -4.159, z: 28.6, face: [1, 0] }, { x: 4.159, z: 28.6, face: [-1, 0] }],
     candles: {
       stands: [
         { x: 8.9, z: 17.2, slots: 96, reach: 2.2, cols: 16, face: [-1, 0], pitch: 0.5, step: 0.25, ystep: 0.3, y0: 0.8 },

@@ -879,9 +879,8 @@
       });
 
       // 카메라: 맨 위 궁륭 아래까지(맨 아래층 묘소부터 상부 궁륭까지 한 공간 — cam_guard 여러 층)
-      // tight(시점 모드, docs/church/CAMERA_MODES.md): 묘소(둥근 방·기도방·층계참, 천장 3.2m)는 늘 좁은 곳 — 자동 시점에서 1인칭으로 둘러본다
-      ctx.setCameraBounds({ x0: -10.0, x1: 10.0, z0: -24.0, z1: 28.6, yMax: YU + VC - 0.3,
-        tight: [{ x0: CRY.x - CRY.r - 0.3, x1: CRY.x + CRY.r + 0.3, z0: CRY.z - CRY.r - 0.3, z1: LAND.z1, y0: YC - 0.5, y1: YC + 0.5 }] });
+      // (2026-11-23 3차: 카메라는 벽을 개의치 않고 잘라낸다 — 묘소의 '좁은 구역(tight)' 표시는 자동 1인칭과 함께 없앴다, docs/church/CAMERA_MODES.md)
+      ctx.setCameraBounds({ x0: -10.0, x1: 10.0, z0: -24.0, z1: 28.6, yMax: YU + VC - 0.3 });
       ctx.setColliderRange(null);
     }
   };

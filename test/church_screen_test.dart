@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
 import 'package:rosary_app/church/church_constants.dart';
+import 'package:rosary_app/church/church_hud.dart' show ChurchMoveZone;
 import 'package:rosary_app/church/church_candle_store.dart';
 import 'package:rosary_app/church/church_candle_sheet.dart'
     show candleColorNotice;
@@ -179,7 +180,11 @@ void main() {
       await g.up();
       await tester.pump();
       expect(h.scene.lastArgs('setJoystick'), {'x': 0.0, 'y': 0.0});
-      // 손을 떼면 손잡이가 가운데로 돌아온다(사라지지 않는다).
+      // 손을 떼면 손잡이가 가운데로 부드럽게(ChurchMoveZone.knobReturn) 돌아온다(사라지지 않는다).
+      await tester.pump(ChurchMoveZone.knobReturn ~/ 2);
+      final mid = tester.getCenter(find.byKey(const ValueKey('joystick-knob')));
+      expect(mid.dy, lessThan(rect.center.dy), reason: '돌아오는 중(순간이동 아님)');
+      await tester.pump(ChurchMoveZone.knobReturn);
       expect(
         tester.getCenter(find.byKey(const ValueKey('joystick-knob'))),
         rect.center,
@@ -1017,7 +1022,10 @@ void main() {
     expect(l['bead'], look.bead);
     expect(l['cord'], look.cord);
     expect(l['cross'], look.cross);
-    expect(l.keys, containsAll(['rough', 'metal', 'emissive', 'emissiveI', 'crossMetal']));
+    expect(
+      l.keys,
+      containsAll(['rough', 'metal', 'emissive', 'emissiveI', 'crossMetal']),
+    );
     // 크기: 한 번 보내는 모습이 작다(수정 기준 400바이트 이내)
     expect(jsonEncode(l).length, lessThan(400));
   });

@@ -68,6 +68,7 @@ class ChurchSelectScreen extends StatefulWidget {
     'stpaul',
     'milan',
     'florence',
+    'assisi',
     'myeongdong',
   };
 

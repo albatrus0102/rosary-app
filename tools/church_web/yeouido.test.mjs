@@ -394,55 +394,34 @@ test('yeouido: 성능 예산(고화질 빌드) — 묶음 메시·삼각형·점
 });
 
 
-test('yeouido: 카메라 리그 — 성가대석 밑·계단 위·계단 밑·1층 로비에서 360° 돌려도 다른 층(위층 바닥 너머)에 서지 않고 실내에 선다', () => {
+test('yeouido: 카메라 잘라내기 — 성가대석 밑·계단 위·계단 밑·1층 로비에서 360° 돌려도(카메라는 벽·층을 개의치 않는다) 다른 층·겹친 계단이 아바타를 가리지 않는다', () => {
   if (c.ret && c.ret.group) c.ctx.root.add(c.ret.group);
   const items = c.prepare();
   items.forEach((it) => c.ctx.root.add(it.batch.build(it.material, it.name, { spatial: true })));
-  const cb0 = c.ctx._.cameraBounds, cb = { x0: cb0.x0, x1: cb0.x1, z0: cb0.z0, z1: cb0.z1, yMax: cb0.yMax, pitchMax: cb0.pitchMax };
-  assert.ok(cb.pitchMax > 0.8 && cb.pitchMax < 1.05, '계단 홀에서 거의 바로 위로 올라가지 않게(올림 상한)');
-  const so = Guard.spaceOpts(L, lay, c.zones); so.spaceTop = cb.yMax;
-  assert.ok(near(so.levelLow, F1), '카메라 공간은 1층 바닥부터');
-  eq(so.levelYs, [0, Lf.y], '층 칸막이 = 2층 바닥 · 성가대석 바닥');
+  const cb0 = c.ctx._.cameraBounds, cb = { x0: cb0.x0, x1: cb0.x1, z0: cb0.z0, z1: cb0.z1, yMax: cb0.yMax };
+  const so = Guard.spaceOpts(L, lay, c.zones);
+  assert.ok(near(so.levelLow, F1), '층 값 기준은 1층 바닥');
+  eq(so.levelYs, [0, Lf.y], '위층 잘라내기의 층 = 2층 바닥 · 성가대석 바닥');
   const g = Guard.build(c.ctx.root, { bounds: cb, yLow: so.levelLow + 1.05, see: false, ...so });
-  assert.ok(g.space && g.space.reachable > 1000 && g.partitions.every((n) => n > 500), '공간·칸막이 ' + JSON.stringify(g.partitions));
+  eq(g.levelYs, [0, Lf.y], '가드 층 표');
   const spots = [['성가대석 밑 오른쪽', 8.5, 17.0, 0], ['성가대석 밑 왼쪽', -6.0, 16.0, 0], ['스폰', 0, 16.5, 0], ['성가대석 왼쪽 덩이', -4.5, Lf.z + 0.55, Lf.y],
     ['2층 → 3층 계단 가운데', ...Object.values(hallPt(0)), null], ['1층 → 2층 계단 가운데', ...Object.values(hallPt(-20)), null], ['1층 → 2층 계단 아래쪽', ...Object.values(hallPt(50)), null], ['1층 → 2층 계단 20°', ...Object.values(hallPt(20)), null], ['1층 → 2층 계단 −60°', ...Object.values(hallPt(-60)), null],
     ['1층 → 2층 계단 밑(1층)', ...Object.values(hallPt(-40, 0.7)), F1], ['계단참(성가대석 높이)', ...Object.values(hallPt(Bd.landing.th0 + 12, 0.75)), Lf.y], ['옆 갤러리', 12.0, 16.5, Lf.y], ['계단참 밑(2층)', ...Object.values(hallPt(Bd.landing.th0 + 10, 0.7)), 0], ['1층 로비', -6.5, 25.6, F1], ['2층 로비', -6.5, 25.6, 0]];
-  let n = 0, other = 0, out = 0, fp = 0, high = 0, thru = 0; const bad = [], fpAt = {};
+  let n = 0, occ = 0, upper = 0; const bad = [];
   for (const [what, x, z, y0] of spots) {
     const fy = y0 === null ? L.floorY(x, z, what.startsWith('1층') ? -1.0 : 2.0) : y0;
     assert.ok(free(x, z, fy), what + ' 서는 자리');
-    for (let k = 0; k < 12; k++) for (const pitch of [0.06, 0.45]) {
+    for (let k = 0; k < 12; k++) for (const pitch of [0.06, 0.45, 0.9]) {
       n++;
-      const rig = Guard.createRig(), O = {}, I = { mx: x, fy: fy + 1.0, mz: z, yaw: k * Math.PI / 6, pitch, D: 7.2, cb, guard: g, auto: true };
-      for (let f = 0; f < 3; f++) rig.solve(I, 1 / 30, O);
-      if (O.fpOn) { fp++; fpAt[what] = (fpAt[what] || 0) + 1; continue; }
-      const cy = Math.min(cb.yMax, Math.max(fy + 0.7, O.y));
-      // 다른 층: 머리 → 카메라 선이 그 사람의 층이 아닌 걷는 바닥 구역(층 바닥 높이)을 지난다(기하가 아닌 다른 출처로 잰다)
-      for (const h of [0, Lf.y]) {
-        if (Math.abs(h - fy) < 0.05) continue;
-        const ay = fy + 1.0; if ((ay < h) === (cy < h)) continue;
-        const t = (h - ay) / (cy - ay), hx = x + (O.x - x) * t, hz = z + (O.z - z) * t;
-        if (L.floorsAt(hx, hz).some((f) => Math.abs(f - h) < 0.05)) { other++; if (bad.length < 4) bad.push(`${what} yaw${k * 30} → (${O.x.toFixed(1)},${cy.toFixed(1)},${O.z.toFixed(1)})`); break; }
-      }
-      // 위층 바닥 위에 선 카메라(우물·계단 띠 같은 구멍으로 올라간 경우 — 선이 층 바닥을 지나지 않아도 다른 층이다)
-      if (L.floorsAt(O.x, O.z).some((f) => f > fy + 1.0 && f < cy)) { other++; if (bad.length < 4) bad.push(`위층 바닥 위 ${what} yaw${k * 30} → (${O.x.toFixed(1)},${cy.toFixed(1)},${O.z.toFixed(1)})`); continue; }
-      // 걷는 바닥(계단 디딤·성가대석 단 포함)을 지나 선 카메라: 겹친 계단에서 아래 계단 → 위 계단 너머 등(층 칸막이만으로는 못 막던 것)
-      for (let u = 0.05, py = fy + 1.0; u <= 1.0001; u += 0.05) {
-        const qx = x + (O.x - x) * u, qy = fy + 1.0 + (cy - fy - 1.0) * u, qz = z + (O.z - z) * u;
-        if (L.floorsAt(qx, qz).some((f) => f > Math.min(py, qy) + 0.02 && f < Math.max(py, qy) - 0.02 && Math.abs(f - fy) > 0.4)) { thru++; if (bad.length < 4) bad.push(`바닥 너머 ${what} yaw${k * 30}`); break; }
-        py = qy;
-      }
-      if (!g.space.at(O.x, cy, O.z)) out++;
-      if (O.pitch > 1.0) high++;   // 올림 상한(pitchMax) 위 — 0 이어야 한다
+      const D = 7.2, yaw = k * Math.PI / 6, cp = Math.cos(pitch), cx = x + Math.sin(yaw) * cp * D, cy = fy + 1.0 + Math.sin(pitch) * D, cz = z + Math.cos(yaw) * cp * D;
+      const C = Guard.createCut(), O = {}, I = { guard: g, cx, cy, cz, mx: x, my: fy + 1.0, mz: z, hy: fy + 1.55, foot: fy, low: false, fp: 0 };
+      for (let f = 0; f < 10; f++) C.step(I, 1 / 30, O);
+      if (O.k[4] > 0.5) upper++;
+      if (C.blocked(g, x, fy + 1.55, z) && C.blocked(g, x, fy + 1.0, z)) { occ++; if (bad.length < 4) bad.push(`${what} yaw${k * 30} p${pitch}`); }
     }
   }
-  assert.equal(other, 0, `다른 층에 선 카메라 ${other}/${n}: ${bad.join('; ')}`);
-  assert.ok(out <= n * 0.02, `카메라 공간 밖 ${out}/${n}`);
-  // 1인칭: (2026-11-23) 계단 폭 3배 뒤로는 겹친 계단 밑에서도 3인칭 자리가 있다(예전 좁은 계단은 7% 까지 받아들였다)
-  assert.ok(fp <= n * 0.01, `1인칭 ${fp}/${n} ${JSON.stringify(fpAt)}`);
-  assert.equal(high, 0, '거의 바로 위에서 내려다보는 카메라');
-  assert.ok(thru <= n * 0.01, `걷는 바닥(계단 디딤) 너머에 선 카메라 ${thru}/${n}: ${bad.join('; ')}`);
-  console.log(`# yeouido 카메라 리그: 표본 ${n}, 다른 층 ${other}, 바닥 너머 ${thru}, 공간 밖 ${out}, 1인칭 ${fp}, 높이 내려다보기(pitch > 1.0) ${high}, 1인칭 자리 ${JSON.stringify(fpAt)}`);
+  assert.ok(occ <= n * 0.01, `가림 ${occ}/${n}: ${bad.join('; ')}`);
+  assert.ok(upper > n * 0.1, `위층 잘라내기가 켜진 표본 ${upper}/${n}(성가대석 밑·1층 로비)`);
+  console.log(`# yeouido 잘라내기: 표본 ${n}, 가림 ${occ}, 위층 잘라내기 ${upper}`);
 });
 

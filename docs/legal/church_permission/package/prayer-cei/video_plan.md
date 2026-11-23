@@ -1,5 +1,6 @@
 # 영상 계획 — 이탈리아 주교회의(CEI) 전국 전례국(Ufficio Liturgico Nazionale) — 권리자 재단에 전달 요청 (prayer-cei)
 
+- **2차 개정(2026-11-23)**: 편지가 「공식 본문을 보내 달라」에서 「붙인 본문(`texts.md`)을 확인·수정해 달라」로 바뀌었다. 영상은 그대로 한국어판 화면을 찍되, 마침 카드 자막을 그에 맞게 고쳤다. 편지의 답은 ①②③ 셋이다.
 - 자막 언어: **이탈리아어** · 길이 약 2분(1~2분) · 변종: it-IT
 - 찍는 것: **한국어판 앱 화면.** 답을 받기 전에는 그쪽 본문을 앱에 넣지 않으므로, 본문이 들어갈 자리와 쓰는 방식을 한국어 화면으로 보여 주고 자막으로 설명한다. 영상에 그쪽 기도문 본문을 적지 않는다.
 - 만드는 법: 화면 녹화(세로 화면을 16:9 틀 가운데에 둠), 1080p, 해설 목소리 없음, 자막만. 한국어 선창 음성은 8번 장면에서만 2~3초 들려 준다(배포판 상태: 기기 음성).
@@ -22,7 +23,7 @@
 | 10 | 1:28–1:34 | 가상 성당(성 베드로 모형): 성수대 앞에서 「성호 긋기」 | All’acquasantiera si fa il segno della croce. Solo gesti di preghiera: niente giochi, niente combattimenti. |
 | 11 | 1:34–1:42 | 가상 성당(성 베드로 모형): 촛불 봉헌대에서 「초 켜기」 → 정해진 지향 목록에서 하나 고름(글 입력 칸이 없음이 보이게) | Si accende una candela scegliendo l’intenzione fra frasi già fissate: nessun testo libero, nessuna chat. |
 | 12 | 1:42–1:50 | 가상 성당(성 베드로 모형): 신자석에 앉아 묵주 기도(묵주 패널이 보이게) → 「무릎 꿇고」로 바꿈 | Ci si siede o ci si inginocchia e si prega il Rosario. Nessuna funzione imita la Messa o i Sacramenti. |
-| 13 | 1:50–2:00 | 마침 카드(글자만) | Che cosa chiediamo: l’autorizzazione a mostrare i testi e la Vostra scelta fra le opzioni della lettera. Senza la Vostra risposta, il Vostro testo non è usato. Contatto: 〔이메일〕 |
+| 13 | 1:50–2:00 | 마침 카드(글자만) | Che cosa chiediamo: che confermiate o correggiate i testi allegati e ne autorizziate l’uso: basta rispondere alla lettera con un numero (①②③). Senza la Vostra risposta, il Vostro testo non è usato. Contatto: 〔이메일〕 |
 
 ## 첨부 화면 캡처 4장
 

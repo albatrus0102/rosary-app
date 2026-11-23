@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { loadChurches } from './church_harness.mjs';
 import fs from 'node:fs';
-import { runScenario, slipStats, postureStats, smoothStats, cameraTrack, legMotion, turnStats, glbSlip, loadAvatar, joyWalker, autoWalker, remoteWalker, crowdWalker, speedWalker, ASSETS } from './gait_lib.mjs';
+import { runScenario, slipStats, postureStats, smoothStats, cameraTrack, legMotion, turnStats, glbSlip, loadAvatar, joyWalker, autoWalker, remoteWalker, crowdWalker, speedWalker, lineWalker, symmetryStats, ASSETS } from './gait_lib.mjs';
 import { loadAudio, stepLevels, stepTimbres } from './footstep_levels.mjs';
 const require = createRequire(import.meta.url);
 const Logic = require('../../assets/church/scene_logic.js');
@@ -95,7 +95,9 @@ for (const c of churches) {
     for (let i = 0, run = 0; i < push.length; i++) { run = push[i].bodyV < 0.05 ? run + push[i].dt : 0; if (run > 0.5) { tb = push[i].t; break; } }
     assert.ok(tb > 0, 'reached a wall');
     assert.equal(push[push.length - 1].walkTarget > 0.9, true, 'input still says walk');
-    assert.ok(legMotion(push, tb + 0.4, tb + 2.4) < 0.02, 'legs stop when blocked');
+    // tb = 몸이 멈추고 0.5초 뒤. 4 m/s 로 벽에 부딪히면 벌어진 발을 두 걸음에 모으는 데 부딪힌 뒤 약 1.2초 걸린다(위 「출발·정지」 시험과 같다) —
+    // 부딪힐 때 두 발이 다 디뎌 있으면 첫 걸음이 늦어 tb + 0.4 를 조금 넘길 수 있어(3차, WALK_GAIT.md §7) tb + 0.7 부터 본다
+    assert.ok(legMotion(push, tb + 0.7, tb + 2.4) < 0.02, 'legs stop when blocked');
     assert.ok(glbSlip(push, { from: tb + 0.4, to: tb + 2.4, Glb: loadAvatar().Glb }).legFootV < 0.02, 'glb legs stop when blocked');
     assert.ok(slipStats(push, 0, tb).ratio < SLIP_MAX, 'approach slip');
     const slide = runScenario(undefined, { ...base, dur: 10, step: joyWalker(L, () => ({ x: 0.8, y: 0.6 })) });
@@ -194,7 +196,7 @@ test('최고 속도 상수 하나: scene_logic WALK_SPEED = avatar.js 걸음 최
 });
 test('카메라는 골반이 아니라 루트(몸 위치)를 따른다: 평지에서 걸어도 카메라 높이가 오르내리지 않는다', () => {
   const src = fs.readFileSync(ASSETS + '/main.js', 'utf8');
-  assert.match(src, /var fy = me\.y \+ 1\.0 \+ sf \* \(0\.45 - 0\.2\);/, '카메라 보는 점 = 루트 높이(me.y)');
+  assert.match(src, /tfy = me\.y \+ 1\.0 \+ sf \* \(0\.45 - 0\.2\);/, '카메라 보는 점(피벗 스프링의 목표) = 루트 높이(me.y)');
   assert.doesNotMatch(src.slice(src.indexOf('function updateCamera'), src.indexOf('function myTagRect')), /bones|hips/, '카메라가 뼈를 읽지 않는다');
   for (const v of [1.2, WS]) {
     const fr = at(v), c = cameraTrack(fr, 2, 6), s = smoothStats(fr, 2, 6);
@@ -218,4 +220,59 @@ test('발소리: 가볍고 짧은 돌바닥 「톡」 — 200 Hz 아래 에너�
   // 귀로 느끼는 크기(A 가중 에너지)가 옛 발소리보다 작다: 표본 차이 + STEP_TRIM_DB
   const avg = T.reduce((q, t) => q + t.aExpDb, 0) / T.length;
   assert.ok(avg + A.LEVELS.STEP_TRIM_DB < -31.0, 'A-weighted energy (old avg -31.0 dB) ' + (avg + A.LEVELS.STEP_TRIM_DB));
+});
+
+
+// ------------------------------------------------------------------ 2026-11-23 3차: 「오른발이 굽힌 채로 절뚝거려」(WALK_GAIT.md §7)
+// 고치기 전(같은 시나리오): ① 여러 층 성당(아시시·여의도동)에서 계단을 지나면 계단에서 고른 디딜 자리 어긋남(F.toff, 예 −0.2m)이 평평한 바닥에서도
+// 한 발에만 영영 남아 한 걸음이 0.33 / 0.81m(84%), 여의도동 계단 올라온 뒤 0.41 / 0.99m(35%) — 한 발은 늘 뒤에 딛고 4 m/s 에서는 그 다리가 29° 굽은 채 다른 다리는 쭉 뻗었다.
+// ② 2.8 m/s 위에서 디딤 내내 무릎이 15~29° 굽어 펴지지 않았다(KNEE_FAST 0.5, 두 다리 모두). ③ 발소리가 프레임 경계에서 나 한 주기 프레임 수가 홀수면 왼→오 / 오→왼 간격이 한 프레임씩 엇갈렸다(3.8 m/s 0.283 / 0.267s, 6%).
+// GAIT_ASSETS=<옛 assets 사본> 으로 옛 코드에 돌리면 실패한다(확인용).
+const SYM_DIR = process.env.GAIT_ASSETS || undefined;
+const SYM_V = [0.8, 1.2, 2.0, 3.8, WS];
+const symCheck = (s, tag, knee = true) => {
+  assert.ok(s.nSteps >= 6, `${tag}: steps ${s.nSteps}`);
+  if (knee) for (const k of ['L', 'R']) assert.ok(s[k].stanceKneeMin >= 0 && s[k].stanceKneeMin <= 10, `${tag}: ${k} knee extends in stance (${s.L.stanceKneeMin.toFixed(1)} / ${s.R.stanceKneeMin.toFixed(1)}°)`);
+  assert.ok(s.timeAsym < 0.05, `${tag}: step time L>R ${s.tLR.toFixed(3)} / R>L ${s.tRL.toFixed(3)}`);
+  assert.ok(s.lenAsym < 0.05, `${tag}: step length L>R ${s.dLR.toFixed(3)} / R>L ${s.dRL.toFixed(3)}`);
+  assert.ok(s.soundAsym < 0.05, `${tag}: footstep sound interval ${s.soundLR.toFixed(3)} / ${s.soundRL.toFixed(3)}`);
+};
+test('좌우 대칭(절뚝거림 없음): 두 성별(원피스·바지) × 0.8~4 m/s × 60/30fps — 디딤에서 두 무릎 모두 0~10° 까지 펴지고, 걸음 시간·길이·발소리 간격 좌우 차 < 5%, 미끄러짐 < 5%', () => {
+  for (const g of [0, 1]) for (const fps of [60, 30]) for (const v of SYM_V) {
+    const fr = runScenario(SYM_DIR, { g, off: 1, dur: 10, dt: 1 / fps, step: speedWalker(v) }), tag = `g${g} ${fps}fps ${v} m/s`;
+    symCheck(fr && symmetryStats(fr, 3, 10), tag, fps === 60);   // 30fps 는 짧게 펴지는 순간을 프레임이 놓칠 수 있어 무릎은 60fps 로만
+    assert.ok(slipStats(fr, 3, 10).ratio < SLIP_MAX, `${tag}: slip`);
+  }
+});
+// 가짜 계단(단 0.28~0.38m × 0.17m, 8단)을 오른 뒤 평평한 바닥 — 여러 층 성당의 바닥 함수(setGround)를 쓰는 길
+const stairThenFlat = (tread, v, g) => {
+  const gy = (z) => { const d = -z - 2; return d <= 0 ? 0 : Math.min(8, Math.floor(d / tread) + 1) * 0.17; };
+  const Lg = { floorY: (x, z) => gy(z), bodyY: (x, z, fy, dx, dz) => { let q = 0; for (let i = -3; i <= 3; i++) q += gy(z + dz * 0.15 * i); return q / 7; } };
+  const fr = runScenario(SYM_DIR, { g, off: 1, dur: 14, ground: (x, z) => gy(z), step: lineWalker(Lg, [{ x: 0, z: 0 }, { x: 0, z: -80 }], v) });
+  const t0 = fr.find((f) => -f.z > 2 + 8 * tread + 1.5).t;
+  return { fr, t0 };
+};
+test('계단을 지난 뒤에도 절뚝거리지 않는다: 가짜 계단(단 깊이 4가지) 위 평평한 바닥에서 두 발 걸음 길이·무릎이 같다(옛 코드 최대 84% 차)', () => {
+  for (const g of [0, 1]) for (const tread of [0.28, 0.3, 0.33, 0.38]) for (const v of [0.8, 1.2, 2.0, WS]) {
+    const { fr, t0 } = stairThenFlat(tread, v, g);
+    symCheck(symmetryStats(fr, t0 + 1, 14), `g${g} tread ${tread} ${v} m/s after stairs`);
+  }
+});
+test('아시시 36단·여의도동 곡선 계단을 오르내릴 때 두 발 걸음 길이·시간이 같다(< 5%, 옛 코드 여의도동 35%)', () => {
+  const { churches } = loadChurches({ only: ['assisi', 'yeouido'] });
+  for (const c of churches) {
+    const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }), S = Stations.create(L), Bd = c.builder;
+    let runs;
+    if (c.id === 'assisi') { const ST = Bd.stair, H = Bd.heights, sx = (ST.x0 + ST.x1) / 2; runs = [['up', [{ x: sx, z: -6.9 }, { x: sx, z: ST.z1 - 0.9 }], H.lower], ['down', [{ x: sx, z: ST.z1 - 0.9 }, { x: sx, z: -6.9 }], H.upper]]; }
+    else { const F1 = Bd.floors.F1, sp = { x: c.layout.spawn.x, z: c.layout.spawn.z, y: 0 }, lob = { x: -6.5, z: 25.6, y: F1 }; runs = [['down', S.findPath(sp, lob).pts, 0], ['up', S.findPath(lob, sp).pts, F1]]; }
+    for (const [nm, pts, y0] of runs) for (const v of [1.2, WS]) {
+      const fr = runScenario(SYM_DIR, { g: 0, off: 1, dur: 40, x0: pts[0].x, z0: pts[0].z, y0: L.floorY(pts[0].x, pts[0].z, y0), yaw0: Math.atan2(-(pts[1].x - pts[0].x), -(pts[1].z - pts[0].z)), ground: (x, z, y) => L.floorY(x, z, y + 0.2), step: lineWalker(L, pts, v) });
+      const mv = fr.filter((f) => f.bodyV > 0.5 * v);
+      symCheck(symmetryStats(fr, mv[0].t + 0.5, mv[mv.length - 1].t), `${c.id} ${nm} ${v} m/s`, false);   // 계단 위 무릎은 단 높이에 따라 다르다(오를 때 굽는다)
+    }
+  }
+});
+test('발소리는 실제로 닿은 때에 맞춰 낸다(avatar ev.lag → main.js 지연 → audio.js start 시각)', () => {
+  assert.match(fs.readFileSync(ASSETS + '/main.js', 'utf8'), /footstep\(stepEv\.side > 0, stepEv\.v, Math\.max\(0, dt - \(stepEv\.lag \|\| 0\)\)\)/);
+  assert.match(fs.readFileSync(ASSETS + '/audio.js', 'utf8'), /s\.start\(dl > 0 \? c\.currentTime \+ dl : 0\)/);
 });

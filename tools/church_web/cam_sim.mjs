@@ -1,9 +1,14 @@
-// 카메라 표본 시뮬레이터(docs/church/CAMERA_MODES.md): 성당 메시·카메라 가드를 Node 에서 짓고, main.js updateCamera 와 같은 순서로
-// 리그(cam_guard createRig) → 시점 모드(createView: 좁으면 자동 1인칭) → 카메라 놓기(composeCam)를 매 프레임 돌린다.
+// 카메라 표본 시뮬레이터(docs/church/CAMERA_MODES.md §숫자): 성당 메시·카메라 가드를 Node 에서 짓고, main.js updateCamera 와 같은 순서로 매 프레임 돌린다.
+//  지금(new): 피벗 스프링(controls.js createFollow) + 사용자 각도·거리 그대로의 팔(충돌 없음) → 잘라내기(cam_guard createCut).
+//  예전(old, --old 옛cam_guard.js): 리그(createRig 스프링 암·자동 시점) → 자동 1인칭(createView) → 카메라 놓기(createCompose) + 원뿔 잘라내기(main.js seeEase).
 // 시나리오: (1) 그 자리에 서서 화면을 끌어 한 바퀴 넘게 돌리고 위아래로도 끈다(rotate) (2) 계단·통로를 걸으며 뒤에서 따라간다(walk).
-// 지표: 카메라가 면 안(가까운 면까지 near 평면보다 가깝다) · 튐(한 프레임 거리 변화 > POP) · 되튐(튐 뒤 0.6초 안에 반대쪽 튐) · 1인칭 비율.
-// legacy=true 면 예전 main.js(직교 좌표 7/s 따라가기 + 벽 속이면 곧장 목표로 + rig.fp 만) — 고치기 전 숫자를 같은 자로 잰다.
-// CLI: node tools/church_web/cam_sim.mjs [--guard 옛cam_guard.js] [--legacy] [--json]
+// 지표(3인칭 프레임):
+//  jumps   = 튐: 한 프레임 카메라 이동이 (피벗 이동 + 팔 길이 × 각도 변화)보다 POP(0.35m) 넘게 크다 — 기하가 카메라를 밀거나 당긴 것
+//  boomNI  = 사용자 입력(거리 D) 없이 카메라 → 피벗 거리가 1cm 넘게 바뀐 프레임(지금은 0 이어야 한다)
+//  occ     = 아바타 가림: 카메라 → 머리·가슴 두 선이 모두 지우지 못한 면에 막힘(occAny = 둘 중 하나)
+//  flicker = 잘라내기(또는 예전 원뿔)가 켜졌다 꺼졌다 하는 한 구간이 0.3초보다 짧았던 횟수
+//  fpF     = 1인칭 프레임(아바타가 안 보인다 — 예전 자동 1인칭), us = 카메라 계산(JS) 프레임당 마이크로초
+// CLI: node tools/church_web/cam_sim.mjs [--old 옛cam_guard.js] [--only assisi,yeouido] [--json]
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -11,9 +16,11 @@ import { loadChurches } from './church_harness.mjs';
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
 const Stations = require('../../assets/church/stations.js');
+const Controls = require('../../assets/church/controls.js');
 
 export const DT = 1 / 30;
-export const POP = 0.35;   // 한 프레임(1/30초)에 카메라 → 아바타 거리가 이보다 많이 바뀌면 '튐'(초당 10.5m)
+export const POP = 0.35;
+export const FLICK = 0.3;
 const wrap = (a) => { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; };
 
 let loaded = null;
@@ -22,7 +29,7 @@ export function load(only) {
   return loaded;
 }
 
-// 성당 하나의 시험 환경: world.js 와 같은 카메라 가드(공간 복셀·여러 층) + 면 탐침(모든 면) + 걷기 논리
+// 성당 하나의 시험 환경: world.js 와 같은 가드(여러 층 층 값) + 걷기 논리. Guard = 지금 또는 예전 cam_guard
 export function makeEnv(id, Guard) {
   const { churches, Logic } = load();
   const c = churches.find((x) => x.id === id);
@@ -31,16 +38,15 @@ export function makeEnv(id, Guard) {
     c.prepare().forEach((it) => c.ctx.root.add(it.batch.build(it.material, it.name, { spatial: true })));
     c.__built = true;
   }
-  const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones });
+  const L = c.__L || (c.__L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }));
   const S = c.ctx._, B = c.layout.bounds, cb0 = S.cameraBounds || {};
   const cb = { x0: cb0.x0 ?? B.x0, x1: cb0.x1 ?? B.x1, z0: cb0.z0 ?? B.z0, z1: cb0.z1 ?? B.z1, yMax: cb0.yMax || 9, pitchMax: cb0.pitchMax, tight: cb0.tight };
   const sp = c.layout.spawn || { x: 0, z: 0 };
   const so = Guard.spaceOpts(L, c.layout, c.zones), multi = L.multi && so.levelLow !== undefined;
   if (multi) so.spaceTop = cb.yMax;
   const guard = Guard.build(c.ctx.root, { bounds: cb, yLow: (multi ? so.levelLow : (L.floorY(sp.x, sp.z) || 0)) + 1.05, see: false, ...so });
-  const probe = Guard.build(c.ctx.root, { bounds: { x0: cb.x0 - 20, x1: cb.x1 + 20, z0: cb.z0 - 20, z1: cb.z1 + 20 }, minArea: 0, see: false, space: false });
   const floorAt = (x, z, y) => (L.multi ? L.floorY(x, z, y) : (L.floorY(x, z) || 0));
-  return { id, c, L, cb, guard, probe, floorAt, St: Stations.create(L) };
+  return { id, c, L, cb, guard, floorAt, St: Stations.create(L), Guard };
 }
 
 // 누르기 이동 경로를 main.js 와 같은 걷기(moveCircle·floorY)로 따라간 프레임 [{x,z,foot,yaw}]
@@ -64,80 +70,108 @@ export function walkFrames(env, from, to, speed = 1.4) {
 }
 
 // 그 자리에 서서(1초) 화면을 끈다: 5초 동안 초당 1.4rad 로 돌리고(한 바퀴 넘게), 이어 2초 동안 위아래로 끌며 계속 돌린다.
-export function rotateFrames(pt, yaw0 = 0) {
+// p0 = 기본 팔 각도(지금 FEEL.pitchDefault, 예전 0.45)
+export function rotateFrames(pt, yaw0 = 0, p0 = Controls.FEEL.pitchDefault) {
   const fr = [];
-  for (let i = 0; i < 30; i++) fr.push({ x: pt.x, z: pt.z, foot: pt.foot, camYaw: yaw0, pitch: 0.45, drag: false });
-  for (let i = 0; i < 150; i++) fr.push({ x: pt.x, z: pt.z, foot: pt.foot, camYaw: yaw0 + i * DT * 1.4, pitch: 0.45, drag: true });
-  for (let i = 0; i < 60; i++) fr.push({ x: pt.x, z: pt.z, foot: pt.foot, camYaw: yaw0 + (150 + i) * DT * 1.4, pitch: 0.45 + 0.45 * Math.sin(i / 60 * Math.PI), drag: true });
+  for (let i = 0; i < 30; i++) fr.push({ x: pt.x, z: pt.z, foot: pt.foot, camYaw: yaw0, pitch: p0, drag: false });
+  for (let i = 0; i < 150; i++) fr.push({ x: pt.x, z: pt.z, foot: pt.foot, camYaw: yaw0 + i * DT * 1.4, pitch: p0, drag: true });
+  for (let i = 0; i < 60; i++) fr.push({ x: pt.x, z: pt.z, foot: pt.foot, camYaw: yaw0 + (150 + i) * DT * 1.4, pitch: p0 + 0.45 * Math.sin(i / 60 * Math.PI), drag: true });
   return fr;
 }
 
-// 면에 가까움(카메라 near 평면보다 가까운 면이 6방향 중 하나라도) = 화면에 벽 속·면 단면이 보인다
-function inside(probe, x, y, z, r) {
-  return probe.clip(x, y, z, x + r, y, z, 0) < 1 || probe.clip(x, y, z, x - r, y, z, 0) < 1 || probe.clip(x, y, z, x, y, z + r, 0) < 1 ||
-    probe.clip(x, y, z, x, y, z - r, 0) < 1 || probe.clip(x, y, z, x, y + r, z, 0) < 1 || probe.clip(x, y, z, x, y - r, z, 0) < 1;
+function newStats() { return { n: 0, tp: 0, jumps: 0, maxJump: 0, boomNI: 0, occ: 0, occAny: 0, flicker: 0, toggles: 0, fpF: 0, us: 0 }; }
+// 켜짐/꺼짐 구간 기록: 한 구간(켜진 채·꺼진 채)이 FLICK 초보다 짧게 끝나면 깜빡임
+function trackFlick(st, ch, on, t) {
+  const c = st._ch || (st._ch = {});
+  const s = c[ch] || (c[ch] = { on: false, t: -9, n: 0 });
+  if (on !== s.on) { if (s.n > 0 && t - s.t < FLICK) { st.flicker++; if (process.env.CAMSIM_FL) console.log("flick", ch, on, t.toFixed(2), (t - s.t).toFixed(2)); } s.on = on; s.t = t; s.n++; st.toggles++; }
+}
+// 한 프레임 공통 지표: 튐·입력 없는 거리 변화
+function motion(st, prev, cam, piv, yaw, pitch, D, avx, avy, avz) {
+  if (prev.ok) {
+    const mv = Math.hypot(cam.x - prev.cx, cam.y - prev.cy, cam.z - prev.cz);
+    const ang = Math.hypot(wrap(yaw - prev.yaw) * Math.cos(pitch), pitch - prev.pitch);
+    const expect = Math.hypot(avx - prev.ax, avy - prev.ay, avz - prev.az) + D * ang + Math.abs(D - prev.D);
+    const ex = mv - expect;
+    if (ex > st.maxJump) st.maxJump = ex;
+    if (ex > POP) st.jumps++;
+    const d = Math.hypot(cam.x - piv.x, cam.y - piv.y, cam.z - piv.z);
+    if (Math.abs(D - prev.D) < 1e-6 && Math.abs(d - prev.d) > 0.01) st.boomNI++;
+    prev.d = d;
+  } else prev.d = Math.hypot(cam.x - piv.x, cam.y - piv.y, cam.z - piv.z);
+  prev.cx = cam.x; prev.cy = cam.y; prev.cz = cam.z; prev.yaw = yaw; prev.pitch = pitch; prev.D = D; prev.ax = avx; prev.ay = avy; prev.az = avz; prev.ok = true;
 }
 
-// frames: [{x,z,foot, yaw(걷는 방향, walk) | camYaw(끄는 방향, rotate), pitch?, drag?}]. opts: {Guard, legacy, mode('auto'|'fp'|'tp'), D}
+// 지금: 피벗 스프링 + 사용자 팔 + createCut. frames: [{x,z,foot, yaw(걷는 방향, walk) | camYaw(끄는 방향, rotate), pitch?}]. opts: {Guard, D, mode('tp'|'fp'), keep}
 export function simulate(env, frames, opts) {
-  const { Guard } = opts, legacy = !!opts.legacy, cb = env.cb, D = opts.D || 7.2;
-  const rig = Guard.createRig(), O = {}, view = !legacy && Guard.createView ? Guard.createView() : null, VO = {}, comp = !legacy && Guard.createCompose ? Guard.createCompose() : null, CO = {};
-  const pos = { x: 0, y: 0, z: 0 };
-  let init = false, camYaw = frames.length ? (frames[0].camYaw ?? frames[0].yaw) : 0, prevD = -1, prevFp = 0;
-  const st = { n: 0, tp: 0, inside: 0, pops: 0, rebounds: 0, fpF: 0, flips: 0, maxJump: 0, lastPopT: -9, lastPopDir: 0, fpOn: false, fpOnT: [], trans: 0, cuts: 0, samples: [] };
-  let pitch = 0.45, yawOff = 0, pitchAdj = 0;
+  const { Guard } = opts, D = opts.D || Controls.FEEL.boomDist, g = env.guard;
+  const fol = Controls.createFollow(), cut = Guard.createCut(), CO = {}, st = newStats(), prev = { ok: false }, cam = { x: 0, y: 0, z: 0 };
+  let camYaw = frames.length ? (frames[0].camYaw ?? frames[0].yaw) : 0;
+  const fp = opts.mode === 'fp' ? 1 : 0;
+  for (let i = 0; i < frames.length; i++) {
+    const f = frames[i], t = i * DT, fy = f.foot + 1.0;
+    if (f.camYaw !== undefined) camYaw = f.camYaw; else camYaw += wrap(f.yaw - camYaw) * (1 - Math.exp(-DT * 1.2));   // 누르기 이동: followStep(walkSt) 과 같은 뒤로 맞추기
+    const pitch = Math.max(0.06, Math.min(1.25, f.pitch ?? Controls.FEEL.pitchDefault));
+    const t0 = process.hrtime.bigint();
+    const pv = fol.step(f.x, fy, f.z, DT, i === 0);
+    const cp = Math.cos(pitch);
+    cam.x = pv.x + Math.sin(camYaw) * cp * D; cam.y = pv.y + Math.sin(pitch) * D; cam.z = pv.z + Math.cos(camYaw) * cp * D;
+    if (fp) { cam.x = f.x; cam.y = f.foot + 1.6; cam.z = f.z; }
+    cut.step({ guard: g, cx: cam.x, cy: cam.y, cz: cam.z, mx: pv.x, my: pv.y, mz: pv.z, hy: f.foot + 1.55, foot: f.foot, low: false, fp }, DT, CO);
+    st.us += Number(process.hrtime.bigint() - t0) / 1000;
+    st.n++;
+    if (fp) { st.fpF++; continue; }
+    st.tp++;
+    motion(st, prev, cam, pv, camYaw, pitch, D, f.x, fy, f.z);
+    const bh = cut.blocked(g, f.x, f.foot + 1.55, f.z), bc = cut.blocked(g, f.x, fy, f.z);
+    if (bh && bc) { st.occ++; if (process.env.CAMSIM_OCC === env.id) { const hx = f.x, hy = f.foot + 1.55, hz = f.z; const tt = g.clip(cam.x, cam.y, cam.z, hx, hy, hz, 0, (tr0, th) => cut.amount(g, tr0, cam.x + (hx - cam.x) * th, cam.y + (hy - cam.y) * th, cam.z + (hz - cam.z) * th) >= 0.5); const tr = g.out.tri, P = tr >= 0 ? g.triPoint(tr, {}) : {}; console.log('occ', i, f.x.toFixed(1), f.z.toFixed(1), f.foot.toFixed(1), 'cam', cam.x.toFixed(1), cam.y.toFixed(1), cam.z.toFixed(1), 'hit', tt.toFixed(2), tr, tr >= 0 ? [g.isThin(tr), g.isFlat(tr), g.levelOf(tr).toFixed(1), P.x.toFixed(1), P.y.toFixed(1), P.z.toFixed(1)].join(' ') : '', 'k', Array.from(cut.k).map((v) => v.toFixed(2)).join(','), 'pd', cut.pd.toFixed(2), 'thr', cut.thr.toFixed(2)); } }
+    if (bh || bc) st.occAny++;
+    for (let k = 0; k < 6; k++) trackFlick(st, k, !!cut.on[k], t);
+    if (opts.keep) (st.samples || (st.samples = [])).push({ t, x: cam.x, y: cam.y, z: cam.z, occ: bh && bc, k: Array.from(cut.k) });
+  }
+  delete st._ch;
+  return st;
+}
+
+// 예전: 리그(스프링 암·자동 시점) → 자동 1인칭 → 카메라 놓기 + 원뿔 잘라내기(seeEase: 켜기 초당 10, 끄기 초당 4). 아바타 가림 = 원뿔 세기 < 0.5 인 면에 막힘
+export function simulateOld(env, frames, opts) {
+  const { Guard } = opts, cb = env.cb, D = opts.D || 7.2, g = env.guard;
+  const rig = Guard.createRig(), O = {}, view = Guard.createView(), VO = {}, comp = Guard.createCompose(), CO = {}, st = newStats(), prev = { ok: false }, cam = { x: 0, y: 0, z: 0 };
+  let camYaw = frames.length ? (frames[0].camYaw ?? frames[0].yaw) : 0, yawOff = 0, pitchAdj = 0, init = false, seeK = 0, seeW = 0;
+  const ease = (cur, on) => { const v = cur + ((on ? 1 : 0) - cur) * Math.min(1, DT * (on ? 10 : 4)); return v < 0.003 ? 0 : v; };
   for (let i = 0; i < frames.length; i++) {
     const f = frames[i], t = i * DT, mx = f.x, mz = f.z, fy = f.foot + 1.0;
     if (f.camYaw !== undefined) camYaw = f.camYaw + yawOff; else camYaw += wrap(f.yaw - camYaw) * (1 - Math.exp(-DT * 1.6));
-    pitch = Math.max(0.06, Math.min(1.25, (f.pitch ?? 0.45) + pitchAdj));
-    const I = { mx, fy, mz, yaw: camYaw, pitch, D, cb, guard: env.guard, auto: true, minD: 2.8, drag: !!f.drag, foot: f.foot };
-    rig.solve(I, DT, O);
-    if (O.baked && !legacy) { yawOff += O.bakeYaw; pitchAdj = O.bakePitch - (f.pitch ?? 0.45); if (f.camYaw === undefined) camYaw += O.bakeYaw; }   // main.js: 끌기 시작 = 리그 각도를 사용자 각도로
-    let cx = O.x, cy = Math.min(cb.yMax, Math.max(env.L.multi ? f.foot + 0.7 : 0.7, O.y)), cz = O.z, fp = O.fp || 0, near = 0.3;
-    const dx = Math.sin(O.yaw), dz = Math.cos(O.yaw);
-    const ex = mx, ey = f.foot + 1.6, ez = mz;
-    if (view) {
-      view.step({ guard: env.guard, floorAt: env.floorAt, mx, mz, foot: f.foot, cb, boom: O.avail, rigFp: !!O.fpOn, mode: opts.mode || 'auto', block: false }, DT, VO);
-      fp = VO.f;
-      comp.step({ mx, fy, mz, cx, cy, cz, ex, ey, ez, fp, yaw: O.yaw, cut: O.cut, rig, auto: true, init: !init }, DT, CO);
-      pos.x = CO.x; pos.y = CO.y; pos.z = CO.z; init = true;
-      near = fp > 0.5 ? 0.1 : 0.3;
-    } else {
-      if (fp > 0) { const fdx = -dx, fdz = -dz, e2x = mx + fdx * 0.15, e2z = mz + fdz * 0.15; cx += (e2x - cx) * fp; cy += (ey - cy) * fp; cz += (e2z - cz) * fp; }
-      if (!init || O.cut) { pos.x = cx; pos.y = cy; pos.z = cz; init = true; }
-      const kp = 1 - Math.exp(-DT * (fp > 0 ? 12 : 7));
-      pos.x += (cx - pos.x) * kp; pos.y += (cy - pos.y) * kp; pos.z += (cz - pos.z) * kp;
-      if (fp < 0.5 && !rig.ok(pos.x, pos.y, pos.z) && rig.ok(cx, cy, cz)) { pos.x = cx; pos.y = cy; pos.z = cz; }
+    const pitch = Math.max(0.06, Math.min(1.25, (f.pitch ?? 0.45) + pitchAdj));
+    const t0 = process.hrtime.bigint();
+    rig.solve({ mx, fy, mz, yaw: camYaw, pitch, D, cb, guard: g, auto: true, minD: 2.8, drag: !!f.drag }, DT, O);
+    if (O.baked) { yawOff += O.bakeYaw; pitchAdj = O.bakePitch - (f.pitch ?? 0.45); if (f.camYaw === undefined) camYaw += O.bakeYaw; }
+    const cx = O.x, cy = Math.min(cb.yMax, Math.max(env.L.multi ? f.foot + 0.7 : 0.7, O.y)), cz = O.z;
+    view.step({ guard: g, floorAt: env.floorAt, mx, mz, foot: f.foot, cb, boom: O.avail, rigFp: !!O.fpOn, mode: opts.mode || 'auto', block: false }, DT, VO);
+    const fp = VO.f;
+    comp.step({ mx, fy, mz, cx, cy, cz, ex: mx, ey: f.foot + 1.6, ez: mz, fp, cut: O.cut, init: !init }, DT, CO);
+    cam.x = CO.x; cam.y = CO.y; cam.z = CO.z; init = true;
+    // 예전 원뿔 잘라내기(main.js): 가슴·머리 → 카메라 선이 면을 지나면
+    let occT = false, occW = false;
+    if (fp < 0.5) {
+      const t1 = g.clip(mx, fy, mz, cam.x, cam.y, cam.z, 0), th1 = g.out.thin, t2 = g.clip(mx, f.foot + 1.55, mz, cam.x, cam.y, cam.z, 0), th2 = g.out.thin;
+      occW = t1 < 1 || t2 < 1; occT = occW || th1 < 1 || th2 < 1;
     }
+    seeK = ease(seeK, occT); seeW = ease(seeW, occW);
+    st.us += Number(process.hrtime.bigint() - t0) / 1000;
     st.n++;
-    const isFp = fp > 0.5;
-    if (isFp) st.fpF++;
-    if (isFp !== st.fpOn) { st.fpOn = isFp; st.flips++; st.fpOnT.push(t); }
-    const moving = Math.abs(fp - prevFp) > 1e-4;   // 1인칭 ↔ 3인칭 전환 중(부드럽게 옮기는 중): 튐에서 빼고 따로 센다
-    prevFp = fp;
-    if (inside(env.probe, pos.x, pos.y, pos.z, near)) { st.inside++; if (process.env.CAMSIM_IN && env.id === process.env.CAMSIM_IN) console.log('in', i, mx.toFixed(2), mz.toFixed(2), f.foot.toFixed(2), 'cam', pos.x.toFixed(2), pos.y.toFixed(2), pos.z.toFixed(2), 'fp', fp.toFixed(2), 'rig', O.dist.toFixed(2), 'pe', O.pitch.toFixed(2)); }
-    const d = Math.hypot(pos.x - mx, pos.y - fy, pos.z - mz);
-    if (O.cut) st.cuts++;
-    if (!isFp && !moving && !O.cut) {
-      st.tp++;
-      if (prevD >= 0) {
-        const dd = d - prevD, a = Math.abs(dd);
-        if (a > st.maxJump) st.maxJump = a;
-        if (a > POP) {
-          st.pops++;
-          if (process.env.CAMSIM_DBG && env.id === process.env.CAMSIM_DBG) console.log('pop', i, mx.toFixed(2), mz.toFixed(2), 'd', prevD.toFixed(2), '->', d.toFixed(2), 'rig', O.dist.toFixed(2), 'tg', (O.tg || 0).toFixed(2), 'opt', O.opt, 'pe', O.pitch.toFixed(2), 'cut', O.cut, 'yaw', (O.yaw % 6.283).toFixed(2), 'fp', fp.toFixed(2), 'drag', !!f.drag);
-          const dir = Math.sign(dd);
-          if (t - st.lastPopT < 0.6 && dir !== st.lastPopDir) st.rebounds++;
-          st.lastPopT = t; st.lastPopDir = dir;
-        }
-      }
-      prevD = d;
-    } else { prevD = -1; if (moving) st.trans++; }
-    if (opts.keep) st.samples.push({ t, x: pos.x, y: pos.y, z: pos.z, d, fp });
+    if (fp > 0.5) { st.fpF++; prev.ok = false; continue; }
+    st.tp++;
+    const piv = { x: CO.px ?? mx, y: CO.py ?? fy, z: CO.pz ?? mz };
+    motion(st, prev, cam, piv, O.yaw, O.pitch, D, mx, fy, mz);
+    // 머리·가슴 선이 원뿔 세기 < 0.5 인 면에 막혔나(원뿔 축 위라 세기 = seeK(가는 면)·seeW(넓은 면))
+    const blocked = (py) => { const tt = g.clip(cam.x, cam.y, cam.z, mx, py, mz, 0), th = g.out.thin; return (tt < 1 && seeW < 0.5) || (th < 1 && seeK < 0.5); };
+    const bh = blocked(f.foot + 1.55), bc = blocked(fy);
+    if (bh && bc) st.occ++;
+    if (bh || bc) st.occAny++;
+    trackFlick(st, 0, occT, t); trackFlick(st, 1, occW, t);
   }
-  // 1인칭 ↔ 3인칭이 1초 안에 다시 바뀐 횟수(왔다 갔다)
-  let ff = 0; for (let k = 1; k < st.fpOnT.length; k++) if (st.fpOnT[k] - st.fpOnT[k - 1] < 1.0) ff++;
-  st.flipFlop = ff;
+  delete st._ch;
   return st;
 }
 
@@ -184,35 +218,38 @@ export function samplePlaces(env) {
 
 export const SAMPLE_CHURCHES = ['assisi', 'yeouido', 'myeongdong', 'milan', 'stpaul'];
 
-// 모든 표본: 자리마다 네 방향에서 시작해 돌리기 + 걷기 경로. 꼬리표(tag)별로 합친다.
+// 모든 표본: 자리마다 네 방향에서 시작해 돌리기 + 걷기 경로. 꼬리표(tag)별로 합친다. opts.old = true 면 예전 흐름(opts.Guard 는 옛 cam_guard)
 export function runSamples(Guard, opts = {}) {
-  const out = {};
+  const out = {}, sim = opts.old ? simulateOld : simulate;
   const add = (tag, s) => {
-    const o = out[tag] || (out[tag] = { n: 0, tp: 0, inside: 0, pops: 0, rebounds: 0, fpF: 0, flipFlop: 0, maxJump: 0, trans: 0, cuts: 0 });
-    for (const k of ['n', 'tp', 'inside', 'pops', 'rebounds', 'fpF', 'flipFlop', 'trans', 'cuts']) o[k] += s[k];
+    const o = out[tag] || (out[tag] = newStats());
+    for (const k of Object.keys(o)) if (k !== 'maxJump') o[k] += s[k];
     o.maxJump = Math.max(o.maxJump, s.maxJump);
   };
   for (const id of opts.only || SAMPLE_CHURCHES) {
     const env = makeEnv(id, Guard), { pts, walks } = samplePlaces(env);
-    for (const p of pts) for (const y0 of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) add(id + ':' + p.tag, simulate(env, rotateFrames(p, y0), { ...opts, Guard }));
-    for (const w of walks) { const fr = walkFrames(env, w.from, w.to); if (fr.length) add(id + ':' + w.tag + '(walk)', simulate(env, fr, { ...opts, Guard })); }
+    const p0 = opts.old ? 0.45 : Controls.FEEL.pitchDefault;   // 그때의 기본 구도(예전 26°·7.2m)
+    for (const p of pts) for (const y0 of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) add(id + ':' + p.tag, sim(env, rotateFrames(p, y0, p0), { ...opts, Guard }));
+    for (const w of walks) { const fr = walkFrames(env, w.from, w.to); if (fr.length) add(id + ':' + w.tag + '(walk)', sim(env, fr, { ...opts, Guard })); }
   }
   return out;
 }
 
+export function total(res) {
+  const t = newStats();
+  for (const o of Object.values(res)) { for (const k of Object.keys(t)) if (k !== 'maxJump') t[k] += o[k]; t.maxJump = Math.max(t.maxJump, o.maxJump); }
+  return t;
+}
+
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const argv = process.argv.slice(2), opt = (n) => { const i = argv.indexOf('--' + n); return i >= 0 ? argv[i + 1] : undefined; };
-  const gp = opt('guard') ? path.resolve(opt('guard')) : path.resolve(here, '../../assets/church/cam_guard.js');
+  const old = !!opt('old'), gp = old ? path.resolve(opt('old')) : path.resolve(here, '../../assets/church/cam_guard.js');
   const Guard = require(gp);
-  const legacy = argv.includes('--legacy') || !Guard.createView;
-  const res = runSamples(Guard, { legacy, mode: opt('mode') || 'auto', only: opt('only') ? opt('only').split(',') : undefined });
+  const res = runSamples(Guard, { old, mode: opt('mode'), only: opt('only') ? opt('only').split(',') : undefined });
   if (argv.includes('--json')) { console.log(JSON.stringify(res)); process.exit(0); }
-  console.log((legacy ? '예전' : '지금') + ' (' + gp + ')');
-  console.log('표본'.padEnd(34), '프레임', '면안', '튐', '되튐', '최대튐', '1인칭%', '왔다갔다');
-  const tot = { n: 0, inside: 0, pops: 0, rebounds: 0, fpF: 0, flipFlop: 0 };
-  for (const [k, o] of Object.entries(res)) {
-    console.log(k.padEnd(34), String(o.n).padStart(5), String(o.inside).padStart(5), String(o.pops).padStart(4), String(o.rebounds).padStart(4), o.maxJump.toFixed(2).padStart(6), (o.fpF / o.n * 100).toFixed(1).padStart(6), String(o.flipFlop).padStart(5));
-    for (const kk of Object.keys(tot)) tot[kk] += o[kk];
-  }
-  console.log('합'.padEnd(34), String(tot.n).padStart(5), String(tot.inside).padStart(5), String(tot.pops).padStart(4), String(tot.rebounds).padStart(4), ''.padStart(6), (tot.fpF / tot.n * 100).toFixed(1).padStart(6), String(tot.flipFlop).padStart(5));
+  console.log((old ? '예전' : '지금') + ' (' + gp + ')');
+  const row = (k, o) => console.log(k.padEnd(30), String(o.n).padStart(6), String(o.jumps).padStart(5), o.maxJump.toFixed(2).padStart(6), String(o.boomNI).padStart(6), String(o.occ).padStart(5), String(o.occAny).padStart(6), String(o.flicker).padStart(5), (o.fpF / o.n * 100).toFixed(1).padStart(6), (o.us / o.n).toFixed(0).padStart(5));
+  console.log('표본'.padEnd(30), '프레임', '튐', '최대초과', '입력없는거리', '가림', '가림일부', '깜빡', '1인칭%', 'µs/f');
+  for (const [k, o] of Object.entries(res)) row(k, o);
+  row('합', total(res));
 }

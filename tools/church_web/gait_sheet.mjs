@@ -1,4 +1,5 @@
-// 걸음 접촉 시트: node tools/church_web/gait_sheet.mjs <outDir> [assets 폴더=assets/church] [이름 접두=after]
+// 걸음 접촉 시트: node tools/church_web/gait_sheet.mjs <outDir> [assets 폴더=assets/church] [이름 접두=after] [성별 1(남, 바지)|0(여, 원피스 — 앱 기본값)=1] [stairs]
+// stairs: 가짜 계단(단 0.33m × 0.17m, 8단 — 여러 층 성당의 setGround 길)을 오른 뒤 평평한 윗바닥에서 찍는다(계단 뒤 「절뚝거림」, WALK_GAIT.md §7)
 // 코드로 그린 아바타를 빈 바닥(10cm 격자)에서 걷게 하고 한 주기를 8장으로 옆·앞에서 찍는다(카메라는 몸을 따라가므로 디딘 발이 격자에 붙어 있으면 미끄러지지 않는 것).
 // 속도: 1.2 m/s(보통 걸음), 2.0 m/s, 4.0 m/s(최고 속도 — 빠른 걸음). 결과: <outDir>/<접두>_<side|front>_<속도>.png
 import { createRequire } from 'node:module';
@@ -11,6 +12,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const out = process.argv[2] || '/tmp/gait_sheet';
 const dir = path.resolve(process.argv[3] || path.join(here, '../../assets/church'));
 const tag = process.argv[4] || 'after';
+const GEN = process.argv[5] === '0' ? 0 : 1, gtag = (GEN ? '' : '_g0') + (process.argv[6] === 'stairs' ? '_stairs' : '');   // 성별 0 이면 파일 이름에 _g0, 계단 뒤면 _stairs
+const STAIRS = process.argv[6] === 'stairs';
 fs.mkdirSync(out, { recursive: true });
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#ddd}</style></head><body>
 ${['three.min.js', 'palette.js', 'baptismal_names.js', 'geo.js', 'label_fit.js', 'avatar.js'].map((f) => `<script src="file://${dir}/${f}"></script>`).join('\n')}
@@ -22,12 +25,16 @@ sc.add(new T.HemisphereLight(0xffffff, 0x887766, 1.1)); const dl = new T.Directi
 const grid = new T.GridHelper(200, 2000, 0x555555, 0x9a948a); grid.position.y = 0.001; sc.add(grid);
 const big = new T.GridHelper(200, 200, 0x222222, 0x333333); big.position.y = 0.002; sc.add(big);
 const cam = new T.PerspectiveCamera(24, W / H, 0.1, 100);
-window.mk = (g) => { const a = new ChurchAvatar.Avatar({ g, skin: 1, style: 1, hair: 2, outfit: 3, name: 0, nv: 2 }, { showTag: false }); a.setLod(0); if (a.phase !== undefined) a.phase = 0.3; sc.add(a.root); return a; };
-window.run = (av, v, dur, state) => { const dt = 1 / 60; let n = Math.round(dur / dt); while (n-- > 0) { state.t += dt; const vv = Math.min(v, v * state.t / 0.3); state.z -= vv * dt; av.setWalk(Math.min(1, vv / 4 * 1.05)); av.setPose(0, 0, state.z, 0); av.update(dt, state.t); } };
+const STAIRS = ${STAIRS}, TREAD = 0.33, RISE = 0.17, NST = 8, TOP = NST * RISE;
+const gy = (z) => { const d = -z - 1; return d <= 0 ? 0 : Math.min(NST, Math.floor(d / TREAD) + 1) * RISE; };
+if (STAIRS) { grid.position.y = TOP + 0.001; big.position.y = TOP + 0.002; }
+window.mk = (g) => { const a = new ChurchAvatar.Avatar({ g, skin: 1, style: 1, hair: 2, outfit: 3, name: 0, nv: 2 }, { showTag: false }); a.setLod(0); if (a.phase !== undefined) a.phase = 0.3; if (STAIRS && a.setGround) a.setGround((x, z) => gy(z)); sc.add(a.root); return a; };
+window.run = (av, v, dur, state) => { const dt = 1 / 60; let n = Math.round(dur / dt); while (n-- > 0) { state.t += dt; const vv = Math.min(v, v * state.t / 0.3); state.z -= vv * dt; if (STAIRS) { let q = 0; for (let i = -3; i <= 3; i++) q += gy(state.z - 0.15 * i); state.y += (q / 7 - state.y) * Math.min(1, dt * 14); } av.setWalk(Math.min(1, vv / 4 * 1.05)); av.setPose(0, state.y, state.z, 0); av.update(dt, state.t); } };
 window.shot = (av, state, view) => {
-  const z = state.z;
-  if (view === 'side') { cam.position.set(4.6, 0.85, z - 0.15); cam.lookAt(0, 0.78, z - 0.15); }
-  else { cam.position.set(0.35, 0.95, z - 5.0); cam.lookAt(0, 0.75, z); }
+  const z = state.z, y = state.y;
+  if (view === 'side') { cam.position.set(4.6, 0.85 + y, z - 0.15); cam.lookAt(0, 0.78 + y, z - 0.15); }
+  else if (view === 'back') { cam.position.set(0, 1.9 + y, z + 6.0); cam.lookAt(0, 0.8 + y, z); }   // 앱 3인칭 카메라처럼 뒤에서(사용자가 보는 쪽)
+  else { cam.position.set(0.35, 0.95 + y, z - 5.0); cam.lookAt(0, 0.75 + y, z); }
   r.render(sc, cam); return r.domElement.toDataURL('image/png');
 };
 </script></body></html>`;
@@ -41,10 +48,10 @@ await page.waitForFunction(() => window.ChurchAvatar && window.run);
 // 한 주기 길이: 옛 코드는 phase 2π, 새 코드는 gait.ph 1 바퀴. 둘 다 phase(라디안)를 읽어 2π 를 8칸으로 나눈다.
 const cases = [['1.2', 1.2], ['2.0', 2.0], ['4.0', 4.0]];
 const files = [];
-for (const [name, v] of cases) for (const view of ['side', 'front']) {
-  const imgs = await page.evaluate(([v, view]) => {
-    const av = mk(1), st = { t: 0, z: 0 };
-    run(av, v, 3, st);
+for (const [name, v] of cases) for (const view of ['side', 'front', 'back']) {
+  const imgs = await page.evaluate(([v, view, G]) => {
+    const av = mk(G), st = { t: 0, z: 0, y: 0 };
+    run(av, v, STAIRS ? Math.max(3, (1 + NST * TREAD + 3) / v + 0.5) : 3, st);   // 계단이면 윗바닥에서 몇 걸음 더 간 뒤
     const ph0 = av.phase, res = [];
     // 위상이 2π/8 씩 나아갈 때마다 찍는다(옛 phase 는 누적값, 새 phase = 2π·uR)
     const unwrap = { last: av.phase, acc: 0 };
@@ -56,8 +63,8 @@ for (const [name, v] of cases) for (const view of ['side', 'front']) {
     av.root.parent.remove(av.root);
     void ph0;
     return res;
-  }, [v, view]);
-  const strip = path.join(out, `${tag}_${view}_${name}.png`);
+  }, [v, view, GEN]);
+  const strip = path.join(out, `${tag}${gtag}_${view}_${name}.png`);
   // 8장을 가로로 이어 붙인다(브라우저 캔버스로)
   const data = await page.evaluate(async (imgs) => {
     const c = document.createElement('canvas'); c.width = 300 * imgs.length; c.height = 380; const g = c.getContext('2d');

@@ -141,7 +141,7 @@
       var p = places.p[k];
       cubeCam.position.set(p[0], p[1], p[2]); cubeCam.updateMatrixWorld(true);
       var su = typeof o.see === 'function' ? o.see() : o.see, see = su && su.k ? su.k.value : null, s0 = 0, s1 = 0, s2 = 0;
-      if (see) { s0 = see[0]; s1 = see[1]; s2 = see[2]; see[0] = see[1] = see[2] = 0; }   // 카메라 가림 잘라내기(cam_guard)를 끈다
+      if (su && su.mute) { su.mute(); see = null; } else if (see) { s0 = see[0]; s1 = see[1]; s2 = see[2]; see[0] = see[1] = see[2] = 0; }   // 카메라 가림 잘라내기(cam_guard — 원뿔·단면·위층·카메라 둘레)를 끈다
       hideFor(o.scene, o.keep, hidden);
       for (var i = 0; i < hidden.length; i++) hidden[i].visible = false;
       var oldT = renderer.getRenderTarget(), oldSU = renderer.shadowMap.needsUpdate, oldXR = renderer.xr.enabled;
@@ -152,7 +152,7 @@
       } finally {
         renderer.setRenderTarget(oldT); renderer.shadowMap.needsUpdate = oldSU; renderer.xr.enabled = oldXR;
         for (i = 0; i < hidden.length; i++) hidden[i].visible = true;
-        if (see) { see[0] = s0; see[1] = s1; see[2] = s2; }
+        if (su && su.unmute) su.unmute(); else if (see) { see[0] = s0; see[1] = s1; see[2] = s2; }
       }
       st.faces++;
     }

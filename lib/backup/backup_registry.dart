@@ -193,7 +193,7 @@ abstract final class BackupRegistry {
     PrefSpec(
       'church_cam_view',
       _b,
-      '카메라 시점(자동·1인칭·뒤에서 보기)',
+      '카메라 시점(뒤에서 보기·1인칭)',
       type: _str,
       label: '성당 카메라',
     ),

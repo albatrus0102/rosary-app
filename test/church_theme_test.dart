@@ -295,7 +295,7 @@ void main() {
         final bar = tester.getRect(find.byType(ChurchTopActions));
         expect(bar.left, greaterThanOrEqualTo(-0.5));
         expect(bar.right, lessThanOrEqualTo(size.width + 0.5));
-        for (final tip in ['소리 끄기', '아바타 편집', '인사', '시점: 자동', '메뉴 접기']) {
+        for (final tip in ['소리 끄기', '아바타 편집', '인사', '시점: 뒤에서 보기', '메뉴 접기']) {
           final r = tester.getRect(find.byTooltip(tip));
           expect(r.width, greaterThanOrEqualTo(48), reason: tip);
           expect(r.height, greaterThanOrEqualTo(48), reason: tip);

@@ -369,7 +369,7 @@ class ChurchTopActions extends StatelessWidget {
     required this.onToggleAmbient,
     required this.onEditAvatar,
     required this.onEmote,
-    this.viewMode = ChurchCamView.auto,
+    this.viewMode = ChurchCamView.follow,
     this.onViewMode,
     this.onGo,
     this.onCollapse,
@@ -378,12 +378,11 @@ class ChurchTopActions extends StatelessWidget {
   /// 지금 카메라 시점(「시점」 항목의 아이콘·스크린리더 라벨).
   final ChurchCamView viewMode;
 
-  /// 있으면 「시점」 항목을 둔다: 누를 때마다 자동 → 1인칭 고정 → 뒤에서 보기 고정 → 자동. docs/church/CAMERA_MODES.md
+  /// 있으면 「시점」 항목을 둔다: 누를 때마다 뒤에서 보기 ↔ 1인칭(손으로 고르는 것만 — 자동 전환 없음). docs/church/CAMERA_MODES.md
   final VoidCallback? onViewMode;
 
-  /// 시점마다의 아이콘: 자동(A), 1인칭(눈), 뒤에서 보기(사람).
+  /// 시점마다의 아이콘: 뒤에서 보기(사람), 1인칭(눈).
   static IconData viewIcon(ChurchCamView v) => switch (v) {
-    ChurchCamView.auto => Icons.motion_photos_auto_outlined,
     ChurchCamView.firstPerson => Icons.visibility_outlined,
     ChurchCamView.follow => Icons.person_outline,
   };
@@ -404,7 +403,8 @@ class ChurchTopActions extends StatelessWidget {
   /// 항목 폭의 하한(M3 터치 타깃 48dp).
   static const double minItemWidth = 48;
 
-  int get _itemCount => 3 + (onViewMode != null ? 1 : 0) + (onGo != null ? 1 : 0);
+  int get _itemCount =>
+      3 + (onViewMode != null ? 1 : 0) + (onGo != null ? 1 : 0);
 
   /// 줄 안 항목(소리·아바타·인사·시점·가기) 말고 고정 폭: 좌우 안쪽 여백 + 구분선 + 접기 단추.
   /// [compact]면 좌우 여백과 구분선을 없앤다(320dp 폰에서 다섯 항목을 48dp로 넣으려고 — '가기'는 금색 표시기로 따로 보인다).
@@ -415,8 +415,7 @@ class ChurchTopActions extends StatelessWidget {
 
   /// 기본 여백으로는 48dp 항목이 다 들어가지 않을 만큼 좁은가(그때만 여백·구분선을 뺀다).
   bool compactFor(double maxWidth) =>
-      maxWidth.isFinite &&
-      _fixedWidth() + _itemCount * minItemWidth > maxWidth;
+      maxWidth.isFinite && _fixedWidth() + _itemCount * minItemWidth > maxWidth;
 
   /// 줄이 [maxWidth] 안에 들어가게 하는 항목 폭. 기본 폭으로 들어가면 null(예전 그대로).
   /// 320dp 폰처럼 좁으면 항목을 똑같이 줄이되 48dp 아래로는 줄이지 않는다(라벨 글자는 [_HudBarButton]이 줄인다).
@@ -913,6 +912,9 @@ class ChurchMoveZone extends StatefulWidget {
   /// 손잡이와 화면 가장자리 사이 여백.
   static const double margin = AppSpace.sm;
 
+  /// 손을 뗀 뒤 손잡이가 가운데로 돌아오는 시간(docs/church/CAMERA_MODES.md §손맛 — 웹 FEEL 과 함께 고친다).
+  static const Duration knobReturn = Duration(milliseconds: 180);
+
   /// 손잡이가 차지하는 폭(여백 포함): 같은 줄의 다른 HUD 가 이만큼 비켜 선다.
   static const double reserve = 132 + margin + AppSpace.xs;
 
@@ -1287,8 +1289,17 @@ class _ChurchMoveZoneState extends State<ChurchMoveZone> {
                           ),
                         ],
                       ),
-                      child: Transform.translate(
-                        offset: _knob * (_radius - knobSize / 2),
+                      // 손잡이: 잡은 동안은 손가락을 바로 따르고, 놓으면 가운데로 부드럽게 돌아온다(knobReturn, easeOutCubic — 걷기는 웹이 미끄러지듯 멈춘다)
+                      child: TweenAnimationBuilder<Offset>(
+                        tween: Tween<Offset>(
+                          end: _knob * (_radius - knobSize / 2),
+                        ),
+                        duration: _pointer == null
+                            ? ChurchMoveZone.knobReturn
+                            : Duration.zero,
+                        curve: Curves.easeOutCubic,
+                        builder: (context, off, child) =>
+                            Transform.translate(offset: off, child: child),
                         child: Center(
                           child: Container(
                             key: const ValueKey('joystick-knob'),

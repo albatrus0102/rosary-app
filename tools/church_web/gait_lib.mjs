@@ -40,9 +40,11 @@ export function runScenario(dir, scen) {
   const av = new A.Avatar({ g: scen.g === undefined ? 1 : scen.g, skin: 0, style: 0, hair: 0, outfit: 0, name: 0, nv: 2 }, { showTag: false });
   av.setLod(0);
   if (av.phase !== undefined) av.phase = 0.3;   // 결정적(처음 걸음 위상)
+  if (scen.off !== undefined) av.off = scen.off;   // 숨쉬기·서 있을 때 체중 이동의 위상(기본은 무작위)
+  if (scen.ground && av.setGround) av.setGround(scen.ground);   // 여러 층(계단): main.js groundFn 과 같은 바닥 함수
   const v3 = new T.Vector3();
-  const body = { x: scen.x0 || 0, z: scen.z0 || 0, yaw: scen.yaw0 || 0, vx: 0, vz: 0 };
-  av.setPose(body.x, 0, body.z, body.yaw); av.update(1 / 60, 0); av.snapPose && av.snapPose();
+  const body = { x: scen.x0 || 0, z: scen.z0 || 0, yaw: scen.yaw0 || 0, vx: 0, vz: 0, y: scen.y0 || 0, fy: scen.y0 || 0 };
+  av.setPose(body.x, body.y, body.z, body.yaw); av.update(1 / 60, 0); av.snapPose && av.snapPose();
   const frames = [];
   let t = 0, i = 0;
   const prev = [null, null];
@@ -67,13 +69,15 @@ export function runScenario(dir, scen) {
       // ikErr: 발목 뼈가 걸음이 정한 발목 자리(gait.f[k].ax/ay/az)에서 떨어진 거리(m) — 다리가 닿지 않아 IK 가 길이를 자르면 커진다
       b.getWorldPosition(v3);
       const ikErr = gf && gf.ax !== undefined ? Math.hypot(v3.x - gf.ax, v3.y - gf.ay, v3.z - gf.az) : 0;
-      feet.push({ y: pts[lo][1], vel, vy: pv ? (pts[lo][1] - pv[lo][1]) / dt : 0, pts, yaw: Math.atan2(-fw.x, -fw.z), pitch: Math.asin(Math.max(-1, Math.min(1, fw.y))), st: gf ? gf.st : (pts[lo][1] < 0.012 ? 1 : 0), ikErr });
+      feet.push({ y: pts[lo][1], vel, vy: pv ? (pts[lo][1] - pv[lo][1]) / dt : 0, pts, yaw: Math.atan2(-fw.x, -fw.z), pitch: Math.asin(Math.max(-1, Math.min(1, fw.y))), st: gf ? gf.st : (pts[lo][1] < 0.012 ? 1 : 0), ikErr, u: gf ? gf.u : 0 });
       prev[k] = pts;
     }
     const wp = (bi) => { av.bones[bi].getWorldPosition(v3); return [v3.x, v3.y, v3.z]; };
     const J = {}; for (const n of ['hips', 'chest', 'neck', 'head', 'ulL', 'llL', 'ftL', 'ulR', 'llR', 'ftR', 'uaL', 'faL', 'uaR', 'faR']) J[n] = wp(BI[n]);
     const hq = av.bones[BI.hips].quaternion; const hipsYaw = 2 * Math.atan2(hq.y, hq.w);
-    frames.push({ t, dt, bodyV: Math.hypot(body.x - px, body.z - pz) / dt, x: body.x, y: body.y || 0, z: body.z, yaw: body.yaw, feet, J, hipsYaw, walkTarget: walkV });
+    // ev: 이 프레임에 디딘 발(avatar.takeStep 이 돌려줄 값 — main.js 가 발소리를 낸다), rate: 걸음 위상 속도(주기/초)
+    const ev = av.gait && av.gait.ev ? Object.assign({}, av.gait.ev) : null;
+    frames.push({ t, dt, bodyV: Math.hypot(body.x - px, body.z - pz) / dt, x: body.x, y: body.y || 0, z: body.z, yaw: body.yaw, feet, J, hipsYaw, walkTarget: walkV, ev, rate: av.gait ? av.gait.rate : 0 });
     t += dt; i++;
   }
   return frames;
@@ -200,6 +204,7 @@ export function postureStats(frames, from, to) {
 
 // ------------------------------------------------------------------ 몸 움직임(main.js updateMe 의 걷기와 같은 규칙)
 const Logic = require(path.join(ASSETS, 'scene_logic.js'));
+const Ctl = require(path.join(ASSETS, 'controls.js'));   // 손맛(FEEL): 손잡이 곡선·가속·감속(main.js updateMe 와 같은 함수)
 // scene_logic.js joyToVelocity 와 같은 식(성당 없이 쓰려고 옮겨 둠; 속도 상수는 그쪽 것을 읽는다)
 function joyToVelocity(jx, jy, camYaw, out) {
   const mag = Math.hypot(jx, jy);
@@ -214,18 +219,17 @@ export function joyWalker(L, joy, camYaw = 0) {
   const vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 };
   const wrap = (a) => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
   return (me, dt, t) => {
-    const j = joy(t);
+    const j = joy(t);   // 시험의 손잡이 값 = 속도 비율(앱의 손잡이 곡선 FEEL.joy* 는 입력 감도라 걸음 시험에서는 빼고, 가속·감속은 main.js 와 같게)
     joyToVelocity(j.x, j.y, j.cam === undefined ? camYaw : j.cam, vel);
-    const k = Math.min(1, dt * 12);
-    me.vx += (vel.vx - me.vx) * k; me.vz += (vel.vz - me.vz) * k;
+    Ctl.moveStep(me, vel.vx, vel.vz, dt, false);
     let sp = Math.sqrt(me.vx * me.vx + me.vz * me.vz);
-    if (sp > 0.02) {
+    if (sp > 0.02 || me.mvx * me.mvx + me.mvz * me.mvz > 4e-4) {
       pp.x = me.x; pp.z = me.z;
-      if (L) L.moveCircle(pp, me.vx * dt, me.vz * dt); else { pp.x += me.vx * dt; pp.z += me.vz * dt; }
+      if (L) L.moveCircle(pp, me.mvx * dt, me.mvz * dt); else { pp.x += me.mvx * dt; pp.z += me.mvz * dt; }
       me.x = pp.x; me.z = pp.z;
     } else { me.vx = me.vz = 0; sp = 0; }
-    if (vel.speed > 0.05) me.yaw += wrap(vel.yaw - me.yaw) * Math.min(1, dt * 11);
-    else if (j.turnTo !== undefined) me.yaw += wrap(j.turnTo - me.yaw) * Math.min(1, dt * 8);
+    if (vel.speed > 0.05) me.yaw += wrap(vel.yaw - me.yaw) * (1 - Math.exp(-dt * Ctl.FEEL.turnRate));
+    else if (j.turnTo !== undefined) me.yaw += wrap(j.turnTo - me.yaw) * (1 - Math.exp(-dt * 8));
     return Math.min(1, sp / Logic.C.WALK_SPEED * 1.05);
   };
 }
@@ -237,11 +241,10 @@ export function autoWalker(L, S, target) {
     if (!w) { const p = S.findPath(me, target); w = p ? S.startWalk(p, target, 'x') : null; }
     let vx = 0, vz = 0, speed = 0, yaw = me.yaw;
     if (w) { S.stepWalk(w, me, dt, wv); if (wv.done) w = false; else { vx = wv.vx; vz = wv.vz; speed = wv.speed; yaw = wv.yaw; } }
-    const k = Math.min(1, dt * 12);
-    me.vx += (vx - me.vx) * k; me.vz += (vz - me.vz) * k;
+    Ctl.moveStep(me, vx, vz, dt, true);
     let sp = Math.hypot(me.vx, me.vz);
-    if (sp > 0.02) { pp.x = me.x; pp.z = me.z; L.moveCircle(pp, me.vx * dt, me.vz * dt); me.x = pp.x; me.z = pp.z; } else { me.vx = me.vz = 0; sp = 0; }
-    if (speed > 0.05) me.yaw += wrap(yaw - me.yaw) * Math.min(1, dt * 11);
+    if (sp > 0.02 || me.mvx * me.mvx + me.mvz * me.mvz > 4e-4) { pp.x = me.x; pp.z = me.z; L.moveCircle(pp, me.mvx * dt, me.mvz * dt); me.x = pp.x; me.z = pp.z; } else { me.vx = me.vz = 0; sp = 0; }
+    if (speed > 0.05) me.yaw += wrap(yaw - me.yaw) * (1 - Math.exp(-dt * Ctl.FEEL.turnRate));
     return Math.min(1, sp / Logic.C.WALK_SPEED * 1.05);
   };
 }
@@ -364,4 +367,73 @@ export function cameraTrack(frames, from, to, rootY = (f) => f.y) {
     py = cy;
   }
   return { range: ymax - ymin, accMax: am };
+}
+
+// ------------------------------------------------------------------ 계단·꺾은 길·좌우 대칭(2026-11-23 3차, 「절뚝거림」 — WALK_GAIT.md §7)
+/** 꺾은선(pts, xz)을 속도 v 로 걷는 몸: 몸 방향은 main.js 처럼 × dt·11 로 돌고, 여러 층이면 발 높이 fy = L.floorY, 루트 높이는 L.bodyY(계단을 비탈처럼)를 × dt·14 로 따른다.
+ *  runScenario 에 { ground: (x, z, y) => L.floorY(x, z, y + 0.2), x0, z0, y0, yaw0 } 와 함께 준다. 끝에 닿으면 선다. */
+export function lineWalker(L, pts, v) {
+  const segs = []; let len = 0;
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z); if (d > 1e-6) { segs.push({ a: pts[i - 1], b: pts[i], s0: len, d }); len += d; } }
+  const at = (s) => { let g = segs[segs.length - 1]; for (const q of segs) if (s <= q.s0 + q.d) { g = q; break; } const f = Math.min(1, Math.max(0, (s - g.s0) / g.d)); return { x: g.a.x + (g.b.x - g.a.x) * f, z: g.a.z + (g.b.z - g.a.z) * f, yaw: Math.atan2(-(g.b.x - g.a.x), -(g.b.z - g.a.z)) }; };
+  let s = 0, sp = 0;
+  return (me, dt) => {
+    sp += (v - sp) * Math.min(1, dt * 12);
+    const px = me.x, pz = me.z;
+    s = Math.min(len, s + sp * dt);
+    const P = at(s); me.x = P.x; me.z = P.z;
+    me.yaw += Math.atan2(Math.sin(P.yaw - me.yaw), Math.cos(P.yaw - me.yaw)) * Math.min(1, dt * 11);
+    if (L && L.floorY) {
+      me.fy = L.floorY(me.x, me.z, me.fy);
+      const mx = me.x - px, mz = me.z - pz, md = Math.hypot(mx, mz);
+      me.y += ((md > 1e-5 && L.bodyY ? L.bodyY(me.x, me.z, me.fy, mx / md, mz / md) : me.fy) - me.y) * Math.min(1, dt * 14);
+    }
+    return Math.min(1, Math.hypot(me.x - px, me.z - pz) / dt / Logic.C.WALK_SPEED * 1.05);
+  };
+}
+/** 좌우 대칭(절뚝거림) 수치. 디딤(gait 상태)마다 그 발의 무릎 최소(°, 디딤에서 다리를 펴는가)·최대, 흔들기 무릎 최대, 디딤·흔들기 시간, 흔들 때 밑창 최고(m),
+ *  착지 사이 시간·거리: tLR/dLR = 왼발 착지 → 오른발 착지(오른발이 내딛는 걸음), tRL/dRL 은 반대. 사람 걸음의 좌우 차는 보통 2~5% 안.
+ *  soundLR/soundRL/soundAsym: main.js 가 내는 발소리 사이 간격(ev.lag 로 프레임 안 착지 시각을 맞춘다) — 옛 코드는 프레임 경계라 엇갈렸다. */
+export function symmetryStats(frames, from, to) {
+  const F = frames.filter((f) => f.t >= from && f.t <= to);
+  const med = (a) => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+  const avg = (a) => a.reduce((s, x) => s + x, 0) / (a.length || 1);
+  const side = [0, 1].map(() => ({ stMin: [], stMax: [], swMax: [], stT: [], swT: [], clear: [], cur: null }));
+  const strikes = [];
+  for (let i = 1; i < F.length; i++) {
+    const f = F[i], g = F[i - 1];
+    for (const k of [0, 1]) {
+      const n = k ? 'R' : 'L', kn = 180 - ang(f.J['ul' + n], f.J['ll' + n], f.J['ft' + n]), S = side[k];
+      const st = f.feet[k].st, was = g.feet[k].st;
+      if (st && !was) {   // 착지: 흔들기 끝, 디딤 시작
+        if (S.cur && S.cur.kind === 'sw') { S.swMax.push(S.cur.max); S.swT.push(f.t - S.cur.t0); S.clear.push(S.cur.clear); }
+        S.cur = { kind: 'st', t0: f.t, min: kn, max: kn };
+        // 실제 닿은 때: 착지는 프레임 경계에서만 알 수 있어, 위상이 한 바퀴를 넘은 만큼(u / rate) 앞으로 당긴다(프레임 수가 홀수인 주기에서 한 프레임씩 엇갈리는 측정 오차를 뺀다)
+        const lag = f.rate > 0 ? Math.min(f.dt, f.feet[k].u / f.rate) : 0;
+        strikes.push({ k, t: f.t - lag, p: f.J['ft' + n] });
+      } else if (!st && was) {   // 떼기
+        if (S.cur && S.cur.kind === 'st') { S.stMin.push(S.cur.min); S.stMax.push(S.cur.max); S.stT.push(f.t - S.cur.t0); }
+        S.cur = { kind: 'sw', t0: f.t, max: kn, clear: 0 };
+      } else if (S.cur) {
+        S.cur.min = Math.min(S.cur.min, kn); S.cur.max = Math.max(S.cur.max, kn);
+        if (S.cur.kind === 'sw') S.cur.clear = Math.max(S.cur.clear, f.feet[k].y - f.y);
+      }
+    }
+  }
+  // 발소리 시각: main.js 와 같이 이 프레임 + (dt − ev.lag) 에 낸다(lag 가 없던 옛 코드는 프레임 시각 그대로)
+  const snd = [];
+  for (const f of F) if (f.ev) snd.push({ k: f.ev.side > 0 ? 1 : 0, t: f.t + (f.ev.lag === undefined ? 0 : Math.max(0, f.dt - f.ev.lag)) });
+  const st2 = [[], []];
+  for (let i = 1; i < snd.length; i++) if (snd[i].k !== snd[i - 1].k) st2[snd[i].k].push(snd[i].t - snd[i - 1].t);
+  const t = [[], []], d = [[], []];
+  for (let i = 1; i < strikes.length; i++) {
+    const a = strikes[i - 1], b = strikes[i];
+    if (a.k === b.k) continue;
+    t[b.k].push(b.t - a.t); d[b.k].push(Math.hypot(b.p[0] - a.p[0], b.p[2] - a.p[2]));
+  }
+  const out = (S) => ({ stanceKneeMin: med(S.stMin), stanceKneeMax: med(S.stMax), swingKneeMax: med(S.swMax), stanceT: avg(S.stT), swingT: avg(S.swT), clear: med(S.clear), n: S.stMin.length });
+  const tLR = avg(t[1]), tRL = avg(t[0]), dLR = avg(d[1]), dRL = avg(d[0]);
+  return { L: out(side[0]), R: out(side[1]), tLR, tRL, dLR, dRL, nSteps: t[0].length + t[1].length,
+    timeAsym: Math.abs(tLR - tRL) / Math.max(1e-9, (tLR + tRL) / 2), lenAsym: Math.abs(dLR - dRL) / Math.max(1e-9, (dLR + dRL) / 2),
+    soundLR: avg(st2[1]), soundRL: avg(st2[0]), soundAsym: Math.abs(avg(st2[1]) - avg(st2[0])) / Math.max(1e-9, (avg(st2[1]) + avg(st2[0])) / 2) };
 }

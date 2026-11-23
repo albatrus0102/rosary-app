@@ -1,9 +1,8 @@
-// 시점 모드(좁으면 자동 1인칭 + 「시점」 단추)와 스프링 암 시험(docs/church/CAMERA_MODES.md).
-// 사용자 제보(2026-11-23): 「아시시 대성당 묘소는 거의 돌려볼 수가 없어. 너무 좁아가지고 … 돌려보려고 해도 자꾸 튀어나와 튕기고」.
-// 1) 히스테리시스: 좁음/트임이 0.2초마다 바뀌어도 1초 안에 1인칭 ↔ 3인칭이 다시 바뀌지 않는다
-// 2) 튀지 않는다: 좁은 곳 표본(아시시 묘소·계단, 여의도동 계단·성가대석 아래, 명동 성단 옆, 밀라노·성 바오로 주보랑)에서 화면을 돌려도
-//    한 프레임 거리 변화가 POP 을 넘는 일이 거의 없고 되튐(앞뒤로 번갈아 튐)이 없다
-// 3) 묘소에서는 1인칭, 트인 신랑에서는 3인칭 4) 고정 모드·기도 중 막기 5) 끄는 각도는 리그가 덮지 않는다 6) 다리(bridge.js) 메서드
+// 카메라 시점·잘라내기 시험(docs/church/CAMERA_MODES.md). 2026-11-23 3차 사용자 결정:
+// 「그냥 뷰를 벽을 개의치 않고 보여주면 안 되나? … 보여지는 쪽만 충실하면 될 거 같은데 … 1인칭도 굳이 쓸 필요가 없고 … 아시시를 해 보니 아직도 덜컹거리는 곳이」
+// 1) 카메라는 벽을 개의치 않는다: 사용자 입력 없이 팔 길이가 바뀌는 프레임 0, 튐 0(좁은 곳 표본 전체 — 아시시 묘소·계단, 여의도동 계단·성가대석 아래,
+//    명동 성단 옆, 밀라노·성 바오로 주보랑, 트인 신랑) 2) 아바타는 보인다: 지우지 못한 면에 가려진 프레임 ≈ 0 3) 깜빡이지 않는다: 잘라내기가 0.3초 안에
+//    켰다 껐다 하는 일이 드물다 4) 자동 1인칭 없음(「시점」 단추로 고를 때만) 5) 잘라내기 단위(원뿔·단면·위층·카메라 둘레)·셰이더 6) 다리(bridge.js)
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,158 +10,115 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { makeEnv, samplePlaces, simulate, rotateFrames, walkFrames, runSamples, POP, DT } from './cam_sim.mjs';
+import { makeEnv, samplePlaces, simulate, rotateFrames, runSamples, total, DT } from './cam_sim.mjs';
 const require = createRequire(import.meta.url);
 const Guard = require('../../assets/church/cam_guard.js');
 const here = path.dirname(fileURLToPath(import.meta.url));
 const assets = path.resolve(here, '../../assets/church');
 
-// 가짜 공간: 빈 거리(free)·천장(up)을 바꿀 수 있는 가드
-function fakeGuard(st) {
+const res = runSamples(Guard, {});
+const tot = total(res);
+
+test('카메라 표본: 사용자 입력 없이 팔 길이가 바뀌지 않고(0), 튀지 않는다(0) — 벽이 카메라를 밀거나 당기지 않는다', () => {
+  if (process.env.CAMMODE_REPORT) console.log(JSON.stringify(res));
+  assert.ok(tot.n > 60000, `표본 프레임 ${tot.n}`);
+  assert.equal(tot.boomNI, 0, '입력 없는 팔 길이 변화');
+  assert.equal(tot.jumps, 0, '튐');
+  assert.ok(tot.maxJump < 0.15, `한 프레임 초과 이동 최대 ${tot.maxJump.toFixed(2)}m`);
+  assert.equal(tot.fpF, 0, '자동 1인칭(뒤에서 보기가 기본)');
+});
+
+test('카메라 표본: 아바타가 지우지 못한 면에 가려진 프레임이 거의 없다(0.1% 이하, 표본마다 1% 이하)', () => {
+  assert.ok(tot.occ <= tot.tp * 0.001, `가림 ${tot.occ}/${tot.tp}`);
+  for (const [tag, o] of Object.entries(res)) assert.ok(o.occ <= o.tp * 0.01, `${tag}: 가림 ${o.occ}/${o.tp}`);
+});
+
+test('카메라 표본: 잘라내기가 0.3초 안에 켰다 껐다 하는 일이 드물다(돌리는 1분에 2번 이하)', () => {
+  const mins = tot.n * DT / 60;
+  assert.ok(tot.flicker <= mins * 2, `깜빡 ${tot.flicker}번 / ${mins.toFixed(1)}분`);
+});
+
+// 가짜 가드: 아바타(0,0,0) 앞뒤 z = wall 에 벽 하나(넓은 면), 여러 층이면 levelYs
+function fakeWall(wall, o = {}) {
+  const out = { thin: 1, tri: -1, wideTri: -1 };
   return {
-    clip: (ax, ay, az, bx, by, bz) => { const len = Math.hypot(bx - ax, by - ay, bz - az), horiz = Math.abs(by - ay) < 1e-6, r = horiz ? st.free : st.up; return Math.min(1, r / len); },
-    out: { thin: 1 }, space: null
+    out, fy0: 0, levelYs: o.levels || null,
+    isThin: () => false, isFlat: () => false, levelOf: () => o.lb || 0,
+    clip(ax, ay, az, bx, by, bz, m, skip) {
+      out.thin = 1; out.tri = -1; out.wideTri = -1;
+      // 위층 바닥 판(o.slab 높이의 수평면)을 지나면 그 면(층 값 o.lb)
+      if (o.slab !== undefined && (ay - o.slab) * (by - o.slab) < 0) { const ts = (o.slab - ay) / (by - ay); if (!(skip && skip(0, ts))) { out.tri = 0; out.wideTri = 0; return ts; } }
+      if ((az - wall) * (bz - wall) >= 0) return 1;
+      const th = (wall - az) / (bz - az);
+      if (skip && skip(0, th)) return 1;
+      out.tri = 0; out.wideTri = 0; return th;
+    }
   };
 }
 
-test('시점 모드: 히스테리시스 — 좁음/트임이 0.2초마다 바뀌어도 1초 안에 다시 바뀌지 않는다, 들어가면 1초는 머문다', () => {
-  const st = { free: 5, up: 5 }, g = fakeGuard(st), V = Guard.createView(), O = {};
-  const I = { guard: g, floorAt: null, mx: 0, mz: 0, foot: 0, cb: null, boom: 7, mode: 'auto', block: false };
-  const flips = [];
-  let last = false;
-  for (let i = 0; i < 300; i++) {
-    const t = i * DT;
-    st.free = Math.floor(t / 0.2) % 2 ? 1.2 : 3.5;   // 0.2초마다 좁음 ↔ 트임
-    I.mx = (i % 2) * 0.25;   // 다시 재게(0.2m 넘게 움직임)
-    V.step(I, DT, O);
-    if (O.want !== last) { flips.push(t); last = O.want; }
-  }
-  for (let k = 1; k < flips.length; k++) assert.ok(flips[k] - flips[k - 1] >= 1.0, `바뀐 시각 ${flips.map((x) => x.toFixed(2)).join(',')}`);
-  // 경계 값(들어가는 문턱과 나오는 문턱 사이)에서는 지금 상태를 지킨다
-  const V2 = Guard.createView(); st.free = 1.5;
-  for (let i = 0; i < 60; i++) V2.step(I, DT, O);
-  assert.equal(O.want, true, '좁으면 1인칭');
-  st.free = 2.2;   // freeIn 1.9 과 freeOut 2.6 사이
-  for (let i = 0; i < 120; i++) V2.step(I, DT, O);
-  assert.equal(O.want, true, '문턱 사이에서는 1인칭 그대로');
-  st.free = 4;
-  for (let i = 0; i < 20; i++) V2.step(I, DT, O);
-  assert.equal(O.want, true, '트여도 1초는 기다린다');
-  for (let i = 0; i < 30; i++) V2.step(I, DT, O);
-  assert.equal(O.want, false, '1초 넘게 트이면 3인칭');
+test('잘라내기: 벽 뒤 카메라 → 원뿔·단면이 0.08초에 켜지고, 단면은 아바타 쪽 벽 면에서 0.3m 카메라 쪽, 풀리면 hold 뒤 0.15초에 돌아온다', () => {
+  const C = Guard.createCut(), O = {}, g = fakeWall(2.0);
+  const I = { guard: g, cx: 0, cy: 4, cz: 6.5, mx: 0, my: 1, mz: 0, hy: 1.55, foot: 0, low: false, fp: 0 };
+  C.step({ ...I, cz: 1.5 }, DT, O);   // 첫 프레임: 벽 앞
+  assert.equal(O.k[1], 0);
+  let n = 0; for (; n < 10 && C.k[1] < 1; n++) C.step(I, DT, O);
+  assert.ok(n * DT <= Guard.CUT.fadeIn + DT + 1e-9, `켜지는 데 ${(n * DT).toFixed(2)}초`);
+  assert.equal(O.k[3], 1, '단면');
+  assert.ok(Math.abs(O.pd - (2.0 - Guard.CUT.planeBack)) < 0.05, `단면 자리 ${O.pd.toFixed(2)}`);
+  // 셰이더와 같은 식: 벽(카메라 쪽 z=2)은 지우고, 아바타 앞(z=-1)·아바타 옆 가구(z=0.2)는 남긴다
+  assert.equal(C.amount(g, 0, 3, 2, 2.0), 1);
+  assert.equal(C.amount(g, 0, 3, 1, -1), 0);
+  assert.equal(C.amount(g, 0, 3, 1, 0.2), 0);
+  // 풀림: hold 동안은 켠 채, 그 뒤 fadeOut 안에 돌아온다(0.3초 안에 켰다 껐다 하지 않는다)
+  const free = { ...I, cz: 1.5 };
+  let t = 0; while (C.on[1] && t < 3) { C.step(free, DT, O); t += DT; }
+  assert.ok(t >= Guard.CUT.hold - 1e-9, `끄기까지 ${t.toFixed(2)}초(hold ${Guard.CUT.hold})`);
+  let t2 = 0; while (C.k[1] > 0 && t2 < 1) { C.step(free, DT, O); t2 += DT; }
+  assert.ok(t2 <= Guard.CUT.fadeOut + DT + 1e-9 && Guard.CUT.fadeOut <= 0.15, `돌아오는 데 ${t2.toFixed(2)}초`);
 });
 
-test('시점 모드: 0.5초 ease-in-out 으로 섞는다(처음·끝이 느리다), 고정 모드·기도 중 막기', () => {
-  const st = { free: 1.0, up: 5 }, g = fakeGuard(st), V = Guard.createView(), O = {};
-  const I = { guard: g, floorAt: null, mx: 0, mz: 0, foot: 0, cb: null, boom: 7, mode: 'auto', block: false };
-  V.step({ ...I, guard: fakeGuard({ free: 5, up: 5 }) }, DT, O);   // 첫 프레임은 트인 곳
-  const fs2 = [];
-  for (let i = 0; i < 40; i++) { V.step(I, DT, O); fs2.push(O.f); }
-  const t0 = fs2.findIndex((f) => f > 0), t1 = fs2.findIndex((f) => f >= 1);
-  assert.ok(t0 > 0 && t1 > t0, 'enterT 뒤에 섞기 시작');
-  const dur = (t1 - t0 + 1) * DT;
-  assert.ok(dur > 0.4 && dur < 0.6, `섞는 시간 ${dur.toFixed(2)}초`);
-  assert.ok(fs2[t0] < 0.05 && fs2[t1 - 1] > 0.95, 'ease-in-out(처음·끝 느림)');
-  // 고정
-  const Vf = Guard.createView(); Vf.step({ ...I, guard: fakeGuard({ free: 5, up: 5 }), mode: 'fp' }, DT, O);
-  assert.equal(O.f, 1, '1인칭 고정: 트인 곳에서도(처음 프레임은 바로)');
-  const Vt = Guard.createView(); for (let i = 0; i < 60; i++) Vt.step({ ...I, mode: 'tp' }, DT, O);
-  assert.equal(O.f, 0, '뒤에서 보기 고정: 좁아도 3인칭');
-  // 앉기·기도 시점 중에는 1인칭을 쓰지 않는다(기도 카메라) → 일어나면 지금 모드로
-  const Vb = Guard.createView(); for (let i = 0; i < 60; i++) Vb.step({ ...I, mode: 'fp' }, DT, O);
-  assert.equal(O.f, 1);
-  for (let i = 0; i < 30; i++) Vb.step({ ...I, mode: 'fp', block: true }, DT, O);
-  assert.equal(O.f, 0, '앉으면 기도 카메라');
-  for (let i = 0; i < 30; i++) Vb.step({ ...I, mode: 'fp', block: false }, DT, O);
-  assert.equal(O.f, 1, '일어나면 1인칭 고정으로');
+test('잘라내기: 위층 — 카메라가 위층 바닥 아래 1.3m 까지 오르면 그 층(바닥 − 0.3m 위)을 아바타 앞 먼 평면까지 지운다, 그 아래는 남긴다', () => {
+  const C = Guard.createCut(), O = {}, g = fakeWall(99, { levels: [3.6, 10.2], lb: 3.6, slab: 3.4 });
+  const I = { guard: g, cx: 0, cy: 4.1, cz: 6.5, mx: 0, my: 1, mz: 0, hy: 1.55, foot: 0, low: false, fp: 0 };
+  for (let i = 0; i < 5; i++) C.step(I, DT, O);
+  assert.equal(O.k[4], 1, '위층(하부 성당) 지움');
+  assert.ok(Math.abs(O.thr - 3.3) < 1e-6, `기준 ${O.thr}`);
+  assert.equal(C.amount(g, 0, 0, 3.6, 3), 1, '카메라 쪽 위층 바닥 판');
+  assert.equal(C.amount(g, 0, 0, 3.6, -O.fd - 1), 0, '먼 평면 너머는 남긴다');
+  const g2 = fakeWall(99, { levels: [3.6, 10.2], lb: 0 });
+  assert.equal(C.amount(g2, 0, 3, 1.0, 3), 0, '아바타 층(묘소 벽)은 위층 잘라내기로 지우지 않는다');
+  // 카메라가 낮으면(위층 바닥 아래 1.3m 밑) 켜지 않는다
+  const C2 = Guard.createCut(); C2.step({ ...I, cy: 2.0 }, DT, O);
+  assert.equal(O.k[4], 0);
+  // 위층 바닥에 뚫린 구멍(계단 우물)으로 보이면(그 층 면을 지나지 않으면) 지우지 않는다 — 우물 둘레 바닥이 그대로
+  const C4 = Guard.createCut(); for (let i = 0; i < 5; i++) C4.step({ ...I, guard: fakeWall(99, { levels: [3.6, 10.2], lb: 3.6 }) }, DT, O);
+  assert.equal(O.k[4], 0, '우물로 보이는 위층은 남긴다');
+  // 1인칭: 잘라내기 없음
+  const C3 = Guard.createCut(); C3.step({ ...I, fp: 1 }, DT, O);
+  assert.ok(Array.from(O.k).every((v) => v === 0), '1인칭에서는 지우지 않는다');
 });
 
-test('리그: 끄는 동안은 사용자 각도 그대로(옵션이 덮지 않는다), 끌기 시작하면 리그 각도를 넘긴다(bake)', () => {
-  // 뒤로 1.5m 만 설 수 있다 → 끌지 않으면 리그가 카메라를 올린다
-  const g = { space: { at: (x, y, z) => (z < 1.5 ? 3 : 0), covered: () => true, solid: () => 0 }, clip: () => 1, out: { thin: 1 } };
-  const rig = Guard.createRig(), O = {}, I = { mx: 0, fy: 1, mz: 0, yaw: 0, pitch: 0.45, D: 7.2, cb: null, guard: g, auto: true };
-  for (let i = 0; i < 90; i++) rig.solve(I, DT, O);
-  assert.ok(O.pitch > 0.9, '끌지 않으면 올린다(예전 그대로)');
-  const lifted = O.pitch;
-  I.drag = true; rig.solve(I, DT, O);
-  assert.ok(O.baked && Math.abs(O.bakePitch - lifted) < 0.05, '끌기 시작: 리그 각도를 사용자 각도로 넘긴다');
-  I.pitch = O.bakePitch; I.yaw += O.bakeYaw;
-  for (let i = 0; i < 60; i++) {
-    I.yaw += 0.04; I.pitch = Math.min(1.25, Math.max(0.06, I.pitch + 0.01 * Math.sin(i / 5)));
-    rig.solve(I, DT, O);
-    assert.ok(Math.abs(O.yaw - I.yaw) < 1e-9 && Math.abs(O.pitch - I.pitch) < 1e-9, `끄는 중 프레임 ${i}: 리그가 각도를 바꿨다`);
-    assert.ok(!O.cut, '끄는 중에는 시점을 끊지 않는다');
-  }
-  // 손을 떼도 걸어가기 전에는 사용자 각도 그대로
-  I.drag = false;
-  for (let i = 0; i < 60; i++) rig.solve(I, DT, O);
-  assert.ok(Math.abs(O.pitch - I.pitch) < 1e-9 && Math.abs(O.yaw - I.yaw) < 1e-9, '손을 떼도 그 자리에서는 각도를 되돌리지 않는다');
+test('셰이더: 칸(가는 255·넓은 170·낮은 85·바닥 42)·층 값(seeLvl)·균일값 다섯을 공유하고, 원래 onBeforeCompile 를 잇는다', () => {
+  const src = fs.readFileSync(path.join(assets, 'cam_guard.js'), 'utf8');
+  for (const k of ['attribute float seeThru', 'attribute float seeLvl', 'uniform vec4 uSeeP', 'uniform vec4 uSeeQ', 'if (sN < sF) discard', "'|see3'"]) assert.ok(src.includes(k), k);
+  assert.ok(!/createRig|createView|buildSpace|reachOn/.test(src), '예전 충돌 리그·자동 1인칭·카메라 공간이 남았다');
 });
 
-test('리그(스프링 암): 줄일 때는 빠르게, 늘릴 때는 천천히(약 0.5초) — 한 프레임에 크게 튀지 않는다', () => {
-  let wall = 99; const g = { space: { at: (x, y, z) => (z < wall ? 3 : 0), covered: () => true, solid: () => 0 }, clip: () => 1, out: { thin: 1 } };
-  const rig = Guard.createRig(), O = {}, I = { mx: 0, fy: 1, mz: 0, yaw: 0, pitch: 0.45, D: 7.2, cb: null, guard: g, auto: true, drag: true };
-  rig.solve(I, DT, O);
-  wall = 3.0; let prev = O.dist, maxStep = 0, n = 0;
-  for (let i = 0; i < 30; i++) { rig.solve(I, DT, O); maxStep = Math.max(maxStep, Math.abs(O.dist - prev)); prev = O.dist; if (O.z < wall) n = n || i + 1; }
-  assert.ok(O.z < wall && n <= 18, `막히면 0.6초 안에 벽 앞으로(${n}프레임 — 4m 를 초당 10m 로)`);
-  assert.ok(maxStep <= 10 * DT + 1e-6, `줄이는 한 프레임 ${maxStep.toFixed(2)}m(초당 10m 까지)`);
-  wall = 99; const d0 = O.dist; let t = 0;
-  for (let i = 0; i < 120 && O.dist < 7.0; i++) { rig.solve(I, DT, O); t += DT; maxStep = Math.max(maxStep, O.dist - prev); prev = O.dist; }
-  assert.ok(t > 0.6, `늘리기는 천천히(${t.toFixed(2)}초에 ${d0.toFixed(1)} → 7)`);
+test('main.js: 카메라는 사용자 각도·거리 그대로(리그·자동 1인칭·벽 당기기 없음), 잘라내기는 createCut, 시점 기본 tp', () => {
+  const main = fs.readFileSync(path.join(assets, 'main.js'), 'utf8');
+  assert.ok(!/createRig|createView|createCompose|clipWide|rig\.solve/.test(main), '예전 리그 흔적');
+  assert.ok(main.includes('CG.createCut()') && main.includes('cutS.step(cutI, dt, cutO)'));
+  assert.match(main, /var VIEW_MODES = \{ fp: 1, tp: 1 \};/);
+  assert.match(main, /App\.camCfg\.view = VIEW_MODES\[m\] \? m : 'tp'/, "예전 'auto' 는 뒤에서 보기로");
 });
 
-// 실제 성당 표본(카메라 표본, cam_sim.mjs)
-const res = runSamples(Guard, { mode: 'auto' });
-const sum = (pred, k) => Object.entries(res).filter(([tag]) => pred(tag)).reduce((a, [, o]) => a + o[k], 0);
-
-test('카메라 표본: 좁은 곳을 돌려 보고 걸어도 튀지 않는다(튐 ≤ 3·되튐 ≤ 1), 1인칭 ↔ 3인칭이 1초 안에 다시 바뀌지 않는다', () => {
-  if (process.env.CAMMODE_REPORT) console.log(JSON.stringify(res));
-  const pops = sum(() => true, 'pops'), reb = sum(() => true, 'rebounds'), ff = sum(() => true, 'flipFlop'), n = sum(() => true, 'n');
-  assert.ok(n > 50000, `표본 프레임 ${n}`);
-  assert.ok(pops <= 3, `튐 ${pops}(한 프레임 > ${POP}m)`);
-  assert.ok(reb <= 1, `되튐 ${reb}`);
-  assert.equal(ff, 0, '왔다 갔다');
-  for (const [tag, o] of Object.entries(res)) assert.ok(o.maxJump < 0.5, `${tag}: 한 프레임 최대 ${o.maxJump.toFixed(2)}m`);
-});
-
-test('카메라 표본: 아시시 묘소·계단은 1인칭, 트인 신랑(모든 표본 성당)은 3인칭', () => {
-  const pct = (tag) => res[tag].fpF / res[tag].n;
-  assert.ok(pct('assisi:crypt') > 0.95, `묘소 1인칭 ${(pct('assisi:crypt') * 100).toFixed(0)}%`);
-  assert.ok(pct('assisi:lower_stairs') > 0.9, '하부 → 상부 계단 1인칭');
-  assert.ok(pct('assisi:crypt_stairs') > 0.7, '묘소 계단 1인칭');
-  // 여의도동 곡선 계단: 2026-11-23 폭 4.5m(3배)로 넓혔지만 두 계단이 같은 띠에 겹쳐 아래 계단은 머리 위가 낮다 → 자리에 따라 1·3인칭이 갈린다(측정 62%).
-  // 어느 쪽이 맞다고 못 박지 않고, 튐·왕복 없음은 다른 시험이 지킨다. 표본이 사라지지 않았는지만 본다.
-  assert.ok(res['yeouido:stairs'].n > 0, '여의도동 계단 표본');
-  for (const id of ['assisi', 'yeouido', 'myeongdong', 'milan', 'stpaul']) assert.equal(res[id + ':open_nave'].fpF, 0, `${id} 트인 신랑에서 1인칭`);
-  // 성가대석 아래(천장 3.4m, 넓다)는 3인칭으로 본다(낮춰 보기)
-  assert.ok(pct('yeouido:under_loft') < 0.1, `성가대석 아래 1인칭 ${(pct('yeouido:under_loft') * 100).toFixed(0)}%`);
-});
-
-test('묘소: 빌더 표시(tight 구역)만으로도 1인칭 — 입장 첫 프레임은 섞지 않고 바로', () => {
-  const env = makeEnv('assisi', Guard), cb = env.cb;
-  assert.ok(cb.tight && cb.tight.length, 'ch_assisi.js 카메라 상자 tight');
-  const C = env.c.builder.crypt, V = Guard.createView(), O = {};
-  V.step({ guard: null, floorAt: null, mx: C.x + 2.2, mz: C.z, foot: 0, cb, boom: 7, mode: 'auto', block: false }, DT, O);
-  assert.equal(O.f, 1); assert.equal(O.why, 'zone');
-  // 하부 성당(같은 xz, 위층)은 구역 밖
-  const V2 = Guard.createView();
-  V2.step({ guard: null, floorAt: null, mx: C.x + 2.2, mz: C.z, foot: env.c.builder.heights.lower, cb, boom: 7, mode: 'auto', block: false }, DT, O);
-  assert.equal(O.f, 0, '하부 성당은 묘소 구역이 아니다');
-});
-
-test('뒤에서 보기 고정: 묘소에서도 3인칭(튀지 않는다), 1인칭 고정: 신랑에서도 1인칭', () => {
+test('1인칭은 고를 때만: fp 모드면 모든 프레임 1인칭, 뒤에서 보기면 묘소에서도 3인칭', () => {
   const env = makeEnv('assisi', Guard), { pts } = samplePlaces(env);
   const crypt = pts.find((p) => p.tag === 'crypt'), nave = pts.find((p) => p.tag === 'open_nave');
   const tp = simulate(env, rotateFrames(crypt, 0), { Guard, mode: 'tp' });
-  assert.equal(tp.fpF, 0);
-  assert.ok(tp.pops <= 1 && tp.rebounds === 0, `묘소 3인칭 고정 튐 ${tp.pops}`);
+  assert.equal(tp.fpF, 0); assert.equal(tp.jumps, 0); assert.equal(tp.boomNI, 0);
   const fp = simulate(env, rotateFrames(nave, 0), { Guard, mode: 'fp' });
   assert.equal(fp.fpF, fp.n);
-  // 계단을 걸어 내려가며(자동): 1인칭으로 들어갔다 나오는 횟수가 적다
-  const w = walkFrames(env, { x: 0, z: 16, y: env.c.builder.heights.lower }, { x: 0, z: 1.2, y: 0 });
-  const s = simulate(env, w, { Guard, mode: 'auto' });
-  assert.ok(s.flips <= 2 && s.flipFlop === 0, `묘소로 내려가며 전환 ${s.flips}번`);
 });
 
 test('다리: setViewMode 가 bridge.js METHODS·main.js api 에 있고, Flutter 가 부른다', () => {
