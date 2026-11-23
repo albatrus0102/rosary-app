@@ -205,7 +205,7 @@
         var cx = w / 2, cy = h / 2, R = w / 2;
         for (var y = 0; y < h; y += 6) for (var x = 0; x < w; x += 6) {
           var d = Math.hypot(x - cx, y - cy) / R, v = 0.82 + mosaicRng() * 0.2;
-          var ring = Math.abs(d - 0.93) < 0.04 || Math.abs(d - 0.62) < 0.025;
+          var ring = kind !== 'apse' && (Math.abs(d - 0.93) < 0.04 || Math.abs(d - 0.62) < 0.025);   // 후진 반돔은 고른 금빛(무늬 없음)
           var col = ring ? [150 * v, 30 * v, 40 * v] : [222 * v, 178 * v, 86 * v];
           if (kind === 'gloria' && (Math.abs(d - 0.25) < 0.03 || Math.abs(d - 0.38) < 0.03 || Math.abs(d - 0.5) < 0.03)) col = [250 * v, 244 * v, 226 * v];
           g.fillStyle = 'rgb(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ')'; g.fillRect(x, y, 5, 5);
@@ -423,7 +423,7 @@
       var N = 32, Rw = M.r + 0.5, H = 14;
       for (var x0 = -12; x0 < 12; x0 += 4) floorQuad(f, x0, x0 + 4, M.cz - 12, M.cz + 12, 0, MARBLE);
       // 바닥 무늬(메달: 열두 별 고리 — 글자 없음)
-      for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; gd.add(Geo.cyl(5, 1), GOLD, { x: Math.cos(a) * 3.2, y: 0.01, z: M.cz + Math.sin(a) * 3.2, sx: 0.32, sy: 0.02, sz: 0.32, vary: 0 }); }
+      for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; p.add(Geo.cyl(5, 1), 0x8a6a35, { x: Math.cos(a) * 3.2, y: 0.01, z: M.cz + Math.sin(a) * 3.2, sx: 0.32, sy: 0.02, sz: 0.32, vary: 0 }); }
       for (k = 0; k < N; k++) {
         var a0 = (k / N) * Math.PI * 2, a1 = ((k + 1) / N) * Math.PI * 2, am = (a0 + a1) / 2;
         var mx = Math.sin(am) * Rw, mz = M.cz + Math.cos(am) * Rw;
@@ -462,10 +462,10 @@
       // 바닥의 묵주(정거장 46): 반지름 27 고리에 구슬 55(작은 50 + 큰 5), 입구 쪽 늘어진 줄 4알(큰 1·작은 3) — 59알(고리 55 + 줄 4) + 십자가
       for (i = 0; i < 55; i++) {
         var big = i % 11 === 0, th = 180 + (i + 0.5) * 360 / 55, q = P(27, th);
-        gd.add(Geo.cyl(10, 1), 0xb08a3e, { x: q.x, y: 0.005, z: q.z, sx: big ? 0.42 : 0.22, sy: 0.02, sz: big ? 0.42 : 0.22, vary: 0 });
+        p.add(Geo.cyl(10, 1), 0x8a6a35, { x: q.x, y: 0.005, z: q.z, sx: big ? 0.42 : 0.22, sy: 0.02, sz: big ? 0.42 : 0.22, vary: 0 });
       }
-      for (i = 0; i < 4; i++) gd.add(Geo.cyl(10, 1), 0xb08a3e, { x: 0, y: 0.005, z: 28.6 + i * 1.5, sx: i === 3 ? 0.42 : 0.22, sy: 0.02, sz: i === 3 ? 0.42 : 0.22, vary: 0 });
-      boxA(gd, -0.08, 0.08, 0.005, 0.03, 35.2, 37.6, 0xb08a3e); boxA(gd, -0.7, 0.7, 0.005, 0.03, 35.9, 36.1, 0xb08a3e);
+      for (i = 0; i < 4; i++) p.add(Geo.cyl(10, 1), 0x8a6a35, { x: 0, y: 0.005, z: 28.6 + i * 1.5, sx: i === 3 ? 0.42 : 0.22, sy: 0.02, sz: i === 3 ? 0.42 : 0.22, vary: 0 });
+      boxA(p, -0.08, 0.08, 0.005, 0.03, 35.2, 37.6, 0x8a6a35); boxA(p, -0.7, 0.7, 0.005, 0.03, 35.9, 36.1, 0x8a6a35);
       // 기둥 12(설계 θ = 15 + 30k)
       for (k = 0; k < 12; k++) {
         var pc = P(PLAN.R_DOME, 15 + 30 * k);
@@ -581,13 +581,12 @@
       var zBack = -(PLAN.R_BACK - PLAN.WALL_T / 2), zIn = -PLAN.WIN_PLANE;   // 뒷벽 가운데선, 안쪽 면
       // 뒷벽(창 구멍 없이 판 — 창 그림은 앞에 붙는다) + 창 둘레 돌 틀
       boxA(sb, -hw(PLAN.R_BACK) - 0.6, hw(PLAN.R_BACK) + 0.6, 0, PLAN.CHAPEL_H, zBack - PLAN.WALL_T / 2, zBack + PLAN.WALL_T / 2 - 0.02, STONE);
-      var WW = PLAN.WIN_W, top = PLAN.WIN_TOP, rise = 2.6, sill = top - 10.2;
+      var WW = PLAN.WIN_W, top = PLAN.WIN_TOP, rise = 2.6, sill = top - 8.6;   // 창 자리 3 × 8.6 m(받은 그림 비율 0.35~0.41 에 맞춤)
       boxA(sb, -WW / 2 - 0.55, -WW / 2 - 0.05, sill - 0.3, top - rise, zIn - 0.02, zIn + 0.32, STONE_W);
       boxA(sb, WW / 2 + 0.05, WW / 2 + 0.55, sill - 0.3, top - rise, zIn - 0.02, zIn + 0.32, STONE_W);
       boxA(sb, -WW / 2 - 0.8, WW / 2 + 0.8, sill - 0.55, sill - 0.05, zIn - 0.02, zIn + 0.55, STONE_W);
       archRing(sb, 0, zIn + 0.16, 1, 0, WW / 2 + 0.3, top - rise, top + 0.3, 0, 0.5, STONE_W, 10);
       archRing(gb, 0, zIn + 0.36, 1, 0, WW / 2 + 0.55, top - rise, top + 0.55, 0, 0.12, GOLD, 10);
-      boxA(wb, -WW / 2, WW / 2, sill, top, zIn - 0.05, zIn - 0.01, 0x14111a);   // 그림이 덮지 못한 곳(납틀 색 뒤판)
       // 창 아래 돌 선반(제대 아님 — 무릎틀과 봉헌초만 둔다) + 빈 청동판 자리
       boxA(sb, -2.2, 2.2, 0, 1.05, zIn, zIn + 0.6, STONE_D);
       boxA(wb, -0.8, 0.8, 1.35, 2.35, zIn - 0.0, zIn + 0.05, 0x6e5530);   // 빈 청동판 자리(그림·글자 없음)
@@ -769,9 +768,9 @@
       CHAPELS.forEach(function (c, i) { g.save(); g.translate((i % 10) * 64, (i / 10 | 0) * 208); placeholderPane(c.set, 100 + i)(g, 64, 208); g.restore(); });
     });
     function cellUV(i) { var cx = (i % 10) * 64, cy = (i / 10 | 0) * 208; return [cx / 640, 1 - (cy + 208) / 416, (cx + 64) / 640, 1 - cy / 416]; }
-    // 그림 비율 그대로 3 × 10.2 m 창 자리에 맞춘다(늘이지 않음): 넓으면 폭 3 m·높이를 줄이고, 좁고 길면 높이 10.2 m·폭을 줄인다.
-    // 남는 곳은 창 둘레 납틀 색 뒤판이 보인다. 그림 파일만 바꿔도(build_light_glass.py) 새 비율로 다시 맞춘다.
-    var WIN_HMAX = 10.2;
+    // 그림 비율 그대로 3 × 8.6 m 창 자리에 맞춘다(늘이지 않음): 넓으면 폭 3 m·높이를 줄이고, 좁고 길면 높이 8.6 m·폭을 줄인다.
+    // 남는 곳은 창 둘레 돌벽(깊은 창틀처럼)이 보인다. 그림 파일만 바꿔도(build_light_glass.py) 새 비율로 다시 맞춘다.
+    var WIN_HMAX = 8.6;
     function winSize(key) {
       var n = pack && pack.near[key];
       if (!n) return { w: PLAN.WIN_W, h: WIN_HMAX };
@@ -795,7 +794,7 @@
     farMesh = new T.Mesh(buildFar(), glassMat(placeholderAtlas));
     farMesh.name = 'light_far_windows'; Z.Z5.group.add(farMesh); ctx.stats.meshes++;
     for (var pi = 0; pi < 8; pi++) {
-      var nm = new T.Mesh(lancetGeo(PLAN.WIN_W, 10.2, 2.6), glassMat(null)); nm.visible = false; nm.userData.key = null;
+      var nm = new T.Mesh(lancetGeo(PLAN.WIN_W, 8.6, 2.6), glassMat(null)); nm.visible = false; nm.userData.key = null;
       Z.Z5.group.add(nm); nearPool.push(nm); ctx.stats.meshes++;
     }
     var imgCache = {};
@@ -860,7 +859,7 @@
         m.position.set(0, 0, 0); m.rotation.set(0, 0, 0); m.updateMatrix();
         m.matrixAutoUpdate = false;
         m.matrix.makeRotationY(c.theta * D2R).multiply(new T.Matrix4().makeTranslation(0, PLAN.WIN_TOP - hgt, -PLAN.WIN_PLANE + 0.03));
-        m.userData.key = k; m.visible = true;
+        m.userData.key = k; m.visible = !!(t && t.image);
       });
       // 가까운 8칸에서 빠진 질감은 놓는다(GPU 에서 내림) — 상주 질감 상한
       Object.keys(nearTex).forEach(function (k) {
@@ -890,6 +889,8 @@
       var cp = camera.position;
       setZone(zoneOf(cp.x, cp.z));
       if (Z.Z5.group.visible) updateNear(cp.x, cp.z);
+      // 가까운 창 판은 그림을 다 읽은 뒤에만 보인다(읽는 동안은 뒤의 먼 창 아틀라스가 보인다 — 검은 판이 번쩍이지 않게)
+      for (var q = 0; q < nearPool.length; q++) { var nm2 = nearPool[q]; nm2.visible = !!(nm2.userData.key && nm2.material.map && nm2.material.map.image); }
     });
 
     // ===== 묶음 → 메쉬 =====
