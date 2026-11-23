@@ -493,7 +493,7 @@
       var s = o.size || 1.5;
       sp.position.set(o.x, o.y, o.z); sp.scale.set(s, s, 1);
       ctx.root.add(sp);
-      S_.glows.push({ sp: sp, size: s, pulse: o.pulse || 0, phase: rand() * 6.28, base: 0.6, kind: o.kind || 'lamp' });
+      S_.glows.push({ sp: sp, size: s, pulse: o.pulse || 0, phase: rand() * 6.28, base: 0.6, kind: o.kind || 'lamp', level: o.level });   // level: 여러 층 성당에서 그 층(levelVis id)을 볼 때만 그린다
       return sp;
     };
     // 제단·촛대 불꽃: 스프라이트를 만들지 않고 자료만 적는다(핸들 .visible 로 켜고 끈다). world.js 가 봉헌초와 함께

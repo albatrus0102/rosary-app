@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { fixedCam } from './thumb_cam.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -23,8 +24,9 @@ for (const id of ids) {
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(`file://${assets}/test.html?church=${id}&hideui=1&thumb=1&hour=15&autotier=0&msaa=0&frames=5${lowFlag ? '&quality=low' : ''}`);
   try { await page.waitForFunction(() => window.__church && window.__church.done, null, { timeout: 600000 }); } catch (e) { errors.push('timeout'); }
+  const fixedPng = await fixedCam(page);
   const tmp = path.join(outDir, `${id}.raw.png`);
-  await page.screenshot({ path: tmp });
+  if (fixedPng) fs.writeFileSync(tmp, Buffer.from(fixedPng.split(',')[1], 'base64')); else await page.screenshot({ path: tmp });
   await page.close();
   const dest = path.join(outDir, `${id}.webp`);
   // PIL 로 WebP 저장(APK 용량: 팔레트 PNG 보다 작고 색이 더 좋다)

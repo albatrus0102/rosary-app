@@ -128,6 +128,70 @@
       if (key === levelVis.key) return;
       levelVis.key = key;
       levelVis.def.levels.forEach(function (L) { (levelVis.groups[L.id] || []).forEach(function (g) { g.visible = L._on; }); });
+      // 층을 정한 빛 무리 스프라이트(addGlow level): 그 층을 볼 때만(다른 층에서는 바닥에 가려 보이지 않는데 draw call 만 든다)
+      var on = {}; levelVis.def.levels.forEach(function (L) { on[L.id] = L._on; });
+      S.glows.forEach(function (gl) { if (gl.level !== undefined) { gl.off = !on[gl.level]; gl.sp.visible = gl.kind !== 'none' && !gl.off; } });
+    }
+    // 여러 층 룩(빌더 levelLook = [{ y0, y1, expK, ambK, ambTint, ambTintK, light }]): 층마다 노출·반구광(세기·색)을 따로 둔다 — 창 없는 하부 성당·묘소에
+    // 눈이 적응한 듯 밝게(성당 룩 looks.js 위에 곱한다). y0..y1 = 그 층 값을 그대로 쓰는 발 높이 띠, 띠 사이(계단)는 높이로 선형 보간 → 계단을 오르내리면 서서히 바뀐다.
+    // 순간 이동('가기')도 시간 상수 0.6초로 따라간다. light = 그 층의 빌더 점광원(자리·색·세기·거리·kind): 점광원은 늘 하나(addLight)이고
+    // 보는 층이 바뀌면 0.25초에 꺼졌다가 그 층 자리로 옮겨 0.5초에 켜진다(광원 수·셰이더 프로그램 그대로). levelLook 이 없는 성당은 예전 그대로.
+    var levelLook = null, LL_TAU = 0.6;
+    if (builder.levelLook && logic.multi) {
+      levelLook = { def: builder.levelLook.slice().sort(function (a, b) { return a.y0 - b.y0; }), cur: null, li: -2, fade: 1, base: { exp: 1, hi: 0, hs: new T.Color(), hg: new T.Color() }, tg: { expK: 1, ambK: 1, tintK: 0, tint: new T.Color() }, tc: new T.Color() };
+    }
+    function llSample(y, out) {
+      var E = levelLook.def, a = E[0], b = E[0], t = 0;
+      if (y >= E[E.length - 1].y0) a = b = E[E.length - 1];
+      else for (var i = 0; i < E.length; i++) {
+        if (y <= E[i].y1) { a = b = E[i]; break; }
+        if (i + 1 < E.length && y < E[i + 1].y0) { a = E[i]; b = E[i + 1]; t = (y - a.y1) / Math.max(1e-6, b.y0 - a.y1); break; }
+      }
+      function v(o, k, d) { return o[k] === undefined ? d : o[k]; }
+      out.expK = v(a, 'expK', 1) + (v(b, 'expK', 1) - v(a, 'expK', 1)) * t;
+      out.ambK = v(a, 'ambK', 1) + (v(b, 'ambK', 1) - v(a, 'ambK', 1)) * t;
+      out.tintK = v(a, 'ambTintK', 0) + (v(b, 'ambTintK', 0) - v(a, 'ambTintK', 0)) * t;
+      out.tint.setHex(v(a, 'ambTint', 0xffffff)).lerp(levelLook.tc.setHex(v(b, 'ambTint', 0xffffff)), t);
+      return out;
+    }
+    // 그 높이에서 점광원을 둘 층(띠가 가장 가까운 층; 그 층에 light 가 없으면 -1)
+    function llLightIdx(y) {
+      var E = levelLook.def, best = -1, bd = 1e9;
+      for (var i = 0; i < E.length; i++) { var d = y < E[i].y0 ? E[i].y0 - y : (y > E[i].y1 ? y - E[i].y1 : 0); if (d < bd) { bd = d; best = i; } }
+      return best >= 0 && E[best].light ? best : -1;
+    }
+    // applyEnv 가 시간대·성당 룩으로 정한 값(바탕)을 적어 둔다 — 층 배율은 프레임마다 이 바탕에 곱한다
+    function llBase() {
+      if (!levelLook) return;
+      var B = levelLook.base; B.exp = env.exp; B.hi = hemi.intensity; B.hs.copy(hemi.color); B.hg.copy(hemi.groundColor);
+      if (levelLook.cur) llApply();
+    }
+    function llApply() {
+      var B = levelLook.base, C = levelLook.cur;
+      env.exp = B.exp * C.expK;
+      hemi.intensity = B.hi * C.ambK;
+      hemi.color.copy(B.hs).lerp(C.tint, C.tintK); hemi.groundColor.copy(B.hg).lerp(C.tint, C.tintK * 0.5);
+    }
+    function llUpdate(dt, camera) {
+      var y = levelVis && levelVis.viewer !== null ? levelVis.viewer : (camera ? camera.position.y - 1.6 : 0);
+      var tg = llSample(y, levelLook.tg);
+      if (!levelLook.cur) levelLook.cur = { expK: tg.expK, ambK: tg.ambK, tintK: tg.tintK, tint: tg.tint.clone() };
+      else {
+        var k = Math.min(1, Math.max(0, dt) / LL_TAU), C = levelLook.cur;
+        C.expK += (tg.expK - C.expK) * k; C.ambK += (tg.ambK - C.ambK) * k; C.tintK += (tg.tintK - C.tintK) * k; C.tint.lerp(tg.tint, k);
+      }
+      llApply();
+      if (!bLight) return;
+      var want = llLightIdx(y);
+      if (levelLook.li === -2) { levelLook.li = want; levelLook.fade = 1; llPlace(); }
+      else if (want !== levelLook.li) { levelLook.fade -= dt / 0.25; if (levelLook.fade <= 0) { levelLook.fade = 0; levelLook.li = want; llPlace(); } }
+      else levelLook.fade = Math.min(1, levelLook.fade + dt / 0.5);
+    }
+    function llPlace() {
+      var sl = levelLook.li >= 0 ? levelLook.def[levelLook.li].light : null;
+      if (!sl) return;
+      bSpec = sl;
+      bLight.position.set(sl.x, sl.y, sl.z); bLight.color.setHex(sl.color === undefined ? 0xffc27a : sl.color); bLight.distance = (sl.distance || 14) * 1.2;
     }
 
     // ---- 조명 ----
@@ -143,7 +207,7 @@
     scene.add(target); dirLight.target = target;
     var candleLight = new T.PointLight(0xffa860, 0, 12, 2);
     scene.add(hemi); scene.add(dirLight); scene.add(candleLight);
-    var bLight = null;
+    var bLight = null, bSpec = S.lights[0] || null;   // bSpec: 지금 점광원의 자리·세기(여러 층 룩이 층마다 바꾼다)
     if (S.lights.length) {
       var sl = S.lights[0];
       bLight = new T.PointLight(sl.color === undefined ? 0xffc27a : sl.color, 0, (sl.distance || 14) * 1.2, 2);
@@ -557,16 +621,17 @@
       moonSp.material.opacity = Math.max(0.2, env.night);
       candleLight.userData.k = env.candle;
       fb.setNight(env.night);
-      if (bLight) { bLight.userData.k = S.lights[0].kind === 'always' ? 1 : env.lamp; }
+      if (bLight) { bLight.userData.k = bSpec.kind === 'always' ? 1 : env.lamp; }
       for (var gI = 0; gI < S.glows.length; gI++) {
         var gl = S.glows[gI];
-        gl.sp.visible = gl.kind !== 'none';
+        gl.sp.visible = gl.kind !== 'none' && !gl.off;
         gl.k = gl.kind === 'always' ? 1 : (gl.kind === 'lamp' ? Math.max(0.25, env.lamp) : 1);
       }
       updateBeams(env);
       if (probes) probes.onEnv(env);
       if (giFx) giFx.onEnv(env, tierCfg ? tierCfg[tier].gi : 1, look && look.giK !== undefined ? look.giK : 1);
       for (var hI = 0; hI < S.hourHooks.length; hI++) { try { S.hourHooks[hI](env); } catch (e) { /* ignore */ } }
+      llBase();
     }
 
     var stand0 = (layout.candles && layout.candles.stands && layout.candles.stands[0]) || null;
@@ -625,6 +690,8 @@
       // 여러 층: 보는 사람(내 아바타) 발 높이 — main.js 가 프레임마다 준다. 지금 그리는 층 표(시험·진단): levelKey() '110' 처럼 levels 순서
       setViewer: function (y) { if (levelVis) levelVis.viewer = typeof y === 'number' ? y : null; },
       levelKey: function () { return levelVis ? levelVis.key : ''; },
+      // 여러 층 룩의 지금 배율(시험·진단): { expK, ambK, tintK, light: 점광원을 둔 층 번호, fade } — levelLook 이 없으면 null
+      levelLookNow: function () { return levelLook && levelLook.cur ? { expK: levelLook.cur.expK, ambK: levelLook.cur.ambK, tintK: levelLook.cur.tintK, light: levelLook.li, fade: levelLook.fade } : null; },
       showLevelsAt: function (y) { if (levelVis) { levelVis.viewer = null; levelVis.key = ''; applyLevelVis(y); } },
       hour: function () { return curHour; },
       setHour: function (h) { curHour = ((h % 24) + 24) % 24; shForce = true; if (probes) { probes.resetEnvKey(); probes.markDirty('hour', true); } applyEnv(); },
@@ -758,8 +825,10 @@
         }
         if (stand0 && focus) {
           var best = null, bd = 1e9;
-          layout.candles.stands.forEach(function (st2) { var d2 = (st2.x - focus.x) * (st2.x - focus.x) + (st2.z - focus.z) * (st2.z - focus.z); if (d2 < bd) { bd = d2; best = st2; } });
-          var bf = best.face || [-1, 0]; candleLight.position.set(best.x + bf[0] * 0.9, 1.9, best.z + bf[1] * 0.9);
+          // 여러 층: 봉헌대 바닥 높이(fy)도 거리에 넣고, 빛은 그 봉헌대 바닥 + 1.9m 에 둔다(예전에는 늘 1.9 — 위층 봉헌대 빛이 아래층 안에 켜졌다)
+          var fyF = focus.fy !== undefined ? focus.fy : (focus.y || 0);
+          layout.candles.stands.forEach(function (st2) { var dy2 = (st2.fy || 0) - fyF, d2 = (st2.x - focus.x) * (st2.x - focus.x) + (st2.z - focus.z) * (st2.z - focus.z) + dy2 * dy2 * 9; if (d2 < bd) { bd = d2; best = st2; } });
+          var bf = best.face || [-1, 0]; candleLight.position.set(best.x + bf[0] * 0.9, (best.fy || 0) + 1.9, best.z + bf[1] * 0.9);
         }
         var cl = Math.min(60, 8 + litCount * 1.2) * (candleLight.userData.k === undefined ? 1 : candleLight.userData.k);
         candleLight.intensity = litCount ? cl : 0;
@@ -774,7 +843,8 @@
           flare.e = fe;
         }
         if (camera) updateHaze(camera);
-        if (bLight) bLight.intensity = (S.lights[0].intensity || 1) * 22 * (bLight.userData.k === undefined ? 1 : bLight.userData.k);
+        if (levelLook) llUpdate(dt, camera);
+        if (bLight) bLight.intensity = (bSpec.intensity || 1) * 22 * (bSpec.kind === 'always' ? 1 : env.lamp) * (levelLook ? levelLook.fade : 1);
         var bk = 0.85 + 0.15 * Math.sin(clock * 0.6);
         if (beamMesh) { beamMat.opacity = bk * (tier !== 'low' ? 0.8 : 1); beamMesh.visible = !api.viewMode && !softOn; }
         if (shafts) {
