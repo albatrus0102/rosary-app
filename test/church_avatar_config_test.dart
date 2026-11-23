@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/church/avatar/avatar_config.dart';
 import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/church/church_catalog.dart';
-import 'package:rosary_app/church/church_select_screen.dart' show churchStyleById;
+import 'package:rosary_app/church/church_select_screen.dart' show churchStyleById, ChurchSelectScreen;
 import 'package:rosary_app/church/church_constants.dart';
 
 void main() {
@@ -437,7 +437,9 @@ void main() {
       expect(a.modelNote, contains('승인한 모형이 아닙니다'));
       expect(a.source, contains('basilica.sanfrancesco.org'));
       expect(churchStyleById['assisi'], '고딕');
-      expect(ReleaseGate.pendingConsentChurchIds, contains('assisi'));
+      // 2026-11-23 사용자 결정으로 열었다(다른 대성전과 같은 규칙).
+      expect(ReleaseGate.pendingConsentChurchIds, isNot(contains('assisi')));
+      expect(ChurchSelectScreen.releaseIds, contains('assisi'));
     });
 
     test('3D 내부가 있는 성당은 모두 실제와 다른 점을 밝힌다(같지 않습니다 … 승인한 모형이 아닙니다)', () {

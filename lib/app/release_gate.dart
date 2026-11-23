@@ -28,12 +28,11 @@ abstract final class ReleaseGate {
   /// 숨기는 이유: 성지·본당·서울대교구의 서면 동의 전이다(법률 검토 M6, 3D 실내 모형 = 2차적저작물 판례).
   /// 목록에는 '준비 중'으로만 보이고 들어갈 수 없다(여의도동의 임시 그리스도상도 그 안이라 함께 숨는다).
   /// 풀리는 조건: 당고개 — 성지·서울대교구(·설계자) 서면 동의, 여의도동 — 본당·서울대교구 동의,
-  /// 아시시 — 대성당(사크로 콘벤토 쿠스토디아) 동의(docs/legal/church_permission/08_Assisi_consent_request.md).
+  /// (아시시는 2026-11-23 사용자 결정으로 열었다 — 다른 오래된 대성전처럼 이의 없음·이름 사용만 여쭙는 경우, 08 요청서는 보낸다.)
   /// 동의를 받으면 해당 id 를 이 집합에서 빼고 `ChurchSelectScreen.releaseIds` 에 넣는다.
   static const Set<String> pendingConsentChurchIds = {
     'danggogae',
     'yeouido',
-    'assisi',
   };
 
   /// [releaseIds]에 더해 지금 빌드에서 열리는 성당 id.
