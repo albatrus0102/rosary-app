@@ -14,9 +14,10 @@ PROJECT="${PROJECT:-rosarium-demo}"
 node web_demo/build.mjs --base "https://${PROJECT}.pages.dev"
 
 # 2) 프로젝트가 없으면 만든다(있으면 오류를 무시)
-npx --yes wrangler pages project create "$PROJECT" --production-branch main >/dev/null 2>&1 || true
+# 저장소 루트의 wrangler.jsonc(Worker용)가 끼어들어 project create가 조용히 실패한다 — build/ 안에서 돌린다.
+(cd build && npx --yes wrangler pages project create "$PROJECT" --production-branch main >/dev/null 2>&1) || true
 
 # 3) 올리기
-npx --yes wrangler pages deploy build/web_demo --project-name "$PROJECT" --branch main --commit-dirty=true
+(cd build && npx --yes wrangler pages deploy web_demo --project-name "$PROJECT" --branch main --commit-dirty=true)
 
 echo "올렸습니다. 받는 곳별 주소는 build/web_demo_links.txt (비밀 — 저장소·채팅에 올리지 마세요)."
