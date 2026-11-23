@@ -177,3 +177,20 @@ test('grid path hugs corridors: bench rows are crossed only through the aisle', 
   assert.ok(path.len >= 20.5);
   void L;
 });
+
+// 성수대: 성 베드로·아시시는 닿을 수 있는 성수대 스테이션(성호 긋기 단추 자리)이 있다.
+for (const id of ['stpeter', 'assisi']) {
+  test(`fonts ${id}: reachable font station`, () => {
+    const c = churches.find((k) => k.id === id);
+    const { S } = mk(c);
+    const f = S.stations().font;
+    assert.ok(f.length >= 1, 'font station exists');
+    assert.equal(f.length, c.layout.fonts.length);
+    for (const k of f) {
+      assert.ok(S.free(k.x, k.z, k.y), 'font approach collides');
+      assert.ok(S.isReachable(k.x, k.z, k.y), 'font approach unreachable');
+      const d = Math.hypot(k.x - k.stand.x, k.z - k.stand.z);
+      assert.ok(d >= 0.6 && d <= 1.4 && d < k.reach, 'approach within reach ' + d);
+    }
+  });
+}
