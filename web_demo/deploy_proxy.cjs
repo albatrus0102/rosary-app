@@ -1,7 +1,7 @@
 // web_demo/deploy_proxy.cjs — 세션 프록시가 api.cloudflare.com 요청의 Authorization 을 저장된 토큰으로 덮어쓰는 환경용 배포 준비.
 // wrangler 의 파일 올리기 단계(일회용 JWT)는 그 덮어쓰기 때문에 실패한다. 그래서
 //   ① 이미 Cloudflare 에 올라가 있는 파일(같은 해시 — wrangler 와 같은 blake3(base64+확장자))은 manifest 로 가리키기만 하고,
-//   ② 새로 생기거나 바뀐 파일은 _worker.js 안에 넣어 Worker 가 바로 내준다(합계 900KB 까지; 넘으면 멈춘다 → wrangler 로 올려야 한다).
+//   ② 새로 생기거나 바뀐 파일은 _worker.js 안에 넣어 Worker 가 바로 내준다(합계 2.4MB 까지 — Workers 무료 한도 3MB(압축 뒤) 안; 넘으면 멈춘다 → wrangler 로 올려야 한다).
 // 쓰임: node web_demo/deploy_proxy.cjs <정적 폴더> <출력 폴더> <이미 올라간 해시 목록 json(manifest 형식, 여러 개면 쉼표)>
 //   → <출력 폴더>/manifest.json, worker.bundle, uploaded.json(이번 배포로 쓸 수 있게 된 해시 — 다음 번 목록에 더한다)
 // 보내기(Node fetch 는 프록시를 거치지 않으므로 curl):
@@ -30,7 +30,7 @@ let inlineBytes = 0;
     inlineBytes += buf.length;
   }
 })(dir);
-if (inlineBytes > 900 * 1024) { console.error('바뀐 파일이 너무 큽니다(' + inlineBytes + ' bytes) — wrangler 로 올리세요: ' + Object.keys(inline).join(', ')); process.exit(3); }
+if (inlineBytes > 2400 * 1024) { console.error('바뀐 파일이 너무 큽니다(' + inlineBytes + ' bytes) — wrangler 로 올리세요: ' + Object.keys(inline).join(', ')); process.exit(3); }
 const worker = `const FILES=${JSON.stringify(inline)};
 function hdr(res,p){const r=new Response(res.body,res);r.headers.set('X-Robots-Tag','noindex, nofollow, noarchive');r.headers.set('Referrer-Policy','no-referrer');r.headers.set('X-Content-Type-Options','nosniff');
 if(p.startsWith('/v/'))r.headers.set('Cache-Control','no-store');else if(p.startsWith('/assets/'))r.headers.set('Cache-Control','public, max-age=600');return r}
