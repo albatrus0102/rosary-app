@@ -8,7 +8,7 @@
 
   var UI = {
     ko: {
-      tagline: '로사리움(Rosarium) — 광고·결제 없는 무료 묵주기도 앱',
+      tagline: '로사리움(Rosarium) — 광고·결제 없는 무료 묵주기도 안드로이드 앱 · 이 화면은 웹 미리보기입니다',
       noteReal: '이 3D 성당({name})은 실제 모습과 같지 않은, 단순하게 본뜬 가상 모형입니다. 실제 미술 작품은 싣지 않았습니다. {approver}',
       noteFict: '이 3D 성당은 실제로 있는 어느 성당과도 같지 않은, 앱이 지어낸 가상의 본당입니다. 실제 미술 작품은 싣지 않았습니다. {approver}',
       langLabel: '언어',
@@ -29,7 +29,7 @@
       foot: 'Rosarium은 광고·결제·후원이 없는 비상업 앱입니다.'
     },
     it: {
-      tagline: 'Rosarium — app gratuita e non commerciale per la preghiera del Rosario',
+      tagline: 'Rosarium — app Android gratuita e non commerciale per la preghiera del Rosario · questa è un’anteprima web',
       noteReal: 'Questo modello 3D è una versione virtuale semplificata e non è uguale alla chiesa reale ({name}). Le opere d’arte reali non sono incluse. {approver}',
       noteFict: 'Questa chiesa 3D non è uguale a nessuna chiesa reale: è una parrocchia virtuale inventata dall’app. Le opere d’arte reali non sono incluse. {approver}',
       langLabel: 'Lingua',
@@ -50,7 +50,7 @@
       foot: 'Rosarium è un’app non commerciale: nessuna pubblicità, nessun pagamento, nessuna raccolta fondi.'
     },
     en: {
-      tagline: 'Rosarium — free, non-commercial rosary prayer app',
+      tagline: 'Rosarium — free, non-commercial Android app for praying the Rosary · this is a web preview',
       noteReal: 'This is a simplified virtual model; it differs from the real {name}. Real artworks are not included. {approver}',
       noteFict: 'This 3D church is not like any real church: it is a fictional parish invented by the app. Real artworks are not included. {approver}',
       langLabel: 'Language',
@@ -71,7 +71,7 @@
       foot: 'Rosarium is a non-commercial app: no ads, no payments, no donations.'
     },
     es: {
-      tagline: 'Rosarium — aplicación gratuita y sin fines comerciales para rezar el Rosario',
+      tagline: 'Rosarium — aplicación Android gratuita y sin fines comerciales para rezar el Rosario · esta es una vista previa web',
       noteReal: 'Este es un modelo virtual simplificado y no es igual a la iglesia real ({name}). No se incluyen obras de arte reales. {approver}',
       noteFict: 'Esta iglesia 3D no se parece a ninguna iglesia real: es una parroquia ficticia inventada por la aplicación. No se incluyen obras de arte reales. {approver}',
       langLabel: 'Idioma',
@@ -92,7 +92,7 @@
       foot: 'Rosarium es una aplicación sin fines comerciales: sin anuncios, sin pagos, sin donaciones.'
     },
     pt: {
-      tagline: 'Rosarium — aplicativo gratuito e não comercial para rezar o Rosário',
+      tagline: 'Rosarium — aplicativo Android gratuito e não comercial para rezar o Rosário · esta é uma prévia na web',
       noteReal: 'Este é um modelo virtual simplificado e não é igual à igreja real ({name}). Obras de arte reais não estão incluídas. {approver}',
       noteFict: 'Esta igreja 3D não é igual a nenhuma igreja real: é uma paróquia fictícia inventada pelo aplicativo. Obras de arte reais não estão incluídas. {approver}',
       langLabel: 'Idioma',
