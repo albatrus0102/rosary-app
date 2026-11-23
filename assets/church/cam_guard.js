@@ -552,7 +552,10 @@
     pitchUp: [0.8, 1.05, 1.3, 1.42], pitchDown: [0.28, 0.12], yawOff: [0.45, -0.45, 0.9, -0.9, 1.35, -1.35, 1.8, -1.8],
     wUp: 1.0, wDown: 1.6, wYaw: 2.0, wYaw0: 1.0, switchK: 0.8, swT: 0.6, homeT: 1.5, slack: 0.6,
     holdT: 0.5, tauIn: 0.4, vMax: 1.9, tauOut: 0.8, outMax: 1.6, hyst: 0.3, ahead: 0.6, yawAhead: 1.0,
-    liftFwd: 1.6, liftDep: 0.42, hMax: 4.6, wCap: 0.4, tauPitch: 0.45, tauYaw: 0.5, tauRush: 0.12, fpInT: 0.3, fpOutT: 0.8, fpOutK: 0.6, tauFp: 0.22
+    liftFwd: 1.6, liftDep: 0.42, hMax: 4.6, wCap: 0.4, tauPitch: 0.45, tauYaw: 0.5, tauRush: 0.12, fpInT: 0.3, fpOutT: 0.8, fpOutK: 0.6, tauFp: 0.22,
+    // 스프링 암(2026-11-23, CAMERA_MODES.md): 줄일 때는 빠르게(지금 자리가 벽 속이면 tauHard, 아니면 tauShort·초당 shortMax),
+    // 늘릴 때는 holdT 버틴 뒤 tauLong(약 0.5초)·초당 outMax 로. 사용자가 끈 각도(yaw·pitch)는 옵션(올리기·돌기)이 덮지 않는다(uhMove 만큼 걸어가기 전까지).
+    tauShort: 0.15, shortMax: 8.0, tauHard: 0.06, hardMax: 10.0, invMax: 10.0, escape: 1.2, tauLong: 0.5, uhMove: 1.0, aheadU: 1.0, yawAheadU: 1.4
   };
   // Q = {sp, cb, g, mx, fy, mz, needCov}. 방향(ux,uy,uz) 으로 d 만큼 간 점(점 하나)에 카메라가 설 수 있나
   function okPt(Q, ux, uy, uz, d) {
@@ -603,7 +606,7 @@
   function wrapA(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
 
   function createRig() {
-    var s = { d: -1, hold: 0, lastD: -1, pe: 0, yo: 0, oi: 0, cand: -1, candT: 0, fp: 0, fpWant: false, fpT: 0, py: 0, px: 0, pz: 0, pOk: false, peOk: false };
+    var s = { d: -1, hold: 0, lastD: -1, pe: 0, yo: 0, oi: 0, cand: -1, candT: 0, fp: 0, fpWant: false, fpT: 0, py: 0, px: 0, pz: 0, pOk: false, peOk: false, uh: false, uhx: 0, uhz: 0 };
     var Q = { sp: null, cb: null, g: null, mx: 0, fy: 0, mz: 0, needCov: false }, QP = { sp: null, cb: null, g: null, mx: 0, fy: 0, mz: 0, needCov: false };
     var NP = 1 + RIG.pitchUp.length + RIG.pitchDown.length, NYw = 1 + RIG.yawOff.length;
     // 시점 번호 oi = pi * NYw + yi. pi 0 = 사용자 pitch, 1.. = 올림, 그다음 = 내림. yi 0 = 사용자 yaw, 1.. = 좌우로 돈 것.
@@ -629,18 +632,38 @@
       ev.c = Math.abs(De - A) + RIG.wCap * (D - De) + (dp > 0 ? RIG.wUp * dp : -RIG.wDown * dp) + RIG.wYaw * Math.abs(wrapA(optYaw(yi) - s.yo)) + RIG.wYaw0 * Math.abs(optYaw(yi)) + (A < RIG.fpD ? 100 : 0);
       return ev;
     }
-    // I: {mx,fy,mz, yaw,pitch, D(목표 거리), cb, guard, auto, minD}. O 에 {x,y,z, pitch, dist, lift, fwd, yaw, fp, opt} 를 쓴다(할당 0).
+    // I: {mx,fy,mz, yaw,pitch, D(목표 거리), cb, guard, auto, minD, drag(사용자가 화면을 끄는 중)}.
+    // O 에 {x,y,z, pitch, dist, lift, fwd, yaw, fp, opt, avail, boom, baked, bakeYaw, bakePitch} 를 쓴다(할당 0).
     s.solve = function (I, dt, O) {
       var D = I.D, auto = I.auto !== false, yaw0 = I.yaw, sp = auto && I.guard ? I.guard.space || null : null;
+      // 사용자가 끈 각도가 이긴다: 끌기 시작하면 리그가 덧붙인 각도(올리기·돌기)를 사용자 각도로 넘기고(O.baked — 호출하는 쪽이 ctl.yaw += bakeYaw,
+      // ctl.pitch = bakePitch), 그 뒤로는 uhMove 만큼 걸어가기 전까지 옵션을 쓰지 않는다(벽 때문에 시점이 반대로 휘돌지 않게). 거리만 스프링으로 맞춘다.
+      O.baked = false;
+      if (I.drag) {
+        if (!s.uh && s.peOk && (s.oi !== 0 || Math.abs(s.yo) > 1e-3 || Math.abs(s.pe - I.pitch) > 1e-3)) {
+          O.baked = true; O.bakeYaw = s.yo; O.bakePitch = s.pe; yaw0 += s.yo;
+        }
+        if (!s.uh || O.baked) { s.oi = 0; s.yo = 0; s.cand = -1; s.candT = 0; }
+        s.uh = true; s.uhx = I.mx; s.uhz = I.mz;
+      } else if (s.uh && Math.abs(I.mx - s.uhx) + Math.abs(I.mz - s.uhz) > RIG.uhMove) s.uh = false;
+      var user = auto && s.uh;
       // 올림 상한(성당 카메라 상자 pitchMax — 좁은 계단 홀에서 거의 바로 위로 올라가 내려다보지 않게). 없으면 RIG.pitchUp 전부
       pMaxCur = I.pitchMax !== undefined ? I.pitchMax : (I.cb && I.cb.pitchMax !== undefined ? I.cb.pitchMax : 9);
       // 걷는 곳이 카메라 상자 밖이면(익랑 끝) 상자 없이 공간 격자만
       var cb0 = I.cb, inCb = cb0 && I.mx >= cb0.x0 && I.mx <= cb0.x1 && I.mz >= cb0.z0 && I.mz <= cb0.z1;
       Q.sp = sp; Q.cb = auto && (inCb || !sp) ? cb0 : null;
       Q.g = I.guard || null; Q.mx = I.mx; Q.fy = I.fy; Q.mz = I.mz; Q.needCov = !!(sp && sp.covered(I.mx, I.mz, I.fy));
-      var minD = Math.min(D, I.minD || RIG.minD), tp = I.pitch, ty = 0, fpWant = false, i;
+      var minD = Math.min(D, I.minD || RIG.minD), tp = O.baked ? O.bakePitch : I.pitch, ty = 0, fpWant = false, i, avail = D;
       curMin = minD;
-      if (auto) {
+      if (user) {
+        // 사용자 각도 그대로(옵션 없음). 막혔는지(1인칭)는 그 각도에서 얻는 거리로만 본다
+        s.oi = 0;
+        var uA = reachOn(Q, yaw0, tp, D, 0.4, D + RIG.push, -1, 0.4);
+        avail = uA;
+        if (!s.fpWant) { if (uA < RIG.fpD) { s.fpT += dt; if (s.fpT >= RIG.fpInT || s.d < 0 || uA < 0.4) { s.fpWant = true; s.fpT = 0; } } else s.fpT = 0; }
+        else if (uA >= RIG.fpD + RIG.fpOutK) { s.fpT += dt; if (s.fpT >= RIG.fpOutT) { s.fpWant = false; s.fpT = 0; } } else s.fpT = 0;
+        fpWant = s.fpWant;
+      } else if (auto) {
         // 지금 시점과 가장 좋은 시점(각도만 → 그래도 모자라면 좌우로 돌기)
         var cur = evalOpt(s.oi, I, yaw0, D), cC = cur.c, cA = cur.A, best = s.oi, bC = cC, bA = cA;
         // 각도(올리기·내리기)는 사용자 거리에 못 미치면 늘 따져 보고, 좌우로 돌기는 그래도 max(minD, 0.6D) 를 못 얻을 때만
@@ -667,7 +690,7 @@
         tp = optPitch((s.oi / NYw) | 0, I.pitch); if (tp < 0) { s.oi = 0; tp = I.pitch; }
         ty = optYaw(s.oi % NYw);
         // 1인칭: 어떤 시점으로도 fpD 를 못 얻는다(fpInT 이어지면). 돌아오기: fpD + fpOutK 를 fpOutT 동안 얻으면.
-        var avail = Math.max(oA, bA);
+        avail = Math.max(oA, bA);
         if (!s.fpWant) { if (avail < RIG.fpD) { s.fpT += dt; if (s.fpT >= RIG.fpInT || s.d < 0 || avail < 0.4) { s.fpWant = true; s.fpT = 0; } } else s.fpT = 0; }
         else if (avail >= RIG.fpD + RIG.fpOutK) { s.fpT += dt; if (s.fpT >= RIG.fpOutT) { s.fpWant = false; s.fpT = 0; } } else s.fpT = 0;
         fpWant = s.fpWant;
@@ -676,7 +699,9 @@
       if (!s.peOk || s.d < 0) { s.pe = tp; s.yo = ty; s.peOk = true; }
       // 지금 각도로는 최소 거리도 못 얻으면(막혀서 바꾸는 중) 빨리 돈다 — 그 사이 카메라가 머리에 붙지 않게
       var De = auto ? effD((s.oi / NYw) | 0, tp, D) : D;   // 지금 시점의 목표 거리(올렸으면 높이 hMax 까지)
-      var cut = false, turning = Math.abs(tp - s.pe) > 0.02 || Math.abs(wrapA(ty - s.yo)) > 0.02;
+      // 사용자가 정한 각도는 늦추지 않고 그대로(끄는 손가락을 바로 따른다 — 리그가 각도를 덮거나 끊지 않는다)
+      if (user) { s.pe = tp; s.yo = 0; }
+      var cut = false, turning = !user && (Math.abs(tp - s.pe) > 0.02 || Math.abs(wrapA(ty - s.yo)) > 0.02);
       var rush = auto && sp && turning && reachOn(Q, yaw0 + s.yo, s.pe, De, 0.4, De + RIG.push, -1, minD) < minD;
       s.pe += (tp - s.pe) * (1 - Math.exp(-dt / (rush ? RIG.tauRush : RIG.tauPitch)));
       s.yo += wrapA(ty - s.yo) * (1 - Math.exp(-dt / (rush ? RIG.tauRush : RIG.tauYaw)));
@@ -685,38 +710,71 @@
       var yaw = yaw0 + s.yo, pe = s.pe;
       // 지금 각도에서 D 에 가장 가까운 자리(+ 미리 보기: ahead 초 뒤의 피벗·방향에서 곧 막히면 미리 천천히 줄인다)
       var pref = s.d < 0 ? 0 : (s.d < De - 0.1 ? -1 : (s.d > De + 0.1 ? 1 : 0));   // 지금 있는 쪽(피어 앞/뒤)에 머문다
-      var tg = auto ? reachOn(Q, yaw, pe, De, 0.4, De + RIG.push, pref, minD) : D;
+      // 사용자가 끈 각도: 가까운 쪽부터 끝까지 본다(최소 거리 아래도 — 벽 너머로 튀어 나가지 않게. 너무 가까우면 1인칭이 받는다)
+      var mnR = user ? 0.4 : minD;
+      var tg = auto ? reachOn(Q, yaw, pe, De, 0.4, De + RIG.push, user && pref === 0 ? -1 : pref, mnR) : D;
       if (auto && tg < 0.4) tg = s.d > 0 ? s.d : Math.min(D, RIG.fpD);
       if (auto && sp && s.pOk && dt > 1e-4) {
-        var wy = wrapA(yaw - s.py), k = RIG.ahead / dt, yP = yaw + Math.max(-RIG.yawAhead, Math.min(RIG.yawAhead, wy * k));
+        // 사용자가 돌리는 중이면 더 멀리(1초) 내다보고 지나갈 길 셋(⅓·⅔·끝)을 모두 본다: 벽으로 돌아 들어가기 전에 미리 줄여서 한 번에 당기지 않게
+        var wy = wrapA(yaw - s.py), k = (user ? RIG.aheadU : RIG.ahead) / dt, yA = user ? RIG.yawAheadU : RIG.yawAhead, yS = Math.max(-yA, Math.min(yA, wy * k));
         QP.sp = sp; QP.cb = Q.cb; QP.g = Q.g; QP.fy = I.fy; QP.needCov = Q.needCov;
         QP.mx = I.mx + Math.max(-1, Math.min(1, (I.mx - s.px) * k)); QP.mz = I.mz + Math.max(-1, Math.min(1, (I.mz - s.pz) * k));
-        var Ap = reachOn(QP, yP, pe, De, 0.4, De + RIG.push, pref, minD);
-        if (Ap >= Math.max(RIG.fpD, minD) && Ap < tg) tg = Ap;
+        for (var qa = user && Math.abs(yS) > 0.05 ? 1 : 3; qa <= 3; qa++) {
+          var Ap = reachOn(QP, yaw + yS * qa / 3, pe, De, 0.4, De + RIG.push, user && pref === 0 ? -1 : pref, mnR);
+          if (Ap >= (user ? 0.4 : Math.max(RIG.fpD, minD)) && Ap < tg) tg = Ap;
+        }
       }
       s.py = yaw; s.px = I.mx; s.pz = I.mz; s.pOk = true;
       var cp = Math.cos(pe), ux = Math.sin(yaw) * cp, uy = Math.sin(pe), uz = Math.cos(yaw) * cp;
-      var d0 = s.d, free = s.d < 0 || Math.abs(D - s.lastD) > 1e-3;
-      var inv = !free && auto && sp && !okBr(Q, ux, uy, uz, s.d);
-      if (free) {
-        // 처음이거나 사용자가 거리를 바꿨다(핀치·설정·앉기): 그대로 따른다(사용자가 바꾼 것은 바로 보인다)
-        if (s.d < 0 || tg < s.d || s.lastD < 0) s.d = tg; else s.d = Math.min(tg, s.d + (D - s.lastD));
-        s.hold = RIG.holdT;
-      } else if (inv) {
-        // 지금 자리가 설 수 없는 곳(막혀 들어오는 중·각도 보간 중·피어 앞뒤로 옮기는 중): 버티지 않고 목표 쪽 가장 가까운 설 수 있는 곳으로.
-        // 초당 vMax 로 가되, 벽 여유(slack)보다 깊이 들어가 있으면 그 경계까지는 곧장(면에 붙거나 속에 머물지 않게)
-        var dir = tg > s.d ? 1 : -1, found = tg;
-        for (var dd = s.d; dir > 0 ? dd <= tg : dd >= tg; dd += dir * RIG.step) if (okAt(Q, ux, uy, uz, dd)) { found = dd; break; }
-        var gap = Math.abs(found - s.d), mv = Math.min(gap, Math.max(RIG.vMax * dt, gap - RIG.slack));
-        s.d += dir * mv; s.hold = 0;
-      } else if (tg < s.d) {
-        s.d += (tg - s.d) * (1 - Math.exp(-dt / RIG.tauIn));
-        s.hold = RIG.holdT;
-      } else if (tg > s.d + RIG.hyst) {
-        if (s.hold > 0) s.hold -= dt; else s.d += Math.min((tg - s.d) * (1 - Math.exp(-dt / RIG.tauOut)), RIG.outMax * dt);
-      } else if (tg > s.d) s.d = tg;
-      // 거리는 초당 vMax 넘게 바꾸지 않는다(자동 줌이 튀지 않게, 위의 '설 수 없는 곳' 경우 말고)
-      if (!free && !inv) { var lim = RIG.vMax * dt; if (s.d > d0 + lim) s.d = d0 + lim; else if (s.d < d0 - lim) s.d = d0 - lim; }
+      var d0 = s.d;
+      if (!user) {
+        // 걷는 중(자동 시점): 예전 그대로 — 자동 줌은 초당 vMax 를 넘지 않는다(정신없는 줌 금지, camera_rig.test). 벽 속이면 목표 쪽 경계로 곧장
+        var free = s.d < 0 || Math.abs(D - s.lastD) > 1e-3;
+        var inv = !free && auto && sp && !okBr(Q, ux, uy, uz, s.d);
+        if (free) {
+          // 처음이거나 사용자가 거리를 바꿨다(핀치·설정·앉기): 그대로 따른다(사용자가 바꾼 것은 바로 보인다)
+          if (s.d < 0 || tg < s.d || s.lastD < 0) s.d = tg; else s.d = Math.min(tg, s.d + (D - s.lastD));
+          s.hold = RIG.holdT;
+        } else if (inv) {
+          var dir = tg > s.d ? 1 : -1, found = tg;
+          for (var dd = s.d; dir > 0 ? dd <= tg : dd >= tg; dd += dir * RIG.step) if (okAt(Q, ux, uy, uz, dd)) { found = dd; break; }
+          // 경계까지 곧장이되 한 프레임에 초당 invMax 넘게는 아니다(2026-11-23: 몇 m 를 한 프레임에 건너뛰던 튐)
+          var gap = Math.abs(found - s.d), mv = Math.min(gap, Math.max(RIG.vMax * dt, Math.min(gap - RIG.slack, RIG.invMax * dt)));
+          s.d += dir * mv; s.hold = 0;
+        } else if (tg < s.d) {
+          s.d += (tg - s.d) * (1 - Math.exp(-dt / RIG.tauIn));
+          s.hold = RIG.holdT;
+        } else if (tg > s.d + RIG.hyst) {
+          if (s.hold > 0) s.hold -= dt; else s.d += Math.min((tg - s.d) * (1 - Math.exp(-dt / RIG.tauOut)), RIG.outMax * dt);
+        } else if (tg > s.d) s.d = tg;
+        if (!free && !inv) { var lim = RIG.vMax * dt; if (s.d > d0 + lim) s.d = d0 + lim; else if (s.d < d0 - lim) s.d = d0 - lim; }
+      } else if (s.d < 0) { s.d = tg; s.hold = RIG.holdT; }
+      else {
+        // 스프링 암(사용자가 끄는 각도, 2026-11-23): 앞뒤로 번갈아 끊지 않는다.
+        // 사용자가 거리를 바꿨다(핀치·설정·앉기): 바꾼 만큼은 바로 보인다(그다음 막힘은 스프링이 맞춘다)
+        if (s.lastD >= 0 && Math.abs(D - s.lastD) > 1e-3) s.d = Math.max(0.4, s.d + (D - s.lastD));
+        // 지금 자리가 벽 속(지나가도 되는 얇은 것 속도 아님)이면: 가장 가까운 설 수 있는 거리(짧은 쪽 먼저, escape 안)로 빠르게(초당 hardMax 까지 —
+        // 한 프레임에 순간이동하지 않는다). 목표가 멀어도 벽 너머로 튀어 나가지 않는다(먼저 빠져나오고, 늘리기는 천천히).
+        var hard = sp && !okBr(Q, ux, uy, uz, s.d), goal = tg, tau = RIG.tauShort, cap = RIG.shortMax;
+        if (hard) {
+          goal = -1;
+          for (var e2 = RIG.step * 0.5; e2 <= RIG.escape + 1e-6 && goal < 0; e2 += RIG.step * 0.5) {
+            if (s.d - e2 >= 0.4 && okBr(Q, ux, uy, uz, s.d - e2)) goal = s.d - e2;
+            else if (s.d + e2 <= tg && okBr(Q, ux, uy, uz, s.d + e2)) goal = s.d + e2;
+          }
+          if (goal < 0) goal = Math.min(tg, s.d);
+          tau = RIG.tauHard; cap = RIG.hardMax;
+        }
+        if (goal < s.d - 1e-4 || (hard && goal > s.d + 1e-4)) {
+          var nd = s.d + (goal - s.d) * (1 - Math.exp(-dt / tau));
+          if (Math.abs(nd - s.d) > cap * dt) nd = s.d + (nd > s.d ? 1 : -1) * cap * dt;
+          s.d = nd; s.hold = RIG.holdT;
+        } else if (goal > s.d + 1e-4) {
+          // 늘리기: holdT 버틴 뒤 천천히(약 0.5초, 초당 outMax 까지)
+          if (s.hold > 0) s.hold -= dt;
+          else s.d += Math.min((goal - s.d) * (1 - Math.exp(-dt / RIG.tauLong)), RIG.outMax * dt);
+        }
+      }
       s.lastD = D;
       s.fp += ((fpWant ? 1 : 0) - s.fp) * (1 - Math.exp(-dt / RIG.tauFp));
       if (s.fp < 1e-3) s.fp = 0; else if (s.fp > 0.999) s.fp = 1;
@@ -725,6 +783,8 @@
       // 올렸으면 앞을 본다: 아바타가 화면 가운데에서 약 24° 아래(화면 아래쪽)에 오도록 보는 점을 앞으로(가는 길이 보이게)
       var hh = uy * s.d, hz = cp * s.d, dep = Math.max(0.6, Math.atan2(hh, hz) - RIG.liftDep), fg = hh / Math.tan(dep) - hz;
       O.pitch = pe; O.dist = s.d; O.lift = lift; O.fwd = lift * Math.max(RIG.liftFwd, Math.min(6, fg)); O.yaw = yaw; O.fp = s.fp; O.fpOn = s.fpWant; O.opt = s.oi; O.cut = cut;
+      // 시점 모드(createView)가 쓰는 '얻을 수 있는 3인칭 거리': 사용자 각도면 그 방향 붐, 아니면 시점들 중 가장 좋은 것
+      O.avail = avail; O.boom = user ? tg : avail; O.user = user; O.tg = tg;
       return O;
     };
     // 지금 피벗 기준으로 (x,y,z) 에 카메라가 설 수 있나(main.js 안전망: 부드럽게 따라가는 위치가 벽 속이면 목표로)
@@ -734,7 +794,126 @@
       if (d < 1e-3) return false;
       return okBr(Q, ex / d, ey / d, ez / d, d);
     };
-    s.reset = function () { s.d = -1; s.hold = 0; s.lastD = -1; s.pOk = false; s.peOk = false; s.yo = 0; s.oi = 0; s.cand = -1; s.candT = 0; s.fp = 0; s.fpWant = false; s.fpT = 0; };
+    s.reset = function () { s.d = -1; s.hold = 0; s.lastD = -1; s.pOk = false; s.peOk = false; s.yo = 0; s.oi = 0; s.cand = -1; s.candT = 0; s.fp = 0; s.fpWant = false; s.fpT = 0; s.uh = false; };
+    return s;
+  }
+
+  // ---- 시점 모드: 좁으면 자동 1인칭(docs/church/CAMERA_MODES.md) ----
+  // 사용자 제보(2026-11-23): 「아시시 묘소는 거의 돌려볼 수가 없어. 너무 좁아서. 돌려보려고 해도 자꾸 튀어나와 튕기고」 — 좁은 곳(묘소·계단·주보랑)에서
+  // 3인칭 카메라가 면에 막혀 앞뒤로 튀었다. 고친 방법: 좁은 곳에서는 카메라가 아바타 눈으로 0.5초에 부드럽게 들어가(1인칭) 그 자리에서 둘러보고,
+  // 트인 곳으로 나오면 다시 뒤로 빠진다. 「좁다」 = 아래 넷 중 하나(들어갈 때 문턱 · 나올 때 더 넉넉한 문턱 — 히스테리시스, 머무는 최소 1초):
+  //  (가) 사용자 방향 붐(카메라 팔)이 면에 막혀 boomIn(1.6m) 아래 (나) 눈높이 수평 8방향 평균 빈 거리가 freeIn 아래이거나, 천장이 낮고(upLow) 좁다
+  //  (다) 계단 중간(앞뒤 모두 단이 있고 오르내림이 크다 — 제대 앞 두세 단은 아니다) (라) 빌더가 표시한 좁은 구역(카메라 상자 tight: [{x0,x1,z0,z1,y0,y1}])
+  var VIEW = {
+    boomIn: 1.6, boomOut: 2.4, freeIn: 1.9, freeOut: 2.6, upLow: 1.9, freeLowIn: 3.4, freeLowOut: 4.0, stairFree: 3.4,
+    ray: 5.0, eye: 1.5, enterT: 0.25, exitT: 1.0, dwell: 1.0, blendT: 0.5, every: 0.1,
+    stairReach: 1.5, stairStep: 0.3, stairSide: 0.25, stairRise: 0.8
+  };
+  // 눈높이 빈 공간(수평 8방향 평균 · 위)과 계단 중간인지. 가는 면(기둥)도 막는다. floorAt(x,z,yRef) = 그 자리 바닥 높이(여러 층은 yRef 에서 한 걸음 안).
+  function spaceAround(guard, floorAt, x, foot, z, out) {
+    out = out || {};
+    var ey = foot + VIEW.eye, R = VIEW.ray, sum = 0, mn = R, k;
+    if (guard && guard.clip) {
+      for (k = 0; k < 8; k++) {
+        var a = k * Math.PI / 4, d = guard.clip(x, ey, z, x + Math.sin(a) * R, ey, z + Math.cos(a) * R, 0) * R;   // 가는 면(기둥)은 빼고 잰다: 3인칭은 기둥을 잘라내고 지나간다
+        sum += d; if (d < mn) mn = d;
+      }
+      var tu = guard.clip(x, ey, z, x, ey + R, z, 0);
+      out.up = tu * R;
+      out.free = sum / 8; out.minFree = mn;
+    } else { out.up = R; out.free = R; out.minFree = R; }
+    out.stair = false;
+    if (floorAt) {
+      for (k = 0; k < 4; k++) {
+        var b = k * Math.PI / 4, sx = Math.sin(b), sz = Math.cos(b), ys = [0, 0], near = [0, 0];
+        for (var sgn = 0; sgn < 2; sgn++) {
+          var y = foot, s = sgn ? -1 : 1;
+          for (var r = VIEW.stairStep; r <= VIEW.stairReach + 1e-6; r += VIEW.stairStep) {
+            var ny = floorAt(x + sx * s * r, z + sz * s * r, y);
+            if (!(ny > -1e8) || Math.abs(ny - y) > 0.5) break;   // 바닥 없음·낭떠러지(한 걸음보다 큼)는 계단이 아니다
+            y = ny;
+            if (r <= 0.6 + 1e-6) near[sgn] = y - foot;
+          }
+          ys[sgn] = y - foot;
+        }
+        // 한쪽은 오르고 다른 쪽은 내리며(가운데), 가까운 단도 양쪽에 있고, 합한 오르내림이 크다
+        var up = Math.max(ys[0], ys[1]), dn = -Math.min(ys[0], ys[1]);
+        if (ys[0] * ys[1] < 0 && near[0] * near[1] < 0 && up >= VIEW.stairSide && dn >= VIEW.stairSide && up + dn >= VIEW.stairRise) { out.stair = true; break; }
+      }
+    }
+    return out;
+  }
+  function inTight(list, x, foot, z) {
+    if (!list) return false;
+    for (var i = 0; i < list.length; i++) {
+      var t = list[i];
+      if (x >= t.x0 && x <= t.x1 && z >= t.z0 && z <= t.z1 && (t.y0 === undefined || foot >= t.y0) && (t.y1 === undefined || foot <= t.y1)) return true;
+    }
+    return false;
+  }
+  function smooth01(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u * u * (3 - 2 * u); }
+  // 시점 모드 상태: step(I, dt, O). I = {guard, floorAt, mx, mz, foot, cb(.tight), boom(리그가 사용자 방향으로 얻은 거리), rigFp(리그가 정말 막혀 1인칭),
+  //  mode('auto'|'fp'|'tp'), block(앉기·무릎·기도 자리 시점 중: 1인칭 금지 — 기도 카메라를 그대로 쓴다)}.
+  // O = {want(지금 1인칭을 원하나), f(0..1, 0.5초 ease-in-out 으로 섞는 값), why(무엇 때문에 좁다), free, up, stair}
+  function createView() {
+    var s = { want: false, lin: 0, tIn: 0, tOut: 0, since: 9, acc: 9, sp: {}, lx: 1e9, lz: 1e9, lf: 1e9, why: '', fresh: true };
+    s.step = function (I, dt, O) {
+      O = O || {};
+      var mode = I.mode || 'auto', sp = s.sp;
+      // 빈 공간·계단은 0.1초마다 또는 0.2m 넘게 움직였을 때만 다시 잰다(선 9개 + 바닥 조회 수십 번)
+      s.acc += dt;
+      if (s.acc >= VIEW.every || Math.abs(I.mx - s.lx) + Math.abs(I.mz - s.lz) > 0.2 || Math.abs(I.foot - s.lf) > 0.1) {
+        spaceAround(I.guard, I.floorAt, I.mx, I.foot, I.mz, sp); s.acc = 0; s.lx = I.mx; s.lz = I.mz; s.lf = I.foot;
+        sp.hint = inTight(I.cb && I.cb.tight, I.mx, I.foot, I.mz);
+      }
+      var boom = I.boom === undefined ? 99 : I.boom;
+      var stair = sp.stair && sp.free < VIEW.stairFree;   // 트인 넓은 계단(밀라노 제단 앞 큰 계단)은 3인칭 그대로
+      var tight = boom < VIEW.boomIn || sp.free < VIEW.freeIn || (sp.up < VIEW.upLow && sp.free < VIEW.freeLowIn) || stair || sp.hint || !!I.rigFp;
+      var open = boom >= VIEW.boomOut && sp.free >= VIEW.freeOut && !(sp.up < VIEW.upLow && sp.free < VIEW.freeLowOut) && !stair && !sp.hint && !I.rigFp;
+      s.why = tight ? (sp.hint ? 'zone' : stair ? 'stair' : boom < VIEW.boomIn ? 'boom' : I.rigFp ? 'blocked' : 'space') : '';
+      s.since += dt;
+      var autoWant = s.want;
+      if (!s.want) {
+        s.tIn = tight ? s.tIn + dt : 0;
+        if (s.tIn >= VIEW.enterT && s.since >= VIEW.dwell) autoWant = true;
+      } else {
+        s.tOut = open ? s.tOut + dt : 0;
+        if (s.tOut >= VIEW.exitT && s.since >= VIEW.dwell) autoWant = false;
+      }
+      // 입장·복원(자리 옮김) 첫 프레임: 그 자리가 좁으면 기다리지 않고 바로 1인칭(섞지도 않는다)
+      if (s.fresh && tight) autoWant = true;
+      var want = I.block ? false : mode === 'fp' ? true : mode === 'tp' ? false : autoWant;
+      if (want !== s.want) { s.want = want; s.since = 0; s.tIn = 0; s.tOut = 0; }
+      var tgt = s.want ? 1 : 0, stp = dt / VIEW.blendT;
+      if (s.fresh) { s.lin = tgt; s.fresh = false; }
+      s.lin = s.lin < tgt ? Math.min(tgt, s.lin + stp) : Math.max(tgt, s.lin - stp);
+      O.want = s.want; O.f = smooth01(s.lin); O.why = s.why; O.free = sp.free; O.up = sp.up; O.stair = !!sp.stair; O.hint = !!sp.hint; O.tight = tight;
+      return O;
+    };
+    // 입장·복원(자리 옮김): 그 자리의 모드로 바로(섞지 않는다). 처음 프레임에 좁으면 곧장 1인칭
+    s.reset = function () { s.want = false; s.lin = 0; s.tIn = 0; s.tOut = 0; s.since = 9; s.acc = 9; s.lx = 1e9; s.fresh = true; };
+    return s;
+  }
+  // 카메라 놓기(main.js updateCamera 와 시험이 같이 쓴다): 피벗(아바타 가슴)만 부드럽게 따라가고, 카메라는 '부드러운 피벗 + 리그가 정한 팔'에 둔다.
+  // 예전에는 카메라 위치 자체를 직교 좌표로 7/s 따라가게 해서, 화면을 빠르게 돌리면 원의 현(chord)을 가로질러 아바타 쪽으로 파고들었고
+  // 그 자리가 벽 속이면 '곧장 목표로' 끊어 앞뒤로 튀었다. 팔 길이·각도는 리그가 이미 부드럽게 한다(스프링 암).
+  // I = {mx,fy,mz(피벗), cx,cy,cz(리그 카메라), ex,ey,ez(눈), fp(0..1), cut, init}. O = {x,y,z, px,py,pz(부드러운 피벗)}
+  function createCompose() {
+    var s = { px: 0, py: 0, pz: 0, ok: false };
+    s.step = function (I, dt, O) {
+      O = O || {};
+      if (!s.ok || I.init || I.cut) { s.px = I.mx; s.py = I.fy; s.pz = I.mz; s.ok = true; }
+      var k = 1 - Math.exp(-dt * 12);
+      s.px += (I.mx - s.px) * k; s.py += (I.fy - s.py) * k; s.pz += (I.mz - s.pz) * k;
+      // 걷는 속도로 뒤처지는 만큼은 작다(1.4m/s × 0.08초 ≈ 0.1m). 순간이동(1.5m 넘게)은 따라가지 않고 바로
+      if (Math.abs(I.mx - s.px) + Math.abs(I.mz - s.pz) + Math.abs(I.fy - s.py) > 1.5) { s.px = I.mx; s.py = I.fy; s.pz = I.mz; }
+      var ox = s.px - I.mx, oy = s.py - I.fy, oz = s.pz - I.mz, f = I.fp || 0;
+      var tx = I.cx + ox, ty = I.cy + oy, tz = I.cz + oz, ex = I.ex + ox, ey = I.ey + oy, ez = I.ez + oz;
+      O.x = tx + (ex - tx) * f; O.y = ty + (ey - ty) * f; O.z = tz + (ez - tz) * f;
+      O.px = s.px; O.py = s.py; O.pz = s.pz;
+      return O;
+    };
+    s.reset = function () { s.ok = false; };
     return s;
   }
 
@@ -781,7 +960,8 @@
     return o2;
   }
 
-  var api = { build: build, classifyThin: classifyThin, patchSee: patchSee, avatarAlpha: avatarAlpha, MIN_ALPHA: MIN_ALPHA, SPOT: SPOT, PRAY: PRAY, spotBlend: spotBlend, RIG: RIG, createRig: createRig, reachOn: reachOn, prayYaw: prayYaw, spaceOpts: spaceOpts };
+  var api = { build: build, classifyThin: classifyThin, patchSee: patchSee, avatarAlpha: avatarAlpha, MIN_ALPHA: MIN_ALPHA, SPOT: SPOT, PRAY: PRAY, spotBlend: spotBlend, RIG: RIG, createRig: createRig, reachOn: reachOn, prayYaw: prayYaw, spaceOpts: spaceOpts,
+    VIEW: VIEW, createView: createView, createCompose: createCompose, spaceAround: spaceAround, inTight: inTight };
   root.ChurchCamGuard = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : this);

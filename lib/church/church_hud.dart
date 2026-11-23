@@ -281,6 +281,7 @@ class ChurchStatusChip extends StatelessWidget {
 /// [emphasized]면 아이콘 뒤에 `primaryContainer` 표시기(M3 내비게이션 표시기 모양)를 둔다.
 class _HudBarButton extends StatelessWidget {
   const _HudBarButton({
+    super.key,
     required this.icon,
     required this.label,
     required this.onPressed,
@@ -359,7 +360,7 @@ class _HudBarButton extends StatelessWidget {
   }
 }
 
-/// 위쪽 도구 줄(하나의 어두운 표면 위): 소리, 아바타 편집, 인사/이모트, 그리고 [onGo]가 있으면
+/// 위쪽 도구 줄(하나의 어두운 표면 위): 소리, 아바타 편집, 인사/이모트, 시점([onViewMode]가 있으면), 그리고 [onGo]가 있으면
 /// 구분선 뒤에 '가기'([ChurchGoButton]). 항목마다 금색 선 아이콘 아래 짧은 라벨이 있다.
 class ChurchTopActions extends StatelessWidget {
   const ChurchTopActions({
@@ -368,9 +369,24 @@ class ChurchTopActions extends StatelessWidget {
     required this.onToggleAmbient,
     required this.onEditAvatar,
     required this.onEmote,
+    this.viewMode = ChurchCamView.auto,
+    this.onViewMode,
     this.onGo,
     this.onCollapse,
   });
+
+  /// 지금 카메라 시점(「시점」 항목의 아이콘·스크린리더 라벨).
+  final ChurchCamView viewMode;
+
+  /// 있으면 「시점」 항목을 둔다: 누를 때마다 자동 → 1인칭 고정 → 뒤에서 보기 고정 → 자동. docs/church/CAMERA_MODES.md
+  final VoidCallback? onViewMode;
+
+  /// 시점마다의 아이콘: 자동(A), 1인칭(눈), 뒤에서 보기(사람).
+  static IconData viewIcon(ChurchCamView v) => switch (v) {
+    ChurchCamView.auto => Icons.motion_photos_auto_outlined,
+    ChurchCamView.firstPerson => Icons.visibility_outlined,
+    ChurchCamView.follow => Icons.person_outline,
+  };
 
   /// 있으면 줄 끝에 '메뉴 접기' 단추를 둔다(접으면 [ChurchHudMenuButton] 하나만 남는다).
   final VoidCallback? onCollapse;
@@ -388,20 +404,30 @@ class ChurchTopActions extends StatelessWidget {
   /// 항목 폭의 하한(M3 터치 타깃 48dp).
   static const double minItemWidth = 48;
 
-  /// 줄 안 항목(소리·아바타·인사·가기) 말고 고정 폭: 좌우 안쪽 여백 + 구분선 + 접기 단추.
-  double _fixedWidth() =>
-      AppSpace.xs * 2 +
-      (onGo != null ? AppSpace.xs + 1 : 0) +
+  int get _itemCount => 3 + (onViewMode != null ? 1 : 0) + (onGo != null ? 1 : 0);
+
+  /// 줄 안 항목(소리·아바타·인사·시점·가기) 말고 고정 폭: 좌우 안쪽 여백 + 구분선 + 접기 단추.
+  /// [compact]면 좌우 여백과 구분선을 없앤다(320dp 폰에서 다섯 항목을 48dp로 넣으려고 — '가기'는 금색 표시기로 따로 보인다).
+  double _fixedWidth({bool compact = false}) =>
+      (compact ? 0 : AppSpace.xs * 2) +
+      (onGo != null && !compact ? AppSpace.xs + 1 : 0) +
       (onCollapse != null ? 48 : 0);
+
+  /// 기본 여백으로는 48dp 항목이 다 들어가지 않을 만큼 좁은가(그때만 여백·구분선을 뺀다).
+  bool compactFor(double maxWidth) =>
+      maxWidth.isFinite &&
+      _fixedWidth() + _itemCount * minItemWidth > maxWidth;
 
   /// 줄이 [maxWidth] 안에 들어가게 하는 항목 폭. 기본 폭으로 들어가면 null(예전 그대로).
   /// 320dp 폰처럼 좁으면 항목을 똑같이 줄이되 48dp 아래로는 줄이지 않는다(라벨 글자는 [_HudBarButton]이 줄인다).
   double? itemWidthFor(double maxWidth) {
     if (!maxWidth.isFinite) return null;
-    final n = onGo != null ? 4 : 3;
+    final n = _itemCount;
     final full = _fixedWidth() + n * ChurchHudStyle.barItemSize.width;
-    if (maxWidth >= full) return null;
-    final w = ((maxWidth - _fixedWidth()) / n).floorToDouble();
+    // 꼭 맞는 폭(여유 8dp 미만)도 항목 폭을 정해 준다: 기본 폭에서는 큰 글씨 라벨이 항목을 넓혀 1px 안쪽으로 넘칠 수 있다.
+    if (maxWidth >= full + AppSpace.xs) return null;
+    final fixed = _fixedWidth(compact: compactFor(maxWidth));
+    final w = ((maxWidth - fixed) / n).floorToDouble();
     return w < minItemWidth ? minItemWidth : w;
   }
 
@@ -409,22 +435,26 @@ class ChurchTopActions extends StatelessWidget {
   Widget build(BuildContext context) {
     // 넓은 화면(이름판 옆)에서는 폭 제한이 없고, 폰 폭(이름판 아래 오른쪽)에서는 남은 폭 안에 들어가야 한다.
     return LayoutBuilder(
-      builder: (context, constraints) =>
-          _buildBar(context, itemWidthFor(constraints.maxWidth)),
+      builder: (context, constraints) => _buildBar(
+        context,
+        itemWidthFor(constraints.maxWidth),
+        compactFor(constraints.maxWidth),
+      ),
     );
   }
 
-  Widget _buildBar(BuildContext context, double? itemW) {
+  Widget _buildBar(BuildContext context, double? itemW, bool compact) {
     final scheme = Theme.of(context).colorScheme;
     final go = onGo;
+    final onView = onViewMode;
     return Material(
       color: ChurchHudStyle.surface(scheme),
       shape: ChurchHudStyle.bar(scheme),
       clipBehavior: Clip.antiAlias,
       elevation: ChurchHudStyle.elevation,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.xs,
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 0 : AppSpace.xs,
           vertical: AppSpace.xxs,
         ),
         child: IntrinsicHeight(
@@ -467,14 +497,30 @@ class ChurchTopActions extends StatelessWidget {
                   ),
                 ),
               ),
-              if (go != null) ...[
-                VerticalDivider(
-                  width: AppSpace.xs + 1,
-                  thickness: 1,
-                  indent: AppSpace.xs,
-                  endIndent: AppSpace.xs,
-                  color: scheme.outlineVariant,
+              if (onView != null)
+                Semantics(
+                  button: true,
+                  label: '시점: ${viewMode.label}',
+                  hint: '누르면 ${viewMode.next.label}',
+                  excludeSemantics: true,
+                  child: _HudBarButton(
+                    key: const ValueKey('view-mode'),
+                    tooltip: '시점: ${viewMode.label}',
+                    onPressed: onView,
+                    icon: viewIcon(viewMode),
+                    label: '시점',
+                    width: itemW,
+                  ),
                 ),
+              if (go != null) ...[
+                if (!compact)
+                  VerticalDivider(
+                    width: AppSpace.xs + 1,
+                    thickness: 1,
+                    indent: AppSpace.xs,
+                    endIndent: AppSpace.xs,
+                    color: scheme.outlineVariant,
+                  ),
                 ChurchGoButton(
                   key: const ValueKey('go-button'),
                   onPressed: go,

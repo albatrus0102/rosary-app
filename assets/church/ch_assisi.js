@@ -817,7 +817,9 @@
       [-10, -14.5, -19].forEach(function (z) { glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: TER.x1 - 0.02, y: YU + 2.0, z: z, vary: 0 }); glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: STR.x0 + 0.02, y: YL + 2.0 + (TZ0 - z) / (TZ0 - STR.z1) * (YU - YL), z: z, vary: 0 }); });
 
       // 카메라: 맨 위 궁륭 아래까지(맨 아래층 묘소부터 상부 궁륭까지 한 공간 — cam_guard 여러 층)
-      ctx.setCameraBounds({ x0: -10.0, x1: 10.0, z0: -24.0, z1: 28.6, yMax: YU + VC - 0.3 });
+      // tight(시점 모드, docs/church/CAMERA_MODES.md): 묘소(둥근 방·기도방·층계참, 천장 3.2m)는 늘 좁은 곳 — 자동 시점에서 1인칭으로 둘러본다
+      ctx.setCameraBounds({ x0: -10.0, x1: 10.0, z0: -24.0, z1: 28.6, yMax: YU + VC - 0.3,
+        tight: [{ x0: CRY.x - CRY.r - 0.3, x1: CRY.x + CRY.r + 0.3, z0: CRY.z - CRY.r - 0.3, z1: LAND.z1, y0: YC - 0.5, y1: YC + 0.5 }] });
       ctx.setColliderRange(null);
     }
   };

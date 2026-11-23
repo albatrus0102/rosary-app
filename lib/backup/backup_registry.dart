@@ -190,6 +190,13 @@ abstract final class BackupRegistry {
     ),
     PrefSpec('church_cam_dist', _b, '카메라 거리', type: _str, label: '성당 카메라'),
     PrefSpec('church_cam_follow', _b, '카메라 따라가기', type: _bool, label: '성당 카메라'),
+    PrefSpec(
+      'church_cam_view',
+      _b,
+      '카메라 시점(자동·1인칭·뒤에서 보기)',
+      type: _str,
+      label: '성당 카메라',
+    ),
     PrefSpec('church_hud_collapsed', _b, '성당 위쪽 메뉴 접기', type: _bool),
     PrefSpec('skin_id', _b, '앱 스킨', type: _str, label: '스킨'),
     PrefSpec('skin_seen', _b, '새 스킨 표시를 본 것', type: _list),

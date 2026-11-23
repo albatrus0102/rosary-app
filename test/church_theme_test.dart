@@ -285,7 +285,7 @@ void main() {
   // 도구 줄은 남은 폭에 맞춰 항목을 똑같이 줄이고(48dp 아래로는 줄이지 않는다) 라벨 글자만 줄인다 — 항목은 하나도 빼지 않는다.
   group('좁은 폰(320dp)에서 펼친 도구 줄', () {
     for (final scale in const [1.0, 1.3, 2.0]) {
-      testWidgets('넘치지 않고 다섯 항목이 모두 48dp 이상: x$scale', (tester) async {
+      testWidgets('넘치지 않고 여섯 항목(소리·아바타·인사·시점·가기·접기)이 모두 48dp 이상: x$scale', (tester) async {
         const size = Size(320, 640);
         final h = await pumpChurch(tester, size: size, textScale: scale);
         h.net.goOnline(3);
@@ -295,7 +295,7 @@ void main() {
         final bar = tester.getRect(find.byType(ChurchTopActions));
         expect(bar.left, greaterThanOrEqualTo(-0.5));
         expect(bar.right, lessThanOrEqualTo(size.width + 0.5));
-        for (final tip in ['소리 끄기', '아바타 편집', '인사', '메뉴 접기']) {
+        for (final tip in ['소리 끄기', '아바타 편집', '인사', '시점: 자동', '메뉴 접기']) {
           final r = tester.getRect(find.byTooltip(tip));
           expect(r.width, greaterThanOrEqualTo(48), reason: tip);
           expect(r.height, greaterThanOrEqualTo(48), reason: tip);
@@ -304,7 +304,7 @@ void main() {
         final go = tester.getRect(find.byKey(const ValueKey('go-button')));
         expect(go.shortestSide, greaterThanOrEqualTo(48));
         expect(go.right, lessThanOrEqualTo(bar.right + 0.5));
-        for (final label in ['소리', '아바타', '인사', '가기']) {
+        for (final label in ['소리', '아바타', '인사', '시점', '가기']) {
           expect(find.text(label), findsWidgets, reason: label);
         }
         await tester.pump(const Duration(seconds: 7));
@@ -325,6 +325,26 @@ void main() {
       // 320dp 폰: 화면 320 − 좌우 여백 32 = 288 → 항목 53(4 × 53 + 고정 73 = 285)
       expect(bar.itemWidthFor(288), 53);
       expect(bar.itemWidthFor(200), ChurchTopActions.minItemWidth);
+    });
+
+    test('「시점」을 더해 다섯 항목이면: 320dp(남은 288)에서 여백·구분선을 빼고 48dp 다섯 + 접기 48 = 288', () {
+      final bar = ChurchTopActions(
+        ambientOn: true,
+        onToggleAmbient: () {},
+        onEditAvatar: () {},
+        onEmote: (_) {},
+        onViewMode: () {},
+        onGo: () {},
+        onCollapse: () {},
+      );
+      expect(bar.itemWidthFor(double.infinity), isNull);
+      expect(bar.itemWidthFor(400), isNull);
+      expect(bar.compactFor(400), isFalse);
+      expect(bar.compactFor(288), isTrue);
+      expect(bar.itemWidthFor(288), 48);
+      // 360dp 폰(남은 328): 기본 여백 73 + 5 × 51 = 328
+      expect(bar.compactFor(328), isFalse);
+      expect(bar.itemWidthFor(328), 51);
     });
   });
 
