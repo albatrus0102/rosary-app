@@ -460,7 +460,7 @@
         arcadeRow('Z1', sg * E.crossHalf, E.crossZ0 + 0.4, sg * E.crossHalf, E.crossZ1 - 0.4, nIn, 0, 5, 9.6, 12.4, 13.8);
         [[E.crossZ1, -1], [E.crossZ0, 1]].forEach(function (wz) { arcadeRow('Z1', sg * (h + 0.4), wz[0], sg * (E.crossHalf - 0.4), wz[0], 0, wz[1], 7, 9.6, 12.4, 13.8); });
         [[E.crossZ1, -1], [E.crossZ0, 1]].forEach(function (wz) {
-          trims('Z1', sg * h, wz[0], sg * E.crossHalf, wz[0], 0, wz[1], { plinth: false, string: 6.8, cornice: H, shafts: [3.6, 9.9, 16.2], shaftTop: H - 0.6 });
+          trims('Z1', sg * h, wz[0], sg * E.crossHalf, wz[0], 0, wz[1], { plinth: false, string: 6.8, cornice: H, shafts: [7.15, 13.45, 19.9], shaftTop: H - 0.6 });   // 붙은 기둥은 벽감 사이에(3단계: 3.6·9.9·16.2 는 벽감 가운데라 성상 앞을 기둥이 가로질렀다)
         });
       });
       [[-h, -3.4], [3.4, h]].forEach(function (xr) { trims('Z1', xr[0], E.z1, xr[1], E.z1, 0, -1, { string: 6.8, cornice: H }); trims('Z1', xr[0] < 0 ? -h : 4.4, E.z0, xr[0] < 0 ? -4.4 : h, E.z0, 0, 1, { cornice: H }); });
