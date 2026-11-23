@@ -35,13 +35,11 @@ abstract final class ReleaseGate {
     'yeouido',
   };
 
-  // ── 2-1. 주인 확인 전 성당(빛의 성당 — 앱이 지은 가상의 성당) ───────────────────────────
-  /// 숨기는 이유: 새로 짓는 중인 가상 성당이다(설계 시안 C 「돌로 지은 묵주」 1단계, `assets/church/ch_light.js`).
-  /// 주인이 직접 걸어 보고 확인하기 전에는 일반(배포) 빌드의 목록에 **'준비 중'으로도 나오지 않는다**([churchListed]).
-  /// 창 그림 팩(`assets/church/light/`)은 번들에서도 빠진다(`tools/release_hidden_assets.txt`).
-  /// 개발용 빌드(`tools/build_dev_apk.sh`, `--dart-define=ROSARIUM_DEV_GLASS=true`)에서는 목록에 나오고 들어갈 수 있다.
-  /// 풀리는 조건: 주인 확인. 그때 이 집합에서 빼고 `ChurchSelectScreen.releaseIds` 에 넣고, 창 팩 줄을 숨김 목록에서 뺀다.
-  static const Set<String> unreleasedChurchIds = {'light'};
+  // ── 2-1. 주인 확인 전 성당(앱이 지은 가상의 성당) ───────────────────────────────────────
+  /// 새로 짓는 가상 성당을 주인이 확인하기 전까지 일반(배포) 빌드의 목록에서 **'준비 중'으로도 빼 두는** 자리([churchListed]).
+  /// 그 성당의 자산 폴더는 `tools/release_hidden_assets.txt`에 올려 번들에서도 뺀다. 개발용 빌드에서는 열린다.
+  /// 빛의 성당(`light`)은 2026-11-24 사용자 결정으로 공개했다 — `ChurchSelectScreen.releaseIds`로 옮기고 창 팩 폴더를 번들에 넣었다.
+  static const Set<String> unreleasedChurchIds = {};
 
   /// 이 성당을 지금 빌드의 목록(성당 고르기·입구 캐러셀)에 보여도 되는가.
   static bool churchListed(String id) =>

@@ -1432,7 +1432,7 @@
   ChurchBuilders.light = {
     layout: layout,
     fictional: true,
-    thumb: { x: 0, z: 203, yaw: 0, pitch: 14, zoom: 1, hour: 15.5 },
+    thumb: { x: 0, z: -10, yaw: 0, pitch: -6, zoom: 1.0, hour: 11 },
     plan: PLAN, chapels: CHAPELS, partitions: PARTITIONS, doors: DOORS, zones: ZONES, zoneOf: zoneOf, visible: VISIBLE,
     build: build
   };

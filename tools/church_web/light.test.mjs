@@ -69,12 +69,12 @@ test('등록: 빌더 블록·레이아웃·가상 성당 표시, 실제 치수(1
   assert.equal(light.layout.scalePercent, 100);
   assert.equal(light.layout.fictional, true);
   assert.equal(B.fictional, true);
-  // 출시 빌드에서 숨김: 창 그림 팩 폴더는 번들 제외 목록에 있고 pubspec 에 없다(Flutter 쪽 관문은 test/release_gate_test.dart)
+  // 2026-11-24 공개: 창 그림 팩 폴더는 번들 제외 목록에 없고 pubspec 에 있다(Flutter 쪽 관문은 test/release_gate_test.dart)
   const hidden = fs.readFileSync(path.resolve(here, '../release_hidden_assets.txt'), 'utf8');
-  assert.match(hidden, /^assets\/church\/light\/$/m);
-  assert.doesNotMatch(fs.readFileSync(path.resolve(here, '../../pubspec.yaml'), 'utf8'), /- assets\/church\/light\//);
+  assert.doesNotMatch(hidden, /^assets\/church\/light\/$/m);
+  assert.match(fs.readFileSync(path.resolve(here, '../../pubspec.yaml'), 'utf8'), /- assets\/church\/light\//);
   const gate = fs.readFileSync(path.resolve(here, '../../lib/app/release_gate.dart'), 'utf8');
-  assert.match(gate, /unreleasedChurchIds = \{'light'\}/);
+  assert.match(gate, /unreleasedChurchIds = \{\}/);
 });
 
 test('신비 경당 20칸: 서문에서 시계 방향으로 환희 1~5 → 빛 1~5 → [제단] → 고통 1~5 → 영광 1~5, 창은 파일 이름으로', () => {

@@ -71,6 +71,7 @@ class ChurchSelectScreen extends StatefulWidget {
     'florence',
     'assisi',
     'myeongdong',
+    'light',
   };
 
   /// 교회 측 서면 동의를 기다리는 성당(docs/legal/church_permission/). 개발용 빌드에서만 연다.
