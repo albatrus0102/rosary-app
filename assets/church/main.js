@@ -1014,8 +1014,9 @@
   root.ChurchAPI._bind({ api: api });
   function boot() {
     post({ e: 'ready' });
-    // Flutter 없이 열었을 때(index.html 직접 열기 / 브라우저 미리보기)
-    setTimeout(function () { if (!App.started) start({}); }, 1800);
+    // Flutter 없이 열었을 때(index.html 직접 열기 / 브라우저 미리보기). 스스로 init 을 부르는 셸(web_demo)은 ChurchNoAutoStart 로 끈다:
+    // 켜 두면 1.8초 뒤 기본 성당을 몰래 짓고 첫 프레임 신호(firstFrame, 한 번뿐)를 써 버려서, 그 뒤 누른 「둘러보기」가 「짓는 중」에 멈췄다.
+    setTimeout(function () { if (!App.started && !root.ChurchNoAutoStart) start({}); }, 1800);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(typeof window !== 'undefined' ? window : this);

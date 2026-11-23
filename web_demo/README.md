@@ -12,6 +12,7 @@
 | `web_demo/links.local.json` | **비밀 대응표**(id → 성당·언어·토큰). `.gitignore` 에 있다. 첫 빌드에 기본 대응표로 만들어지고 토큰이 채워진다 |
 | `web_demo/deploy.sh` | Cloudflare Pages 에 올린다(실행은 사람이/메인이) |
 | `web_demo/build.test.mjs` | 빌드 시험(`node --test web_demo/build.test.mjs`) |
+| `web_demo/shell_stuck.test.mjs` | 「성당을 짓는 중」 안전망 시험(가짜 장면, Playwright 있으면): 장면 자동 시작 끔(`ChurchNoAutoStart`) · 30초 뒤 「다시 시도」 · init 예외/WebGL 문맥 잃음 안내 |
 | `web_demo/e2e.mjs` | 헤드리스 Chromium 점검·캡처(`node web_demo/e2e.mjs --out <폴더>`; Playwright 필요) |
 
 ## 만들기
@@ -63,6 +64,7 @@ bash web_demo/deploy.sh           # 빌드 → (없으면) 프로젝트 rosarium
 
 ```
 node --test web_demo/build.test.mjs                 # 토큰 폴더·중립 루트·noindex·토큰이 저장소에 없음
+node --test web_demo/shell_stuck.test.mjs           # 「짓는 중」이 끝없이 돌지 않는가(2026-11-23 멈춤 결함 회귀)
 node --test "tools/church_web/*.test.mjs"           # 장면(assets/church) 불변 확인
 node web_demo/e2e.mjs --out /tmp/shots --cases ko:danggogae,it:stpeter,en:basic:phone   # 헤드리스 점검·캡처(느림)
 ```

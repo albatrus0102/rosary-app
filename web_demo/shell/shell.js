@@ -22,12 +22,19 @@
 
   // 장면 안 한국어 글(이름표·아바타 세례명)은 한국어가 아닌 링크에서 번역하거나 숨긴다. assets/church 의 작은 고리 둘(markers.js · avatar.js)이 읽는다.
   if (lang !== 'ko') { root.ChurchLabelMap = I.labels[lang] || null; root.ChurchNoTags = true; }
+  // 장면은 셸이 「둘러보기」·「직접 걸어 보기」를 누를 때 init 으로 짓는다. 장면 혼자 1.8초 뒤 기본 성당을 짓는 미리보기 동작(main.js boot)은 끈다 —
+  // 켜져 있으면 시작 화면 뒤에서 basic 을 짓느라 기기가 멎고, 한 번뿐인 firstFrame 을 먼저 써 버려 입장 뒤 「짓는 중」이 끝나지 않았다(2026-11-23 재현).
+  root.ChurchNoAutoStart = true;
 
   // ---- 장면에서 오는 이벤트(FlutterChurch 채널 대용). 스크립트보다 먼저 만들어 둔다 ----
   root.FlutterChurch = { postMessage: function (s) {
     var o; try { o = JSON.parse(s); } catch (e) { return; }
     if (!o || !o.e) return;
-    if (o.e === 'pos' || o.e === 'perf' || o.e === 'hb' || o.e === 'life') { if (o.e === 'pos' && o.m) S.lastMove = Date.now(); fire(o); return; }
+    if (o.e === 'pos' || o.e === 'perf' || o.e === 'hb' || o.e === 'life') {
+      if (o.e === 'pos' && o.m) S.lastMove = Date.now();
+      if (o.e === 'hb') { S.hb = o; if (S.building && S.ffBefore && S.drawnAtInit !== null && (o.f || 0) > S.drawnAtInit) built('hb'); }   // 입장 전에 이미 첫 프레임을 보낸 장면: 입장 뒤 그린 프레임 수가 늘면 다 지은 것
+      fire(o); return;
+    }
     onEvent(o); fire(o);
   } };
   function fire(o) {
@@ -43,8 +50,12 @@
       case 'walkDone': onWalkDone(o); break;
       case 'walkFail': if (!S.tour) toast(L.walkFail); S.pendingAfter = null; break;
       case 'walkCancel': S.pendingAfter = null; break;
-      case 'firstFrame': S.firstFrame = true; hideBuilding(); break;
-      case 'jsError': S.errors.push(o); if (root.console) (o.kind === 'stall' ? console.warn : console.error)('[church] ' + o.kind + ': ' + o.msg); break;   // 「stall」은 성을 짓는 동안 한 프레임이 길어졌다는 감시 기록(오류 아님)
+      case 'firstFrame': S.firstFrame = true; if (S.building) built('firstFrame'); break;
+      case 'jsError':
+        S.errors.push(o); if (root.console) (o.kind === 'stall' ? console.warn : console.error)('[church] ' + o.kind + ': ' + o.msg);   // 「stall」은 성을 짓는 동안 한 프레임이 길어졌다는 감시 기록(오류 아님)
+        if (S.building && (o.kind === 'error' || o.kind === 'rejection' || o.kind === 'api')) showStuck('fail', o.kind + ': ' + o.msg);   // 짓는 동안 잡히지 않은 오류: 알리고 계속 기다린다(첫 프레임이 오면 걷힌다)
+        break;
+      case 'gl': S.glLost = !!o.lost; if (o.lost && S.started) showStuck('gl', 'context lost'); else if (!o.lost && S.stuck === 'gl') hideStuck(); break;
       default: break;
     }
   }
@@ -83,6 +94,7 @@
       '<p class="foot">' + esc(L.foot) + '</p>' +
     '</div></div>' +
     '<div id="building" hidden><div class="spin"></div><div>' + esc(L.building) + '</div></div>' +
+    '<div id="stuck" hidden role="alertdialog" aria-live="assertive"><div class="box"><p id="stuckMsg"></p><button id="btnRetry" class="big primary">' + esc(L.retry) + '</button><p id="stuckWhy"></p></div></div>' +
     '<div id="top" hidden><div class="nm">' + esc(name) + '</div><button id="btnSound" class="chip">♪ ' + esc(L.sound) + '</button><button id="btnQual" class="chip"></button></div>' +
     '<div id="cap" role="status" aria-live="polite"></div>' +
     '<div id="toast" role="status"></div>' +
@@ -121,6 +133,8 @@
     });
   }
   function loaded() {
+    // 스크립트가 다 왔어도 실행 중에 깨졌으면(onload 는 그래도 온다) 장면 API 가 없다 — 「짓는 중」에 들어가지 않게 여기서 알린다
+    if (!root.ChurchAPI || typeof root.ChurchAPI.init !== 'function') { $('loadTxt').textContent = L.loadFail; if (root.console) console.error('[demo] ChurchAPI missing after load'); return; }
     S.ready = true;
     $('loadTxt').textContent = S.webgl ? L.ready : L.noWebgl;
     if (S.webgl) { $('btnTour').disabled = false; $('btnFree').disabled = false; }
@@ -129,23 +143,55 @@
   }
 
   // ---- 입장 ----
+  // 「짓는 중」은 장면의 첫 프레임(firstFrame)이 와야 걷힌다. 오지 않으면 끝없이 돌지 않게:
+  //   · BUILD_SLOW_MS 가 지나면 「평소보다 오래 걸린다 + 다시 시도」(그 뒤에 첫 프레임이 오면 저절로 걷히고 이어 간다)
+  //   · init 이 예외 · 장면이 시작하지 못함(WebGL 문맥을 못 만듦) · 짓는 중 WebGL 문맥 잃음 · 잡히지 않은 오류 → 바로 같은 안내
+  // 30초: 소프트웨어 렌더링 + CPU 4배 감속 + 화면 2.6배에서 첫 프레임 약 21초(2026-11-23 측정). 폰 GPU 는 이보다 빠르다.
+  var BUILD_SLOW_MS = 30000, slm = /[?&]slowms=(\d+)/.exec(root.location.search);   // 시험용: ?slowms= 로 기다리는 시간을 바꾼다
+  if (slm) BUILD_SLOW_MS = +slm[1];
+  S.BUILD_SLOW_MS = BUILD_SLOW_MS;
+  S.building = false; S.stuck = null; S.drawnAtInit = null;
   function showBuilding() { $('building').hidden = false; }
   function hideBuilding() { $('building').hidden = true; }
+  function showStuck(kind, why) {
+    S.stuck = kind; S.stuckWhy = why || '';
+    $('stuckMsg').textContent = kind === 'slow' ? L.buildSlow : kind === 'gl' ? L.glLost : L.buildFail;
+    $('stuckWhy').textContent = why ? String(why).slice(0, 160) : '';
+    $('stuck').hidden = false;
+    if (root.console) console.warn('[demo] stuck ' + kind + (why ? ': ' + why : ''));
+  }
+  function hideStuck() { S.stuck = null; $('stuck').hidden = true; }
+  S.showStuck = showStuck; S.hideStuck = hideStuck;
+  $('btnRetry').addEventListener('click', function () { root.location.reload(); });
+  var onBuilt = null, slowT = 0;
+  function built(why) {
+    if (!S.building) return;
+    S.building = false; S.builtBy = why; S.buildMs = Date.now() - S.buildT0; clearTimeout(slowT);
+    hideBuilding();
+    if (S.stuck && S.stuck !== 'gl') hideStuck();
+    if (S.glLost) { showStuck('gl', 'context lost'); onBuilt = null; return; }   // 문맥을 잃은 채로는 둘러보기를 시작하지 않는다
+    var f = onBuilt; onBuilt = null; if (f) f();
+  }
   function enter(thenTour) {
     if (!S.ready || S.started || !S.webgl) return;
-    S.started = true;
+    S.started = true; S.building = true; S.buildT0 = Date.now();
+    S.ffBefore = !!S.firstFrame;   // 장면이 입장 전에 이미 그렸는가(그러면 firstFrame 이 다시 오지 않는다 → 심장 박동의 그린 프레임 수로 본다)
     $('start').hidden = true; showBuilding();
+    onBuilt = function () { if (thenTour && root.DemoShell.runTour) root.DemoShell.runTour(); };
+    slowT = setTimeout(function () { if (S.building && !S.stuck) showStuck('slow', ''); }, BUILD_SLOW_MS);
     // 「성당을 짓는 중」을 먼저 그린 뒤 init(월드를 짓는 동안 화면이 멈춘다)
     requestAnimationFrame(function () { setTimeout(function () {
-      api('init', { church: D.church, hour: 11, ambient: S.sound, solo: true, quality: S.quality });
+      var A = root.ChurchAPI, st0 = S.stations;
+      if (!A || typeof A.init !== 'function') { showStuck('fail', 'ChurchAPI missing'); return; }
+      try { A.init({ church: D.church, hour: 11, ambient: S.sound, solo: true, quality: S.quality }); }
+      catch (e) { if (root.console) console.error('[demo] api init', e); showStuck('fail', 'init: ' + ((e && e.message) || e)); return; }
+      // init 은 동기로 월드를 짓고 그 안에서 stations 를 보낸다. 오지 않았으면 장면이 시작하지 못한 것(WebGL 문맥을 못 만듦 등)
+      if (!S.stations || (S.stations === st0 && !S.ffBefore) || (S.stations.church && S.stations.church !== D.church)) { showStuck('fail', 'scene did not start'); return; }
+      S.drawnAtInit = S.hb ? (S.hb.f || 0) : 0;
       api('setInput', { ext: true });
       S.mode = 'free';
       $('top').hidden = false; $('hud').hidden = false; $('joy').hidden = !touch;
       updateQual(); updateActs();
-      var fin = false;
-      var go = function () { if (fin) return; fin = true; hideBuilding(); if (thenTour && root.DemoShell.runTour) root.DemoShell.runTour(); };
-      S.waitEvent(function (o) { return o.e === 'firstFrame'; }, 60000).then(go);
-      setTimeout(function () { if (!S.firstFrame) hideBuilding(); }, 60000);
       setTimeout(function () { var h = $('help'); if (h) h.style.opacity = '0'; }, 14000);
     }, 30); });
   }
