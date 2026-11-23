@@ -24,6 +24,7 @@
 |---|---|---|
 | `bg_glow.webp`, `rail_decor.webp`, `hero_milan.webp`, `thumb_{stpeter,maggiore,stpaul,milan,myeongdong}.webp` | **사용자가 올린 시안 이미지(AI 생성)에서 잘라 낸 임시 자산** | 시안이 1190×1322 라 해상도가 낮다(썸네일 약 158×113, 대표 그림 746×420). 고해상도 그림이 오면 교체 |
 | `render_{basic,florence,lateran,maggiore,myeongdong,stpaul,stpeter}.webp` | 우리 3D 성당 렌더(`tools/church_web/entry_shots.mjs`) | 대표 그림이 없는 성당의 대체 |
+| `thumb_assisi.webp` | **사용자가 올린 AI 생성 외관 그림**(2026-11-23, ChatGPT — 상부 대성당 정면·종탑·회랑, 두 안 가운데 실제 정면에 더 가까운 1안) | 4:3, 480×360. 사진이 아니라 그림(생성 이미지) — 실제 사진·작가 작품을 쓰지 않음 |
 | `render_assisi.webp`, `assets/church_thumbs/assisi.webp` | 우리 3D 성당 렌더(2026-11-23, 밝기 조정 뒤 — 상부 신랑 입구에서 제대·궁륭 쪽, 낮 11시) | **사진이 아니라 렌더인 까닭**: 이탈리아 문화유산(벽화·내부) 사진은 권리 확인(쿠스토디아 허락·문화재법 검토, `interiors/assisi.md` §7)이 끝날 때까지 받지도 싣지도 않는다. 사용자가 AI 그림을 주면 `thumb_assisi.webp`(4:3, 폭 480)·`hero_assisi.webp`(16:9, 폭 1280) 이름으로 넣기만 하면 렌더 대신 그것이 나온다(코드 변경 없음 — 아래 대체 순서) |
 
 ## 만드는 법
