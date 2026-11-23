@@ -60,12 +60,12 @@
   }
 
   // 뼈대 -------------------------------------------------------------------
-  var BN = ['root', 'hips', 'spine', 'chest', 'neck', 'head', 'uaL', 'faL', 'haL', 'uaR', 'faR', 'haR', 'ulL', 'llL', 'ftL', 'ulR', 'llR', 'ftR', 'skirt', 'ckL', 'ckR'];
+  var BN = ['root', 'hips', 'spine', 'chest', 'neck', 'head', 'uaL', 'faL', 'haL', 'uaR', 'faR', 'haR', 'ulL', 'llL', 'ftL', 'ulR', 'llR', 'ftR', 'skirt', 'ckL', 'ckR', 'cbL', 'cbR'];
   var BI = {}; BN.forEach(function (n, i) { BI[n] = i; });
-  var BPAR = [-1, 0, 1, 2, 3, 4, 3, 6, 7, 3, 9, 10, 1, 12, 13, 1, 15, 16, 1, 1, 1];
+  var BPAR = [-1, 0, 1, 2, 3, 4, 3, 6, 7, 3, 9, 10, 1, 12, 13, 1, 15, 16, 1, 1, 1, 18, 18];
   var BABS = [[0, 0, 0], [0, HIPS_Y, 0], [0, 1.03, 0], [0, 1.20, 0], [0, 1.42, 0.012], [0, 1.50, 0],
     [-SX, 1.40, 0], [-SX, 1.11, 0], [-SX, 0.85, 0], [SX, 1.40, 0], [SX, 1.11, 0], [SX, 0.85, 0],
-    [-HX, HIP_JOINT, 0], [-HX, 0.49, 0], [-HX, ANKLE, 0], [HX, HIP_JOINT, 0], [HX, 0.49, 0], [HX, ANKLE, 0], [0, HIP_JOINT, 0], [-HX, HIP_JOINT, 0], [HX, HIP_JOINT, 0]];
+    [-HX, HIP_JOINT, 0], [-HX, 0.49, 0], [-HX, ANKLE, 0], [HX, HIP_JOINT, 0], [HX, 0.49, 0], [HX, ANKLE, 0], [0, HIP_JOINT, 0], [-HX, HIP_JOINT, 0], [HX, HIP_JOINT, 0], [-HX, HIP_JOINT, 0], [HX, HIP_JOINT, 0]];
   var B = BI;
 
   // 영역 id (색 표로 변환)
@@ -461,7 +461,10 @@
     var sR = sm((p[0] + 0.07) / 0.14);
     var nk = sm((y - 1.43) / 0.03) * 0.25;
     var sk = sm((0.93 - y) / 0.15), rest = hw * (1 - tw);
-    return [[B.chest, cw * (1 - nk)], [B.neck, cw * nk], [B.spine, sw], [B.hips, rest * (1 - sk)], [B.skirt, rest * sk], [B.ckR, hw * tw * sR], [B.ckL, hw * tw * (1 - sR)]];
+    // 원피스 뒷자락은 skirt 뼈의 자식 cbL/cbR(다리마다)에 붙는다: 앉을 때는 skirt 뼈가 접고, 걸을 때는 뒤로 뻗는 다리를 따라 뒷자락이 그쪽만 뒤로 밀린다(다리가 뒷자락을 뚫지 않게).
+    var bk = rest * sk;
+    if (!GN) return [[B.chest, cw * (1 - nk)], [B.neck, cw * nk], [B.spine, sw], [B.hips, rest * (1 - sk)], [B.cbR, bk * sR], [B.cbL, bk * (1 - sR)], [B.ckR, hw * tw * sR], [B.ckL, hw * tw * (1 - sR)]];
+    return [[B.chest, cw * (1 - nk)], [B.neck, cw * nk], [B.spine, sw], [B.hips, rest * (1 - sk)], [B.skirt, bk], [B.ckR, hw * tw * sR], [B.ckL, hw * tw * (1 - sR)]];
   }
   var COAT_YS = [
     [1.446, 1.430, 1.410, 1.380, 1.320, 1.240, 1.150, 1.080, 1.010, 0.930, 0.840, 0.740, 0.640, 0.555],
@@ -1204,6 +1207,11 @@
   }
 
   var SKIRT_SIT = 0.17, KNEEL_HEM = 0.10, LAP_FLAT = 0.78;   // 원피스: 앉을 때 뒷자락 접힘 비율(아랫단이 좌석 윗면 위에 남는다), 무릎 꿇을 때 앞자락을 뒤로 당기는 각(rad)
+  // 원피스 자락이 걷는 다리를 따라가는 정도(2026-11-23 「걸을 때 다리가 치마를 뚫고 나온다」 — tools/church_web/skirt_lib.mjs 로 잰다, WALK_GAIT.md §8).
+  // 옛 값(앞자락 허벅지 앞뒤 각의 0.6 배, 뒷자락은 골반에 고정)은 4 m/s 에서 뒤로 뻗은 다리가 뒷자락을 18cm, 앞으로 든 무릎이 앞자락을 뚫었다.
+  // CK: 앞자락이 허벅지 앞뒤 각(t1)을 따라가는 비율, CKG: 옆으로 벌림(gam), CKP: 허벅지 비틀림(psi, 뒷자락만), CB: 뒤로 뻗은 다리(t1 < 0)를 뒷자락이 따라가는 비율,
+  // CB0: 뒷자락이 따라가기 시작하는 각(rad), CKZ: 앞자락을 앞으로 내 주는 길이(m, × (1 - cos 각) — 고관절 높이 앞자락이 돌면서 허벅지 쪽으로 들어가는 만큼)
+  var SKIRT_WALK = { CK: 1, CKG: 1, CKP: 0.5, CB: 1, CB0: 0, CKZ: 0.15 };
   var LAP_T = [[0.095, -0.205, -0.19], [0.0, -1, 0]];   // 무릎 위 손목 목표(가슴 로컬)
   var KNEEL_FOOT = -1.45, KNEEL_HAND_Y = 0.115, KNEEL_HAND_Z = -0.30;   // 무릎 꿇을 때: 발목 각(발등 펴기), 등받이 윗단에 얹는 손목 목표(가슴 로컬)
 
@@ -1578,8 +1586,12 @@
     // 무릎 꿇으면 앞자락을 조금 뒤로 당겨 앞줄 등받이에 닿지 않게 한다.
     var dress = this.cfg && this.cfg.g === 0 ? 1 : 0;
     setE(bs[B.skirt], -0.30 * sk, 0, 0); bs[B.skirt].scale.set(1, lerp(1, dress ? SKIRT_SIT : 0.30, sk), 1);
-    var ck = 0.6 + 0.4 * sa, ckK = dress ? KNEEL_HEM * ka : 0;
-    setE(bs[B.ckR], t1R * ck + ckK, 0, 0.04 * sa); setE(bs[B.ckL], t1L * ck + ckK, 0, -0.04 * sa);
+    var ck = lerp(dress ? SKIRT_WALK.CK : 0.6, 1, sa), ckK = dress ? KNEEL_HEM * ka : 0, cwk = (1 - cw) * dress;
+    setE(bs[B.ckR], t1R * ck + ckK, 0, 0.04 * sa + lR.gam * SKIRT_WALK.CKG * cwk); setE(bs[B.ckL], t1L * ck + ckK, 0, -0.04 * sa + lL.gam * SKIRT_WALK.CKG * cwk);
+    // 앞자락은 고관절을 축으로 돌아서, 고관절 높이의 앞자락은 돌수록 아래·뒤(다리 쪽)로 R(1 - cos) 만큼 들어간다 — 그만큼 앞으로 내 준다(걸을 때만)
+    bs[B.ckR].position.z = -SKIRT_WALK.CKZ * (1 - Math.cos(t1R * ck)) * cwk; bs[B.ckL].position.z = -SKIRT_WALK.CKZ * (1 - Math.cos(t1L * ck)) * cwk;
+    // 원피스 뒷자락(cbL/cbR, skirt 뼈의 자식): 걸을 때 뒤로 뻗는 다리(t1 < 0)를 따라 그쪽 뒷자락만 뒤로 — 서 있거나 앉으면 0(앉은 접힘은 skirt 뼈가 한다)
+    setE(bs[B.cbR], Math.min(0, t1R + SKIRT_WALK.CB0) * SKIRT_WALK.CB * cwk, lR.psi * SKIRT_WALK.CKP * cwk, lR.gam * SKIRT_WALK.CKG * cwk); setE(bs[B.cbL], Math.min(0, t1L + SKIRT_WALK.CB0) * SKIRT_WALK.CB * cwk, lL.psi * SKIRT_WALK.CKP * cwk, lL.gam * SKIRT_WALK.CKG * cwk);
     if (dress) { var cz = lerp(1, LAP_FLAT, sk), cx = lerp(1, 0.74, sk); bs[B.ckR].scale.set(cx, 1, cz); bs[B.ckL].scale.set(cx, 1, cz); }   // 앉으면 앞자락이 허벅지 위에 내려앉는다(쟁반처럼 뜨지 않게)
     setE(bs[B.spine], spX, spineRy, -0.012 * ws * 0);
     setE(bs[B.chest], chX, chestRy, 0.012 * ws);
@@ -1700,7 +1712,7 @@
   };
 
   root.ChurchAvatar = {
-    _dbg: { MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
+    _dbg: { SKIRT_WALK: SKIRT_WALK, MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK, GAIT_V_TOP: GAIT.V_TOP,
     ROSARY: ROSARY, rosaryGeometry: getRosaryGeo, rosaryParts: getRosaryParts, normRosaryLook: normRosaryLook, HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM,
     SIGN: { TL: SIGN_TL, DUR: EMOTE_DUR, phase: signPhase }, kneelPose: kneelPose, KNEEL: { DUR: KNEEL_DUR, KNEE_R: KNEEL_KNEE_R, HAND_Y: KNEEL_HAND_Y, HAND_Z: KNEEL_HAND_Z, HIPS_Y: HIPS_Y, HIP_JOINT: HIP_JOINT, CHEST_Y: 1.20, TORSO_HALF: 0.12 },
