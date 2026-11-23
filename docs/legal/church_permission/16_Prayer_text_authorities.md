@@ -59,6 +59,8 @@ Basta rispondere a questa e-mail con un numero:
 ② Autorizzazione a queste condizioni o con queste correzioni: ______
 ③ Preferiamo che il nostro testo non sia usato (non lo userò).
 
+Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+
 In allegato: i testi che intendo usare (ciascuno con la sua fonte), una scheda di una pagina con tutti i dettagli, 4 schermate e un breve video: 〔YouTube 링크〕
 
 Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
@@ -103,6 +105,8 @@ A one-number reply is enough:
 ① No objection — permission as described (credit line, if any: ______).
 ② Permission with conditions or corrections — please tell me: ______
 ③ Please do not use our text (I will not use it).
+
+If anything should be corrected or changed for you to grant permission, please let me know and I will gladly do so.
 
 Attached: the texts I intend to use (each with its source), a one-page summary with all the details, 4 screenshots, and a short video: 〔YouTube 링크〕
 
@@ -149,6 +153,8 @@ A one-number reply is enough:
 ② Permission with conditions or corrections — please tell me: ______
 ③ Please do not use our text (I will not use it).
 
+If anything should be corrected or changed for you to grant permission, please let me know and I will gladly do so.
+
 Attached: the texts I intend to use (each with its source), a one-page summary with all the details, 4 screenshots, and a short video: 〔YouTube 링크〕
 
 If this request belongs to another office, I would be grateful if you would forward it. Thank you very much for your time; may the peace of the Lord be with you.
@@ -193,6 +199,8 @@ A one-number reply is enough:
 ① No objection — permission as described (credit line, if any: ______).
 ② Permission with conditions or corrections — please tell me: ______
 ③ Please do not use our text (I will not use it).
+
+If anything should be corrected or changed for you to grant permission, please let me know and I will gladly do so.
 
 Attached: the texts I intend to use (each with its source), a one-page summary with all the details, 4 screenshots, and a short video: 〔YouTube 링크〕
 
@@ -239,6 +247,8 @@ Basta con responder con un número:
 ② Autorización con condiciones o correcciones; les ruego que me las indiquen: ______
 ③ Preferimos que nuestro texto no se use (no lo usaré).
 
+Si, para conceder la autorización, consideran que algo debe corregirse o cambiarse, les ruego que me lo indiquen: lo haré con mucho gusto.
+
 Adjunto: los textos que pienso usar (cada uno con su fuente), una ficha de una página con todos los detalles, 4 capturas de pantalla y un vídeo breve: 〔YouTube 링크〕
 
 Si esta solicitud corresponde a otra oficina, les agradecería que la remitieran. Muchas gracias por su tiempo; que la paz del Señor esté con ustedes.
@@ -283,6 +293,8 @@ Basta con responder con un número:
 ① Sin objeción: autorización en los términos descritos (mención de derechos, si la hay: ______).
 ② Autorización con condiciones o correcciones; les ruego que me las indiquen: ______
 ③ Preferimos que nuestro texto no se use (no lo usaré).
+
+Si, para conceder la autorización, consideran que algo debe corregirse o cambiarse, les ruego que me lo indiquen: lo haré con mucho gusto.
 
 Adjunto: los textos que pienso usar (cada uno con su fuente), una ficha de una página con todos los detalles, 4 capturas de pantalla y un vídeo breve: 〔YouTube 링크〕
 
@@ -329,6 +341,8 @@ Basta rispondere a questa e-mail con un numero:
 ② Autorizzazione a queste condizioni o con queste correzioni: ______
 ③ Preferiamo che il nostro testo non sia usato (non lo userò).
 
+Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+
 In allegato: i testi che intendo usare (ciascuno con la sua fonte), una scheda di una pagina con tutti i dettagli, 4 schermate e un breve video: 〔YouTube 링크〕
 
 Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
@@ -374,6 +388,8 @@ Basta responder com um número:
 ② Autorização com condições ou correções; peço que as indiquem: ______
 ③ Preferimos que o nosso texto não seja usado (não o usarei).
 
+Se, para conceder a autorização, considerarem que algo deve ser corrigido ou alterado, peço que me avisem: farei a mudança de bom grado.
+
 Em anexo: os textos que pretendo usar (cada um com a sua fonte), um resumo de uma página com todos os detalhes, 4 capturas de tela e um vídeo curto: 〔YouTube 링크〕
 
 Se este pedido couber a outro setor, eu ficaria grato se o encaminhassem. Muito obrigado pelo seu tempo; que a paz do Senhor esteja com todos.
@@ -418,6 +434,8 @@ Basta responder com um número:
 ① Sem objeção: autorização nos termos descritos (menção de direitos, se houver: ______).
 ② Autorização com condições ou correções; peço que as indiquem: ______
 ③ Preferimos que o nosso texto não seja usado (não o usarei).
+
+Se, para conceder a autorização, considerarem que algo deve ser corrigido ou alterado, peço que me avisem: farei a mudança de bom grado.
 
 Em anexo: os textos que tenciono usar (cada um com a sua fonte), um resumo de uma página com todos os pormenores, 4 capturas de ecrã e um vídeo breve: 〔YouTube 링크〕
 

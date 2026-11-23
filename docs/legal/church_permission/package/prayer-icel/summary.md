@@ -87,6 +87,7 @@ If you wish to be more specific, you may use these items.
 
 ### 4. What I will do with your answer
 
+- If anything should be corrected or changed for you to grant permission, please let me know and I will gladly do so.
 - D1: I will use the text exactly and show your credit line. D2: I will change to the edition you name. D3: I will mark it as public domain, with its source. D4 and D5: I will do as you say. D6: I will follow the procedure and will not publish your text before it is complete. D7: I will not use it.
 - If I receive no answer, I will not use the ICEL translation. The app will show an older traditional English translation of the Apostles’ Creed that is in the public domain, with its source.
 - At any time, also after publication, I will correct or remove whatever you ask.

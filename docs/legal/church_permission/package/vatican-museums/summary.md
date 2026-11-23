@@ -20,7 +20,7 @@
 **Risposta (basta un numero).**
 
 ☐ ① Nessuna obiezione, alle condizioni descritte.
-☐ ② Sì, a queste condizioni (dicitura, procedura, eventuale compenso): ______
+☐ ② Sì, a queste condizioni o con queste correzioni (dicitura, procedura, eventuale compenso): ______
 ☐ ③ Preferiamo che queste immagini non siano usate (non le userò).
 
 Se desiderate precisare di più, trovate le voci di dettaglio D1, D2 … più sotto, al punto 4. Se è previsto un compenso, rinuncerò a usare le immagini: l’app è gratuita e ne sostengo io tutte le spese.
@@ -72,6 +72,7 @@ Se desiderate precisare di più, potete usare queste voci.
 
 ### 5. Che cosa farò secondo la Vostra risposta
 
+- Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
 - D1: inserirò le immagini con la dicitura descritta. D2: farò come indicherete. D3: seguirò la procedura, e prima non userò le immagini. D4: userò le Vostre immagini o aggiungerò il link. D5: non le userò.
 - Se non ricevo risposta, non userò queste immagini: l’app resterà com’è oggi, con una serie di litografie del 1897 al posto della Via Crucis di Previati e uno sfondo senza immagine al posto della Trasfigurazione.
 - In ogni momento, anche dopo la pubblicazione, toglierò ciò che mi chiederete.

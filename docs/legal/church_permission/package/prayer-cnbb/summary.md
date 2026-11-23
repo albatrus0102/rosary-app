@@ -89,6 +89,7 @@ Se quiserem precisar mais, podem usar estes pontos.
 
 ### 4. O que farei conforme a sua resposta
 
+- Se, para conceder a autorização, considerarem que algo deve ser corrigido ou alterado, peço que me avisem: farei a mudança de bom grado.
 - D1: usarei o texto exatamente e mostrarei a menção indicada. D2: mudarei para a edição que indicarem. D3: vou assinalá-lo como de domínio público, com a sua fonte. D4 e D5: farei como indicarem. D6: seguirei o procedimento e não publicarei o seu texto antes de concluí-lo. D7: não o usarei.
 - Se eu não receber resposta, a edição em português não será publicada. Ela permanece oculta até que eu tenha a sua aprovação.
 - A qualquer momento, também depois da publicação, corrigirei ou retirarei o que me pedirem.

@@ -113,8 +113,10 @@ Vorrei mostrare nell’app, a bassa risoluzione e con la dicitura completa, le f
 Basta rispondere a questa e-mail con un numero:
 
 ① Nessuna obiezione, alle condizioni descritte.
-② Sì, a queste condizioni (dicitura, procedura, eventuale compenso): ______
+② Sì, a queste condizioni o con queste correzioni (dicitura, procedura, eventuale compenso): ______
 ③ Preferiamo che queste immagini non siano usate (non le userò).
+
+Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
 
 In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, le immagini, le fonti e le licenze, la dicitura, le voci più specifiche), 4 schermate e il link a un breve video: 〔YouTube 링크〕
 

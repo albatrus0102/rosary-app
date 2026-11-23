@@ -91,6 +91,8 @@ Basta rispondere a questa e-mail con un numero:
 ② Sì, a queste condizioni o con queste correzioni: ______
 ③ Preferiamo che la Basilica non compaia nell’app (la toglierò).
 
+Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+
 In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, com’è fatto il modello, le immagini di opere reali oggi presenti e la loro fonte, le voci più specifiche su opere, fotografie e link), 5 schermate e il link a un breve video: 〔YouTube 링크〕
 
 Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi.

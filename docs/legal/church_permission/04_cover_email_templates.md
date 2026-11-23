@@ -60,8 +60,18 @@
 
 ### 0-4. 선택지와 자료
 
-- 편지에는 번호 하나로 답할 수 있는 **선택지 셋**만 둡니다: ① 이의 없음(허락) ② 조건·고칠 점이 있음(알려 주십시오) ③ 싣지 않기를 원함(빼겠습니다). 작품 반영·사진·링크·이미 실린 이미지 같은 세부 선택지는 요약의 「자세한 내용」에 있습니다(외국어 D1, D2 … / 한국어 (1), (2) …). 주교회의만 음성 (가)(나)(다)가 따로 있습니다.
+- 편지에는 번호 하나로 답할 수 있는 **선택지 셋**만 둡니다: ① 이의 없음(허락) ② 조건·고칠 점이 있음(알려 주십시오 — 기꺼이 고치겠습니다, 0-5) ③ 싣지 않기를 원함(빼겠습니다). 작품 반영·사진·링크·이미 실린 이미지 같은 세부 선택지는 요약의 「자세한 내용」에 있습니다(외국어 D1, D2 … / 한국어 (1), (2) …). 주교회의만 음성 (가)(나)(다)가 따로 있습니다.
 - 자료는 요약(PDF — 1쪽 요약 + 자세한 내용), 1~2분 영상 링크 〔YouTube 링크〕, 화면 캡처 4~6장, 기도문 권리자에게는 「쓰려는 기도문」(`texts.md`)입니다(`package/<id>/`). 앱 설치 파일은 보내지 않습니다.
+
+### 0-5. 기꺼이 고치겠다는 한 문장 (모든 편지의 선택지 바로 아래 · 2026-11-23 추가)
+
+허락을 받는 데 고치거나 바꿔야 할 것(모형·글·고지 문구·이름·그려 넣은 요소·앱이 교회와 기도를 보여 주는 방식)이 있으면 기꺼이 고치겠다는 뜻을, 선택지 ①②③ 바로 아래에 받는 곳의 언어로 한 문장 적습니다. 요약에는 「답에 따라 앱이 하는 일」의 첫 줄에 같은 문장을 둡니다. ②는 「조건이나 고칠 곳」을 함께 적는 칸입니다.
+
+- 한국어: 허락을 위해 고치거나 바꿔야 할 부분이 있으면 말씀해 주십시오. 기꺼이 고치겠습니다.
+- 이탈리아어: Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+- 영어: If anything should be corrected or changed for you to grant permission, please let me know and I will gladly do so.
+- 스페인어: Si, para conceder la autorización, consideran que algo debe corregirse o cambiarse, les ruego que me lo indiquen: lo haré con mucho gusto.
+- 포르투갈어: Se, para conceder a autorização, considerarem que algo deve ser corrigido ou alterado, peço que me avisem: farei a mudança de bom grado.
 
 ## 1. 주교회의 총무부 — 첫 전자우편(신청서 + 별첨 + 문의 사항, 한 통)
 

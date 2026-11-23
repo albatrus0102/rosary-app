@@ -91,6 +91,7 @@ Si desean precisar más, pueden usar estos puntos.
 
 ### 4. Qué haré según su respuesta
 
+- Si, para conceder la autorización, consideran que algo debe corregirse o cambiarse, les ruego que me lo indiquen: lo haré con mucho gusto.
 - D1: usaré el texto exactamente y mostraré la mención indicada. D2: cambiaré a la edición que indiquen. D3: lo señalaré como de dominio público, con su fuente. D4 y D5: lo haré como indiquen. D6: seguiré el procedimiento y no publicaré su texto antes de completarlo. D7: no lo usaré.
 - Si no recibo respuesta, no incluiré ningún texto cuyos derechos les pertenezcan. La edición en español usará entonces solo textos claramente de dominio público, con su fuente indicada; donde no sea posible, no se publicará.
 - En cualquier momento, también después de la publicación, corregiré o retiraré lo que me pidan.

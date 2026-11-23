@@ -93,6 +93,7 @@ Se desiderate precisare di più, potete usare queste voci.
 
 ### 4. Che cosa farò secondo la Vostra risposta
 
+- Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
 - D1: userò il testo esattamente e mostrerò la dicitura indicata. D2: passerò all’edizione che indicherete. D3: lo segnalerò come di pubblico dominio, con la sua fonte. D4 e D5: farò come indicherete. D6: seguirò la procedura e non pubblicherò il Vostro testo prima di averla completata. D7: non lo userò.
 - Se non ricevo risposta, userò soltanto i nomi dei misteri (brevi titoli tradizionali), indicando la fonte, e non riporterò i testi delle preghiere dell’Appendice del Compendio; il latino sarà scritto senza gli accenti dell’edizione del Compendio.
 - In ogni momento, anche dopo la pubblicazione, correggerò o toglierò ciò che mi chiederete.

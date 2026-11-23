@@ -93,6 +93,7 @@ Se desiderate precisare di più, potete usare queste voci.
 
 ### 6. Che cosa farò secondo la Vostra risposta
 
+- Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
 - D1: lascio il modello com’è, con l’avviso.
 - D2: riprodurrò soltanto le opere da Voi indicate e Vi mostrerò il risultato prima di pubblicarlo.
 - D3: userò soltanto le fotografie da Voi indicate, a bassa risoluzione, con la dicitura che mi chiederete.
