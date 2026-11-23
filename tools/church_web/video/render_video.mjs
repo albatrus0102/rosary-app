@@ -197,6 +197,7 @@ async function frame(c = {}) {
   if (Date.now() - tf > 8000) console.log(`  [느린 프레임] #${frames} ${(Date.now() - tf) / 1000}s ${JSON.stringify(r.st || {})}`);
   ff.stdin.write(Buffer.from(r.url.split(',')[1], 'base64'));
   frames++;
+  if (process.env.VID_DBG && r.st && Math.abs(r.st.yaw) > 7) console.log(`  [yaw 이상] #${frames} ${JSON.stringify(r.st)}`);
   if (frames % (process.env.VID_DBG ? 20 : 150) === 0) console.log(`  ${(frames / FPS).toFixed(0)}s 분량 · 경과 ${((Date.now() - t0) / 1000).toFixed(0)}s · ${JSON.stringify(r.st || {})}`);
   return r.st;
 }
@@ -241,7 +242,7 @@ const VIEWS = [
   { rel: 0.35, pitch: 0.24, zoom: 1.0, look: 0.55 },
   { rel: -0.2, pitch: 0.22, zoom: 1.0, look: 0.2 }
 ];
-await frame({ ...api(`api.walkTo({kind:'altar'})`), camTo: { frames: sec(1.2), ...VIEWS[0], hold: true, view: 'auto' } });
+await frame({ ...api(`api.walkTo({kind:'altar'})`), camTo: { frames: sec(1.2), ...VIEWS[0], hold: true, view: 'tp' } });
 for (let k = 0; k < 5; k++) {
   if (!clipLeft()) break;
   say(CAPS[2 + k], CAPSEC);
@@ -257,7 +258,7 @@ if (!on('tour') && on('boundary')) {   // 시험: 걷기 장면을 건너뛰면 
 if (on('boundary') && clipLeft()) {
   await until((st) => !st.walking, 40);
   say(CAPS[7], 6);
-  await frame({ camTo: { frames: sec(1.6), rel: 0.55, pitch: 0.22, zoom: 0.9, look: 0, hold: true, view: 'auto' } });
+  await frame({ camTo: { frames: sec(1.6), rel: 0.55, pitch: 0.22, zoom: 0.9, look: 0, hold: true, view: 'tp' } });
   await hold(1.2);
   await frame({ pad: [Math.sin(0.55), Math.cos(0.55)] });   // 카메라가 0.55rad 비껴 있으므로 그만큼 보정해 제단(아바타 앞) 쪽으로 계속 민다
   const z0 = (await frame()).z;
@@ -279,7 +280,7 @@ if (on('cross') && clipLeft()) {
   } else await frame(api(`A.meAv.playEmote(1)`));
   await frame({ camTo: { frames: sec(1.8), auto: [Math.PI * 0.8, -Math.PI * 0.8, Math.PI * 0.5, -Math.PI * 0.5, 0.5, -0.5, 0], dist: 3.0, pitch: 0.2, zoom: 0.8, look: 0, hold: true, view: 'tp' } });
   await hold(4.4);
-  await frame(api(`api.setViewMode({mode:'auto'})`));
+  await frame(api(`api.setViewMode({mode:'tp'})`));
 }
 // 6) 초 켜기 — 도착하면 앱의 '자리 시점'이 봉헌대를 향해 잡는다
 if (on('candle') && clipLeft()) {
@@ -301,7 +302,7 @@ if (on('pray') && clipLeft()) {
   await hold(3.4);
   await frame(api(`api.setPrayerPosture({posture:'kneel'})`));
   await hold(3);
-  await frame({ camTo: { frames: sec(3.2), rel: 0.5, pitch: 0.38, zoom: 1.6, look: 0, hold: true, spin: 0.003, view: 'auto' } });
+  await frame({ camTo: { frames: sec(3.2), rel: 0.5, pitch: 0.38, zoom: 1.6, look: 0, hold: true, spin: 0.003, view: 'tp' } });
   await hold(3.4);
   if (!RAW) for (let i = 0; i < sec(0.8); i++) await frame({ black: i / sec(0.8) });
 }
