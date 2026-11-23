@@ -242,7 +242,7 @@
       var ov = layout.stations && layout.stations.altar;
       if (ov && rz && logic.reverence.inZone(ov.x, ov.z, C.RADIUS + 0.1)) ov = rz.stand;
       var ax = navAxis(), sp = layout.spawn;
-      if (ov) return { x: ov.x, z: ov.z, yaw: ov.yaw === undefined ? ax.yaw : ov.yaw, reach: ov.reach || 1.6, how: 'layout' };
+      if (ov) { var r0 = { x: ov.x, z: ov.z, yaw: ov.yaw === undefined ? ax.yaw : ov.yaw, reach: ov.reach || 1.6, how: 'layout' }; if (ov.labelY !== undefined) r0.labelY = ov.labelY; return r0; }   // labelY: 표식 이름표 높이(markers.js)
       // 1) 축을 따라 걷기
       var bestS = 0, stepLen = 0.25, maxS = Math.sqrt((B.x1 - B.x0) * (B.x1 - B.x0) + (B.z1 - B.z0) * (B.z1 - B.z0));
       for (var s = 0; s <= maxS; s += stepLen) {
@@ -605,7 +605,7 @@
     function deriveAltar() {
       var rz = logic.reverence && logic.reverence.zone, ov = layout.stations && layout.stations.altar, ax = navAxis(), sp = layout.spawn;
       if (ov && rz && logic.reverence.inZone(ov.x, ov.z, C.RADIUS + 0.1)) ov = rz.stand;
-      if (ov) return { x: ov.x, z: ov.z, y: logic.floorY(ov.x, ov.z, ySp + 0.7), yaw: ov.yaw === undefined ? ax.yaw : ov.yaw, reach: ov.reach || 1.6, how: 'layout' };
+      if (ov) { var r1 = { x: ov.x, z: ov.z, y: logic.floorY(ov.x, ov.z, ySp + 0.7), yaw: ov.yaw === undefined ? ax.yaw : ov.yaw, reach: ov.reach || 1.6, how: 'layout' }; if (ov.labelY !== undefined) r1.labelY = ov.labelY; return r1; }
       var bestS = 0, y = ySp, maxS = Math.sqrt((B.x1 - B.x0) * (B.x1 - B.x0) + (B.z1 - B.z0) * (B.z1 - B.z0)), by = ySp;
       for (var s = 0; s <= maxS; s += 0.25) {
         var px = sp.x + ax.x * s, pz = sp.z + ax.z * s;

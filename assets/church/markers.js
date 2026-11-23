@@ -80,7 +80,7 @@
       // 이름표는 서는 자리가 아니라 대상(스탠드/제대) 쪽 위에 떠 있다
       var tx = s.stand ? s.stand.x : s.x, tz = s.stand ? s.stand.z : s.z;
       if (kind === 'altar') { tx = s.x; tz = s.z; }
-      var by = floor + (kind === 'altar' ? 2.5 : 2.3);
+      var by = floor + (s.labelY !== undefined ? s.labelY : (kind === 'altar' ? 2.5 : 2.3));   // s.labelY: 성당이 정한 이름표 높이(빛의 성당 — 난간 높이로 내려 닫집 아래 십자고상을 가리지 않게)
       sp.position.set(tx, by, tz); sp.renderOrder = 8;
       sp.userData.aspect = lt.aspect;
       holder.add(ring); holder.add(hit); holder.add(sp);
