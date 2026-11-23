@@ -57,7 +57,8 @@
     'setViewInset',   // 아래 패널(성당 묵주 패널)만큼 장면을 위로(T-81)
     // 앱 입력 연동(앱 손잡이 ext·손잡이 원 stick·앱이 읽은 시점 look/dx/dy·확대 k·터치 기록 trace), 성능 표시, 카메라 설정.
     // 이 셋이 빠져 있어 기기에서는 window.ChurchAPI.setInput 이 없었고, Flutter 의 호출(churchApiScript)이 조용히 버려졌다(멀티터치 시점 고장의 원인).
-    'setInput', 'setPerfHud', 'setCamera'];
+    'setInput', 'setPerfHud', 'setCamera',
+    'setViewMode'];   // 카메라 시점(자동·1인칭·뒤에서 보기, docs/church/CAMERA_MODES.md)
   var NO_QUEUE = { setJoystick: 1, tapAt: 1, cancelWalk: 1 };   // 오래되면 의미 없는 입력은 쌓지 않는다
   var API = {};
   METHODS.forEach(function (m) {

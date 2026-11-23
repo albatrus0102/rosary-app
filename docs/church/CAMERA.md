@@ -1,5 +1,7 @@
 # 성당 3인칭 카메라 (2026-11-15 재설계, 11-16 2차: 잘라내기 방식)
 
+> 2026-11-23: 좁은 곳에서는 자동 1인칭, 끄는 동안은 스프링 암(사용자 각도 우선), 도구 줄 「시점」 단추 → [CAMERA_MODES.md](CAMERA_MODES.md). 아래 「최소 거리와 1인칭」의 1인칭은 이제 그 조건 중 하나다.
+
 이 카메라는 예측 가능하게 움직이고 내 캐릭터와 가는 길을 놓치지 않는 것을 목표로 한다. 구현은 `assets/church/cam_guard.js`(`build`·`buildSpace`·`createRig`·`patchSee`·`prayYaw`)와 `main.js updateCamera`이다. 시험은 `tools/church_web/camera_rig.test.mjs`, `cam_guard.test.mjs`, `cam_occlusion.test.mjs`에 있고, 확인 샷은 `node tools/church_web/cam_shots.mjs --out DIR [case|spawn]`로 찍는다.
 
 ## 2차 변경의 이유(휴대폰 시험 제보)

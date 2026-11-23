@@ -606,7 +606,7 @@
     }
     var api = {
       id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
-      cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9, pitchMax: cb.pitchMax },   // pitchMax: 카메라 리그 올림 상한(빌더가 줄 때만 — 여의도동 계단 홀)
+      cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9, pitchMax: cb.pitchMax, tight: cb.tight },   // pitchMax: 카메라 리그 올림 상한(빌더가 줄 때만 — 여의도동 계단 홀), tight: 좁은 구역(시점 모드 자동 1인칭, CAMERA_MODES.md)
       // 3인칭 카메라 가드(cam_guard.js): 카메라가 설 수 있는 실내 공간 + 사이 가림물 잘라내기(docs/church/CAMERA.md)
       camGuard: (function () {
         if (!root.ChurchCamGuard) return null;

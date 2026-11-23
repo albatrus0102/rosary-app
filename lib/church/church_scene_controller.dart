@@ -748,6 +748,10 @@ abstract class ChurchSceneController {
 
   /// 카메라 설정(설정 > 성당 > 카메라): {autoZoom, dist, follow}. docs/church/CAMERA.md
   Future<void> setCamera(Map<String, Object> args) => _call('setCamera', args);
+
+  /// 카메라 시점(위쪽 도구 줄 「시점」): `auto`(좁으면 자동 1인칭) · `fp`(1인칭 고정) · `tp`(뒤에서 보기 고정).
+  /// docs/church/CAMERA_MODES.md
+  Future<void> setViewMode(String mode) => _call('setViewMode', {'mode': mode});
   Future<void> setHour(double hour) => _call('setHour', {'hour': hour});
 
   /// 전례 시기 장식(SPEC §33). [args]는 `LiturgicalDay.toSceneArgs()`.
