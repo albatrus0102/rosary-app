@@ -294,7 +294,7 @@ void main() {
       expect(find.text('12명'), findsOneWidget);
       expect(find.byKey(const ValueKey('presence-chevron')), findsOneWidget);
       await tester.tap(find.text('12명'));
-      await tester.tap(find.text('성 베드로 대성전'));
+      await tester.tap(_nameText('성 베드로 대성전'));
       expect((presence, change), (2, 0));
       await tester.tap(find.byTooltip('성당 바꾸기'));
       expect((presence, change), (2, 1));
@@ -719,7 +719,7 @@ void main() {
 
       // 상세 시트(확인 단계)가 뜨고, 닫으면 그대로 머문다.
       await pickMilan();
-      expect(find.text(ChurchCatalog.byId['milan']!.nameKo), findsOneWidget);
+      expect(_nameText(ChurchCatalog.byId['milan']!.nameKo), findsOneWidget);
       expect(find.widgetWithText(FilledButton, '입장'), findsOneWidget);
       Navigator.of(tester.element(find.widgetWithText(FilledButton, '입장')))
           .pop();
@@ -737,7 +737,7 @@ void main() {
       await tester.pump();
       expect(settings.churchId, 'milan');
       expect(net.connectedIds.last, 'milan');
-      expect(find.text(ChurchCatalog.byId['milan']!.nameKo), findsOneWidget);
+      expect(_nameText(ChurchCatalog.byId['milan']!.nameKo), findsOneWidget);
     });
   });
 
@@ -860,3 +860,7 @@ void main() {
     }
   }, skip: _shotDir.isEmpty);
 }
+
+/// 성당 이름 찾기: 화면은 keepAll(낱말 붙임 U+2060)로 그리므로 붙임 표시를 빼고 비교한다.
+Finder _nameText(String s) => find.byWidgetPredicate(
+    (w) => w is Text && (w.data ?? '').replaceAll('\u2060', '') == s);

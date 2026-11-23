@@ -110,7 +110,7 @@ void main() {
     );
     // 첫 구역의 카드 내용: 이름, 도시, 종류. 축소 비율 문구는 없다.
     await _reveal(tester, _card('stpeter'));
-    expect(find.text('성 베드로 대성전'), findsOneWidget);
+    expect(_nameText('성 베드로 대성전'), findsOneWidget);
     expect(find.textContaining('실제의 '), findsNothing);
     // 썸네일이 없어도 색 블록으로 대체되므로 예외가 없다.
     expect(find.byType(Image), findsWidgets);
@@ -177,7 +177,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(BottomSheet),
-        matching: find.text(info.nameKo),
+        matching: _nameText(info.nameKo),
       ),
       findsOneWidget,
     );
@@ -431,7 +431,7 @@ void main() {
       await tester.pump();
       expect(net.connectedIds, ['stpeter']);
       expect(scene.lastArgs('init')!['church'], 'stpeter');
-      expect(find.text('성 베드로 대성전'), findsOneWidget); // HUD 칩
+      expect(_nameText('성 베드로 대성전'), findsOneWidget); // HUD 칩
       expect(find.text('성당 고르기'), findsNothing);
 
       await tester.tap(find.byTooltip('성당 바꾸기'));
@@ -773,7 +773,7 @@ void main() {
       ]) {
         await open(tester, size, scale);
         expect(tester.takeException(), isNull);
-        expect(inSheet(find.text('여의도동성당')), findsOneWidget);
+        expect(inSheet(_nameText('여의도동성당')), findsOneWidget);
         final scroll = inSheet(find.byType(Scrollable)).first;
         for (final t in [info.blurb, ...info.facts, info.source]) {
           await tester.scrollUntilVisible(
@@ -824,7 +824,7 @@ void main() {
     testWidgets('순교자 10위·근거·알아 둘 사실·모형 고지가 보이고 [입장]이 된다', (tester) async {
       final info = ChurchCatalog.byId['danggogae']!;
       await open(tester, const Size(400, 800), 1.0);
-      expect(inSheet(find.text('당고개 순교성지')), findsOneWidget);
+      expect(inSheet(_nameText('당고개 순교성지')), findsOneWidget);
       expect(inSheet(find.textContaining('성지')), findsWidgets);
       expect(inSheet(find.text(info.blurb)), findsOneWidget);
       final scroll = inSheet(find.byType(Scrollable)).first;
@@ -965,3 +965,7 @@ class _ProbeState extends State<_Probe> {
   @override
   Widget build(BuildContext context) => const Center(child: Text('PROBE'));
 }
+
+/// 성당 이름 찾기: 화면은 keepAll(낱말 붙임 U+2060)로 그리므로 붙임 표시를 빼고 비교한다.
+Finder _nameText(String s) => find.byWidgetPredicate(
+    (w) => w is Text && (w.data ?? '').replaceAll('\u2060', '') == s);
