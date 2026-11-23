@@ -22,15 +22,15 @@
 |---|---|---|---|---|---|
 | 16-1 | `prayer-lev` | 교황청 출판사(Libreria Editrice Vaticana, LEV) 저작권 담당 | 이탈리아어 | en·es·it·pt 공통 + 라틴어 표기 | `diritti.lev@spc.va` |
 | 16-2 | `prayer-icel` | 국제 영어 전례 위원회(ICEL) | 영어 | en-US·en-GB(ICEL 본문을 쓸 때만) | `permission@eliturgy.org` |
-| 16-3 | `prayer-usccb` | 미국 주교회의(USCCB) 허락 담당 | 영어 | en-US | `〔확인 필요〕` |
+| 16-3 | `prayer-usccb` | 미국 주교회의(USCCB) 허락 담당 | 영어 | en-US | `nabperm@usccb.org` + 전례국 문의 양식 |
 | 16-4 | `prayer-cbcew` | 잉글랜드·웨일스 주교회의 전례국(Liturgy Office, CBCEW) | 영어 | en-GB(·IE) | `Liturgy.Office@cbcew.org.uk` |
-| 16-5 | `prayer-cee` | 스페인 주교회의(CEE) — 전례 주교위원회에 전달 요청 | 스페인어 | es-ES | `info@conferenciaepiscopal.es` |
+| 16-5 | `prayer-cee` | 스페인 주교회의(CEE) — 전례 주교위원회에 전달 요청 | 스페인어 | es-ES | `liturgia@conferenciaepiscopal.es` · `liturgia.secretariado@conferenciaepiscopal.es` |
 | 16-6 | `prayer-cem` | 멕시코 주교회의(CEM) — 전례 사목 위원회에 전달 요청(중남미 es-419) | 스페인어 | es-419 | `contacto@cem.org.mx` |
 | 16-7 | `prayer-cei` | 이탈리아 주교회의(CEI) 전국 전례국(Ufficio Liturgico Nazionale) — 권리자 재단에 전달 요청 | 이탈리아어 | it-IT | `uln@chiesacattolica.it` |
 | 16-8 | `prayer-cnbb` | 브라질 주교회의(CNBB) 전례문 위원회(CETEL)·Edições CNBB | 포르투갈어(브라질) | pt-BR(보류: 승인 후 출시) | `〔확인 필요〕` |
 | 16-9 | `prayer-cep` | 포르투갈 주교회의(CEP) 전국 전례 사무국(Secretariado Nacional de Liturgia) | 포르투갈어(포르투갈) | pt-PT(보류: 승인 후 출시) | `secretariado@liturgia.pt` |
 
-- 9곳 가운데 주소를 확인한 곳 7, 〔확인 필요〕 2(USCCB, CNBB). 확인 근거는 각 절의 표에 적었다.
+- 9곳 모두 주소 확인(2026-11-23 사용자가 ChatGPT 웹 검색으로 공식 누리집에서 USCCB·CNBB·CEE 전례 사무국 주소를 확인해 전달). 멕시코는 일반 창구. 확인 근거는 각 절의 표에 적었다.
 - **답이 없을 때의 공통 규칙**: 권리자가 있는 본문은 싣지 않는다. 그 언어는 공유 저작물이 분명한 전통문만 출처와 함께 싣고, 그것으로 묵주기도를 채울 수 없으면 그 언어를 내지 않는다. 포르투갈어는 승인 전에는 내지 않는다(`design.md` §12 의 언어 관문).
 - 아일랜드 주교회의·CELAM·Catholic Truth Society·Buena Prensa·Edições CNBB(별도 주소)는 이번 발송 목록에 넣지 않았다(연락처·관할 미확인). 위 편지에서 「어디에 물어야 하는지」를 함께 여쭙고, 안내받은 곳에 같은 본문으로 다시 보낸다.
 
@@ -134,11 +134,11 @@ If this request belongs to another office, I would be grateful if you would forw
 
 | 받는 곳 | 전자우편 | 언어 | 변종 | 확인 |
 |---|---|---|---|---|
-| **미국 주교회의(USCCB) 허락 담당** | **〔확인 필요〕** | 영어 | en-US | 다국어 조사(prayer_sources.md §2): USCCB 누리집이 403 을 돌려줘 본문·연락처를 열지 못했다. 검색 결과로 「CCD Permissions」 전화만 보았고 **전자우편 주소는 확인하지 못했다**. `APPROVAL_ODDS.md` 2-6: 허락 정책 쪽(https://www.usccb.org/es/node/48245)에는 담당(CCD 허락 부국장)의 전화·우편 주소만 있고 전자우편이 표시되지 않는다(확인) → 전례 사무국 문의 양식 또는 CCD 허락 담당 우편으로 보낸다 〔확인 필요: 사용자가 브라우저로 usccb.org 의 Permissions 쪽을 열어 주소·신청 양식 확인〕. 「인터넷 게시용 문서 자료는 현재 허락하지 않는다」는 문구(검색 결과, 날짜 미상)도 원문 미확인 |
+| **미국 주교회의(USCCB) 허락 담당** | **nabperm@usccb.org** + 전례국 문의 양식 | 영어 | en-US | 다국어 조사(prayer_sources.md §2): USCCB 누리집이 403 을 돌려줘 본문·연락처를 열지 못했다. 검색 결과로 「CCD Permissions」 전화만 보았고 **전자우편 주소는 확인하지 못했다**. `APPROVAL_ODDS.md` 2-6: 허락 정책 쪽(https://www.usccb.org/es/node/48245)에는 담당(CCD 허락 부국장)의 전화·우편 주소만 있고 전자우편이 표시되지 않는다(확인) → 전례 사무국 문의 양식 또는 CCD 허락 담당 우편으로 보낸다 〔확인 필요: 사용자가 브라우저로 usccb.org 의 Permissions 쪽을 열어 주소·신청 양식 확인〕. 「인터넷 게시용 문서 자료는 현재 허락하지 않는다」는 문구(검색 결과, 날짜 미상)도 원문 미확인 |
 
 ### (가) 보낼 본문 (영어)
 
-To: 〔확인 필요〕
+To: nabperm@usccb.org (Cc/also: USCCB Secretariat of Divine Worship contact form)
 Subject: Free, non-commercial Rosary app “Rosarium”: may I use these prayer texts? (a one-number reply is enough)
 
 Dear USCCB Permissions,
@@ -228,11 +228,11 @@ If this request belongs to another office, I would be grateful if you would forw
 
 | 받는 곳 | 전자우편 | 언어 | 변종 | 확인 |
 |---|---|---|---|---|
-| **스페인 주교회의(CEE) — 전례 주교위원회에 전달 요청** | **info@conferenciaepiscopal.es** | 스페인어 | es-ES | 2026-11-23 CEE 공식 누리집 전례 위원회 쪽 https://www.conferenciaepiscopal.es/comisiones/liturgia/ 직접 열람 — 누리집 머리·바닥의 일반 주소다. 전례 위원회·전례 사무국의 전용 주소와 전례서 권리 담당(Coeditores Litúrgicos 등, 추정)은 찾지 못했다 〔확인 필요〕 — 본문에서 전달을 부탁한다 |
+| **스페인 주교회의(CEE) 전례 위원회 사무국** | **liturgia@conferenciaepiscopal.es** · liturgia.secretariado@conferenciaepiscopal.es | 스페인어 | es-ES | 2026-11-23 CEE 공식 누리집 전례 위원회 쪽 https://www.conferenciaepiscopal.es/comisiones/liturgia/ 직접 열람 — 누리집 머리·바닥의 일반 주소다. 전례 위원회·전례 사무국의 전용 주소와 전례서 권리 담당(Coeditores Litúrgicos 등, 추정)은 찾지 못했다 〔확인 필요〕 — 본문에서 전달을 부탁한다 |
 
 ### (가) 보낼 본문 (스페인어)
 
-Para: info@conferenciaepiscopal.es
+Para: liturgia@conferenciaepiscopal.es, liturgia.secretariado@conferenciaepiscopal.es
 Asunto: Aplicación de oración gratuita «Rosarium»: ¿puedo usar estos textos de oración? (basta responder con un número)
 
 A la Conferencia Episcopal Española, Comisión Episcopal para la Liturgia:
@@ -369,11 +369,11 @@ Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltra
 
 | 받는 곳 | 전자우편 | 언어 | 변종 | 확인 |
 |---|---|---|---|---|
-| **브라질 주교회의(CNBB) 전례문 위원회(CETEL)·Edições CNBB** | **〔확인 필요〕** | 포르투갈어(브라질) | pt-BR(보류: 승인 후 출시) | 다국어 조사(prayer_sources.md §6): CNBB 『Missal Romano』 3판(2023 대림부터 의무), CETEL 이 번역 담당, 출판·복제 허락은 Edições CNBB 로 보임 — **공식 연락 주소는 확인하지 못했다.** 2026-11-23 에 cnbb.org.br 연락 쪽과 edicoescnbb.com.br 을 열었으나 주소가 본문에 없거나 자동 열람이 막혔다 〔확인 필요: 사용자가 브라우저로 두 누리집의 「Fale conosco」에서 주소 확인〕 |
+| **브라질 주교회의(CNBB) 전례 위원회** | **liturgia@cnbb.org.br** | 포르투갈어(브라질) | pt-BR(보류: 승인 후 출시) | 다국어 조사(prayer_sources.md §6): CNBB 『Missal Romano』 3판(2023 대림부터 의무), CETEL 이 번역 담당, 출판·복제 허락은 Edições CNBB 로 보임 — **공식 연락 주소는 확인하지 못했다.** 2026-11-23 에 cnbb.org.br 연락 쪽과 edicoescnbb.com.br 을 열었으나 주소가 본문에 없거나 자동 열람이 막혔다 〔확인 필요: 사용자가 브라우저로 두 누리집의 「Fale conosco」에서 주소 확인〕 |
 
 ### (가) 보낼 본문 (포르투갈어(브라질))
 
-Para: 〔확인 필요〕
+Para: liturgia@cnbb.org.br
 Assunto: «Rosarium», aplicativo de oração gratuito: posso usar estes textos de oração? (basta responder com um número)
 
 À Conferência Nacional dos Bispos do Brasil — Comissão Episcopal para os Textos Litúrgicos (CETEL) e Edições CNBB:

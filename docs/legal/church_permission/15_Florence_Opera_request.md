@@ -6,7 +6,7 @@
 
 | 받는 곳 | 전자우편 | 확인 |
 |---|---|---|
-| **피렌체 대성당 관리 재단(Opera di Santa Maria del Fiore)** | **opera@duomo.firenze.it 〔확인 필요〕** | 2026-11-23: 공식 누리집 duomo.firenze.it 는 자동 열람이 막혀(HTTP 403) 직접 열지 못했다. 검색 결과에 나온 **누리집 쪽 바닥글 발췌**로만 `opera@duomo.firenze.it`(일반), `help@duomo.firenze.it`(고객 지원)을 보았고, 누리집에 사진 자료실(Fototeca, 약 3만 점)과 "Opera 소유 이미지 사용 요청서 두 가지" 쪽이 있다는 것까지 확인했다(https://duomo.firenze.it/en/378/en/home , https://duomo.firenze.it/en/862/en/home — 검색 발췌). 〔확인 필요: 보내기 전에 사용자가 브라우저로 누리집 연락처·이미지 요청 쪽을 열어 주소와 요청서 양식을 확인〕 |
+| **피렌체 대성당 관리 재단(Opera di Santa Maria del Fiore)** | **g.giari@duomo.firenze.it**(사진 기록 보관소·이미지 복제) + 공식 이미지 사용 허가 신청서, 참조 opera@duomo.firenze.it | 2026-11-23: 공식 누리집 duomo.firenze.it 는 자동 열람이 막혀(HTTP 403) 직접 열지 못했다. 검색 결과에 나온 **누리집 쪽 바닥글 발췌**로만 `opera@duomo.firenze.it`(일반), `help@duomo.firenze.it`(고객 지원)을 보았고, 누리집에 사진 자료실(Fototeca, 약 3만 점)과 "Opera 소유 이미지 사용 요청서 두 가지" 쪽이 있다는 것까지 확인했다(https://duomo.firenze.it/en/378/en/home , https://duomo.firenze.it/en/862/en/home — 검색 발췌). 〔확인 필요: 보내기 전에 사용자가 브라우저로 누리집 연락처·이미지 요청 쪽을 열어 주소와 요청서 양식을 확인〕 |
 
 - **근거 분류: (c)** — 건물은 수백 년 된 것이라 건축 저작권이 남아 있지 않다. 그래서 저작권 이용 허락이 아니라 **이의 없음·이름 사용 동의(예의)** 와 **복제 규칙의 확인**을 구한다. 소유·관리: 이탈리아 영토, 소유·관리는 Opera di Santa Maria del Fiore(대성당 관리 단체, 지방 공공단체 아님) — 문화유산법 107조는 직접 적용되지 않고 소유자 규칙이 문제다. 촬영물 이용 규정은 미확인(법률 검토 §1.3).
 - 전자우편 한 통으로 보낸다(전화 없음). 이탈리아어판이 본문이고, 한국어 요약은 사용자가 내용을 확인하는 용도다.
@@ -17,7 +17,7 @@
 
 ## (가) 이탈리아어판 (보낼 본문)
 
-A: opera@duomo.firenze.it
+A: g.giari@duomo.firenze.it (Cc: opera@duomo.firenze.it) — inviare anche il modulo ufficiale di richiesta d’uso delle immagini
 Oggetto: App di preghiera gratuita «Rosarium»: una domanda sulla Cattedrale di Santa Maria del Fiore (basta rispondere con un numero)
 
 Spettabile Opera di Santa Maria del Fiore,
@@ -50,7 +50,7 @@ Con viva gratitudine e un ricordo nella preghiera,
 
 - **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 240 낱말로 줄였다(이전 약 1900 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/florence/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
 - 맺음 인사를 「Pace e bene」(프란치스코회 인사)에서 중립적인 「Con viva gratitudine e un ricordo nella preghiera」로 바꿨다(원어민 검토 때 확인).
-- 받는 곳: 피렌체 대성당 관리 재단(Opera di Santa Maria del Fiore) · `opera@duomo.firenze.it 〔확인 필요〕`
+- 받는 곳: 피렌체 대성당 관리 재단(Opera di Santa Maria del Fiore) · `g.giari@duomo.firenze.it`(참조 `opera@duomo.firenze.it`) + 공식 이미지 사용 신청서
 - 자기소개: 대한민국 〔교구명〕 〔소속 본당〕 신자 〔성명〕 〔세례명〕. 개인이 만드는 무료 안드로이드 묵주 기도 앱 「로사리움」. 광고·유료 기능·후원 없음. 교회의 공식 서비스가 아님.
 - 요약에 **앱을 만든 까닭**(회사가 아닌 개인·가족 모두 신자·가족의 부탁에서 시작·가 보기 어려운 성당의 간접 체험·경건하고 기도문이 정확한 앱의 필요·수익 없음·허락을 구하는 까닭·바람)을 사용자 말 그대로 한 절로 적었다.
 - 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
