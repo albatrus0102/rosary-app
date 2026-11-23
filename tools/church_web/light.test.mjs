@@ -165,7 +165,9 @@ test('순례 정거장 46곳: 설계 문구 그대로, 걸을 수 있는 곳, �
   assert.equal(st[0].title, '광장의 묵주 지도');
   assert.equal(st[26].title, '제단 앞');
   assert.equal(st[26].meaning, '최후의 만찬과 수난 사이에 제대가 있다. 미사는 그 둘을 하나로 잇는다');
-  assert.equal(st[45].what, '로툰다 바닥 돌 상감이 구슬 59알의 묵주를 그리며 입구로 되돌아간다');
+  // 46 은 지어진 바닥(닫힌 고리 55알 = 작은 50 + 큰 5, 밟는 바닥이라 늘어진 줄·십자가 없음)에 맞춘 문구(3단계)
+  assert.equal(st[45].what, '로툰다 바닥에 청동 구슬 쉰다섯 알이 끊김 없는 고리를 이룬다. 작은 구슬 쉰은 성모송, 큰 구슬 다섯은 주님의 기도');
+  assert.equal(st[45].meaning, '기도는 끝나지 않고 삶으로 이어진다');
   // 신비 정거장: 경당 순서와 같다(15~19 환희, 22~26 빛, 32~36 고통, 40~44 영광)
   const myst = st.filter((s) => s.kind === 'mystery');
   assert.deepEqual(myst.map((s) => s.window), Pilgrim.mysteryOrder);
