@@ -83,3 +83,108 @@ body.touch #tourbar{bottom:calc(14px + env(safe-area-inset-bottom))}
 #intent button{display:block;width:100%;min-height:46px;margin:0 0 8px;padding:10px 14px;border-radius:12px;border:1px solid rgba(200,168,106,.6);background:rgba(255,255,255,.05);text-align:left;font-size:15px;color:var(--ivory)}
 #intent button.pick{background:rgba(200,168,106,.4);border-color:var(--gold)}
 @media (max-height:480px){#start .note{margin-bottom:14px}#start .btns{flex-direction:row}#start .big{flex:1;min-height:48px;font-size:16px}}
+
+/* 앉은 자리 묵주기도(rosary.js): 앉은 줄 · 묵주 패널. 앱 ChurchSeatedBar / ChurchRosaryPanel 과 같은 짜임(넓은 화면은 폭 560 으로 묶음) */
+.plaque{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:13;width:calc(100% - 16px);max-width:560px;box-sizing:border-box;
+  border-radius:16px;border:1px solid rgba(200,168,106,.7);background:rgba(28,24,48,.94);color:var(--ivory);box-shadow:0 6px 24px rgba(0,0,0,.45)}
+#seatbar{padding:12px}
+#seatbar p{margin:0 0 6px;font-size:15px;line-height:1.45;color:var(--ivory2);word-break:keep-all;overflow-wrap:anywhere}
+#seatbar .sbtoday{color:var(--gold);font-weight:600}
+.plaque .row{display:flex;gap:8px;margin-top:8px}
+.plaque .row .fill{flex:1}
+.btn{min-height:48px;min-width:48px;padding:8px 14px;border-radius:24px;font-size:15px;font-weight:600;line-height:1.2;box-sizing:border-box;border:1px solid transparent;background:transparent;color:var(--ivory);overflow-wrap:anywhere}
+.btn.fill{background:linear-gradient(180deg,var(--gold),#b0914f);color:var(--ink);border-color:var(--gold)}
+.btn.outline{border-color:rgba(200,168,106,.8)}
+.btn.tonal{background:rgba(200,168,106,.22);border-color:rgba(200,168,106,.4)}
+.btn.text{padding:8px 6px;color:var(--gold);border-radius:12px}
+.btn[disabled]{opacity:.4;cursor:default}
+.btn[hidden]{display:none}
+.seg{display:inline-flex;border:1px solid rgba(200,168,106,.7);border-radius:24px;overflow:hidden;max-width:100%}
+.seg button{min-height:48px;padding:6px 14px;border:0;background:transparent;color:var(--ivory);font-size:14px;font-weight:600;white-space:nowrap}
+.seg button+button{border-left:1px solid rgba(200,168,106,.7)}
+.seg button[aria-pressed="true"]{background:rgba(200,168,106,.35)}
+#rosary{display:flex;flex-direction:column;max-height:calc(62vh - env(safe-area-inset-bottom));padding:0 8px 8px 12px}
+.rhead{position:relative;display:flex;align-items:center;gap:6px;min-height:48px;flex:none}
+#rState{flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtime{font-size:14px;color:var(--ivory2);font-variant-numeric:tabular-nums}
+.icon{min-width:48px;min-height:48px;border:0;border-radius:24px;background:transparent;color:var(--ivory);font-size:22px;line-height:1}
+#rMenuBox{position:absolute;right:0;bottom:100%;margin-bottom:4px;min-width:180px;padding:6px;border-radius:12px;background:var(--plum2);border:1px solid var(--gold);box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:2}
+#rMenuBox button{display:block;width:100%;min-height:48px;padding:8px 12px;border:0;border-radius:8px;background:transparent;color:var(--ivory);text-align:left;font-size:15px}
+#rMenuBox button:hover{background:rgba(200,168,106,.2)}
+#rDone{margin:0 0 8px;font-size:16px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+#rMain{display:flex;flex-direction:column;min-height:0;flex:1 1 auto}
+.rbody{display:flex;gap:10px;flex:none}
+#rBeads{position:relative;flex:none;width:92px;height:150px;border-radius:12px;background:radial-gradient(90% 70% at 50% 45%,rgba(200,168,106,.14),rgba(0,0,0,.25));overflow:hidden}
+#rBeads .chain{position:absolute;left:50%;top:0;bottom:22px;width:2px;margin-left:-1px;background:rgba(200,168,106,.45)}
+#rBeads .b{position:absolute;left:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7e6,#c8a86a 60%,#7a6232);opacity:.7}
+#rBeads .b.bb{width:22px;height:22px;margin:-11px 0 0 -11px}
+#rBeads .b.bl{width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:2px;transform:rotate(45deg)}
+#rBeads .b.bc{width:6px;height:24px;margin:-12px 0 0 -3px;border-radius:1px;background:#c8a86a}
+#rBeads .b.bc::after{content:"";position:absolute;left:-6px;top:6px;width:18px;height:5px;border-radius:1px;background:#c8a86a}
+#rBeads .b.cur{opacity:1;transform:scale(1.45);box-shadow:0 0 12px 3px rgba(246,236,218,.55)}
+#rBeads .b.bl.cur{transform:rotate(45deg) scale(1.6)}
+#rBeads .dec{position:absolute;left:0;right:0;bottom:6px;display:flex;justify-content:center;gap:5px}
+#rBeads .dec i{width:8px;height:8px;border-radius:50%;border:1px solid rgba(200,168,106,.8)}
+#rBeads .dec i.done{background:rgba(200,168,106,.8)}
+#rBeads .dec i.now{background:var(--ivory);border-color:var(--ivory)}
+.info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rstep{font-size:20px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.rstep b{color:var(--gold);margin-left:6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rline{font-size:14px;color:var(--ivory2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rmyst{font-size:14px;word-break:keep-all;overflow-wrap:anywhere;line-height:1.4;color:var(--ivory);white-space:pre-line;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tools{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 4px}
+.nav{display:flex;gap:8px;margin-top:2px}
+.nav .fill{flex:1}
+.rtext{flex:1 1 auto;min-height:0;overflow:auto;margin-top:6px;padding:8px 6px 4px 0;border-top:1px solid rgba(200,168,106,.3);touch-action:pan-y;-webkit-user-select:text;user-select:text}
+.rprayer{white-space:pre-line;font-size:16px;line-height:1.65;color:var(--ivory);overflow-wrap:anywhere}
+.rprayer.pending{font-style:italic;color:var(--ivory2)}
+.rsrc{margin:10px 0 0;font-size:12px;line-height:1.4;color:rgba(246,236,218,.6)}
+.rfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;flex:none}
+.rfoot .seg{min-width:0}
+.rfoot .btn{flex:none}
+body.rosary-on #cap,body.touch.rosary-on #cap{top:calc(134px + env(safe-area-inset-top));bottom:auto}
+body.rosary-on #tourbar{top:calc(52px + env(safe-area-inset-top));bottom:auto}
+@media (max-width:370px){#rBeads{width:76px}.rstep{font-size:18px}.seg button{padding:6px 10px}}
+@media (max-height:560px){#rosary{max-height:calc(80vh - env(safe-area-inset-bottom))}#rBeads{height:120px}}
+
+/* 십자가의 길(cross.js): 판 앞 칩(앱 ChurchCrossChip, 위쪽 줄 아래) · 묵상 시트(앱 M3 바텀시트, 화면 92% 이하) */
+.crosschip{position:fixed;left:12px;top:calc(56px + env(safe-area-inset-top));z-index:11;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);min-height:48px;box-sizing:border-box;padding:6px 14px;border-color:rgba(200,168,106,.8);text-align:left}
+.crosschip .ct{min-width:0;flex:1 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.crosschip .cm{flex:none;color:var(--gold);font-weight:600}
+#crossSheet{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,8,6,.5)}
+#crossSheet .sheet{width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;box-sizing:border-box;border-radius:22px 22px 0 0;background:var(--plum2);border:1px solid rgba(200,168,106,.7);border-bottom:0;color:var(--ivory);padding-bottom:env(safe-area-inset-bottom)}
+#crossSheet .grab{width:32px;height:4px;margin:10px auto 2px;border-radius:2px;background:rgba(246,236,218,.4)}
+.shead{display:flex;align-items:center;gap:8px;padding:0 4px 0 16px;flex:none}
+#csHead{flex:1;min-width:0;font-size:17px;font-weight:700;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#csProg{font-size:14px;color:var(--ivory2);font-variant-numeric:tabular-nums}
+.sbody{flex:1 1 auto;min-height:0;overflow:auto;padding:4px 16px 12px;touch-action:pan-y;-webkit-user-select:text;user-select:text;font-size:16px;line-height:1.6}
+.sbody p{margin:0;overflow-wrap:anywhere}
+.sfig{display:flex;justify-content:center;margin:4px 0 12px}
+.sartimg{height:min(340px,34vh);aspect-ratio:216/266;border-radius:16px;background-color:rgba(255,255,255,.06);background-repeat:no-repeat}
+.slabel{color:var(--gold);font-weight:700;font-size:15px}
+.stitle{margin:2px 0;font-size:21px;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+.refs{font-size:13px;color:var(--ivory2);margin-bottom:10px!important}
+.sbody h4{margin:14px 0 4px;font-size:15px;color:var(--gold)}
+.sbody .rub{font-size:14px;color:var(--ivory2);margin:2px 0}
+.spart{display:flex;gap:6px;margin:6px 0}
+.spart .mk{flex:none;width:1.5em;color:var(--gold);font-weight:700}
+.spart>div{flex:1;min-width:0}
+.ann{margin:8px 0!important}
+.ann b{color:var(--gold)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:12px!important;font-size:13px;color:var(--ivory2)}
+.legend b{color:var(--gold)}
+.sbody .small{font-size:13px;line-height:1.45;color:var(--ivory2);margin-top:4px}
+.sbody .pending{font-style:italic;color:var(--ivory2)}
+.smed{margin:12px 0 4px;border:1px solid rgba(200,168,106,.45);border-radius:13px;padding:0 12px}
+.smed summary{min-height:48px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;list-style:none}
+.smed summary::-webkit-details-marker{display:none}
+.smed summary span{font-size:13px;color:var(--ivory2);font-weight:400}
+.smed p{margin-bottom:10px}
+.smed .pet{padding:10px 12px;border-radius:12px;background:rgba(200,168,106,.15)}
+.sart{margin-top:12px;font-size:13px;line-height:1.45;color:var(--ivory2)}
+.sart .disc{margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.05)}
+.sclose{text-align:center;padding:8px 0}
+.sclose .sun{width:72px;height:72px;margin:0 auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(200,168,106,.25);font-size:34px;color:var(--gold)}
+.sclose h3{margin:0 0 10px;font-size:21px}
+.sact{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-top:1px solid rgba(200,168,106,.3);flex:none}
+.sact .btn.fill{min-width:120px}

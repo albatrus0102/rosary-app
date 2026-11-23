@@ -119,6 +119,57 @@
     }
   };
 
+  // 앉은 자리 묵주기도(rosary.js) 문구. ko 는 앱(church_hud.dart ChurchSeatedBar · church_rosary_panel.dart)의 문구 그대로, 나머지는 기계 초안.
+  // rPending 은 사용자가 정한 문구(2026-11-23): 공식 본문을 아직 받지 못한 기도의 자리.
+  var ROSARY_UI = {
+    ko: {
+      rTitle: '묵주기도', rSeatedNote: '앉아 있어요. 묵주기도는 원할 때 시작해요.', rToday: '오늘의 신비: {name}', rSit: '앉아서', rKneel: '무릎 꿇고',
+      rStart: '묵주기도 시작', rOn: '묵주기도 중', rPausedState: '묵주기도 · 쉬는 중', rDone: '기도를 마쳤습니다', rMore: '더보기', rPause: '잠깐 쉬기', rResume: '이어 기도', rEnd: '끝내기',
+      rPrev: '이전', rNext: '다음', rTextOpen: '기도문 펼치기', rTextClose: '기도문 접기', rNextDecade: '다음 단으로 ›', rIntro: '서두', rClosing: '마침', rDecade: '{n}단', rClosingTitle: '마침 {t}',
+      rFinished: '{name} 묵주기도를 모두 바쳤습니다. 평화를 빕니다.', rTextOnly: '이 웹 미리보기는 기도문을 글로만 보여 줍니다(소리 없음).', rSource: '기도문: 『가톨릭 기도서』(한국천주교주교회의).',
+      rPending: '이 자리의 기도문은 공식 본문을 받는 대로 넣습니다.', tourEndRosary: '둘러보기를 마쳤습니다. 「다음」으로 기도를 이어 가거나 「일어나기」로 일어나 걸어 보세요.'
+    },
+    it: {
+      rTitle: 'Rosario', rSeatedNote: 'Sei seduto. Inizia il Rosario quando vuoi.', rToday: 'Misteri del giorno: {name}', rSit: 'Seduto', rKneel: 'In ginocchio',
+      rStart: 'Inizia il Rosario', rOn: 'Rosario in corso', rPausedState: 'Rosario · in pausa', rDone: 'Preghiera conclusa', rMore: 'Altro', rPause: 'Pausa', rResume: 'Riprendi la preghiera', rEnd: 'Termina',
+      rPrev: 'Indietro', rNext: 'Avanti', rTextOpen: 'Mostra il testo', rTextClose: 'Nascondi il testo', rNextDecade: 'Decina successiva ›', rIntro: 'Inizio', rClosing: 'Conclusione', rDecade: 'Decina {n}', rClosingTitle: 'Conclusione: {t}',
+      rFinished: 'Hai pregato tutto il Rosario ({name}). La pace sia con te.', rTextOnly: 'In questa anteprima web le preghiere sono mostrate solo come testo (senza audio).', rSource: 'Testi: Compendio del Catechismo della Chiesa Cattolica (LEV); Padre nostro nella formulazione oggi in uso (Ufficio Liturgico Nazionale, CEI).',
+      rPending: 'Questa preghiera sarà inserita appena riceveremo il testo ufficiale.', tourEndRosary: 'La visita è finita. Tocca «Avanti» per continuare a pregare o «Alzati» per camminare di nuovo.'
+    },
+    en: {
+      rTitle: 'Rosary', rSeatedNote: 'You are seated. Start the Rosary whenever you wish.', rToday: 'Mysteries of the day: {name}', rSit: 'Sitting', rKneel: 'Kneeling',
+      rStart: 'Start the Rosary', rOn: 'Praying the Rosary', rPausedState: 'Rosary · paused', rDone: 'Prayer finished', rMore: 'More', rPause: 'Pause', rResume: 'Continue praying', rEnd: 'End',
+      rPrev: 'Previous', rNext: 'Next', rTextOpen: 'Show prayer text', rTextClose: 'Hide prayer text', rNextDecade: 'Next decade ›', rIntro: 'Opening', rClosing: 'Closing', rDecade: 'Decade {n}', rClosingTitle: 'Closing: {t}',
+      rFinished: 'You have prayed the whole Rosary ({name}). Peace be with you.', rTextOnly: 'In this web preview the prayers are shown as text only (no audio).', rSource: 'Texts: as published on usccb.org (USCCB); names of the mystery groups: Compendium of the Catechism (LEV).',
+      rPending: 'This prayer will be added as soon as we receive the official text.', tourEndRosary: 'The tour is over. Tap “Next” to keep praying, or “Stand up” to walk again.'
+    },
+    es: {
+      rTitle: 'Rosario', rSeatedNote: 'Estás sentado. Empieza el Rosario cuando quieras.', rToday: 'Misterios del día: {name}', rSit: 'Sentado', rKneel: 'De rodillas',
+      rStart: 'Empezar el Rosario', rOn: 'Rezando el Rosario', rPausedState: 'Rosario · en pausa', rDone: 'Oración terminada', rMore: 'Más', rPause: 'Pausa', rResume: 'Seguir rezando', rEnd: 'Terminar',
+      rPrev: 'Anterior', rNext: 'Siguiente', rTextOpen: 'Mostrar el texto', rTextClose: 'Ocultar el texto', rNextDecade: 'Siguiente decena ›', rIntro: 'Inicio', rClosing: 'Final', rDecade: 'Decena {n}', rClosingTitle: 'Final: {t}',
+      rFinished: 'Has rezado todo el Rosario ({name}). La paz esté contigo.', rTextOnly: 'En esta vista previa web las oraciones se muestran solo como texto (sin audio).', rSource: 'Textos: Compendio del Catecismo de la Iglesia Católica (LEV).',
+      rPending: 'Esta oración se añadirá en cuanto recibamos el texto oficial.', tourEndRosary: 'La visita ha terminado. Toca «Siguiente» para seguir rezando o «Levantarse» para volver a caminar.'
+    },
+    pt: {
+      rTitle: 'Rosário', rSeatedNote: 'Você está sentado. Comece o Rosário quando quiser.', rToday: 'Mistérios do dia: {name}', rSit: 'Sentado', rKneel: 'De joelhos',
+      rStart: 'Começar o Rosário', rOn: 'Rezando o Rosário', rPausedState: 'Rosário · em pausa', rDone: 'Oração concluída', rMore: 'Mais', rPause: 'Pausa', rResume: 'Continuar rezando', rEnd: 'Encerrar',
+      rPrev: 'Anterior', rNext: 'Próximo', rTextOpen: 'Mostrar o texto', rTextClose: 'Ocultar o texto', rNextDecade: 'Próxima dezena ›', rIntro: 'Início', rClosing: 'Final', rDecade: 'Dezena {n}', rClosingTitle: 'Final: {t}',
+      rFinished: 'Você rezou o Rosário inteiro ({name}). A paz esteja com você.', rTextOnly: 'Nesta prévia na web as orações aparecem só como texto (sem áudio).', rSource: 'Textos: CNBB («Como rezar o Terço?»); Sinal da Cruz e nomes dos grupos de mistérios: Compêndio do Catecismo (LEV).',
+      rPending: 'Esta oração será incluída assim que recebermos o texto oficial.', tourEndRosary: 'A visita terminou. Toque em «Próximo» para continuar rezando ou «Levantar» para andar de novo.'
+    }
+  };
+  LANGS.forEach(function (l) { for (var k in ROSARY_UI[l]) UI[l][k] = ROSARY_UI[l][k]; });
+
+  // 십자가의 길(cross.js) 문구. ko 는 앱(church_cross.dart · stations_sheet.dart · stations_prayer_view.dart)의 문구 그대로, 나머지는 기계 초안.
+  var STATIONS_UI = {
+    ko: { sWay: '십자가의 길', sChip: '십자가의 길 {n}처 · {t}', sMeditate: '묵상하기', sTitle: '십자가의 길', sClose: '닫기', sLabel: '제{n}처', sImgAlt: '{label} 그림', sOpening: '시작 기도', sPrayer: '기도문', sMeditation: '묵상', sMedNote: '로사리움이 덧붙인 짧은 글(공식 기도문 아님)', sClosingTitle: '십자가의 길을 마치며', sClosingNote: '『가톨릭 기도서』의 십자가의 길은 제14처 기도로 끝납니다. 위 글은 로사리움이 덧붙인 마침 묵상이며 공식 기도문이 아닙니다.', sArt: '그림:', sArtCredit: '{artist}, {year}{photo}. {license}.', sDisclosure: '이 그림은 이 성당에 실제로 걸린 작품이 아니라 로사리움이 고른 대체 성화입니다.', sEnd: '마침', sBackTo: '{n}처로', sFinish: '순례 마치기', sEnding: '마치며', sNextStation: '다음 처로', sDone: '십자가의 길을 마쳤습니다' },
+    it: { sWay: 'Via Crucis', sChip: 'Via Crucis · Stazione {n}', sMeditate: 'Medita', sTitle: 'Via Crucis', sClose: 'Chiudi', sLabel: 'Stazione {n}', sImgAlt: 'Immagine: {label}', sOpening: 'Preghiera iniziale', sPrayer: 'Preghiera', sMeditation: 'Meditazione', sMedNote: 'Breve testo aggiunto da Rosarium (non è una preghiera ufficiale)', sClosingTitle: 'Al termine della Via Crucis', sClosingNote: 'Nel libro di preghiere coreano la Via Crucis termina con la preghiera della XIV stazione.', sArt: 'Immagine:', sArtCredit: '{artist}, {year}{photo}. {license}.', sDisclosure: 'Questa immagine non è l’opera realmente presente in questa chiesa: è un’immagine sostitutiva scelta da Rosarium.', sEnd: 'Fine', sBackTo: 'Torna alla stazione {n}', sFinish: 'Concludi il pellegrinaggio', sEnding: 'Conclusione', sNextStation: 'Stazione successiva', sDone: 'Hai concluso la Via Crucis' },
+    en: { sWay: 'Way of the Cross', sChip: 'Way of the Cross · Station {n}', sMeditate: 'Meditate', sTitle: 'Way of the Cross', sClose: 'Close', sLabel: 'Station {n}', sImgAlt: 'Image for {label}', sOpening: 'Opening prayer', sPrayer: 'Prayer', sMeditation: 'Meditation', sMedNote: 'A short text added by Rosarium (not an official prayer)', sClosingTitle: 'Ending the Way of the Cross', sClosingNote: 'In the Korean prayer book the Way of the Cross ends with the prayer of the 14th station.', sArt: 'Image:', sArtCredit: '{artist}, {year}{photo}. {license}.', sDisclosure: 'This image is not the work actually hanging in this church; it is a replacement chosen by Rosarium.', sEnd: 'End', sBackTo: 'Back to Station {n}', sFinish: 'Finish the pilgrimage', sEnding: 'Conclude', sNextStation: 'Next station', sDone: 'You have finished the Way of the Cross' },
+    es: { sWay: 'Vía Crucis', sChip: 'Vía Crucis · Estación {n}', sMeditate: 'Meditar', sTitle: 'Vía Crucis', sClose: 'Cerrar', sLabel: 'Estación {n}', sImgAlt: 'Imagen: {label}', sOpening: 'Oración inicial', sPrayer: 'Oración', sMeditation: 'Meditación', sMedNote: 'Breve texto añadido por Rosarium (no es una oración oficial)', sClosingTitle: 'Al terminar el Vía Crucis', sClosingNote: 'En el devocionario coreano el Vía Crucis termina con la oración de la XIV estación.', sArt: 'Imagen:', sArtCredit: '{artist}, {year}{photo}. {license}.', sDisclosure: 'Esta imagen no es la obra que realmente está en esta iglesia: es una imagen sustitutiva elegida por Rosarium.', sEnd: 'Final', sBackTo: 'Volver a la estación {n}', sFinish: 'Terminar la peregrinación', sEnding: 'Concluir', sNextStation: 'Siguiente estación', sDone: 'Has terminado el Vía Crucis' },
+    pt: { sWay: 'Via-Sacra', sChip: 'Via-Sacra · Estação {n}', sMeditate: 'Meditar', sTitle: 'Via-Sacra', sClose: 'Fechar', sLabel: 'Estação {n}', sImgAlt: 'Imagem: {label}', sOpening: 'Oração inicial', sPrayer: 'Oração', sMeditation: 'Meditação', sMedNote: 'Breve texto acrescentado pelo Rosarium (não é uma oração oficial)', sClosingTitle: 'Ao terminar a Via-Sacra', sClosingNote: 'No livro de orações coreano a Via-Sacra termina com a oração da XIV estação.', sArt: 'Imagem:', sArtCredit: '{artist}, {year}{photo}. {license}.', sDisclosure: 'Esta imagem não é a obra que de fato está nesta igreja: é uma imagem substituta escolhida pelo Rosarium.', sEnd: 'Fim', sBackTo: 'Voltar à estação {n}', sFinish: 'Concluir a peregrinação', sEnding: 'Concluir', sNextStation: 'Próxima estação', sDone: 'Você concluiu a Via-Sacra' }
+  };
+  LANGS.forEach(function (l) { for (var k in STATIONS_UI[l]) UI[l][k] = STATIONS_UI[l][k]; });
+
   // 초 켜는 지향 8가지(앱 church_constants.dart candleIntentions 와 같은 순서). 글을 직접 쓰는 칸은 없다.
   var INTENTIONS = {
     ko: ['가족과 이웃을 위해', '아픈 이들을 위해', '세상의 평화를 위해', '돌아가신 이들을 위해', '감사의 마음으로', '시험과 일을 위해', '통회와 용서를 위해', '나라와 교회를 위해'],
@@ -181,6 +232,16 @@
       outro: 'A visita terminou. Agora explore por conta própria.'
     }
   };
+
+  // 둘러보기 끝의 묵주기도 자막(앉은 뒤). 앱이 하는 일만 말한다.
+  var ROSARY_CAPTIONS = {
+    ko: { rosStart: '자리에 앉아 「묵주기도 시작」을 누릅니다. 신비는 오늘 요일에 맞춰 정해집니다.', rosSign: '성호경으로 시작합니다. 기도문은 글로 보여 주고, 「다음」을 누를 때마다 묵주알이 한 알씩 넘어갑니다.', rosCreed: '사도신경 · 주님의 기도 · 성모송 세 번 · 영광송으로 서두를 바칩니다.', rosDecade: '각 단은 그 단의 신비를 묵상하며 주님의 기도, 성모송 열 번, 영광송, 구원을 비는 기도로 바칩니다.', rosHand: '이제 직접 「다음」으로 넘기거나 「다음 단으로」로 건너뛰어 보세요. 「일어나기」로 자리에서 일어납니다.' },
+    it: { rosStart: 'Da seduti si tocca «Inizia il Rosario». I misteri seguono il giorno della settimana.', rosSign: 'Si comincia con il Segno della Croce. Le preghiere sono mostrate come testo e ogni «Avanti» fa scorrere il rosario di un grano.', rosCreed: 'L’inizio: il Simbolo degli Apostoli, il Padre nostro, tre Ave Maria e il Gloria al Padre.', rosDecade: 'Ogni decina: meditando il suo mistero, il Padre nostro, dieci Ave Maria, il Gloria al Padre e la preghiera di Fatima.', rosHand: 'Ora prova tu: «Avanti» per proseguire, «Decina successiva» per passare oltre, «Alzati» per lasciare il banco.' },
+    en: { rosStart: 'Seated, you tap “Start the Rosary”. The mysteries follow the day of the week.', rosSign: 'It begins with the Sign of the Cross. The prayers are shown as text, and each “Next” moves the rosary on by one bead.', rosCreed: 'The opening: the Apostles’ Creed, the Our Father, three Hail Marys and the Glory Be.', rosDecade: 'Each decade: meditating on its mystery, the Our Father, ten Hail Marys, the Glory Be and the Fatima prayer.', rosHand: 'Now try it yourself: “Next” to go on, “Next decade” to skip ahead, “Stand up” to leave the pew.' },
+    es: { rosStart: 'Sentado, se toca «Empezar el Rosario». Los misterios siguen el día de la semana.', rosSign: 'Se empieza con la señal de la cruz. Las oraciones se muestran como texto y cada «Siguiente» pasa una cuenta del rosario.', rosCreed: 'El inicio: el Símbolo de los Apóstoles, el Padre nuestro, tres avemarías y el Gloria al Padre.', rosDecade: 'Cada decena: meditando su misterio, el Padre nuestro, diez avemarías, el Gloria al Padre y la oración de Fátima.', rosHand: 'Ahora pruébalo tú: «Siguiente» para avanzar, «Siguiente decena» para saltar, «Levantarse» para dejar el banco.' },
+    pt: { rosStart: 'Sentado, toca-se «Começar o Rosário». Os mistérios seguem o dia da semana.', rosSign: 'Começa-se com o sinal da cruz. As orações aparecem como texto e cada «Próximo» passa uma conta do terço.', rosCreed: 'O início: o Creio, o Pai-Nosso, três ave-marias e o Glória ao Pai.', rosDecade: 'Cada dezena: meditando o seu mistério, o Pai-Nosso, dez ave-marias, o Glória ao Pai e a oração de Fátima.', rosHand: 'Agora experimente: «Próximo» para seguir, «Próxima dezena» para avançar, «Levantar» para deixar o banco.' }
+  };
+  LANGS.forEach(function (l) { for (var k in ROSARY_CAPTIONS[l]) CAPTIONS[l][k] = ROSARY_CAPTIONS[l][k]; });
 
   // 장면 안 이름표(assets/church/markers.js 의 한국어 문구 -> 번역). 장면이 window.ChurchLabelMap 을 읽는다. ko 는 그대로.
   var LABELS = {

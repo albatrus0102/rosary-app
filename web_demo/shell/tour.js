@@ -1,5 +1,6 @@
 /* tour.js — 둘러보기(약 60~90초): 입구에서 걸어 들어와 → 천장을 올려다보고 → 제대 쪽으로 가다 제단 경계에서 멈추고 →
-   (성수대가 있는 모형만) 성호 → 초 켜기(정해진 지향) → 앉아 기도 → 마침 넓은 시점. 끝나면 자유롭게 걷는다.
+   (성수대가 있는 모형만) 성호 → 초 켜기(정해진 지향) → 앉아서 묵주기도(성호경 · 사도신경 · 1단 몇 알, rosary.js) → 앉은 채로 넘겨준다.
+   앉지 못하면 예전처럼 넓은 시점으로 마친다. 끝나면 자유롭게 걷거나 이어 기도한다.
    자막은 페이지가 넘긴 D.captions({언어: {역할: 글}}; video_plan.md 의 자막 줄, 그 계획의 언어에만 있다)를 쓰고, 없는 줄은 i18n 기본 자막.
    장면을 몰기만 한다(ChurchAPI). 사용자의 아무 입력(키·누름·휠·단추)이 오면 바로 멈추고 자유 모드로 넘어간다. */
 (function (root) {
@@ -7,6 +8,7 @@
   var S = root.DemoShell, I = root.DemoI18N, D = root.DEMO, L = S.L, doc = root.document;
   var caps = I.pickCaptions(D.captions, S.lang), gen = I.captions[S.lang] || I.captions.en;
   function cap(k) { return caps[k] || gen[k] || ''; }
+  var SPEED = +((/[?&]tourspeed=(\d+)/.exec(root.location.search) || [])[1] || 1) || 1;   // 시험용: ?tourspeed=10 이면 기다리는 시간을 1/10 로
   function ease(k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; }
 
   S.runTour = function () {
@@ -23,13 +25,13 @@
       S.api('setJoystick', { x: 0, y: 0 }); S.api('cancelWalk');
       if (S.closeIntent && S.intentBox) S.closeIntent();
       S.caption(''); S.tour = null;
-      $('tourbar').hidden = true; $('hud').hidden = false; $('joy').hidden = !S.touch; S.updateActs(); mark('stop');
+      $('tourbar').hidden = true; $('hud').hidden = false; $('joy').hidden = !S.touch || S.seated; S.updateActs(); mark('stop');
       root.__tourLog = T.log;
     };
     // 시작 누름이 끝난 뒤부터 입력을 듣는다
     setTimeout(function () { T.armed = true; }, 400);
 
-    function sleep(ms) { return Promise.race([new Promise(function (r) { setTimeout(r, ms); }), T.aborted]); }
+    function sleep(ms) { return Promise.race([new Promise(function (r) { setTimeout(r, ms / SPEED); }), T.aborted]); }
     function frame() { return Promise.race([new Promise(function (r) { requestAnimationFrame(r); }), T.aborted]); }
     // 걷기 끝(도착·실패·취소) 기다림. 아바타가 움직이는 동안은 계속 기다리고(느린 기기에서도 끝까지 걷는다),
     // 9초 넘게 꼼짝 않거나 150초가 지나면 멈추고 다음으로 넘어간다.
@@ -102,9 +104,27 @@
           S.caption(cap('sit'));
           S.api('sit', { seat: s.seat || undefined });
           await Promise.race([S.waitEvent(function (o) { return o.e === 'seated'; }, 8000), T.aborted]); if (T.stopped) return;
-          await sleep(7500); if (T.stopped) return;
+          await sleep(5000); if (T.stopped) return;
         }
-        // 7. 마침: 일어나 넓은 시점으로
+        // 7. 묵주기도(앱처럼 앉은 줄의 「묵주기도 시작」): 성호경 → 사도신경 → 서두를 빠르게 → 1단(신비) 주님의 기도 → 성모송 몇 알. 끝나면 앉은 채로 넘겨준다.
+        var R = S.rosary;
+        if (S.seated && R) {
+          mark('rosary'); S.caption(gen.rosStart);
+          await sleep(3800); if (T.stopped) return;
+          R.open = true; R.start(); mark('rosary-sign');
+          S.caption(gen.rosSign); await sleep(5600); if (T.stopped) return;
+          R.next(); mark('rosary-creed');   // 사도신경
+          S.caption(gen.rosCreed); await sleep(5200); if (T.stopped) return;
+          while (R.i < R.steps.length && !R.steps[R.i].d) { R.next(); await sleep(650); if (T.stopped) return; }   // 서두(주님의 기도 · 성모송 3 · 영광송)를 한 알씩 빠르게
+          mark('rosary-decade'); S.caption(gen.rosDecade);   // 1단 주님의 기도 + 신비
+          await sleep(6200); if (T.stopped) return;
+          for (var h = 0; h < 3; h++) { R.next(); await sleep(2100); if (T.stopped) return; }   // 성모송 1·2·3
+          mark('rosary-hand'); S.caption(gen.rosHand);
+          await sleep(6500); if (T.stopped) return;
+          mark('end'); T.stop(); S.toast(L.tourEndRosary);
+          return;
+        }
+        // 8. (앉지 못했을 때) 마침: 일어나 넓은 시점으로
         mark('outro'); S.caption(cap('outro'));
         if (S.seated) { S.api('stand'); await Promise.race([S.waitEvent(function (o) { return o.e === 'stood'; }, 6000), T.aborted]); if (T.stopped) return; }
         S.setView('tp'); await zoomOut(6); await sleep(4200); if (T.stopped) return;
