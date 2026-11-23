@@ -207,3 +207,211 @@ draw call·삼각형 전후(`scan_shots.mjs`, 960×540, high, 군중 없음, 성
 결과: 다섯 묶음 모두 **남김**(얼굴이 원본에 가깝게 읽힌다 — 철회·사진 판 복귀 없음). 스케치팹 09_pieta_textured 같은 다른 원본은 필요 없었다.
 draw call 은 그대로(피에타 close 81 → 80, 나머지 같음), 삼각형은 피에타 close 250k → 314k, 다른 자리 +8k–16k. 묶음 합계 1.0MB → 1.32MB(deflate 0.65 → 0.87MB).
 남은 한계: 그리스도의 얼굴은 원작대로 뒤로 젖혀져 통로 눈높이에서는 턱·코 윤곽만 보인다(스캔·단순화 탓 아님). 미리 구운 AO 는 넣지 않았다(열쇠 빛과 새 법선으로 얼굴이 읽혀서) — 더 필요하면 다음 후보.
+
+## 9. 빛의 대성당용 추가 수집 (2026-11-24)
+
+사용자 요청: 「성당에 쓰는 저작권 없는 성상을 가져와라 — 3D 를 직접 만들기는 어렵다.」 새 가상 고딕 대성당(빛의 대성당)과 기존 성당에 쓸 모델을 더 모았다. 기준은 §1 그대로(CC0·퍼블릭 도메인·CC BY·CC BY-NC, SA·ND·유료 제외) + 조각 자체가 1900년 이전이거나 작가 사후 70년이 지난 것. AI 생성물·나체상은 넣지 않았다(아기 예수의 아기 모습은 예외).
+
+- 새로 받은 것 **42점**, 777.7MB (`art/statue_handoff/received/`, 저장소에는 올리지 않음). 파일별 SHA-256·내려받기 주소는 `manifest.json` 의 `received`(R24~).
+- 스케치팹에서 사용자가 받아 줄 것 **10점**(11~20번, `art/statue_handoff/README_ko.md`).
+- 상태: **받음** = 받아 두었고 기준을 통과 · **보류** = 받아 두었지만 연도·라이선스 확인 전에는 쓰지 않음 · **사용자 요청** = 스케치팹 로그인이 필요해 사용자가 받아야 함.
+- Zenodo 사본의 라이선스 표기는 믿지 않았다: 이번에 스케치팹 원본을 확인하니 Zenodo 에 CC BY·BY-NC 로 적힌 것 가운데 원본이 지금 Standard 나 BY-NC-SA 인 것이 여럿 있었다(아래 「쓰지 않는 것」).
+
+### 마리아 (10점)
+
+| 쓰임 | 제목 · 파일 | 만든이/박물관 | 원본 주소 | 라이선스 | 조각 연도·작가 | 삼각형 | 용량 | 상태 | 비고 |
+|---|---|---|---|---|---|---|---|---|---|
+| 성모자상(서 있는 자리·측면 제대) — 브뤼헤의 성모 | Jomfru Maria med Barnet, 'Brügge-Madonna' · `smk_KAS225_bruges_madonna_michelangelo_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS225 | 퍼블릭 도메인 | 미켈란젤로(1564년 사망), 원작 1503~1505년경, 브뤼헤 성모 성당. 석고 주형 1897년 | 400,008 | 20.0MB | **받음** | 실제 작품의 주형. 높이 129cm. 아기 예수는 옷을 입지 않은 아기 모습 |
+| 통고의 성모 좌상(십자가 경당·피에타 대안) | Siddende Jomfru Maria, Mater dolorosa · `smk_KAS1999_mater_dolorosa_seated_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS1999 | 퍼블릭 도메인 | 1585년경, 파리 생트샤펠 뒤 팔레에 있던 상(지금 루브르). SMK 기록에 작가 이름 없음 | 400,012 | 20.0MB | **받음** | 높이 173cm, 두 손을 가슴에 모은 좌상 |
+| 벽 부조 — 계단의 성모 | Jomfru Maria med Barnet, 'Trappe-Madonna' · `smk_KAS2358_madonna_of_the_stairs_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS2358 | 퍼블릭 도메인 | 미켈란젤로, 원작 1490~1492년경, 카사 부오나로티 | 398,349 | 19.9MB | **받음** | 56×40cm 얕은 부조 |
+| 벽 원형 부조 — 톤도 피티(성모자와 어린 세례자 요한) | Jomfru Maria med Barnet og den unge Johannes Døber, 'Tondo Pitti' · `smk_KAS2202_tondo_pitti_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS2202 | 퍼블릭 도메인 | 미켈란젤로, 원작 1505년경, 바르젤로 | 399,996 | 20.0MB | **받음** | 지름 약 85cm |
+| 원죄 없이 잉태되신 성모(지구와 뱀을 밟은 입상) | Maria Immaculata · `zenodo_maria_immaculata_seitzersdorf_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/d0d88725e0ea4665b31f7209c408c511 | CC BY-NC 4.0 | 1755년 세움(자이처스도르프-볼프파싱), 작가 미상 | 580,174 | 21.3MB | **받음** |  |
+| 옥좌의 성모자(로마네스크·고딕 목조) | Kilcorban - Madonna - 13th C · `zenodo_madonna_kilcorban_galway3d.glb` | Galway3D_DH_AGe | https://sketchfab.com/3d-models/3ac1be94eb88452881e46feed43024f6 | CC0 1.0 | 12세기 말~13세기 초, 아일랜드 킬코번 | 699,050 | 21.3MB | **받음** | 채색 참나무 좌상 |
+| 원죄 없이 잉태되신 성모(테라코타) | Immaculate Conception (Montemor-o-Novo) · `zenodo_immaculate_conception_montemor_gdh.glb` | Global Digital Heritage and GDH-Afrika | https://sketchfab.com/3d-models/1b9ed849648f491cae300108b19604e4 | CC BY-NC 4.0 | 18세기, 포르투갈 몬테모르오노보 상 도밍구스 박물관 | 3,999,999 | 12.5MB | **받음** | Zenodo 의 `_normalized` 판(압축, 4백만 삼각형 — 크게 줄여 써야 한다) |
+| 통고의 성모(고딕 목조) | Sculpture “Our Lady of Sorrows” · `zenodo_our_lady_of_sorrows_biecz_malopolska.glb` | Virtual Museums of Małopolska | https://sketchfab.com/3d-models/e601c914626e422c83ca161bb300b0f0 | CC0 1.0 | 15세기, 비에치 지방 박물관 AH/1282 | 55,426 | 6.7MB | **받음** | 십자가 아래 성모 — 십자고상 옆 자리 |
+| 고딕 성모자 입상(정문 중앙 기둥) — 파리 노트르담 성모의 문 | Notre-Dame de Paris - Virgin Mary · `zenodo_virgin_notre_dame_paris_portal.glb` | Benoît Rogez | https://sketchfab.com/3d-models/b5bbdc379daa4ee19e3775bb179dbcc1 | CC BY-NC 4.0 | 13세기 문. 스캔 설명에는 「성모의 문 일부」라고만 있다 — 중앙 기둥 성모자상이라면 19세기 복원상(1900년 이전) | 1,001,053 | 31.8MB | **받음** | 어느 부분인지 띄워서 확인할 것. 복원 조각가 이름은 확인하지 못했다 |
+| 왕관 쓴 고딕 성모자(석회암) | Madonna and Child in stone · `zenodo_madonna_and_child_stone_hunt_museum.glb` | The Hunt Museum | https://sketchfab.com/3d-models/1eab9e29e5b74f5686c0d17fe58d90c4 | CC BY 4.0 | 14~15세기, 부르고뉴(헌트 박물관 HCM 031) | 1,000,000 | 32.0MB | **받음** | 아기 예수 윗몸이 없어졌다 |
+
+### 천사 (9점)
+
+| 쓰임 | 제목 · 파일 | 만든이/박물관 | 원본 주소 | 라이선스 | 조각 연도·작가 | 삼각형 | 용량 | 상태 | 비고 |
+|---|---|---|---|---|---|---|---|---|---|
+| 촛대를 든 무릎 꿇은 천사(제대 옆) — 미켈란젤로 | Angel with candlestick · `zenodo_angel_with_candlestick_michelangelo_cast_stw.glb` | Scan-the-World | https://zenodo.org/records/20166092 | CC0 1.0 (Zenodo record only — original not verified) | 미켈란젤로, 1494~1495년, 볼로냐 산 도메니코 성당 성 도미니코의 무덤. 석고 주형 스캔 | 1,287,326 | 16.9MB | **보류** | Scan the World 사본. Zenodo 기록은 cc-zero 이지만 원본(MyMiniFactory)을 열 수 없어 확인 못 함 — 확인 전 사용 보류 |
+| 서 있는 천사(묘지 천사상) | Engel · `zenodo_angel_st_marx_cemetery_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/0d54d997ca3e4e2cb46141708bb82015 | CC0 1.0 | 1874년 이전(빈 장크트 마르크스 묘지는 1874년 폐쇄) | 528,998 | 18.5MB | **받음** |  |
+| 아기 천사 | Engel · `zenodo_angel_child_maria_lanzendorf_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/afb2365680ee45769d607b310d1008af | CC BY-NC 4.0 | 18세기 초, 마리아 란첸도르프 갈바리아 | 515,206 | 17.8MB | **받음** |  |
+| 고딕 대천사 가브리엘(성모 영보 군상) | 1954.387 The Archangel Gabriel · `zenodo_archangel_gabriel_cleveland_1954_387.glb` | Cleveland Museum of Art | https://sketchfab.com/3d-models/bba5bad5a0704a0e880821ccb99951cc | CC0 1.0 | 1350년경, 파리. 클리블랜드 미술관 1954.387 | 60,000 | 4.4MB | **받음** | 설화석고, 높이 약 37cm 의 작은 상 — 키워서 쓸 수 있다 |
+| 성작을 든 천사 | Angel Holding a Chalice · `zenodo_angel_holding_chalice_brittany_kenyon.glb` | kenyon-vrc | https://sketchfab.com/3d-models/237a98641dd142109353e11288157edf | CC BY 4.0 | 16세기 말, 브르타뉴 피니스테르 | 173,201 | 6.5MB | **받음** | 돌 조각 |
+| 신고딕 천사 입상 — 띠 두루마리 | 170 Sint-Jan, engel met banderol (1) · `zenodo_angel_banderole_sint_jan_1872.glb` | Erfgoed 's-Hertogenbosch | https://sketchfab.com/3d-models/845ce8b196f84794b647cc4e042ea48e | CC BY 4.0 | 1872년(명문), 스헤르토헨보스 성 요한 대성당 북쪽 측랑 | 240,579 | 11.7MB | **받음** | 신고딕 사암상. 한 벌 4점 가운데 하나 |
+| 신고딕 천사 입상 — 방패 | 171 Sint-Jan, engel met schild · `zenodo_angel_shield_sint_jan_1873.glb` | Erfgoed 's-Hertogenbosch | https://sketchfab.com/3d-models/9c4f095ca8ef461494df0e3270867c71 | CC BY 4.0 | 1873년(명문), 스헤르토헨보스 성 요한 대성당 | 396,646 | 13.3MB | **받음** |  |
+| 신고딕 천사 입상 — 칼 | 167 Sint-Jan, engel met zwaard · `zenodo_angel_sword_sint_jan.glb` | Erfgoed 's-Hertogenbosch | https://sketchfab.com/3d-models/dade17e251ad49698c58d24ae87c0ea0 | CC BY 4.0 | 19세기 4/4분기, 스헤르토헨보스 성 요한 대성당 | 350,913 | 11.6MB | **받음** |  |
+| 신고딕 천사 입상 — 묵주 | 227 Sint-Jan, engel met rozenkrans · `zenodo_angel_rosary_sint_jan.glb` | Erfgoed 's-Hertogenbosch | https://sketchfab.com/3d-models/7aacea03a32740ca87c23b7939b49c8f | CC BY 4.0 | 19세기 4/4분기, 스헤르토헨보스 성 요한 대성당 | 200,939 | 9.1MB | **받음** | 묵주를 든 천사 — 로사리움에 잘 맞는다 |
+
+### 성인 (8점)
+
+| 쓰임 | 제목 · 파일 | 만든이/박물관 | 원본 주소 | 라이선스 | 조각 연도·작가 | 삼각형 | 용량 | 상태 | 비고 |
+|---|---|---|---|---|---|---|---|---|---|
+| 세례자 요한 입상(세례대 옆) | Johannes Døberen · `smk_KAS446_john_baptist_siena_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS446 | 퍼블릭 도메인 | 도나텔로(1466년 사망), 1457년, 시에나 대성당 | 400,016 | 20.0MB | **받음** | 높이 189cm, 청동 원작의 주형. SMK 기록에 작가 이름은 없고 원작 정보만 있다 |
+| 모세 좌상(벽감·경당) | Moses · `smk_KAS243_moses_michelangelo_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS243 | 퍼블릭 도메인 | 미켈란젤로, 1513~1514년, 로마 산 피에트로 인 빈콜리 | 400,060 | 20.0MB | **받음** | 높이 249cm |
+| 벽감 부조 — 성 예로니모 | Den hellige Hieronymus · `smk_DEP36_st_jerome_bregno_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/DEP36 | 퍼블릭 도메인 | 안드레아 브레뇨(1503년 사망) | 400,006 | 20.0MB | **받음** | 95×41cm 대리석 부조 원작. 세례자 요한(DEP35)과 한 쌍 |
+| 벽감 부조 — 세례자 요한 | Johannes Døberen · `smk_DEP35_john_baptist_bregno_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/DEP35 | 퍼블릭 도메인 | 안드레아 브레뇨(1503년 사망) | 400,000 | 20.0MB | **받음** | 95×41cm |
+| 파도바의 성 안토니오 | Hl. Antonius · `zenodo_st_anthony_padua_trausdorf_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/3a9e6927c57345a6a7f335e3709496ae | CC BY 4.0 | 1720년, 트라우스도르프 성 라우렌시오 성당 옆 | 510,118 | 18.6MB | **받음** | 기둥 위 바로크 석상 |
+| 성녀 베로니카(성 베드로 대성전 베로니카 기둥 대용) | Saint Veronica · `zenodo_saint_veronica_tyniec.glb` | Virtual Museums of Małopolska | https://sketchfab.com/3d-models/404e75841ed3456aacae757a9fcd085e | CC0 1.0 | 18세기 3/4분기, 티니에츠 수도원 RZ/8/2017 | 337,606 | 17.7MB | **받음** | 받아 둔 성 론지노와 같은 수도원 것 |
+| 성 베드로(노팅엄 설화석고) | S. Pedro / St. Peter · `zenodo_st_peter_nottingham_alabaster_morbase.glb` | Morbase | Museu Virtual | https://sketchfab.com/3d-models/8bfeb8018fe9443b86dd74397ac6a5d7 | CC0 1.0 | 15세기 1/4분기(노팅엄 설화석고), 포르투갈 Morbase 가상 박물관 | 350,098 | 16.0MB | **받음** | 채색 흔적 |
+| 기둥 사도상 한 쌍 — 성 야고보와 성 요한 | Cámara Santa de Oviedo: Santiago y San Juan · `zenodo_apostles_james_john_oviedo_camara_santa.glb` | Pablo Serrano Basterra | https://sketchfab.com/3d-models/e5a926bcdfef467aa2d0644642c7e2d9 | CC BY 4.0 | 12세기 말, 오비에도 카마라 산타 | 480,842 | 15.6MB | **받음** | 기둥에 붙은 로마네스크 사도 쌍 — 신랑 기둥·문설주에 맞는다 |
+
+### 그리스도 (2점)
+
+| 쓰임 | 제목 · 파일 | 만든이/박물관 | 원본 주소 | 라이선스 | 조각 연도·작가 | 삼각형 | 용량 | 상태 | 비고 |
+|---|---|---|---|---|---|---|---|---|---|
+| 강복하시는 그리스도(고딕 목조) | Christ blessing · `zenodo_christ_blessing_malopolska.glb` | Virtual Museums of Małopolska | https://sketchfab.com/3d-models/888f4046cdf645acb23f6bdd192e8131 | CC0 1.0 | 15~16세기, 티니에츠 수도원 RZ/3/2012 | 359,700 | 18.7MB | **받음** | 오른팔 아래가 떨어져 나갔다 |
+| 피에타(바로크 채색) | Pietà · `zenodo_pieta_seefeld_kadolz_1745_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/2ab91ee0f13a4e4fb7942208850aafa4 | CC BY-NC 4.0 | 1745년, 제펠트-카돌츠 | 556,820 | 21.0MB | **받음** | 왕관 쓴 성모 |
+
+### 정면·문 (8점)
+
+| 쓰임 | 제목 · 파일 | 만든이/박물관 | 원본 주소 | 라이선스 | 조각 연도·작가 | 삼각형 | 용량 | 상태 | 비고 |
+|---|---|---|---|---|---|---|---|---|---|
+| 정면 문설주 고딕 입상 — 에클레시아(교회) | Ecclesia sancta, Den sejrende kristendom med korsstav · `smk_KAS396_ecclesia_strasbourg_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS396 | 퍼블릭 도메인 | 1230년경, 스트라스부르 대성당 남쪽 문. 작가 미상 | 400,060 | 20.0MB | **받음** | 높이 202cm, 십자가 지팡이와 성작을 든 왕관 쓴 여인. 짝인 시나고가(KAS397)는 받지 않았다 |
+| 정면 문설주 고딕 입상 — 예언자 다니엘 | Profeten Daniel med skriftrulle · `smk_KAS52-1_prophet_daniel_freiberg_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS52/1 | 퍼블릭 도메인 | 1200~1250년경, 프라이베르크 대성당 황금 문. 작가 미상 | 400,036 | 20.0MB | **받음** | 높이 131cm. 솔로몬·스바 여왕과 한 벌 |
+| 정면 문설주 고딕 입상 — 스바의 여왕 | Dronningen af Saba med krone og opslået skriftrulle · `smk_KAS52-2_queen_of_sheba_freiberg_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS52/2 | 퍼블릭 도메인 | 1200~1250년경, 프라이베르크 대성당 황금 문 | 400,010 | 20.0MB | **받음** | 높이 131cm |
+| 정면 문설주 고딕 입상 — 솔로몬 왕 | Kong Salomon med krone, scepter og skriftrulle · `smk_KAS52-3_king_solomon_freiberg_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS52/3 | 퍼블릭 도메인 | 1200~1250년경, 프라이베르크 대성당 황금 문 | 400,024 | 20.0MB | **받음** | 높이 131cm |
+| 정면 문 위 팀파눔 — 최후의 심판 | Dommedag · `smk_KAS1964_last_judgment_tympanum_bamberg_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS1964 | 퍼블릭 도메인 | 1240년경, 밤베르크 대성당 군주의 문. 작가 미상 | 400,100 | 20.0MB | **받음** | 157×301cm 반원 부조. 고딕 대성당 정문에 그대로 맞는다 |
+| 문 위 반원 부조 — 십자가에서 내리심 | Nedtagelsen af korset · `smk_KAS2351_deposition_lucca_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS2351 | 퍼블릭 도메인 | 1260~1265년, 루카 산 마르티노 대성당 | 400,000 | 20.0MB | **받음** | 94×172cm |
+| 문 위 팀파눔 — 베드로에게 열쇠를 주심 | Tympanum on Church of St. Peter, Prague · `zenodo_tympanum_st_peter_prague_1876.glb` | madbert | https://sketchfab.com/3d-models/b0c21ad8a3c848ae98b50394c82ac67d | CC BY 4.0 | 루드비크 시메크(1886년 사망), 1876년, 프라하 성 베드로 성당 | 998,909 | 30.7MB | **받음** | 신고딕 |
+| 고딕 막힌 문(첨두 아치 문틀) | Blind Gothic Portal · `zenodo_blind_gothic_portal_musilek.glb` | Tomáš Musílek | https://sketchfab.com/3d-models/e96d09d70b8648319d56760978f72b63 | CC BY 4.0 | 제작 연도 미확인(체코, 중세 석조 문틀) | 500,000 | 16.2MB | **받음** | 장식 없는 건축 부재라 조각 저작권 문제는 없다고 본다 |
+
+### 전례 가구 (5점)
+
+| 쓰임 | 제목 · 파일 | 만든이/박물관 | 원본 주소 | 라이선스 | 조각 연도·작가 | 삼각형 | 용량 | 상태 | 비고 |
+|---|---|---|---|---|---|---|---|---|---|
+| 강론대 부조판 — 동방 박사의 경배 | Kongernes tilbedelse · `smk_KAS2032_adoration_magi_siena_pulpit_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS2032 | 퍼블릭 도메인 | 니콜라 피사노 공방, 1265~1269년, 시에나 대성당 강론대 | 400,100 | 20.0MB | **받음** | 96×93cm |
+| 강론대 부조판 — 성전 봉헌과 이집트 피신 | Fremstillingen i templet og flugten til Egypten · `smk_KAS2033_presentation_flight_siena_pulpit_relief_small.stl` | SMK | https://open.smk.dk/artwork/image/KAS2033 | 퍼블릭 도메인 | 니콜라 피사노 공방, 1265~1269년, 시에나 대성당 강론대 | 400,100 | 20.0MB | **받음** | 97×97cm |
+| 돌 강론대(네 복음사가 부조) | Kanzel · `zenodo_pulpit_burgschleinitz_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/d9ca289b094d4f1e913a4f958c39ce85 | CC BY 4.0 | 1580년경, 부르크슐라이니츠 납골당 바깥 강론대 | 507,289 | 19.4MB | **받음** |  |
+| 세례대 | Taufbecken · `zenodo_baptismal_font_pillichsdorf_noe3d.glb` | noe-3d.at | https://sketchfab.com/3d-models/93811784ac6a480d977cb9be3138728a | CC BY 4.0 | 1649년, 필리히스도르프 성 마르티노 본당. 아드네트 대리석 | 488,540 | 18.6MB | **받음** | 나무 뚜껑 위에 세례 장면 |
+| 고딕 강론대 — 멘도사 강론대 | Pulpit of Mendoza, Sigüenza · `zenodo_pulpit_mendoza_siguenza_gdh.glb` | Global Digital Heritage and GDH-Afrika | https://sketchfab.com/3d-models/6ae513013b3d4802baabe88ba6346c5b | CC BY-NC 4.0 | 15세기 말, 시구엔사 대성당. 설화석고 | 1,101,653 | 29.8MB | **받음** | Zenodo 사본의 줄인 판 |
+
+### 스케치팹에서 사용자가 받아 줄 것 (11~20번)
+
+| 번호 | 쓰임 | 모델 | 만든이 | 라이선스 | 조각 연도·작가 | 면 | 주소 | 상태 |
+|---|---|---|---|---|---|---|---|---|
+| 11 (필수) | 빛의 대성당 — 주 성모자상(고딕 「아름다운 성모」) | Madonna of Krużlowa | Virtual Museums of Małopolska | CC BY 4.0 | 1410년경, 크루즐로바 본당(지금 크라쿠프 국립박물관). 작가 미상 | 564,938 | https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec | **사용자 요청** |
+| 12 (필수) | 제대 양옆 무릎 꿇은 경배 천사 | Engel (Stronsdorf) | noe-3d.at | CC BY-NC 4.0 | 1826년, 슈트론스도르프 흑사병 기둥의 무릎 꿇은 천사 4점 가운데 하나 | 567,806 | https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c | **사용자 요청** |
+| 13 (필수) | 성 요셉과 아기 예수 | Hl. Josef (Wolkersdorf) | noe-3d.at | CC BY-NC 4.0 | 1727년, 볼커스도르프 성당 계단. 작가 미상 | 622,794 | https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274 | **사용자 요청** |
+| 14 | 아시시의 성 프란치스코 | Hl. Franziskus (Heiligenkreuz) | noe-3d.at | CC BY-NC 4.0 | 18세기 전반(십자가의 길 1731~1748), 하일리겐크로이츠 수도원 | 621,324 | https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f | **사용자 요청** |
+| 15 | 신랑 기둥 사도상(고딕) | Nürnberger Tonapostel, um 1420 / Pl.O.234 | Germanisches Nationalmuseum | CC BY 4.0 | 1420년경, 뉘른베르크 점토 사도상 9점 가운데 하나. 작가 미상 | 630,083 | https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb | **사용자 요청** |
+| 16 | 정면 정문(신고딕 문 전체 — 그리스도 왕과 사도들) | Portal Votivkirche | noe-3d.at | CC BY-NC 4.0 | 1856~1879년 빈 봉헌 성당. 요하네스 벵크(1914년 사망), 요제프 가서(1900년 사망) | 1,282,539 | https://sketchfab.com/3d-models/ee5583b262bc4f088e402d50fa7ee22f | **사용자 요청** |
+| 17 | 아빌라의 성녀 데레사 | Hl. Theresia | noe-3d.at | CC BY 4.0 | 18세기 전반, 요제프 슈니처(1706~1769), 하일리겐크로이츠 수도원 | 496,782 | https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67 | **사용자 요청** |
+| 18 | 성 요셉(예비) | Hl. Joseph | noe-3d.at | CC BY-NC 4.0 | 18세기 전반, 요제프 슈니처 작으로 전함 | 651,768 | https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68 | **사용자 요청** |
+| 19 | 후기 고딕 성모상(예비) | Madona Sculpture | jan.zachar | CC BY 4.0 | 후기 고딕, 슬로바키아 레보차(설명에 연도 없음) | 375,409 | https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb | **사용자 요청** |
+| 20 | 사도 유다 타대오(신랑 기둥·벽감) | Hl. Judas Thaddäus | noe-3d.at | CC BY-NC 4.0 | 18세기 전반, 클라인슈바인바르트 성모 본당 앞 | 594,962 | https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa | **사용자 요청** |
+
+### 로그인 없이 받을 수 있지만 디스크 때문에 미룬 것
+
+기기 여유 공간이 2.9GB 뿐이라 새로 받는 양을 800MB 아래로 묶었다. 아래는 기준을 통과했고 Zenodo·SMK 에서 바로 받을 수 있다 — 자리가 정해지면 받는다.
+
+- Madonna z Dzieciątkiem Jezus (프롬보르크 대성당, 1690년 바로크 채색 목조) — Muzeum Pomnika Historii Frombork Zespół Katedralny — CC BY 4.0 — https://zenodo.org/records/10328901 (41MB)
+- Engel (라 안 데어 타야 삼위일체 기둥, 1710년) — noe-3d.at — CC BY-NC 4.0 — https://zenodo.org/records/21530022 (27MB)
+- Engel (마리아 란첸도르프 갈바리아, 18세기 초) — noe-3d.at — CC BY-NC 4.0 — https://zenodo.org/records/21569723 (17MB)
+- Hl. Franz Xaver (18세기 전반) — noe-3d.at — CC BY 4.0 — https://zenodo.org/records/21646406 (14MB)
+- Hl. Ulrich von Augsburg (18세기 후반, 프란츠 제겐) — noe-3d.at — CC0 — https://zenodo.org/records/21570067 (20MB)
+- The Prophet Simeon (목조) — Virtual Museums of Małopolska — CC0 — https://zenodo.org/records/21530934 (40MB)
+- Kilcorban - St Catherine - 15th C — Galway3D — CC0 — https://zenodo.org/records/10305800 (24MB)
+- St John the Baptist Statue (15세기 석회암, 런던 성 요한 기사단 박물관) — artfletch — CC BY 4.0 — https://zenodo.org/records/10233978 (34MB)
+- Small Gothic Portal - Sv Jindrich, Prague — Tomáš Musílek — CC BY 4.0 — https://zenodo.org/records/10387617 (16MB)
+- Pietà (홀라브룬, 1788년) — noe-3d.at — CC BY-NC 4.0 — https://zenodo.org/records/21488331 (19MB)
+- Sculpture of Virgin Mary, St John, Mary Magdalen (참나무 군상) — The Hunt Museum — CC BY 4.0 — https://zenodo.org/records/21529733 (22MB)
+- Figure Of Christ (라임나무) — The Hunt Museum — CC0 — https://zenodo.org/records/21355269 (46MB)
+- Main portal of St. Matthias in Trier (수도원 성당 정문) — netgis — CC BY-NC(Zenodo 표기 — 원본 확인 필요) — https://zenodo.org/records/10358113 (130MB)
+- Lectern (15세기 참나무 독서대, 헌트 박물관) — The Hunt Museum — CC BY 4.0 — https://zenodo.org/records/21291699 (35MB)
+- Altarpiece of Saint John and Saint Catherine (15세기 전반, 시구엔사 대성당) — Global Digital Heritage — CC BY-NC 4.0 — https://zenodo.org/records/21370194 (31MB)
+- Hl. Aloisius von Gonzaga (18세기 후반, 프란츠 크사버 제겐) — noe-3d.at — CC0 — https://zenodo.org/records/21290906 (21MB)
+- SMK 미켈란젤로 메디치의 성모 KAS114 · 톤도 타데이 KAS85 · 론다니니 피에타 KAS2361, 도나텔로 성 제오르지오 KAS82, 피렌체 대성당 성가대 칸막이 예언자 부조 KAS1690·KAS1691 — SMK — 퍼블릭 도메인 — https://open.smk.dk (각 20MB)
+- SMK 고딕 머리 4점(스트라스부르 대성당 동방 박사·어리석은 처녀들 KAS1455~1459), 시나고가 KAS397, 마인츠 주교 묘비 부조 KAS1704, 어린 세례자 요한 KAS465 — SMK — 퍼블릭 도메인 — https://open.smk.dk (각 20MB)
+
+### 쓰지 않는 것 (이번에 확인)
+
+- Standing Virgin with Child (1380년경 사암, 브뤼셀) · Baptismal Angel kneeling(토르발센 1827~28) · Angel with a calice(크벨리누스) · Engel(토르발센 1830) — Geoffrey Marchal — Zenodo 사본은 CC BY/BY-NC 로 적혀 있지만 스케치팹 원본이 지금 Standard(유료용 표준) 라이선스 → 쓰지 않음
+- The Virgin and Child(1225~50) · figure of Virgin Mary(1425) · St. Michael the Archangel ×2 · The Apostle James the Elder · Mary and John the Evangelist · Bishop saint · 제대 장식 3점 — Geoffrey Marchal — 스케치팹 원본이 CC BY-NC-SA → 쓰지 않음(SA)
+- Immaculate Conception (포르투 주교관, 17세기) — Arnadi Murtiyoso — 스케치팹 원본이 Standard → 쓰지 않음
+- Scan the World 의 Enthroned Madonna 등 Zenodo 사본 대부분 — CC BY-NC-SA → 쓰지 않음
+- Hl. Michael (클링엔바흐, 1959년 보르톨로티 공방) — 20세기 작 → 보류
+- Hl. Johannes · Hl. Matthäus (락센부르크), Hl. Michael (부르크슐라이니츠), Engel (빈 중앙묘지, CC0), Grabfigur 무릎 꿇은 천사 — 제작 연도 미확인 → 보류(받지 않음)
+- Sculpture “Madonna and Child”(바벨 왕궁) · Sculpture “Christ Resurrected”(미실레니체) · Crucifix(크라쿠프 고고학 박물관) · Candlestick with the Crucifixion and baptism(노비 송치) — 마워폴스카 CC0, Heilige Familie(파른도르프, noe-3d.at BY-NC), San Francesco - Sculpture(발 디 사소, CC BY) — 제작 연도 미확인 → 보류(받았다가 디스크 때문에 지움 — 연도가 확인되면 Zenodo 에서 다시 받는다)
+- Big Christian Candlestick (파리 생메리, 19세기) — 스케치팹 원본 라이선스 표기가 비어 있음 → 쓰지 않음
+
+### 찾지 못한 것
+
+- **열두 사도 한 벌**: 한 벌로 맞는 것은 없다. 조각 맞추기: SMK 사도 부조 4점(이미 받음) + 오비에도 기둥 사도 쌍(야고보·요한) + 뉘른베르크 점토 사도(15번) + noe-3d 낱개 사도(유다 타대오 20번, 받아 둔 티니에츠 베드로·바오로).
+- **리지외의 성녀 데레사(소화 데레사)**: 1925년 시성이라 상이 모두 20세기 작 — 작가 사후 70년이 확인된 것이 없다. 아빌라의 데레사(17번)만 있다.
+- **예수 성심상**: 연도가 확인된 1900년 이전 스캔은 이번에도 없다(받아 둔 보르톨로티 Christusfigur 는 연도 미확인 그대로).
+- **착한 목자 그리스도**: 헌트 박물관의 작은 상아상(CC0)뿐 — 성당 크기 상으로는 맞지 않아 받지 않았다.
+- **대천사 미카엘**: 고딕 목조 2점은 NC-SA, 석상은 1959년 작이거나 연도 미확인.
+- **아기 예수를 안은 성 안토니오**: 1720년 바로크 석상 한 점만(받음).
+- **성가대석, 제대 뒤 장식벽(레레도스), 첨탑 꼭대기 장식(피니얼), 고딕 제대 촛대**: 쓸 수 있는 스캔 없음 — 절차 생성 그대로.
+
+### 이번에 찾아본 곳
+
+| 출처 | 결과 |
+|---|---|
+| SMK Open (`api.smk.dk`) | 3D 파일 있는 373점을 전부 훑어 종교 조각 22점을 더 받음(작은 판 STL, 각 20MB) |
+| Zenodo `3dbigdataspace` | 손님은 한 쪽 25건 제한. 제목 검색(madonna·maria·engel·hl.·apostle·christ·crucifix·pulpit·gothic …)으로 약 1,370건을 모아 고름. 원본 라이선스는 스케치팹 API 로 다시 확인 |
+| 스케치팹 | 검색·상세 API 만 열림 → 11~20번을 사용자에게 요청 |
+| noe-3d.at, 마워폴스카 가상 박물관 | 사이트는 열리지만 모델은 스케치팹으로만 내려받는다(로그인) → Zenodo 사본을 씀 |
+| Smithsonian 3D | 200, 가톨릭 성상 없음(그대로) |
+| MyMiniFactory(Scan the World) | 403 — 한 번 시도하고 중단 |
+| Europeana | 401 — API 키 필요 |
+| Wikimedia Commons | 429 — 한 번 시도하고 중단 |
+| Met, Rijksmuseum | 410 — 열려 있던 API 가 응답하지 않음. 한 번 시도하고 중단 |
+
+### 주의
+
+1. SMK 파일은 질감 없는 STL 이다(§4-5 와 같음). 부조(톤도·팀파눔·강론대 판)는 뒷면이 평평해 벽·문 위에 그대로 붙일 수 있다.
+2. 미켈란젤로 촛대 천사(Scan the World 사본)는 Zenodo 표기만 cc-zero 이고 원본 쪽을 열 수 없어 **보류**했다. 원작과 주형은 문제없으니, MyMiniFactory 원본 표기만 확인되면 쓸 수 있다.
+3. 스헤르토헨보스 성 요한 대성당 신고딕 천사 4점(1872~73년)은 한 벌이라 신랑 기둥에 나란히 세우기 좋다. 조각가 이름은 스캔 설명에 없다 — 1900년 이전이라 기준은 통과.
+4. 파리 노트르담 성모의 문 성모자상은 19세기 복원상이다. 안내문에 「13세기」로 쓰지 않는다.
+5. 연도 미확인인 것(바벨 성모자, 발 디 사소 성 프란치스코, 파른도르프 성가정, 미실레니체 부활 그리스도, 크라쿠프 십자고상, 노비 송치 촛대)은 받지 않았다 — 「쓰지 않는 것」 참고.
+6. Zenodo 사본에는 줄인 판이 함께 있다. 받은 것은 원본 업로드(`<uid>.glb`)이고, 원본이 46MB 를 넘는 두 점(멘도사 강론대, 몬테모르 성모)만 Zenodo 의 `_normalized` 판이다(manifest `variant`).
+7. **아직 화면에 띄워 보지 않았다.** 이번에는 설명·라이선스·파일 크기·삼각형 수(GLB/STL 머리 정보)만 확인했다. 앱에 넣기 전에 한 점씩 띄워 모양(깨진 곳, 함께 스캔된 배경, 옷차림)을 본다.
+
+### 앱에 표시할 출처 문구 (쓰게 되면 넣는다)
+
+- Jomfru Maria med Barnet, 'Brügge-Madonna' — 3D scan: SMK (Statens Museum for Kunst), KAS225, public domain, open.smk.dk
+- Siddende Jomfru Maria, Mater dolorosa — 3D scan: SMK (Statens Museum for Kunst), KAS1999, public domain, open.smk.dk
+- Jomfru Maria med Barnet, 'Trappe-Madonna' — 3D scan: SMK (Statens Museum for Kunst), KAS2358, public domain, open.smk.dk
+- Jomfru Maria med Barnet og den unge Johannes Døber, 'Tondo Pitti' — 3D scan: SMK (Statens Museum for Kunst), KAS2202, public domain, open.smk.dk
+- Ecclesia sancta, Den sejrende kristendom med korsstav — 3D scan: SMK (Statens Museum for Kunst), KAS396, public domain, open.smk.dk
+- Profeten Daniel med skriftrulle — 3D scan: SMK (Statens Museum for Kunst), KAS52/1, public domain, open.smk.dk
+- Dronningen af Saba med krone og opslået skriftrulle — 3D scan: SMK (Statens Museum for Kunst), KAS52/2, public domain, open.smk.dk
+- Kong Salomon med krone, scepter og skriftrulle — 3D scan: SMK (Statens Museum for Kunst), KAS52/3, public domain, open.smk.dk
+- Dommedag — 3D scan: SMK (Statens Museum for Kunst), KAS1964, public domain, open.smk.dk
+- Kongernes tilbedelse — 3D scan: SMK (Statens Museum for Kunst), KAS2032, public domain, open.smk.dk
+- Fremstillingen i templet og flugten til Egypten — 3D scan: SMK (Statens Museum for Kunst), KAS2033, public domain, open.smk.dk
+- Nedtagelsen af korset — 3D scan: SMK (Statens Museum for Kunst), KAS2351, public domain, open.smk.dk
+- Johannes Døberen — 3D scan: SMK (Statens Museum for Kunst), KAS446, public domain, open.smk.dk
+- Moses — 3D scan: SMK (Statens Museum for Kunst), KAS243, public domain, open.smk.dk
+- Den hellige Hieronymus — 3D scan: SMK (Statens Museum for Kunst), DEP36, public domain, open.smk.dk
+- Johannes Døberen — 3D scan: SMK (Statens Museum for Kunst), DEP35, public domain, open.smk.dk
+- "Maria Immaculata" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/d0d88725e0ea4665b31f7209c408c511 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Kilcorban - Madonna - 13th C" by Galway3D_DH_AGe — CC0 1.0 — https://sketchfab.com/3d-models/3ac1be94eb88452881e46feed43024f6
+- "Immaculate Conception (Montemor-o-Novo)" by Global Digital Heritage and GDH-Afrika — CC BY-NC 4.0 — https://sketchfab.com/3d-models/1b9ed849648f491cae300108b19604e4 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Sculpture “Our Lady of Sorrows”" by Virtual Museums of Małopolska — CC0 1.0 — https://sketchfab.com/3d-models/e601c914626e422c83ca161bb300b0f0
+- "Notre-Dame de Paris - Virgin Mary" by Benoît Rogez — CC BY-NC 4.0 — https://sketchfab.com/3d-models/b5bbdc379daa4ee19e3775bb179dbcc1 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Engel" by noe-3d.at — CC0 1.0 — https://sketchfab.com/3d-models/0d54d997ca3e4e2cb46141708bb82015
+- "Engel" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/afb2365680ee45769d607b310d1008af — 수정함(삼각형 수 줄임, 재질 변경)
+- "1954.387 The Archangel Gabriel" by Cleveland Museum of Art — CC0 1.0 — https://sketchfab.com/3d-models/bba5bad5a0704a0e880821ccb99951cc
+- "Angel Holding a Chalice" by kenyon-vrc — CC BY 4.0 — https://sketchfab.com/3d-models/237a98641dd142109353e11288157edf — 수정함(삼각형 수 줄임, 재질 변경)
+- "170 Sint-Jan, engel met banderol (1)" by Erfgoed 's-Hertogenbosch — CC BY 4.0 — https://sketchfab.com/3d-models/845ce8b196f84794b647cc4e042ea48e — 수정함(삼각형 수 줄임, 재질 변경)
+- "171 Sint-Jan, engel met schild" by Erfgoed 's-Hertogenbosch — CC BY 4.0 — https://sketchfab.com/3d-models/9c4f095ca8ef461494df0e3270867c71 — 수정함(삼각형 수 줄임, 재질 변경)
+- "167 Sint-Jan, engel met zwaard" by Erfgoed 's-Hertogenbosch — CC BY 4.0 — https://sketchfab.com/3d-models/dade17e251ad49698c58d24ae87c0ea0 — 수정함(삼각형 수 줄임, 재질 변경)
+- "227 Sint-Jan, engel met rozenkrans" by Erfgoed 's-Hertogenbosch — CC BY 4.0 — https://sketchfab.com/3d-models/7aacea03a32740ca87c23b7939b49c8f — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Antonius" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/3a9e6927c57345a6a7f335e3709496ae — 수정함(삼각형 수 줄임, 재질 변경)
+- "Saint Veronica" by Virtual Museums of Małopolska — CC0 1.0 — https://sketchfab.com/3d-models/404e75841ed3456aacae757a9fcd085e
+- "S. Pedro | St. Peter" by Morbase | Museu Virtual — CC0 1.0 — https://sketchfab.com/3d-models/8bfeb8018fe9443b86dd74397ac6a5d7
+- "Cámara Santa de Oviedo: Santiago y San Juan" by Pablo Serrano Basterra — CC BY 4.0 — https://sketchfab.com/3d-models/e5a926bcdfef467aa2d0644642c7e2d9 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Christ blessing" by Virtual Museums of Małopolska — CC0 1.0 — https://sketchfab.com/3d-models/888f4046cdf645acb23f6bdd192e8131
+- "Pietà" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/2ab91ee0f13a4e4fb7942208850aafa4 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Tympanum on Church of St. Peter, Prague" by madbert — CC BY 4.0 — https://sketchfab.com/3d-models/b0c21ad8a3c848ae98b50394c82ac67d — 수정함(삼각형 수 줄임, 재질 변경)
+- "Blind Gothic Portal" by Tomáš Musílek — CC BY 4.0 — https://sketchfab.com/3d-models/e96d09d70b8648319d56760978f72b63 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Kanzel" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/d9ca289b094d4f1e913a4f958c39ce85 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Taufbecken" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/93811784ac6a480d977cb9be3138728a — 수정함(삼각형 수 줄임, 재질 변경)
+- "Pulpit of Mendoza, Sigüenza" by Global Digital Heritage and GDH-Afrika — CC BY-NC 4.0 — https://sketchfab.com/3d-models/6ae513013b3d4802baabe88ba6346c5b — 수정함(삼각형 수 줄임, 재질 변경)
+- "Madonna and Child in stone" by The Hunt Museum — CC BY 4.0 — https://sketchfab.com/3d-models/1eab9e29e5b74f5686c0d17fe58d90c4 — 수정함(삼각형 수 줄임, 재질 변경)

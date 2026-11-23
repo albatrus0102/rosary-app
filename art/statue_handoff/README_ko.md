@@ -105,3 +105,79 @@
 - 라테라노 사도상 실물 — 성 토마스 한 점이 있으나 '변경 금지(ND)'라 제외.
 - 피렌체 반디니 피에타 — '동일조건(SA)'뿐이라 제외.
 - 성 김대건 안드레아 상, 비오 9세 기도상 — 없음.
+
+## 추가 — 빛의 대성당용, 사용자가 받아 줄 것 (2026-11-24)
+
+스케치팹에 로그인해서 **Download 3D Model → glTF(.glb)** 로 받아 `received/` 에 아래 파일 이름으로 넣어 주세요. 모두 라이선스 확인을 마쳤습니다(스케치팹 API, 2026-11-23). 11~13번이 먼저입니다.
+
+11. **빛의 대성당 — 주 성모자상(고딕 「아름다운 성모」)** (필수) — Madonna of Krużlowa
+    - 링크: https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec
+    - 파일 이름: `11_madonna_kruzlowa.glb`
+    - 만든이: Virtual Museums of Małopolska · CC BY 4.0 · 면 564,938개
+    - 조각: 1410년경, 크루즐로바 본당(지금 크라쿠프 국립박물관). 작가 미상
+    - 이유: 고딕 성모자 입상 가운데 가장 알맞다. 로그인 없이 받을 수 있는 사본이 없다
+12. **제대 양옆 무릎 꿇은 경배 천사** (필수) — Engel (Stronsdorf)
+    - 링크: https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c
+    - 파일 이름: `12_kneeling_angel_stronsdorf.glb`
+    - 만든이: noe-3d.at · CC BY-NC 4.0 · 면 567,806개
+    - 조각: 1826년, 슈트론스도르프 흑사병 기둥의 무릎 꿇은 천사 4점 가운데 하나
+    - 이유: 연도가 확인된 무릎 꿇은 천사. 좌우 반전으로 한 쌍을 만든다
+13. **성 요셉과 아기 예수** (필수) — Hl. Josef (Wolkersdorf)
+    - 링크: https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274
+    - 파일 이름: `13_st_joseph_wolkersdorf.glb`
+    - 만든이: noe-3d.at · CC BY-NC 4.0 · 면 622,794개
+    - 조각: 1727년, 볼커스도르프 성당 계단. 작가 미상
+    - 이유: 받아 둔 니트라 성 요셉은 연도 미확인이라, 연도가 확인된 것으로 바꾼다
+14. **아시시의 성 프란치스코** — Hl. Franziskus (Heiligenkreuz)
+    - 링크: https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f
+    - 파일 이름: `14_st_francis_heiligenkreuz.glb`
+    - 만든이: noe-3d.at · CC BY-NC 4.0 · 면 621,324개
+    - 조각: 18세기 전반(십자가의 길 1731~1748), 하일리겐크로이츠 수도원
+    - 이유: SMK 성 프란치스코(KAS1959)는 질감이 없다
+15. **신랑 기둥 사도상(고딕)** — Nürnberger Tonapostel, um 1420 / Pl.O.234
+    - 링크: https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb
+    - 파일 이름: `15_apostle_nuremberg_1420.glb`
+    - 만든이: Germanisches Nationalmuseum · CC BY 4.0 · 면 630,083개
+    - 조각: 1420년경, 뉘른베르크 점토 사도상 9점 가운데 하나. 작가 미상
+    - 이유: 고딕 「아름다운 양식」 사도 좌상. 한 벌 가운데 스캔은 이 한 점뿐
+16. **정면 정문(신고딕 문 전체 — 그리스도 왕과 사도들)** — Portal Votivkirche
+    - 링크: https://sketchfab.com/3d-models/ee5583b262bc4f088e402d50fa7ee22f
+    - 파일 이름: `16_portal_votivkirche.glb`
+    - 만든이: noe-3d.at · CC BY-NC 4.0 · 면 1,282,539개
+    - 조각: 1856~1879년 빈 봉헌 성당. 요하네스 벵크(1914년 사망), 요제프 가서(1900년 사망)
+    - 이유: 문설주·팀파눔·박공 조각이 한 덩어리로 있는 유일한 신고딕 문. 128만 삼각형이라 크게 줄여야 한다
+17. **아빌라의 성녀 데레사** — Hl. Theresia
+    - 링크: https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67
+    - 파일 이름: `17_st_teresa_avila_heiligenkreuz.glb`
+    - 만든이: noe-3d.at · CC BY 4.0 · 면 496,782개
+    - 조각: 18세기 전반, 요제프 슈니처(1706~1769), 하일리겐크로이츠 수도원
+    - 이유: 리지외의 성녀 데레사(소화 데레사) 상은 모두 20세기 작이라 찾지 못했다 — 가르멜의 데레사로 대신할지는 사용자 판단
+18. **성 요셉(예비)** — Hl. Joseph
+    - 링크: https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68
+    - 파일 이름: `18_st_joseph_schnitzer.glb`
+    - 만든이: noe-3d.at · CC BY-NC 4.0 · 면 651,768개
+    - 조각: 18세기 전반, 요제프 슈니처 작으로 전함
+    - 이유: 13번의 예비
+19. **후기 고딕 성모상(예비)** — Madona Sculpture
+    - 링크: https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb
+    - 파일 이름: `19_madonna_levoca.glb`
+    - 만든이: jan.zachar · CC BY 4.0 · 면 375,409개
+    - 조각: 후기 고딕, 슬로바키아 레보차(설명에 연도 없음)
+    - 이유: 질감 없이 음영만 있는 스캔
+20. **사도 유다 타대오(신랑 기둥·벽감)** — Hl. Judas Thaddäus
+    - 링크: https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa
+    - 파일 이름: `20_st_jude_thaddeus.glb`
+    - 만든이: noe-3d.at · CC BY-NC 4.0 · 면 594,962개
+    - 조각: 18세기 전반, 클라인슈바인바르트 성모 본당 앞
+    - 이유: 연도가 확인된 사도 석상
+
+## 추가로 받아 둔 것 (2026-11-24, 받으실 필요 없음)
+
+42점, 777.7MB. 목록·출처·라이선스는 `docs/church/STATUE_SOURCES.md` 9절과 `manifest.json`(R24~)에 있습니다.
+
+- 마리아 10점: `smk_KAS225_bruges_madonna_michelangelo_small.stl`, `smk_KAS1999_mater_dolorosa_seated_small.stl`, `smk_KAS2358_madonna_of_the_stairs_relief_small.stl`, `smk_KAS2202_tondo_pitti_relief_small.stl`, `zenodo_maria_immaculata_seitzersdorf_noe3d.glb`, `zenodo_madonna_kilcorban_galway3d.glb`, `zenodo_immaculate_conception_montemor_gdh.glb`, `zenodo_our_lady_of_sorrows_biecz_malopolska.glb`, `zenodo_virgin_notre_dame_paris_portal.glb`, `zenodo_madonna_and_child_stone_hunt_museum.glb`
+- 천사 9점: `zenodo_angel_with_candlestick_michelangelo_cast_stw.glb`, `zenodo_angel_st_marx_cemetery_noe3d.glb`, `zenodo_angel_child_maria_lanzendorf_noe3d.glb`, `zenodo_archangel_gabriel_cleveland_1954_387.glb`, `zenodo_angel_holding_chalice_brittany_kenyon.glb`, `zenodo_angel_banderole_sint_jan_1872.glb`, `zenodo_angel_shield_sint_jan_1873.glb`, `zenodo_angel_sword_sint_jan.glb`, `zenodo_angel_rosary_sint_jan.glb`
+- 성인 8점: `smk_KAS446_john_baptist_siena_small.stl`, `smk_KAS243_moses_michelangelo_small.stl`, `smk_DEP36_st_jerome_bregno_relief_small.stl`, `smk_DEP35_john_baptist_bregno_relief_small.stl`, `zenodo_st_anthony_padua_trausdorf_noe3d.glb`, `zenodo_saint_veronica_tyniec.glb`, `zenodo_st_peter_nottingham_alabaster_morbase.glb`, `zenodo_apostles_james_john_oviedo_camara_santa.glb`
+- 그리스도 2점: `zenodo_christ_blessing_malopolska.glb`, `zenodo_pieta_seefeld_kadolz_1745_noe3d.glb`
+- 정면·문 8점: `smk_KAS396_ecclesia_strasbourg_small.stl`, `smk_KAS52-1_prophet_daniel_freiberg_small.stl`, `smk_KAS52-2_queen_of_sheba_freiberg_small.stl`, `smk_KAS52-3_king_solomon_freiberg_small.stl`, `smk_KAS1964_last_judgment_tympanum_bamberg_small.stl`, `smk_KAS2351_deposition_lucca_relief_small.stl`, `zenodo_tympanum_st_peter_prague_1876.glb`, `zenodo_blind_gothic_portal_musilek.glb`
+- 전례 가구 5점: `smk_KAS2032_adoration_magi_siena_pulpit_relief_small.stl`, `smk_KAS2033_presentation_flight_siena_pulpit_relief_small.stl`, `zenodo_pulpit_burgschleinitz_noe3d.glb`, `zenodo_baptismal_font_pillichsdorf_noe3d.glb`, `zenodo_pulpit_mendoza_siguenza_gdh.glb`
