@@ -9,9 +9,9 @@ These are the texts the app would show, as text only and unchanged. They are the
 Source: USCCB, https://www.usccb.org/local-celebrations-consecration-united-states-america-most-sacred-heart-jesus
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://www.usccb.org/local-celebrations-consecration-united-states-america-most-sacred-heart-jesus〕
+In the name of the Father, and of the Son, and of the Holy Spirit. Amen.
 ```
-<!-- 가져오지 못함: HTTP 403 Forbidden (2026-11-23, WebFetch 와 curl 모두; 차단을 우회하지 않음) -->
+<!-- 출처: https://www.usccb.org/local-celebrations-consecration-united-states-america-most-sacred-heart-jesus — 저희 쪽은 HTTP 403(우회하지 않음). 문장은 2026-11-23 사용자가 ChatGPT 웹 검색으로 같은 USCCB 쪽에서 확인해 전한 것(VERIFIED). -->
 
 ### The Apostles’ Creed
 
