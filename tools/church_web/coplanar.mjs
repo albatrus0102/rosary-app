@@ -30,7 +30,12 @@ export function horizontalTris(c) {
   root.traverse((o) => {
     if (!o.isMesh || !o.visible || !o.geometry || !o.geometry.attributes.position) return;
     const m = o.material; if (m && (m.transparent || m.depthWrite === false)) return;
-    const pos = o.geometry.attributes.position, idx = o.geometry.index, n = idx ? idx.count : pos.count, e = o.matrixWorld.elements;
+    const pos = o.geometry.attributes.position, idx = o.geometry.index, n = idx ? idx.count : pos.count;
+    // InstancedMesh: 인스턴스마다 instanceMatrix 를 곱한 월드 좌표로 본다(예전에는 지역 좌표 한 벌만 보았다 — 같은 모듈을 여러 덩어리로 나누면 덩어리끼리 겹쳐 보였다)
+    const mats = [];
+    if (o.isInstancedMesh && o.instanceMatrix) { const T = o.matrixWorld.constructor; for (let k = 0; k < o.count; k++) { const im = new T().fromArray(o.instanceMatrix.array, k * 16); mats.push(new T().multiplyMatrices(o.matrixWorld, im).elements); } }
+    else mats.push(o.matrixWorld.elements);
+    for (const e of mats) {
     const P = (k) => { const i = idx ? idx.getX(k) : k, x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i); return [e[0] * x + e[4] * y + e[8] * z + e[12], e[1] * x + e[5] * y + e[9] * z + e[13], e[2] * x + e[6] * y + e[10] * z + e[14]]; };
     for (let i = 0; i + 2 < n; i += 3) {
       const a = P(i), b = P(i + 1), d = P(i + 2);
@@ -41,6 +46,7 @@ export function horizontalTris(c) {
       const tri = ccw([[a[0], a[2]], [b[0], b[2]], [d[0], d[2]]]);
       if (Math.abs(area(tri)) < 1e-6) continue;
       out.push({ y: (a[1] + b[1] + d[1]) / 3, up: side ? 0 : 1, tri, mesh: o, col: m && m.color ? m.color.getHexString() : '', key: 'mesh:' + (m && m.color ? m.color.getHexString() : '') + ':' + (m && m.map ? m.map.uuid : '') });
+    }
     }
   });
   // 정점색 배치(벽·박스·계단·가구): 월드 좌표의 풀린 삼각형 목록. 유리·빛·AO 자국은 깊이를 안 쓰거나 일부러 겹치므로 뺀다.

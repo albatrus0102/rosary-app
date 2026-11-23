@@ -37,7 +37,7 @@
     marbleLit: { color: 0xd8d2c8, roughness: 0.66, metalness: 0, envMapIntensity: 0.22, key: { dir: [-0.5, 0.72, 0.62], color: 0xfff1dc, intensity: 3.2, wrap: 0.2 } },
     color: { vertexColors: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.7 },
     // colorWarm: 금박 채색 목조(빛의 성당 메달 홀 성모자상) — 따뜻한 열쇠 빛을 더해 금박·채색이 벽감 안에서도 읽히게
-    colorWarm: { vertexColors: true, roughness: 0.42, metalness: 0.15, envMapIntensity: 1.0, key: { dir: [-0.3, 0.65, 0.75], color: 0xffc27a, intensity: 2.4, wrap: 0.35 } }
+    colorWarm: { vertexColors: true, roughness: 0.42, metalness: 0.15, envMapIntensity: 1.0, key: { dir: [-0.3, 0.65, 0.75], color: 0xffc27a, intensity: 2.0, wrap: 0.35 } }
   };
   // 열쇠 빛 셰이더 조각: 정점에서 지역 방향을 시야 공간으로(modelViewMatrix — 거울 성상은 빛도 거울), 조각에서 람베르트(wrap)로 더한다.
   function keyLight(m, key) {

@@ -65,15 +65,15 @@
   };
 
   // ---- 레이아웃(순수 자료) ----
-  // 회중석(참고 c2): 제대를 둘러싼 부채꼴 네 묶음 — 줄마다 제대 쪽 점 PEW_C 에서 같은 거리(동심원 띠), 묶음마다 PEW_C 를 바라본다.
-  // 가운데 통로(폭 3 m 이상)는 서문 → 제대 앞 걷는 길. 바닥 묵주 상감(반지름 27) 안쪽에 들어간다.
-  var PEW_C = { x: 0, z: -36 };
-  var seatGroups = [];
-  [['A', -16, 6, 16], ['B', 16, 6, 16], ['C', -37, 4, 20], ['D', 37, 4, 20]].forEach(function (g) {
-    var y = g[1] * D2R, n = g[2], R0 = g[3], sy = Math.sin(y), cy = Math.cos(y), ex = cy, ez = -sy, half = (n - 1) / 2 * 0.95;
-    seatGroups.push({ g: g[0], rows: 8, perRow: n, origin: { x: +(PEW_C.x + R0 * sy - ex * half).toFixed(3), z: +(PEW_C.z + R0 * cy - ez * half).toFixed(3) },
-      dx: +(0.95 * ex).toFixed(4), dzIdx: +(0.95 * ez).toFixed(4), dz: +(1.6 * cy).toFixed(4), rowDx: +(1.6 * sy).toFixed(4), yaw: y });
-  });
+  // 회중석(참고 c2): 제대를 둘러싼 부채꼴 네 묶음. 줄은 엔진 규약대로 제대 쪽(−z)을 바라보는 곧은 줄(yaw 0 — 줄 띠 충돌·통로 자리·제대 방향 시험)이고,
+  // 뒤 줄로 갈수록 바깥으로 비켜(rowDx) 가운데 묶음 둘과 한 줄 뒤에서 시작하는 바깥 묶음 둘이 계단식 부채꼴을 이룬다.
+  // 가운데 통로(앞 2 m, 뒤로 갈수록 넓어짐)는 서문 → 제대 앞 걷는 길. 바닥 묵주 상감(반지름 27) 안쪽.
+  var seatGroups = [
+    { g: 'A', rows: 8, perRow: 6, origin: { x: -6.35, z: -19 }, dx: 0.95, dz: 1.7, rowDx: -0.25, yaw: 0 },
+    { g: 'B', rows: 8, perRow: 6, origin: { x: 1.6, z: -19 }, dx: 0.95, dz: 1.7, rowDx: 0.25, yaw: 0 },
+    { g: 'C', rows: 7, perRow: 4, origin: { x: -12.35, z: -17.3 }, dx: 0.95, dz: 1.7, rowDx: -0.45, yaw: 0 },
+    { g: 'D', rows: 7, perRow: 4, origin: { x: 9.5, z: -17.3 }, dx: 0.95, dz: 1.7, rowDx: 0.45, yaw: 0 }
+  ];
   // 경당마다 봉헌초 받침(4칸 × 2줄): 경당 오른쪽(시계 반대 쪽) 벽 앞, 경당 축을 바라본다
   var stands = CHAPELS.map(function (c) {
     var a = c.theta * D2R, ca = Math.cos(a), sa = Math.sin(a);
@@ -635,7 +635,7 @@
       (function niche() {
         var NX = -11.36, ZC = M.cz, st = B('Z3', 'star'), y0 = 0.95, sp = 3.65, ap = 4.95;
         boxA(s, -11.5, -10.3, 0, y0, ZC - 1.35, ZC + 1.35, STONE_W);
-        boxA(gd, -11.5, -10.25, y0 - 0.04, y0, ZC - 1.4, ZC + 1.4, GOLD);
+        boxA(gd, -10.3, -10.24, y0 - 0.07, y0 + 0.005, ZC - 1.4, ZC + 1.4, GOLD);   // 턱 앞 금 띠(윗면과 겹치지 않게 앞에만)
         boxA(gd, -10.3, -10.27, 0.2, 0.75, ZC - 1.1, ZC + 1.1, 0xb8903f);
         ctx.addCollider({ x0: -11.6, x1: -10.15, z0: ZC - 1.5, z1: ZC + 1.5 });
         blindArch('Z3', NX, ZC, 0, 1, 1, 0, 1.15, y0, sp, ap);
@@ -671,7 +671,7 @@
           [-0.5, 0.5].forEach(function (o) { boxA(fl, sd2.x - 0.66, sd2.x + 0.12, 0, 0.04, sd2.z + o - 0.03, sd2.z + o + 0.03, IRON); boxA(fl, sd2.x - 0.04, sd2.x + 0.02, 0, sd2.y0, sd2.z + o - 0.03, sd2.z + o + 0.03, IRON); boxA(fl, sd2.x - 0.56, sd2.x - 0.5, 0, sd2.y0 + 0.52, sd2.z + o - 0.03, sd2.z + o + 0.03, IRON); });
           ctx.addCollider({ x0: sd2.x - 0.7, x1: sd2.x + 0.2, z0: sd2.z - 0.6, z1: sd2.z + 0.6 });
         });
-        ctx.addGlow({ x: -10.55, y: 2.0, z: ZC, size: 2.6, color: 0xffcf8a, kind: 'always' });
+        ctx.addGlow({ x: -11.25, y: 2.35, z: ZC, size: 2.4, color: 0xffc070, kind: 'always' });   // 성상 뒤 따뜻한 빛(얼굴을 덮지 않게 뒤에)
       })();
       for (k = 0; k < N; k++) {
         var a0 = (k / N) * Math.PI * 2, a1 = ((k + 1) / N) * Math.PI * 2, am = (a0 + a1) / 2;

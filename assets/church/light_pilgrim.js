@@ -75,8 +75,8 @@
   add({ title: '제단 앞', what: '빛 5단(성체성사)과 고통 1단(겟세마니) 사이, 첫 계단 앞에서 멈춘다. 금빛 닫집과 제대(기존 high_altar)', meaning: '최후의 만찬과 수난 사이에 제대가 있다. 미사는 그 둘을 하나로 잇는다', plan: [20, 0], look: { x: 0, y: 2.5, z: -40 }, zone: 'Z4' });
   add({ title: '감실과 성체등', what: '고딕 첨탑 장식벽 가운데 감실', meaning: '"내가 세상 끝 날까지 너희와 함께 있다"', plan: [21, -8], look: { x: 0, y: 3, z: -50.5 }, zone: 'Z4' });
   add({ title: '후진 창 〈약속〉', what: '제단 왼쪽 큰 창(기존 그림)', meaning: '구약의 약속', plan: [21, 8], look: { x: -8.4, y: 13, z: -67 }, zone: 'Z4' });
-  add({ title: '후진 창 〈묵주기도의 성모〉', what: '제단 뒤 가운데 창. 성모자께서 묵주를 건네신다', meaning: '이 성당 전체의 열쇠가 되는 그림', plan: [14, -4], at: { x: -1.5, z: -14 }, moved: true, look: { x: 0, y: 13, z: -69.6 }, zone: 'Z4' });
-  add({ title: '후진 창 〈교회와 모든 성인〉', what: '제단 오른쪽 창. 한국 순교 성인 포함', meaning: '약속의 열매인 교회', plan: [14, 4], at: { x: 1.5, z: -14 }, moved: true, look: { x: 8.4, y: 13, z: -67 }, zone: 'Z4' });
+  add({ title: '후진 창 〈묵주기도의 성모〉', what: '제단 뒤 가운데 창. 성모자께서 묵주를 건네신다', meaning: '이 성당 전체의 열쇠가 되는 그림', plan: [14, -4], at: { x: -0.9, z: -14 }, moved: true, look: { x: 0, y: 13, z: -69.6 }, zone: 'Z4' });
+  add({ title: '후진 창 〈교회와 모든 성인〉', what: '제단 오른쪽 창. 한국 순교 성인 포함', meaning: '약속의 열매인 교회', plan: [14, 4], at: { x: 0.9, z: -14 }, moved: true, look: { x: 8.4, y: 13, z: -67 }, zone: 'Z4' });
   mystery('sorrowful', 'Z5');
   add({ title: '남문 · 회랑 정원', what: '고통과 영광 사이의 문을 나서면 성모상과 분수의 정원(기존 baptistery_cloister)', meaning: '무덤이 있던 동산, 부활 아침의 정원', plan: [0, 70], look: { x: 91, y: 2, z: 0 }, zone: 'Z7', built: false });
   add({ title: '한국 순교자 경당', what: '회랑 서쪽 경당(기존 side_chapels_4)', meaning: '고통의 신비를 삶으로 산 이들', plan: [-33, 90], look: { x: 90, y: 2, z: 36 }, zone: 'Z7', built: false });
