@@ -513,8 +513,8 @@ void main() {
         '$dir/render_basic.webp',
       );
       expect(
-        ChurchEntryArt.pick(ChurchEntryArt.thumbCandidates('lateran')),
-        'assets/church_thumbs/lateran.webp',
+        ChurchEntryArt.pick(ChurchEntryArt.thumbCandidates('danggogae')),
+        'assets/church_thumbs/danggogae.webp',
       );
       // 아무 그림도 없는 새 성당: 마지막 후보(없으면 위젯이 아이콘을 그린다).
       expect(
