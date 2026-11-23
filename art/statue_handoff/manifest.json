@@ -1996,7 +1996,24 @@
    "faceCount": 921599,
    "why": "No scan of the Vatican bronze exists under an allowed licence. This is a mid-14th-century seated St Peter blessing with keys – same type and pose as Arnolfo's; will be retextured dark bronze.",
    "alternative_url": "https://sketchfab.com/3d-models/san-pedro-statue-3515031fd3c24c839172114615ad3788",
-   "attribution": "\"San Pietro in cattedra\" by Daniele Madella (photo survey: Paolo Saglia) — CC BY 4.0 — https://sketchfab.com/3d-models/san-pietro-in-cattedra-2e11ebf282d24879a0a8f4960ac23363"
+   "attribution": "\"San Pietro in cattedra\" by Daniele Madella (photo survey: Paolo Saglia) — CC BY 4.0 — https://sketchfab.com/3d-models/san-pietro-in-cattedra-2e11ebf282d24879a0a8f4960ac23363",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/2e11ebf282d24879a0a8f4960ac23363 license = CC Attribution (by), isDownloadable=True, by Daniele Madella (2026-11-23, 이 세션의 API 토큰)",
+   "status": "받음",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_peter_enthroned.js",
+   "pack_key": "st_peter_enthroned",
+   "pack_bytes": 215425,
+   "pack_tris": {
+    "source": 921599,
+    "near": 35988,
+    "far": 4996
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_peter_enthroned.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"San Pietro in cattedra\" by Daniele Madella — CC BY 4.0 — https://sketchfab.com/3d-models/2e11ebf282d24879a0a8f4960ac23363 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf01_st_peter_enthroned.glb",
+   "front_note": "묶음 +Z 가 3/4 쪽 — 놓을 때 y축 약 45° 더 돌림(q45 렌더가 정면)"
   },
   {
    "id": "02",
@@ -2011,7 +2028,11 @@
    "faceCount": 1167009,
    "why": "Photogrammetry of the actual statue, \"Captured in Milan Cathedral\" (verified from thumbnail). Only real-artwork scan found for Milan.",
    "alternative_url": null,
-   "attribution": "\"St. Bartholomew\" by auriea — CC BY 4.0 — https://sketchfab.com/3d-models/st-bartholomew-dd9d403ad3584cb4bff30f3946f0818e"
+   "attribution": "\"St. Bartholomew\" by auriea — CC BY 4.0 — https://sketchfab.com/3d-models/st-bartholomew-dd9d403ad3584cb4bff30f3946f0818e",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/dd9d403ad3584cb4bff30f3946f0818e license = CC Attribution (by), isDownloadable=True, by auriea (2026-11-23, 이 세션의 API 토큰)",
+   "status": "제외",
+   "status_reason": "받아 보니 성상 하나가 아니라 밀라노 대성당 벽·제단 일부를 통째로 스캔한 장면(약 2.3×2×1.6m)이고 성상은 그 안의 작은 부분이다. 또 살가죽이 벗겨진 해부학적 나체상(마르코 다그라테)이라 「나체상은 성당 안에 쓰지 않음」 기준으로 제외. 원본은 지웠다.",
+   "status_date": "2026-11-23"
   },
   {
    "id": "03",
@@ -2026,7 +2047,24 @@
    "faceCount": 444854,
    "why": "Baroque kneeling angel with folded hands (Calvary of Maria-Lanzendorf, early 18th c.) – the pose our altar angels need; none of the received angels kneel.",
    "alternative_url": "https://sketchfab.com/3d-models/schutzengel-bd16f76552084f8296e2ff50a24a05e2",
-   "attribution": "\"Engel\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/engel-bd6261224279427685fd1c486e3c4240"
+   "attribution": "\"Engel\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/engel-bd6261224279427685fd1c486e3c4240",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/bd6261224279427685fd1c486e3c4240 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status": "받음",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_angel_kneeling.js",
+   "pack_key": "angel_kneeling",
+   "pack_bytes": 217298,
+   "pack_tris": {
+    "source": 444854,
+    "near": 36000,
+    "far": 5000
+   },
+   "face_check": "art/statue_handoff/packs/checks/angel_kneeling.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Engel\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/bd6261224279427685fd1c486e3c4240 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf03_angel_kneeling_lanzendorf.glb",
+   "front_note": "묶음 +Z 가 3/4 쪽 — 놓을 때 y축 약 45° 더 돌림(q45 렌더가 정면)"
   },
   {
    "id": "04",
@@ -2041,7 +2079,23 @@
    "faceCount": 784094,
    "why": "Baroque stone St Paul with sword and book (Mistelbach, 1724), closer to the white marble statue than the gilded wood one we already have.",
    "alternative_url": "https://sketchfab.com/3d-models/hl-paulus-85640201f7ef4ee0a67f2bfc354f0b3a",
-   "attribution": "\"Hl. Paulus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-paulus-7455a9981c7a46c4992d88c8caa78521"
+   "attribution": "\"Hl. Paulus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-paulus-7455a9981c7a46c4992d88c8caa78521",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/7455a9981c7a46c4992d88c8caa78521 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status": "받음",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_paul_stone.js",
+   "pack_key": "st_paul_stone",
+   "pack_bytes": 215780,
+   "pack_tris": {
+    "source": 784094,
+    "near": 35997,
+    "far": 4997
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_paul_stone.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Paulus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/7455a9981c7a46c4992d88c8caa78521 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf04_st_paul_mistelbach.glb"
   },
   {
    "id": "05",
@@ -2056,7 +2110,11 @@
    "faceCount": 479642,
    "why": "Baroque stone St Peter with keys and book; pairs with 04.",
    "alternative_url": "https://sketchfab.com/3d-models/hl-petrus-f107280081c245e6b7bc5699fa270969",
-   "attribution": "\"Hl. Petrus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-petrus-fce2f11097ae4237b2c4c48c374acca7"
+   "attribution": "\"Hl. Petrus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-petrus-fce2f11097ae4237b2c4c48c374acca7",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/fce2f11097ae4237b2c4c48c374acca7 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status": "보류",
+   "status_reason": "라이선스(CC BY-NC)는 통과. 스케치팹 설명·검색으로 조각 제작 연도를 확인하지 못했다(술츠 임 비너발트 성당은 1783년 건축이지만 성상 연도는 아님) — §4 「연도 미확인 → 보류」. 받지 않음.",
+   "status_date": "2026-11-23"
   },
   {
    "id": "06",
@@ -2071,7 +2129,11 @@
    "faceCount": 596036,
    "why": "Stone Veronica holding the veil with the Holy Face (Falkenstein).",
    "alternative_url": "https://sketchfab.com/3d-models/hl-veronika-cf1ac2fa36144566aba5a1beaeaee36b",
-   "attribution": "\"Hl. Veronika\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-veronika-cf472d787dc54f6dbf09764263061399"
+   "attribution": "\"Hl. Veronika\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-veronika-cf472d787dc54f6dbf09764263061399",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/cf472d787dc54f6dbf09764263061399 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status": "보류",
+   "status_reason": "라이선스(CC BY-NC)는 통과. 팔켄슈타인 크로이츠베르크 베로니카상의 제작 연도를 확인하지 못함 — §4 기준 보류. 받지 않음.",
+   "status_date": "2026-11-23"
   },
   {
    "id": "07",
@@ -2086,7 +2148,23 @@
    "faceCount": 536653,
    "why": "Sandstone Helena with the cross (Heiligenkreuz, from 1731).",
    "alternative_url": null,
-   "attribution": "\"Hl. Helena\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-helena-15a4ee895e5447e09f8ea980df03fefd"
+   "attribution": "\"Hl. Helena\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-helena-15a4ee895e5447e09f8ea980df03fefd",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/15a4ee895e5447e09f8ea980df03fefd license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status": "받음",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_helena.js",
+   "pack_key": "st_helena",
+   "pack_bytes": 215390,
+   "pack_tris": {
+    "source": 536653,
+    "near": 35990,
+    "far": 4998
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_helena.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Helena\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/15a4ee895e5447e09f8ea980df03fefd — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf07_st_helena_heiligenkreuz.glb"
   },
   {
    "id": "08",
@@ -2101,7 +2179,11 @@
    "faceCount": 446840,
    "why": "Classic parish-church St Joseph (Pinkafeld, 1912) with lily – more typical than the Nitra one we already have.",
    "alternative_url": "https://sketchfab.com/3d-models/hl-josef-712c97315ad54774b9957623e9d0b0c8",
-   "attribution": "\"Hl. Josef\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-josef-78910d3f53284ccfbb6b9150f69cd429"
+   "attribution": "\"Hl. Josef\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/hl-josef-78910d3f53284ccfbb6b9150f69cd429",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/78910d3f53284ccfbb6b9150f69cd429 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status": "보류",
+   "status_reason": "1912년 작, 작가 미상 — §4-1(핀카펠트 성 요셉, 조각 저작권 검토 대상) 그대로 보류. 받지 않음.",
+   "status_date": "2026-11-23"
   },
   {
    "id": "09",
@@ -2116,7 +2198,11 @@
    "faceCount": 72680,
    "why": "Photogrammetry of a replica of Michelangelo's Pietà, already light (72k faces). Only needed if the SMK cast scan (received) decimates badly.",
    "alternative_url": "https://sketchfab.com/3d-models/michelangelos-pieta-94f57a35beb34a27aeb08a5985d34407",
-   "attribution": "\"Pieta' MICHELANGELO\" by leone.giorgio — CC BY 4.0 — https://sketchfab.com/3d-models/pieta-michelangelo-6398440bbccc4350963687782145dad4"
+   "attribution": "\"Pieta' MICHELANGELO\" by leone.giorgio — CC BY 4.0 — https://sketchfab.com/3d-models/pieta-michelangelo-6398440bbccc4350963687782145dad4",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/6398440bbccc4350963687782145dad4 license = CC Attribution (by), isDownloadable=True, by leone.giorgio (2026-11-23, 이 세션의 API 토큰)",
+   "status": "보류",
+   "status_reason": "§8(2026-11-16 2차): SMK 1.5M 피에타 묶음으로 얼굴이 살아 「질감 있는 대안은 필요 없다」고 정함. 원본이 실물인지 복제품인지 설명에 없음. 받지 않음.",
+   "status_date": "2026-11-23"
   },
   {
    "id": "10",
@@ -2131,7 +2217,23 @@
    "faceCount": 287022,
    "why": "Gothic crucifix from the Holy Sepulchre Basilica in Miechów (in a gilded niche). Alternative to the received CC0 crucifix.",
    "alternative_url": "https://sketchfab.com/3d-models/crucifix-9e5f9a61cf914e649dec44041affe1d2",
-   "attribution": "\"Gothic crucifix\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/gothic-crucifix-35fde9ce3c734d29ab8813072732d27a"
+   "attribution": "\"Gothic crucifix\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/gothic-crucifix-35fde9ce3c734d29ab8813072732d27a",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/35fde9ce3c734d29ab8813072732d27a license = CC Attribution (by), isDownloadable=True, by Virtual Museums of Małopolska (2026-11-23, 이 세션의 API 토큰)",
+   "status": "받음",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_crucifix_gothic.js",
+   "pack_key": "crucifix_gothic",
+   "pack_bytes": 218351,
+   "pack_tris": {
+    "source": 287022,
+    "near": 25996,
+    "far": 3996
+   },
+   "face_check": "art/statue_handoff/packs/checks/crucifix_gothic.jpg — 머리를 깊이 숙인 원작 자세라 가시관·턱선만 보임(원본과 같은 모양)",
+   "placed_in_app": false,
+   "pack_attribution": "\"Gothic crucifix\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/35fde9ce3c734d29ab8813072732d27a — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf10_gothic_crucifix_miechow.glb"
   },
   {
    "id": "11",
@@ -2149,7 +2251,22 @@
    "sculpture": "1410년경, 크루즐로바 본당(지금 크라쿠프 국립박물관). 작가 미상",
    "why": "고딕 성모자 입상 가운데 가장 알맞다. 로그인 없이 받을 수 있는 사본이 없다",
    "attribution": "\"Madonna of Krużlowa\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/597d14d7e6ec46a8a0becdf57dd6dbec license = CC Attribution (by), isDownloadable=True, by Virtual Museums of Małopolska (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_madonna_kruzlowa.js",
+   "pack_key": "madonna_kruzlowa",
+   "pack_bytes": 219156,
+   "pack_tris": {
+    "source": 564120,
+    "near": 26000,
+    "far": 3998
+   },
+   "face_check": "art/statue_handoff/packs/checks/madonna_kruzlowa.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Madonna of Krużlowa\" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf11_madonna_kruzlowa.glb"
   },
   {
    "id": "12",
@@ -2167,7 +2284,22 @@
    "sculpture": "1826년, 슈트론스도르프 흑사병 기둥의 무릎 꿇은 천사 4점 가운데 하나",
    "why": "연도가 확인된 무릎 꿇은 천사. 좌우 반전으로 한 쌍을 만든다",
    "attribution": "\"Engel (Stronsdorf)\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/4da4a29f59e142af86b8fbdc7aff818c license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_angel_kneeling_stronsdorf.js",
+   "pack_key": "angel_kneeling_stronsdorf",
+   "pack_bytes": 217497,
+   "pack_tris": {
+    "source": 567806,
+    "near": 35993,
+    "far": 4998
+   },
+   "face_check": "art/statue_handoff/packs/checks/angel_kneeling_stronsdorf.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Engel\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf12_angel_kneeling_stronsdorf.glb"
   },
   {
    "id": "13",
@@ -2185,7 +2317,22 @@
    "sculpture": "1727년, 볼커스도르프 성당 계단. 작가 미상",
    "why": "받아 둔 니트라 성 요셉은 연도 미확인이라, 연도가 확인된 것으로 바꾼다",
    "attribution": "\"Hl. Josef (Wolkersdorf)\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/067f62dda6ac4348a94581ade6e9f274 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_joseph_child.js",
+   "pack_key": "st_joseph_child",
+   "pack_bytes": 216798,
+   "pack_tris": {
+    "source": 622794,
+    "near": 35998,
+    "far": 5000
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_joseph_child.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Josef\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf13_st_joseph_wolkersdorf.glb"
   },
   {
    "id": "14",
@@ -2203,7 +2350,22 @@
    "sculpture": "18세기 전반(십자가의 길 1731~1748), 하일리겐크로이츠 수도원",
    "why": "SMK 성 프란치스코(KAS1959)는 질감이 없다",
    "attribution": "\"Hl. Franziskus (Heiligenkreuz)\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/3eb9029e6a45485aa25425b10f4b5a3f license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_francis.js",
+   "pack_key": "st_francis",
+   "pack_bytes": 216240,
+   "pack_tris": {
+    "source": 621322,
+    "near": 35987,
+    "far": 4998
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_francis.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Franziskus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf14_st_francis_heiligenkreuz.glb"
   },
   {
    "id": "15",
@@ -2221,7 +2383,22 @@
    "sculpture": "1420년경, 뉘른베르크 점토 사도상 9점 가운데 하나. 작가 미상",
    "why": "고딕 「아름다운 양식」 사도 좌상. 한 벌 가운데 스캔은 이 한 점뿐",
    "attribution": "\"Nürnberger Tonapostel, um 1420 | Pl.O.234\" by Germanisches Nationalmuseum — CC BY 4.0 — https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/418484f48ef14723865d76dcbcad45fb license = CC Attribution (by), isDownloadable=True, by Germanisches Nationalmuseum (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_apostle_clay.js",
+   "pack_key": "apostle_clay",
+   "pack_bytes": 221207,
+   "pack_tris": {
+    "source": 630083,
+    "near": 25991,
+    "far": 3999
+   },
+   "face_check": "art/statue_handoff/packs/checks/apostle_clay.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Nürnberger Tonapostel, um 1420 | Pl.O.234\" by Germanisches Nationalmuseum — CC BY 4.0 — https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf15_nuremberg_clay_apostle.glb"
   },
   {
    "id": "16",
@@ -2239,7 +2416,10 @@
    "sculpture": "1856~1879년 빈 봉헌 성당. 요하네스 벵크(1914년 사망), 요제프 가서(1900년 사망)",
    "why": "문설주·팀파눔·박공 조각이 한 덩어리로 있는 유일한 신고딕 문. 128만 삼각형이라 크게 줄여야 한다",
    "attribution": "\"Portal Votivkirche\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/ee5583b262bc4f088e402d50fa7ee22f",
-   "status": "사용자 요청"
+   "status": "보류",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/ee5583b262bc4f088e402d50fa7ee22f license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_reason": "라이선스·연도(1856~79, 벵크 1914·가서 1900 사망)는 통과. 받아 보니 높이 약 8m 정문 전체에 인물 수십이라, 휴대폰 예산(군상도 근거리 ≤120k)에서는 인물 하나당 얼굴이 수백 삼각형 — 얼굴을 살릴 수 없다. 정면 자리가 정해지면 인물 몇을 잘라 쓰는 방식으로 다시 검토. 원본은 지웠다.",
+   "status_date": "2026-11-23"
   },
   {
    "id": "17",
@@ -2257,7 +2437,22 @@
    "sculpture": "18세기 전반, 요제프 슈니처(1706~1769), 하일리겐크로이츠 수도원",
    "why": "리지외의 성녀 데레사(소화 데레사) 상은 모두 20세기 작이라 찾지 못했다 — 가르멜의 데레사로 대신할지는 사용자 판단",
    "attribution": "\"Hl. Theresia\" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/7d9a15d5495c40dc9548ead778422f67 license = CC Attribution (by), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_teresa.js",
+   "pack_key": "st_teresa",
+   "pack_bytes": 216392,
+   "pack_tris": {
+    "source": 496782,
+    "near": 35999,
+    "far": 5000
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_teresa.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Theresia\" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf17_st_teresa_heiligenkreuz.glb"
   },
   {
    "id": "18",
@@ -2275,7 +2470,22 @@
    "sculpture": "18세기 전반, 요제프 슈니처 작으로 전함",
    "why": "13번의 예비",
    "attribution": "\"Hl. Joseph\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/38098e2ebcef4e998d1ab62154e57b68 license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_joseph_lily.js",
+   "pack_key": "st_joseph_lily",
+   "pack_bytes": 217641,
+   "pack_tris": {
+    "source": 651768,
+    "near": 35997,
+    "far": 4998
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_joseph_lily.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Joseph\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68 — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf18_st_joseph_heiligenkreuz.glb"
   },
   {
    "id": "19",
@@ -2293,7 +2503,22 @@
    "sculpture": "후기 고딕, 슬로바키아 레보차(설명에 연도 없음)",
    "why": "질감 없이 음영만 있는 스캔",
    "attribution": "\"Madona Sculpture\" by jan.zachar — CC BY 4.0 — https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/5e16f3cd478e4c8cb32dede7446a83fb license = CC Attribution (by), isDownloadable=True, by jan.zachar (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_madonna_levoca.js",
+   "pack_key": "madonna_levoca",
+   "pack_bytes": 214334,
+   "pack_tris": {
+    "source": 375409,
+    "near": 35996,
+    "far": 4999
+   },
+   "face_check": "art/statue_handoff/packs/checks/madonna_levoca.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Madona Sculpture\" by jan.zachar — CC BY 4.0 — https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf19_madonna_levoca.glb"
   },
   {
    "id": "20",
@@ -2311,7 +2536,23 @@
    "sculpture": "18세기 전반, 클라인슈바인바르트 성모 본당 앞",
    "why": "연도가 확인된 사도 석상",
    "attribution": "\"Hl. Judas Thaddäus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa",
-   "status": "사용자 요청"
+   "status": "받음",
+   "license_recheck_2026-11-23": "Sketchfab API v3 /models/2cb9b7c61cea469b9628d62c9fe289aa license = CC Attribution-NonCommercial (by-nc), isDownloadable=True, by noe-3d.at (2026-11-23, 이 세션의 API 토큰)",
+   "status_date": "2026-11-23",
+   "received_via": "Sketchfab Data API /download (glb). 원본은 저장소 밖(/tmp)에서만 처리하고 지웠다 — 다시 만들려면 다시 받는다.",
+   "pack": "art/statue_handoff/packs/scan3d_st_jude.js",
+   "pack_key": "st_jude",
+   "pack_bytes": 216324,
+   "pack_tris": {
+    "source": 594962,
+    "near": 35998,
+    "far": 4998
+   },
+   "face_check": "art/statue_handoff/packs/checks/st_jude.jpg (정면·45°·얼굴 근접, 헤드리스 Chromium). 얼굴 읽힘 — 원본 얼굴과 같은 카메라로 비교해 단순화로 뭉개진 곳 없음",
+   "placed_in_app": false,
+   "pack_attribution": "\"Hl. Judas Thaddäus\" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa — 수정함(삼각형 수 줄임, 재질 변경)",
+   "pack_src_file": "sf20_st_jude_thaddeus.glb",
+   "front_note": "묶음 +Z 가 3/4 쪽 — 놓을 때 y축 약 45° 더 돌림(q45 렌더가 정면)"
   }
  ],
  "not_found": [
@@ -2556,5 +2797,6 @@
    "statue": "Big Christian Candlestick (파리 생메리, 19세기)",
    "reason": "스케치팹 원본 라이선스 표기가 비어 있음 → 쓰지 않음"
   }
- ]
+ ],
+ "generated_update_2026-11-23": "스케치팹 1~20번 처리: 받음 14, 보류 5(05·06·08·09·16), 제외 1(02). 묶음은 art/statue_handoff/packs/(scan_packs.json 'staged'), 아직 성당 빌더·앱 출처 화면에는 넣지 않음."
 }

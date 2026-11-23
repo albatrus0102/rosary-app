@@ -268,6 +268,28 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 - 조각 자체: 모두 작가 사후 70년이 지난 15~18세기 작품(피에타 1498–99). 대용은 실제 작품 이름을 붙이지 않는다.
 - 스캔을 못 읽으면 예전 그림(피에타 사진 판 — 위 '성당 안 진본 성화')이나 절차 생성 상이 그 자리에 선다.
 
+## 성상 3D 스캔 대기 묶음 — 스케치팹 (2026-11-23 추가, 앱 미사용)
+
+`art/statue_handoff/packs/scan3d_<키>.js` 14개(각 209–216KB, 합계 ≈ 3.0MB) — 앱(`assets/church/`)에는 아직 넣지 않았다. 원본 glb 는 저장소에 없다(스케치팹 API 로 받아 저장소 밖에서 줄이고 지움).
+라이선스는 2026-11-23 스케치팹 API 로 다시 확인. CC BY-NC 모델은 유료화·광고·후원을 도입하면 빼야 한다. 근거·표기 문구: `docs/church/STATUE_SOURCES.md` §10.
+
+| 파일 | 원본 | 만든이 | 라이선스 | 비고 |
+|---|---|---|---|---|
+| art/statue_handoff/packs/scan3d_st_peter_enthroned.js | https://sketchfab.com/3d-models/2e11ebf282d24879a0a8f4960ac23363 | Daniele Madella | CC BY 4.0 | San Pietro in cattedra — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_angel_kneeling.js | https://sketchfab.com/3d-models/bd6261224279427685fd1c486e3c4240 | noe-3d.at | CC BY-NC 4.0 | Engel — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_paul_stone.js | https://sketchfab.com/3d-models/7455a9981c7a46c4992d88c8caa78521 | noe-3d.at | CC BY-NC 4.0 | Hl. Paulus — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_helena.js | https://sketchfab.com/3d-models/15a4ee895e5447e09f8ea980df03fefd | noe-3d.at | CC BY-NC 4.0 | Hl. Helena — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_crucifix_gothic.js | https://sketchfab.com/3d-models/35fde9ce3c734d29ab8813072732d27a | Virtual Museums of Małopolska | CC BY 4.0 | Gothic crucifix — 축소·정점 색. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_madonna_kruzlowa.js | https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec | Virtual Museums of Małopolska | CC BY 4.0 | Madonna of Krużlowa — 축소·정점 색. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_angel_kneeling_stronsdorf.js | https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c | noe-3d.at | CC BY-NC 4.0 | Engel — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_joseph_child.js | https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274 | noe-3d.at | CC BY-NC 4.0 | Hl. Josef — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_francis.js | https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f | noe-3d.at | CC BY-NC 4.0 | Hl. Franziskus — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_apostle_clay.js | https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb | Germanisches Nationalmuseum | CC BY 4.0 | Nürnberger Tonapostel, um 1420 / Pl.O.234 — 축소·정점 색. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_teresa.js | https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67 | noe-3d.at | CC BY 4.0 | Hl. Theresia — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_joseph_lily.js | https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68 | noe-3d.at | CC BY-NC 4.0 | Hl. Joseph — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_madonna_levoca.js | https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb | jan.zachar | CC BY 4.0 | Madona Sculpture — 축소·흰 대리석 재질. 앱 미사용(대기) |
+| art/statue_handoff/packs/scan3d_st_jude.js | https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa | noe-3d.at | CC BY-NC 4.0 | Hl. Judas Thaddäus — 축소·흰 대리석 재질. 앱 미사용(대기) |
+
 ## 당고개 순교성지(`danggogae`) — 새 자산 없음(2026-11-15)
 
 - **번들에 더한 사진·그림·질감 파일: 없음.** 성당의 모든 표면(황토 미장·쪼갠 돌·마루 2종·불 켜진 한지·옹기 조각 벽·분홍 화강암·신자석 나무)은
