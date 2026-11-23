@@ -17,7 +17,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #langSel:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #start .kicker{margin:0 0 10px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
 #start h1{margin:0 0 12px;font-size:clamp(26px,6.2vw,40px);line-height:1.2;font-weight:700;color:var(--ivory);word-break:keep-all}
-#start .tag{margin:0 0 18px;font-size:clamp(15px,3.8vw,18px);line-height:1.5;color:var(--ivory2)}
+#start .tag{margin:0 0 18px;font-size:clamp(15px,3.8vw,18px);line-height:1.5;color:var(--ivory2);word-break:keep-all;overflow-wrap:anywhere}
 #start .note{margin:0 auto 26px;max-width:480px;padding:12px 14px;border:1px solid rgba(200,168,106,.45);border-radius:12px;
   background:rgba(255,255,255,.04);font-size:clamp(13px,3.4vw,15px);line-height:1.6;color:var(--ivory2);text-align:left;word-break:keep-all}
 #start .btns{display:flex;flex-direction:column;gap:12px;align-items:stretch;max-width:380px;margin:0 auto}
