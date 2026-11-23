@@ -1,5 +1,6 @@
 # 영상 계획 — 스페인 주교회의(CEE) — 전례 주교위원회에 전달 요청 (prayer-cee)
 
+- **2차 개정(2026-11-23)**: 편지가 「공식 본문을 보내 달라」에서 「붙인 본문(`texts.md`)을 확인·수정해 달라」로 바뀌었다. 영상은 그대로 한국어판 화면을 찍되, 마침 카드 자막을 그에 맞게 고쳤다. 편지의 답은 ①②③ 셋이다.
 - 자막 언어: **스페인어** · 길이 약 2분(1~2분) · 변종: es-ES
 - 찍는 것: **한국어판 앱 화면.** 답을 받기 전에는 그쪽 본문을 앱에 넣지 않으므로, 본문이 들어갈 자리와 쓰는 방식을 한국어 화면으로 보여 주고 자막으로 설명한다. 영상에 그쪽 기도문 본문을 적지 않는다.
 - 만드는 법: 화면 녹화(세로 화면을 16:9 틀 가운데에 둠), 1080p, 해설 목소리 없음, 자막만. 한국어 선창 음성은 8번 장면에서만 2~3초 들려 준다(배포판 상태: 기기 음성).
@@ -22,7 +23,7 @@
 | 10 | 1:28–1:34 | 가상 성당(성 베드로 모형): 성수대 앞에서 「성호 긋기」 | Junto a la pila de agua bendita se hace la señal de la cruz. Solo gestos de oración: ni juegos ni combates. |
 | 11 | 1:34–1:42 | 가상 성당(성 베드로 모형): 촛불 봉헌대에서 「초 켜기」 → 정해진 지향 목록에서 하나 고름(글 입력 칸이 없음이 보이게) | Se enciende una vela eligiendo la intención entre frases ya fijadas: sin texto libre, sin chat. |
 | 12 | 1:42–1:50 | 가상 성당(성 베드로 모형): 신자석에 앉아 묵주 기도(묵주 패널이 보이게) → 「무릎 꿇고」로 바꿈 | Uno se sienta o se arrodilla y reza el Rosario. Nada imita la Misa ni los sacramentos. |
-| 13 | 1:50–2:00 | 마침 카드(글자만) | Qué pedimos: autorización para mostrar los textos y su elección entre las opciones de la carta. Sin su respuesta, su texto no se usa. Contacto: 〔이메일〕 |
+| 13 | 1:50–2:00 | 마침 카드(글자만) | Qué pedimos: que confirmen o corrijan los textos adjuntos y autoricen su uso: basta responder a la carta con un número (①②③). Sin su respuesta, su texto no se usa. Contacto: 〔이메일〕 |
 
 ## 첨부 화면 캡처 4장
 

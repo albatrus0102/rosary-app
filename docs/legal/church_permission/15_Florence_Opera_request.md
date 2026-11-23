@@ -18,99 +18,25 @@
 ## (가) 이탈리아어판 (보낼 본문)
 
 A: opera@duomo.firenze.it
-Oggetto: Richiesta di nulla osta: modello 3D semplificato della Cattedrale di Santa Maria del Fiore in un’app di preghiera gratuita e non commerciale
+Oggetto: App di preghiera gratuita «Rosarium»: una domanda sulla Cattedrale di Santa Maria del Fiore (basta rispondere con un numero)
 
 Spettabile Opera di Santa Maria del Fiore,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. Sto realizzando, a titolo personale, un’app gratuita per Android chiamata «Rosarium», che aiuta a pregare il Rosario. L’app è interamente non commerciale: non ha pubblicità, né funzioni a pagamento, né raccolte di offerte. Non è un servizio ufficiale della Chiesa, e lo dichiara al proprio interno.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario, anche all’interno di modelli 3D semplificati di alcune chiese. Non è ancora pubblicata.
 
-Nell’app si può entrare in modelli 3D semplificati di alcune chiese, camminare, sedersi e pregare il Rosario. Uno di questi modelli rappresenta la Cattedrale di Santa Maria del Fiore. L’app non è ancora pubblicata: Vi scrivo prima, per dirVi con chiarezza che cosa ho fatto e che cosa chiedo. Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla o indicarmi a chi scrivere.
+Uno dei modelli rappresenta la Cattedrale di Santa Maria del Fiore. L’edificio ha molti secoli e non Vi chiedo una licenza di diritto d’autore: per rispetto verso chi lo custodisce, Vi chiedo se avete obiezioni all’uso del nome e di un modello semplificato, che l’app dichiara diverso dall’originale e non approvato da Voi. La riverenza è una regola dell’app: nel presbiterio non si entra, e nulla imita la Messa o i Sacramenti.
 
-**Chi sono e perché ho fatto quest’app**
+Basta rispondere a questa e-mail con un numero:
 
-Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è tutta la mia famiglia; nostro figlio 〔o: nostra figlia〕 ha ricevuto il Battesimo da neonato e ha servito all’altare come ministrante. L’app è nata in casa: i miei familiari desideravano poter pregare il Rosario come lo pregavamo nella parrocchia che frequentavamo un tempo. Strada facendo ho desiderato offrire, anche a chi forse non potrà mai visitarle, l’esperienza — almeno indiretta — di pregare il Rosario in alcune chiese celebri. Di recente il «metaverso» è tornato a far parlare di sé (in Corea, per esempio, nella comunità buddista), e ho letto molti cattolici augurarsi qualcosa di simile per la Chiesa cattolica. Ho cercato altre app di «chiese virtuali», ma in molte ho trovato elementi poco rispettosi — avatar che salgono liberamente sull’altare — oppure testi di preghiera sbagliati. Per questo ho deciso di farne una fatta bene, con rispetto.
+① Nessuna obiezione.
+② Sì, a queste condizioni o con queste correzioni: ______
+③ Preferiamo che la Cattedrale non compaia nell’app (la toglierò).
 
-Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore: le opere d’arte non sono riprodotte, e le poche immagini di opere reali rimaste provengono da fonti con licenza libera e sono elencate più sotto. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di alcune opere o immagini, le inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
+In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, com’è fatto il modello, le immagini di opere reali oggi presenti e la loro fonte, le voci più specifiche su opere, fotografie e link), 6 schermate e il link a un breve video: 〔YouTube 링크〕
 
-**Come custodiamo la riverenza**
+Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi.
 
-Poiché è un luogo di preghiera, la riverenza non è lasciata soltanto alla buona volontà degli utenti: è una regola scritta nell’app.
-
-- **Nel presbiterio non si entra.** In ogni chiesa l’area dell’altare è una zona inaccessibile: l’avatar si ferma ai piedi dei gradini. Lo verificano prove automatiche, chiesa per chiesa.
-- **Nessuna imitazione della Messa o dei Sacramenti.** Dentro la chiesa l’app dichiara: «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti (Confessione, Eucaristia, ecc.)».
-- **Solo gesti di preghiera.** Inchino, segno della croce, un saluto, sedersi o inginocchiarsi per pregare, accendere una candela. La candela si accende solo al portacandele; il segno della croce è proposto all’acquasantiera, dove il modello ne ha una; il saluto con la mano è possibile solo vicino all’ingresso (altrove diventa un inchino). Non ci sono giochi, combattimenti né scherzi.
-- **Nessuna chat.** Anche l’intenzione della candela si sceglie fra frasi di preghiera già fissate, senza testo libero: non possono comparire parole offensive.
-- **Testi di preghiera fedeli.** I testi coreani sono stati confrontati parola per parola con il libro di preghiere ufficiale dei Vescovi di Corea; nelle altre lingue saranno usati soltanto i testi ufficiali.
-- **Il calendario liturgico.** Il colore del paliotto dell’altare e gli addobbi cambiano con i tempi liturgici.
-- **Chiarezza su ciò che è.** Ogni chiesa porta l’avviso che è un modello virtuale semplificato, diverso dalla chiesa reale e non approvato; le opere ancora protette dal diritto d’autore sono sostituite da forme astratte.
-- **Niente pubblicità, niente pagamenti, nessuna vendita di dati.**
-
-**1. Che cosa chiedo, e perché lo chiedo a Voi**
-
-Forse richieste come questa non Vi arrivano spesso; spiego quindi su quali basi, per quanto ne so, mi rivolgo a Voi. Non chiedo di approvare un «luogo virtuale», né di riconoscere l’app come un’iniziativa Vostra. Chiedo tre cose precise.
-
-a) Il Vostro nulla osta — oppure la Vostra opposizione — al fatto che il nome della Cattedrale e un suo modello virtuale semplificato compaiano nell’app. L’edificio ha molti secoli e, per quanto mi risulta, la sua architettura non è più protetta dal diritto d’autore (in Italia la protezione dura fino a settant’anni dopo la morte dell’autore: legge 633/1941, art. 25). Non Vi chiedo quindi una licenza di diritto d’autore. Chi custodisce la Cattedrale ha però un interesse legittimo sull’uso del suo nome e della sua immagine: per questo chiedo il Vostro consenso, e non vorrei usarne il nome contro la Vostra volontà.
-
-b) Un’indicazione sulle regole che si applicano alla riproduzione delle opere e delle immagini della Cattedrale. In Italia c’è il Codice italiano dei beni culturali e del paesaggio (D.Lgs. 42/2004, artt. 107-108: https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2004-01-22;42), che affida a chi ha in consegna un bene culturale l’autorizzazione delle riproduzioni e lascia libere quelle fatte senza scopo di lucro (art. 108, comma 3-bis). Non so se e come si applichi a un bene affidato all’Opera, e non conosco il regolamento dell’Opera sull’uso delle immagini. Io non ho effettuato alcuna ripresa nella Cattedrale e non uso immagini della Vostra Fototeca. Per quanto ho potuto leggere, queste regole riguardano soprattutto gli usi a scopo di lucro; l’app non ha alcuno scopo di lucro, ma non sono certo di come si applichino a un modello 3D semplificato in un’app gratuita, e preferisco chiederlo a Voi anziché darlo per scontato. Se vale una procedura diversa, Vi prego di correggermi.
-
-c) La Vostra scelta fra le opzioni del punto 5: basta rispondere a questa e-mail indicando i numeri.
-
-**2. Com’è fatto il modello**
-
-- Che cosa è costruito: l’interno — navata centrale e navate laterali, l’ottagono sotto la cupola e le tre tribune — ridotto a circa il 45% delle dimensioni reali; le tre tribune dietro l’altare sono meno profonde rispetto alle proporzioni reali. Il modello è fatto con una geometria semplice, scritta da me.
-- Che cosa non è costruito: i resti di Santa Reparata, la salita alla cupola, il Campanile, il Battistero e l’esterno non sono costruiti.
-- Il «Giudizio Universale» della cupola non è riprodotto: è sostituito da campiture di colore, senza le scene.
-- Le vetrate, tranne tre occhi (vedi punto 3), sono vetri disegnati dall’app.
-- Il crocifisso dietro l’altare non è quello della Cattedrale, ma la scansione 3D di un antico crocifisso conservato altrove (Virtual Museums of Małopolska, licenza CC0); le statue dei santi sono forme semplici.
-- La statua della Madonna è generica (modello 3D generato con intelligenza artificiale) e la sua posizione è scelta dall’app.
-- I banchi e il luogo delle candele sono collocati dall’app; i paramenti dell’altare cambiano secondo il tempo liturgico; pavimento e luce sono semplificati.
-
-**3. Immagini di opere reali presenti oggi nel modello**
-
-Le elenco tutte, perché possiate dirmi se qualcuna va tolta:
-
-- Tre affreschi della navata sinistra: il Monumento equestre a Niccolò da Tolentino (Andrea del Castagno) e il Monumento equestre a Giovanni Acuto (Paolo Uccello) — fotografie di Sailko, Wikimedia Commons, CC BY 3.0; «Dante e la Divina Commedia» (Domenico di Michelino) — immagine di Wikimedia Commons indicata come PD-Art. Tutte ritagliate e ridotte (circa 1.000–1.200 pixel).
-- Tre occhi (vetrate circolari): «Incoronazione della Vergine» (cartone di Donatello), «Assunzione» e «Ascensione» (cartoni di Lorenzo Ghiberti) — immagini caricate da Sailko su Wikimedia Commons e indicate come pubblico dominio (PD-Art). Non ho potuto verificare la posizione reale di uno dei due occhi del tamburo.
-- La Via Crucis non è quella della Cattedrale: è una serie di illustrazioni del 1859 (D. Mosler, pubblico dominio).
-
-**4. Che cosa dichiara l’app**
-
-- Accanto al modello l’app mostra questo avviso (traduzione dal coreano): «Questo modello 3D non è uguale alla vera Cattedrale di Santa Maria del Fiore. […] Non è un modello realizzato o approvato dall’Arcidiocesi di Firenze o dalla Cattedrale.» L’avviso elenca, punto per punto, le differenze descritte sopra.
-- A ogni ingresso in una chiesa: «È una ricostruzione virtuale, diversa dalla chiesa reale» e «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti».
-- Nelle informazioni sull’app: «Questa app non è un servizio ufficiale della Chiesa cattolica».
-- L’app non ha mai dichiarato né lasciato intendere un’approvazione o un patrocinio da parte Vostra, e non usa stemmi, loghi o marchi dell’Opera, della Cattedrale o dell’Arcidiocesi.
-- Non si possono usare abiti o titoli di sacerdoti e religiosi (le altre regole di rispetto sono descritte sopra, in «Come custodiamo la riverenza»).
-
-**5. Opzioni (si può rispondere indicando soltanto i numeri)**
-
-☐ ① Nessuna obiezione: il nome della Cattedrale e il modello virtuale semplificato possono comparire nell’app (opzione di base).
-☐ ② È possibile rispecchiare l’aspetto reale di alcune opere (vetrate, dipinti, mosaici, statue; ad es. il «Giudizio Universale» della cupola, gli altri occhi del tamburo). Quali: ______
-☐ ③ È possibile usare fotografie. Quali fotografie e con quale dicitura: ______
-☐ ④ Desideriamo che l’app riporti il link al sito ufficiale e un breve testo di presentazione. Link e testo: ______
-☐ ⑤ Preferiamo che la Cattedrale non compaia nell’app (in tal caso la toglierò).
-☐ ⑥ Le immagini di opere reali già presenti (punto 3): ☐ possono restare ☐ vanno tolte ☐ vanno sostituite con: ______
-☐ ⑦ Altre correzioni o condizioni: ______
-
-**6. Che cosa farò secondo la Vostra risposta**
-
-- ①: lascio il modello com’è, con l’avviso.
-- ②: riprodurrò soltanto le opere da Voi indicate e Vi mostrerò il risultato prima di pubblicarlo.
-- ③: userò soltanto le fotografie da Voi indicate, a bassa risoluzione, con la dicitura che mi chiederete.
-- ④: aggiungerò il link e il testo così come me li invierete.
-- ⑤: la toglierò dall’app.
-- Se non ricevo risposta, il modello resterà nella forma semplificata attuale, con l’avviso che non è uguale all’originale e che non è approvato da Voi; non aggiungerò opere reali né altre fotografie (le opzioni ② e ③ valgono solo con una Vostra risposta esplicita). Le immagini elencate al punto 3, tratte da fonti con licenza libera, resteranno come sono, finché non mi direte diversamente.
-- In ogni momento, anche dopo la pubblicazione, correggerò o toglierò ciò che mi chiederete.
-- Se concederete un permesso, ne indicherò i limiti all’interno dell’app e non aggiungerò, oltre quei limiti, elementi che possano creare equivoci. Se lo ritenete utile, chiederò volentieri a persone da Voi indicate di esaminare l’app.
-
-**Materiali**
-
-1. Scheda di una pagina (PDF, in italiano), allegata.
-2. Video non in elenco su YouTube (1–2 minuti), realizzato da me a partire dalla scena 3D, con sottotitoli in italiano: 〔YouTube 링크〕
-3. 6 schermate dell’app, allegate.
-
-Non invio l’app stessa: la scheda, il video e le schermate mostrano ciò che l’utente vede.
-
-Vi ringrazio per il tempo che vorrete dedicarmi. Pace e bene.
+Con viva gratitudine e un ricordo nella preghiera,
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Corea del Sud
@@ -120,10 +46,12 @@ Vi ringrazio per il tempo che vorrete dedicarmi. Pace e bene.
 
 ## (나) 한국어 요약 (사용자 확인용)
 
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 240 낱말로 줄였다(이전 약 1900 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/florence/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- 맺음 인사를 「Pace e bene」(프란치스코회 인사)에서 중립적인 「Con viva gratitudine e un ricordo nella preghiera」로 바꿨다(원어민 검토 때 확인).
 - 받는 곳: 피렌체 대성당 관리 재단(Opera di Santa Maria del Fiore) · `opera@duomo.firenze.it 〔확인 필요〕`
 - 자기소개: 대한민국 〔교구명〕 〔소속 본당〕 신자 〔성명〕 〔세례명〕. 개인이 만드는 무료 안드로이드 묵주 기도 앱 「로사리움」. 광고·유료 기능·후원 없음. 교회의 공식 서비스가 아님.
-- 편지에 **앱을 만든 까닭**(회사가 아닌 개인·가족 모두 신자·가족의 부탁에서 시작·가 보기 어려운 성당의 간접 체험·경건하지 못한 다른 앱·수익 없음·허락을 구하는 까닭·바람)을 사용자 말 그대로 한 절로 적었다.
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- 요약에 **앱을 만든 까닭**(회사가 아닌 개인·가족 모두 신자·가족의 부탁에서 시작·가 보기 어려운 성당의 간접 체험·경건하고 기도문이 정확한 앱의 필요·수익 없음·허락을 구하는 까닭·바람)을 사용자 말 그대로 한 절로 적었다.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 c)** — 이런 문의를 받아 본 일이 드물 것이므로 근거를 함께 적었다(건축 저작권 보호 기간: 이탈리아 저작권법 633/1941 제25조 · 이름·모습에 대한 관리 주체의 정당한 관심 · 복제 규칙의 출처 주소). 확실하지 않은 곳은 「제가 이해한 바로는 … 다른 절차가 있으면 바로잡아 주십시오」라고 적었다: 「가상 공간」을 승인해 달라는 것도, 앱을 그쪽의 사업으로 인정해 달라는 것도 아니다. ① 피렌체 대성당의 **이름과 단순화한 가상 모형을 싣는 데 이의가 없는지**(건물은 수백 년 된 것이라 건축 저작권이 남아 있지 않다 — 저작권 이용 허락이 아니라 관리 주체에 대한 예의로 구하는 동의) ② 작품·이미지 복제에 적용되는 **규칙의 확인**(이탈리아 영토, 소유·관리는 Opera di Santa Maria del Fiore(대성당 관리 단체, 지방 공공단체 아님) — 문화유산법 107조는 직접 적용되지 않고 소유자 규칙이 문제다. 촬영물 이용 규정은 미확인(법률 검토 §1.3)) — 주로 영리 이용에 관한 규칙으로 읽었지만 짐작하지 않고 여쭌다 ③ 5번 **선택지** 가운데 고르기.
 - 모형: 내부(신랑·측랑·돔 아래 팔각·세 트리부나)를 실제의 약 45% 로 줄여 지음. 짓지 않은 곳·단순하게 바꾼 곳은 앱의 고지 글(`lib/church/church_catalog.dart` 의 `modelNote`)과 같은 내용이다.
 - 모형에 들어 있는 실제 작품 이미지: 북 측랑 벽화 3점(톨렌티노·호크우드: Sailko CC BY 3.0, 단테: PD-Art), 둥근 창 3점(도나텔로·기베르티 2, Sailko 올림, PD-Art).

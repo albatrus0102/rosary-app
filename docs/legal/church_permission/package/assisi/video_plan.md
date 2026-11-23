@@ -23,7 +23,7 @@
 | 10 | 1:28–1:34 | 성수대 앞에서 「성호 긋기」 | All’acquasantiera si fa il segno della croce. Solo gesti di preghiera: niente giochi, niente combattimenti. |
 | 11 | 1:34–1:42 | 촛불 봉헌대에서 「초 켜기」 → 정해진 지향 목록에서 하나 고름(글 입력 칸이 없음이 보이게) | Si accende una candela scegliendo l’intenzione fra frasi già fissate: nessun testo libero, nessuna chat. |
 | 12 | 1:42–1:50 | 신자석에 앉아 묵주 기도(묵주 패널이 보이게) → 「무릎 꿇고」로 바꿈 | Ci si siede o ci si inginocchia e si prega il Rosario. Nessuna funzione imita la Messa o i Sacramenti. |
-| 13 | 1:50–2:00 | 마침 카드(글자만) | Che cosa chiediamo: il Vostro nulla osta e la Vostra scelta fra le opzioni della lettera. Se lo preferite, togliamo il modello dall’app. Contatto: 〔이메일〕 |
+| 13 | 1:50–2:00 | 마침 카드(글자만) | Che cosa chiediamo: il Vostro nulla osta: basta rispondere alla lettera con un numero (①②③). Se lo preferite, togliamo il modello dall’app. Contatto: 〔이메일〕 |
 
 ## 첨부 화면 캡처 5장
 

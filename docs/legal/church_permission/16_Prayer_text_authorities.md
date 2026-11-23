@@ -1,8 +1,16 @@
 # 16. 외국어 기도문 권리자 — 묵주기도 본문 사용 허락 요청 (en · es · it · pt)
 
-작성일: 2026-11-23 · 작성: Claude Fable 5.2 · 근거: 다국어 조사 `prayer_sources.md`·`design.md`(Claude Opus 5.5, 2026-11-23 — 세션 작업 폴더의 조사 결과이며 저장소에는 아직 없다) + 이번에 공식 누리집에서 다시 확인한 주소 · 개인 정보는 모두 `〔 〕` 자리 표시(보내기 직전에 채운다. 로마자로 적는다).
+작성일: 2026-11-23 · 작성: Claude Fable 5.2 · 근거: 다국어 조사 `docs/i18n/prayer_sources.md`·`docs/i18n/design.md`(Claude Opus 5.5, 2026-11-23) + 이번에 공식 누리집에서 다시 확인한 주소 · 개인 정보는 모두 `〔 〕` 자리 표시(보내기 직전에 채운다. 로마자로 적는다).
 
 ## 0. 한눈에
+
+> **2026-11-23 2차 개정(사용자 승인 — `APPROVAL_ODDS.md` 4-3 의 6·7·8번)**
+> 1. **본문을 보내 달라고 청하지 않는다.** 쓰려는 본문을 받는 곳마다 `package/<id>/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 상대에게 일을 시키는 요청보다 「이대로 써도 됩니까」가 답하기 쉽다.
+> 2. 붙인 본문은 2026-11-23(UTC)에 vatican.va 의 『교리서 요약(Compendium)』 영어·스페인어·이탈리아어·포르투갈어판을 직접 내려받아 글자 그대로 옮긴 것이다(성호경·사도신경·주님의 기도·성모송·영광송·성모 찬송·신비 20단·응송과 마침 기도, 라틴어 병기). 변종 선택은 `docs/i18n/prayer_sources.md` 를 따랐다.
+> 3. **확인하지 못한 것은 지어내지 않고 〔확인 필요〕로 남겼다**: 파티마 기도(영어는 미국 책자의 흔한 형태를 「미확인」으로 붙임, es·it·pt 는 비워 둠) · USCCB 자체 본문(누리집을 열지 못함) · ICEL 2010 사도신경 전문 · 스페인·멕시코·이탈리아(2020)·브라질·포르투갈(2022) 미사 경본의 현행 문안 · 브라질 표기(vatican.va 포르투갈어판은 유럽 표기) · 전례 시기·대축일 영어 이름. 편지와 첨부에서 그렇게 솔직히 밝히고 알려 주시기를 청한다.
+> 4. 편지 본문은 약 250 낱말로 줄였다(누구인지 · 앱 한 문장과 경건함 한 줄 · 무엇을 왜 · 답 ①②③ · 붙임). 나머지는 요약 `summary.md` 의 「Details / Dettagli / Detalles / Detalhes」에 있다. 세부 선택지는 D1, D2 … 로 번호를 바꿨다.
+> 5. USCCB: 「누리집이 오류를 돌려줬다」는 문장을 뺐다. 인가(imprimatur) 물음은 「따로, 답하지 않으셔도 되는 물음」으로 요약에 옮겼다. 허락 정책 쪽에 전자우편이 표시되지 않으므로(APPROVAL_ODDS 2-6 확인) 전례 사무국 문의 양식이나 CCD 허락 담당 우편을 쓴다 〔확인 필요〕. ICEL: 첫 물음을 「Compendium 문안(전통 번역)을 쓰면 허락이 필요 없는지」로 올렸다.
+> 6. 아래 각 절의 한국어 요약에 남아 있는 「선택지 ①~⑦」은 요약의 세부 항목 D1~D7 을 가리킨다.
 
 - **근거 분류: (a) 저작권 이용 허락.** 기도 자체는 오래된 것이지만, 현대 번역문과 인가된 판본은 권리자가 있다. 그래서 여기서는 「이의 없음」이 아니라 **실어도 되는지, 조건이 무엇인지**를 묻는다. 공유 저작물이라 허락이 필요 없는 본문은 그렇게 알려 달라고 적었다.
 - 계획 언어: **영어·스페인어·이탈리아어**(en-US·en-GB, es-ES·es-419, it-IT). **포르투갈어(pt-BR·pt-PT)는 보류**이고 승인을 받은 뒤에만 낸다 — 승인 요청은 이번에 함께 보낸다.
@@ -37,82 +45,23 @@
 ### (가) 보낼 본문 (이탈리아어)
 
 A: diritti.lev@spc.va
-Oggetto: Richiesta di autorizzazione: testi delle preghiere del Rosario in un’app di preghiera gratuita e non commerciale
+Oggetto: App di preghiera gratuita «Rosarium»: posso usare questi testi di preghiera? (basta rispondere con un numero)
 
 Spettabile Libreria Editrice Vaticana, Ufficio Diritti,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. Sto realizzando, a titolo personale, «Rosarium», un’app gratuita per Android che aiuta a pregare il Rosario. È interamente non commerciale: non ha pubblicità, né funzioni a pagamento, né raccolte di offerte. Non è un servizio ufficiale della Chiesa, e lo dichiara. Non è ancora pubblicata.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario. È pensata con riverenza: serve soltanto a pregare, e nulla in essa imita la Messa o i Sacramenti.
 
-L’app è in preparazione in inglese, spagnolo e italiano (e, più avanti, in portoghese). Non voglio tradurre io le preghiere dal coreano: desidero mostrare, parola per parola, i testi che la Chiesa nei diversi Paesi prega realmente. Vi scrivo per chiedere che cosa posso usare e a quali condizioni. Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla o indicarmi a chi scrivere.
+Per le edizioni in inglese, spagnolo, italiano e portoghese vorrei mostrare, solo come testo (l’app non li legge mai ad alta voce), i nomi dei venti misteri del Rosario e alcune preghiere comuni così come compaiono nell’Appendice del Compendio del Catechismo (© 2005 Libreria Editrice Vaticana), e usare la grafia latina con gli accenti del Compendio. Allego i testi esatti, copiati dal sito vatican.va, ciascuno con la sua fonte. Vi chiedo di confermarli o correggerli, e di dirmi se posso usarli e con quale dicitura.
 
-**Chi sono e perché ho fatto quest’app**
+Basta rispondere a questa e-mail con un numero:
 
-Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è tutta la mia famiglia; nostro figlio 〔o: nostra figlia〕 ha ricevuto il Battesimo da neonato e ha servito all’altare come ministrante. L’app è nata in casa: i miei familiari desideravano poter pregare il Rosario come lo pregavamo nella parrocchia che frequentavamo un tempo. Strada facendo ho desiderato offrire, anche a chi forse non potrà mai visitarle, l’esperienza — almeno indiretta — di pregare il Rosario in alcune chiese celebri. Di recente il «metaverso» è tornato a far parlare di sé (in Corea, per esempio, nella comunità buddista), e ho letto molti cattolici augurarsi qualcosa di simile per la Chiesa cattolica. Ho cercato altre app di «chiese virtuali», ma in molte ho trovato elementi poco rispettosi — avatar che salgono liberamente sull’altare — oppure testi di preghiera sbagliati. Per questo ho deciso di farne una fatta bene, con rispetto.
+① Nessuna obiezione: autorizzazione nei termini descritti (eventuale dicitura: ______).
+② Autorizzazione a queste condizioni o con queste correzioni: ______
+③ Preferiamo che il nostro testo non sia usato (non lo userò).
 
-Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di alcuni testi protetti, li inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
+In allegato: i testi che intendo usare (ciascuno con la sua fonte), una scheda di una pagina con tutti i dettagli, 4 schermate e un breve video: 〔YouTube 링크〕
 
-**Come custodiamo la riverenza**
-
-Poiché è un luogo di preghiera, la riverenza non è lasciata soltanto alla buona volontà degli utenti: è una regola scritta nell’app.
-
-- **Nel presbiterio non si entra.** In ogni chiesa l’area dell’altare è una zona inaccessibile: l’avatar si ferma ai piedi dei gradini. Lo verificano prove automatiche, chiesa per chiesa.
-- **Nessuna imitazione della Messa o dei Sacramenti.** Dentro la chiesa l’app dichiara: «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti (Confessione, Eucaristia, ecc.)».
-- **Solo gesti di preghiera.** Inchino, segno della croce, un saluto, sedersi o inginocchiarsi per pregare, accendere una candela. La candela si accende solo al portacandele; il segno della croce è proposto all’acquasantiera, dove il modello ne ha una; il saluto con la mano è possibile solo vicino all’ingresso (altrove diventa un inchino). Non ci sono giochi, combattimenti né scherzi.
-- **Nessuna chat.** Anche l’intenzione della candela si sceglie fra frasi di preghiera già fissate, senza testo libero: non possono comparire parole offensive.
-- **Testi di preghiera fedeli.** I testi coreani sono stati confrontati parola per parola con il libro di preghiere ufficiale dei Vescovi di Corea; nelle altre lingue saranno usati soltanto i testi ufficiali.
-- **Il calendario liturgico.** Il colore del paliotto dell’altare e gli addobbi cambiano con i tempi liturgici.
-- **Chiarezza su ciò che è.** Ogni chiesa porta l’avviso che è un modello virtuale semplificato, diverso dalla chiesa reale e non approvato; le opere ancora protette dal diritto d’autore sono sostituite da forme astratte.
-- **Niente pubblicità, niente pagamenti, nessuna vendita di dati.**
-
-**1. Che cosa chiedo, e perché**
-
-Forse richieste come questa non Vi arrivano spesso; spiego quindi su quali basi, per quanto ne so, mi rivolgo a Voi. Il Compendio del Catechismo reca la nota «© Copyright 2005 – Libreria Editrice Vaticana», e la LEV cura i diritti dei documenti pontifici (https://www.vatican.va/roman_curia/institutions_connected/lev/docs_lev/copyright_en.htm); la Vostra pagina sui diritti indica questo indirizzo per le richieste di autorizzazione (https://www.libreriaeditricevaticana.va/en/content/16-foreign-rights).
-
-È una questione di diritto d’autore. Le preghiere sono antiche, ma una traduzione moderna o un’edizione approvata è di norma protetta, e spetta al titolare autorizzarne la riproduzione. Chiedo quindi:
-
-a) se posso riportare i nomi dei quattro gruppi di misteri e dei venti misteri del Rosario, così come compaiono nell’Appendice del Compendio del Catechismo della Chiesa Cattolica (2005) e nella Lettera apostolica «Rosarium Virginis Mariae» (2002), in inglese, spagnolo, italiano e portoghese;
-b) se, dove una Conferenza episcopale non mi indichi un proprio testo, posso riportare le preghiere comuni dell’Appendice del Compendio (Segno della croce, Gloria al Padre, Ave Maria, Salve Regina) in quelle lingue;
-c) se posso usare la grafia latina con gli accenti del Compendio (ad es. «Mystéria gaudiósa», «Annuntiátio») per l’opzione «Pregare in latino»;
-d) con quale dicitura (ad es. «© Libreria Editrice Vaticana») e se è previsto un compenso per un’app gratuita.
-
-Se un testo è di pubblico dominio e non richiede autorizzazione, Vi sarei grato se me lo indicaste. Questo è quanto ho capito: Vi prego di correggermi se vale una procedura diversa.
-
-Per l’opzione «Pregare in latino» uso i testi latini tradizionali (Pater noster, Ave Maria, Gloria Patri, Symbolum Apostolorum, Salve Regina, «Deus, cuius Unigenitus»), antichi di secoli, che ritengo di pubblico dominio e per i quali non chiedo autorizzazione: se sbaglio, Vi prego di dirmelo.
-
-**2. Come sarebbero usati i testi**
-
-- Mostrati come testo sullo schermo, senza modifiche, con la dicitura che indicherete, nella schermata di preghiera e in una pagina «Fonti delle preghiere».
-- Solo testo. L’app non legge mai ad alta voce le preghiere in queste lingue né in latino: né voce registrata, né voce sintetica (IA), né sintesi vocale del dispositivo. (Soltanto l’edizione coreana ha una voce, con una richiesta separata alla Conferenza episcopale coreana.)
-- Per la preghiera a due cori, ogni preghiera è mostrata in due parti (guida e risposta); nulla è modificato, e le due parti insieme formano il testo completo. Una «vista breve» facoltativa mostra solo le prime parole delle preghiere che l’utente sa a memoria.
-- L’app non contiene testi della Sacra Scrittura (solo i riferimenti), né testi della Messa, né canti.
-- App gratuita su Google Play, disponibile in tutto il mondo.
-
-**3. Opzioni (si può rispondere indicando soltanto i numeri)**
-
-☐ ① I testi indicati possono essere usati così come sono, con questa dicitura: ______ (opzione di base)
-☐ ② Il testo ufficiale da usare è questo (allegato, o a questo link): ______
-☐ ③ Questi testi sono di pubblico dominio, o non richiedono la nostra autorizzazione: ______
-☐ ④ Mostrare la preghiera in due parti (guida / risposta) e la «vista breve»: ☐ va bene ☐ si mostri solo il testo completo
-☐ ⑤ Si aggiunga un link alla fonte ufficiale: ______
-☐ ⑥ È necessaria una domanda formale, una licenza o un compenso. Procedura: ______
-☐ ⑦ Preferiamo che il nostro testo non sia usato nell’app (non lo userò).
-
-**4. Che cosa farò secondo la Vostra risposta**
-
-- ①: userò il testo esattamente e mostrerò la dicitura indicata. ②: passerò all’edizione che indicherete. ③: lo segnalerò come di pubblico dominio, con la sua fonte. ④ e ⑤: farò come indicherete. ⑥: seguirò la procedura e non pubblicherò il Vostro testo prima di averla completata. ⑦: non lo userò.
-- Se non ricevo risposta, userò soltanto i nomi dei misteri (brevi titoli tradizionali), indicando la fonte, e non riporterò i testi delle preghiere dell’Appendice del Compendio; il latino sarà scritto senza gli accenti dell’edizione del Compendio.
-- In ogni momento, anche dopo la pubblicazione, correggerò o toglierò ciò che mi chiederete.
-- Se concederete un permesso, ne indicherò i limiti all’interno dell’app e non aggiungerò, oltre quei limiti, elementi che possano creare equivoci. Se lo ritenete utile, chiederò volentieri a persone da Voi indicate di esaminare l’app.
-
-**Materiali**
-
-1. Scheda di una pagina (PDF, in italiano), allegata.
-2. Video non in elenco su YouTube (1–2 minuti), realizzato da me a partire dall’app, con sottotitoli in italiano: 〔YouTube 링크〕
-3. 4 schermate, allegate.
-
-Non invio l’app stessa: la scheda, il video e le schermate mostrano ciò che l’utente vede. Il video mostra l’edizione coreana, perché non inserirò il Vostro testo nell’app prima di avere la Vostra risposta.
-
-Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
+Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Corea del Sud
@@ -120,7 +69,9 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 244 낱말로 줄였다(이전 약 1473 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-lev/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-lev/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: 신비 이름(en·es·it·pt 20단 전부), 부록 공통 기도(성호경·영광송·성모송·성모 찬송, 4개 언어), 라틴어 강세 표기 본문 — 모두 vatican.va 에서 그대로 옮김(확인). 〔확인 필요〕: 영광송 라틴어의 「sæ´cula」 강세 표기 한 곳.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ① 『교리서 요약(Compendium)』 부록과 『동정 마리아의 묵주기도』에 나오는 신비 4종·20단 이름(en·es·it·pt)을 실어도 되는지 ② 주교회의가 자기 본문을 알려 주지 않는 곳에서는 Compendium 부록의 공통 기도(성호경·영광송·성모송·성모 찬송)를 실어도 되는지 ③ 라틴어 토글에 Compendium 의 강세 부호 표기를 써도 되는지 ④ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -139,79 +90,23 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 ### (가) 보낼 본문 (영어)
 
 To: permission@eliturgy.org
-Subject: Permission request: Rosary prayer texts in a free, non-commercial prayer app
+Subject: Free, non-commercial Rosary app “Rosarium”: may I use these prayer texts? (a one-number reply is enough)
 
 Dear ICEL Permissions,
 
-My name is 〔성명〕 (baptismal name: 〔세례명〕). I am a lay Catholic of 〔소속 본당〕 parish, 〔교구명〕, South Korea. As an individual I am making “Rosarium”, a free Android app that helps people pray the Rosary. It is entirely non-commercial: no advertising, no paid features, no donations. It is not an official service of the Church, and it says so. It has not been published yet.
+My name is 〔성명〕 (baptismal name: 〔세례명〕). I am a lay Catholic of 〔소속 본당〕 parish, 〔교구명〕, South Korea. As an individual I am preparing “Rosarium”, a free, non-commercial Android app (no advertising, no payments) that helps people pray the Rosary. It is made to be reverent: it is for prayer only, and nothing in it imitates the Mass or the sacraments.
 
-The app is being prepared in English. I do not want to translate the prayers myself from Korean: I want to show, word for word, the texts that the Church in English-speaking countries actually prays. I am writing to ask what I may use, and on what terms. If this request belongs to another office, I would be grateful if you would forward it or tell me whom to write to.
+For the English edition I would like to show the Apostles’ Creed as text only (the app never reads English prayers aloud). I attach the wording I intend to use, with its source. Because The Roman Missal is © 2010 ICEL, I ask you: if I use the wording attached — taken from the Compendium of the Catechism, not from the Missal — do I need your permission at all? And if you would rather I used your 2010 translation, may I, and with what credit line?
 
-**Who I am, and why I made this app**
+A one-number reply is enough:
 
-I am not a company but one person. I have been a Catholic for many years and my whole family is Catholic; our child was baptised as an infant and served at the altar. The app began at home: my family asked to be able to pray the Rosary the way we used to pray it in the parish we once attended. Along the way I also wished to let people experience, at least indirectly, praying the Rosary in famous churches they may never be able to visit. Recently the “metaverse” has drawn attention again (in Korea, for example, in the Buddhist community), and I have seen many Catholics say they wish there were something like it for the Catholic Church. I looked at other virtual-church apps, but many had irreverent elements — avatars walking freely up onto the altar — or incorrect prayer texts. So I decided to make a proper, reverent one.
+① No objection — permission as described (credit line, if any: ______).
+② Permission with conditions or corrections — please tell me: ______
+③ Please do not use our text (I will not use it).
 
-There is no revenue model at all: no advertising, no paid features; I bear all the costs of the service myself, and it is completely free. It began from a simple wish to help many of the faithful. In the process I learned that a number of elements require permission, so I am writing, one by one, to each church, diocese and rights holder concerned. For now I have left out everything that I judged could raise a copyright issue. If, to deepen Catholic devotional life and to help the wider public take an interest in the Church, you are willing to permit the use of certain protected texts, I will include them (see the options). My hope is that Catholics will have more occasions to pray the Rosary, and that those who are not Catholic may find the Church more approachable.
+Attached: the texts I intend to use (each with its source), a one-page summary with all the details, 4 screenshots, and a short video: 〔YouTube 링크〕
 
-**How we keep it reverent**
-
-Because this is a place of prayer, reverence is not left to users’ good will alone: it is built into the app as a rule.
-
-- **The sanctuary cannot be entered.** In every church the altar area is a no-entry zone: the avatar stops at the foot of the steps. Automated tests check this, church by church.
-- **No imitation of the Mass or the sacraments.** Inside the church the app states: “Prayer in a virtual church does not replace attending Mass or the sacraments (Confession, the Eucharist, and so on).”
-- **Only prayerful actions.** A bow, the sign of the cross, a greeting, sitting or kneeling to pray, lighting a candle. A candle can be lit only at the candle stand; the sign of the cross is offered at the holy water font, where the model has one; a wave of greeting is possible only near the entrance (elsewhere it becomes a bow). There are no games, no combat, no jokes.
-- **No chat.** Even a candle intention is chosen from fixed, prayerful phrases, with no free text, so no abusive words can appear.
-- **Faithful prayer texts.** The Korean texts were checked word by word against the official prayer book of the Korean bishops; in other languages only the official texts will be used.
-- **The liturgical calendar.** The colour of the altar frontal and the seasonal decorations change with the liturgical season.
-- **Honest about what it is.** Each church carries a notice that it is a simplified virtual model, different from the real church and not endorsed; works of art still in copyright are replaced by abstract forms.
-- **No advertising, no payments, no selling of data.**
-
-**1. What I am asking, and why**
-
-Requests like this may not reach you often, so let me say on what basis, as far as I understand it, I am writing to you. Your copyright page states that The Roman Missal is © 2010 ICEL and gives this address for permission requests (https://www.icelweb.org/copyright.htm).
-
-This is a copyright question. The prayers are ancient, but a modern translation or an approved edition is normally protected, and it is for the rights holder to authorise its reproduction. So I ask:
-
-a) that you send me, or point me to, the authoritative text of the Apostles’ Creed in the translation of The Roman Missal (© 2010 ICEL), and tell me whether I may show it in a free app, and on what terms;
-b) whether the English names of the liturgical seasons and solemnities (Advent, Christmas Time, Ordinary Time, Lent, the Paschal Triduum, Easter Time …) need your permission;
-c) what credit line you require.
-
-Where a text is in the public domain and needs no permission, I would be grateful if you would simply tell me so. This is my understanding; please correct me if a different procedure applies.
-
-**2. How the texts would be used**
-
-- Shown as text on the screen, unchanged, with the credit line you specify, on the prayer screen and on a “Prayer sources” page.
-- Text only. English prayers are never read aloud by the app: no recorded voice, no synthetic (AI) voice, no text-to-speech. (Only the Korean edition has a voice, under a separate request to the Korean bishops’ conference.)
-- For praying in two parts, each prayer is shown as a leader’s part and a response; nothing is altered, and the two parts together are the complete text. An optional “short view” shows only the opening words of prayers the user knows by heart.
-- The app contains no Scripture text (references only), no Mass texts and no hymns.
-- A free app on Google Play, available worldwide.
-
-**3. Options (you can answer by replying with the numbers)**
-
-☐ ① You may use the texts listed above as they stand, with this credit line: ______ (basic option)
-☐ ② The official text to use is this one (attached, or at this link): ______
-☐ ③ These texts are in the public domain, or need no permission from us: ______
-☐ ④ Showing a prayer in two parts (leader / response) and the “short view”: ☐ acceptable ☐ please show the full text only
-☐ ⑤ Please add a link to the official source: ______
-☐ ⑥ A formal application, licence or fee is required. Procedure: ______
-☐ ⑦ We prefer that our text is not used in the app (I will not use it).
-
-**4. What I will do with your answer**
-
-- ①: I will use the text exactly and show your credit line. ②: I will change to the edition you name. ③: I will mark it as public domain, with its source. ④ and ⑤: I will do as you say. ⑥: I will follow the procedure and will not publish your text before it is complete. ⑦: I will not use it.
-- If I receive no answer, I will not use the ICEL translation. The app will show an older traditional English translation of the Apostles’ Creed that is in the public domain, with its source.
-- At any time, also after publication, I will correct or remove whatever you ask.
-- If you grant permission, the app will state the scope of that permission inside the app, and I will not add anything beyond it that could cause misunderstanding. If you wish, I will gladly ask persons you designate to review the app.
-
-**Materials**
-
-1. A one-page summary (PDF, in English), attached.
-2. An unlisted YouTube video (1–2 minutes), made by me from the app, with English captions: 〔YouTube 링크〕
-3. 4 screenshots, attached.
-
-I am not sending the app itself: the summary, the video and the screenshots show what the user sees. The video shows the Korean edition, because I will not put your text into the app before I have your answer.
-
-Thank you very much for your time. May the peace of the Lord be with you.
+If this request belongs to another office, I would be grateful if you would forward it. Thank you very much for your time; may the peace of the Lord be with you.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, South Korea
@@ -219,7 +114,9 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 247 낱말로 줄였다(이전 약 1439 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-icel/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-icel/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: 사도신경 A(Compendium 영어판 — 확인), B(Roman Missal 2010 ICEL 번역 — 첫 구절만 있고 나머지 〔확인 필요〕), 전례 시기 이름 여섯(추정 〔확인 필요〕, 대축일 이름 목록 〔확인 필요〕). 첫 물음을 「전통 번역(Compendium 문안)을 쓰면 허락이 필요 없는지」로 올렸다.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ① 『로마 미사 경본』 2010 ICEL 번역의 사도신경을 무료 앱에 실어도 되는지와 조건 ② 전례 시기·대축일의 영어 이름에 허락이 필요한지 ③ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -233,86 +130,28 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 | 받는 곳 | 전자우편 | 언어 | 변종 | 확인 |
 |---|---|---|---|---|
-| **미국 주교회의(USCCB) 허락 담당** | **〔확인 필요〕** | 영어 | en-US | 다국어 조사(prayer_sources.md §2): USCCB 누리집이 403 을 돌려줘 본문·연락처를 열지 못했다. 검색 결과로 「CCD Permissions」 전화만 보았고 **전자우편 주소는 확인하지 못했다** 〔확인 필요: 사용자가 브라우저로 usccb.org 의 Permissions 쪽을 열어 주소·신청 양식 확인〕. 「인터넷 게시용 문서 자료는 현재 허락하지 않는다」는 문구(검색 결과, 날짜 미상)도 원문 미확인 |
+| **미국 주교회의(USCCB) 허락 담당** | **〔확인 필요〕** | 영어 | en-US | 다국어 조사(prayer_sources.md §2): USCCB 누리집이 403 을 돌려줘 본문·연락처를 열지 못했다. 검색 결과로 「CCD Permissions」 전화만 보았고 **전자우편 주소는 확인하지 못했다**. `APPROVAL_ODDS.md` 2-6: 허락 정책 쪽(https://www.usccb.org/es/node/48245)에는 담당(CCD 허락 부국장)의 전화·우편 주소만 있고 전자우편이 표시되지 않는다(확인) → 전례 사무국 문의 양식 또는 CCD 허락 담당 우편으로 보낸다 〔확인 필요: 사용자가 브라우저로 usccb.org 의 Permissions 쪽을 열어 주소·신청 양식 확인〕. 「인터넷 게시용 문서 자료는 현재 허락하지 않는다」는 문구(검색 결과, 날짜 미상)도 원문 미확인 |
 
 ### (가) 보낼 본문 (영어)
 
 To: 〔확인 필요〕
-Subject: Permission request: Rosary prayer texts in a free, non-commercial prayer app
+Subject: Free, non-commercial Rosary app “Rosarium”: may I use these prayer texts? (a one-number reply is enough)
 
 Dear USCCB Permissions,
 
-My name is 〔성명〕 (baptismal name: 〔세례명〕). I am a lay Catholic of 〔소속 본당〕 parish, 〔교구명〕, South Korea. As an individual I am making “Rosarium”, a free Android app that helps people pray the Rosary. It is entirely non-commercial: no advertising, no paid features, no donations. It is not an official service of the Church, and it says so. It has not been published yet.
+My name is 〔성명〕 (baptismal name: 〔세례명〕). I am a lay Catholic of 〔소속 본당〕 parish, 〔교구명〕, South Korea. As an individual I am preparing “Rosarium”, a free, non-commercial Android app (no advertising, no payments) that helps people pray the Rosary. It is made to be reverent: it is for prayer only, and nothing in it imitates the Mass or the sacraments.
 
-The app is being prepared in English. I do not want to translate the prayers myself from Korean: I want to show, word for word, the texts that the Church in the United States actually prays. I am writing to ask what I may use, and on what terms. If this request belongs to another office, I would be grateful if you would forward it or tell me whom to write to.
+For users in the United States I would like to show the prayers of the Rosary as text only (the app never reads English prayers aloud). I attach the exact wording I intend to use, with the source of each text. I should say plainly that I have not been able to consult your own published texts: the wording attached comes from the Compendium of the Catechism on vatican.va, and the Fatima prayer is a form I could not verify. Would you kindly confirm or correct these texts, and tell me whether I may use them, and with what credit line?
 
-**Who I am, and why I made this app**
+A one-number reply is enough:
 
-I am not a company but one person. I have been a Catholic for many years and my whole family is Catholic; our child was baptised as an infant and served at the altar. The app began at home: my family asked to be able to pray the Rosary the way we used to pray it in the parish we once attended. Along the way I also wished to let people experience, at least indirectly, praying the Rosary in famous churches they may never be able to visit. Recently the “metaverse” has drawn attention again (in Korea, for example, in the Buddhist community), and I have seen many Catholics say they wish there were something like it for the Catholic Church. I looked at other virtual-church apps, but many had irreverent elements — avatars walking freely up onto the altar — or incorrect prayer texts. So I decided to make a proper, reverent one.
+① No objection — permission as described (credit line, if any: ______).
+② Permission with conditions or corrections — please tell me: ______
+③ Please do not use our text (I will not use it).
 
-There is no revenue model at all: no advertising, no paid features; I bear all the costs of the service myself, and it is completely free. It began from a simple wish to help many of the faithful. In the process I learned that a number of elements require permission, so I am writing, one by one, to each church, diocese and rights holder concerned. For now I have left out everything that I judged could raise a copyright issue. If, to deepen Catholic devotional life and to help the wider public take an interest in the Church, you are willing to permit the use of certain protected texts, I will include them (see the options). My hope is that Catholics will have more occasions to pray the Rosary, and that those who are not Catholic may find the Church more approachable.
+Attached: the texts I intend to use (each with its source), a one-page summary with all the details, 4 screenshots, and a short video: 〔YouTube 링크〕
 
-**How we keep it reverent**
-
-Because this is a place of prayer, reverence is not left to users’ good will alone: it is built into the app as a rule.
-
-- **The sanctuary cannot be entered.** In every church the altar area is a no-entry zone: the avatar stops at the foot of the steps. Automated tests check this, church by church.
-- **No imitation of the Mass or the sacraments.** Inside the church the app states: “Prayer in a virtual church does not replace attending Mass or the sacraments (Confession, the Eucharist, and so on).”
-- **Only prayerful actions.** A bow, the sign of the cross, a greeting, sitting or kneeling to pray, lighting a candle. A candle can be lit only at the candle stand; the sign of the cross is offered at the holy water font, where the model has one; a wave of greeting is possible only near the entrance (elsewhere it becomes a bow). There are no games, no combat, no jokes.
-- **No chat.** Even a candle intention is chosen from fixed, prayerful phrases, with no free text, so no abusive words can appear.
-- **Faithful prayer texts.** The Korean texts were checked word by word against the official prayer book of the Korean bishops; in other languages only the official texts will be used.
-- **The liturgical calendar.** The color of the altar frontal and the seasonal decorations change with the liturgical season.
-- **Honest about what it is.** Each church carries a notice that it is a simplified virtual model, different from the real church and not endorsed; works of art still in copyright are replaced by abstract forms.
-- **No advertising, no payments, no selling of data.**
-
-**1. What I am asking, and why**
-
-Requests like this may not reach you often, so let me say on what basis, as far as I understand it, I am writing to you. I understand that the texts on your website and in your publications are your copyright, and that your Guidelines for the Publication of Liturgical Books (https://www.usccb.org/committees/divine-worship/policies/guidelines-for-the-publication-of-liturgical-books) ask for Church approval of prayer books. I could not open your web pages from where I am (they returned an error), so I have not been able to read the official texts or your permissions policy myself. That is why I ask you for the texts as well as for the permission.
-
-This is a copyright question. The prayers are ancient, but a modern translation or an approved edition is normally protected, and it is for the rights holder to authorise its reproduction. So I ask:
-
-a) that you send me, or point me to, the authoritative text of each prayer below in the form approved for use in the United States, so that I do not copy an unverified version from elsewhere;
-b) the prayers are: the Sign of the Cross, the Apostles’ Creed, the Our Father, the Hail Mary, the Glory Be, the Fatima prayer (“O my Jesus …”), the Hail Holy Queen with its versicle, and the closing prayer (“O God, whose only-begotten Son …”), together with the names of the twenty mysteries — which form of each you ask Catholics in the United States to use, and, if you can say, where the texts used in the United Kingdom and Ireland differ;
-c) whether I may show these texts in a free app, and with what credit line. I understand that you may not currently grant permission for posting texts on the internet; if that applies to an app, please tell me, and I will not use your text. If the copyright in any of them belongs to ICEL or to someone else, please tell me whom to ask;
-d) whether an app of this kind needs an imprimatur or other Church approval under your Guidelines for the Publication of Liturgical Books, and whom I should ask;
-
-Where a text is in the public domain and needs no permission, I would be grateful if you would simply tell me so. This is my understanding; please correct me if a different procedure applies.
-
-**2. How the texts would be used**
-
-- Shown as text on the screen, unchanged, with the credit line you specify, on the prayer screen and on a “Prayer sources” page.
-- Text only. English prayers are never read aloud by the app: no recorded voice, no synthetic (AI) voice, no text-to-speech. (Only the Korean edition has a voice, under a separate request to the Korean bishops’ conference.)
-- For praying in two parts, each prayer is shown as a leader’s part and a response; nothing is altered, and the two parts together are the complete text. An optional “short view” shows only the opening words of prayers the user knows by heart.
-- The app contains no Scripture text (references only), no Mass texts and no hymns.
-- A free app on Google Play, available worldwide.
-
-**3. Options (you can answer by replying with the numbers)**
-
-☐ ① You may use the texts listed above as they stand, with this credit line: ______ (basic option)
-☐ ② The official text to use is this one (attached, or at this link): ______
-☐ ③ These texts are in the public domain, or need no permission from us: ______
-☐ ④ Showing a prayer in two parts (leader / response) and the “short view”: ☐ acceptable ☐ please show the full text only
-☐ ⑤ Please add a link to the official source: ______
-☐ ⑥ A formal application, licence or fee is required. Procedure: ______
-☐ ⑦ We prefer that our text is not used in the app (I will not use it).
-☐ ⑧ Church approval (imprimatur) for an app of this kind: ☐ not needed ☐ needed — please ask: ______
-
-**4. What I will do with your answer**
-
-- ①: I will use the text exactly and show your credit line. ②: I will change to the edition you name. ③: I will mark it as public domain, with its source. ④ and ⑤: I will do as you say. ⑥: I will follow the procedure and will not publish your text before it is complete. ⑦: I will not use it.
-- If I receive no answer, I will not copy any text from your website or publications. The English (US) edition will use only traditional texts that are clearly in the public domain, with their source shown.
-- At any time, also after publication, I will correct or remove whatever you ask.
-- If you grant permission, the app will state the scope of that permission inside the app, and I will not add anything beyond it that could cause misunderstanding. If you wish, I will gladly ask persons you designate to review the app.
-
-**Materials**
-
-1. A one-page summary (PDF, in English), attached.
-2. An unlisted YouTube video (1–2 minutes), made by me from the app, with English captions: 〔YouTube 링크〕
-3. 4 screenshots, attached.
-
-I am not sending the app itself: the summary, the video and the screenshots show what the user sees. The video shows the Korean edition, because I will not put your text into the app before I have your answer.
-
-Thank you very much for your time. May the peace of the Lord be with you.
+If this request belongs to another office, I would be grateful if you would forward it. Thank you very much for your time; may the peace of the Lord be with you.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, South Korea
@@ -320,8 +159,10 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 미국에서 묵주기도에 쓰는 본문(성호경·사도신경·주님의 기도·성모송·영광송·파티마 기도·성모 찬송과 응송·마침 기도)과, 「Prayers of the Rosary」 쪽의 전통문을 무료 앱에 실어도 되는지 ② 그중 USCCB 저작권인 것이 있는지(인터넷 게시 허락을 하지 않는다는 방침이 앱에도 적용되는지) ③ 이런 앱에 교회 인가(임프리마투르)가 필요한지, 어디에 물어야 하는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 261 낱말로 줄였다(이전 약 1662 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-usccb/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-usccb/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: 성호경·사도신경·주님의 기도·성모송·영광송·성모 찬송(USA version)·신비 20단·응송과 마침 기도 — Compendium 영어판에서 그대로 옮김(확인). 〔확인 필요〕: **USCCB 자체 본문 전부**(누리집을 열지 못함 — 편지에서 솔직히 밝히고 확인·수정을 청함), 파티마 기도(미국 책자의 흔한 형태, 추정), 사도신경을 Compendium 문안으로 할지 ICEL 2010 으로 할지. 「누리집이 오류를 돌려줬다」는 문장은 뺐고, 인가(imprimatur) 물음은 「따로, 답하지 않으셔도 되는 물음」으로 요약에 옮겼다.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 미국에서 묵주기도에 쓰는 본문(성호경·사도신경·주님의 기도·성모송·영광송·파티마 기도·성모 찬송과 응송·마침 기도)과, 「Prayers of the Rosary」 쪽의 전통문을 무료 앱에 실어도 되는지 ② 그중 USCCB 저작권인 것이 있는지(인터넷 게시 허락을 하지 않는다는 방침이 앱에도 적용되는지) ③ 이런 앱에 교회 인가(임프리마투르)가 필요한지, 어디에 물어야 하는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함 ⑧ 교회 인가(임프리마투르) 필요 여부
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -339,81 +180,23 @@ Thank you very much for your time. May the peace of the Lord be with you.
 ### (가) 보낼 본문 (영어)
 
 To: Liturgy.Office@cbcew.org.uk
-Subject: Permission request: Rosary prayer texts in a free, non-commercial prayer app
+Subject: Free, non-commercial Rosary app “Rosarium”: may I use these prayer texts? (a one-number reply is enough)
 
 Dear Liturgy Office,
 
-My name is 〔성명〕 (baptismal name: 〔세례명〕). I am a lay Catholic of 〔소속 본당〕 parish, 〔교구명〕, South Korea. As an individual I am making “Rosarium”, a free Android app that helps people pray the Rosary. It is entirely non-commercial: no advertising, no paid features, no donations. It is not an official service of the Church, and it says so. It has not been published yet.
+My name is 〔성명〕 (baptismal name: 〔세례명〕). I am a lay Catholic of 〔소속 본당〕 parish, 〔교구명〕, South Korea. As an individual I am preparing “Rosarium”, a free, non-commercial Android app (no advertising, no payments) that helps people pray the Rosary. It is made to be reverent: it is for prayer only, and nothing in it imitates the Mass or the sacraments.
 
-The app is being prepared in English, with a separate text file for users in Great Britain and Ireland. I do not want to translate the prayers myself from Korean: I want to show, word for word, the texts that the Church in England and Wales actually prays. I am writing to ask what I may use, and on what terms. If this request belongs to another office, I would be grateful if you would forward it or tell me whom to write to.
+For users in Great Britain and Ireland I would like to show the prayers of the Rosary as text only (the app never reads English prayers aloud). I attach the exact wording I intend to use, with the source of each text: it comes from the Compendium of the Catechism on vatican.va (with its “UK version” of the Hail Holy Queen), and I have not yet compared it line by line with your “Traditional Prayers” pages; the Fatima prayer is a form I could not verify. Would you kindly confirm or correct these texts, tell me whose permission each needs, and what credit line to show?
 
-**Who I am, and why I made this app**
+A one-number reply is enough:
 
-I am not a company but one person. I have been a Catholic for many years and my whole family is Catholic; our child was baptised as an infant and served at the altar. The app began at home: my family asked to be able to pray the Rosary the way we used to pray it in the parish we once attended. Along the way I also wished to let people experience, at least indirectly, praying the Rosary in famous churches they may never be able to visit. Recently the “metaverse” has drawn attention again (in Korea, for example, in the Buddhist community), and I have seen many Catholics say they wish there were something like it for the Catholic Church. I looked at other virtual-church apps, but many had irreverent elements — avatars walking freely up onto the altar — or incorrect prayer texts. So I decided to make a proper, reverent one.
+① No objection — permission as described (credit line, if any: ______).
+② Permission with conditions or corrections — please tell me: ______
+③ Please do not use our text (I will not use it).
 
-There is no revenue model at all: no advertising, no paid features; I bear all the costs of the service myself, and it is completely free. It began from a simple wish to help many of the faithful. In the process I learned that a number of elements require permission, so I am writing, one by one, to each church, diocese and rights holder concerned. For now I have left out everything that I judged could raise a copyright issue. If, to deepen Catholic devotional life and to help the wider public take an interest in the Church, you are willing to permit the use of certain protected texts, I will include them (see the options). My hope is that Catholics will have more occasions to pray the Rosary, and that those who are not Catholic may find the Church more approachable.
+Attached: the texts I intend to use (each with its source), a one-page summary with all the details, 4 screenshots, and a short video: 〔YouTube 링크〕
 
-**How we keep it reverent**
-
-Because this is a place of prayer, reverence is not left to users’ good will alone: it is built into the app as a rule.
-
-- **The sanctuary cannot be entered.** In every church the altar area is a no-entry zone: the avatar stops at the foot of the steps. Automated tests check this, church by church.
-- **No imitation of the Mass or the sacraments.** Inside the church the app states: “Prayer in a virtual church does not replace attending Mass or the sacraments (Confession, the Eucharist, and so on).”
-- **Only prayerful actions.** A bow, the sign of the cross, a greeting, sitting or kneeling to pray, lighting a candle. A candle can be lit only at the candle stand; the sign of the cross is offered at the holy water font, where the model has one; a wave of greeting is possible only near the entrance (elsewhere it becomes a bow). There are no games, no combat, no jokes.
-- **No chat.** Even a candle intention is chosen from fixed, prayerful phrases, with no free text, so no abusive words can appear.
-- **Faithful prayer texts.** The Korean texts were checked word by word against the official prayer book of the Korean bishops; in other languages only the official texts will be used.
-- **The liturgical calendar.** The colour of the altar frontal and the seasonal decorations change with the liturgical season.
-- **Honest about what it is.** Each church carries a notice that it is a simplified virtual model, different from the real church and not endorsed; works of art still in copyright are replaced by abstract forms.
-- **No advertising, no payments, no selling of data.**
-
-**1. What I am asking, and why**
-
-Requests like this may not reach you often, so let me say on what basis, as far as I understand it, I am writing to you. Your copyright page (https://liturgyoffice.org/Resources/Copyright/index.shtml) explains that most liturgical texts belong to ICEL and that a permanent publication should ask the rights holder directly; your “Traditional Prayers” page (https://liturgyoffice.org/Prayer/Traditional/index.shtml) is marked © CBCEW.
-
-This is a copyright question. The prayers are ancient, but a modern translation or an approved edition is normally protected, and it is for the rights holder to authorise its reproduction. So I ask:
-
-a) that you send me, or point me to, the authoritative text of each prayer below in the form approved for use in England and Wales, so that I do not copy an unverified version from elsewhere;
-b) whether the traditional prayers listed on your “Traditional Prayers” page (the Lord’s Prayer, the Hail Mary, the Glory Be, the Apostles’ Creed, the Hail Holy Queen, the Rosary) may be shown in a free app;
-c) which of them are your copyright, ICEL’s, or the Catholic Truth Society’s (the Compendium), and whom I should ask for each;
-d) where the wording used in England and Wales differs from that used in the United States, and whether the same texts serve for Ireland;
-e) what credit line you require.
-
-Where a text is in the public domain and needs no permission, I would be grateful if you would simply tell me so. This is my understanding; please correct me if a different procedure applies.
-
-**2. How the texts would be used**
-
-- Shown as text on the screen, unchanged, with the credit line you specify, on the prayer screen and on a “Prayer sources” page.
-- Text only. English prayers are never read aloud by the app: no recorded voice, no synthetic (AI) voice, no text-to-speech. (Only the Korean edition has a voice, under a separate request to the Korean bishops’ conference.)
-- For praying in two parts, each prayer is shown as a leader’s part and a response; nothing is altered, and the two parts together are the complete text. An optional “short view” shows only the opening words of prayers the user knows by heart.
-- The app contains no Scripture text (references only), no Mass texts and no hymns.
-- A free app on Google Play, available worldwide.
-
-**3. Options (you can answer by replying with the numbers)**
-
-☐ ① You may use the texts listed above as they stand, with this credit line: ______ (basic option)
-☐ ② The official text to use is this one (attached, or at this link): ______
-☐ ③ These texts are in the public domain, or need no permission from us: ______
-☐ ④ Showing a prayer in two parts (leader / response) and the “short view”: ☐ acceptable ☐ please show the full text only
-☐ ⑤ Please add a link to the official source: ______
-☐ ⑥ A formal application, licence or fee is required. Procedure: ______
-☐ ⑦ We prefer that our text is not used in the app (I will not use it).
-
-**4. What I will do with your answer**
-
-- ①: I will use the text exactly and show your credit line. ②: I will change to the edition you name. ③: I will mark it as public domain, with its source. ④ and ⑤: I will do as you say. ⑥: I will follow the procedure and will not publish your text before it is complete. ⑦: I will not use it.
-- If I receive no answer, I will not use any text in which you hold the copyright. Users in Great Britain and Ireland will then see the same public-domain traditional texts as the general English edition, with their source shown.
-- At any time, also after publication, I will correct or remove whatever you ask.
-- If you grant permission, the app will state the scope of that permission inside the app, and I will not add anything beyond it that could cause misunderstanding. If you wish, I will gladly ask persons you designate to review the app.
-
-**Materials**
-
-1. A one-page summary (PDF, in English), attached.
-2. An unlisted YouTube video (1–2 minutes), made by me from the app, with English captions: 〔YouTube 링크〕
-3. 4 screenshots, attached.
-
-I am not sending the app itself: the summary, the video and the screenshots show what the user sees. The video shows the Korean edition, because I will not put your text into the app before I have your answer.
-
-Thank you very much for your time. May the peace of the Lord be with you.
+If this request belongs to another office, I would be grateful if you would forward it. Thank you very much for your time; may the peace of the Lord be with you.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, South Korea
@@ -421,8 +204,10 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 「Traditional Prayers」 쪽의 전통 기도(주님의 기도·성모송·영광송·사도신경·성모 찬송·묵주기도)를 무료 앱에 실어도 되는지 ② 어느 것이 CBCEW·ICEL·Catholic Truth Society 저작권인지, 각각 어디에 물어야 하는지 ③ 미국 본문과 다른 곳, 아일랜드에도 같은 본문을 쓰는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 266 낱말로 줄였다(이전 약 1522 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-cbcew/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-cbcew/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: 위와 같되 성모 찬송은 Compendium 의 「UK version」(확인). 〔확인 필요〕: 전례국 「Traditional Prayers」 하위 쪽 본문과의 줄 단위 대조, 파티마 기도, 사도신경 문안 선택, 아일랜드 본문.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 「Traditional Prayers」 쪽의 전통 기도(주님의 기도·성모송·영광송·사도신경·성모 찬송·묵주기도)를 무료 앱에 실어도 되는지 ② 어느 것이 CBCEW·ICEL·Catholic Truth Society 저작권인지, 각각 어디에 물어야 하는지 ③ 미국 본문과 다른 곳, 아일랜드에도 같은 본문을 쓰는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -440,81 +225,23 @@ Thank you very much for your time. May the peace of the Lord be with you.
 ### (가) 보낼 본문 (스페인어)
 
 Para: info@conferenciaepiscopal.es
-Asunto: Solicitud de autorización: textos de las oraciones del Rosario en una aplicación de oración gratuita y sin fines comerciales
+Asunto: Aplicación de oración gratuita «Rosarium»: ¿puedo usar estos textos de oración? (basta responder con un número)
 
 A la Conferencia Episcopal Española, Comisión Episcopal para la Liturgia:
 
-Me llamo 〔성명〕 (nombre de bautismo: 〔세례명〕). Soy un fiel laico católico de la parroquia 〔소속 본당〕, 〔교구명〕, Corea del Sur. Estoy preparando, a título personal, «Rosarium», una aplicación gratuita para Android que ayuda a rezar el Rosario. No tiene ningún fin comercial: no lleva publicidad, ni funciones de pago, ni donativos. No es un servicio oficial de la Iglesia, y así lo indica. Todavía no se ha publicado.
+Me llamo 〔성명〕 (nombre de bautismo: 〔세례명〕) y soy un fiel laico católico de la parroquia 〔소속 본당〕, 〔교구명〕, Corea del Sur. A título personal estoy preparando «Rosarium», una aplicación gratuita y sin fines comerciales (sin publicidad ni pagos) que ayuda a rezar el Rosario. Está hecha con reverencia: es solo para rezar, y nada en ella imita la Misa ni los sacramentos.
 
-La aplicación se está preparando en español, con un archivo de textos propio para España. No quiero traducir yo mismo las oraciones desde el coreano: quiero mostrar, palabra por palabra, los textos que la Iglesia en España reza de hecho. Les escribo para preguntar qué puedo usar y en qué condiciones. Si esta solicitud corresponde a otra oficina, les agradecería que la remitieran o me indicaran a quién escribir.
+Para la edición en español de España quisiera mostrar las oraciones del Rosario solo como texto (la aplicación nunca las lee en voz alta). Adjunto la redacción exacta que pienso usar, con la fuente de cada texto: procede del Compendio del Catecismo en vatican.va, porque no he podido comprobar por mí mismo la redacción vigente de la tercera edición del Misal Romano; la oración de Fátima queda en blanco, a la espera de la forma que ustedes recomienden. Les ruego que confirmen o corrijan estos textos y me indiquen si puedo usarlos y con qué mención de derechos.
 
-**Quién soy y por qué he hecho esta aplicación**
+Basta con responder con un número:
 
-No soy una empresa, sino una sola persona. Soy católico desde hace muchos años y toda mi familia lo es; nuestro hijo 〔o: nuestra hija〕 recibió el Bautismo de niño y sirvió al altar como monaguillo. La aplicación nació en casa: mi familia me pidió poder rezar el Rosario como lo rezábamos en la parroquia a la que íbamos antes. Por el camino quise ofrecer también, a quienes quizá nunca puedan visitarlas, la experiencia —al menos indirecta— de rezar el Rosario en algunas iglesias célebres. Últimamente el «metaverso» vuelve a llamar la atención (en Corea, por ejemplo, en la comunidad budista), y he visto a muchos católicos desear algo así para la Iglesia católica. Busqué otras aplicaciones de «iglesias virtuales», pero en muchas encontré elementos poco reverentes —avatares que suben libremente al altar— o textos de oración incorrectos. Por eso decidí hacer una bien hecha y reverente.
+① Sin objeción: autorización en los términos descritos (mención de derechos, si la hay: ______).
+② Autorización con condiciones o correcciones; les ruego que me las indiquen: ______
+③ Preferimos que nuestro texto no se use (no lo usaré).
 
-No hay ningún modelo de ingresos: ni publicidad ni funciones de pago; yo mismo asumo todos los gastos del servicio, que es totalmente gratuito. Nació del simple deseo de ayudar a muchos fieles. En el proceso vi que varios elementos necesitan autorización; por eso estoy escribiendo, una por una, a las iglesias, diócesis y titulares de derechos correspondientes. Por ahora he dejado fuera todo lo que, a mi juicio, podía plantear problemas de derechos de autor. Si, para profundizar la vida de devoción de los católicos y acercar la Iglesia a quienes no la conocen, están dispuestos a permitir el uso de ciertos textos protegidos, los incluiré (véanse las opciones). Mi esperanza es que los católicos tengan más ocasiones de rezar el Rosario y que quienes no son católicos sientan la Iglesia más cercana.
+Adjunto: los textos que pienso usar (cada uno con su fuente), una ficha de una página con todos los detalles, 4 capturas de pantalla y un vídeo breve: 〔YouTube 링크〕
 
-**Cómo cuidamos la reverencia**
-
-Por tratarse de un lugar de oración, la reverencia no se deja solo a la buena voluntad de los usuarios: es una regla escrita en la aplicación.
-
-- **No se puede entrar en el presbiterio.** En todas las iglesias la zona del altar es un espacio vedado: el avatar se detiene al pie de las gradas. Lo comprueban pruebas automáticas, iglesia por iglesia.
-- **Ninguna imitación de la Misa ni de los sacramentos.** Dentro de la iglesia la aplicación declara: «La oración en una iglesia virtual no sustituye la participación en la Misa ni los sacramentos (Confesión, Eucaristía, etc.)».
-- **Solo gestos de oración.** Inclinarse, santiguarse, saludar, sentarse o arrodillarse para rezar, encender una vela. La vela solo se enciende en el lampadario; la señal de la cruz se propone junto a la pila de agua bendita, donde el modelo la tiene; el saludo con la mano solo es posible cerca de la entrada (en otro lugar se convierte en una inclinación). No hay juegos, combates ni bromas.
-- **No hay chat.** Incluso la intención de la vela se elige entre frases de oración ya fijadas, sin texto libre: no pueden aparecer palabras ofensivas.
-- **Textos de oración fieles.** Los textos coreanos se cotejaron palabra por palabra con el devocionario oficial de los obispos de Corea; en las demás lenguas solo se usarán los textos oficiales.
-- **El calendario litúrgico.** El color del frontal del altar y los adornos cambian con los tiempos litúrgicos.
-- **Claridad sobre lo que es.** Cada iglesia lleva el aviso de que es un modelo virtual simplificado, distinto de la iglesia real y no aprobado; las obras de arte aún protegidas por derechos de autor se sustituyen por formas abstractas.
-- **Sin publicidad, sin pagos, sin venta de datos.**
-
-**1. Qué pido y por qué**
-
-Quizá no reciban a menudo peticiones como esta; por eso explico en qué me baso, hasta donde alcanzo a entender, para dirigirme a ustedes. Entiendo que la tercera edición del Misal Romano fue aprobada por la Conferencia Episcopal en 2016 y que sus textos tienen derechos reservados. No he encontrado una página pública sobre el procedimiento ni he podido comprobar por mí mismo la redacción vigente de cada oración: por eso pido el texto, además de la autorización.
-
-Es una cuestión de derechos de autor. Las oraciones son antiguas, pero una traducción moderna o una edición aprobada suele estar protegida, y corresponde al titular autorizar su reproducción. Por eso pregunto:
-
-a) que me envíen, o me indiquen dónde encontrar, el texto oficial de cada una de las oraciones siguientes en la forma aprobada en España, para no copiar una versión no verificada;
-b) si puedo mostrar, en una aplicación gratuita, las oraciones del Rosario en la redacción vigente en España — la Señal de la cruz, el Credo de los Apóstoles, el Padre nuestro, el Avemaría, el Gloria, la oración de Fátima («Oh, Jesús mío…») y la Salve con su versículo y su oración final — y los nombres de los veinte misterios;
-c) cuáles de esos textos tienen derechos de la Conferencia Episcopal (Misal Romano, tercera edición) y a quién debo dirigirme;
-d) qué forma de la oración de Fátima recomiendan;
-e) qué mención de derechos debo mostrar.
-
-Si algún texto es de dominio público y no necesita autorización, les agradecería que simplemente me lo indicaran. Así lo entiendo; les ruego que me corrijan si corresponde otro procedimiento.
-
-**2. Cómo se usarían los textos**
-
-- Se muestran como texto en pantalla, sin cambios, con la mención de derechos que ustedes indiquen, en la pantalla de oración y en una página «Fuentes de las oraciones».
-- Solo texto. La aplicación nunca lee en voz alta las oraciones en español: ni voz grabada, ni voz sintética (IA), ni lectura automática del dispositivo. (Solo la edición coreana tiene voz, con una solicitud aparte a la Conferencia Episcopal de Corea.)
-- Para rezar a dos coros, cada oración se muestra en dos partes (guía y respuesta); no se altera nada, y las dos partes juntas forman el texto completo. Una «vista breve» opcional muestra solo las primeras palabras de las oraciones que el usuario sabe de memoria.
-- La aplicación no contiene texto bíblico (solo las citas), ni textos de la Misa, ni cantos.
-- Aplicación gratuita en Google Play, disponible en todo el mundo.
-
-**3. Opciones (pueden responder indicando solo los números)**
-
-☐ ① Puede usar los textos indicados tal como están, con esta mención: ______ (opción básica)
-☐ ② El texto oficial que debe usar es este (adjunto, o en este enlace): ______
-☐ ③ Estos textos son de dominio público, o no necesitan nuestra autorización: ______
-☐ ④ Mostrar la oración en dos partes (guía / respuesta) y la «vista breve»: ☐ aceptable ☐ muestre solo el texto completo
-☐ ⑤ Añada un enlace a la fuente oficial: ______
-☐ ⑥ Se requiere una solicitud formal, una licencia o una tarifa. Procedimiento: ______
-☐ ⑦ Preferimos que nuestro texto no se use en la aplicación (no lo usaré).
-
-**4. Qué haré según su respuesta**
-
-- ①: usaré el texto exactamente y mostraré la mención indicada. ②: cambiaré a la edición que indiquen. ③: lo señalaré como de dominio público, con su fuente. ④ y ⑤: lo haré como indiquen. ⑥: seguiré el procedimiento y no publicaré su texto antes de completarlo. ⑦: no lo usaré.
-- Si no recibo respuesta, no incluiré ningún texto cuyos derechos les pertenezcan. La edición en español usará entonces solo textos claramente de dominio público, con su fuente indicada; donde no sea posible, no se publicará.
-- En cualquier momento, también después de la publicación, corregiré o retiraré lo que me pidan.
-- Si conceden una autorización, la aplicación indicará en su interior el alcance de esa autorización, y no añadiré, más allá de él, nada que pueda causar malentendidos. Si lo desean, pediré con gusto a las personas que ustedes designen que revisen la aplicación.
-
-**Materiales**
-
-1. Ficha de una página (PDF, en español), adjunta.
-2. Vídeo no listado en YouTube (1–2 minutos), hecho por mí a partir de la aplicación, con subtítulos en español: 〔YouTube 링크〕
-3. 4 capturas de pantalla, adjuntas.
-
-No envío la aplicación: la ficha, el vídeo y las capturas muestran lo que ve el usuario. El vídeo muestra la edición coreana, porque no pondré su texto en la aplicación antes de tener su respuesta.
-
-Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
+Si esta solicitud corresponde a otra oficina, les agradecería que la remitieran. Muchas gracias por su tiempo; que la paz del Señor esté con ustedes.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Corea del Sur
@@ -522,8 +249,10 @@ Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 스페인에서 지금 쓰는 묵주기도 본문(성호경·사도신경·주님의 기도·성모송·영광송·파티마 기도·성모 찬송과 응송·마침 기도)과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEE 저작권(『로마 미사 경본』 3판)인 것과 문의처 ③ 파티마 기도의 권장 형태 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 261 낱말로 줄였다(이전 약 1510 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-cee/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-cee/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: Compendium 스페인어판에서 그대로 옮김(확인). 〔확인 필요〕: 스페인 『Misal Romano』 3판 현행 문안과의 대조(주님의 기도·사도신경), 파티마 기도 전문(비워 둠), 마침 기도 두 형태 가운데 어느 것.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 스페인에서 지금 쓰는 묵주기도 본문(성호경·사도신경·주님의 기도·성모송·영광송·파티마 기도·성모 찬송과 응송·마침 기도)과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEE 저작권(『로마 미사 경본』 3판)인 것과 문의처 ③ 파티마 기도의 권장 형태 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -541,81 +270,23 @@ Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
 ### (가) 보낼 본문 (스페인어)
 
 Para: contacto@cem.org.mx
-Asunto: Solicitud de autorización: textos de las oraciones del Rosario en una aplicación de oración gratuita y sin fines comerciales
+Asunto: Aplicación de oración gratuita «Rosarium»: ¿puedo usar estos textos de oración? (basta responder con un número)
 
 A la Conferencia del Episcopado Mexicano, Comisión Episcopal para la Pastoral Litúrgica:
 
-Me llamo 〔성명〕 (nombre de bautismo: 〔세례명〕). Soy un fiel laico católico de la parroquia 〔소속 본당〕, 〔교구명〕, Corea del Sur. Estoy preparando, a título personal, «Rosarium», una aplicación gratuita para Android que ayuda a rezar el Rosario. No tiene ningún fin comercial: no lleva publicidad, ni funciones de pago, ni donativos. No es un servicio oficial de la Iglesia, y así lo indica. Todavía no se ha publicado.
+Me llamo 〔성명〕 (nombre de bautismo: 〔세례명〕) y soy un fiel laico católico de la parroquia 〔소속 본당〕, 〔교구명〕, Corea del Sur. A título personal estoy preparando «Rosarium», una aplicación gratuita y sin fines comerciales (sin publicidad ni pagos) que ayuda a rezar el Rosario. Está hecha con reverencia: es solo para rezar, y nada en ella imita la Misa ni los sacramentos.
 
-La aplicación se está preparando en español, con un archivo de textos para América Latina distinto del de España. No quiero traducir yo mismo las oraciones desde el coreano: quiero mostrar, palabra por palabra, los textos que la Iglesia en México reza de hecho. Les escribo para preguntar qué puedo usar y en qué condiciones. Si esta solicitud corresponde a otra oficina, les agradecería que la remitieran o me indicaran a quién escribir.
+Para los usuarios de México y de América Latina quisiera mostrar las oraciones del Rosario solo como texto (la aplicación nunca las lee en voz alta). Adjunto la redacción exacta que pienso usar, con la fuente de cada texto: procede del Compendio del Catecismo en vatican.va, porque no he podido comprobar por mí mismo la redacción que se usa en México ni he encontrado un texto común para América Latina; la oración de Fátima queda en blanco. Les ruego que confirmen o corrijan estos textos y me indiquen si puedo usarlos y con qué mención de derechos.
 
-**Quién soy y por qué he hecho esta aplicación**
+Basta con responder con un número:
 
-No soy una empresa, sino una sola persona. Soy católico desde hace muchos años y toda mi familia lo es; nuestro hijo 〔o: nuestra hija〕 recibió el Bautismo de niño y sirvió al altar como monaguillo. La aplicación nació en casa: mi familia me pidió poder rezar el Rosario como lo rezábamos en la parroquia a la que íbamos antes. Por el camino quise ofrecer también, a quienes quizá nunca puedan visitarlas, la experiencia —al menos indirecta— de rezar el Rosario en algunas iglesias célebres. Últimamente el «metaverso» vuelve a llamar la atención (en Corea, por ejemplo, en la comunidad budista), y he visto a muchos católicos desear algo así para la Iglesia católica. Busqué otras aplicaciones de «iglesias virtuales», pero en muchas encontré elementos poco reverentes —avatares que suben libremente al altar— o textos de oración incorrectos. Por eso decidí hacer una bien hecha y reverente.
+① Sin objeción: autorización en los términos descritos (mención de derechos, si la hay: ______).
+② Autorización con condiciones o correcciones; les ruego que me las indiquen: ______
+③ Preferimos que nuestro texto no se use (no lo usaré).
 
-No hay ningún modelo de ingresos: ni publicidad ni funciones de pago; yo mismo asumo todos los gastos del servicio, que es totalmente gratuito. Nació del simple deseo de ayudar a muchos fieles. En el proceso vi que varios elementos necesitan autorización; por eso estoy escribiendo, una por una, a las iglesias, diócesis y titulares de derechos correspondientes. Por ahora he dejado fuera todo lo que, a mi juicio, podía plantear problemas de derechos de autor. Si, para profundizar la vida de devoción de los católicos y acercar la Iglesia a quienes no la conocen, están dispuestos a permitir el uso de ciertos textos protegidos, los incluiré (véanse las opciones). Mi esperanza es que los católicos tengan más ocasiones de rezar el Rosario y que quienes no son católicos sientan la Iglesia más cercana.
+Adjunto: los textos que pienso usar (cada uno con su fuente), una ficha de una página con todos los detalles, 4 capturas de pantalla y un vídeo breve: 〔YouTube 링크〕
 
-**Cómo cuidamos la reverencia**
-
-Por tratarse de un lugar de oración, la reverencia no se deja solo a la buena voluntad de los usuarios: es una regla escrita en la aplicación.
-
-- **No se puede entrar en el presbiterio.** En todas las iglesias la zona del altar es un espacio vedado: el avatar se detiene al pie de las gradas. Lo comprueban pruebas automáticas, iglesia por iglesia.
-- **Ninguna imitación de la Misa ni de los sacramentos.** Dentro de la iglesia la aplicación declara: «La oración en una iglesia virtual no sustituye la participación en la Misa ni los sacramentos (Confesión, Eucaristía, etc.)».
-- **Solo gestos de oración.** Inclinarse, santiguarse, saludar, sentarse o arrodillarse para rezar, encender una vela. La vela solo se enciende en el lampadario; la señal de la cruz se propone junto a la pila de agua bendita, donde el modelo la tiene; el saludo con la mano solo es posible cerca de la entrada (en otro lugar se convierte en una inclinación). No hay juegos, combates ni bromas.
-- **No hay chat.** Incluso la intención de la vela se elige entre frases de oración ya fijadas, sin texto libre: no pueden aparecer palabras ofensivas.
-- **Textos de oración fieles.** Los textos coreanos se cotejaron palabra por palabra con el devocionario oficial de los obispos de Corea; en las demás lenguas solo se usarán los textos oficiales.
-- **El calendario litúrgico.** El color del frontal del altar y los adornos cambian con los tiempos litúrgicos.
-- **Claridad sobre lo que es.** Cada iglesia lleva el aviso de que es un modelo virtual simplificado, distinto de la iglesia real y no aprobado; las obras de arte aún protegidas por derechos de autor se sustituyen por formas abstractas.
-- **Sin publicidad, sin pagos, sin venta de datos.**
-
-**1. Qué pido y por qué**
-
-Quizá no reciban a menudo peticiones como esta; por eso explico en qué me baso, hasta donde alcanzo a entender, para dirigirme a ustedes. Entiendo que la tercera edición del Misal Romano para México lleva mención de derechos de la Conferencia del Episcopado Mexicano. No he encontrado una página pública sobre el procedimiento, ni un texto común para América Latina, ni he podido comprobar por mí mismo la redacción de cada oración: por eso pido el texto, además de la autorización.
-
-Es una cuestión de derechos de autor. Las oraciones son antiguas, pero una traducción moderna o una edición aprobada suele estar protegida, y corresponde al titular autorizar su reproducción. Por eso pregunto:
-
-a) que me envíen, o me indiquen dónde encontrar, el texto oficial de cada una de las oraciones siguientes en la forma aprobada en México, para no copiar una versión no verificada;
-b) si puedo mostrar, en una aplicación gratuita, las oraciones del Rosario en la redacción que se usa en México — la Señal de la cruz, el Credo de los Apóstoles, el Padre nuestro, el Avemaría, el Gloria, la oración de Fátima («Oh, Jesús mío…») y la Salve con su versículo y su oración final — y los nombres de los veinte misterios;
-c) cuáles de esos textos tienen derechos de la Conferencia del Episcopado Mexicano (Misal Romano, tercera edición) y a quién debo dirigirme;
-d) si existe un texto común para América Latina, o qué texto recomiendan para los usuarios de otros países latinoamericanos;
-e) qué mención de derechos debo mostrar.
-
-Si algún texto es de dominio público y no necesita autorización, les agradecería que simplemente me lo indicaran. Así lo entiendo; les ruego que me corrijan si corresponde otro procedimiento.
-
-**2. Cómo se usarían los textos**
-
-- Se muestran como texto en pantalla, sin cambios, con la mención de derechos que ustedes indiquen, en la pantalla de oración y en una página «Fuentes de las oraciones».
-- Solo texto. La aplicación nunca lee en voz alta las oraciones en español: ni voz grabada, ni voz sintética (IA), ni lectura automática del dispositivo. (Solo la edición coreana tiene voz, con una solicitud aparte a la Conferencia Episcopal de Corea.)
-- Para rezar a dos coros, cada oración se muestra en dos partes (guía y respuesta); no se altera nada, y las dos partes juntas forman el texto completo. Una «vista breve» opcional muestra solo las primeras palabras de las oraciones que el usuario sabe de memoria.
-- La aplicación no contiene texto bíblico (solo las citas), ni textos de la Misa, ni cantos.
-- Aplicación gratuita en Google Play, disponible en todo el mundo.
-
-**3. Opciones (pueden responder indicando solo los números)**
-
-☐ ① Puede usar los textos indicados tal como están, con esta mención: ______ (opción básica)
-☐ ② El texto oficial que debe usar es este (adjunto, o en este enlace): ______
-☐ ③ Estos textos son de dominio público, o no necesitan nuestra autorización: ______
-☐ ④ Mostrar la oración en dos partes (guía / respuesta) y la «vista breve»: ☐ aceptable ☐ muestre solo el texto completo
-☐ ⑤ Añada un enlace a la fuente oficial: ______
-☐ ⑥ Se requiere una solicitud formal, una licencia o una tarifa. Procedimiento: ______
-☐ ⑦ Preferimos que nuestro texto no se use en la aplicación (no lo usaré).
-
-**4. Qué haré según su respuesta**
-
-- ①: usaré el texto exactamente y mostraré la mención indicada. ②: cambiaré a la edición que indiquen. ③: lo señalaré como de dominio público, con su fuente. ④ y ⑤: lo haré como indiquen. ⑥: seguiré el procedimiento y no publicaré su texto antes de completarlo. ⑦: no lo usaré.
-- Si no recibo respuesta, no incluiré ningún texto cuyos derechos les pertenezcan. La edición en español usará entonces solo textos claramente de dominio público, con su fuente indicada; donde no sea posible, no se publicará.
-- En cualquier momento, también después de la publicación, corregiré o retiraré lo que me pidan.
-- Si conceden una autorización, la aplicación indicará en su interior el alcance de esa autorización, y no añadiré, más allá de él, nada que pueda causar malentendidos. Si lo desean, pediré con gusto a las personas que ustedes designen que revisen la aplicación.
-
-**Materiales**
-
-1. Ficha de una página (PDF, en español), adjunta.
-2. Vídeo no listado en YouTube (1–2 minutos), hecho por mí a partir de la aplicación, con subtítulos en español: 〔YouTube 링크〕
-3. 4 capturas de pantalla, adjuntas.
-
-No envío la aplicación: la ficha, el vídeo y las capturas muestran lo que ve el usuario. El vídeo muestra la edición coreana, porque no pondré su texto en la aplicación antes de tener su respuesta.
-
-Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
+Si esta solicitud corresponde a otra oficina, les agradecería que la remitieran. Muchas gracias por su tiempo; que la paz del Señor esté con ustedes.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Corea del Sur
@@ -623,8 +294,10 @@ Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 멕시코에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEM 저작권인 것과 문의처 ③ 중남미 공통 본문이 있는지, 다른 중남미 나라 사용자에게는 어떤 본문을 권하는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 260 낱말로 줄였다(이전 약 1532 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-cem/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-cem/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: Compendium 스페인어판에서 그대로 옮김(확인 — 스페인판과 같은 글). 〔확인 필요〕: 멕시코·중남미에서 다른 구절 전부, 파티마 기도 전문(비워 둠), 마침 기도 형태.
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 멕시코에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEM 저작권인 것과 문의처 ③ 중남미 공통 본문이 있는지, 다른 중남미 나라 사용자에게는 어떤 본문을 권하는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -642,80 +315,23 @@ Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
 ### (가) 보낼 본문 (이탈리아어)
 
 A: uln@chiesacattolica.it
-Oggetto: Richiesta di autorizzazione: testi delle preghiere del Rosario in un’app di preghiera gratuita e non commerciale
+Oggetto: App di preghiera gratuita «Rosarium»: posso usare questi testi di preghiera? (basta rispondere con un numero)
 
 Spettabile Ufficio Liturgico Nazionale della Conferenza Episcopale Italiana,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. Sto realizzando, a titolo personale, «Rosarium», un’app gratuita per Android che aiuta a pregare il Rosario. È interamente non commerciale: non ha pubblicità, né funzioni a pagamento, né raccolte di offerte. Non è un servizio ufficiale della Chiesa, e lo dichiara. Non è ancora pubblicata.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario. È pensata con riverenza: serve soltanto a pregare, e nulla in essa imita la Messa o i Sacramenti.
 
-L’app è in preparazione in italiano. Non voglio tradurre io le preghiere dal coreano: desidero mostrare, parola per parola, i testi che la Chiesa in Italia prega realmente. Vi scrivo per chiedere che cosa posso usare e a quali condizioni. Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla o indicarmi a chi scrivere.
+Per l’edizione italiana vorrei mostrare le preghiere del Rosario solo come testo (l’app non le legge mai ad alta voce). Allego la formulazione esatta che intendo usare, con la fonte di ciascun testo: proviene dal Compendio del Catechismo su vatican.va; per il Padre nostro ho segnato la formulazione della terza edizione del Messale Romano (2020), che ho potuto verificare solo in parte, e la preghiera di Fatima è lasciata in bianco. Vi chiedo di confermare o correggere questi testi, di dirmi se posso usarli e con quale dicitura e, poiché i diritti del Messale risultano di una Fondazione, a chi rivolgere la domanda.
 
-**Chi sono e perché ho fatto quest’app**
+Basta rispondere a questa e-mail con un numero:
 
-Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è tutta la mia famiglia; nostro figlio 〔o: nostra figlia〕 ha ricevuto il Battesimo da neonato e ha servito all’altare come ministrante. L’app è nata in casa: i miei familiari desideravano poter pregare il Rosario come lo pregavamo nella parrocchia che frequentavamo un tempo. Strada facendo ho desiderato offrire, anche a chi forse non potrà mai visitarle, l’esperienza — almeno indiretta — di pregare il Rosario in alcune chiese celebri. Di recente il «metaverso» è tornato a far parlare di sé (in Corea, per esempio, nella comunità buddista), e ho letto molti cattolici augurarsi qualcosa di simile per la Chiesa cattolica. Ho cercato altre app di «chiese virtuali», ma in molte ho trovato elementi poco rispettosi — avatar che salgono liberamente sull’altare — oppure testi di preghiera sbagliati. Per questo ho deciso di farne una fatta bene, con rispetto.
+① Nessuna obiezione: autorizzazione nei termini descritti (eventuale dicitura: ______).
+② Autorizzazione a queste condizioni o con queste correzioni: ______
+③ Preferiamo che il nostro testo non sia usato (non lo userò).
 
-Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di alcuni testi protetti, li inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
+In allegato: i testi che intendo usare (ciascuno con la sua fonte), una scheda di una pagina con tutti i dettagli, 4 schermate e un breve video: 〔YouTube 링크〕
 
-**Come custodiamo la riverenza**
-
-Poiché è un luogo di preghiera, la riverenza non è lasciata soltanto alla buona volontà degli utenti: è una regola scritta nell’app.
-
-- **Nel presbiterio non si entra.** In ogni chiesa l’area dell’altare è una zona inaccessibile: l’avatar si ferma ai piedi dei gradini. Lo verificano prove automatiche, chiesa per chiesa.
-- **Nessuna imitazione della Messa o dei Sacramenti.** Dentro la chiesa l’app dichiara: «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti (Confessione, Eucaristia, ecc.)».
-- **Solo gesti di preghiera.** Inchino, segno della croce, un saluto, sedersi o inginocchiarsi per pregare, accendere una candela. La candela si accende solo al portacandele; il segno della croce è proposto all’acquasantiera, dove il modello ne ha una; il saluto con la mano è possibile solo vicino all’ingresso (altrove diventa un inchino). Non ci sono giochi, combattimenti né scherzi.
-- **Nessuna chat.** Anche l’intenzione della candela si sceglie fra frasi di preghiera già fissate, senza testo libero: non possono comparire parole offensive.
-- **Testi di preghiera fedeli.** I testi coreani sono stati confrontati parola per parola con il libro di preghiere ufficiale dei Vescovi di Corea; nelle altre lingue saranno usati soltanto i testi ufficiali.
-- **Il calendario liturgico.** Il colore del paliotto dell’altare e gli addobbi cambiano con i tempi liturgici.
-- **Chiarezza su ciò che è.** Ogni chiesa porta l’avviso che è un modello virtuale semplificato, diverso dalla chiesa reale e non approvato; le opere ancora protette dal diritto d’autore sono sostituite da forme astratte.
-- **Niente pubblicità, niente pagamenti, nessuna vendita di dati.**
-
-**1. Che cosa chiedo, e perché**
-
-Forse richieste come questa non Vi arrivano spesso; spiego quindi su quali basi, per quanto ne so, mi rivolgo a Voi. Mi risulta che la terza edizione del Messale Romano (2020) rechi la nota «© Fondazione di Religione Santi Francesco d’Assisi e Caterina da Siena». Non ho trovato una pagina pubblica sulla procedura, e ho potuto verificare soltanto in parte la formulazione attuale delle preghiere: per questo chiedo il testo, oltre all’autorizzazione.
-
-È una questione di diritto d’autore. Le preghiere sono antiche, ma una traduzione moderna o un’edizione approvata è di norma protetta, e spetta al titolare autorizzarne la riproduzione. Chiedo quindi:
-
-a) che mi inviate, o mi indichiate dove trovare, il testo ufficiale di ciascuna delle preghiere qui sotto nella forma approvata in Italia, per non copiare una versione non verificata;
-b) se posso mostrare, in un’app gratuita, le preghiere del Rosario nella formulazione oggi in uso in Italia — il Segno della croce, il Simbolo degli Apostoli, il Padre nostro secondo la terza edizione del Messale Romano (2020: «non abbandonarci alla tentazione»), l’Ave Maria, il Gloria al Padre, la preghiera di Fatima («Gesù mio, perdona le nostre colpe…») e la Salve Regina con il versetto e l’orazione finale — e i nomi dei venti misteri;
-c) poiché i diritti del Messale risultano della Fondazione di Religione Santi Francesco d’Assisi e Caterina da Siena, a chi devo rivolgere la domanda (Vi sarei grato se voleste inoltrarla);
-d) quale dicitura devo riportare.
-
-Se un testo è di pubblico dominio e non richiede autorizzazione, Vi sarei grato se me lo indicaste. Questo è quanto ho capito: Vi prego di correggermi se vale una procedura diversa.
-
-**2. Come sarebbero usati i testi**
-
-- Mostrati come testo sullo schermo, senza modifiche, con la dicitura che indicherete, nella schermata di preghiera e in una pagina «Fonti delle preghiere».
-- Solo testo. L’app non legge mai ad alta voce le preghiere in italiano: né voce registrata, né voce sintetica (IA), né sintesi vocale del dispositivo. (Soltanto l’edizione coreana ha una voce, con una richiesta separata alla Conferenza episcopale coreana.)
-- Per la preghiera a due cori, ogni preghiera è mostrata in due parti (guida e risposta); nulla è modificato, e le due parti insieme formano il testo completo. Una «vista breve» facoltativa mostra solo le prime parole delle preghiere che l’utente sa a memoria.
-- L’app non contiene testi della Sacra Scrittura (solo i riferimenti), né testi della Messa, né canti.
-- App gratuita su Google Play, disponibile in tutto il mondo.
-
-**3. Opzioni (si può rispondere indicando soltanto i numeri)**
-
-☐ ① I testi indicati possono essere usati così come sono, con questa dicitura: ______ (opzione di base)
-☐ ② Il testo ufficiale da usare è questo (allegato, o a questo link): ______
-☐ ③ Questi testi sono di pubblico dominio, o non richiedono la nostra autorizzazione: ______
-☐ ④ Mostrare la preghiera in due parti (guida / risposta) e la «vista breve»: ☐ va bene ☐ si mostri solo il testo completo
-☐ ⑤ Si aggiunga un link alla fonte ufficiale: ______
-☐ ⑥ È necessaria una domanda formale, una licenza o un compenso. Procedura: ______
-☐ ⑦ Preferiamo che il nostro testo non sia usato nell’app (non lo userò).
-
-**4. Che cosa farò secondo la Vostra risposta**
-
-- ①: userò il testo esattamente e mostrerò la dicitura indicata. ②: passerò all’edizione che indicherete. ③: lo segnalerò come di pubblico dominio, con la sua fonte. ④ e ⑤: farò come indicherete. ⑥: seguirò la procedura e non pubblicherò il Vostro testo prima di averla completata. ⑦: non lo userò.
-- Se non ricevo risposta, non inserirò alcun testo di cui siate titolari dei diritti. L’edizione italiana userà allora soltanto testi chiaramente di pubblico dominio, con la fonte indicata; dove non sia possibile, non sarà pubblicata.
-- In ogni momento, anche dopo la pubblicazione, correggerò o toglierò ciò che mi chiederete.
-- Se concederete un permesso, ne indicherò i limiti all’interno dell’app e non aggiungerò, oltre quei limiti, elementi che possano creare equivoci. Se lo ritenete utile, chiederò volentieri a persone da Voi indicate di esaminare l’app.
-
-**Materiali**
-
-1. Scheda di una pagina (PDF, in italiano), allegata.
-2. Video non in elenco su YouTube (1–2 minuti), realizzato da me a partire dall’app, con sottotitoli in italiano: 〔YouTube 링크〕
-3. 4 schermate, allegate.
-
-Non invio l’app stessa: la scheda, il video e le schermate mostrano ciò che l’utente vede. Il video mostra l’edizione coreana, perché non inserirò il Vostro testo nell’app prima di avere la Vostra risposta.
-
-Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
+Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Corea del Sud
@@ -723,8 +339,10 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 이탈리아에서 지금 쓰는 묵주기도 본문(특히 『Messale Romano』 3판 2020 의 주님의 기도 「non abbandonarci alla tentazione」)과 20단 이름을 무료 앱에 실어도 되는지 ② 미사 경본 권리자가 재단이므로 누구에게 신청해야 하는지(전달 부탁) ③ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 262 낱말로 줄였다(이전 약 1451 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-cei/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-cei/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: Compendium 이탈리아어판에서 그대로 옮김(확인 — 주님의 기도는 2005년 옛 형태). 〔확인 필요〕: 2020년 『Messale Romano』 3판의 주님의 기도 전문(「non abbandonarci alla tentazione」만 확인, 「come anche noi li rimettiamo」는 추정), 파티마 기도 전문(비워 둠).
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 이탈리아에서 지금 쓰는 묵주기도 본문(특히 『Messale Romano』 3판 2020 의 주님의 기도 「non abbandonarci alla tentazione」)과 20단 이름을 무료 앱에 실어도 되는지 ② 미사 경본 권리자가 재단이므로 누구에게 신청해야 하는지(전달 부탁) ③ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -742,80 +360,23 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 ### (가) 보낼 본문 (포르투갈어(브라질))
 
 Para: 〔확인 필요〕
-Assunto: Pedido de autorização: textos das orações do Terço em um aplicativo de oração gratuito e sem fins comerciais
+Assunto: «Rosarium», aplicativo de oração gratuito: posso usar estes textos de oração? (basta responder com um número)
 
 À Conferência Nacional dos Bispos do Brasil — Comissão Episcopal para os Textos Litúrgicos (CETEL) e Edições CNBB:
 
-Meu nome é 〔성명〕 (nome de batismo: 〔세례명〕). Sou um fiel leigo católico da paróquia 〔소속 본당〕, 〔교구명〕, Coreia do Sul. Estou preparando, a título pessoal, o «Rosarium», um aplicativo gratuito para Android que ajuda a rezar o Terço. Não tem nenhum fim comercial: não tem publicidade, nem funções pagas, nem doações. Não é um serviço oficial da Igreja, e informa isso ao usuário. Ainda não foi publicado.
+Meu nome é 〔성명〕 (nome de batismo: 〔세례명〕) e sou um fiel leigo católico da paróquia 〔소속 본당〕, 〔교구명〕, Coreia do Sul. A título pessoal estou preparando o «Rosarium», um aplicativo gratuito e sem fins comerciais (sem publicidade nem pagamentos) que ajuda a rezar o Terço. É feito com reverência: serve apenas para rezar, e nada nele imita a Missa ou os sacramentos.
 
-Mais adiante, o aplicativo terá uma edição em português, com um arquivo de textos próprio para o Brasil. Não quero traduzir eu mesmo as orações a partir do coreano: quero mostrar, palavra por palavra, os textos que a Igreja no Brasil realmente reza. Escrevo para perguntar o que posso usar e em que condições. Se este pedido couber a outro setor, eu ficaria grato se o encaminhassem ou me indicassem a quem escrever.
+Para a futura edição em português do Brasil, eu gostaria de mostrar as orações do Terço apenas como texto (o aplicativo nunca as lê em voz alta). Anexo a redação que pretendo usar, com a fonte de cada texto: vem do Compêndio do Catecismo em vatican.va, em português europeu, porque não pude conferir eu mesmo a redação em uso no Brasil; a oração de Fátima fica em branco. Peço que a corrijam para a forma brasileira (ou me indiquem onde encontrá-la) e me digam se posso usá-la e com que menção de direitos. A edição em português só será publicada depois da sua resposta.
 
-**Quem sou e por que fiz este aplicativo**
+Basta responder com um número:
 
-Não sou uma empresa, mas uma só pessoa. Sou católico há muitos anos e toda a minha família é católica; nosso filho 〔ou: nossa filha〕 foi batizado ainda bebê e serviu ao altar como coroinha. O aplicativo nasceu em casa: minha família pediu para poder rezar o Terço como rezávamos na paróquia que frequentávamos antes. No caminho, quis também oferecer, a quem talvez nunca possa visitá-las, a experiência — ao menos indireta — de rezar o Terço em algumas igrejas célebres. Recentemente o «metaverso» voltou a chamar a atenção (na Coreia, por exemplo, na comunidade budista), e vi muitos católicos desejarem algo assim para a Igreja Católica. Procurei outros aplicativos de «igrejas virtuais», mas em muitos encontrei elementos pouco reverentes — avatares que sobem livremente ao altar — ou textos de oração incorretos. Por isso decidi fazer um bem-feito e reverente.
+① Sem objeção: autorização nos termos descritos (menção de direitos, se houver: ______).
+② Autorização com condições ou correções; peço que as indiquem: ______
+③ Preferimos que o nosso texto não seja usado (não o usarei).
 
-Não há nenhum modelo de receita: nem publicidade, nem funções pagas; eu mesmo arco com todos os custos do serviço, que é totalmente gratuito. Nasceu do simples desejo de ajudar muitos fiéis. No processo, vi que vários elementos precisam de autorização; por isso estou escrevendo, uma a uma, às igrejas, dioceses e titulares de direitos envolvidos. Por enquanto, deixei de fora tudo o que, a meu ver, poderia levantar questões de direitos autorais. Se, para aprofundar a vida de devoção dos católicos e aproximar da Igreja quem não a conhece, estiverem dispostos a permitir o uso de certos textos protegidos, eu os incluirei (vejam as opções). Minha esperança é que os católicos tenham mais ocasiões de rezar o Terço e que quem não é católico sinta a Igreja mais próxima.
+Em anexo: os textos que pretendo usar (cada um com a sua fonte), um resumo de uma página com todos os detalhes, 4 capturas de tela e um vídeo curto: 〔YouTube 링크〕
 
-**Como cuidamos da reverência**
-
-Por se tratar de um lugar de oração, a reverência não fica apenas por conta da boa vontade dos usuários: é uma regra escrita no aplicativo.
-
-- **Não se entra no presbitério.** Em todas as igrejas a área do altar é uma zona vedada: o avatar para ao pé dos degraus. Testes automáticos verificam isso, igreja por igreja.
-- **Nenhuma imitação da Missa nem dos sacramentos.** Dentro da igreja o aplicativo declara: «A oração em uma igreja virtual não substitui a participação na Missa nem os sacramentos (Confissão, Eucaristia etc.)».
-- **Somente gestos de oração.** Inclinar-se, fazer o sinal da cruz, cumprimentar, sentar-se ou ajoelhar-se para rezar, acender uma vela. A vela só se acende no velário; o sinal da cruz é proposto junto à pia de água benta, onde o modelo a tem; o aceno de mão só é possível perto da entrada (em outro lugar torna-se uma inclinação). Não há jogos, combates nem brincadeiras.
-- **Não há chat.** Até a intenção da vela é escolhida entre frases de oração já fixadas, sem texto livre: não podem aparecer palavras ofensivas.
-- **Textos de oração fiéis.** Os textos coreanos foram conferidos palavra por palavra com o livro oficial de orações dos bispos da Coreia; nas outras línguas serão usados somente os textos oficiais.
-- **O calendário litúrgico.** A cor do frontal do altar e os enfeites mudam conforme o tempo litúrgico.
-- **Clareza sobre o que é.** Cada igreja traz o aviso de que é um modelo virtual simplificado, diferente da igreja real e não aprovado; as obras de arte ainda protegidas por direitos autorais são substituídas por formas abstratas.
-- **Sem publicidade, sem pagamentos, sem venda de dados.**
-
-**1. O que peço, e por quê**
-
-Talvez pedidos como este não cheguem com frequência; por isso explico em que me baseio, até onde entendo, para escrever aos senhores. Entendo que a terceira edição do Missal Romano para o Brasil (obrigatória desde o Advento de 2023) é publicada pelas Edições CNBB, com direitos reservados, e que a tradução é da CETEL. Não encontrei uma página pública sobre o procedimento, nem pude conferir eu mesmo a redação atual de cada oração: por isso peço o texto, além da autorização.
-
-É uma questão de direitos autorais. As orações são antigas, mas uma tradução moderna ou uma edição aprovada costuma ser protegida, e cabe ao titular autorizar a sua reprodução. Por isso pergunto:
-
-a) que me enviem, ou me indiquem onde encontrar, o texto oficial de cada uma das orações abaixo na forma aprovada no Brasil, para que eu não copie uma versão não verificada;
-b) se posso mostrar, em um aplicativo gratuito, as orações do Terço na redação em uso no Brasil — o Sinal da Cruz, o Creio (Símbolo dos Apóstolos), o Pai-Nosso, a Ave-Maria, o Glória ao Pai, a oração de Fátima («Ó meu Jesus, perdoai-nos…») e a Salve-Rainha com o seu versículo e a oração final — e os nomes dos vinte mistérios;
-c) quais desses textos têm direitos da CNBB (Missal Romano, terceira edição) e a quem devo dirigir o pedido;
-d) que menção de direitos devo mostrar, e se há alguma taxa para um aplicativo gratuito.
-
-Se algum texto for de domínio público e não precisar de autorização, eu ficaria grato se simplesmente me dissessem. É este o meu entendimento; peço que me corrijam se houver outro procedimento.
-
-**2. Como os textos seriam usados**
-
-- Mostrados como texto na tela, sem alterações, com a menção de direitos que indicarem, na tela de oração e em uma página «Fontes das orações».
-- Somente texto. O aplicativo nunca lê em voz alta as orações em português: nem voz gravada, nem voz sintética (IA), nem leitura automática do aparelho. (Somente a edição coreana tem voz, com um pedido separado à Conferência Episcopal da Coreia.)
-- Para rezar em dois coros, cada oração é mostrada em duas partes (dirigente e resposta); nada é alterado, e as duas partes juntas formam o texto completo. Uma «visão breve» opcional mostra apenas as primeiras palavras das orações que o usuário sabe de cor.
-- O aplicativo não contém texto bíblico (apenas as referências), nem textos da Missa, nem cantos.
-- Aplicativo gratuito no Google Play, disponível no mundo inteiro.
-
-**3. Opções (podem responder indicando apenas os números)**
-
-☐ ① Pode usar os textos indicados tal como estão, com esta menção: ______ (opção básica)
-☐ ② O texto oficial a usar é este (anexo, ou neste link): ______
-☐ ③ Estes textos são de domínio público, ou não precisam da nossa autorização: ______
-☐ ④ Mostrar a oração em duas partes (dirigente / resposta) e a «visão breve»: ☐ aceitável ☐ mostre apenas o texto completo
-☐ ⑤ Acrescente um link para a fonte oficial: ______
-☐ ⑥ É necessário um pedido formal, uma licença ou uma taxa. Procedimento: ______
-☐ ⑦ Preferimos que o nosso texto não seja usado no aplicativo (não o usarei).
-
-**4. O que farei conforme a sua resposta**
-
-- ①: usarei o texto exatamente e mostrarei a menção indicada. ②: mudarei para a edição que indicarem. ③: vou assinalá-lo como de domínio público, com a sua fonte. ④ e ⑤: farei como indicarem. ⑥: seguirei o procedimento e não publicarei o seu texto antes de concluí-lo. ⑦: não o usarei.
-- Se eu não receber resposta, a edição em português não será publicada. Ela permanece oculta até que eu tenha a sua aprovação.
-- A qualquer momento, também depois da publicação, corrigirei ou retirarei o que me pedirem.
-- Se concederem a autorização, o aplicativo indicará, em seu interior, o alcance dessa autorização, e não acrescentarei, além dele, nada que possa causar mal-entendidos. Se desejarem, pedirei com prazer a pessoas indicadas pelos senhores que revisem o aplicativo.
-
-**Materiais**
-
-1. Ficha de uma página (PDF, em português), anexa.
-2. Vídeo não listado no YouTube (1–2 minutos), feito por mim a partir do aplicativo, com legendas em português: 〔YouTube 링크〕
-3. 4 capturas de tela, anexas.
-
-Não envio o aplicativo: a ficha, o vídeo e as capturas mostram o que o usuário vê. O vídeo mostra a edição coreana, porque não colocarei o seu texto no aplicativo antes de ter a sua resposta.
-
-Muito obrigado pela atenção. Que a paz do Senhor esteja com todos.
+Se este pedido couber a outro setor, eu ficaria grato se o encaminhassem. Muito obrigado pelo seu tempo; que a paz do Senhor esteja com todos.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Coreia do Sul
@@ -823,8 +384,10 @@ Muito obrigado pela atenção. Que a paz do Senhor esteja com todos.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 브라질에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CNBB 저작권(『Missal Romano』 3판)인 것과 신청처 ③ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 266 낱말로 줄였다(이전 약 1466 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-cnbb/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-cnbb/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: Compendium 포르투갈어판에서 그대로 옮겼으나 **유럽 포르투갈어 표기**(Ámen·baptismo·há-de)다. 〔확인 필요〕: **브라질 본문 전부**(모든 기도에 표시), 파티마 기도 전문(비워 둠).
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 브라질에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CNBB 저작권(『Missal Romano』 3판)인 것과 신청처 ③ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -842,80 +405,23 @@ Muito obrigado pela atenção. Que a paz do Senhor esteja com todos.
 ### (가) 보낼 본문 (포르투갈어(포르투갈))
 
 Para: secretariado@liturgia.pt
-Assunto: Pedido de autorização: textos das orações do Rosário numa aplicação de oração gratuita e sem fins comerciais
+Assunto: «Rosarium», aplicação de oração gratuita: posso usar estes textos de oração? (basta responder com um número)
 
 Ao Secretariado Nacional de Liturgia da Conferência Episcopal Portuguesa:
 
-Chamo-me 〔성명〕 (nome de batismo: 〔세례명〕). Sou um fiel leigo católico da paróquia 〔소속 본당〕, 〔교구명〕, Coreia do Sul. Estou a preparar, a título pessoal, a «Rosarium», uma aplicação gratuita para Android que ajuda a rezar o Rosário. Não tem qualquer fim comercial: não tem publicidade, nem funções pagas, nem donativos. Não é um serviço oficial da Igreja, e declara-o. Ainda não foi publicada.
+Chamo-me 〔성명〕 (nome de batismo: 〔세례명〕) e sou um fiel leigo católico da paróquia 〔소속 본당〕, 〔교구명〕, Coreia do Sul. A título pessoal estou a preparar a «Rosarium», uma aplicação gratuita e sem fins comerciais (sem publicidade nem pagamentos) que ajuda a rezar o Rosário. É feita com reverência: serve apenas para rezar, e nada nela imita a Missa ou os sacramentos.
 
-Mais adiante, a aplicação terá uma edição em português, com um ficheiro de textos próprio para Portugal. Não quero traduzir eu próprio as orações a partir do coreano: quero mostrar, palavra por palavra, os textos que a Igreja em Portugal realmente reza. Escrevo para perguntar o que posso usar e em que condições. Se este pedido competir a outro serviço, ficaria grato se o encaminhassem ou me indicassem a quem escrever.
+Para a futura edição em português de Portugal, gostaria de mostrar as orações do Rosário apenas como texto (a aplicação nunca as lê em voz alta). Anexo a redação que tenciono usar, com a fonte de cada texto: vem do Compêndio do Catecismo em vatican.va, porque não pude verificar eu próprio a redação da terceira edição do Missal Romano; a oração de Fátima fica em branco. Peço que confirmem ou corrijam estes textos e me digam se posso usá-los e com que menção de direitos. A edição em português só será publicada depois da vossa resposta.
 
-**Quem sou e porque fiz esta aplicação**
+Basta responder com um número:
 
-Não sou uma empresa, mas uma só pessoa. Sou católico há muitos anos e toda a minha família é católica; o nosso filho 〔ou: a nossa filha〕 foi batizado em bebé e serviu ao altar como acólito. A aplicação nasceu em casa: a minha família pediu para poder rezar o Rosário como o rezávamos na paróquia que antes frequentávamos. Pelo caminho, quis também oferecer, a quem talvez nunca as possa visitar, a experiência — ao menos indireta — de rezar o Rosário em algumas igrejas célebres. Recentemente o «metaverso» voltou a chamar a atenção (na Coreia, por exemplo, na comunidade budista), e vi muitos católicos desejarem algo assim para a Igreja Católica. Procurei outras aplicações de «igrejas virtuais», mas em muitas encontrei elementos pouco reverentes — avatares que sobem livremente ao altar — ou textos de oração incorretos. Por isso decidi fazer uma bem feita e reverente.
+① Sem objeção: autorização nos termos descritos (menção de direitos, se houver: ______).
+② Autorização com condições ou correções; peço que as indiquem: ______
+③ Preferimos que o nosso texto não seja usado (não o usarei).
 
-Não há qualquer modelo de receita: nem publicidade, nem funções pagas; suporto eu próprio todos os custos do serviço, que é totalmente gratuito. Nasceu do simples desejo de ajudar muitos fiéis. No processo, vi que vários elementos precisam de autorização; por isso estou a escrever, uma a uma, às igrejas, dioceses e titulares de direitos envolvidos. Por agora, deixei de fora tudo o que, a meu ver, poderia levantar questões de direitos de autor. Se, para aprofundar a vida de devoção dos católicos e aproximar da Igreja quem não a conhece, estiverem dispostos a permitir o uso de certos textos protegidos, incluí-los-ei (vejam as opções). A minha esperança é que os católicos tenham mais ocasiões de rezar o Rosário e que quem não é católico sinta a Igreja mais próxima.
+Em anexo: os textos que tenciono usar (cada um com a sua fonte), um resumo de uma página com todos os pormenores, 4 capturas de ecrã e um vídeo breve: 〔YouTube 링크〕
 
-**Como cuidamos da reverência**
-
-Por se tratar de um lugar de oração, a reverência não fica apenas entregue à boa vontade dos utilizadores: é uma regra escrita na aplicação.
-
-- **Não se entra no presbitério.** Em todas as igrejas a zona do altar é um espaço vedado: o avatar detém-se ao pé dos degraus. Testes automáticos verificam-no, igreja a igreja.
-- **Nenhuma imitação da Missa nem dos sacramentos.** Dentro da igreja a aplicação declara: «A oração numa igreja virtual não substitui a participação na Missa nem os sacramentos (Confissão, Eucaristia, etc.)».
-- **Apenas gestos de oração.** Inclinar-se, fazer o sinal da cruz, cumprimentar, sentar-se ou ajoelhar-se para rezar, acender uma vela. A vela só se acende no suporte das velas; o sinal da cruz é proposto junto à pia de água benta, onde o modelo a tem; o aceno de mão só é possível perto da entrada (noutro lugar torna-se uma inclinação). Não há jogos, combates nem brincadeiras.
-- **Não há chat.** Até a intenção da vela é escolhida entre frases de oração já fixadas, sem texto livre: não podem aparecer palavras ofensivas.
-- **Textos de oração fiéis.** Os textos coreanos foram conferidos palavra por palavra com o livro oficial de orações dos bispos da Coreia; nas outras línguas serão usados apenas os textos oficiais.
-- **O calendário litúrgico.** A cor do frontal do altar e os enfeites mudam conforme o tempo litúrgico.
-- **Clareza sobre o que é.** Cada igreja traz o aviso de que é um modelo virtual simplificado, diferente da igreja real e não aprovado; as obras de arte ainda protegidas por direitos de autor são substituídas por formas abstratas.
-- **Sem publicidade, sem pagamentos, sem venda de dados.**
-
-**1. O que peço, e porquê**
-
-Talvez pedidos como este não cheguem com frequência; por isso explico em que me baseio, tanto quanto sei, para vos escrever. Entendo que a terceira edição do Missal Romano (em vigor desde a Quinta-Feira Santa de 2022) tem direitos reservados. Não encontrei uma página pública sobre o procedimento, nem pude verificar eu próprio a redação atual de cada oração: por isso peço o texto, além da autorização.
-
-É uma questão de direitos de autor. As orações são antigas, mas uma tradução moderna ou uma edição aprovada está normalmente protegida, e cabe ao titular autorizar a sua reprodução. Por isso pergunto:
-
-a) que me enviem, ou me indiquem onde encontrar, o texto oficial de cada uma das orações abaixo na forma aprovada em Portugal, para não copiar uma versão não verificada;
-b) se posso mostrar, numa aplicação gratuita, as orações do Rosário na redação em uso em Portugal — o Sinal da Cruz, o Credo (Símbolo dos Apóstolos), o Pai-Nosso, a Ave-Maria, o Glória ao Pai, a oração de Fátima («Ó meu Jesus, perdoai-nos…») e a Salve-Rainha com o seu versículo e a oração final — e os nomes dos vinte mistérios;
-c) quais desses textos têm direitos da Conferência Episcopal (Missal Romano, terceira edição) e a quem devo dirigir o pedido;
-d) que menção de direitos devo mostrar, e se há alguma taxa para uma aplicação gratuita.
-
-Se algum texto for do domínio público e não precisar de autorização, ficaria grato se simplesmente mo indicassem. É este o meu entendimento; peço que me corrijam se houver outro procedimento.
-
-**2. Como seriam usados os textos**
-
-- Mostrados como texto no ecrã, sem alterações, com a menção de direitos que indicarem, no ecrã de oração e numa página «Fontes das orações».
-- Apenas texto. A aplicação nunca lê em voz alta as orações em português: nem voz gravada, nem voz sintética (IA), nem leitura automática do dispositivo. (Só a edição coreana tem voz, com um pedido separado à Conferência Episcopal da Coreia.)
-- Para rezar a dois coros, cada oração é mostrada em duas partes (guia e resposta); nada é alterado, e as duas partes juntas formam o texto completo. Uma «vista breve» opcional mostra apenas as primeiras palavras das orações que o utilizador sabe de cor.
-- A aplicação não contém texto bíblico (apenas as referências), nem textos da Missa, nem cânticos.
-- Aplicação gratuita no Google Play, disponível em todo o mundo.
-
-**3. Opções (podem responder indicando apenas os números)**
-
-☐ ① Pode usar os textos indicados tal como estão, com esta menção: ______ (opção de base)
-☐ ② O texto oficial a usar é este (em anexo, ou nesta ligação): ______
-☐ ③ Estes textos são do domínio público, ou não precisam da nossa autorização: ______
-☐ ④ Mostrar a oração em duas partes (guia / resposta) e a «vista breve»: ☐ aceitável ☐ mostre apenas o texto completo
-☐ ⑤ Acrescente uma ligação para a fonte oficial: ______
-☐ ⑥ É necessário um pedido formal, uma licença ou uma taxa. Procedimento: ______
-☐ ⑦ Preferimos que o nosso texto não seja usado na aplicação (não o usarei).
-
-**4. O que farei conforme a vossa resposta**
-
-- ①: usarei o texto exatamente e mostrarei a menção indicada. ②: mudarei para a edição que indicarem. ③: assinalá-lo-ei como do domínio público, com a sua fonte. ④ e ⑤: farei como indicarem. ⑥: seguirei o procedimento e não publicarei o vosso texto antes de o concluir. ⑦: não o usarei.
-- Se não receber resposta, a edição em português não será publicada. Fica oculta até eu ter a vossa aprovação.
-- Em qualquer momento, também depois da publicação, corrigirei ou retirarei o que me pedirem.
-- Se concederem a autorização, a aplicação indicará, no seu interior, o âmbito dessa autorização, e não acrescentarei, para além dele, nada que possa causar mal-entendidos. Se o desejarem, pedirei de bom grado a pessoas por vós indicadas que revejam a aplicação.
-
-**Materiais**
-
-1. Ficha de uma página (PDF, em português), em anexo.
-2. Vídeo não listado no YouTube (1–2 minutos), feito por mim a partir da aplicação, com legendas em português: 〔YouTube 링크〕
-3. 4 capturas de ecrã, em anexo.
-
-Não envio a aplicação: a ficha, o vídeo e as capturas mostram o que o utilizador vê. O vídeo mostra a edição coreana, porque não porei o vosso texto na aplicação antes de ter a vossa resposta.
-
-Muito obrigado pela atenção. Que a paz do Senhor esteja convosco.
+Se este pedido competir a outro serviço, ficaria grato se o encaminhassem. Muito obrigado pelo vosso tempo; que a paz do Senhor esteja convosco.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Coreia do Sul
@@ -923,8 +429,10 @@ Muito obrigado pela atenção. Que a paz do Senhor esteja convosco.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
-- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
-- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 포르투갈에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEP 저작권(『Missal Romano』 3판)인 것과 신청처 ③ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
+- **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 255 낱말로 줄였다(이전 약 1450 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/prayer-cep/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
+- **본문을 보내 달라고 청하지 않는다(2026-11-23 2차 개정).** 쓰려는 본문을 `package/prayer-cep/texts.md` 로 붙이고(본문마다 출처), **확인·수정**과 허락·표기 문구를 청한다. 붙인 것: Compendium 포르투갈어판에서 그대로 옮김(확인). 〔확인 필요〕: 2022년 『Missal Romano』 3판에서 주님의 기도·사도신경이 바뀌었는지, 파티마 기도 전문(비워 둠).
+- 요약에 **경건함을 지키기 위해 한 일** 절을 두고, 편지에는 한 줄로 줄였다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
+- **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **붙인 본문(`texts.md`)이 맞는지 확인·수정해 달라**(본문을 보내 달라고 청하지 않는다 — 확인하지 못한 본문은 그렇게 밝히고, 알려 주시거나 확인해 주시기를 청한다) ① 포르투갈에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEP 저작권(『Missal Romano』 3판)인 것과 신청처 ③ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
 - **답에 따라**: ① 글자 그대로 + 표기 ② 알려 준 판본으로 바꿈 ③ 출처와 함께 공유 저작물로 표시 ④⑤ 알려 준 대로 ⑥ 절차를 마치기 전에는 그 본문을 싣지 않음 ⑦ 쓰지 않음.
@@ -936,5 +444,6 @@ Muito obrigado pela atenção. Que a paz do Senhor esteja convosco.
 ## 보내기 전에 확인할 것
 
 - 〔확인 필요〕 주소 둘(USCCB, CNBB)을 사용자가 브라우저로 공식 누리집에서 확인했는지. 확인하지 못한 곳에는 보내지 않는다(주소를 지어내지 않는다).
+- 붙이는 기도문(`package/prayer-*/texts.md`)의 〔확인 필요〕 가운데 채울 수 있는 것을 채웠는지, 채운 뒤 편지의 「확인하지 못했다」는 문장을 그에 맞게 고쳤는지(README 7-1 의 14번). 지어내지 않는다 — 모르면 빈 채로 보내고 알려 주시기를 청한다
 - 각 언어 본문을 그 언어를 아는 사람이 한 번 읽어 보았는지 〔확인 필요: 원어민 검토 전〕
 - 편지의 「쓰는 방식」(글로만·음성 없음·두 부분 표시·짧게 보기)이 그때의 다국어 설계와 같은지
