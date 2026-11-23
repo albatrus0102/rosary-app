@@ -14,7 +14,7 @@ const [dir, outDir, knownArg] = process.argv.slice(2);
 if (!dir || !outDir || !knownArg) { console.error('쓰임: node deploy_proxy.cjs <정적 폴더> <출력 폴더> <이미 올라간 manifest.json[,…]>'); process.exit(2); }
 const known = new Set();
 for (const f of knownArg.split(',')) { const j = JSON.parse(fs.readFileSync(f, 'utf8')); for (const h of Array.isArray(j) ? j : Object.values(j)) known.add(h); }
-const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', json: 'application/json', txt: 'text/plain; charset=utf-8', webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', svg: 'image/svg+xml', woff2: 'font/woff2' };
+const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8', json: 'application/json', txt: 'text/plain; charset=utf-8', webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', svg: 'image/svg+xml', woff2: 'font/woff2', pdf: 'application/pdf' };
 const man = {}, inline = {};
 let inlineBytes = 0;
 (function walk(d) {
