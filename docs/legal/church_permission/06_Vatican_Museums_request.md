@@ -2,6 +2,13 @@
 
 작성일: 2026-11-16 · 근거: `docs/legal/LEGAL_REVIEW_2026-11.md` §2, M8 · 개인 정보는 모두 `〔 〕` 자리 표시(보내기 직전에 채운다).
 
+## 2026-11-23 개정 — 무엇이 바뀌었나
+
+- **근거 분류 (c): 작품의 저작권은 끝났다**(프레비아티 1920년, 라파엘로 1520년 사망). 여쭙는 것은 저작권 이용 허락이 아니라 **소장 기관의 복제 규칙**(방문자 촬영 「개인·가정 용도」, 이미지 이용 절차, 2017년 바티칸 저작권법의 문화재 복제물 보호)이 우리 같은 제3자의 재사용에 적용되는지와, **이의가 없는지**다.
+- 보낼 본문을 **이탈리아어판 (다)** 로 바꾸었다(앱을 만든 까닭 · 왜 여쭙는지 · 선택지 · 답에 따라 하는 일 포함). 아래 (가) 영어판과 (나) 한국어판은 **이전 판**이며 참고로 남긴다 — 필요하면 (가)를 이탈리아어 본문 아래에 덧붙여 보내도 된다. 전화번호 자리 표시는 지웠다(전자우편으로만 연락).
+- 다른 곳과 **같은 날 한꺼번에** 보낸다. 자료: `package/vatican-museums/`.
+- 현재 상태(2026-11-23 확인): 맨 아래 「준비해 둔 대안」의 뜻은 `lib/app/release_gate.dart`(`hiddenStationSeriesIds = {'previati'}`, `stationSeriesOverrides`)로 **이미 배포판에 적용**돼 있다 — 프레비아티는 숨겨져 있고 성 베드로에는 1897년 석판화가 걸리며, 〈거룩한 변모〉 배경도 숨겨져 있다. 허락을 받으면 다시 연다. 답이 없거나 거절이면 지금 상태 그대로 간다.
+
 ## 0. 보낼 곳
 
 | 받는 곳 | 연락처 | 확인 |
@@ -14,14 +21,14 @@
 
 ---
 
-## (가) 영어판 (보낼 본문)
+## (가) 영어판 — 〔이전 판, 참고용. 보낼 본문은 아래 (다) 이탈리아어판〕
 
 To: id.musei@scv.va
 Subject: Permission request: photographs of Previati's Via Crucis in a free, non-commercial prayer app
 
 Dear Images and Copyright Office,
 
-My name is 〔Name〕, a Catholic layperson from 〔Parish〕 in 〔Diocese〕, South Korea. I am developing a free Android prayer app called "Rosarium" that helps users pray the Rosary and the Stations of the Cross. It is entirely non-commercial: there are no ads, no paid features and no donations, and I publish it as an individual. It is not an official service of the Church.
+My name is 〔성명〕, a Catholic layperson from 〔소속 본당〕 in 〔교구명〕, South Korea. I am developing a free Android prayer app called "Rosarium" that helps users pray the Rosary and the Stations of the Cross. It is entirely non-commercial: there are no ads, no paid features and no donations, and I publish it as an individual. It is not an official service of the Church.
 
 I would like to ask whether I may use, at low resolution, two groups of images of works in the Vatican collections:
 
@@ -48,9 +55,9 @@ I will not publish the app with these images until I hear from you, and I will r
 Thank you very much for your time. May peace be with you.
 
 Sincerely,
-〔Name〕 〔Baptismal name〕
-〔Parish〕, 〔Diocese〕, South Korea
-〔Email〕 · 〔Phone〕
+〔성명〕 〔세례명〕
+〔소속 본당〕, 〔교구명〕, South Korea
+〔이메일〕
 
 ---
 
@@ -88,9 +95,85 @@ Sincerely,
 바쁘신 가운데 살펴 주셔서 감사합니다. 주님의 평화를 빕니다.
 
 〔성명〕 〔세례명〕 올림
-〔소속 본당〕, 〔교구명〕교구 · 〔이메일〕 · 〔전화〕
+〔소속 본당〕, 〔교구명〕교구 · 〔이메일〕
 
 ---
+
+## (다) 이탈리아어판 — 2026-11-23 개정, **보낼 본문**
+
+A: id.musei@scv.va
+Oggetto: Richiesta di autorizzazione: fotografie della Via Crucis di Previati e della Trasfigurazione di Raffaello in un’app di preghiera gratuita e non commerciale
+
+Spettabile Ufficio Immagini e Diritti dei Musei Vaticani,
+
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. Sto realizzando, a titolo personale, un’app gratuita per Android chiamata «Rosarium», che aiuta a pregare il Rosario e la Via Crucis. L’app è interamente non commerciale: non ha pubblicità, né funzioni a pagamento, né raccolte di offerte. Non è un servizio ufficiale della Chiesa, e lo dichiara al proprio interno. Non è ancora pubblicata.
+
+**Chi sono e perché ho fatto quest’app**
+
+Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è tutta la mia famiglia; nostro figlio 〔o: nostra figlia〕 ha ricevuto il Battesimo da neonato e ha servito all’altare come ministrante. L’app è nata in casa: i miei familiari desideravano poter pregare il Rosario come lo pregavamo nella parrocchia che frequentavamo un tempo. Strada facendo ho desiderato offrire, anche a chi forse non potrà mai visitarle, l’esperienza — almeno indiretta — di pregare il Rosario in alcune chiese celebri. Di recente il «metaverso» è tornato a far parlare di sé (in Corea, per esempio, nella comunità buddista), e ho letto molti cattolici augurarsi qualcosa di simile per la Chiesa cattolica. Ho cercato altre app di «chiese virtuali», ma in molte ho trovato elementi poco rispettosi — avatar che salgono liberamente sull’altare — oppure testi di preghiera sbagliati. Per questo ho deciso di farne una fatta bene, con rispetto.
+
+Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore, comprese le immagini di cui Vi scrivo. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di queste immagini, le inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
+
+**1. Che cosa chiedo, e perché lo chiedo a Voi**
+
+Forse richieste come questa non Vi arrivano spesso; spiego quindi su quali basi, per quanto ne so, mi rivolgo a Voi. Chiedo se posso mostrare nell’app, a bassa risoluzione, le fotografie di due opere delle collezioni vaticane.
+
+Le due opere sono antiche e, per quanto mi risulta, non più protette dal diritto d’autore (Previati è morto nel 1920, Raffaello nel 1520): non chiedo quindi una licenza sulle opere. Ma sono conservate nei Musei Vaticani, e ho letto che: le Vostre regole per i visitatori permettono le fotografie soltanto «per uso personale e domestico» (https://www.museivaticani.va/content/museivaticani/en/organizza-visita/consigli-utili.html); la Vostra pagina «Immagini e diritti» dice che l’uso delle immagini segue precise procedure economiche e regolamentari (https://www.museivaticani.va/content/museivaticani/en/organizza-visita/servizi-per-i-visitatori/immagini-e-diritti.html); e, a quanto ho letto, la legge sul diritto d’autore dello Stato della Città del Vaticano (2017) tutela anche le riproduzioni dei beni culturali. Non sono certo che queste regole si applichino a chi, come me, riutilizza fotografie già pubblicate da altri su Wikimedia Commons con licenza libera: preferisco chiederlo a Voi anziché darlo per scontato. Se vale una procedura diversa, Vi prego di correggermi.
+
+**2. Le immagini**
+
+- Gaetano Previati, «Via Crucis» (1901–1902), quattordici tavole, Collezione d’Arte Religiosa Moderna. Nell’app sarebbero le immagini delle quattordici stazioni nel modello 3D semplificato della Basilica di San Pietro. Le fotografie sono di Sailko, pubblicate su Wikimedia Commons con licenza CC BY 3.0 (https://commons.wikimedia.org/wiki/Category:Via_Crucis_by_Gaetano_Previati).
+- Raffaello, «Trasfigurazione» (Pinacoteca Vaticana): una piccola immagine di sfondo per la meditazione di un mistero della luce. È l’immagine Google Art Project presente su Wikimedia Commons, indicata come pubblico dominio (PD-Art).
+- Uso: dimensione ridotta (al massimo circa 1280 pixel), cornice ritagliata, con questa dicitura: titolo, autore, «Musei Vaticani», fotografo, licenza e link, «ritagliata e ridotta».
+- Non uso alcuna immagine tratta dal Vostro sito.
+- Oggi queste immagini non sono nella versione dell’app destinata al pubblico: al loro posto ci sono una serie di litografie del 1897 e uno sfondo senza immagine. Le inserirò soltanto con il Vostro consenso.
+
+**3. Che cosa dichiara l’app**
+
+«Questa app non è un servizio ufficiale della Chiesa cattolica.» L’app non ha mai dichiarato né lasciato intendere un’approvazione o un patrocinio dei Musei Vaticani, e non usa stemmi, loghi o marchi della Santa Sede o dei Musei.
+
+**4. Opzioni (si può rispondere indicando soltanto i numeri)**
+
+☐ ① Nessuna obiezione: le fotografie indicate possono essere usate alle condizioni descritte (opzione di base).
+☐ ② Sì, ma con questa dicitura o a queste condizioni: ______
+☐ ③ È necessaria una licenza o una procedura dei Musei Vaticani. Procedura ed eventuale compenso per un uso gratuito e non commerciale: ______
+☐ ④ Preferiamo fornire noi le immagini ufficiali, oppure che l’app riporti un link al sito dei Musei: ______
+☐ ⑤ Preferiamo che queste immagini non siano usate (non le userò).
+☐ ⑥ Le regole per i visitatori («uso personale e domestico») valgono anche per chi riutilizza fotografie già pubblicate su Wikimedia Commons: ☐ sì ☐ no
+
+**5. Che cosa farò secondo la Vostra risposta**
+
+- ①: inserirò le immagini con la dicitura descritta. ②: farò come indicherete. ③: seguirò la procedura, e prima non userò le immagini. ④: userò le Vostre immagini o aggiungerò il link. ⑤: non le userò.
+- Se non ricevo risposta, non userò queste immagini: l’app resterà com’è oggi, con una serie di litografie del 1897 al posto della Via Crucis di Previati e uno sfondo senza immagine al posto della Trasfigurazione.
+- In ogni momento, anche dopo la pubblicazione, toglierò ciò che mi chiederete.
+- Se concederete un permesso, ne indicherò i limiti all’interno dell’app e non aggiungerò, oltre quei limiti, elementi che possano creare equivoci. Se lo ritenete utile, chiederò volentieri a persone da Voi indicate di esaminare l’app.
+
+**Materiali**
+
+1. Scheda di una pagina (PDF, in italiano), allegata.
+2. Video non in elenco su YouTube (1–2 minuti), realizzato da me a partire dall’app, con sottotitoli in italiano: 〔YouTube 링크〕
+3. 4 schermate, allegate.
+
+Non invio l’app stessa: la scheda, il video e le schermate mostrano ciò che l’utente vedrebbe.
+
+Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
+
+〔성명〕 〔세례명〕
+〔소속 본당〕, 〔교구명〕, Corea del Sud
+〔이메일〕
+
+---
+
+## (라) 한국어 요약 — 2026-11-23 개정(사용자 확인용)
+
+- 받는 곳: 바티칸 박물관 이미지·저작권 사무실 · `id.musei@scv.va`
+- 편지에 **앱을 만든 까닭**을 사용자 말 그대로 한 절로 적었다.
+- **무엇을 여쭙는가(근거 분류 c)**: 프레비아티 〈십자가의 길〉 14점과 라파엘로 〈거룩한 변모〉의 사진(위키미디어 커먼즈, CC BY 3.0 / PD-Art)을 낮은 해상도로 실어도 되는지. 두 작품은 저작권이 끝났으므로 작품에 대한 허락이 아니라, 박물관의 규칙 — 방문자 촬영은 「개인·가정 용도」만, 이미지 이용은 정해진 절차, 2017년 바티칸 저작권법의 문화재 복제물 보호 — 이 커먼즈 사진을 다시 쓰는 제3자에게도 적용되는지를 묻는다. 확실하지 않다고 적고, 다른 절차가 있으면 바로잡아 달라고 했다.
+- **선택지**: ① 적은 조건대로 써도 됨(기본) ② 표기·조건을 달아 허락 ③ 박물관의 계약·절차 필요(절차·비용) ④ 공식 이미지를 주거나 박물관 누리집 링크를 실을 것 ⑤ 쓰지 않기를 원함 ⑥ 방문자 규칙이 커먼즈 재사용자에게도 적용되는지(예/아니오)
+- **답에 따라**: ① 적은 표기로 싣는다 ② 알려 준 대로 ③ 절차를 마치기 전에는 쓰지 않는다 ④ 공식 이미지를 쓰거나 링크를 싣는다 ⑤ 쓰지 않는다.
+- **답이 없으면**: 쓰지 않는다. 지금처럼 프레비아티 자리에는 1897년 석판화, 〈거룩한 변모〉 자리에는 그림 없는 배경을 둔다.
+- 허락을 받으면 그 범위를 앱 안에 밝혀 적고, 범위를 넘는 요소는 더하지 않는다. 필요하면 지정하는 분께 앱 검수를 청한다.
+- 자료: 한 쪽 요약(PDF, 이탈리아어) · 영상 1~2분 〔YouTube 링크〕 · 화면 캡처 4장. APK 는 보내지 않는다.
 
 ## 별첨 — 보낼 때 첨부할 것
 

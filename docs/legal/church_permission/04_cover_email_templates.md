@@ -1,15 +1,49 @@
 # 04. 바로 붙여 쓰는 전자우편 본문
 
-보내기 전에 `〔 〕` 자리를 모두 채웁니다. 긴 본문은 `01`, `02`, `03` 문서에 있고, 여기에는 짧은 첫 연락과 후속 연락을 모았습니다. 모든 연락은 전자우편으로만 하며, 전화 문의는 하지 않습니다. 개인 정보는 보내는 글에만 적고 이 저장소에는 적지 않습니다.
+처음 작성: 2026-11-16 · **2026-11-23 개정**(사용자 지시: 모든 편지에 「앱을 만든 까닭」과 「왜 여쭙는지」를, 서식이 아니라 따뜻하고 겸손한 편지로)
+
+보내기 전에 `〔 〕` 자리를 모두 채웁니다. 보낼 본문은 받는 곳마다 `01`·`02`·`05`·`06`·`08`~`16` 문서에 있고, 여기에는 **모든 편지에 공통으로 들어가는 문단**과 접수 확인·감사 인사 같은 짧은 글을 모았습니다. 모든 연락은 전자우편으로만 하며, 전화 문의는 하지 않습니다. 개인 정보는 보내는 글에만 적고 이 저장소에는 적지 않습니다.
+
+## 0. 모든 편지에 들어가는 공통 문단
+
+### 0-1. 앱을 만든 까닭 (한국어 표준 문단)
+
+한국어 편지(`01`·`02`·`05`·`09`)에 그대로 들어 있습니다. 이탈리아어·영어·스페인어·포르투갈어판은 각 편지의 「Chi sono e perché ho fatto quest’app」 / 「Who I am, and why I made this app」 / 「Quién soy y por qué he hecho esta aplicación」 / 「Quem sou e …」 절에 있습니다(`06`·`08`·`10`~`16`). 가족 이야기는 사용자가 적으라고 한 그대로이며 이름은 적지 않습니다. 외국어판의 자녀 문장은 보내기 전에 성별에 맞게 고릅니다.
+
+저는 회사가 아니라 개인으로 이 앱을 만들고 있습니다. 오랜 신자이고 가족 모두가 신자이며, 아이는 유아 세례를 받고 복사를 섰습니다. 이 앱은 예전에 다니던 본당에서 바치던 것처럼 묵주 기도를 바칠 수 있게 해 달라는 가족의 부탁에서 시작했습니다. 만들다 보니, 평생 가 보기 어려운 이름난 성당에서 묵주 기도를 바치는 체험을 간접으로나마 나누고 싶어졌습니다. 요즘 메타버스가 다시 관심을 받으면서(불교계의 사례처럼) 이런 앱이 조명되고, 천주교에도 있으면 좋겠다는 신자분들의 말을 많이 보았습니다. 다른 가상 성당 앱도 찾아보았지만, 아바타가 제단 위를 마음대로 걸어 다니는 것처럼 경건하지 못한 요소가 있거나 기도문이 틀린 것이 많았습니다. 그래서 바르고 경건한 앱을 제대로 만들어 보기로 했습니다.
+
+수익 모델은 전혀 없습니다. 광고도 유료 기능도 없고, 서비스에 드는 비용은 모두 제가 부담하여 완전히 무료입니다. 많은 신자분께 도움이 되고 싶다는 마음 하나로 시작한 일입니다. 만드는 과정에서 여러 요소에 허락이 필요하다는 것을 알게 되어, 관련된 성당과 교구에 한 곳 한 곳 연락드려 허락을 구하고 있습니다. 지금은 저작권 문제가 생길 수 있다고 본 것을 모두 뺐습니다. 신자들의 신심 생활을 깊게 하고 일반인이 천주교에 관심을 갖게 하는 데 도움이 된다고 보시어 일부 저작물의 사용을 허락해 주신다면, 그 범위에서 앱에 반영하겠습니다. 신자분들이 묵주 기도를 바칠 계기가 늘고, 신자가 아닌 분들도 천주교를 더 가깝게 느끼게 되기를 바랍니다.
+
+### 0-2. 왜 여쭙는지 — 받는 곳마다 적는 근거
+
+이런 문의를 받아 본 일이 드문 곳이 많으므로, 편지마다 근거를 짧게 적고 「제가 이해한 바로는 …, 다른 절차가 있으면 바로잡아 주십시오」라고 덧붙입니다.
+
+| 받는 곳 | 편지에 적는 근거 |
+|---|---|
+| 주교회의(`01`) | 저작권 안내 https://cbck.or.kr/Copyright (『가톨릭 기도서』 전재·복제에 승인 필요) · 「전례문의 저작권 사용 절차 규정」 제5조 ③·제7조 https://cbck.or.kr/Board/K7300/13000841 · 2023년 규정 제8조(AI·앱) https://cbck.or.kr/Board/K7300/20230535 |
+| 당고개·여의도동, 설계자·작가(`02`·`05`) | 저작권법 제4조 제1항 제5호(건축저작물)·제39조(사후 70년) · 서울고등법원 2016. 12. 1. 선고 2015나2016239 판결(실제 공간의 3D 구현) |
+| 서울대교구(`09`) | 명동대성당: 1898년 건물·설계자 1896년 선종 → 저작권 없음, 이름과 모습에 대한 교구의 정당한 관심 · 당고개·여의도동: 위와 같음 |
+| 외국 성당(`08`·`10`~`15`) | 이탈리아 저작권법 633/1941 제25조(사후 70년 → 저작권 없음) · 관리 주체의 이름·모습에 대한 정당한 관심 · 문화유산법 D.Lgs. 42/2004 제107–108조 https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2004-01-22;42 · 라테란 조약 제13·15조 · 바티칸의 복제 규칙 |
+| 바티칸 박물관(`06`) | 방문자 규칙(「개인·가정 용도」) · 「이미지와 권리」 안내 · 2017년 바티칸 저작권법 |
+| 외국어 기도문(`16`) | 각 권리자의 저작권 표기와 안내 쪽(ICEL © 2010, LEV © 2005 등). 원문을 다 확인하지 못했으므로 **공식 본문 자체**도 청한다 |
+
+### 0-3. 스스로 지킬 약속 (모든 편지의 끝부분)
+
+허락해 주시면 허락하신 범위를 앱 안에 밝혀 적고, 그 범위를 넘어 오해를 살 수 있는 요소는 더하지 않겠습니다. 필요하다고 보시면, 지정해 주시는 분께 앱의 검수를 청하겠습니다.
+
+### 0-4. 선택지와 자료
+
+- 편지마다 번호만 적어 답할 수 있는 선택지를 둡니다. 기본 꼴: ① 이름과 단순화한 가상 모형을 싣는 데 이의 없음 ② 실제 작품의 모습을 반영해도 됨(작품별) ③ 사진을 사용해도 됨(어떤 사진·표기) ④ 공식 누리집 링크·소개 문구를 함께 실어 주기를 원함 ⑤ 싣지 않기를 원함. 받는 곳에 맞게 고친 것은 각 편지에 있습니다.
+- 자료는 한 쪽 요약(PDF), 1~2분 영상 링크 〔YouTube 링크〕, 화면 캡처 4~6장입니다(`package/<id>/`). 앱 설치 파일은 보내지 않습니다.
 
 ## 1. 주교회의 총무부 — 첫 전자우편(신청서 + 별첨 + 문의 사항, 한 통)
 
 받는 곳: mano@cbck.or.kr (되돌아올 때만 mano@cbck.kr 로 다시 보낸다)
-전화는 하지 않습니다. 본문은 `01_CBCK_copyright_request.md` 의 (가)를 그대로 씁니다. 그 안에 아래 문의 사항이 한 문단으로 들어 있습니다.
+전화는 하지 않습니다. 본문은 `01_CBCK_copyright_request.md` 의 (가)를 그대로 씁니다(2026-11-23 개정판: 앱을 만든 까닭, 왜 여쭙는지, 선택지 포함).
 
-> 문의 사항(요약): ① 신청서를 전자우편으로 제출해도 되는지, 원본 우편이 필요한지 ② 개인 신청 시 상호·사업자등록번호 칸 기재 방법('개인', '해당 없음') ③ 비매품 무료 앱의 사용료(「전례문의 저작권 사용 절차 규정」 제5조 ③) ④ '교회 인가 사실' 칸을 '받지 않음, 본당 사제 검수 진행 중'으로 적어도 되는지 ⑤ 승인 후 앱에 표시할 저작권 표기 문구
+> 문의 사항(요약): ① 신청서를 전자우편으로 제출해도 되는지, 원본 우편이 필요한지 ② 개인 신청 시 상호·사업자등록번호 칸 기재 방법('개인', '해당 없음') ③ 비매품 무료 앱의 사용료(「전례문의 저작권 사용 절차 규정」 제5조 ③) ④ '교회 인가 사실' 칸을 '받지 않음'으로 적어도 되는지, 인가나 검수가 필요한지(2026-11-23: 「본당 사제 검수 진행 중」은 쓰지 않는다) ⑤ 승인 후 앱에 표시할 저작권 표기 문구
 
-붙임: 신청서(hwp), 별첨 1(기도문 목록), 별첨 2(화면 캡처), 별첨 3(앱 소개)
+붙임: 신청서(hwp), 별첨 1(기도문 목록), 한 쪽 요약(PDF), 화면 캡처 6장, 영상 링크
 
 ## 2. 주교회의 총무부 — 접수 확인(보낸 뒤 2~3주가 지나도 답이 없을 때)
 
@@ -27,7 +61,7 @@
 〔성명〕 〔세례명〕 올림
 〔이메일〕
 
-## 3. 당고개 순교성지 — 첫 연락(짧은 글)
+## 3. 당고개 순교성지 — 첫 연락(짧은 글) 〔이전 판 — 2026-11-23 부터 `02` (가) 전체를 한 번에 보낸다〕
 
 받는 곳: dgg1839@kakao.com (성지 사무실에 먼저 보내고, 이어서 아래 4번의 교구 전자우편을 보낸다)
 긴 본문은 `02_Danggogae_consent_request.md` 의 (가)입니다. 먼저 짧게 여쭙고 싶을 때 씁니다.
@@ -52,13 +86,14 @@
 
 붙임: 동의 요청서(`02` (가) 본문), 화면 캡처 〔장수〕장, 앱 소개
 
-## 4. 천주교 서울대교구 — 문화팀 전자우편(순교자현양위원회 전달 요청)
+## 4. 천주교 서울대교구 — 〔이전 판 대체: `09_Seoul_Archdiocese_request.md`〕
 
 받는 곳: 문화홍보국 문화팀 culture@seoul.catholic.kr
-순교자현양위원회는 전자우편 주소를 찾지 못했습니다. 성지 사무실에는 위 3번 전자우편에서 "교구의 어느 부서에 보내면 되는지, 위원회에 전달해 주실 수 있는지" 여쭙고, 문화팀에는 아래 본문으로 위원회 전달 또는 담당 부서 안내를 요청합니다.
-본문은 `02_Danggogae_consent_request.md` 의 (나)를 씁니다(전달 요청 문장이 들어 있습니다).
+2026-11-23 부터 명동대성당·당고개 순교성지·여의도동성당을 **한 통에 묶어**, 성지·본당과 같은 날 보냅니다. 본문은 `09_Seoul_Archdiocese_request.md` 의 (가)입니다. 순교자현양위원회와 명동대성당 사무실은 전자우편 주소를 찾지 못해 그 편지에서 전달을 부탁합니다. (이전에는 `02` 의 (나)를 성지의 답을 들은 뒤 보내기로 했습니다.)
 
-## 5. 본당 신부님 — 검수 부탁
+## 5. 본당 신부님 — 검수 부탁 〔교구가 요청할 때만 — 지금은 보내지 않는다〕
+
+> 2026-11-23 사용자 결정: 본당 신부님께 검수를 청하지 않습니다(짐을 드리는 일). 서울대교구나 주교회의가 검수가 필요하다고 답하면, 그때 지정해 주시는 분께 아래 글을 고쳐 씁니다.
 
 보내는 법: 전자우편으로 보내거나, 인쇄한 검수 자료를 본당 사무실에 직접 전해 드립니다.
 
@@ -96,3 +131,59 @@
 
 〔날짜〕
 〔성명〕 〔세례명〕 올림
+
+허락해 주신 범위를 앱 안에 밝혀 적고, 그 범위를 넘는 요소는 더하지 않겠습니다. 〔허락을 받은 경우에만 넣는 문장〕
+
+## 7. 외국 기관 — 접수 확인(보낸 뒤 3주가 지나도 답이 없을 때, 한 번만)
+
+재촉하지 않는 짧은 글입니다. 자리 표시 `〔날짜〕` 에는 처음 보낸 날을 적습니다.
+
+### 이탈리아어
+
+Oggetto: App di preghiera «Rosarium» — richiesta del 〔날짜〕
+
+Gentili Signori,
+
+il 〔날짜〕 Vi ho scritto a proposito dell’app di preghiera gratuita «Rosarium». So che una richiesta così insolita richiede tempo e non desidero farVi fretta: scrivo soltanto per accertarmi che il mio messaggio sia arrivato all’ufficio giusto. Se devo rivolgermi altrove, Vi sarei grato di una breve indicazione. Nel frattempo non cambio nulla rispetto a quanto descritto nella lettera.
+
+Grazie di cuore. La pace del Signore sia con Voi.
+
+〔성명〕 〔세례명〕 — 〔이메일〕
+
+### 영어
+
+Subject: Prayer app “Rosarium” — my request of 〔날짜〕
+
+Dear Sir or Madam,
+
+On 〔날짜〕 I wrote to you about the free prayer app “Rosarium”. I know that an unusual request like this takes time, and I do not wish to press you; I only want to make sure that my message reached the right office. If I should write elsewhere, a short note would be a great help. In the meantime I am changing nothing from what the letter describes.
+
+With thanks, and may the peace of the Lord be with you.
+
+〔성명〕 〔세례명〕 — 〔이메일〕
+
+### 스페인어
+
+Asunto: Aplicación de oración «Rosarium» — mi solicitud del 〔날짜〕
+
+Estimados señores:
+
+El 〔날짜〕 les escribí acerca de la aplicación de oración gratuita «Rosarium». Sé que una petición tan poco habitual requiere tiempo y no deseo apremiarles; solo quiero asegurarme de que mi mensaje llegó a la oficina adecuada. Si debo dirigirme a otro lugar, les agradecería una breve indicación. Mientras tanto no cambio nada de lo descrito en la carta.
+
+Muchas gracias. Que la paz del Señor esté con ustedes.
+
+〔성명〕 〔세례명〕 — 〔이메일〕
+
+### 포르투갈어
+
+Assunto: «Rosarium», aplicativo de oração — meu pedido de 〔날짜〕
+
+Prezados Senhores,
+
+No dia 〔날짜〕 escrevi a respeito do «Rosarium», um aplicativo de oração gratuito. Sei que um pedido tão pouco habitual leva tempo e não desejo apressá-los; quero apenas ter a certeza de que a minha mensagem chegou ao setor certo. Se eu devo escrever a outro lugar, agradeceria uma breve indicação. Enquanto isso, não altero nada do que a carta descreve.
+
+Muito obrigado. Que a paz do Senhor esteja com todos.
+
+〔성명〕 〔세례명〕 — 〔이메일〕
+
+(포르투갈에 보낼 때는 「aplicativo」를 「aplicação」로, 「setor」를 「serviço」로 고친다.)
