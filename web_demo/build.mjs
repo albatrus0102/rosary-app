@@ -242,11 +242,13 @@ export function ensureOwnerToken(file, rec) {
   fs.writeFileSync(file, JSON.stringify(j, null, 2) + '\n', { mode: 0o600 });
   return t;
 }
+const OWNER_LABELS = { cbck: '한국천주교주교회의', danggogae: '당고개 순교성지', yeouido: '여의도동 성당', 'seoul-archdiocese': '서울대교구 (명동 장면)', 'seoul-archdiocese-danggogae': '서울대교구 (당고개 장면)', 'seoul-archdiocese-yeouido': '서울대교구 (여의도동 장면)', stpeter: '성 베드로 대성당', 'vatican-museums': '바티칸 박물관', lateran: '라테라노 대성당', maggiore: '산타 마리아 마조레', stpaul: '성 바오로 대성당', assisi: '아시시 성 프란치스코', milan: '밀라노 대성당', florence: '피렌체 대성당', 'prayer-lev': '바티칸 출판사 LEV', 'prayer-icel': 'ICEL(영어 전례)', 'prayer-usccb': '미국 주교회의', 'prayer-cbcew': '잉글랜드·웨일스 주교회의', 'prayer-cee': '스페인 주교회의', 'prayer-cem': '멕시코 주교회의', 'prayer-cei': '이탈리아 주교회의', 'prayer-cnbb': '브라질 주교회의', 'prayer-cep': '포르투갈 주교회의' };
+const LANG_KO = { ko: '한국어', en: '영어', it: '이탈리아어', es: '스페인어', pt: '포르투갈어', la: '라틴어' };
 function ownerHtml(rec) {
   const e = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const rows = Object.entries(rec).map(([id, r]) => `<li><a href="../${e(r.token)}/"><b>${e(id)}</b><span>${e(r.church)} · ${e(r.lang)}</span></a></li>`).join('\n');
+  const rows = Object.entries(rec).map(([id, r]) => `<li><a href="../${e(r.token)}/"><b>${e(OWNER_LABELS[id] || id)}</b><span>${e(r.church)} · ${e(LANG_KO[r.lang] || r.lang)}</span></a></li>`).join('\n');
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>Rosarium — 확인용 목록</title>
-<style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#1c1830;color:#f6ecda}main{max-width:640px;margin:0 auto;padding:24px 16px}h1{font-size:20px;margin:0 0 6px}p{color:#c9bda6;margin:0 0 16px;font-size:14px}ul{list-style:none;padding:0;margin:0}li a{display:flex;justify-content:space-between;gap:12px;padding:14px 12px;border-bottom:1px solid #3a3352;color:#f6ecda;text-decoration:none;min-height:24px}li a:active{background:#2b2440}span{color:#c8a86a;font-size:14px}</style></head>
+<style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#1c1830;color:#f6ecda}main{max-width:640px;margin:0 auto;padding:24px 16px}h1{font-size:20px;margin:0 0 6px}p{color:#c9bda6;margin:0 0 16px;font-size:14px}ul{list-style:none;padding:0;margin:0}li a{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #3a3352;color:#f6ecda;text-decoration:none;min-height:24px}li a:active{background:#2b2440}span{color:#c8a86a;font-size:14px}</style></head>
 <body><main><h1>Rosarium 확인용 목록</h1><p>받는 곳마다 보내는 쪽과 똑같은 화면입니다. 이 주소는 혼자만 쓰세요.</p><ul>
 ${rows}
 </ul></main></body></html>`;
