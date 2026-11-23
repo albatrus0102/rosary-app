@@ -112,6 +112,8 @@ void main() {
       final shared = {
         'yeouido': 'fugel',
         'assisi': 'fugel',
+        // 빛의 성당(가상)도 1단계는 판을 걸지 않고(crossWay.none) 기본 연작에 묶는다.
+        'light': 'fugel',
         if (!ReleaseGate.showAll) 'stpeter': 'oreilly',
       };
       shared.forEach(
