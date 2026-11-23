@@ -62,9 +62,10 @@
     // 여의도동: 낮에는 옆벽 위 창과 정면 큰 창의 햇빛, 회녹색 홈 줄 콘크리트 벽과 크림색 후진. 후진 둘레·팔각 천장 간접등이 따뜻하게
     yeouido: { keyK: 0.9, keyTint: 0xffe2bc, keyTintK: 0.3, ambK: 0.72, ambTint: 0xffe6c4, ambTintK: 0.32, expK: 0.82, envK: 0.8, beamK: 0.6, lampK: 1.6, candleK: 1.4, fogTint: 0x4a463c, fogTintK: 0.2, dust: 80,
       sat: 1.04, warm: 0.12, vig: 0.26, con: 0.22, bloomT: 0.84, bloomS: 0.4, night: { lampK: 2.0, ambK: 0.85 } },
-    // 아시시: 상부 성당은 높은 창빛의 밝은 황토·파랑, 하부·묘소는 빌더가 어두운 색·등불로 낮춘다(한 성당 한 룩). 따뜻하고 차분하게
-    assisi: { keyK: 0.9, keyTint: 0xffdcb0, keyTintK: 0.3, ambK: 0.62, ambTint: 0xffe2bc, ambTintK: 0.3, expK: 0.88, envK: 0.7, beamK: 0.75, lampK: 1.8, candleK: 1.5, fogTint: 0x5a4636, fogTintK: 0.25, dust: 90,
-      sat: 1.0, warm: 0.07, vig: 0.3, con: 0.22, bloomT: 0.82, bloomS: 0.42, night: { lampK: 2.0, ambK: 0.8 } },
+    // 아시시: 상부 성당은 높은 창빛의 밝은 황토·파랑. 하부·묘소·계단은 빌더 층별 룩(ch_assisi.js levelLook — 층마다 노출·채움 빛·점광원)이 이 값 위에 곱한다.
+    // 2026-11-23 밝기 조정(휴대폰에서 어둡다): 창빛·하늘 채움·노출을 조금 올리고(상부), 밤 채움 빛도. 대비(con)·비네트는 그대로 — 평평해지지 않게
+    assisi: { keyK: 0.92, keyTint: 0xffdcb0, keyTintK: 0.3, ambK: 0.68, ambTint: 0xffe2bc, ambTintK: 0.3, expK: 0.92, envK: 0.75, beamK: 0.85, lampK: 1.8, candleK: 1.5, fogTint: 0x5a4636, fogTintK: 0.25, dust: 90,
+      glassK: 2.1, sat: 1.0, warm: 0.07, vig: 0.28, con: 0.22, bloomT: 0.82, bloomS: 0.42, night: { lampK: 2.0, ambK: 0.95, expK: 1.0, glassK: 1.4 } },
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
     basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
   };

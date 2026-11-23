@@ -330,6 +330,9 @@ export function lampsOf(c, H, R) {
     if (lum > 1e-6) out.push(x, y, z, r, g, b, lum, range, soft, virt ? 1 : 0);
   };
   S.lights.forEach((sl) => push(sl.x, sl.y, sl.z, sl.color, (sl.intensity || 1) * 22 * (sl.kind === 'always' ? 1 : R.lamp), (sl.distance || 14) * 1.2, 0.5, false));
+  // 여러 층 룩(world.js levelLook)의 층별 점광원: 앱은 보는 층의 것 하나만 켜지만, 그 층 점들은 늘 그 층 빛을 받으므로 전부 넣는다(빌더 점광원과 같은 자리는 한 번만)
+  const LL = (c.builder && c.builder.levelLook) || [];
+  LL.forEach((L) => { const sl = L.light; if (!sl || S.lights.some((q) => q.x === sl.x && q.y === sl.y && q.z === sl.z)) return; push(sl.x, sl.y, sl.z, sl.color, (sl.intensity || 1) * 22 * (sl.kind === 'always' ? 1 : R.lamp), (sl.distance || 14) * 1.2, 0.5, false); });
   S.glows.forEach((g) => { if (g.kind === 'none') return; const p = g.sp.position, s = g.size || 1.5; push(p.x, p.y, p.z, g.sp.material && g.sp.material.color ? g.sp.material.color.getHex() : 0xffc977, 5 * s * s * (g.kind === 'always' ? 1 : R.lamp), 6 + s * 4, 0.6, true); });
   // 불꽃은 1.5m 안끼리 한 등불로(제대 촛대 여러 개)
   const fl = [];

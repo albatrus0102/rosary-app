@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { fixedCam } from './thumb_cam.mjs';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -41,8 +42,9 @@ for (const id of ids) {
   const t0 = Date.now();
   await page.goto(`file://${assets}/test.html?church=${id}&hideui=1&thumb=1&autotier=0&msaa=0&quality=high&frames=6`);
   try { await page.waitForFunction(() => window.__church && window.__church.done, null, { timeout: 900000, polling: 500 }); } catch (e) { errors.push('timeout'); }
+  const fixedPng = await fixedCam(page);
   const tmp = path.join(outDir, `render_${id}.raw.png`);
-  await page.screenshot({ path: tmp });
+  if (fixedPng) fs.writeFileSync(tmp, Buffer.from(fixedPng.split(',')[1], 'base64')); else await page.screenshot({ path: tmp });
   await page.close();
   const dest = path.join(outDir, `render_${id}.webp`);
   // PIL 로 줄여서 WebP 저장.

@@ -88,14 +88,14 @@
     as_cycleU: { photo: 'assisi_cycle', tile: [1, 1], roughness: 0.93, normalScale: 0, envK: 0.5, fb: 'plaster', tint: 0xffffff },
     as_drapeU: { photo: 'assisi_drape', tile: [1, 1], roughness: 0.92, normalScale: 0, envK: 0.5, fb: 'plaster', tint: 0xffffff },
     as_floorU: { photo: 'assisi_floor', tile: [2.4, 2.4], roughness: 0.4, clearcoat: 0.3, ccRough: 0.3, normalScale: 0.2, envK: 0.9, fb: 'marble', tint: 0xffffff },
-    as_stoneL: { photo: 'assisi_stone', tile: [2.4, 2.4], roughness: 0.85, normalScale: 0.7, envK: 0.5, fb: 'plaster', tint: 0xb59a88 },
-    as_plasterL: { photo: 'assisi_fresco', tile: [3.0, 3.0], roughness: 0.93, normalScale: 0.3, envK: 0.5, fb: 'plaster', tint: 0xa08066 },
-    as_vaultL: { photo: 'assisi_vault', tile: [2.6, 2.6], roughness: 0.9, normalScale: 0.25, envK: 0.5, fb: 'plaster', tint: 0xb8bcd0 },
+    as_stoneL: { photo: 'assisi_stone', tile: [2.4, 2.4], roughness: 0.85, normalScale: 0.7, envK: 0.5, fb: 'plaster', tint: 0xc8ae9a },
+    as_plasterL: { photo: 'assisi_fresco', tile: [3.0, 3.0], roughness: 0.93, normalScale: 0.3, envK: 0.5, fb: 'plaster', tint: 0xc09a7a },
+    as_vaultL: { photo: 'assisi_vault', tile: [2.6, 2.6], roughness: 0.9, normalScale: 0.25, envK: 0.5, fb: 'plaster', tint: 0xccd0e2 },
     as_floorL: { photo: 'assisi_floor', tile: [2.4, 2.4], roughness: 0.55, clearcoat: 0.15, ccRough: 0.4, normalScale: 0.2, envK: 0.6, fb: 'marble', tint: 0xb8a898 },
-    as_stoneC: { photo: 'assisi_stone', tile: [2.0, 2.0], roughness: 0.9, normalScale: 0.9, envK: 0.4, fb: 'plaster', tint: 0xb4a090 },
+    as_stoneC: { photo: 'assisi_stone', tile: [2.0, 2.0], roughness: 0.9, normalScale: 0.9, envK: 0.4, fb: 'plaster', tint: 0xd0bca8 },
     // 층 사이 이음(두 층에서 다 보이는 것): 하부 → 상부 계단·벽·천장·테라스 복도, 묘소로 내려가는 우물 계단·벽·층계참. 어느 층 묶음에도 넣지 않는다(늘 그린다)
     // — 층 묶음에 두면 위층에서 내려다보거나 아래층에서 올려다볼 때 그 층이 꺼져 계단·벽이 사라지고 빈 하늘이 보였다(2026-11-22 확인 샷).
-    as_stoneS: { photo: 'assisi_stone', tile: [2.4, 2.4], roughness: 0.86, normalScale: 0.75, envK: 0.45, fb: 'plaster', tint: 0xb8a08e }
+    as_stoneS: { photo: 'assisi_stone', tile: [2.4, 2.4], roughness: 0.86, normalScale: 0.75, envK: 0.45, fb: 'plaster', tint: 0xcab4a0 }
   };
   var LEVEL_SURF = { U: ['as_stoneU', 'as_plasterU', 'as_ochreU', 'as_vaultU', 'as_cycleU', 'as_drapeU', 'as_floorU'], L: ['as_stoneL', 'as_plasterL', 'as_vaultL', 'as_floorL'], C: ['as_stoneC'] };
   var GEN_TEX = ['assisi_cycle', 'assisi_drape', 'assisi_floor'];
@@ -222,7 +222,16 @@
       levels: [{ id: 'U', y0: YU - 1.2, y1: 60 }, { id: 'L', y0: YL - 0.8, y1: YU - 0.3 }, { id: 'C', y0: -5, y1: YL - 0.2 }],
       items: { U: LEVEL_SURF.U.map(function (k) { return 'surf_' + k; }), L: LEVEL_SURF.L.map(function (k) { return 'surf_' + k; }), C: LEVEL_SURF.C.map(function (k) { return 'surf_' + k; }) }
     },
-    thumb: { x: 0, z: 25.0, yaw: 0, pitch: 9, zoom: 1.0, hour: 11 },
+    // 층별 룩(world.js levelLook): 창 없는 하부 성당·묘소는 실제로 어둑하지만 휴대폰 화면에서 벽화 색면·궁륭·무덤이 읽히게,
+    // 눈이 적응한 듯 노출을 올리고 반구광(채움 빛)을 등불 색으로 키운다. 띠(y0..y1) 사이 계단에서는 높이로 서서히 바뀐다.
+    // light = 그 층의 점광원(앱 점광원은 늘 하나 — 보는 층으로 옮긴다): 묘소 무덤 앞 등 · 하부 신랑 가운데 · 상부 신랑 위(밤에 세진다)
+    levelLook: [
+      { id: 'C', y0: -1, y1: 1.3, expK: 1.12, ambK: 1.25, ambTint: 0xffc68c, ambTintK: 0.6, light: { x: 0, y: 2.5, z: -0.9, color: 0xffb466, intensity: 0.26, distance: 8, kind: 'always' } },
+      { id: 'L', y0: YL - 0.6, y1: YL + 1.0, expK: 1.28, ambK: 1.65, ambTint: 0xffcc94, ambTintK: 0.5, light: { x: 0, y: YL + 3.2, z: 2.0, color: 0xffb870, intensity: 1.1, distance: 16, kind: 'always' } },
+      { id: 'U', y0: YU - 0.8, y1: 60, expK: 1.0, ambK: 1.0, light: { x: 0, y: YU + 7.6, z: 11.0, color: 0xffcc94, intensity: 0.7, distance: 24, kind: 'lamp' } }
+    ],
+    // cam: 입구 그림·썸네일 도구(entry_shots·thumbs)가 앱 카메라 리그 대신 쓰는 고정 시점(여러 층이라 리그가 궁륭 쪽으로 올라가 바닥만 찍혔다) — 상부 신랑 입구에서 제대·궁륭 쪽
+    thumb: { x: 0, z: 25.0, yaw: 0, pitch: 9, zoom: 1.0, hour: 11, cam: { pos: [0, YU + 1.8, 26.4], look: [0, YU + 4.4, -4], fov: 56 } },
     build: function (ctx) {
       var T = ctx.THREE, PI = Math.PI, low = ctx.quality === 'low', sqrt = Math.sqrt, cos = Math.cos, sin = Math.sin;
       ensureTextures(ctx);
@@ -646,14 +655,14 @@
         for (var q = 0; q < n; q++) {
           var a0 = PI * q / n, a1 = PI * (q + 1) / n, p0 = [LAR * cos(a0), TZ0 - LAR * sin(a0)], p1 = [LAR * cos(a1), TZ0 - LAR * sin(a1)];
           var amq = (a0 + a1) / 2;
-          vquad(lP, p0[0], p0[1], p1[0], p1[1], YL, LV, -cos(amq), sin(amq), 0x6e5a4c);
+          vquad(lP, p0[0], p0[1], p1[0], p1[1], YL, LV, -cos(amq), sin(amq), 0x9a8270);
           ctx.addCollider({ x: (p0[0] + p1[0]) / 2 * 1.12, z: TZ0 + ((p0[1] + p1[1]) / 2 - TZ0) * 1.12, r: 0.4 });
           var m = 4;
           for (var k = 0; k < m; k++) {
             var e0 = PI / 2 * k / m, e1 = PI / 2 * (k + 1) / m;
             function Q(a, e) { return [LAR * cos(a) * cos(e), LV + LVR * sin(e), TZ0 - LAR * sin(a) * cos(e)]; }
             var A = Q(a0, e0), Bq = Q(a1, e0), C = Q(a1, e1), D = Q(a0, e1);
-            lP.addTris([A[0], A[1], A[2], Bq[0], Bq[1], Bq[2], C[0], C[1], C[2], A[0], A[1], A[2], C[0], C[1], C[2], D[0], D[1], D[2]], 0x5a4638, [0, LV, TZ0], { vary: 0 });
+            lP.addTris([A[0], A[1], A[2], Bq[0], Bq[1], Bq[2], C[0], C[1], C[2], A[0], A[1], A[2], C[0], C[1], C[2], D[0], D[1], D[2]], 0x86705c, [0, LV, TZ0], { vary: 0 });
           }
           ctx.box({ x: (p0[0] + p1[0]) / 2 * 0.86, y: YL, z: TZ0 + ((p0[1] + p1[1]) / 2 - TZ0) * 0.86, w: Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) * 0.86, h: 1.6, d: 0.5, ry: amq + PI / 2, color: 0x4a3020, mat: 'wood' });
         }
@@ -670,11 +679,29 @@
       [1, -1].forEach(function (sx) { bx('as_stoneL', LAL.x + sx * 1.8, LAL.x + sx * 1.9, YL, YL + 0.8, LAL.z - 1.9, LAL.z + 1.9, 0xb8a894); });
       ctx.addLight({ x: 0, y: YL + 3.2, z: 2.0, color: 0xffb870, intensity: 1.1, distance: 16, kind: 'always' });
       // 등(어스름 속 따뜻한 빛 몇 개): 걸린 기름등 — 발광 면(점광원 아님)
-      [[0, 6.3], [0, 12.6], [0, 18.9], [0, -1.0], [-5.5, 22.0], [5.5, 22.0]].forEach(function (p) {
+      // 신랑 가운데 넷은 빛 무리 스프라이트(하부 층을 볼 때만 — 빛 번짐 굽기의 밤 등불도 된다)
+      [[0, 6.3], [0, 12.6], [0, 18.9], [0, -1.0], [-5.5, 22.0], [5.5, 22.0]].forEach(function (p, i) {
         metal.add(new T.CylinderGeometry(0.004, 0.004, 1.2, 4), 0x6a5a3a, { x: p[0], y: LV + LVR - 0.7, z: p[1], vary: 0 });
-        glow.add(new T.SphereGeometry(0.11, 8, 6), hdr(0xffb060, 2.6), { x: p[0], y: LV + LVR - 1.35, z: p[1], vary: 0 });
+        glow.add(new T.SphereGeometry(0.13, 10, 8), hdr(0xffb466, 3.4), { x: p[0], y: LV + LVR - 1.35, z: p[1], vary: 0 });
         metal.add(new T.CylinderGeometry(0.16, 0.09, 0.12, 8), 0x8a6a30, { x: p[0], y: LV + LVR - 1.45, z: p[1], vary: 0 });
+        if (i < 4) ctx.addGlow({ x: p[0], y: LV + LVR - 1.35, z: p[1], color: 0xffb870, size: 1.3, kind: 'always', level: 'L' });
       });
+      // 경당 사이 기둥마다 벽 등(작은 놋쇠 등잔 + 불빛 — 발광 면, 점광원 아님): 벽화 띠와 경당 아치를 따뜻하게 짚어 준다
+      [1, -1].forEach(function (sx) {
+        [LBAY, 2 * LBAY].forEach(function (z) {
+          var xw = sx * (LXN - 0.37);
+          metal.add(new T.BoxGeometry(0.05, 0.05, 0.22), 0x8a6a30, { x: xw - sx * 0.08, y: YL + 2.05, z: z, vary: 0 });
+          metal.add(new T.CylinderGeometry(0.07, 0.04, 0.08, 8), 0x8a6a30, { x: xw - sx * 0.2, y: YL + 2.0, z: z, vary: 0 });
+          glow.add(new T.SphereGeometry(0.05, 8, 6), hdr(0xffb060, 3.6), { x: xw - sx * 0.2, y: YL + 2.09, z: z, vary: 0 });
+        });
+      });
+      // 후진 성가대석 위 촛대 둘(어두운 반돔 밑이 까맣게 뭉개지지 않게)
+      [1, -1].forEach(function (sx) {
+        var ax = sx * 1.9, az = TZ0 - 1.9;
+        ctx.cyl({ x: ax, y: YL, z: az, r: 0.04, h: 1.5, seg: 6, color: 0x8a6a30, mat: 'gloss' });
+        ctx.addFlame({ x: ax, y: YL + 1.62, z: az, scale: 1.1 });
+      });
+      ctx.addGlow({ x: 0, y: YL + 2.6, z: TZ0 - 1.6, color: 0xffb06a, size: 1.6, kind: 'always', level: 'L' });
       ctx.renderSeats({ id: layout.id, seatGroups: layout.seatGroups.slice(2) }, 'bench', { surf: null, wood: 0x5a3a26, seat: 0x6a4530, back: 0x4e3220, kneelerColor: 0x4a3024 });
 
       // --- 묘소로 내려가는 두 줄 계단(신랑 한가운데 양옆) — 우물 둘레 낮은 난간, 디딤 18단
@@ -745,6 +772,7 @@
             function Q(a, e) { var rr = CRY.r * cos(e * PI / 2 * 0.9); return [CRY.x + rr * cos(a), 2.3 + (CRY.top - 2.3) * sin(e * PI / 2), CRY.z + rr * sin(a)]; }
             var A = Q(a0, e0), Bq = Q(a1, e0), C = Q(a1, e1), D = Q(a0, e1);
             cS.addTris([A[0], A[1], A[2], Bq[0], Bq[1], Bq[2], C[0], C[1], C[2], A[0], A[1], A[2], C[0], C[1], C[2], D[0], D[1], D[2]], 0x8a7a6c, [CRY.x, 0.5, CRY.z], { vary: 0 });
+            if (k === m - 1) cS.addTris([CRY.x, CRY.top + 0.02, CRY.z, D[0], D[1], D[2], C[0], C[1], C[2]], 0x8a7a6c, [CRY.x, 0.5, CRY.z], { vary: 0 });
           }
         }
         // 기도방 → 둥근 방 입구 양옆 벽 토막
@@ -777,9 +805,30 @@
         sacred.push({ k: 'tomb', x: CRY.x, z: CRY.z, w: 2 * gd, d: 2 * gd });
         // 봉헌 등(입구 쪽 앞): 사슬 + 등잔 + 작은 불빛(발광)
         metal.add(new T.CylinderGeometry(0.006, 0.006, 0.9, 4), 0x6a5a3a, { x: CRY.x, y: CRY.top - 0.45, z: CRY.z + gd + 0.55, vary: 0 });
-        metal.add(new T.CylinderGeometry(0.2, 0.1, 0.16, 10), 0x9a7838, { x: CRY.x, y: CRY.top - 1.0, z: CRY.z + gd + 0.55, vary: 0 });
+        solid.add(new T.CylinderGeometry(0.2, 0.1, 0.16, 10), 0x7a5a2a, { x: CRY.x, y: CRY.top - 1.0, z: CRY.z + gd + 0.55, vary: 0 });
         glow.add(new T.SphereGeometry(0.06, 8, 6), hdr(0xffb050, 3.5), { x: CRY.x, y: CRY.top - 0.88, z: CRY.z + gd + 0.55, vary: 0 });
+        ctx.addGlow({ x: CRY.x, y: CRY.top - 0.88, z: CRY.z + gd + 0.55, color: 0xffb060, size: 1.1, kind: 'always', level: 'C' });
+        // 무덤 앞 두 모서리 철 촛대(불꽃): 격자 너머 석관 자리가 보이게
+        [1, -1].forEach(function (sx) {
+          var cx2 = CRY.x + sx * (gd + 0.35), cz2 = CRY.z + gd + 0.25;
+          ctx.cyl({ x: cx2, y: YC, z: cz2, r: 0.03, h: 1.25, seg: 6, color: 0x2e2a26, mat: 'gloss' });
+          ctx.cyl({ x: cx2, y: YC + 1.25, z: cz2, r: 0.09, h: 0.04, seg: 8, color: 0x3a342e, mat: 'gloss' });
+          ctx.addFlame({ x: cx2, y: YC + 1.36, z: cz2, scale: 1.0 });
+        });
       })();
+      // 둥근 방 걸린 등 넷(돔 받침 높이, 모서리 벽감 사이) — 발광 면 + 사슬
+      [0, PI / 2, PI, PI * 1.5].forEach(function (a) {
+        var lx = CRY.x + (CRY.r - 0.75) * cos(a), lz = CRY.z + (CRY.r - 0.75) * sin(a);
+        metal.add(new T.CylinderGeometry(0.004, 0.004, 0.7, 4), 0x6a5a3a, { x: lx, y: CRY.top - 0.45, z: lz, vary: 0 });
+        solid.add(new T.CylinderGeometry(0.11, 0.06, 0.1, 8), 0x7a5a2a, { x: lx, y: CRY.top - 0.85, z: lz, vary: 0 });
+        glow.add(new T.SphereGeometry(0.06, 8, 6), hdr(0xffb466, 3.4), { x: lx, y: CRY.top - 0.77, z: lz, vary: 0 });
+      });
+      // 기도방·층계참 벽 등(두 계단이 만나는 곳)
+      [1, -1].forEach(function (sx) {
+        glow.add(new T.SphereGeometry(0.05, 8, 6), hdr(0xffb060, 3.4), { x: sx * (PRAY.x - 0.08), y: YC + 2.0, z: 1.0, vary: 0 });
+        metal.add(new T.BoxGeometry(0.08, 0.05, 0.12), 0x8a6a30, { x: sx * (PRAY.x - 0.03), y: YC + 1.94, z: 1.0, vary: 0 });
+      });
+      ctx.addGlow({ x: 0, y: YC + 2.3, z: 1.0, color: 0xffb466, size: 1.2, kind: 'always', level: 'C' });
       // 기도방 무릎틀 두 줄(보기만 + 충돌: 가운데 통로)
       [0.4, 1.35].forEach(function (z) {
         [1, -1].forEach(function (sx) {
@@ -814,7 +863,20 @@
       ctx.boxAABB({ x0: TER.x0, x1: TER.x1, y0: top - 0.15, y1: top, z0: TER.z0, z1: TZ0 - 0.6, color: 0xe4d4c2, surf: 'as_stoneS' });
       col(STR.x0 - 0.6, TER.z0 - 0.6, STR.x0, TZ0 - 0.6); col(STR.x1, STR.z1, TER.x0, TZ0 - 0.6); col(TER.x1, TER.z0 - 0.6, TER.x1 + 0.6, TZ0 - 0.6); col(STR.x0 - 0.6, TER.z0 - 0.6, TER.x1 + 0.6, TER.z0);
       // 복도 옆 창 자리(테라스 — 실제는 회랑을 내려다보는 열린 테라스): 벽등 몇 개
-      [-10, -14.5, -19].forEach(function (z) { glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: TER.x1 - 0.02, y: YU + 2.0, z: z, vary: 0 }); glow.add(new T.BoxGeometry(0.06, 0.25, 0.14), hdr(0xffd59a, 2.0), { x: STR.x0 + 0.02, y: YL + 2.0 + (TZ0 - z) / (TZ0 - STR.z1) * (YU - YL), z: z, vary: 0 }); });
+      [-10, -14.5, -19].forEach(function (z, i) {
+        var ys = YL + 2.0 + (TZ0 - z) / (TZ0 - STR.z1) * (YU - YL);
+        [[TER.x1 - 0.02, YU + 2.0, -1, 'U'], [STR.x0 + 0.02, ys, 1, 'L']].forEach(function (w) {
+          metal.add(new T.BoxGeometry(0.04, 0.32, 0.18), 0x8a6a30, { x: w[0], y: w[1], z: z, vary: 0 });
+          glow.add(new T.BoxGeometry(0.06, 0.2, 0.12), hdr(0xffaa58, 2.2), { x: w[0] + w[2] * 0.04, y: w[1], z: z, vary: 0 });
+          if (w[3] === 'U' ? i === 1 : true) ctx.addGlow({ x: w[0] + w[2] * 0.12, y: w[1], z: z, color: 0xffb066, size: 0.75, kind: 'always', level: w[3] });
+        });
+      });
+      // 묘소 우물 계단 양 벽 등(중간쯤): 디딤이 보이게
+      [1, -1].forEach(function (sx) {
+        var xw = sx * (WELL.x1 - 0.03), zm = (WELL.zTop + WELL.zBot) / 2, ym = YC + (YL - YC) * (zm - WELL.zBot) / (WELL.zTop - WELL.zBot) + 1.6;
+        metal.add(new T.BoxGeometry(0.04, 0.28, 0.16), 0x8a6a30, { x: xw, y: ym, z: zm, vary: 0 });
+        glow.add(new T.BoxGeometry(0.06, 0.18, 0.1), hdr(0xffaa58, 2.2), { x: xw - sx * 0.04, y: ym, z: zm, vary: 0 });
+      });
 
       // 카메라: 맨 위 궁륭 아래까지(맨 아래층 묘소부터 상부 궁륭까지 한 공간 — cam_guard 여러 층)
       // tight(시점 모드, docs/church/CAMERA_MODES.md): 묘소(둥근 방·기도방·층계참, 천장 3.2m)는 늘 좁은 곳 — 자동 시점에서 1인칭으로 둘러본다
