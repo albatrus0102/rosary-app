@@ -405,7 +405,7 @@ void main() {
       expect(y.modelNote, contains('승인한 모형이 아닙니다'));
       // 2026-11-22: 로비·계단·성가대석을 지었다 → '로비는 짓지 않았다'가 없고, 성가대석·로비 작품의 대체를 밝힌다
       expect(y.modelNote, contains('성전 내부와 로비의 분위기만'));
-      expect(y.modelNote, contains('성가대석의 계단식 좌석은 줄 수를 줄였'));
+      expect(y.modelNote, contains('가운데 통로를 둔 3줄로 줄였'));   // 2026-11-23: 실제 약 10줄 → 가운데 통로 있는 3줄
       expect(y.modelNote, contains('로비의 성화 액자와 색유리 벽도 그림을 옮기지 않고'));
       expect(y.modelNote, contains('성가대석 난간의 실제 자리'));
       expect(y.modelNote, isNot(contains('로비, 성모동산은 짓지 않았습니다')));

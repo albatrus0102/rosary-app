@@ -201,6 +201,7 @@
         }
         // 칸(0.4m) 가운데의 바닥 높이로 보므로 계단처럼 칸 안에서 높이가 바뀌는 곳은 한 단(±0.2m) 여유를 두고 본다
         var dxs = bx - ax, dys = by - ay, dzs = bz - az, n = Math.max(1, Math.ceil(Math.max(Math.sqrt(dxs * dxs + dzs * dzs), Math.abs(dys)) / 0.1)), own = ay - 1.0, py = ay;
+        if (!(n < 2000)) return true;   // 무한·NaN·말이 안 되게 먼 선(카메라가 폭주): 막는다(반복 상한 — 여기서 고리가 끝나지 않으면 장면이 멎는다)
         for (var sI = 1; sI <= n; sI++) {
           var u = sI / n, qx = ax + dxs * u, qy = ay + dys * u, qz = az + dzs * u, ci = Math.floor((qx - PX0) / PC), ck = Math.floor((qz - PZ0) / PC);
           if (ci >= 0 && ck >= 0 && ci < PNX && ck < PNZ) {
@@ -603,7 +604,8 @@
     for (d = Math.min(lo2, D) - st; d >= lo; d -= st) if (okAt(Q, ux, uy, uz, d)) return d;
     return 0;
   }
-  function wrapA(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
+  // 반복 없이 접는다(아주 큰 값·무한·NaN 에서 while 이 끝나지 않던 위험 — 여의도동 멎음 예방, 2026-11-23)
+  function wrapA(a) { if (!(a > -1e9 && a < 1e9)) return 0; var T2 = 2 * Math.PI; a = (a + Math.PI) % T2; if (a < 0) a += T2; return a - Math.PI; }
 
   function createRig() {
     var s = { d: -1, hold: 0, lastD: -1, pe: 0, yo: 0, oi: 0, cand: -1, candT: 0, fp: 0, fpWant: false, fpT: 0, py: 0, px: 0, pz: 0, pOk: false, peOk: false, uh: false, uhx: 0, uhz: 0 };
@@ -737,7 +739,7 @@
           s.hold = RIG.holdT;
         } else if (inv) {
           var dir = tg > s.d ? 1 : -1, found = tg;
-          for (var dd = s.d; dir > 0 ? dd <= tg : dd >= tg; dd += dir * RIG.step) if (okAt(Q, ux, uy, uz, dd)) { found = dd; break; }
+          for (var dd = s.d, nIt = 0; (dir > 0 ? dd <= tg : dd >= tg) && nIt < 400; dd += dir * RIG.step, nIt++) if (okAt(Q, ux, uy, uz, dd)) { found = dd; break; }
           // 경계까지 곧장이되 한 프레임에 초당 invMax 넘게는 아니다(2026-11-23: 몇 m 를 한 프레임에 건너뛰던 튐)
           var gap = Math.abs(found - s.d), mv = Math.min(gap, Math.max(RIG.vMax * dt, Math.min(gap - RIG.slack, RIG.invMax * dt)));
           s.d += dir * mv; s.hold = 0;

@@ -103,7 +103,8 @@ test('stained glass GPU budget per tier with streaming stays far below loading e
 test('render structure guards: one render per vsync, merged post passes, single reflector per floor height, plane merge', () => {
   const main = fs.readFileSync(path.join(assets, 'main.js'), 'utf8');
   assert.ok(main.includes('if (now === App.lastNow) return;'), 'duplicate rAF chains are dropped');
-  assert.ok(main.indexOf('App.rafOn = true;\n      resize();') > 0, 'rafOn is set before the first resize() (resize→kick used to start a 2nd loop)');
+  // (2026-11-23) the same line also stamps App.loopT: kick() treats a chain that has not run for 1 s as dead (scene_stall.test.mjs)
+  assert.ok(/App\.rafOn = true;( App\.loopT = performance\.now\(\);)?\n\s+resize\(\);/.test(main), 'rafOn is set before the first resize() (resize→kick used to start a 2nd loop)');
   const render = fs.readFileSync(path.join(assets, 'render.js'), 'utf8');
   assert.ok(render.includes('bloom.render = bloomRender') && render.includes('if (postMerge) return;'), 'AO and bloom are composited in the final pass');
   const world = fs.readFileSync(path.join(assets, 'world.js'), 'utf8');

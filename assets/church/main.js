@@ -18,7 +18,8 @@
   var Pace = root.ChurchFramePace ? root.ChurchFramePace.create({ enabled: qs.pace !== '0' }) : { div: 1, frames: 0, tick: function () { this.frames++; }, work: function () {}, snap: function (r) { return r; } };
   App.pace = Pace;
 
-  function wrap(a) { while (a > PI) a -= PI * 2; while (a < -PI) a += PI * 2; return a; }
+  // 각을 −π…π 로(반복 없이 — 아주 큰 값·무한·NaN 에서도 바로 끝난다. 예전 while 은 1e17 같은 값에서 영원히 돌았다)
+  function wrap(a) { if (!(a > -1e9 && a < 1e9)) return 0; a = (a + PI) % (PI * 2); if (a < 0) a += PI * 2; return a - PI; }
   // 화질 방식: App.qMode = 'auto'|'high'|'mid'|'low', App.quality = 실제 단계('high'|'mid'|'low'). 자동만 느릴 때 단계를 내린다.
   function setQMode(q) { App.qMode = q === 'low' || q === 'mid' || q === 'high' ? q : 'auto'; App.quality = App.qMode === 'auto' ? 'high' : App.qMode; }
   function autoOn() { return App.qMode === 'auto' && qs.autotier !== '0'; }
@@ -51,12 +52,16 @@
   }
   // 그리기 고리 다시 돌리기(감상 모드는 멈춰 있을 때 rAF 를 쉰다)
   function kick() {
-    if (!App.started || App.rafOn || App.paused) return;   // 일시정지(pause) 중에는 깨우지 않는다
-    App.rafOn = true; App.last = performance.now();
+    if (!App.started || App.paused) return;   // 일시정지(pause) 중에는 깨우지 않는다
+    // 고리가 돈다고 적혀 있어도(rafOn) 1초 넘게 한 번도 들어오지 않았으면 죽은 것으로 보고 다시 띄운다(같은 vsync 에 겹친 고리는 loop 가 버린다)
+    if (App.rafOn && performance.now() - (App.loopT || 0) < 1000) return;
+    App.rafOn = true; App.last = performance.now(); App.loopT = App.last;
     requestAnimationFrame(loop);
   }
   root.addEventListener('resize', resize);
   root.addEventListener('orientationchange', function () { setTimeout(resize, 150); });
+  // 다시 보이면 고리를 확인한다(숨어 있는 동안 rAF 가 오지 않았다 — kick 은 살아 있는 고리는 건드리지 않는다)
+  if (document.addEventListener) document.addEventListener('visibilitychange', function () { if (!document.hidden) kick(); });
 
   // '가기' 메뉴의 성모상 줄 이름(shrine_places.go_ko, 기본 '성모상').
   function shrineGoLabel(id) { var P = root.ChurchShrinePlaces, p = P && P[id]; return (p && p.go_ko) || '성모상'; }
@@ -157,8 +162,9 @@
       App.liturgy = root.ChurchLiturgy || null;
       // 첫 고리는 사진 질감이 준비된 뒤(go) 시작한다. rafOn 을 resize() 보다 먼저 켠다: 예전에는 resize() 안의 kick() 이
       // 고리를 하나 더 띄워 매 vsync 에 장면을 두 번 그렸다(PERF_SCALE.md §1, 2026-11-15 측정: 프레임당 렌더 2회).
-      App.rafOn = true;
+      App.rafOn = true; App.loopT = performance.now();
       resize();
+      watchStart();
       loadWorld(church);
       App.last = performance.now();
       var go = function () { App.last = performance.now(); requestAnimationFrame(loop); };
@@ -250,13 +256,15 @@
     try { A.setAmbient(false); if (A.ctx && A.ctx.suspend) A.ctx.suspend(); } catch (e) { /* ignore */ }
     var s = snapshot();
     if (s) post(s);
+    lifeAck('paused');
   }
   function resume() {
-    if (!App.paused) return;
+    if (!App.paused) { lifeAck('resumed'); return; }
     App.paused = false;
     if (App.ambient) { try { root.ChurchAudio.setAmbient(true); } catch (e) { /* ignore */ } }
     else { try { root.ChurchAudio.resume(); } catch (e) { /* ignore */ } }   // 오르간은 꺼져 있어도 발소리가 켜져 있으면 다시 깨운다
     kick();   // App.last 를 지금으로 맞추고 다시 그린다(멈춰 있던 시간만큼 건너뛰지 않는다)
+    lifeAck('resumed');
   }
   // 새 장면(WebView 를 다시 만든 뒤)에 저장해 둔 상태를 적용한다. 좌석에 이미 누가 있으면 그 줄 통로에 세운다. → {e:'restored'}
   function restore(o) {
@@ -867,7 +875,85 @@
     return { cx: (tagV.x * 0.5 + 0.5) * vw, cy: (-tagV.y * 0.5 + 0.5) * vh + head / 2, w: w, h: h };
   }
 
+  // ---- 그리기 고리 지킴(2026-11-23, 여의도동 '멎음' 제보 — docs/church/interiors/yeouido.md §9.9) ----
+  // ① 한 부분의 예외가 고리 전체를 끊거나 그 뒤(그리기)를 매 프레임 건너뛰지 않게 부분마다 try/catch(오류는 jsError 로 앱 '문제 알리기'에)
+  // ② 내 위치·카메라에 NaN/무한이 생기면 마지막 정상값으로 되돌린다 ③ 1초마다 심장 박동 {e:'hb'}(그린 프레임 수·상태)을 앱에 보내
+  //    앱이 멈춤(박동 끊김·그린 수가 안 늘어남·WebGL 문맥 잃음)을 알아채고 '다시 불러오기'를 내민다 ④ 보이는데 고리가 2.5초 넘게 안 돌면 스스로 다시 띄운다
+  var rafAsked = false, meGood = { x: 0, z: 0, y: 0, fy: 0, yaw: 0, ok: false }, camGood = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0, yaw: 0, pitch: 0.45, zoom: 1, ok: false };
+  function reqFrame() { rafAsked = true; requestAnimationFrame(loop); }
+  function frameErr(part, e) {
+    App.frameErrN = (App.frameErrN || 0) + 1; App.frameErrPart = part;
+    var B = root.ChurchBridge;
+    if (B && B.jsError) B.jsError('frame', part + ': ' + ((e && e.message) || e), '', 0, 0, e && e.stack);
+    if (console && console.error && App.frameErrN < 20) console.error('[church] frame ' + part, e);
+  }
+  function okNum(v) { return typeof v === 'number' && v > -1e7 && v < 1e7; }   // 유한하고 말이 되는 좌표(NaN·무한·폭주 값 거름)
+  function guardMe() {
+    var me = App.me; if (!me) return;
+    if (okNum(me.x) && okNum(me.z) && okNum(me.y) && okNum(me.yaw) && (me.fy === undefined || okNum(me.fy)) && okNum(me.vx) && okNum(me.vz)) {
+      meGood.x = me.x; meGood.z = me.z; meGood.y = me.y; meGood.fy = me.fy; meGood.yaw = me.yaw; meGood.ok = true; return;
+    }
+    frameErr('nan', new Error('me ' + [me.x, me.z, me.y, me.fy, me.yaw].join(',')));
+    if (meGood.ok) { me.x = meGood.x; me.z = meGood.z; me.y = meGood.y; me.fy = meGood.fy; me.yaw = meGood.yaw; }
+    else { me.x = App.logic && App.logic.spawn ? App.logic.spawn.x : 0; me.z = App.logic && App.logic.spawn ? App.logic.spawn.z : 0; me.y = me.fy = 0; me.yaw = 0; }
+    me.vx = me.vz = 0; App.walkSt = null;
+  }
+  function guardCam() {
+    var c = App.ctl, p = App.camPos, l = App.camLook;
+    if (okNum(p.x) && okNum(p.y) && okNum(p.z) && okNum(l.x) && okNum(l.y) && okNum(l.z) && okNum(c.yaw) && okNum(c.pitch) && okNum(c.zoom)) {
+      if (Math.abs(c.yaw) > 1000) c.yaw = wrap(c.yaw);   // 오래 돌려 쌓인 각을 접는다(값이 커지면 각 계산이 느려지고 정밀도를 잃는다)
+      camGood.px = p.x; camGood.py = p.y; camGood.pz = p.z; camGood.lx = l.x; camGood.ly = l.y; camGood.lz = l.z; camGood.yaw = c.yaw; camGood.pitch = c.pitch; camGood.zoom = c.zoom; camGood.ok = true; return;
+    }
+    frameErr('nan', new Error('camera ' + [p.x, p.y, p.z, c.yaw, c.pitch, c.zoom].join(',')));
+    if (!okNum(c.yaw)) c.yaw = camGood.ok ? camGood.yaw : 0;
+    if (!okNum(c.pitch)) c.pitch = camGood.ok ? camGood.pitch : 0.45;
+    if (!okNum(c.zoom)) c.zoom = camGood.ok ? camGood.zoom : 1;
+    if (camGood.ok) { p.set(camGood.px, camGood.py, camGood.pz); l.set(camGood.lx, camGood.ly, camGood.lz); }
+    App.camInit = false; if (App.rig && App.rig.reset) App.rig.reset();
+    if (App.camera) { App.camera.position.copy(p); if (camGood.ok) App.camera.lookAt(l); }
+  }
+  // 일시정지·재개를 받았다는 답(앱의 '문제 알리기' 발자취에 남는다): 고리가 돌던 중인가(raf), 마지막 고리 뒤 몇 ms(age), 지금까지 그린 프레임(f)
+  function lifeAck(s) { post({ e: 'life', s: s, raf: App.rafOn ? 1 : 0, age: Math.round(performance.now() - (App.loopT || 0)), f: App.drawn || 0 }); }
+  function glCtx() { try { return App.renderer && App.renderer.getContext ? App.renderer.getContext() : null; } catch (e) { return null; } }
+  var watchOn = false;
+  function watchStart() {
+    if (watchOn) return;
+    watchOn = true;
+    // WebGL 문맥을 잃으면(앱이 뒤로 갔을 때 메모리 압박 등) three.js 는 조용히 그리기를 건너뛴다 — 화면이 마지막 그림에서 멎는다.
+    // 알리고(오류 기록 + {e:'gl'}), 되찾으면 고리를 다시 깨운다. 되찾지 못하면 앱이 '다시 불러오기'를 내민다(심장 박동 st:'gl').
+    if (canvas && canvas.addEventListener) {
+      canvas.addEventListener('webglcontextlost', function () {
+        App.glLost = true; App.glLostN = (App.glLostN || 0) + 1;
+        var B = root.ChurchBridge; if (B && B.jsError) B.jsError('webgl', 'context lost', '', 0, 0, '');
+        post({ e: 'gl', lost: 1 });
+      }, false);
+      canvas.addEventListener('webglcontextrestored', function () { App.glLost = false; post({ e: 'gl', lost: 0 }); kick(); }, false);
+    }
+    setInterval(heartbeat, 1000);
+  }
+  // 심장 박동(1초마다): f = 그린 프레임 수(앱은 이것이 늘어나는지 본다), l = 고리가 돈 수, st = run|paused|view|hidden|gl, age = 마지막 고리 뒤 ms,
+  // err = 프레임 안 예외 수, heal = 스스로 다시 띄운 수. 보이는데(run) 고리가 2.5초 넘게 안 돌면(아주 느린 한 프레임은 넘기게) 다시 띄우고 오류 기록에 남긴다.
+  function heartbeat() {
+    if (!App.started) return;
+    var t = performance.now(), age = t - (App.loopT || t), hidden = !!(document && document.hidden), gl = glCtx();
+    if (gl && gl.isContextLost && gl.isContextLost() && !App.glLost) { App.glLost = true; post({ e: 'gl', lost: 1 }); }
+    var st = App.paused ? 'paused' : (App.view && (App.view.active || App.view.parked)) ? 'view' : App.glLost ? 'gl' : hidden ? 'hidden' : 'run';
+    if (st === 'run' && age > 2500) {
+      App.loopHeal = (App.loopHeal || 0) + 1;
+      var B = root.ChurchBridge; if (B && B.jsError) B.jsError('stall', 'render loop restarted', '', 0, 0, 'age ' + Math.round(age) + ' rafOn ' + (App.rafOn ? 1 : 0));
+      App.rafOn = false; kick();
+    }
+    post({ e: 'hb', f: App.drawn || 0, l: App.loopN || 0, st: st, age: Math.round(age), err: App.frameErrN || 0, heal: App.loopHeal || 0 });
+  }
   function loop(now) {
+    App.loopT = performance.now(); App.loopN = (App.loopN || 0) + 1;
+    rafAsked = false;
+    try { frame(now); } catch (e) {
+      frameErr('loop', e);
+      if (!rafAsked && !App.paused && App.rafOn) reqFrame();   // 예외가 다음 프레임 요청 전에 났어도 고리는 이어 간다
+    }
+  }
+  function frame(now) {
     if (App.paused) { App.rafOn = false; return; }   // 보이지 않는 동안: 다음 프레임을 청하지 않는다(resume 이 kick 으로 다시 깨운다)
     // 같은 vsync(같은 rAF 시각)에 고리가 두 번 들어오면 뒤의 것은 버린다(그 고리는 여기서 끝난다): 어디서 kick·rAF 가 겹쳐도 한 프레임 한 번만 그린다.
     if (now === App.lastNow) return;
@@ -880,7 +966,7 @@
     // 화면은 거의 정지라 차이가 보이지 않고, 발열·배터리를 줄여 다시 걸을 때의 열 제한 버벅임을 막는다. 끌기·일어서기 즉시 60fps.
     // 고주사율(90Hz 이상) 화면에서 매 vsync 를 못 따라가면 절반 주기로 고정한다(Pace: 들쭉날쭉한 70~90fps 보다 고른 60fps 가 부드럽다).
     var div = (App.idleSkip ? 2 : 1) * Pace.div;
-    if (div > 1 && (Pace.frames % div)) { App.frames++; requestAnimationFrame(loop); return; }
+    if (div > 1 && (Pace.frames % div)) { App.frames++; reqFrame(); return; }
     var raw = Pace.snap((now - App.last) / 1000), dt = Math.min(0.05, raw);
     App.last = now; App.t += dt;
     // 창 감상: 필요할 때만 그린다(입력·활강·페이드·빛 바꾸기). 할 일이 없으면 rAF 를 멈추고 kick() 이 다시 깨운다.
@@ -888,10 +974,10 @@
       var busy = false;
       try { busy = App.view.frame(dt); } catch (e) { if (console && console.error) console.error('[church] view frame', e); }
       if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }
-      if (busy) requestAnimationFrame(loop); else App.rafOn = false;
+      if (busy) reqFrame(); else App.rafOn = false;
       return;
     }
-    requestAnimationFrame(loop);
+    reqFrame();
     if (!App.world) return;
     // 성당에 들어온 직후 구운 AO(ao_<성당>.js)가 붙기 전에는 그리지 않는다(최대 0.5초, 그 사이 화면은 직전 그림): AO 없는 프레임이 번쩍이지 않게
     if (App.world.aoPending && App.world.aoPending()) {
@@ -899,24 +985,27 @@
       if (pn - App.aoHoldT < 500) return;
     }
     var PH = root.ChurchPerfHud && root.ChurchPerfHud.on ? root.ChurchPerfHud : null, tj = PH ? performance.now() : 0;
-    App.ctl.setMoveZone(App.me.mode === 'walk');
-    updateMe(dt, App.t);
-    if (App.world && App.world.setViewer) App.world.setViewer(App.me.y);   // 여러 층: 보는 층만 그린다(world.js levelVis)
-    updateCamera(dt);
+    try { App.ctl.setMoveZone(App.me.mode === 'walk'); updateMe(dt, App.t); } catch (e) { frameErr('me', e); }
+    guardMe();
+    try { if (App.world && App.world.setViewer) App.world.setViewer(App.me.y); } catch (e) { frameErr('levels', e); }   // 여러 층: 보는 층만 그린다(world.js levelVis)
+    try { updateCamera(dt); } catch (e) { frameErr('camera', e); }
+    guardCam();
     // 3D 이름표 크기 보정: 카메라 행렬을 갱신하고 아바타·표식에 알린다
     var vw = root.innerWidth || 360, vh = root.innerHeight || 640;
-    App.camera.updateMatrixWorld();
-    App.camera.matrixWorldInverse.copy(App.camera.matrixWorld).invert();
-    root.ChurchAvatar.setView(App.camera, vh);
-    App.net.setFocus(App.me.x, App.me.z);
-    App.net.update(dt, App.t, now);
-    App.crowd.update(dt, App.t);
-    App.world.update(dt, App.t, App.me, App.camera);
-    if (App.place) App.place.update(dt, App.me, App.camera);
-    if (App.cross) App.cross.update(dt, App.me, App.camera);
-    if (App.liturgy) App.liturgy.update(dt, App.t);
-    if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) });
+    try {
+      App.camera.updateMatrixWorld();
+      App.camera.matrixWorldInverse.copy(App.camera.matrixWorld).invert();
+      root.ChurchAvatar.setView(App.camera, vh);
+    } catch (e) { frameErr('view', e); }
+    try { App.net.setFocus(App.me.x, App.me.z); App.net.update(dt, App.t, now); } catch (e) { frameErr('net', e); }
+    try { App.crowd.update(dt, App.t); } catch (e) { frameErr('crowd', e); }
+    try { App.world.update(dt, App.t, App.me, App.camera); } catch (e) { frameErr('world', e); }
+    try { if (App.place) App.place.update(dt, App.me, App.camera); } catch (e) { frameErr('place', e); }
+    try { if (App.cross) App.cross.update(dt, App.me, App.camera); } catch (e) { frameErr('cross', e); }
+    try { if (App.liturgy) App.liturgy.update(dt, App.t); } catch (e) { frameErr('liturgy', e); }
+    try { if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, App.walkSt ? { kind: App.walkSt.kind, index: App.walkSt.index === undefined ? 0 : App.walkSt.index } : null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) }); } catch (e) { frameErr('markers', e); }
     // RENDER_V4 §5 피사계 심도: 앉아·무릎 꿇고 기도하거나, 성모상 앞에서(또는 서서 기도하며) 1.2초 넘게 멈춰 있을 때만 먼 배경을 살짝 흐린다(초점 = 아바타). 걷는 동안은 0.
+    try {
     if (App.R.dof) {
       var dm = App.me.mode, stillHere = dm === 'walk' && !App.walkSt && (App.near.shrine || App.standPray) && Math.abs(App.me.vx || 0) + Math.abs(App.me.vz || 0) < 0.05;
       App.dofStill = stillHere ? (App.dofStill || 0) + dt : 0;
@@ -930,10 +1019,12 @@
     if (App.world.haze) App.R.haze = App.world.haze;
     App.R.setExposure(App.world.env.exp * (App.expK || 1));
     if (App.R.setGrade) App.R.setGrade(App.world.env.grade);   // 성당 룩(looks.js): 걷기 프로필의 보정·블룸
+    } catch (e) { frameErr('look', e); }
     App.idleSkip = !PH && !App.maxFrames && qs.idle !== '0' && App.me.mode === 'seated' && !App.walkSt && !App.ctl.dragging && App.t - App.ctl.lastDragT > 2 && App.sitF > 0.98 && !(App.meAv && App.meAv.kneelLin !== App.meAv.kneelTarget);
     var gq = PH ? PH.gpuBegin() : null, tr = PH ? performance.now() : 0;
     var tw0 = performance.now();
-    var chg = App.R.render(App.scene, App.camera, dt, App.world);
+    var chg = null;
+    try { chg = App.R.render(App.scene, App.camera, dt, App.world); if (!App.glLost) App.drawn = (App.drawn || 0) + 1; } catch (e) { frameErr('render', e); }
     Pace.work(performance.now() - tw0);
     // 반사 탐침(probe_fx.js): 성당에 들어와 처음 그린 뒤(그림자 맵·AO 가 준비된 뒤) 한 번에 굽는다 — 입장 화면이 아직 덮고 있으므로 firstFrame 을 한 프레임 미룬다.
     // 그 뒤에는 시간대가 크게 바뀔 때만 프레임마다 한 면씩(멈칫 없음). 사진 창이 다 올라오면 한 번 더(반사에 진본 창이 비치게).

@@ -109,6 +109,29 @@ sealed class SceneEvent {
             seated: j['sat'] == 1 || j['sat'] == true,
             auto: j['a'] == 1 || j['a'] == true,
           );
+        case 'hb':
+          int i(Object? v) => v is num ? v.toInt() : 0;
+          final st = j['st'];
+          return SceneHeartbeat(
+            frames: i(j['f']),
+            loops: i(j['l']),
+            state: st is String ? st : 'run',
+            age: i(j['age']),
+            errors: i(j['err']),
+            heals: i(j['heal']),
+          );
+        case 'gl':
+          return SceneGl(lost: j['lost'] == 1 || j['lost'] == true);
+        case 'life':
+          final st = j['s'];
+          if (st is! String) return null;
+          int i(Object? v) => v is num ? v.toInt() : 0;
+          return SceneLife(
+            state: st,
+            raf: j['raf'] == 1 || j['raf'] == true,
+            age: i(j['age']),
+            frames: i(j['f']),
+          );
         // --- 창 감상(viewWindow) 이벤트 ---
         case 'viewReady':
           final win = j['win'];
@@ -352,6 +375,47 @@ class ScenePerf extends SceneEvent {
   final String? tier;
   final bool seated;
   final bool auto;
+}
+
+/// 장면의 심장 박동(1초마다, assets/church/main.js heartbeat): [frames] = 지금까지 그린 프레임 수,
+/// [state] = 'run'(그려야 한다)|'paused'|'view'(창 감상)|'hidden'|'gl'(WebGL 문맥 잃음), [age] = 마지막 그리기 고리 뒤 ms,
+/// [errors] = 프레임 안 예외 수, [heals] = 웹이 스스로 고리를 다시 띄운 수. 화면은 이것으로 멎음을 알아챈다(church_scene_watchdog.dart).
+class SceneHeartbeat extends SceneEvent {
+  const SceneHeartbeat({
+    required this.frames,
+    this.loops = 0,
+    this.state = 'run',
+    this.age = 0,
+    this.errors = 0,
+    this.heals = 0,
+  });
+  final int frames;
+  final int loops;
+  final String state;
+  final int age;
+  final int errors;
+  final int heals;
+}
+
+/// WebGL 문맥을 잃었다([lost] true) / 되찾았다(false).
+class SceneGl extends SceneEvent {
+  const SceneGl({required this.lost});
+  final bool lost;
+}
+
+/// pause/resume 을 웹이 받았다는 답: [state] 'paused'|'resumed', [raf] 그때 그리기 고리가 돌던 중인가,
+/// [age] 마지막 고리 뒤 ms, [frames] 그린 프레임 수. 오류 기록 발자취에 남긴다.
+class SceneLife extends SceneEvent {
+  const SceneLife({
+    required this.state,
+    this.raf = false,
+    this.age = 0,
+    this.frames = 0,
+  });
+  final String state;
+  final bool raf;
+  final int age;
+  final int frames;
 }
 
 /// 창 감상 장면이 첫 화면을 그렸다. [tier]는 질감 단계('t1'|'t2'|'t3'|'tile'),

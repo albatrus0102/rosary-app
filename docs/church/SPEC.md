@@ -72,6 +72,10 @@
 {"e":"stood"}
 {"e":"pos","x":..,"z":..,"r":..,"m":0|1}                // 10Hz 이하, 멈추면 한 번 m:0
 {"e":"perf","fps":58}                                     // 5초마다
+{"e":"hb","f":1234,"l":1240,"st":"run","age":16,"err":0,"heal":0}   // 심장 박동(1초마다, 2026-11-23): f = 그린 프레임 수, l = 고리 수, st = run|paused|view|hidden|gl,
+                                                          // age = 마지막 고리 뒤 ms, err = 프레임 안 예외 수, heal = 웹이 스스로 고리를 다시 띄운 수. 앱의 멎음 감시(church_scene_watchdog.dart)가 쓴다
+{"e":"gl","lost":1|0}                                     // WebGL 문맥을 잃음/되찾음(잃으면 jsError 'webgl' 도 함께)
+{"e":"life","s":"paused"|"resumed","raf":1,"age":16,"f":1234}   // pause/resume 을 받았다는 답(앱 오류 기록 발자취 church_life_ack)
 ```
 ### Flutter → 웹 (`window.ChurchAPI.<method>(jsonObject)`; 인자는 모두 JSON 직렬화 가능한 객체 하나)
 ```
