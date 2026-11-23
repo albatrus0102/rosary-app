@@ -11,7 +11,7 @@
    로툰다(기둥 12 · 열두 리브 별 돔 · 드럼 창 50 · 묵주 등 · 회중석), 신비 경당 20칸(한 모듈을 돌려 InstancedMesh 로 —
    창 20개는 파일 이름으로 걸린다: light/gpack_light.js ← art/light_cathedral/windows/<신비>_<n>.webp), 제단(닫집·장식벽·감실·성체등)·후진 3창 자리,
    네 문(서 = 입구 · 북 · 동 = 제단 · 남; 북·남은 닫힌 문 — 세례당·회랑은 2단계).
-   구역(Z1~Z7)은 보이기 고리(zoneHook)만 둔다: 카메라가 있는 구역과 이웃만 그린다. 이 성당만 걷는 속도 1.1 m/s(layout.walkSpeed). */
+   구역(Z1~Z7)은 보이기 고리(zoneHook)만 둔다: 카메라가 있는 구역과 이웃만 그린다. 걷는 속도는 다른 성당과 같다(scene_logic WALK_SPEED — 사용자 결정 2026-11-24). */
 (function () {
   'use strict';
   var D2R = Math.PI / 180;
@@ -86,7 +86,6 @@
   stands.push.apply(stands, medalStands);
   var layout = {
     id: 'light', scalePercent: 100, fictional: true,
-    walkSpeed: 1.1,   // 이 성당만: 순례 걸음(문 → 제단 약 3분). 다른 성당은 scene_logic WALK_SPEED(4.0) 그대로
     bounds: { x0: -58.4, x1: 58.4, z0: -71, z1: 207 },
     spawn: { x: 0, z: 201, r: 0 },
     seatGroups: seatGroups,

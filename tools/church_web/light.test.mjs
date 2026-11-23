@@ -1,5 +1,5 @@
 // 빛의 성당(ch_light.js, 가상 성당 1단계) 시험: 등록 · 창 20개의 묵주 순서 · 제단 출입 금지 · 건물 밖으로 못 나감 ·
-// 이 성당만 걷는 속도 1.1 m/s · 순례 정거장 46곳(걸을 수 있는 곳·묵주 순서·제단 정거장은 난간 밖) · 구역(Z1~Z7).
+// 걷는 속도는 다른 성당과 같음 · 순례 정거장 46곳(걸을 수 있는 곳·묵주 순서·제단 정거장은 난간 밖) · 구역(Z1~Z7).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -134,28 +134,26 @@ test('건물 밖으로 나갈 수 없다: 스폰에서 닿는 모든 칸이 건�
   for (const p of [[0, 200], [-28, 159], [27, 159], [0, 133], [0, 111], [0, 88], [0, 69], [0, 0], [0, 38], [-38, 0], [38, 0], [0, 49.5]]) assert.ok(reachable(p[0], p[1]), '닿지 않음: ' + p);
 });
 
-test('걷는 속도: 빛의 성당만 1.1 m/s(조이스틱·누르기 이동), 다른 성당은 그대로 WALK_SPEED', () => {
-  assert.equal(light.layout.walkSpeed, 1.1);
-  assert.equal(L.walkSpeed, 1.1);
+test('걷는 속도: 빛의 성당도 다른 성당과 같은 WALK_SPEED(조이스틱·누르기 이동) — 사용자 결정 2026-11-24', () => {
+  assert.equal(light.layout.walkSpeed, undefined);
+  assert.equal(L.walkSpeed, Logic.C.WALK_SPEED);
   const o = {};
   L.joyToVelocity(0, 1, 0, o);
-  assert.ok(Math.abs(o.speed - 1.1) < 1e-9 && Math.abs(o.vz + 1.1) < 1e-9);
+  assert.ok(Math.abs(o.speed - Logic.C.WALK_SPEED) < 1e-9);
   const S = Stations.create(L), w = S.startWalk({ pts: [{ x: 0, z: 0 }, { x: 0, z: -10 }], len: 10 }, { x: 0, z: -10 }, 'altar'), out = {};
   S.stepWalk(w, { x: 0, z: 0 }, 0.016, out);
-  assert.ok(Math.abs(out.speed - 1.1) < 1e-9, '누르기 이동 ' + out.speed);
+  assert.ok(out.speed > 1.1 + 1e-6, '누르기 이동 ' + out.speed);
   for (const c of churches) {
-    if (c.id === 'light') continue;
     assert.equal(c.layout.walkSpeed, undefined, c.id);
     const Lc = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones, reverence: false });
     assert.equal(Lc.walkSpeed, Logic.C.WALK_SPEED, c.id);
     Lc.joyToVelocity(0, 1, 0, o);
     assert.ok(Math.abs(o.speed - Logic.C.WALK_SPEED) < 1e-9, c.id);
   }
-  // 문(광장) → 제대 앞 걷는 길: 3분 안팎(설계 「문 → 제단 앞 210 m」)
+  // 문(광장) → 제대 앞 걷는 길 길이(설계 「문 → 제단 앞 210 m」)
   const S2 = Stations.create(L), path2 = S2.findPath({ x: 0, z: 186.5 }, { x: 0, z: -22.9 });
   assert.ok(path2, '길');
-  const sec = path2.len / 1.1;
-  assert.ok(sec > 170 && sec < 220, `문 → 제대 앞 ${path2.len.toFixed(0)} m, ${sec.toFixed(0)} 초`);
+  assert.ok(path2.len > 187 && path2.len < 242, `문 → 제대 앞 ${path2.len.toFixed(0)} m`);
 });
 
 test('순례 정거장 46곳: 설계 문구 그대로, 걸을 수 있는 곳, 묵주 순서, 제단 정거장은 난간 밖', () => {
