@@ -14,6 +14,8 @@
   function smooth(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
 
   function labelTexture(text) {
+    // 웹 데모(web_demo)용 고리: 한국어 이름표를 다른 언어로 바꾸는 표(window.ChurchLabelMap: 한국어 문구 -> 번역). 없으면 그대로(앱은 영향 없음).
+    if (root.ChurchLabelMap && root.ChurchLabelMap[text]) text = root.ChurchLabelMap[text];
     var w = 256, h = 72;
     var tex = G.canvasTexture(w, h, function (g) {
       g.clearRect(0, 0, w, h);
