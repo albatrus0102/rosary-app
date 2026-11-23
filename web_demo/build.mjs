@@ -133,6 +133,10 @@ function pageHtml(r) {
 <script src="../shell/i18n.js"></script>
 <script>window.DEMO=${escJson(cfg)};</script>
 <script src="../shell/shell.js"></script>
+<script src="../shell/prayers.js"></script>
+<script src="../shell/rosary.js"></script>
+<script src="../shell/stations.js"></script>
+<script src="../shell/cross.js"></script>
 <script src="../shell/tour.js"></script>
 <noscript><p style="color:#f6ecda;font:16px sans-serif;padding:24px">JavaScript is required.</p></noscript>
 </body>

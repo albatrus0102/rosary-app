@@ -1,12 +1,18 @@
 # 웹 데모 — 허락 요청 편지에 붙이는 「비밀 링크」 3D 성당
 
-받는 곳마다 **추측할 수 없는 링크 하나**가 열어 주는 정적 사이트입니다. 데스크톱·휴대폰 브라우저에서 그 곳의 가상 성당(앱의 `assets/church/` 장면 그대로)을 걸어 볼 수 있고, 시작 화면의 **▶ 둘러보기**가 60~90초짜리 자동 시연(들어와서 → 천장을 올려다보고 → 제대 쪽으로 가다 제단 경계에서 멈추고 → 성호(성수대가 있는 곳만) → 초 켜기 → 앉아 기도 → 마침)을 보여 줍니다. 영상(60초)과 함께 편지에 넣는 용도입니다.
+받는 곳마다 **추측할 수 없는 링크 하나**가 열어 주는 정적 사이트입니다. 데스크톱·휴대폰 브라우저에서 그 곳의 가상 성당(앱의 `assets/church/` 장면 그대로)을 걸어 볼 수 있고, 시작 화면의 **▶ 둘러보기**가 60~90초짜리 자동 시연(들어와서 → 천장을 올려다보고 → 제대 쪽으로 가다 제단 경계에서 멈추고 → 성호(성수대가 있는 곳만) → 초 켜기 → 앉아서 묵주기도(성호경 · 사도신경 · 1단 몇 알) → 앉은 채로 넘겨줌)을 보여 줍니다. 영상(60초)과 함께 편지에 넣는 용도입니다.
 
 ## 구성
 
 | 경로 | 하는 일 |
 |---|---|
 | `web_demo/shell/` | 웹 껍데기(앱의 Flutter 자리): `shell.js`(불러오기·단추·손잡이·이벤트), `tour.js`(둘러보기), `i18n.js`(ko·it·en·es·pt 문구), `shell.css` |
+| `web_demo/shell/rosary.js` | 앉은 자리 묵주기도(앱 `ChurchSeatedBar` → `ChurchRosaryPanel`): 앉은 줄(자세 · 「묵주기도 시작」 · 「일어나기」) → 묵주 패널(묵주알 · 제목 n/10 · 신비 · 기도문 · 이전/다음 · 미리 보기용 「다음 단으로」 · ⋮ 잠깐 쉬기/끝내기). 신비는 오늘 요일로. **소리 없음**(어느 언어든 글로만) |
+| `web_demo/shell/prayers.js` | **만든 파일**(`node web_demo/gen_prayers.mjs`): ko = `lib/domain/prayer_data.dart`, en = `prayer-usccb`, it = `prayer-cei`, es = `prayer-cee`, pt = `prayer-cnbb` 의 `texts.md` 에서 글자 그대로(en·pt 신비 묶음 이름은 `prayer-lev`). 공식 본문을 아직 못 받은 기도(it·es·pt 파티마)는 자리와 이름만 두고 「공식 본문을 받는 대로 넣습니다」 |
+| `web_demo/shell/cross.js` | 십자가의 길(앱 `ChurchCrossChip` · 순례 모드 `stations_sheet.dart`): 판 앞 칩 「십자가의 길 n처 · 명칭 — 묵상하기」, 판에 닿으면 그 처의 시트(그림 · 제n처 · 성경 근거 · 1처 시작 기도 · 공식 기도문 ┼◎○ · 출처 · 접힌 묵상 · 그림 출처와 대체 성화 안내 · 닫기 / 다음 처로 = 다음 판까지 걷기 · 마치며), 「십자가의 길」 단추 = 1처로 걷기. 14처 판·근접·판 누르기는 장면(`way_cross.js`) 그대로. 그림은 장면의 `cross_pack*.js` 를 다시 쓴다. 한국어가 아닌 언어는 그림·처 번호와 「공식 본문을 받는 대로 넣습니다」 |
+| `web_demo/shell/stations.js` | **만든 파일**(`gen_prayers.mjs`): `data/stations_prayers.json`·`stations_of_cross.json`·`stations_series.json`, 연작은 `release_gate.dart` 출시 규칙(프레비아티 숨김 → 성 베드로는 오라일리) |
+| `web_demo/stations.test.mjs` | 십자가의 길: 원본과 같음 · 숨긴 연작 없음 · 문구 · 가짜 장면으로 단추→시트→다음 처로→칩→마치며(344px·48px) |
+| `web_demo/rosary.test.mjs` | 기도문이 출처와 바이트까지 같은가 · 모든 언어 문구 · 둘러보기가 묵주 화면에 닿고 손으로 끝까지 가는가(가짜 장면, 344px 배치·48px 단추) |
 | `web_demo/build.mjs` | 정적 폴더 `build/web_demo/` 를 만든다(저장소에 올리지 않음). `assets/church/` 는 **고치지 않고 그대로 복사**(개발용 `dev/`·창 원본 `glass_src/`·시험 페이지는 뺀다) |
 | `web_demo/links.defaults.json` | 받는 곳 id → 성당·언어 기본 대응표(토큰 없음, 저장소에 올림) |
 | `web_demo/links.local.json` | **비밀 대응표**(id → 성당·언어·토큰). `.gitignore` 에 있다. 첫 빌드에 기본 대응표로 만들어지고 토큰이 채워진다 |
@@ -49,7 +55,7 @@ bash web_demo/deploy.sh           # 빌드 → (없으면) 프로젝트 rosarium
 ## 조작 · 규칙
 
 - 데스크톱: W A S D·방향키로 걷기, 마우스 끌기로 둘러보기, 휠로 확대. 휴대폰: 왼쪽 아래 손잡이로 걷기, 화면 끌기로 둘러보기, 두 손가락으로 확대.
-- 큰 단추: 「제대 앞으로」 · 「초 켜기」(정해진 지향 8가지 중 하나 — 글 입력 칸 없음) · 「앉아 기도」 · 「성호」(성수대가 있는 성 베드로·아시시 모형에서만, 앱과 같은 규칙) · 「시점」(자동·1인칭·뒤에서).
+- 큰 단추: 「제대 앞으로」 · 「초 켜기」(정해진 지향 8가지 중 하나 — 글 입력 칸 없음) · 「앉아 기도」(앉으면 앱처럼 「묵주기도 시작」을 고른다) · 「성호」(성수대가 있는 성 베드로·아시시 모형에서만, 앱과 같은 규칙) · 「시점」(자동·1인칭·뒤에서).
 - 제단 출입 금지 구역은 **장면 자체**가 막습니다(셸에서 따로 풀 수 없음). 둘러보기·직접 걷기 모두 같습니다.
 - 화질: 휴대폰은 「보통」(mid), 데스크톱은 「높음」(high)으로 시작하고, 위쪽 「화질」 단추로 낮음·보통·높음을 돌려 고릅니다.
 - 어떤 입력이든(키·누름·휠·단추) 둘러보기를 멈추고 자유 모드로 넘깁니다.
@@ -65,6 +71,9 @@ bash web_demo/deploy.sh           # 빌드 → (없으면) 프로젝트 rosarium
 ```
 node --test web_demo/build.test.mjs                 # 토큰 폴더·중립 루트·noindex·토큰이 저장소에 없음
 node --test web_demo/shell_stuck.test.mjs           # 「짓는 중」이 끝없이 돌지 않는가(2026-11-23 멈춤 결함 회귀)
+node --test web_demo/rosary.test.mjs                # 묵주기도: 출처 그대로 · 문구 · 둘러보기 → 묵주 화면
+node --test web_demo/stations.test.mjs              # 십자가의 길: 원본 그대로 · 출시 연작 규칙 · 칩/시트
+node web_demo/gen_prayers.mjs --check               # prayers.js · stations.js 가 출처와 같은가(원본을 고쳤으면 --check 없이 다시 만든다)
 node --test "tools/church_web/*.test.mjs"           # 장면(assets/church) 불변 확인
 node web_demo/e2e.mjs --out /tmp/shots --cases ko:danggogae,it:stpeter,en:basic:phone   # 헤드리스 점검·캡처(느림)
 ```

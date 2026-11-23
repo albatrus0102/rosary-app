@@ -45,9 +45,11 @@
       case 'ready': S.sceneReady = true; break;
       case 'stations': S.stations = o; updateActs(); break;
       case 'near': S.near = { seat: o.seat || null, candle: o.candle === undefined ? null : o.candle, station: o.station || null }; break;
-      case 'seated': S.seated = true; S.seat = o.seat; api('setPraying', { on: true, ms: 0 }); api('setRosary', { on: true }); updateActs(); break;
-      case 'stood': S.seated = false; S.seat = null; api('setPraying', { on: false, ms: 0 }); api('setRosary', { on: false }); updateActs(); break;
+      // 앉기만 하면 기도를 시작하지 않는다(앱과 같다): 앉은 줄에서 「묵주기도 시작」을 고르면 묵주를 들고 기도한다(rosary.js)
+      case 'seated': S.seated = true; S.seat = o.seat; updateActs(); if (S.onSeated) S.onSeated(); break;
+      case 'stood': S.seated = false; S.seat = null; api('setPraying', { on: false, ms: 0 }); api('setRosary', { on: false }); updateActs(); if (S.onStood) S.onStood(); break;
       case 'walkDone': onWalkDone(o); break;
+      case 'crossNear': if (S.onCrossNear) S.onCrossNear(o.n); break;   // 십자가의 길 판 앞(cross.js)
       case 'walkFail': if (!S.tour) toast(L.walkFail); S.pendingAfter = null; break;
       case 'walkCancel': S.pendingAfter = null; break;
       case 'firstFrame': S.firstFrame = true; if (S.building) built('firstFrame'); break;
@@ -219,6 +221,10 @@
     $('aCandle').hidden = !(S.stations && S.stations.candle > 0);
     $('aSit').textContent = S.seated ? L.stand : L.sit;
     $('aAltar').disabled = S.seated;
+    // 앉아 있는 동안은 걷기 단추·손잡이 대신 앉은 줄 / 묵주 패널(rosary.js)이 아래를 차지한다
+    $('acts').hidden = S.seated; $('help').hidden = S.seated;
+    if (S.mode === 'free' && !S.tour) $('joy').hidden = !touch || S.seated;
+    if (S.cross) S.cross.update();
   }
   S.updateActs = updateActs;
   var VIEWS = ['tp', 'fp'], VIEW_LABEL = { tp: 'viewTp', fp: 'viewFp' };   // 앱과 같이 뒤에서 보기 ↔ 1인칭(자동 1인칭 없앰, docs/church/CAMERA_MODES.md)
@@ -237,6 +243,7 @@
   function onWalkDone(o) {
     var what = S.pendingAfter; S.pendingAfter = null;
     if (S.tour) return;   // 둘러보기는 tour.js 가 직접 기다린다
+    if (o.kind === 'cross' && S.onCrossArrive) { S.onCrossArrive(o.index); return; }   // 판 앞에 닿으면 그 처의 묵상 시트(앱과 같다)
     if (what === 'cross' && o.kind === 'font') api('emote', { e: 1 });
     else if (what === 'candle' && o.kind === 'candle') S.lightHere(false, null);
     else if (what === 'sit' && o.kind === 'seat') api('sit', { seat: o.seat || undefined });
