@@ -79,7 +79,7 @@ for (const name of list) {
   await page.screenshot({ path: file });
   const info = await page.evaluate(() => {
     const a = window.__church, p = a.camPos, me = a.me;
-    return { cam: [p.x, p.y, p.z].map((v) => +v.toFixed(2)), me: [me.x, me.z].map((v) => +v.toFixed(2)), mode: me.mode, dist: +Math.hypot(p.x - me.x, p.z - me.z).toFixed(2), fp: a.rig ? +(a.rig.fp || 0).toFixed(2) : 0, see: [a.seeK, a.seeW, a.seeL].map((v) => +(v || 0).toFixed(2)), seat: window.__seat || null };
+    return { cam: [p.x, p.y, p.z].map((v) => +v.toFixed(2)), me: [me.x, me.z].map((v) => +v.toFixed(2)), mode: me.mode, dist: +Math.hypot(p.x - me.x, p.z - me.z).toFixed(2), cut: a.cut && a.cut.k ? Array.from(a.cut.k).map((v) => +v.toFixed(2)) : null, seat: window.__seat || null };
   });
   console.log(name, ((Date.now() - t0) / 1000).toFixed(0) + 's', JSON.stringify(info), errors.length ? 'ERRORS: ' + errors.slice(0, 3).join(' | ') : 'ok', '->', file);
   if (errors.length) failed++;

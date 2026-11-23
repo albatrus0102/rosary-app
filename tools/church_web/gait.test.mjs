@@ -196,7 +196,7 @@ test('최고 속도 상수 하나: scene_logic WALK_SPEED = avatar.js 걸음 최
 });
 test('카메라는 골반이 아니라 루트(몸 위치)를 따른다: 평지에서 걸어도 카메라 높이가 오르내리지 않는다', () => {
   const src = fs.readFileSync(ASSETS + '/main.js', 'utf8');
-  assert.match(src, /var fy = me\.y \+ 1\.0 \+ sf \* \(0\.45 - 0\.2\);/, '카메라 보는 점 = 루트 높이(me.y)');
+  assert.match(src, /tfy = me\.y \+ 1\.0 \+ sf \* \(0\.45 - 0\.2\);/, '카메라 보는 점(피벗 스프링의 목표) = 루트 높이(me.y)');
   assert.doesNotMatch(src.slice(src.indexOf('function updateCamera'), src.indexOf('function myTagRect')), /bones|hips/, '카메라가 뼈를 읽지 않는다');
   for (const v of [1.2, WS]) {
     const fr = at(v), c = cameraTrack(fr, 2, 6), s = smoothStats(fr, 2, 6);

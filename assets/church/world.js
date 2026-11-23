@@ -672,16 +672,16 @@
     var api = {
       id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9, pitchMax: cb.pitchMax, tight: cb.tight },   // pitchMax: 카메라 리그 올림 상한(빌더가 줄 때만 — 여의도동 계단 홀), tight: 좁은 구역(시점 모드 자동 1인칭, CAMERA_MODES.md)
-      // 3인칭 카메라 가드(cam_guard.js): 카메라가 설 수 있는 실내 공간 + 사이 가림물 잘라내기(docs/church/CAMERA.md)
+      // 카메라 가림 잘라내기(cam_guard.js, docs/church/CAMERA_MODES.md): 카메라는 벽을 개의치 않고, 카메라 쪽 가림물(원뿔·단면·위층·카메라 둘레)을 셰이더가 지운다
       camGuard: (function () {
         if (!root.ChurchCamGuard) return null;
         var sp = layout.spawn || { x: 0, z: 0 }, fy0 = 0;
         try { fy0 = logic.floorY(sp.x, sp.z) || 0; } catch (e) { /* ignore */ }
-        // 카메라 공간 복셀(걷는 자리·바닥 높이·카메라 상자 밖 통로) + 가림 잘라내기(seeThru)
+        // 면 모으기(가림 판정 격자) + 꼭짓점 칸·층 값(seeThru·seeLvl)
         try {
           var go = root.ChurchCamGuard.spaceOpts ? root.ChurchCamGuard.spaceOpts(logic, layout, S.zones) : {};
-          // 여러 층: 기준 = 맨 아래층 바닥(묘소), 삼각형마다 그 층 바닥(go.levelBase), 공간은 카메라 상자 yMax 까지
-          if (logic.multi && go.levelLow !== undefined) { fy0 = go.levelLow; go.spaceTop = cb.yMax; }
+          // 여러 층: 기준 = 맨 아래층 바닥(묘소), 삼각형마다 그 층 바닥(go.levelBase — 위층 잘라내기의 꼭짓점 층 값)
+          if (logic.multi && go.levelLow !== undefined) fy0 = go.levelLow;
           go.bounds = cb; go.yLow = fy0 + 1.05;
           return root.ChurchCamGuard.build(ctx.root, go);
         } catch (e) { if (root.console) console.warn('[church] camGuard', e); return null; }
@@ -910,6 +910,33 @@
       }
     };
     if (probes && api.camGuard) probes.setSee(function () { return api.camGuard.see; });
+    // 잘라내기 바탕(여러 층, docs/church/CAMERA_MODES.md §잘라내기): 위층·카메라 쪽 벽을 지워 묘소·아래층을 들여다볼 때 방 밖(모델이 없는 땅속)이
+    // 하늘로 비지 않게 맨 아래층 바닥 아래에 흙빛 판을 깐다. 잘라내기(위층·단면)가 켜진 동안만 그린다(평소 draw call 0).
+    var cutBack = null, cutDome = null, cutLowY = 0;
+    if (logic.multi && api.camGuard) {
+      var lowY = 1e9; (logic.levels || []).forEach(function (L) { if (L.y < lowY) lowY = L.y; });
+      if (lowY < 1e8) {
+        cutLowY = lowY;
+        var cbMat = new T.MeshBasicMaterial({ color: 0x3a2d23, fog: false });
+        cutBack = new T.Mesh(new T.PlaneGeometry(400, 400), cbMat);
+        cutBack.rotation.x = -PI / 2; cutBack.position.set((bnd.x0 + bnd.x1) / 2, lowY - 0.25, (bnd.z0 + bnd.z1) / 2);
+        cutBack.userData.noCam = true; cutBack.visible = false; cutBack.renderOrder = 999;
+        // 맨 아래층(땅속 묘소·1층 로비)에서는 바닥 판 대신 카메라를 둘러싼 흙빛 둥근 막(반지름 150m — 성당보다 멀어 모든 면 뒤, 하늘보다 먼저)
+        cutDome = new T.Mesh(new T.SphereGeometry(150, 16, 10), new T.MeshBasicMaterial({ color: 0x2c221b, side: T.BackSide, fog: false }));
+        cutDome.userData.noCam = true; cutDome.visible = false; cutDome.renderOrder = 999; cutDome.frustumCulled = false;
+        scene.add(cutBack); scene.add(cutDome);
+      }
+    }
+    // on: 잘라내기(위층·단면)가 켜졌나, foot: 아바타 발 높이, cam: 카메라 자리(둥근 막을 옮긴다)
+    api.setCutBackdrop = function (on, foot, cam) {
+      if (!cutBack) return;
+      var dome = !!on && typeof foot === 'number' && foot < cutLowY + 1.0, floor = !!on && !dome;
+      if (cutBack.visible !== floor) cutBack.visible = floor;
+      if (cutDome.visible !== dome) cutDome.visible = dome;
+      if (dome && cam) cutDome.position.copy(cam);
+    };
+    var disposeBase = api.dispose;
+    api.dispose = function () { [cutBack, cutDome].forEach(function (m) { if (m) { scene.remove(m); m.geometry.dispose(); m.material.dispose(); } }); cutBack = cutDome = null; disposeBase(); };
     applyEnv();
     api.setTier(tier, opts.renderer);
     return api;

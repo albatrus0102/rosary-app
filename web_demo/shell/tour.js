@@ -58,7 +58,7 @@
 
     (async function () {
       try {
-        S.setView('auto');
+        S.setView('tp');
         // 1. 들어와서 신랑 따라 걷기
         mark('walk-in'); S.caption(cap('intro'));
         S.api('setJoystick', { x: 0, y: 0.6 });

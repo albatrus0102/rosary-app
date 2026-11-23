@@ -204,6 +204,7 @@ export function postureStats(frames, from, to) {
 
 // ------------------------------------------------------------------ 몸 움직임(main.js updateMe 의 걷기와 같은 규칙)
 const Logic = require(path.join(ASSETS, 'scene_logic.js'));
+const Ctl = require(path.join(ASSETS, 'controls.js'));   // 손맛(FEEL): 손잡이 곡선·가속·감속(main.js updateMe 와 같은 함수)
 // scene_logic.js joyToVelocity 와 같은 식(성당 없이 쓰려고 옮겨 둠; 속도 상수는 그쪽 것을 읽는다)
 function joyToVelocity(jx, jy, camYaw, out) {
   const mag = Math.hypot(jx, jy);
@@ -218,18 +219,17 @@ export function joyWalker(L, joy, camYaw = 0) {
   const vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 };
   const wrap = (a) => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
   return (me, dt, t) => {
-    const j = joy(t);
+    const j = joy(t);   // 시험의 손잡이 값 = 속도 비율(앱의 손잡이 곡선 FEEL.joy* 는 입력 감도라 걸음 시험에서는 빼고, 가속·감속은 main.js 와 같게)
     joyToVelocity(j.x, j.y, j.cam === undefined ? camYaw : j.cam, vel);
-    const k = Math.min(1, dt * 12);
-    me.vx += (vel.vx - me.vx) * k; me.vz += (vel.vz - me.vz) * k;
+    Ctl.moveStep(me, vel.vx, vel.vz, dt, false);
     let sp = Math.sqrt(me.vx * me.vx + me.vz * me.vz);
-    if (sp > 0.02) {
+    if (sp > 0.02 || me.mvx * me.mvx + me.mvz * me.mvz > 4e-4) {
       pp.x = me.x; pp.z = me.z;
-      if (L) L.moveCircle(pp, me.vx * dt, me.vz * dt); else { pp.x += me.vx * dt; pp.z += me.vz * dt; }
+      if (L) L.moveCircle(pp, me.mvx * dt, me.mvz * dt); else { pp.x += me.mvx * dt; pp.z += me.mvz * dt; }
       me.x = pp.x; me.z = pp.z;
     } else { me.vx = me.vz = 0; sp = 0; }
-    if (vel.speed > 0.05) me.yaw += wrap(vel.yaw - me.yaw) * Math.min(1, dt * 11);
-    else if (j.turnTo !== undefined) me.yaw += wrap(j.turnTo - me.yaw) * Math.min(1, dt * 8);
+    if (vel.speed > 0.05) me.yaw += wrap(vel.yaw - me.yaw) * (1 - Math.exp(-dt * Ctl.FEEL.turnRate));
+    else if (j.turnTo !== undefined) me.yaw += wrap(j.turnTo - me.yaw) * (1 - Math.exp(-dt * 8));
     return Math.min(1, sp / Logic.C.WALK_SPEED * 1.05);
   };
 }
@@ -241,11 +241,10 @@ export function autoWalker(L, S, target) {
     if (!w) { const p = S.findPath(me, target); w = p ? S.startWalk(p, target, 'x') : null; }
     let vx = 0, vz = 0, speed = 0, yaw = me.yaw;
     if (w) { S.stepWalk(w, me, dt, wv); if (wv.done) w = false; else { vx = wv.vx; vz = wv.vz; speed = wv.speed; yaw = wv.yaw; } }
-    const k = Math.min(1, dt * 12);
-    me.vx += (vx - me.vx) * k; me.vz += (vz - me.vz) * k;
+    Ctl.moveStep(me, vx, vz, dt, true);
     let sp = Math.hypot(me.vx, me.vz);
-    if (sp > 0.02) { pp.x = me.x; pp.z = me.z; L.moveCircle(pp, me.vx * dt, me.vz * dt); me.x = pp.x; me.z = pp.z; } else { me.vx = me.vz = 0; sp = 0; }
-    if (speed > 0.05) me.yaw += wrap(yaw - me.yaw) * Math.min(1, dt * 11);
+    if (sp > 0.02 || me.mvx * me.mvx + me.mvz * me.mvz > 4e-4) { pp.x = me.x; pp.z = me.z; L.moveCircle(pp, me.mvx * dt, me.mvz * dt); me.x = pp.x; me.z = pp.z; } else { me.vx = me.vz = 0; sp = 0; }
+    if (speed > 0.05) me.yaw += wrap(yaw - me.yaw) * (1 - Math.exp(-dt * Ctl.FEEL.turnRate));
     return Math.min(1, sp / Logic.C.WALK_SPEED * 1.05);
   };
 }

@@ -31,22 +31,22 @@ enum ChurchCamDist { near, normal, far }
 
 /// 성당 카메라 시점(저장 키 `church_cam_view`, 위쪽 도구 줄 「시점」). docs/church/CAMERA_MODES.md
 ///
-/// [auto] 자동(기본): 묘소·계단·좁은 통로처럼 좁으면 1인칭으로 들어가 둘러보고, 트인 곳에서는 뒤에서 따라간다.
-/// [firstPerson] 1인칭 고정, [follow] 뒤에서 보기 고정. 앉기·기도 중에는 모드와 상관없이 기도 시점을 쓴다.
+/// [follow] 뒤에서 보기(기본): 카메라는 벽을 개의치 않고 사용자 각도·거리 그대로, 카메라 쪽 가림물은 잘라낸다.
+/// [firstPerson] 1인칭(손으로 고를 때만). 앉기·기도 중에는 모드와 상관없이 기도 시점을 쓴다.
+/// 예전 저장값 'auto'(좁으면 자동 1인칭 — 2026-11-23 사용자 결정으로 없앰)는 뒤에서 보기로 읽고 저장값도 고친다.
 enum ChurchCamView {
-  auto('auto', '자동'),
-  firstPerson('fp', '1인칭'),
-  follow('tp', '뒤에서 보기');
+  follow('tp', '뒤에서 보기'),
+  firstPerson('fp', '1인칭');
 
   const ChurchCamView(this.web, this.label);
 
   /// 웹(three.js) `setViewMode` 의 mode 값.
   final String web;
 
-  /// 화면·스크린리더에 쓰는 이름(「시점: 자동」).
+  /// 화면·스크린리더에 쓰는 이름(「시점: 뒤에서 보기」).
   final String label;
 
-  /// 「시점」 단추를 누를 때의 다음: 자동 → 1인칭 고정 → 뒤에서 보기 고정 → 자동.
+  /// 「시점」 단추를 누를 때의 다음: 뒤에서 보기 ↔ 1인칭.
   ChurchCamView get next => values[(index + 1) % values.length];
 }
 
@@ -184,11 +184,16 @@ class AppSettings extends ChangeNotifier {
       ChurchCamDist.normal,
     );
     _churchCamFollow = _prefs.getBool(_kChurchCamFollow) ?? true;
+    final camViewRaw = _prefs.getString(_kChurchCamView);
     _churchCamView = _enumByName(
       ChurchCamView.values,
-      _prefs.getString(_kChurchCamView),
-      ChurchCamView.auto,
+      camViewRaw,
+      ChurchCamView.follow,
     );
+    // 예전 '자동'(auto)·알 수 없는 값은 뒤에서 보기로 고쳐 저장한다(백업·다른 기기에도 고친 값이 가게)
+    if (camViewRaw != null && camViewRaw != _churchCamView.name) {
+      _prefs.setString(_kChurchCamView, _churchCamView.name);
+    }
     _churchHudCollapsed = _prefs.getBool(_kChurchHudCollapsed) ?? true;
     _churchStickRight = _prefs.getBool(_kChurchStickRight) ?? false;
     ChurchDiagnostics.perfHud.value = _churchPerfHud;
@@ -208,8 +213,7 @@ class AppSettings extends ChangeNotifier {
     _prayerScreenTourDone =
         _prefs.getBool(_kPrayerScreenTourDone) ?? defaultPrayerScreenTourDone;
     _appIntroDone = _prefs.getBool(_kAppIntroDone) ?? defaultAppIntroDone;
-    _churchTourDone =
-        _prefs.getBool(_kChurchTourDone) ?? defaultChurchTourDone;
+    _churchTourDone = _prefs.getBool(_kChurchTourDone) ?? defaultChurchTourDone;
     _guideTtsOn = _prefs.getBool(_kGuideTtsOn) ?? true;
     final storedScale = _prefs.getDouble(_kAppTextScale);
     _appTextScale = appTextScaleChoices.contains(storedScale)
@@ -907,7 +911,7 @@ class AppSettings extends ChangeNotifier {
   /// 걸을 때 카메라가 천천히 뒤로 정렬되는지. 끄면 사용자가 돌린 방향을 유지한다.
   bool get churchCamFollow => _churchCamFollow;
 
-  /// 카메라 시점(자동 / 1인칭 고정 / 뒤에서 보기 고정). 웹에는 `setViewMode` 로 따로 보낸다.
+  /// 카메라 시점(뒤에서 보기 / 1인칭). 웹에는 `setViewMode` 로 따로 보낸다.
   ChurchCamView get churchCamView => _churchCamView;
 
   /// 웹(three.js) 카메라 설정 인자(`setCamera`, init 의 `camera`).

@@ -2102,7 +2102,7 @@ class _ChurchScreenState extends State<ChurchScreen>
       onEditAvatar: _openAvatarEditor,
       onEmote: _emote,
       viewMode: _settings.churchCamView,
-      // 누를 때마다 자동 → 1인칭 고정 → 뒤에서 보기 고정 → 자동(저장되고, 웹에는 _onSettings 가 setViewMode 로 보낸다)
+      // 누를 때마다 뒤에서 보기 ↔ 1인칭(저장되고, 웹에는 _onSettings 가 setViewMode 로 보낸다)
       onViewMode: () => _settings.churchCamView = _settings.churchCamView.next,
       onGo: walking ? _onGo : null,
       onCollapse: () => _setHudCollapsed(true),

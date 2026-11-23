@@ -14,7 +14,7 @@
   var QUALS = ['low', 'mid', 'high'];
   var S = root.DemoShell = {
     lang: lang, L: L, touch: touch, church: D.church, ready: false, started: false, stations: null, near: { seat: null, candle: null, station: null },
-    seated: false, seat: null, mode: 'start', tour: null, errors: [], quality: quality, viewMode: 'auto', sound: true, listeners: []
+    seated: false, seat: null, mode: 'start', tour: null, errors: [], quality: quality, viewMode: 'tp', sound: true, listeners: []
   };
   function $(id) { return doc.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -167,7 +167,7 @@
     $('aAltar').disabled = S.seated;
   }
   S.updateActs = updateActs;
-  var VIEWS = ['auto', 'fp', 'tp'], VIEW_LABEL = { auto: 'viewAuto', fp: 'viewFp', tp: 'viewTp' };
+  var VIEWS = ['tp', 'fp'], VIEW_LABEL = { tp: 'viewTp', fp: 'viewFp' };   // 앱과 같이 뒤에서 보기 ↔ 1인칭(자동 1인칭 없앰, docs/church/CAMERA_MODES.md)
   S.setView = function (m) { S.viewMode = m; api('setViewMode', { mode: m }); $('aView').textContent = L.view + ': ' + L[VIEW_LABEL[m]]; };
   $('aView').addEventListener('click', function () { userInput(); S.setView(VIEWS[(VIEWS.indexOf(S.viewMode) + 1) % VIEWS.length]); this.blur(); });
   $('aAltar').addEventListener('click', function () { userInput(); api('walkTo', { kind: 'altar' }); this.blur(); });
