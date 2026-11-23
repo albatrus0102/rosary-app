@@ -409,8 +409,8 @@ class _RailDecor extends StatelessWidget {
   /// 장식 그림의 최대 폭(펼친 레일에서 그림이 지나치게 커지지 않게).
   static const double _maxWidth = 136;
 
-  /// 그림의 세로/가로 비(기본 자산 137x802 기준. 다른 비율의 그림은 잘려 맞춰진다).
-  static const double _aspect = 5.6;
+  /// 그림의 세로/가로 비(자산 360x613 기준 — 2026-11-24 사용자가 올린 아치·백합·초 그림. 다른 비율의 그림은 잘려 맞춰진다).
+  static const double _aspect = 1.7;
 
   static const List<Color> _fade = [Color(0x00FFFFFF), Color(0xFFFFFFFF)];
 
