@@ -649,7 +649,7 @@ class _ChurchCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      info.nameKo,
+                      keepAll(info.nameKo),
                       style: theme.textTheme.titleSmall?.copyWith(color: fg),
                     ),
                     const SizedBox(height: 4),
@@ -829,7 +829,7 @@ class _DetailSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(info.nameKo, style: theme.textTheme.headlineSmall),
+                Text(keepAll(info.nameKo), style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 4),
                 Text(
                   meta,
