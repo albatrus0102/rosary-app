@@ -22,32 +22,36 @@ e do Espírito Santo. Ámen.
 Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
+Creio em Deus Pai Todo-Poderoso, criador do céu e da terra, e em Jesus Cristo, Seu único Filho Nosso Senhor, que foi concebido pelo poder do Espírito Santo, nasceu da Virgem Maria, padeceu sob Pôncio Pilatos, foi crucificado, morto e sepultado; desceu à mansão dos mortos, ressuscitou ao terceiro dia, subiu aos céus, está sentado à direita de Deus Pai Todo-Poderoso, donde há de vir a julgar os vivos e mortos. Creio no Espírito Santo, na Santa Igreja Católica, na comunhão dos santos, na remissão dos pecados, na ressurreição da carne e na vida eterna. Amém.
 ```
+<!-- 가져옴: https://jovensconectados.org.br/como-rezar-o-terco.html · 2026-11-23 · 원문 그대로 -->
 
 ### Pai-Nosso
 
 Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
+Pai nosso que estais nos céus, santificado seja o Vosso nome, venha a nós o Vosso reino, seja feita a Vossa vontade, assim na terra como no céu. O pão nosso de cada dia nos dai hoje e perdoai-nos as nossas ofensas, assim como nós perdoamos a quem nos tem ofendido. Não nos deixeis cair em tentação, mas nos livrai do mal. Amém.
 ```
+<!-- 가져옴: https://jovensconectados.org.br/como-rezar-o-terco.html · 2026-11-23 · 원문 그대로 -->
 
 ### Ave-Maria
 
 Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
+Ave-Maria, cheia de graça! O Senhor é convosco e bendita sois vós entre as mulheres. Bendito é o Fruto do vosso ventre, Jesus. Santa Maria Mãe de Deus, rogai por nós, os pecadores, agora e na hora de nossa morte. Amém.
 ```
+<!-- 가져옴: https://jovensconectados.org.br/como-rezar-o-terco.html · 2026-11-23 · 원문 그대로 -->
 
 ### Glória ao Pai
 
 Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
+Glória ao Pai, ao Filho e ao Espírito Santo. Assim como era no princípio, agora e sempre, e por todos os séculos dos séculos. Amém.
 ```
+<!-- 가져옴: https://jovensconectados.org.br/como-rezar-o-terco.html · 2026-11-23 · 원문 그대로 -->
 
 ### Oração de Fátima
 
@@ -56,24 +60,25 @@ Encontrei duas formas em páginas da CNBB, com finais diferentes. Peço que me i
 Forma A — fonte: https://www.cnbb.org.br/nossa-senhora-de-fatima-4/. Começa assim:
 
 ```text
-Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno…
-〔원문 그대로 옮겨 붙일 것 — https://www.cnbb.org.br/nossa-senhora-de-fatima-4/〕
+ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno, levai as almas todas para o Céu, principalmente aquelas que mais precisarem
 ```
+<!-- 가져옴: https://www.cnbb.org.br/nossa-senhora-de-fatima-4/ · 2026-11-23 · 원문 그대로 -->
 
 Forma B — fonte: https://www.cnbb.org.br/nossa-senhora-de-fatima-3/. Começa assim:
 
 ```text
-Ó Meu Jesus, perdoai-nos e livrai-nos do fogo do Inferno…
-〔원문 그대로 옮겨 붙일 것 — https://www.cnbb.org.br/nossa-senhora-de-fatima-3/〕
+Ó Meu Jesus, perdoai-nos e livrai-nos do fogo do Inferno, levai as almas todas para o Céu; socorrei principalmente as que mais precisarem!
 ```
+<!-- 가져옴: https://www.cnbb.org.br/nossa-senhora-de-fatima-3/ · 2026-11-23 · 원문 그대로 -->
 
 ### Salve-Rainha
 
 Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
+Salve Rainha, Mãe de misericórdia, vida, doçura e esperança nossa, salve! A vós bradamos os degradados filhos de Eva. A vós suspiramos, gemendo e chorando neste vale de lágrimas. Eia pois advogada nossa, esses vossos olhos misericordiosos a nós volvei. E depois deste desterro, mostrai-nos Jesus, bendito fruto de vosso ventre. Ó clemente! Ó piedosa! Ó doce sempre Virgem Maria! Rogai por nós Santa Mãe de Deus, para que sejamos dignos das promessas de Cristo. Amém.
 ```
+<!-- 가져옴: https://jovensconectados.org.br/como-rezar-o-terco.html · 2026-11-23 · 원문 그대로 -->
 
 ### Mistérios do Rosário
 

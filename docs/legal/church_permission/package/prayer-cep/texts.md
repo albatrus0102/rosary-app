@@ -94,16 +94,16 @@ O Santuário de Fátima publica duas formas. Peço que me indiquem qual devo usa
 Forma A (orações de Fátima) — fonte: Santuário de Fátima, https://www.santuario-fatima.pt/pt/pages/oracoes-de-fatima. Começa assim:
 
 ```text
-Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno…
-〔원문 그대로 옮겨 붙일 것 — https://www.santuario-fatima.pt/pt/pages/oracoes-de-fatima〕
+Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno; levai as almas todas para o Céu, principalmente as que mais precisarem.
 ```
+<!-- 가져옴: https://www.santuario-fatima.pt/pt/pages/oracoes-de-fatima · 2026-11-23 · 원문 그대로 -->
 
 Forma B (guia do terço) — fonte: Santuário de Fátima, https://www.santuario-fatima.pt/pt/pages/terco. Começa assim:
 
 ```text
-Ó meu Jesus, perdoai-nos e livrai-nos do fogo do inferno…
-〔원문 그대로 옮겨 붙일 것 — https://www.santuario-fatima.pt/pt/pages/terco〕
+Ó meu Jesus, perdoai-nos e livrai-nos do fogo do inferno; / Levai as almas todas para o Céu, principalmente as que mais precisarem.
 ```
+<!-- 가져옴: https://www.santuario-fatima.pt/pt/pages/terco · 2026-11-23 · 원문 그대로 -->
 
 ### Salve-Rainha
 

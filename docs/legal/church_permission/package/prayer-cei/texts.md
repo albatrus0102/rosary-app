@@ -38,8 +38,18 @@ Fonte: copiato parola per parola il 23 novembre 2026 dal Compendio del Catechism
 **Formulazione oggi in uso.** Nell’app vorrei usare la formulazione attuale («e non abbandonarci alla tentazione, ma liberaci dal male»), come compare nel sussidio liturgico dell’Ufficio Liturgico Nazionale per l’Ascensione 2026: https://liturgico.chiesacattolica.it/wp-content/uploads/sites/8/2026/04/21/SUSSIDIO-ASCENSIONE-2026.pdf (in quel sussidio il testo non ha l’Amen finale; con l’Amen compare, per esempio, sul sito della Diocesi di San Miniato: https://sanminiato.chiesacattolica.it/la-diocesi-di-san-miniato/anno-giubilare-nel-iv-centenario-della-diocesi/indulgenza-giubilare/).
 
 ```text
-〔원문 그대로 옮겨 붙일 것 — https://liturgico.chiesacattolica.it/wp-content/uploads/sites/8/2026/04/21/SUSSIDIO-ASCENSIONE-2026.pdf〕
+Padre nostro, che sei nei cieli,
+sia santificato il tuo nome,
+venga il tuo regno,
+sia fatta la tua volontà,
+come in cielo così in terra.
+Dacci oggi il nostro pane quotidiano,
+e rimetti a noi i nostri debiti
+come anche noi li rimettiamo ai nostri debitori,
+e non abbandonarci alla tentazione,
+ma liberaci dal male.
 ```
+<!-- 가져옴: https://liturgico.chiesacattolica.it/wp-content/uploads/sites/8/2026/04/21/SUSSIDIO-ASCENSIONE-2026.pdf · 2026-11-23 · 원문 그대로 -->
 
 Per confronto, qui sotto è riportata la formulazione precedente del Compendio (2005), che **non** userei.
 
@@ -90,9 +100,9 @@ nei secoli dei secoli. Amen.
 Fonte: libretto del Rosario del Pontificio Consiglio per la Promozione della Nuova Evangelizzazione (2020), pubblicato su un sito della CEI: https://chiciseparera.chiesacattolica.it/wp-content/uploads/sites/59/2020/05/Rosario-Santo-Padre-liturgia.pdf. **Stato: 〔확인 필요〕 verificato solo in parte** — è un testo ufficiale della Chiesa, ma non mi risulta che sia la formulazione approvata dalla CEI. Vi prego di confermarlo o di indicarmi il testo da usare. Comincia così:
 
 ```text
-Gesù mio, perdona le nostre colpe…
-〔원문 그대로 옮겨 붙일 것 — https://chiciseparera.chiesacattolica.it/wp-content/uploads/sites/59/2020/05/Rosario-Santo-Padre-liturgia.pdf〕
+Gesù mio, perdona le nostre colpe, preservaci dal fuoco dell'inferno e porta in cielo tutte le anime, specialmente le più bisognose della tua misericordia.
 ```
+<!-- 가져옴: https://chiciseparera.chiesacattolica.it/wp-content/uploads/sites/59/2020/05/Rosario-Santo-Padre-liturgia.pdf · 2026-11-23 · 원문 그대로 -->
 
 ### Salve Regina
 
