@@ -918,7 +918,6 @@
     if (now === App.lastNow) return;
     App.lastNow = now;
     if (App.maxFrames && App.frameCount >= App.maxFrames) { App.done = true; App.rafOn = false; return; }
-    App.frameCount = (App.frameCount || 0) + 1;
     var tcP = App.R && root.ChurchRender && root.ChurchRender.TIERS ? root.ChurchRender.TIERS[App.R.tier] : null;
     Pace.tick(now, !App.maxFrames && !(tcP && !tcP.pace));
     // 앉아서 가만히 기도하는 동안은 한 프레임 걸러 그린다(약 30fps; 성능 표시·시험 프레임 제한 중에는 끔).
@@ -933,6 +932,7 @@
       var busy = false;
       try { busy = App.view.frame(dt); } catch (e) { if (console && console.error) console.error('[church] view frame', e); }
       if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }
+      App.frameCount = (App.frameCount || 0) + 1;
       if (busy) reqFrame(); else App.rafOn = false;
       return;
     }
@@ -943,6 +943,9 @@
       var pn = performance.now(); if (!App.aoHoldT) App.aoHoldT = pn;
       if (pn - App.aoHoldT < 500) return;
     }
+    // 시험 프레임 제한(?frames=N)은 실제로 그린 프레임만 센다: AO 를 기다리며 건너뛴 프레임까지 세면, 구운 AO 가 늦게 올 때 N 프레임이
+    // 모두 기다림에 쓰여 한 번도 그리지 않고 멈췄다(빛의 성당 전실 시점이 빈 화면으로 찍히던 원인 — 2단계에서 ao 지연으로 재현).
+    App.frameCount = (App.frameCount || 0) + 1;
     var PH = root.ChurchPerfHud && root.ChurchPerfHud.on ? root.ChurchPerfHud : null, tj = PH ? performance.now() : 0;
     try { App.ctl.setMoveZone(App.me.mode === 'walk'); updateMe(dt, App.t); } catch (e) { frameErr('me', e); }
     guardMe();
