@@ -133,8 +133,8 @@
     A.steps = { on: !!o.on, chant: !!o.chant, vol: o.vol === undefined ? LEVELS.VOL_DEFAULT : +o.vol };
     if (A.steps.on && ensure()) A.resume();
   };
-  // 발을 디딜 때 한 번. alt = 오른발(조금 다른 표본), v = 걷는 속도(m/s; 느리면 더 작게)
-  A.footstep = function (alt, v) {
+  // 발을 디딜 때 한 번. alt = 오른발(조금 다른 표본), v = 걷는 속도(m/s; 느리면 더 작게), delay = 이만큼 뒤에 낸다(s, 0..0.1 — 프레임 안 착지 시각 맞추기)
+  A.footstep = function (alt, v, delay) {
     if (!stepsOn() || !A.ctx || A.ctx.state !== 'running' || !A.stepBufs) return;
     var c = A.ctx, s = c.createBufferSource();
     // 같은 표본을 잇달아 내지 않는다(기계적으로 들리지 않게): 6개 가운데 지난번과 다른 것, 재생 속도 ±6%, 크기 −2.5~0 dB
@@ -143,7 +143,8 @@
     s.playbackRate.value = 0.94 + Math.random() * 0.12;
     var sp = v === undefined ? 1.2 : +v, soft = 0.55 + 0.45 * Math.min(1, Math.max(0, sp / 1.4));   // 천천히 걸으면 살살
     var g = c.createGain(); g.gain.value = A.stepGain({ organ: A.on, chant: A.steps.chant, vol: A.steps.vol }) * soft * (0.75 + Math.random() * 0.25);
-    s.connect(g); g.connect(A.stepBus); s.start();
+    var dl = +delay > 0 ? Math.min(0.1, +delay) : 0;
+    s.connect(g); g.connect(A.stepBus); s.start(dl > 0 ? c.currentTime + dl : 0);
   };
   A.chime = function () {
     if (!A.on || !A.ctx || A.ctx.state !== 'running') return;
