@@ -33,7 +33,17 @@ test('빌드: 받는 곳마다 v/<토큰>/index.html, 루트는 중립 페이지
     assert.ok(html.includes('<meta name="robots" content="noindex,nofollow'), id + ' noindex meta');
     assert.ok(html.includes('ch_' + x.church + '.js'), id + ' 빌더');
   }
-  assert.deepEqual(fs.readdirSync(path.join(out, 'v')).sort(), toks.slice().sort());
+  // 만든 사람 확인용 목록 쪽(owner 토큰)도 하나 더 있고, 받는 곳 전부로 이어진다
+  const owner = JSON.parse(fs.readFileSync(links, 'utf8')).owner;
+  assert.match(owner, TOKEN_RE);
+  assert.ok(!toks.includes(owner));
+  assert.deepEqual(fs.readdirSync(path.join(out, 'v')).sort(), toks.concat(owner).sort());
+  const oh = fs.readFileSync(path.join(out, 'v', owner, 'index.html'), 'utf8');
+  assert.match(oh, /noindex/);
+  for (const t of toks) assert.ok(oh.includes('../' + t + '/'), 'owner 목록에 ' + t);
+  // 다시 지어도 owner 토큰은 그대로
+  build({ linksFile: links, outDir: out, quiet: true });
+  assert.equal(JSON.parse(fs.readFileSync(links, 'utf8')).owner, owner);
   // 루트와 404 는 같은 중립 페이지(토큰·성당 이름 없음)
   const root = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
   assert.equal(root, fs.readFileSync(path.join(out, '404.html'), 'utf8'));

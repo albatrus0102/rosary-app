@@ -197,13 +197,22 @@ export function build({ linksFile, outDir, base = '', quiet = false } = {}) {
     fs.mkdirSync(d, { recursive: true });
     fs.writeFileSync(path.join(d, 'index.html'), pageHtml(r));
   }
+  // 만든 사람 확인용 목록 쪽: v/<owner 토큰>/ — 받는 곳 전부를 한 쪽에서 열어 본다(토큰은 links.local.json 의 owner, 없으면 만든다)
+  const ownerToken = ensureOwnerToken(linksFile, rec);
+  if (ownerToken) {
+    const d = path.join(outDir, 'v', ownerToken);
+    fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, 'index.html'), ownerHtml(rec));
+  }
   fs.writeFileSync(path.join(outDir, 'index.html'), NOT_FOUND);
   fs.writeFileSync(path.join(outDir, '404.html'), NOT_FOUND);
   fs.writeFileSync(path.join(outDir, 'robots.txt'), ROBOTS);
   fs.writeFileSync(path.join(outDir, '_headers'), HEADERS);
   // 보낼 주소 목록(배포 폴더 밖; 비밀이므로 저장소에 올리지 않는다)
+  const lines0 = [];
   const listFile = outDir + '_links.txt';
-  const lines = Object.entries(rec).map(([id, r]) => [id, r.church, r.lang, (base || '') + '/v/' + r.token + '/'].join('\t'));
+  if (ownerToken) lines0.push(['owner', '-', 'ko', (base || '') + '/v/' + ownerToken + '/'].join('\t'));
+  const lines = lines0.concat(Object.entries(rec).map(([id, r]) => [id, r.church, r.lang, (base || '') + '/v/' + r.token + '/'].join('\t')));
   fs.writeFileSync(listFile, '# id\tchurch\tlang\turl\n' + lines.join('\n') + '\n', { mode: 0o600 });
   const files = walk(outDir);
   const total = files.reduce((a, f) => a + f.size, 0);
@@ -220,6 +229,27 @@ export function build({ linksFile, outDir, base = '', quiet = false } = {}) {
     console.log('주소 목록(비밀): ' + listFile);
   }
   return summary;
+}
+
+// ---- 만든 사람 확인용 목록 쪽 ----
+export function ensureOwnerToken(file, rec) {
+  if (!fs.existsSync(file)) return null;
+  const j = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const used = new Set(Object.values(rec).map((r) => r.token));
+  if (j.owner && TOKEN_RE.test(j.owner) && !used.has(j.owner)) return j.owner;
+  let t; do t = newToken(); while (used.has(t));
+  j.owner = t;
+  fs.writeFileSync(file, JSON.stringify(j, null, 2) + '\n', { mode: 0o600 });
+  return t;
+}
+function ownerHtml(rec) {
+  const e = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const rows = Object.entries(rec).map(([id, r]) => `<li><a href="../${e(r.token)}/"><b>${e(id)}</b><span>${e(r.church)} · ${e(r.lang)}</span></a></li>`).join('\n');
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>Rosarium — 확인용 목록</title>
+<style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#1c1830;color:#f6ecda}main{max-width:640px;margin:0 auto;padding:24px 16px}h1{font-size:20px;margin:0 0 6px}p{color:#c9bda6;margin:0 0 16px;font-size:14px}ul{list-style:none;padding:0;margin:0}li a{display:flex;justify-content:space-between;gap:12px;padding:14px 12px;border-bottom:1px solid #3a3352;color:#f6ecda;text-decoration:none;min-height:24px}li a:active{background:#2b2440}span{color:#c8a86a;font-size:14px}</style></head>
+<body><main><h1>Rosarium 확인용 목록</h1><p>받는 곳마다 보내는 쪽과 똑같은 화면입니다. 이 주소는 혼자만 쓰세요.</p><ul>
+${rows}
+</ul></main></body></html>`;
 }
 
 if (import.meta.url === 'file://' + process.argv[1]) {
