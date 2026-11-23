@@ -114,6 +114,19 @@ Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è
 
 Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore, comprese le immagini di cui Vi scrivo. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di queste immagini, le inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
 
+**Come custodiamo la riverenza**
+
+Poiché è un luogo di preghiera, la riverenza non è lasciata soltanto alla buona volontà degli utenti: è una regola scritta nell’app.
+
+- **Nel presbiterio non si entra.** In ogni chiesa l’area dell’altare è una zona inaccessibile: l’avatar si ferma ai piedi dei gradini. Lo verificano prove automatiche, chiesa per chiesa.
+- **Nessuna imitazione della Messa o dei Sacramenti.** Dentro la chiesa l’app dichiara: «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti (Confessione, Eucaristia, ecc.)».
+- **Solo gesti di preghiera.** Inchino, segno della croce, un saluto, sedersi o inginocchiarsi per pregare, accendere una candela. La candela si accende solo al portacandele; il segno della croce è proposto all’acquasantiera, dove il modello ne ha una; il saluto con la mano è possibile solo vicino all’ingresso (altrove diventa un inchino). Non ci sono giochi, combattimenti né scherzi.
+- **Nessuna chat.** Anche l’intenzione della candela si sceglie fra frasi di preghiera già fissate, senza testo libero: non possono comparire parole offensive.
+- **Testi di preghiera fedeli.** I testi coreani sono stati confrontati parola per parola con il libro di preghiere ufficiale dei Vescovi di Corea; nelle altre lingue saranno usati soltanto i testi ufficiali.
+- **Il calendario liturgico.** Il colore del paliotto dell’altare e gli addobbi cambiano con i tempi liturgici.
+- **Chiarezza su ciò che è.** Ogni chiesa porta l’avviso che è un modello virtuale semplificato, diverso dalla chiesa reale e non approvato; le opere ancora protette dal diritto d’autore sono sostituite da forme astratte.
+- **Niente pubblicità, niente pagamenti, nessuna vendita di dati.**
+
 **1. Che cosa chiedo, e perché lo chiedo a Voi**
 
 Forse richieste come questa non Vi arrivano spesso; spiego quindi su quali basi, per quanto ne so, mi rivolgo a Voi. Chiedo se posso mostrare nell’app, a bassa risoluzione, le fotografie di due opere delle collezioni vaticane.
@@ -168,6 +181,7 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 
 - 받는 곳: 바티칸 박물관 이미지·저작권 사무실 · `id.musei@scv.va`
 - 편지에 **앱을 만든 까닭**을 사용자 말 그대로 한 절로 적었다.
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 c)**: 프레비아티 〈십자가의 길〉 14점과 라파엘로 〈거룩한 변모〉의 사진(위키미디어 커먼즈, CC BY 3.0 / PD-Art)을 낮은 해상도로 실어도 되는지. 두 작품은 저작권이 끝났으므로 작품에 대한 허락이 아니라, 박물관의 규칙 — 방문자 촬영은 「개인·가정 용도」만, 이미지 이용은 정해진 절차, 2017년 바티칸 저작권법의 문화재 복제물 보호 — 이 커먼즈 사진을 다시 쓰는 제3자에게도 적용되는지를 묻는다. 확실하지 않다고 적고, 다른 절차가 있으면 바로잡아 달라고 했다.
 - **선택지**: ① 적은 조건대로 써도 됨(기본) ② 표기·조건을 달아 허락 ③ 박물관의 계약·절차 필요(절차·비용) ④ 공식 이미지를 주거나 박물관 누리집 링크를 실을 것 ⑤ 쓰지 않기를 원함 ⑥ 방문자 규칙이 커먼즈 재사용자에게도 적용되는지(예/아니오)
 - **답에 따라**: ① 적은 표기로 싣는다 ② 알려 준 대로 ③ 절차를 마치기 전에는 쓰지 않는다 ④ 공식 이미지를 쓰거나 링크를 싣는다 ⑤ 쓰지 않는다.

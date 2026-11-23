@@ -51,6 +51,19 @@ Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è
 
 Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di alcuni testi protetti, li inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
 
+**Come custodiamo la riverenza**
+
+Poiché è un luogo di preghiera, la riverenza non è lasciata soltanto alla buona volontà degli utenti: è una regola scritta nell’app.
+
+- **Nel presbiterio non si entra.** In ogni chiesa l’area dell’altare è una zona inaccessibile: l’avatar si ferma ai piedi dei gradini. Lo verificano prove automatiche, chiesa per chiesa.
+- **Nessuna imitazione della Messa o dei Sacramenti.** Dentro la chiesa l’app dichiara: «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti (Confessione, Eucaristia, ecc.)».
+- **Solo gesti di preghiera.** Inchino, segno della croce, un saluto, sedersi o inginocchiarsi per pregare, accendere una candela. La candela si accende solo al portacandele; il segno della croce è proposto all’acquasantiera, dove il modello ne ha una; il saluto con la mano è possibile solo vicino all’ingresso (altrove diventa un inchino). Non ci sono giochi, combattimenti né scherzi.
+- **Nessuna chat.** Anche l’intenzione della candela si sceglie fra frasi di preghiera già fissate, senza testo libero: non possono comparire parole offensive.
+- **Testi di preghiera fedeli.** I testi coreani sono stati confrontati parola per parola con il libro di preghiere ufficiale dei Vescovi di Corea; nelle altre lingue saranno usati soltanto i testi ufficiali.
+- **Il calendario liturgico.** Il colore del paliotto dell’altare e gli addobbi cambiano con i tempi liturgici.
+- **Chiarezza su ciò che è.** Ogni chiesa porta l’avviso che è un modello virtuale semplificato, diverso dalla chiesa reale e non approvato; le opere ancora protette dal diritto d’autore sono sostituite da forme astratte.
+- **Niente pubblicità, niente pagamenti, nessuna vendita di dati.**
+
 **1. Che cosa chiedo, e perché**
 
 Forse richieste come questa non Vi arrivano spesso; spiego quindi su quali basi, per quanto ne so, mi rivolgo a Voi. Il Compendio del Catechismo reca la nota «© Copyright 2005 – Libreria Editrice Vaticana», e la LEV cura i diritti dei documenti pontifici (https://www.vatican.va/roman_curia/institutions_connected/lev/docs_lev/copyright_en.htm); la Vostra pagina sui diritti indica questo indirizzo per le richieste di autorizzazione (https://www.libreriaeditricevaticana.va/en/content/16-foreign-rights).
@@ -107,6 +120,7 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ① 『교리서 요약(Compendium)』 부록과 『동정 마리아의 묵주기도』에 나오는 신비 4종·20단 이름(en·es·it·pt)을 실어도 되는지 ② 주교회의가 자기 본문을 알려 주지 않는 곳에서는 Compendium 부록의 공통 기도(성호경·영광송·성모송·성모 찬송)를 실어도 되는지 ③ 라틴어 토글에 Compendium 의 강세 부호 표기를 써도 되는지 ④ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -138,6 +152,19 @@ The app is being prepared in English. I do not want to translate the prayers mys
 I am not a company but one person. I have been a Catholic for many years and my whole family is Catholic; our child was baptised as an infant and served at the altar. The app began at home: my family asked to be able to pray the Rosary the way we used to pray it in the parish we once attended. Along the way I also wished to let people experience, at least indirectly, praying the Rosary in famous churches they may never be able to visit. Recently the “metaverse” has drawn attention again (in Korea, for example, in the Buddhist community), and I have seen many Catholics say they wish there were something like it for the Catholic Church. I looked at other virtual-church apps, but many had irreverent elements — avatars walking freely up onto the altar — or incorrect prayer texts. So I decided to make a proper, reverent one.
 
 There is no revenue model at all: no advertising, no paid features; I bear all the costs of the service myself, and it is completely free. It began from a simple wish to help many of the faithful. In the process I learned that a number of elements require permission, so I am writing, one by one, to each church, diocese and rights holder concerned. For now I have left out everything that I judged could raise a copyright issue. If, to deepen Catholic devotional life and to help the wider public take an interest in the Church, you are willing to permit the use of certain protected texts, I will include them (see the options). My hope is that Catholics will have more occasions to pray the Rosary, and that those who are not Catholic may find the Church more approachable.
+
+**How we keep it reverent**
+
+Because this is a place of prayer, reverence is not left to users’ good will alone: it is built into the app as a rule.
+
+- **The sanctuary cannot be entered.** In every church the altar area is a no-entry zone: the avatar stops at the foot of the steps. Automated tests check this, church by church.
+- **No imitation of the Mass or the sacraments.** Inside the church the app states: “Prayer in a virtual church does not replace attending Mass or the sacraments (Confession, the Eucharist, and so on).”
+- **Only prayerful actions.** A bow, the sign of the cross, a greeting, sitting or kneeling to pray, lighting a candle. A candle can be lit only at the candle stand; the sign of the cross is offered at the holy water font, where the model has one; a wave of greeting is possible only near the entrance (elsewhere it becomes a bow). There are no games, no combat, no jokes.
+- **No chat.** Even a candle intention is chosen from fixed, prayerful phrases, with no free text, so no abusive words can appear.
+- **Faithful prayer texts.** The Korean texts were checked word by word against the official prayer book of the Korean bishops; in other languages only the official texts will be used.
+- **The liturgical calendar.** The colour of the altar frontal and the seasonal decorations change with the liturgical season.
+- **Honest about what it is.** Each church carries a notice that it is a simplified virtual model, different from the real church and not endorsed; works of art still in copyright are replaced by abstract forms.
+- **No advertising, no payments, no selling of data.**
 
 **1. What I am asking, and why**
 
@@ -192,6 +219,7 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ① 『로마 미사 경본』 2010 ICEL 번역의 사도신경을 무료 앱에 실어도 되는지와 조건 ② 전례 시기·대축일의 영어 이름에 허락이 필요한지 ③ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -223,6 +251,19 @@ The app is being prepared in English. I do not want to translate the prayers mys
 I am not a company but one person. I have been a Catholic for many years and my whole family is Catholic; our child was baptised as an infant and served at the altar. The app began at home: my family asked to be able to pray the Rosary the way we used to pray it in the parish we once attended. Along the way I also wished to let people experience, at least indirectly, praying the Rosary in famous churches they may never be able to visit. Recently the “metaverse” has drawn attention again (in Korea, for example, in the Buddhist community), and I have seen many Catholics say they wish there were something like it for the Catholic Church. I looked at other virtual-church apps, but many had irreverent elements — avatars walking freely up onto the altar — or incorrect prayer texts. So I decided to make a proper, reverent one.
 
 There is no revenue model at all: no advertising, no paid features; I bear all the costs of the service myself, and it is completely free. It began from a simple wish to help many of the faithful. In the process I learned that a number of elements require permission, so I am writing, one by one, to each church, diocese and rights holder concerned. For now I have left out everything that I judged could raise a copyright issue. If, to deepen Catholic devotional life and to help the wider public take an interest in the Church, you are willing to permit the use of certain protected texts, I will include them (see the options). My hope is that Catholics will have more occasions to pray the Rosary, and that those who are not Catholic may find the Church more approachable.
+
+**How we keep it reverent**
+
+Because this is a place of prayer, reverence is not left to users’ good will alone: it is built into the app as a rule.
+
+- **The sanctuary cannot be entered.** In every church the altar area is a no-entry zone: the avatar stops at the foot of the steps. Automated tests check this, church by church.
+- **No imitation of the Mass or the sacraments.** Inside the church the app states: “Prayer in a virtual church does not replace attending Mass or the sacraments (Confession, the Eucharist, and so on).”
+- **Only prayerful actions.** A bow, the sign of the cross, a greeting, sitting or kneeling to pray, lighting a candle. A candle can be lit only at the candle stand; the sign of the cross is offered at the holy water font, where the model has one; a wave of greeting is possible only near the entrance (elsewhere it becomes a bow). There are no games, no combat, no jokes.
+- **No chat.** Even a candle intention is chosen from fixed, prayerful phrases, with no free text, so no abusive words can appear.
+- **Faithful prayer texts.** The Korean texts were checked word by word against the official prayer book of the Korean bishops; in other languages only the official texts will be used.
+- **The liturgical calendar.** The color of the altar frontal and the seasonal decorations change with the liturgical season.
+- **Honest about what it is.** Each church carries a notice that it is a simplified virtual model, different from the real church and not endorsed; works of art still in copyright are replaced by abstract forms.
+- **No advertising, no payments, no selling of data.**
 
 **1. What I am asking, and why**
 
@@ -279,6 +320,7 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 미국에서 묵주기도에 쓰는 본문(성호경·사도신경·주님의 기도·성모송·영광송·파티마 기도·성모 찬송과 응송·마침 기도)과, 「Prayers of the Rosary」 쪽의 전통문을 무료 앱에 실어도 되는지 ② 그중 USCCB 저작권인 것이 있는지(인터넷 게시 허락을 하지 않는다는 방침이 앱에도 적용되는지) ③ 이런 앱에 교회 인가(임프리마투르)가 필요한지, 어디에 물어야 하는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함 ⑧ 교회 인가(임프리마투르) 필요 여부
@@ -310,6 +352,19 @@ The app is being prepared in English, with a separate text file for users in Gre
 I am not a company but one person. I have been a Catholic for many years and my whole family is Catholic; our child was baptised as an infant and served at the altar. The app began at home: my family asked to be able to pray the Rosary the way we used to pray it in the parish we once attended. Along the way I also wished to let people experience, at least indirectly, praying the Rosary in famous churches they may never be able to visit. Recently the “metaverse” has drawn attention again (in Korea, for example, in the Buddhist community), and I have seen many Catholics say they wish there were something like it for the Catholic Church. I looked at other virtual-church apps, but many had irreverent elements — avatars walking freely up onto the altar — or incorrect prayer texts. So I decided to make a proper, reverent one.
 
 There is no revenue model at all: no advertising, no paid features; I bear all the costs of the service myself, and it is completely free. It began from a simple wish to help many of the faithful. In the process I learned that a number of elements require permission, so I am writing, one by one, to each church, diocese and rights holder concerned. For now I have left out everything that I judged could raise a copyright issue. If, to deepen Catholic devotional life and to help the wider public take an interest in the Church, you are willing to permit the use of certain protected texts, I will include them (see the options). My hope is that Catholics will have more occasions to pray the Rosary, and that those who are not Catholic may find the Church more approachable.
+
+**How we keep it reverent**
+
+Because this is a place of prayer, reverence is not left to users’ good will alone: it is built into the app as a rule.
+
+- **The sanctuary cannot be entered.** In every church the altar area is a no-entry zone: the avatar stops at the foot of the steps. Automated tests check this, church by church.
+- **No imitation of the Mass or the sacraments.** Inside the church the app states: “Prayer in a virtual church does not replace attending Mass or the sacraments (Confession, the Eucharist, and so on).”
+- **Only prayerful actions.** A bow, the sign of the cross, a greeting, sitting or kneeling to pray, lighting a candle. A candle can be lit only at the candle stand; the sign of the cross is offered at the holy water font, where the model has one; a wave of greeting is possible only near the entrance (elsewhere it becomes a bow). There are no games, no combat, no jokes.
+- **No chat.** Even a candle intention is chosen from fixed, prayerful phrases, with no free text, so no abusive words can appear.
+- **Faithful prayer texts.** The Korean texts were checked word by word against the official prayer book of the Korean bishops; in other languages only the official texts will be used.
+- **The liturgical calendar.** The colour of the altar frontal and the seasonal decorations change with the liturgical season.
+- **Honest about what it is.** Each church carries a notice that it is a simplified virtual model, different from the real church and not endorsed; works of art still in copyright are replaced by abstract forms.
+- **No advertising, no payments, no selling of data.**
 
 **1. What I am asking, and why**
 
@@ -366,6 +421,7 @@ Thank you very much for your time. May the peace of the Lord be with you.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 「Traditional Prayers」 쪽의 전통 기도(주님의 기도·성모송·영광송·사도신경·성모 찬송·묵주기도)를 무료 앱에 실어도 되는지 ② 어느 것이 CBCEW·ICEL·Catholic Truth Society 저작권인지, 각각 어디에 물어야 하는지 ③ 미국 본문과 다른 곳, 아일랜드에도 같은 본문을 쓰는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -397,6 +453,19 @@ La aplicación se está preparando en español, con un archivo de textos propio 
 No soy una empresa, sino una sola persona. Soy católico desde hace muchos años y toda mi familia lo es; nuestro hijo 〔o: nuestra hija〕 recibió el Bautismo de niño y sirvió al altar como monaguillo. La aplicación nació en casa: mi familia me pidió poder rezar el Rosario como lo rezábamos en la parroquia a la que íbamos antes. Por el camino quise ofrecer también, a quienes quizá nunca puedan visitarlas, la experiencia —al menos indirecta— de rezar el Rosario en algunas iglesias célebres. Últimamente el «metaverso» vuelve a llamar la atención (en Corea, por ejemplo, en la comunidad budista), y he visto a muchos católicos desear algo así para la Iglesia católica. Busqué otras aplicaciones de «iglesias virtuales», pero en muchas encontré elementos poco reverentes —avatares que suben libremente al altar— o textos de oración incorrectos. Por eso decidí hacer una bien hecha y reverente.
 
 No hay ningún modelo de ingresos: ni publicidad ni funciones de pago; yo mismo asumo todos los gastos del servicio, que es totalmente gratuito. Nació del simple deseo de ayudar a muchos fieles. En el proceso vi que varios elementos necesitan autorización; por eso estoy escribiendo, una por una, a las iglesias, diócesis y titulares de derechos correspondientes. Por ahora he dejado fuera todo lo que, a mi juicio, podía plantear problemas de derechos de autor. Si, para profundizar la vida de devoción de los católicos y acercar la Iglesia a quienes no la conocen, están dispuestos a permitir el uso de ciertos textos protegidos, los incluiré (véanse las opciones). Mi esperanza es que los católicos tengan más ocasiones de rezar el Rosario y que quienes no son católicos sientan la Iglesia más cercana.
+
+**Cómo cuidamos la reverencia**
+
+Por tratarse de un lugar de oración, la reverencia no se deja solo a la buena voluntad de los usuarios: es una regla escrita en la aplicación.
+
+- **No se puede entrar en el presbiterio.** En todas las iglesias la zona del altar es un espacio vedado: el avatar se detiene al pie de las gradas. Lo comprueban pruebas automáticas, iglesia por iglesia.
+- **Ninguna imitación de la Misa ni de los sacramentos.** Dentro de la iglesia la aplicación declara: «La oración en una iglesia virtual no sustituye la participación en la Misa ni los sacramentos (Confesión, Eucaristía, etc.)».
+- **Solo gestos de oración.** Inclinarse, santiguarse, saludar, sentarse o arrodillarse para rezar, encender una vela. La vela solo se enciende en el lampadario; la señal de la cruz se propone junto a la pila de agua bendita, donde el modelo la tiene; el saludo con la mano solo es posible cerca de la entrada (en otro lugar se convierte en una inclinación). No hay juegos, combates ni bromas.
+- **No hay chat.** Incluso la intención de la vela se elige entre frases de oración ya fijadas, sin texto libre: no pueden aparecer palabras ofensivas.
+- **Textos de oración fieles.** Los textos coreanos se cotejaron palabra por palabra con el devocionario oficial de los obispos de Corea; en las demás lenguas solo se usarán los textos oficiales.
+- **El calendario litúrgico.** El color del frontal del altar y los adornos cambian con los tiempos litúrgicos.
+- **Claridad sobre lo que es.** Cada iglesia lleva el aviso de que es un modelo virtual simplificado, distinto de la iglesia real y no aprobado; las obras de arte aún protegidas por derechos de autor se sustituyen por formas abstractas.
+- **Sin publicidad, sin pagos, sin venta de datos.**
 
 **1. Qué pido y por qué**
 
@@ -453,6 +522,7 @@ Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 스페인에서 지금 쓰는 묵주기도 본문(성호경·사도신경·주님의 기도·성모송·영광송·파티마 기도·성모 찬송과 응송·마침 기도)과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEE 저작권(『로마 미사 경본』 3판)인 것과 문의처 ③ 파티마 기도의 권장 형태 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -484,6 +554,19 @@ La aplicación se está preparando en español, con un archivo de textos para Am
 No soy una empresa, sino una sola persona. Soy católico desde hace muchos años y toda mi familia lo es; nuestro hijo 〔o: nuestra hija〕 recibió el Bautismo de niño y sirvió al altar como monaguillo. La aplicación nació en casa: mi familia me pidió poder rezar el Rosario como lo rezábamos en la parroquia a la que íbamos antes. Por el camino quise ofrecer también, a quienes quizá nunca puedan visitarlas, la experiencia —al menos indirecta— de rezar el Rosario en algunas iglesias célebres. Últimamente el «metaverso» vuelve a llamar la atención (en Corea, por ejemplo, en la comunidad budista), y he visto a muchos católicos desear algo así para la Iglesia católica. Busqué otras aplicaciones de «iglesias virtuales», pero en muchas encontré elementos poco reverentes —avatares que suben libremente al altar— o textos de oración incorrectos. Por eso decidí hacer una bien hecha y reverente.
 
 No hay ningún modelo de ingresos: ni publicidad ni funciones de pago; yo mismo asumo todos los gastos del servicio, que es totalmente gratuito. Nació del simple deseo de ayudar a muchos fieles. En el proceso vi que varios elementos necesitan autorización; por eso estoy escribiendo, una por una, a las iglesias, diócesis y titulares de derechos correspondientes. Por ahora he dejado fuera todo lo que, a mi juicio, podía plantear problemas de derechos de autor. Si, para profundizar la vida de devoción de los católicos y acercar la Iglesia a quienes no la conocen, están dispuestos a permitir el uso de ciertos textos protegidos, los incluiré (véanse las opciones). Mi esperanza es que los católicos tengan más ocasiones de rezar el Rosario y que quienes no son católicos sientan la Iglesia más cercana.
+
+**Cómo cuidamos la reverencia**
+
+Por tratarse de un lugar de oración, la reverencia no se deja solo a la buena voluntad de los usuarios: es una regla escrita en la aplicación.
+
+- **No se puede entrar en el presbiterio.** En todas las iglesias la zona del altar es un espacio vedado: el avatar se detiene al pie de las gradas. Lo comprueban pruebas automáticas, iglesia por iglesia.
+- **Ninguna imitación de la Misa ni de los sacramentos.** Dentro de la iglesia la aplicación declara: «La oración en una iglesia virtual no sustituye la participación en la Misa ni los sacramentos (Confesión, Eucaristía, etc.)».
+- **Solo gestos de oración.** Inclinarse, santiguarse, saludar, sentarse o arrodillarse para rezar, encender una vela. La vela solo se enciende en el lampadario; la señal de la cruz se propone junto a la pila de agua bendita, donde el modelo la tiene; el saludo con la mano solo es posible cerca de la entrada (en otro lugar se convierte en una inclinación). No hay juegos, combates ni bromas.
+- **No hay chat.** Incluso la intención de la vela se elige entre frases de oración ya fijadas, sin texto libre: no pueden aparecer palabras ofensivas.
+- **Textos de oración fieles.** Los textos coreanos se cotejaron palabra por palabra con el devocionario oficial de los obispos de Corea; en las demás lenguas solo se usarán los textos oficiales.
+- **El calendario litúrgico.** El color del frontal del altar y los adornos cambian con los tiempos litúrgicos.
+- **Claridad sobre lo que es.** Cada iglesia lleva el aviso de que es un modelo virtual simplificado, distinto de la iglesia real y no aprobado; las obras de arte aún protegidas por derechos de autor se sustituyen por formas abstractas.
+- **Sin publicidad, sin pagos, sin venta de datos.**
 
 **1. Qué pido y por qué**
 
@@ -540,6 +623,7 @@ Muchas gracias por su atención. Que la paz del Señor esté con ustedes.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 멕시코에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEM 저작권인 것과 문의처 ③ 중남미 공통 본문이 있는지, 다른 중남미 나라 사용자에게는 어떤 본문을 권하는지 ④ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -571,6 +655,19 @@ L’app è in preparazione in italiano. Non voglio tradurre io le preghiere dal 
 Non sono un’azienda, ma una persona sola. Sono cattolico da molti anni e lo è tutta la mia famiglia; nostro figlio 〔o: nostra figlia〕 ha ricevuto il Battesimo da neonato e ha servito all’altare come ministrante. L’app è nata in casa: i miei familiari desideravano poter pregare il Rosario come lo pregavamo nella parrocchia che frequentavamo un tempo. Strada facendo ho desiderato offrire, anche a chi forse non potrà mai visitarle, l’esperienza — almeno indiretta — di pregare il Rosario in alcune chiese celebri. Di recente il «metaverso» è tornato a far parlare di sé (in Corea, per esempio, nella comunità buddista), e ho letto molti cattolici augurarsi qualcosa di simile per la Chiesa cattolica. Ho cercato altre app di «chiese virtuali», ma in molte ho trovato elementi poco rispettosi — avatar che salgono liberamente sull’altare — oppure testi di preghiera sbagliati. Per questo ho deciso di farne una fatta bene, con rispetto.
 
 Non c’è alcun modello di guadagno: niente pubblicità, niente funzioni a pagamento; sostengo io tutte le spese del servizio, che è del tutto gratuito. È nata dal semplice desiderio di aiutare molti fedeli. Lavorandoci ho capito che diversi elementi richiedono un permesso: per questo sto scrivendo, una per una, alle chiese, alle diocesi e ai titolari dei diritti interessati. Per ora ho escluso tutto ciò che, a mio giudizio, poteva porre problemi di diritto d’autore. Se, per approfondire la vita di devozione dei cattolici e avvicinare alla Chiesa chi non la conosce, vorrete permettere l’uso di alcuni testi protetti, li inserirò nell’app (vedi le opzioni). La mia speranza è che i cattolici abbiano più occasioni di pregare il Rosario, e che chi non è cattolico senta la Chiesa più vicina.
+
+**Come custodiamo la riverenza**
+
+Poiché è un luogo di preghiera, la riverenza non è lasciata soltanto alla buona volontà degli utenti: è una regola scritta nell’app.
+
+- **Nel presbiterio non si entra.** In ogni chiesa l’area dell’altare è una zona inaccessibile: l’avatar si ferma ai piedi dei gradini. Lo verificano prove automatiche, chiesa per chiesa.
+- **Nessuna imitazione della Messa o dei Sacramenti.** Dentro la chiesa l’app dichiara: «La preghiera in una chiesa virtuale non sostituisce la partecipazione alla Messa né i Sacramenti (Confessione, Eucaristia, ecc.)».
+- **Solo gesti di preghiera.** Inchino, segno della croce, un saluto, sedersi o inginocchiarsi per pregare, accendere una candela. La candela si accende solo al portacandele; il segno della croce è proposto all’acquasantiera, dove il modello ne ha una; il saluto con la mano è possibile solo vicino all’ingresso (altrove diventa un inchino). Non ci sono giochi, combattimenti né scherzi.
+- **Nessuna chat.** Anche l’intenzione della candela si sceglie fra frasi di preghiera già fissate, senza testo libero: non possono comparire parole offensive.
+- **Testi di preghiera fedeli.** I testi coreani sono stati confrontati parola per parola con il libro di preghiere ufficiale dei Vescovi di Corea; nelle altre lingue saranno usati soltanto i testi ufficiali.
+- **Il calendario liturgico.** Il colore del paliotto dell’altare e gli addobbi cambiano con i tempi liturgici.
+- **Chiarezza su ciò che è.** Ogni chiesa porta l’avviso che è un modello virtuale semplificato, diverso dalla chiesa reale e non approvato; le opere ancora protette dal diritto d’autore sono sostituite da forme astratte.
+- **Niente pubblicità, niente pagamenti, nessuna vendita di dati.**
 
 **1. Che cosa chiedo, e perché**
 
@@ -626,6 +723,7 @@ Vi ringrazio per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 이탈리아에서 지금 쓰는 묵주기도 본문(특히 『Messale Romano』 3판 2020 의 주님의 기도 「non abbandonarci alla tentazione」)과 20단 이름을 무료 앱에 실어도 되는지 ② 미사 경본 권리자가 재단이므로 누구에게 신청해야 하는지(전달 부탁) ③ 표기 문구. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -657,6 +755,19 @@ Mais adiante, o aplicativo terá uma edição em português, com um arquivo de t
 Não sou uma empresa, mas uma só pessoa. Sou católico há muitos anos e toda a minha família é católica; nosso filho 〔ou: nossa filha〕 foi batizado ainda bebê e serviu ao altar como coroinha. O aplicativo nasceu em casa: minha família pediu para poder rezar o Terço como rezávamos na paróquia que frequentávamos antes. No caminho, quis também oferecer, a quem talvez nunca possa visitá-las, a experiência — ao menos indireta — de rezar o Terço em algumas igrejas célebres. Recentemente o «metaverso» voltou a chamar a atenção (na Coreia, por exemplo, na comunidade budista), e vi muitos católicos desejarem algo assim para a Igreja Católica. Procurei outros aplicativos de «igrejas virtuais», mas em muitos encontrei elementos pouco reverentes — avatares que sobem livremente ao altar — ou textos de oração incorretos. Por isso decidi fazer um bem-feito e reverente.
 
 Não há nenhum modelo de receita: nem publicidade, nem funções pagas; eu mesmo arco com todos os custos do serviço, que é totalmente gratuito. Nasceu do simples desejo de ajudar muitos fiéis. No processo, vi que vários elementos precisam de autorização; por isso estou escrevendo, uma a uma, às igrejas, dioceses e titulares de direitos envolvidos. Por enquanto, deixei de fora tudo o que, a meu ver, poderia levantar questões de direitos autorais. Se, para aprofundar a vida de devoção dos católicos e aproximar da Igreja quem não a conhece, estiverem dispostos a permitir o uso de certos textos protegidos, eu os incluirei (vejam as opções). Minha esperança é que os católicos tenham mais ocasiões de rezar o Terço e que quem não é católico sinta a Igreja mais próxima.
+
+**Como cuidamos da reverência**
+
+Por se tratar de um lugar de oração, a reverência não fica apenas por conta da boa vontade dos usuários: é uma regra escrita no aplicativo.
+
+- **Não se entra no presbitério.** Em todas as igrejas a área do altar é uma zona vedada: o avatar para ao pé dos degraus. Testes automáticos verificam isso, igreja por igreja.
+- **Nenhuma imitação da Missa nem dos sacramentos.** Dentro da igreja o aplicativo declara: «A oração em uma igreja virtual não substitui a participação na Missa nem os sacramentos (Confissão, Eucaristia etc.)».
+- **Somente gestos de oração.** Inclinar-se, fazer o sinal da cruz, cumprimentar, sentar-se ou ajoelhar-se para rezar, acender uma vela. A vela só se acende no velário; o sinal da cruz é proposto junto à pia de água benta, onde o modelo a tem; o aceno de mão só é possível perto da entrada (em outro lugar torna-se uma inclinação). Não há jogos, combates nem brincadeiras.
+- **Não há chat.** Até a intenção da vela é escolhida entre frases de oração já fixadas, sem texto livre: não podem aparecer palavras ofensivas.
+- **Textos de oração fiéis.** Os textos coreanos foram conferidos palavra por palavra com o livro oficial de orações dos bispos da Coreia; nas outras línguas serão usados somente os textos oficiais.
+- **O calendário litúrgico.** A cor do frontal do altar e os enfeites mudam conforme o tempo litúrgico.
+- **Clareza sobre o que é.** Cada igreja traz o aviso de que é um modelo virtual simplificado, diferente da igreja real e não aprovado; as obras de arte ainda protegidas por direitos autorais são substituídas por formas abstratas.
+- **Sem publicidade, sem pagamentos, sem venda de dados.**
 
 **1. O que peço, e por quê**
 
@@ -712,6 +823,7 @@ Muito obrigado pela atenção. Que a paz do Senhor esteja com todos.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 브라질에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CNBB 저작권(『Missal Romano』 3판)인 것과 신청처 ③ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
@@ -743,6 +855,19 @@ Mais adiante, a aplicação terá uma edição em português, com um ficheiro de
 Não sou uma empresa, mas uma só pessoa. Sou católico há muitos anos e toda a minha família é católica; o nosso filho 〔ou: a nossa filha〕 foi batizado em bebé e serviu ao altar como acólito. A aplicação nasceu em casa: a minha família pediu para poder rezar o Rosário como o rezávamos na paróquia que antes frequentávamos. Pelo caminho, quis também oferecer, a quem talvez nunca as possa visitar, a experiência — ao menos indireta — de rezar o Rosário em algumas igrejas célebres. Recentemente o «metaverso» voltou a chamar a atenção (na Coreia, por exemplo, na comunidade budista), e vi muitos católicos desejarem algo assim para a Igreja Católica. Procurei outras aplicações de «igrejas virtuais», mas em muitas encontrei elementos pouco reverentes — avatares que sobem livremente ao altar — ou textos de oração incorretos. Por isso decidi fazer uma bem feita e reverente.
 
 Não há qualquer modelo de receita: nem publicidade, nem funções pagas; suporto eu próprio todos os custos do serviço, que é totalmente gratuito. Nasceu do simples desejo de ajudar muitos fiéis. No processo, vi que vários elementos precisam de autorização; por isso estou a escrever, uma a uma, às igrejas, dioceses e titulares de direitos envolvidos. Por agora, deixei de fora tudo o que, a meu ver, poderia levantar questões de direitos de autor. Se, para aprofundar a vida de devoção dos católicos e aproximar da Igreja quem não a conhece, estiverem dispostos a permitir o uso de certos textos protegidos, incluí-los-ei (vejam as opções). A minha esperança é que os católicos tenham mais ocasiões de rezar o Rosário e que quem não é católico sinta a Igreja mais próxima.
+
+**Como cuidamos da reverência**
+
+Por se tratar de um lugar de oração, a reverência não fica apenas entregue à boa vontade dos utilizadores: é uma regra escrita na aplicação.
+
+- **Não se entra no presbitério.** Em todas as igrejas a zona do altar é um espaço vedado: o avatar detém-se ao pé dos degraus. Testes automáticos verificam-no, igreja a igreja.
+- **Nenhuma imitação da Missa nem dos sacramentos.** Dentro da igreja a aplicação declara: «A oração numa igreja virtual não substitui a participação na Missa nem os sacramentos (Confissão, Eucaristia, etc.)».
+- **Apenas gestos de oração.** Inclinar-se, fazer o sinal da cruz, cumprimentar, sentar-se ou ajoelhar-se para rezar, acender uma vela. A vela só se acende no suporte das velas; o sinal da cruz é proposto junto à pia de água benta, onde o modelo a tem; o aceno de mão só é possível perto da entrada (noutro lugar torna-se uma inclinação). Não há jogos, combates nem brincadeiras.
+- **Não há chat.** Até a intenção da vela é escolhida entre frases de oração já fixadas, sem texto livre: não podem aparecer palavras ofensivas.
+- **Textos de oração fiéis.** Os textos coreanos foram conferidos palavra por palavra com o livro oficial de orações dos bispos da Coreia; nas outras línguas serão usados apenas os textos oficiais.
+- **O calendário litúrgico.** A cor do frontal do altar e os enfeites mudam conforme o tempo litúrgico.
+- **Clareza sobre o que é.** Cada igreja traz o aviso de que é um modelo virtual simplificado, diferente da igreja real e não aprovado; as obras de arte ainda protegidas por direitos de autor são substituídas por formas abstratas.
+- **Sem publicidade, sem pagamentos, sem venda de dados.**
 
 **1. O que peço, e porquê**
 
@@ -798,6 +923,7 @@ Muito obrigado pela atenção. Que a paz do Senhor esteja convosco.
 
 ### (나) 한국어 요약 (사용자 확인용)
 
+- 편지에 **경건함을 지키기 위해 한 일** 절을 「앱을 만든 까닭」 뒤, 여쭙는 내용 앞에 넣었다(2026-11-23, 코드에서 확인한 사실만): 제단 출입 금지 구역 · 미사·성사 흉내 없음 · 기도하는 동작만(초는 봉헌대에서만, 성호 긋기 단추는 성수대가 있는 성당에서만) · 대화 기능 없음(지향은 정해진 문구) · 기도문 대조 · 전례력 · 실제와 다르다는 고지 · 광고·결제·정보 판매 없음. 다른 사례나 다른 앱 이야기는 더하지 않았다.
 - **무엇을 여쭙는가(근거 분류 a — 저작권 이용 허락)**: ⓪ **공식 본문 자체를 보내 주시거나 있는 곳을 알려 달라**(우리가 원문을 다 확인하지 못했기 때문 — 허락만이 아니라 본문도 청한다) ① 포르투갈에서 쓰는 묵주기도 본문과 20단 이름을 무료 앱에 실어도 되는지 ② 그중 CEP 저작권(『Missal Romano』 3판)인 것과 신청처 ③ 표기 문구·비용. 편지에 앱을 만든 까닭(개인·가족의 부탁·경건한 앱·수익 없음)과, 왜 그곳에 묻는지의 근거(출처 주소)를 적었다. 공유 저작물이라 허락이 필요 없는 것이 있으면 그렇게 알려 달라고 적었다.
 - **쓰는 방식**: 화면 글자로만, 고치지 않고, 알려 주는 표기와 함께. **이 언어의 기도문은 소리 내어 읽지 않는다**(녹음·AI 음성·기기 TTS 모두 없음 — 음성은 한국어만). 선창·후창 두 부분 표시와 「짧게 보기」가 있다. 성경 본문·미사 전례문·성가는 없다.
 - **선택지**: ① 그대로 써도 됨(표기 문구) ② 다른 판본·문안을 쓸 것 ③ 공유 저작물이라 허락 불필요 ④ 두 부분 표시·짧게 보기 가능/전문만 ⑤ 공식 출처 링크 ⑥ 정식 신청·계약·비용 필요 ⑦ 쓰지 않기를 원함
