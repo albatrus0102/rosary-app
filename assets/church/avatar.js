@@ -1236,6 +1236,10 @@
     DS_MARGIN: 0.006,                             // 두 발 디딤 순간 골반을 닿는 높이보다 더 낮춘다(m) — 디딘 직후 무릎이 조금 굽어 받는다(하중 반응)
     BOB_MIN: 0.012,                               // 걸을 때 골반 오르내림 최소(m)
     SMIN: 0.008,                                  // 디딘 다리 닿는 높이 제약의 부드러운 최소 폭(m)
+    STAIR_UP: 0.2, STAIR_UPK: 0.25,                // 계단을 오를 때 흔드는 발을 더 드는 높이 = min(오를 높이, STAIR_UP) × STAIR_UPK(m; 4차, 옛 식은 오를 높이 × 0.9 를 제한 없이)
+    STAIR_RISE: 0.36, STAIR_RISE_FAST: 0.45,      // 계단에서 한 걸음에 오르내리는 높이 상한(m) — 보통 걸음 / 빠른 걸음(4차: 보폭을 줄여 맞춘다)
+    STAIR_DMIN: 0.34,                             // 계단: IK 에서 고관절 ~ 발목 최소 거리(m) — 무릎 굽힘 상한 약 130°(평지는 0.2 = 151°, 4차)
+    STAIR_HIP: 0.35,                              // 계단: 골반을 두 발 바닥 높이 평균(루트 위)만큼 올리는 상한(m; 4차 — 옛 식은 루트 위 HIPS_Y 에 묶여 앞발이 단 위에 디디면 무릎이 120~135° 쪼그려졌다)
     SETTLE: 1.25,                                 // 멈춰 서거나 제자리에서 돌 때 발을 고쳐 딛는 주기(주기/초)
     TELE: 1.5,                                    // 한 번에 이보다 멀리 옮겨지면(순간 이동) 발을 새로 놓는다(m)
     VMAX: 9                                       // 이보다 빠른 이동도 순간 이동으로 본다(m/s)
@@ -1333,21 +1337,36 @@
       this.restOf(k, rx, ry, rz, yaw, GAIT.WIDTH0, F); F.st = 1; F.p = 0; F.toff = 0;
       ankleAt(F, 0, _A); F.ax = _A.x; F.ay = _A.y; F.az = _A.z; F.ayaw = F.yaw; F.u = frac(0.05 + (k ? 0 : 0.5));
     }
-    this.px = rx; this.pz = rz; this.pyaw = yaw; this.vx = this.vz = this.v = 0; this.rate = 0; this.ph = 0.05; this.settle = false; this.ok = true;
+    this.px = rx; this.pz = rz; this.pyaw = yaw; this.pry = ry; this.slope = 0; this.vx = this.vz = this.v = 0; this.rate = 0; this.ph = 0.05; this.settle = false; this.ok = true;
   };
   // 한 프레임: 루트(rx,ry,rz,yaw)가 지난 프레임에서 옮겨 간 만큼 걷는다. active=false(앉기·무릎 꿇기)면 발을 쉬는 자리에 붙인다.
   // t: 시각(s), ws: 서 있을 때 체중 이동(-1..1)
   Gait.prototype.step = function (dt, rx, ry, rz, yaw, active, ws) {
     var dx = rx - this.px, dz = rz - this.pz, d = Math.sqrt(dx * dx + dz * dz), dyaw = wrapPI(yaw - this.pyaw), k, F;
     if (!this.ok || !active || d > GAIT.TELE || d > GAIT.VMAX * Math.max(dt, 1 / 60) || !(dt > 0)) { this.reset(rx, ry, rz, yaw); d = 0; dyaw = 0; dx = dz = 0; }
-    this.px = rx; this.pz = rz; this.pyaw = yaw;
+    var dy = this.pry === undefined ? 0 : ry - this.pry;
+    this.px = rx; this.pz = rz; this.pyaw = yaw; this.pry = ry;
     var idt = 1 / Math.max(dt, 1e-3), kv = Math.min(1, dt * 14);
     this.vx += (dx * idt - this.vx) * kv; this.vz += (dz * idt - this.vz) * kv;
     var v = this.v = Math.sqrt(this.vx * this.vx + this.vz * this.vz);
+    // 계단 기울기(4차): 바닥 함수(ground)가 있을 때 진행 방향 앞뒤 sla(0.6m + 0.1s × 속도) 바닥 높이 차 / sla 가운데 큰 쪽(계단에 들어서기 전에 미리 안다)과
+    // 루트(몸 높이 — 계단 비탈을 따라간다)가 오르내린 높이 / 움직인 거리 가운데 큰 쪽, 부드럽게. 평평한 바닥은 0
+    if (this.ground) {
+      var sl = d > 1e-4 ? Math.abs(dy) / d : 0, sv = Math.sqrt(this.vx * this.vx + this.vz * this.vz);
+      if (sv > 0.05) {
+        var sla = 0.6 + 0.1 * sv, sdx = this.vx / sv * sla, sdz = this.vz / sv * sla, g0 = this.ground(rx, rz, ry);
+        sl = Math.max(sl, Math.abs(this.ground(rx + sdx, rz + sdz, ry) - g0) / sla, Math.abs(g0 - this.ground(rx - sdx, rz - sdz, ry)) / sla);
+      }
+      this.slope += (Math.min(1.5, sl) - this.slope) * Math.min(1, dt * (sl > this.slope ? 12 : 4));
+    } else this.slope = 0;
     var j = this.j = sm((v - GAIT.JOG0) / (GAIT.JOG1 - GAIT.JOG0)), wi = this.wi = clamp01(v / 1.6);
     this.fs = fastOf(v) * (1 - j);
     var fr = this.fr = lerp(GAIT.FRONT, GAIT.FRONT_FAST, this.fs);   // 디딤 거리 가운데 골반 앞쪽 몫(빠를수록 FRONT_FAST)
-    var L = stepLen(v, j), S = 2 * L, beta = dutyOf(v, j), width = lerp(GAIT.WIDTH0, GAIT.WIDTH, sm(v / 0.8));
+    // 계단에서는 한 걸음에 오르내리는 높이가 STAIR_RISE(빠른 걸음은 STAIR_RISE_FAST)를 넘지 않게 보폭을 줄인다(4차, WALK_GAIT.md §9) — 옛 식은 평지 보폭 그대로라
+    // 1.2 m/s 로 오를 때 한 걸음에 단 2~3개(0.34~0.51m), 4 m/s 면 3~4개를 올라 무릎이 120~150° 접혔다(사람은 한 걸음에 단 1~2개). 평평한 바닥은 slope = 0 이라 그대로
+    var L = stepLen(v, j);
+    if (this.slope > 0.05) L = Math.min(L, Math.max(0.3, lerp(GAIT.STAIR_RISE, GAIT.STAIR_RISE_FAST, fastOf(v)) / this.slope));
+    var S = 2 * L, beta = dutyOf(v, j), width = lerp(GAIT.WIDTH0, GAIT.WIDTH, sm(v / 0.8));
     // 발을 고쳐 디딜지: 거의 멈췄는데 발이 쉬는 자리에서 벗어나 있거나, 제자리에서 돌고 있다
     this.spin += (Math.abs(dyaw) * idt - this.spin) * Math.min(1, dt * 10);
     var off = false;
@@ -1407,13 +1426,16 @@
         ankleAt(_T, hs, _A);
         F.p = lerp(F.sp, hs, sm(s / 0.75));
         F.ax = lerp(F.sx, _A.x, e); F.az = lerp(F.sz, _A.z, e);
-        // 계단을 오를 때는 단 높이만큼 더 들어 올린다(발끝이 챌판에 걸리지 않게). ground 가 없으면 ty = 루트 높이라 예전과 같다
-        var up = this.ground ? Math.max(0, F.ty + ANKLE - F.sy) : 0;
+        // 계단을 오를 때는 조금 더 들어 올린다(발끝이 챌판에 걸리지 않게). ground 가 없으면 ty = 루트 높이라 예전과 같다.
+        // 4차(2026-11-23, WALK_GAIT.md §9): 옛 식은 오를 높이 전부(up × 0.9)를 착지 높이 보간 위에 또 더했다 — 한 걸음에 단 2~5개(0.34~0.85m)를 오르면
+        // 발목이 디딜 단보다 0.6~0.8m 위(골반 관절보다 위)로 올라가 허벅지가 뒤로 한 바퀴 돌고(t1 −1.4 → ±π → 1.9) 무릎이 150° 접혔다.
+        // 높이 보간(eY)이 이미 앞서 올라가므로(단 끝을 넘기 전에 디딜 높이) 더하는 몫은 한 단 높이 안에서 조금만(STAIR_UPK), 나머지는 아래 바닥 받침(sinkOf)이 맡는다.
+        var up = this.ground ? Math.min(GAIT.STAIR_UP, Math.max(0, F.ty + ANKLE - F.sy)) * GAIT.STAIR_UPK : 0;
         // 높이(사람 흔들기): 떼자마자 무릎을 굽혀 발목이 조금 더 올라가고(뒤에 남은 다리가 짧아져 닿는다), 흔들기 가운데까지 착지 높이로 내려와
         // 발끝이 바닥을 스치듯 지나간 뒤(lift 만큼만 더 든다), 닿을 때는 거의 수평으로 들어온다. 계단을 오를 때(up)는 예전처럼 일찍 들어 올린다.
         // 계단(디딜 단 높이가 지금 단과 다르다)은 예전 길(높이도 앞뒤 진행과 함께, 더 높이 든다) — 내려갈 때 단 끝을 넘기 전에 내려앉지 않게
         var eY = up > 0.02 ? Math.min(1, e * 1.6) : stair ? e : minJerk(clamp01((s - 0.12) / 0.5));
-        F.ay = lerp(F.sy, _A.y, eY) + ((stair ? liftS : lift) + up * 0.9) * Math.sin(PI * Math.pow(s, 0.8)) + liftE * Math.sin(PI * clamp01(s / 0.6));
+        F.ay = lerp(F.sy, _A.y, eY) + ((stair ? liftS : lift) + up) * Math.sin(PI * Math.pow(s, 0.8)) + liftE * Math.sin(PI * clamp01(s / 0.6));
         F.ayaw = F.syaw + wrapPI(F.tyaw - F.syaw) * e;
         // 흔드는 발끝·뒤꿈치가 바닥(계단이면 그 아래 단)을 파고들지 않게 올린다. soleLow 는 디딘 발의 받침점 모형보다 조금 낮게 잡으므로
         // 떼는 순간(흔들기 시작)과 닿는 순간(착지 자리)의 「모형 차이」만큼은 봐준다 — 옛 식은 떼자마자 발이 4.5cm 튀어 오르고 착지 직전 2~3cm 떠 있다가 한 프레임에 「철썩」 내려앉았다.
@@ -1467,10 +1489,20 @@
     }
     var cB = bobWave(uR, beta, fr);   // 0: 두 발 디딤 가운데, 1: 디딘 발이 골반 바로 아래
     var hy = lerp(yLo, yHi, cB);
+    // 계단(4차, WALK_GAIT.md §9): 루트는 계단 비탈을 따라가는 몸 높이(scene_logic bodyY)라서, 앞발이 단 위에 디디면 그 발은 루트보다 0.3~0.45m 위다.
+    // 골반을 루트 위 HIPS_Y 에 묶어 두면 그 다리가 쪼그려(무릎 120~135°) 접힌다 — 두 발 바닥 높이(흔드는 발은 뗀 단 → 디딜 단으로 보간) 평균이 루트보다 높은 만큼 골반을 올린다.
+    // 디딘 다리가 닿는 높이 제약(아래 smin)은 그대로라 뒤에 남은 발이 낮으면 거기서 막힌다. 평평한 바닥(두 발 = 루트 높이)·내려갈 때(평균이 루트보다 낮다)는 0.
+    if (this.ground) {
+      var gsum = 0;
+      for (k = 0; k < 2; k++) { F = this.f[k]; gsum += F.st ? F.y : lerp(F.y, F.ty, minJerk(clamp01((F.u - F.b) / (1 - F.b)))); }
+      hy += clamp(gsum / 2 - ry, 0, GAIT.STAIR_HIP);
+    }
     for (k = 0; k < 2; k++) {
       F = this.f[k]; side = k ? 1 : -1;
       // 디딘 다리는 늘 닿아야 한다. 흔드는 다리는 착지 직전(마지막 15%)에만 — 보통은 위 물결이 이미 그 높이라 걸리지 않는다(안전망).
-      var sw01 = F.st ? 1 : sm((clamp01((F.u - F.b) / (1 - F.b)) - 0.85) / 0.15);
+      // 계단에서는 떼는 순간(처음 20%)에도 서서히 풀어 준다 — 뒤에 남은 낮은 발이 떨어지는 순간 제약이 한 프레임에 사라져 골반이 9cm 튀어 올랐다(4차)
+      var s01 = clamp01((F.u - F.b) / (1 - F.b));
+      var sw01 = F.st ? 1 : Math.max(sm((s01 - 0.85) / 0.15), this.ground && Math.abs(F.ty - F.y) > 0.02 ? 1 - sm(s01 / 0.2) : 0);
       if (sw01 <= 0) continue;
       var ax = F.ax - rx, az = F.az - rz;
       var hm = this.hipTop(side, ax * cyw - az * syw, ax * syw + az * cyw, F.ay - ry, -1, beta, wi, gw, j, GAIT.REACH) + 0.2 * (1 - sw01);
@@ -1487,7 +1519,7 @@
       var fy = wrapPI(F.ayaw - yaw), rel = wrapPI(fy - this.yaw) + side * GAIT.TOE;
       var psi = clamp(0.8 * rel, -0.5, 0.5), cp = Math.cos(psi), sp = Math.sin(psi);
       var X = _gv.x * cp - _gv.z * sp, Y = _gv.y, Z = _gv.x * sp + _gv.z * cp;
-      var dist = Math.sqrt(X * X + Y * Y + Z * Z), dc = clamp(dist, 0.2, LEN_T + LEN_S - 1e-4);
+      var dist = Math.sqrt(X * X + Y * Y + Z * Z), dc = clamp(dist, this.ground ? GAIT.STAIR_DMIN : 0.2, LEN_T + LEN_S - 1e-4);   // 계단: 발목이 고관절에 STAIR_DMIN 보다 가까워지지 않게(무릎 최대 굽힘 상한, 4차)
       if (dc !== dist && dist > 1e-6) { X *= dc / dist; Y *= dc / dist; Z *= dc / dist; }
       var ck = clamp((dc * dc - LEN_T * LEN_T - LEN_S * LEN_S) / (2 * LEN_T * LEN_S), -1, 1), kn = Math.acos(ck);
       var P = LEN_T + LEN_S * ck, gam = Math.asin(clamp(X / P, -1, 1)), Q = P * Math.cos(gam), R = -LEN_S * Math.sin(kn), det = Q * Q + R * R;
