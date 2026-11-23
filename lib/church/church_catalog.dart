@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/foundation.dart';
 
+import '../app/release_gate.dart';
+
 /// 성당 상세 시트의 '기리는 이' 한 줄(예: 순교자 이름 + 순교일).
 @immutable
 class ChurchPerson {
@@ -154,6 +156,25 @@ abstract final class ChurchCatalog {
           '· 제대 뒤 십자고상은 다른 곳에 있는 옛 십자고상을 3D로 스캔한 것이고, 성모상은 앱의 공통 성모상입니다.\n'
           '· 십자가의 길 14처는 옛 그림 연작(푸겔, 1921년)입니다.\n'
           '· 제대의 천과 장식은 앱이 전례 시기에 맞춰 바꿉니다.\n'
+          '어느 교회나 본당이 만들거나 승인한 모형이 아닙니다.',
+    ),
+    // 앱이 지은 가상의 성당(설계 시안 C, 1단계). 주인 확인 전이라 일반 빌드 목록에는 없다(ReleaseGate.unreleasedChurchIds).
+    ChurchInfo(
+      id: 'light',
+      nameKo: '빛의 성당',
+      place: '가상의 성당',
+      kind: '성당',
+      group: '우리 본당',
+      scalePercent: 100,
+      blurb:
+          '평면이 묵주 한 꿰미인 가상의 성당입니다. 십자가 모양 전실과 구슬 방 다섯을 지나 큰 돔 아래로 들어서면, 스무 신비의 경당이 둘레를 한 바퀴 돕니다.',
+      modelNote:
+          '이 3D 성당은 실제로 있는 어느 성당과도 같지 않습니다. 묵주기도를 떠올리며 앱이 지어낸 가상의 성당입니다.\n'
+          '· 건물의 모양과 크기, 장식은 모두 앱이 지어낸 것이고, 여러 성당에서 생각만 빌렸을 뿐 어느 한 곳을 본뜨지 않았습니다.\n'
+          '· 스무 신비 경당과 장미창의 색유리 그림은 앱을 위해 새로 그린 것이고, 실제 성당의 창이 아닙니다.\n'
+          '· 북쪽 세례당과 남쪽 회랑 정원은 아직 짓지 않아 문이 닫혀 있습니다.\n'
+          '· 십자가의 길 14처는 아직 걸지 않았고, 제대의 천과 장식은 앱이 전례 시기에 맞춰 바꿉니다.\n'
+          '· 이 성당에서는 순례하듯 천천히 걷습니다.\n'
           '어느 교회나 본당이 만들거나 승인한 모형이 아닙니다.',
     ),
     // 1차
@@ -487,6 +508,13 @@ abstract final class ChurchCatalog {
   ];
 
   static final Map<String, ChurchInfo> byId = {for (final c in all) c.id: c};
+
+  /// 지금 빌드의 목록(성당 고르기·준비 중 보기·접속 인원)에 나오는 성당.
+  /// 주인 확인 전 성당([ReleaseGate.unreleasedChurchIds])은 일반 빌드에서 빠진다.
+  static List<ChurchInfo> get listed => [
+    for (final c in all)
+      if (ReleaseGate.churchListed(c.id)) c,
+  ];
 
   /// 알 수 없는 id면 `basic`.
   static ChurchInfo resolve(String? id) => byId[id] ?? byId[defaultId]!;

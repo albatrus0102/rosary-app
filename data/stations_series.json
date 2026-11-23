@@ -10,6 +10,7 @@
  "default": "fugel",
  "assignments": {
   "basic": "fugel",
+  "light": "fugel",
   "stpeter": "previati",
   "lateran": "oreilly",
   "maggiore": "corot",

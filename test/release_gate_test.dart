@@ -104,6 +104,28 @@ void main() {
     });
   });
 
+  group('2-1. unreleased fictional church (빛의 성당)', () {
+    test('light is hidden in release (not even "준비 중"), open in dev builds', () {
+      expect(ReleaseGate.unreleasedChurchIds, {'light'});
+      expect(ChurchSelectScreen.releaseIds, isNot(contains('light')));
+      expect(ChurchSelectScreen.availableIds.contains('light'), _dev);
+      expect(ReleaseGate.churchListed('light'), _dev);
+      expect(ChurchCatalog.listed.map((c) => c.id).contains('light'), _dev);
+      // 카탈로그에는 있다(개발용 빌드가 들어가려면) — 가상의 성당으로 밝힌다
+      final l = ChurchCatalog.byId['light']!;
+      expect(l.place, '가상의 성당');
+      expect(l.modelNote, startsWith('이 3D 성당은 실제로 있는 어느 성당과도 같지 않습니다.'));
+      expect(l.modelNote, contains('가상의 성당'));
+      // 다른 성당은 그대로 목록에 있다
+      for (final id in ChurchSelectScreen.releaseIds) {
+        expect(ReleaseGate.churchListed(id), isTrue, reason: id);
+      }
+      // 창 그림 팩은 일반 빌드 번들에서 빠진다
+      expect(_hiddenEntries(), contains('assets/church/light/'));
+      expect(File('pubspec.yaml').readAsStringSync(), isNot(contains('- assets/church/light/')));
+    });
+  });
+
   group('3. Previati series', () {
     test('not listed, St Peter uses another bundled public-domain series', () {
       final ids = StationsSeriesCatalog.all.map((s) => s.id);

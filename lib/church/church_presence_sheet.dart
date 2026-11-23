@@ -295,7 +295,7 @@ class _ChurchPresenceSheetState extends State<ChurchPresenceSheet> {
       return const Center(child: CircularProgressIndicator());
     }
     final counts = {
-      for (final c in ChurchCatalog.all)
+      for (final c in ChurchCatalog.listed)
         if ((raw[c.id] ?? 0) > 0) c.id: raw[c.id]!,
     };
     // 지금 있는 성당은 방에서 받은 최신 인원을 쓴다(나 자신이 빠져 보이지 않게).

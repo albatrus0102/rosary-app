@@ -399,7 +399,7 @@ void main() {
             net: FakeChurchNet(),
             scene: FakeChurchSceneController(),
             // 다섯 장보다 많아야 넘길 것이 있다.
-            availableIds: {for (final c in ChurchCatalog.all.take(9)) c.id},
+            availableIds: {for (final c in ChurchCatalog.listed.take(9)) c.id},
           ),
         ),
       );
@@ -414,7 +414,7 @@ void main() {
       final button = tester.getRect(next);
       expect(button.left, greaterThanOrEqualTo(view.right));
       // 버튼은 썸네일 높이 안에 있고, 다섯 장이 잘리지 않고 보인다.
-      final ids = [for (final c in ChurchCatalog.all.take(9)) c.id];
+      final ids = [for (final c in ChurchCatalog.listed.take(9)) c.id];
       for (final id in ids.take(5)) {
         final r = tester.getRect(_thumb(id));
         expect(r.left, greaterThanOrEqualTo(view.left - 0.5), reason: id);

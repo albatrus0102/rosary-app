@@ -183,7 +183,7 @@ class _ChurchTabState extends State<ChurchTab> {
           settings: widget.settings,
           // 새 성당이 카탈로그에 추가되면(그리고 들어갈 수 있으면) 캐러셀에 저절로 나온다.
           churches: [
-            for (final c in ChurchCatalog.all)
+            for (final c in ChurchCatalog.listed)
               if (available.contains(c.id)) c,
           ],
           lastId: last.id,

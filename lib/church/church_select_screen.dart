@@ -42,6 +42,7 @@ const Map<String, String> churchStyleById = {
   'sagrada': '근대',
   'notredame': '고딕',
   'basic': '근대',
+  'light': '고딕',
 };
 
 /// 지역 필터 값(구역 머리글과 같다. '우리 본당'은 제외).
@@ -220,7 +221,7 @@ class _ChurchSelectScreenState extends State<ChurchSelectScreen> {
         builder: (context, _) {
           final items = ChurchSelectScreen.arrange(
             [
-              for (final c in ChurchCatalog.all)
+              for (final c in ChurchCatalog.listed)
                 if (_showUpcoming || _available.contains(c.id)) c,
             ],
             query: _query,

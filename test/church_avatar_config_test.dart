@@ -326,6 +326,7 @@ void main() {
     test('contains every SPEC id in order with consistent fields', () {
       expect(ChurchCatalog.all.map((c) => c.id).toList(), [
         'basic',
+        'light',
         'stpeter',
         'lateran',
         'maggiore',
@@ -363,6 +364,7 @@ void main() {
       }
       expect(ChurchCatalog.all.where((c) => c.wave == 1).map((c) => c.id), [
         'basic',
+        'light',
         'stpeter',
         'lateran',
         'maggiore',
@@ -450,6 +452,7 @@ void main() {
       ];
       expect(built.map((c) => c.id).toSet(), {
         'basic',
+        'light',
         'stpeter',
         'lateran',
         'maggiore',
@@ -469,7 +472,8 @@ void main() {
           isTrue,
           reason: c.id,
         );
-        if (c.id != 'basic') {
+        // 앱이 지은 가상의 성당(우리 본당·빛의 성당)은 「실제 ○○과」 비교 문장이 없다
+        if (!const {'basic', 'light'}.contains(c.id)) {
           expect(
             lines.first,
             anyOf(contains('실제 ${c.nameKo}과 '), contains('실제 ${c.nameKo}와 ')),

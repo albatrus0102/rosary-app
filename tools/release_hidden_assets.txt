@@ -28,3 +28,6 @@ assets/images/mysteries/glorious_1.webp
 # 5. 출처 미확인 묵주 그림(구슬 12장 + 묵주 전체 12장 + 기본 rosary.webp). assets/images/ 바로 아래 파일만
 #    (하위 폴더 church_entry·stations·mysteries 는 따로 등록되어 있다).
 assets/images/
+
+# 6. 빛의 성당(가상, 주인 확인 전 — ReleaseGate.unreleasedChurchIds): 창 그림 팩. 빌더(ch_light.js)는 팩이 없으면 그림 없는 빛 유리를 그린다.
+assets/church/light/

@@ -10,6 +10,7 @@ const String _defaultSeriesId = "fugel";
 
 const Map<String, String> _assignments = {
   "basic": "fugel",
+  "light": "fugel",
   "stpeter": "previati",
   "lateran": "oreilly",
   "maggiore": "corot",
