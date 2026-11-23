@@ -19,13 +19,17 @@ const repo = path.resolve(here, '../../..');
 const assets = path.join(repo, 'assets/church');
 
 const argv = process.argv.slice(2);
-const pos = argv.filter((a, i) => !a.startsWith('--') && !(argv[i - 1] || '').startsWith('--') || (!a.startsWith('--') && ['--no-audio'].includes(argv[i - 1])));
+const VALUE_OPTS = ['--scenes', '--out', '--scratch', '--clip', '--size', '--quality', '--plan', '--crf', '--preset'];
+const pos = argv.filter((a, i) => !a.startsWith('--') && !VALUE_OPTS.includes(argv[i - 1]));
 const opt = (n, d) => { const i = argv.indexOf('--' + n); return i >= 0 ? argv[i + 1] : d; };
 const flag = (n) => argv.includes('--' + n);
 const id = pos[0], lang = pos[1] || 'ko';
 if (!id) { console.error('사용: render_video.mjs <성당id> <ko|it|en|es|pt> [--clip 초] [--out 경로]'); process.exit(2); }
 const [W, H] = opt('size', '1280x720').split('x').map(Number);
 const FPS = 30, CLIP = +opt('clip', 0);
+const SCENES = opt('scenes', 'all').split(',');   // 시험용: 장면 골라 렌더(intro,tour,boundary,cross,candle,pray). 건너뛴 앞 장면이 필요하면 제대 앞으로 순간이동
+const RAW = flag('raw');   // 카드·자막·페이드·소리 없이 3D 장면만(안내 영상이 이어 붙일 조각)
+const on = (n) => SCENES.includes('all') || SCENES.includes(n);
 const scratch = opt('scratch', path.join(process.env.TMPDIR || '/tmp', 'rosarium_video'));
 fs.mkdirSync(scratch, { recursive: true });
 const outMp4 = opt('out', path.join(scratch, `${id}_${lang}.mp4`));
@@ -70,7 +74,7 @@ const COMMON = {
 
 // 계획표(video_plan.md)에서 장면 자막 읽기: 표 행 2..12 → 투어 7개 + 경건함 4개(제단 경계·성호·초·기도). 1행(제목)·13행(마침)은 카드가 대신한다.
 function readCaptions() {
-  const pf = opt('plan', path.join(repo, 'docs/legal/church_permission/package', id, 'video_plan.md'));
+  const pf = opt('plan', id === 'myeongdong' ? path.join(repo, 'docs/legal/church_permission/package/seoul-archdiocese/video_plan_myeongdong.md') : path.join(repo, 'docs/legal/church_permission/package', id, 'video_plan.md'));
   if (fs.existsSync(pf)) {
     const rows = fs.readFileSync(pf, 'utf8').split('\n').filter((l) => /^\| \d+ \|/.test(l)).map((l) => l.split('|').slice(1, -1).map((s) => s.trim()));
     if (rows.length === 13) return rows.slice(1, 12).map((r) => r[3]);
@@ -93,6 +97,7 @@ await page.waitForFunction(() => window.__church && window.__church.world && win
 await page.evaluate(async ({ fonts, W, H }) => {
   for (const [n, w, d] of fonts) { const f = new FontFace(n, `url(${d})`, { weight: w }); await f.load(); document.fonts.add(f); }
   const A = window.__church, PI = Math.PI;
+  A.meAv.showTag = false; if (A.meAv.tag) { A.meAv.root.remove(A.meAv.tag); A.meAv.tag = null; }   // 이름표(세례명)는 영상에 넣지 않는다
   const out = document.createElement('canvas'); out.width = W; out.height = H;
   const g = out.getContext('2d');
   const wrap = (a) => { a = (a + PI) % (PI * 2); if (a < 0) a += PI * 2; return a - PI; };
@@ -140,8 +145,13 @@ await page.evaluate(async ({ fonts, W, H }) => {
   V.step = (c) => {
     const t = 5000 + (V.n++) * 1000 / 30, me = A.me, ctl = A.ctl;
     if (c.cardOnly) { card(c.card); return { url: out.toDataURL('image/jpeg', 0.92) }; }
-    if (c.camTo) { const k = c.camTo; V.tw = { f: 0, n: Math.max(1, k.frames | 0), from: { yaw: ctl.yaw, pitch: ctl.pitch, zoom: ctl.zoom, look: ctl.look }, to: k }; if (k.hold !== undefined) V.hold = !!k.hold; if (k.rel !== undefined) V.rel = k.rel; if (k.spin !== undefined) V.spin = k.spin; }
-    if (c.release) { V.hold = false; V.tw = null; }
+    if (c.camTo && c.camTo.auto) {   // 벽·기둥에 가리지 않는 쪽을 고른다(카메라 가드로 아바타 → 카메라 선이 면에 닿는지 본다)
+      const k = c.camTo, gd = A.world.camGuard, D = k.dist || 3.2; let pick = k.auto[k.auto.length - 1];
+      for (const r of k.auto) { const cy = me.yaw + r, cx = me.x + Math.sin(cy) * D, cz = me.z + Math.cos(cy) * D; if (!gd || gd.clip(me.x, me.y + 1.3, me.z, cx, me.y + 1.8, cz, 0) >= 1) { pick = r; break; } }
+      k.rel = pick; V.picked = pick;
+    }
+    if (c.camTo) { const k = c.camTo; V.tw = { f: 0, n: Math.max(1, k.frames | 0), from: { yaw: ctl.yaw, pitch: ctl.pitch, zoom: ctl.zoom, look: ctl.look }, to: k }; if (k.hold !== undefined) V.hold = !!k.hold; if (k.rel !== undefined) V.rel = k.rel; V.spin = k.spin || 0; V.spinAcc = 0; if (k.view) A.api.setViewMode({ mode: k.view }); }
+    if (c.release) { V.hold = false; V.tw = null; V.spin = 0; }
     if (c.pad) A.ctl.setJoystick(c.pad[0], c.pad[1]);
     if (c.do) { try { new Function('A', 'api', c.do)(A, A.api); } catch (e) { window.__vidErr = String(e); } }
     // 카메라: 끌기처럼 시점을 직접 쥔다(앱의 자동 따라가기가 빼앗지 않게 lastDragT 를 갱신). 놓으면 앱의 따라가기가 다시 이어받는다.
@@ -164,28 +174,30 @@ await page.evaluate(async ({ fonts, W, H }) => {
     if (c.cap) caption(c.cap.text, c.cap.a);
     if (c.black > 0) { g.fillStyle = 'rgba(28,24,48,' + Math.min(1, c.black) + ')'; g.fillRect(0, 0, W, H); }
     const L = A.logic;
-    return { url: out.toDataURL('image/jpeg', 0.92), st: { mode: me.mode, walking: !!A.walkSt, x: me.x, z: me.z, yaw: me.yaw, nearCandle: A.near.candle, aoPending: !!(A.world.aoPending && A.world.aoPending()), spd: me.speed, kneel: A.meAv.kneelAmt, err: A.frameErrN || 0, vErr: window.__vidErr || null } };
+    return { url: out.toDataURL('image/jpeg', 0.92), st: { mode: me.mode, walking: !!A.walkSt, x: me.x, z: me.z, yaw: me.yaw, nearCandle: A.near.candle, aoPending: !!(A.world.aoPending && A.world.aoPending()), spd: me.speed, kneel: A.meAv.kneelAmt, err: A.frameErrN || 0, vErr: window.__vidErr || null, cy: +ctl.yaw.toFixed(2), hold: V.hold, tw: !!V.tw, spot: !!A.spot, view: A.camCfg.view || 'auto' } };
   };
 }, { fonts: [['Pretendard', 500, fontB64('Pretendard-Medium.otf')], ['Pretendard', 600, fontB64('Pretendard-SemiBold.otf')]], W, H });
 
 // ---------------------------------------------------------------- ffmpeg 입력
 const vidTmp = path.join(scratch, `${id}_${lang}.video.mp4`);
 const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
-  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-r', String(FPS), '-movflags', '+faststart', vidTmp], { stdio: ['pipe', 'inherit', 'inherit'] });
+  '-c:v', 'libx264', '-preset', opt('preset', 'slow'), '-crf', opt('crf', '23'), '-pix_fmt', 'yuv420p', '-r', String(FPS), '-movflags', '+faststart', vidTmp], { stdio: ['pipe', 'inherit', 'inherit'] });
 const ffDone = new Promise((res) => ff.on('close', res));
 let frames = 0; const caps = []; let curCap = null, capStart = 0;
 const t0 = Date.now();
 
 async function frame(c = {}) {
-  if (curCap && !c.cardOnly) {
+  if (curCap && !c.cardOnly && !RAW) {
     const f = frames - capStart, left = curCap.n - f;
     c.cap = { text: curCap.text, a: Math.max(0, Math.min(1, f / 9, left / 9)) };
     if (f >= curCap.n) curCap = null;
   }
+  const tf = Date.now();
   const r = await page.evaluate((cc) => window.__vid.step(cc), c);
+  if (Date.now() - tf > 8000) console.log(`  [느린 프레임] #${frames} ${(Date.now() - tf) / 1000}s ${JSON.stringify(r.st || {})}`);
   ff.stdin.write(Buffer.from(r.url.split(',')[1], 'base64'));
   frames++;
-  if (frames % 150 === 0) console.log(`  ${(frames / FPS).toFixed(0)}s 분량 · 경과 ${((Date.now() - t0) / 1000).toFixed(0)}s · ${JSON.stringify(r.st || {})}`);
+  if (frames % (process.env.VID_DBG ? 20 : 150) === 0) console.log(`  ${(frames / FPS).toFixed(0)}s 분량 · 경과 ${((Date.now() - t0) / 1000).toFixed(0)}s · ${JSON.stringify(r.st || {})}`);
   return r.st;
 }
 const sec = (s) => Math.round(s * FPS);
@@ -202,89 +214,99 @@ const clipLeft = () => !CLIP || frames / FPS < CLIP + 3.2;
   for (let i = 0; i < 20; i++) await page.evaluate(() => window.__vid.step({}));
 }
 const api = (js) => ({ do: js });
+await page.evaluate(() => window.__church.api.setViewInset({ bottom: 0.14 }));   // 자막 띠에 아바타가 가리지 않게 그림을 조금 위로(앱이 아래 패널을 둘 때 쓰는 투영 오프셋)
 
-// ---------------------------------------------------------------- 시나리오
+// ---------------------------------------------------------------- 시나리오 (약 60초)
+// 카메라 원칙: 눈높이 1인칭(fp)으로 신랑·궁륭·제대를 보여 주는 '설정 샷' → 낮은 각(pitch 0.2~0.3)으로 아바타 뒤를 따라가는 3인칭 → 기도 장면은 가까이.
 // 1) 제목 카드
-{ const n = sec(4.5); for (let i = 0; i < n; i++) await frame({ cardOnly: true, card: { l1: STR.title(nm), l2: STR.tag, a: Math.min(1, i / 12, (n - i) / 12) } }); }
-// 2) 입구: 둘러보기
-await frame({ camTo: { frames: 1, rel: 0, pitch: 0.32, zoom: 1.0, hold: true } });
-let fade = 1;
-say(CAPS[0], 5.5);
-for (let i = 0; i < sec(0.6); i++) await frame({ black: 1 - i / sec(0.6) });
-await frame({ camTo: { frames: sec(5), rel: Math.PI * 0.55, pitch: 0.28, zoom: 1.05, hold: true } });
-await hold(2.2);
-await frame({ camTo: { frames: sec(3), rel: -Math.PI * 0.45, pitch: 0.3, zoom: 1.05, hold: true } });
-await hold(2.0);
-// 3) 걷기(제대 쪽) — 앱의 진짜 걷기. 카메라는 뒤에서 느리게 따라간다(놓으면 앱의 따라가기).
-await frame({ camTo: { frames: sec(2.5), rel: 0, pitch: 0.4, zoom: 1.0, hold: false }, release: false, ...api(`api.walkTo({kind:'altar'})`) });
-await frame({ release: true });
-let tourIdx = 1;
-const tourCaps = CAPS.slice(1, 7);
-let walkSec = 0;
-for (const tc of tourCaps) {
+if (!RAW) { const n = sec(4); for (let i = 0; i < n; i++) await frame({ cardOnly: true, card: { l1: STR.title(nm), l2: STR.tag, a: Math.min(1, i / 12, (n - i) / 12) } }); }
+const CAPSEC = 4.4;
+if (on('intro')) {
+// 2) 입구: 눈높이로 신랑을 바라보고(자막 1) 천천히 고개를 들어 궁륭을 본다(자막 2)
+say(CAPS[0], CAPSEC);
+await frame({ camTo: { frames: 1, rel: -0.3, pitch: 0.2, zoom: 1.0, look: 0.05, hold: true, view: 'fp' } });
+if (!RAW) for (let i = 0; i < sec(0.6); i++) await frame({ black: 1 - i / sec(0.6) });
+await frame({ camTo: { frames: sec(3.8), rel: 0.3, pitch: 0.2, look: 0.1, hold: true, view: 'fp' } });
+await hold(3.6);
+say(CAPS[1], CAPSEC);
+await frame({ camTo: { frames: sec(CAPSEC - 0.4), rel: 0, pitch: 0.2, look: 0.85, hold: true, view: 'fp' } });
+await hold(CAPSEC - 0.3);
+}
+if (on('tour')) {
+// 3) 제대 쪽으로 걷기(앱의 진짜 걷기) — 뒤에서 낮은 각으로 따라간다. 자막 3~7 은 걷는 동안과 도착 뒤 둘러보기에 나눠 건다.
+const VIEWS = [
+  { rel: 0.25, pitch: 0.2, zoom: 0.85, look: 0 },
+  { rel: -0.3, pitch: 0.22, zoom: 0.9, look: 0 },
+  { rel: 0.1, pitch: 0.2, zoom: 0.8, look: 0.4 },
+  { rel: 0.35, pitch: 0.24, zoom: 1.0, look: 0.55 },
+  { rel: -0.2, pitch: 0.22, zoom: 1.0, look: 0.2 }
+];
+await frame({ ...api(`api.walkTo({kind:'altar'})`), camTo: { frames: sec(1.2), ...VIEWS[0], hold: true, view: 'auto' } });
+for (let k = 0; k < 5; k++) {
   if (!clipLeft()) break;
-  say(tc, 6);
-  // 매 자막마다 시점을 조금씩 바꾼다: 뒤 · 올려다보기 · 옆 · 뒤
-  const v = [{ rel: 0.5, pitch: 0.35, look: 0 }, { rel: 0, pitch: 0.55, look: 0.5 }, { rel: -0.6, pitch: 0.3, look: 0 }, { rel: 0, pitch: 0.4, look: 0 }, { rel: 0.4, pitch: 0.38, look: 0 }, { rel: 0, pitch: 0.4, look: 0 }][tourIdx - 1] || { rel: 0, pitch: 0.4, look: 0 };
-  tourIdx++;
-  await frame({ camTo: { frames: sec(2), hold: true, zoom: 1.0, ...v } });
-  const r = await until((st) => !st.walking, 6);
-  walkSec += 6;
-  if (!(await page.evaluate(() => !!window.__church.walkSt))) break;
+  say(CAPS[2 + k], CAPSEC);
+  await frame({ camTo: { frames: sec(2.4), ...VIEWS[k], hold: true, spin: k % 2 ? -0.0025 : 0.0025 } });
+  await hold(CAPSEC - 0.05);
 }
-await frame({ release: true });
-// 4) 제단 경계: 도착하면 더 가려고 해도 서 있는 모습
-if (clipLeft()) {
-  await until((st) => !st.walking, 60, { release: true });
-  say(CAPS[7], 8);
+}
+if (!on('tour') && on('boundary')) {   // 시험: 걷기 장면을 건너뛰면 제대 앞 자리로 옮겨 놓는다
+  await page.evaluate(() => { const A = window.__church, a = A.stations.stations().altar; A.me.x = a.x; A.me.z = a.z; A.me.yaw = a.yaw; A.camInit = false; });
+  await hold(1.5);
+}
+// 4) 제단 경계: 도착(아직 걷는 중이면 마저 기다린다) → 더 가려고 밀어도 계단 앞에서 서 있는다
+if (on('boundary') && clipLeft()) {
+  await until((st) => !st.walking, 40);
+  say(CAPS[7], 6);
+  await frame({ camTo: { frames: sec(1.6), rel: 0.55, pitch: 0.22, zoom: 0.9, look: 0, hold: true, view: 'auto' } });
   await hold(1.2);
-  await frame({ pad: [0, 1], camTo: { frames: sec(1.5), rel: Math.PI * 0.2, pitch: 0.3, zoom: 0.9, hold: true } });   // 앞으로 밀기(제단 쪽)
-  await hold(3.2);
+  await frame({ pad: [Math.sin(0.55), Math.cos(0.55)] });   // 카메라가 0.55rad 비껴 있으므로 그만큼 보정해 제단(아바타 앞) 쪽으로 계속 민다
+  const z0 = (await frame()).z;
+  await hold(2.6);
+  const z1 = (await frame()).z;
+  console.log(`  [경계] 밀기 전 z=${z0.toFixed(2)} → 후 z=${z1.toFixed(2)} (변화 ${Math.abs(z1 - z0).toFixed(2)}m)`);
   await frame({ pad: [0, 0] });
-  await hold(1.6);
-  await frame({ release: true });
+  await hold(1.5);
 }
-// 5) 성호 긋기(성수대가 있으면 그 앞에서)
-if (clipLeft()) {
+// 5) 성호 긋기(성수대가 있는 모형은 그 앞에서, 없으면 그 자리에서)
+if (on('cross') && clipLeft()) {
   const hasFont = await page.evaluate(() => (window.__church.stations.stations().font || []).length > 0);
-  say(CAPS[8], 7.5);
-  if (hasFont) { await frame({ ...api(`api.walkTo({kind:'font',index:0})`), camTo: { frames: sec(2), rel: 0.3, pitch: 0.4, zoom: 1.0, hold: false } }); await frame({ release: true }); await until((st) => !st.walking, 40); }
-  await frame({ ...api(`A.meAv.playEmote(1)`), camTo: { frames: sec(2), rel: Math.PI * 0.85, pitch: 0.22, zoom: 0.62, hold: true } });
-  await hold(5.5);
-  await frame({ release: true });
+  say(CAPS[8], 6);
+  if (hasFont) {   // 성수대 앞 도착 자리는 앱 자신의 '자리 시점'(release)이 가장 잘 잡는다
+    await frame({ ...api(`api.setViewMode({mode:'tp'}); api.walkTo({kind:'font',index:0})`), release: true });   // 입구 가까운 성수대는 자동 1인칭이 아바타를 숨기므로 3인칭 고정
+    await until((st) => !st.walking, 40);
+    await hold(0.6);
+    await frame(api(`A.meAv.playEmote(1)`));
+  } else await frame(api(`A.meAv.playEmote(1)`));
+  await frame({ camTo: { frames: sec(1.8), auto: [Math.PI * 0.8, -Math.PI * 0.8, Math.PI * 0.5, -Math.PI * 0.5, 0.5, -0.5, 0], dist: 3.0, pitch: 0.2, zoom: 0.8, look: 0, hold: true, view: 'tp' } });
+  await hold(4.4);
+  await frame(api(`api.setViewMode({mode:'auto'})`));
 }
-// 6) 초 켜기
-if (clipLeft()) {
-  say(CAPS[9], 9);
-  await frame({ ...api(`api.walkTo({kind:'candle',index:0})`), camTo: { frames: sec(2), rel: 0.2, pitch: 0.42, zoom: 1.0, hold: false } });
-  await frame({ release: true });
-  await until((st) => !st.walking, 60);
-  await hold(1.0);
-  await frame({ ...api(`api.lightCandle({slot: A.near.candle === undefined || A.near.candle === null ? 0 : A.near.candle, mine: true, intention: 0, until: Date.now() + 864e5})`), camTo: { frames: sec(2), rel: Math.PI * 0.7, pitch: 0.25, zoom: 0.7, hold: true } });
-  await hold(6);
-  await frame({ release: true });
+// 6) 초 켜기 — 도착하면 앱의 '자리 시점'이 봉헌대를 향해 잡는다
+if (on('candle') && clipLeft()) {
+  say(CAPS[9], 6.5);
+  await frame({ ...api(`api.walkTo({kind:'candle',index:0})`), release: true });
+  await until((st) => !st.walking, 40);
+  await hold(1.2);
+  await frame(api(`api.lightCandle({slot: (A.near.candle === undefined || A.near.candle === null) ? 0 : A.near.candle, mine: true, intention: 0, until: Date.now() + 864e5})`));
+  await hold(5);
 }
-// 7) 앉아 묵주 기도 → 무릎 꿇기
-if (clipLeft()) {
-  say(CAPS[10], 11);
-  await frame({ ...api(`api.walkTo({kind:'seat'})`), camTo: { frames: sec(2), rel: 0, pitch: 0.42, zoom: 1.0, hold: false } });
-  await frame({ release: true });
-  await until((st) => !st.walking, 60);
+// 7) 앉아 묵주 기도 → 무릎 꿇기 → 넓은 마침 시점
+if (on('pray') && clipLeft()) {
+  say(CAPS[10], 6.5);
+  await frame({ ...api(`api.walkTo({kind:'seat'})`), camTo: { frames: sec(1.5), rel: 0, pitch: 0.24, zoom: 1.0, hold: true } });
+  await until((st) => !st.walking, 40);
   await frame(api(`api.sit({})`));
   await until((st) => st.mode === 'seated', 4);
-  await frame(api(`api.setRosary({on:true}); api.setPraying({on:true});`));
-  await hold(5);
+  await frame({ ...api(`api.setViewInset({bottom:0.22}); api.setRosary({on:true}); api.setPraying({on:true});`), camTo: { frames: sec(2), rel: 0.75, pitch: 0.3, zoom: 0.9, look: 0, hold: true } });
+  await hold(3.4);
   await frame(api(`api.setPrayerPosture({posture:'kneel'})`));
-  await hold(5);
+  await hold(3);
+  await frame({ camTo: { frames: sec(3.2), rel: 0.5, pitch: 0.38, zoom: 1.6, look: 0, hold: true, spin: 0.003, view: 'auto' } });
+  await hold(3.4);
+  if (!RAW) for (let i = 0; i < sec(0.8); i++) await frame({ black: i / sec(0.8) });
 }
-// 8) 마침 넓은 시점
-if (CLIP === 0 || true) {
-  await frame({ camTo: { frames: sec(4), rel: Math.PI * 0.35, pitch: 0.75, zoom: 1.6, hold: true, spin: 0.004 } });
-  await hold(4.5);
-  for (let i = 0; i < sec(0.8); i++) await frame({ black: i / sec(0.8) });
-}
-// 9) 마침 카드
-{ const n = sec(4.5); for (let i = 0; i < n; i++) await frame({ cardOnly: true, card: { l1: STR.end, l2: 'Rosarium', a: Math.min(1, i / 12, (n - i) / 12) } }); }
+// 8) 마침 카드
+if (!RAW) { const n = sec(4); for (let i = 0; i < n; i++) await frame({ cardOnly: true, card: { l1: STR.end, l2: 'Rosarium', a: Math.min(1, i / 12, (n - i) / 12) } }); }
 
 ff.stdin.end(); await ffDone;
 const st = await page.evaluate(() => ({ err: window.__church.frameErrN || 0, vErr: window.__vidErr || null }));
@@ -296,7 +318,7 @@ fs.writeFileSync(path.join(scratch, `${id}_${lang}.captions.json`), JSON.stringi
 
 // ---------------------------------------------------------------- 소리(오르간 한 곡을 아주 작게, 페이드) + 마무리
 const organ = path.join(repo, 'assets/music/organ_ave_maria.m4a');
-if (!flag('no-audio') && fs.existsSync(organ)) {
+if (!flag('no-audio') && !RAW && fs.existsSync(organ)) {
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', vidTmp, '-stream_loop', '-1', '-i', organ, '-t', String(dur), '-map', '0:v', '-map', '1:a',
     '-af', `volume=0.16,afade=t=in:st=0:d=3,afade=t=out:st=${(dur - 3.5).toFixed(2)}:d=3.5`, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2', '-shortest', '-movflags', '+faststart', outMp4]);
   fs.unlinkSync(vidTmp);
