@@ -976,7 +976,7 @@
     if (!shadowGeo) shadowGeo = new T.PlaneGeometry(1, 1).rotateX(-PI / 2);
     this.shadow = new T.Mesh(shadowGeo, getShadowMat()); this.shadow.scale.set(0.9, 1, 0.9); this.shadow.position.y = 0.03; this.shadow.renderOrder = 2;
     this.root.add(this.shadow);
-    this.tag = null; this.showTag = opts.showTag !== false; this.tagSelf = !!opts.self; this.tagY = 1.9 + HEAD_UP; this.tagPx = 0; this.tagPpm = 0;
+    this.tag = null; this.showTag = opts.showTag !== false && !root.ChurchNoTags; this.tagSelf = !!opts.self; this.tagY = 1.9 + HEAD_UP; this.tagPx = 0; this.tagPpm = 0;
     this.walkTarget = 0; this.walkAmt = 0; this.phase = Math.random() * 6;
     this.sitTarget = 0; this.sitAmt = 0; this.prayTarget = 0; this.prayAmt = 0;
     this.kneelTarget = 0; this.kneelLin = 0; this.kneelAmt = 0; this.kneelFwd = 0; this.kneelY = 0; this.kneelRail = 0;

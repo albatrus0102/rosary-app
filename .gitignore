@@ -80,3 +80,6 @@ art/statues/meshy/*.glb
 # 성상 3D 원본(SMK·Zenodo·스케치팹에서 받은 것; 저장소에는 올리지 않는다 — art/statue_handoff/manifest.json)
 art/statue_handoff/received/
 art/statue_handoff/*.part
+
+# 웹 데모의 비밀 링크 대응표(받는 곳 id -> 토큰). 절대 올리지 않는다.
+/web_demo/links.local.json

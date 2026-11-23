@@ -1,0 +1,28 @@
+{
+  "_note": "받는 곳 id → 성당·언어. 토큰은 빌드할 때 links.local.json 에 만들어진다(이 파일에는 토큰이 없다). id 는 docs/legal/church_permission/README.md 의 1절과 같다.",
+  "recipients": {
+    "cbck": { "church": "basic", "lang": "ko" },
+    "danggogae": { "church": "danggogae", "lang": "ko" },
+    "yeouido": { "church": "yeouido", "lang": "ko" },
+    "seoul-archdiocese": { "church": "myeongdong", "lang": "ko" },
+    "seoul-archdiocese-danggogae": { "church": "danggogae", "lang": "ko" },
+    "seoul-archdiocese-yeouido": { "church": "yeouido", "lang": "ko" },
+    "stpeter": { "church": "stpeter", "lang": "it" },
+    "vatican-museums": { "church": "stpeter", "lang": "it" },
+    "lateran": { "church": "lateran", "lang": "it" },
+    "maggiore": { "church": "maggiore", "lang": "it" },
+    "stpaul": { "church": "stpaul", "lang": "it" },
+    "assisi": { "church": "assisi", "lang": "it" },
+    "milan": { "church": "milan", "lang": "it" },
+    "florence": { "church": "florence", "lang": "it" },
+    "prayer-lev": { "church": "basic", "lang": "it" },
+    "prayer-icel": { "church": "basic", "lang": "en" },
+    "prayer-usccb": { "church": "basic", "lang": "en" },
+    "prayer-cbcew": { "church": "basic", "lang": "en" },
+    "prayer-cee": { "church": "basic", "lang": "es" },
+    "prayer-cem": { "church": "basic", "lang": "es" },
+    "prayer-cei": { "church": "basic", "lang": "it" },
+    "prayer-cnbb": { "church": "basic", "lang": "pt" },
+    "prayer-cep": { "church": "basic", "lang": "pt" }
+  }
+}
