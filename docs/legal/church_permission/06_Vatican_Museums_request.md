@@ -102,25 +102,35 @@ Sincerely,
 ## (다) 이탈리아어판 — 2026-11-23 개정, **보낼 본문**
 
 A: id.musei@scv.va
-Oggetto: App di preghiera gratuita «Rosarium»: una domanda su due fotografie (Previati, Raffaello) — basta rispondere con un numero
+Oggetto: App di preghiera gratuita «Rosarium»: una domanda su due opere (Previati, Raffaello) — basta rispondere con un numero
 
 Spettabile Ufficio Immagini e Diritti dei Musei Vaticani,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario e la Via Crucis. Non è ancora pubblicata.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud.
 
-Vorrei mostrare nell’app, a bassa risoluzione e con la dicitura completa, le fotografie di due opere delle Vostre collezioni già pubblicate su Wikimedia Commons con licenza libera: la «Via Crucis» di Gaetano Previati (quattordici tavole) e la «Trasfigurazione» di Raffaello. Le opere non sono più protette dal diritto d’autore, ma sono custodite da Voi e so che l’uso delle immagini segue le Vostre regole: per questo lo chiedo a Voi prima di usarle. Oggi non sono nell’app. L’app è pensata con riverenza: serve soltanto a pregare, e nulla in essa imita la Messa o i Sacramenti.
+Sto preparando a titolo personale «Rosarium», un’app gratuita e non commerciale, senza pubblicità né pagamenti, dedicata alla preghiera del Rosario e della Via Crucis. L’app non è ancora stata pubblicata.
 
-Basta rispondere a questa e-mail con un numero:
+Vorrei utilizzare, a bassa risoluzione e con le dovute indicazioni di attribuzione, fotografie di due opere custodite nei Vostri Musei: le quattordici tavole della «Via Crucis» di Gaetano Previati e la «Trasfigurazione» di Raffaello. Le immagini sono disponibili su Wikimedia Commons, con indicazioni di licenza libera o di pubblico dominio.
+
+Sebbene le opere non siano più protette dal diritto d’autore, comprendo che l’utilizzo delle loro immagini possa essere soggetto alle Vostre disposizioni. Per questo desidero consultarVi prima di procedere. Le immagini non sono attualmente presenti nell’app.
+
+«Rosarium» è concepita nel rispetto del carattere sacro della preghiera: non riproduce né imita la Messa o i Sacramenti.
+
+Se possibile, potreste rispondere indicando una delle seguenti opzioni:
 
 ① Nessuna obiezione, alle condizioni descritte.
 ② Sì, a queste condizioni o con queste correzioni (dicitura, procedura, eventuale compenso): ______
 ③ Preferiamo che queste immagini non siano usate (non le userò).
 
-Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+Sarò lieto di apportare qualsiasi modifica riteniate necessaria.
 
-In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, le immagini, le fonti e le licenze, la dicitura, le voci più specifiche), 4 schermate e il link a un breve video: 〔YouTube 링크〕
+Allego una scheda dettagliata (presentazione personale, finalità dell’app, immagini, fonti, licenze, attribuzioni e questioni specifiche), 4 schermate e il link a un breve video: 〔YouTube 링크〕
 
-Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi. La pace del Signore sia con Voi.
+Qualora la richiesta fosse di competenza di un altro ufficio, Vi sarei grato se poteste inoltrarla.
+
+Vi ringrazio sinceramente per l’attenzione e il tempo dedicatomi.
+
+La pace del Signore sia con Voi.
 
 〔성명〕 〔세례명〕
 〔소속 본당〕, 〔교구명〕, Corea del Sud
@@ -130,6 +140,9 @@ Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltra
 
 ## (라) 한국어 요약 — 2026-11-23 개정(사용자 확인용)
 
+- **3차 개정(2026-11-23, 원어민 교정)**: 보낼 본문을, 사용자가 ChatGPT 에 원어민 편집자 역할을 맡겨 다듬은 글로 바꿨다(사용자 요청). 제목·받는 곳·붙임 수와 선택지 ①②③ 은 그대로다. 「허락에 필요하면 고치겠다」는 문장은 교정본의 한 문장(「Sarò lieto di apportare qualsiasi modifica riteniate necessaria.」)만 남겼다(이전의 긴 문장은 뺐다). 기계 교정이므로 **사람 원어민 검토는 여전히 권한다.** 위 「2차 개정」의 낱말 수는 이전 본문 기준이다.
+- 제목의 「due fotografie」는 교정본대로 「due opere」가 되었다. 커먼즈 사진의 권리 표기는 「libera o di pubblico dominio」(자유 라이선스 또는 퍼블릭 도메인)로 넓혀 적었다(프레비아티 CC BY 3.0, 라파엘로 PD-Art 와 맞다).
+- **① 「이의 없음」과 이용 허락은 다르다(교정자 지적)**: 박물관이 ①로 답해도 정식 복제 허락이 아닐 수 있다. 선택지는 바꾸지 않고, ①이 오면 **작품과 쓰임새를 적은 서면 허락**을 다시 청한다(`README.md` 8-1).
 - **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 251 낱말로 줄였다(이전 약 1324 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/vatican-museums/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
 - **유료 견적이 오면 쓰지 않는다**(README 8-1): 무료·비상업 앱이고 비용을 개인이 부담하므로, 요금이 붙으면 그 이미지를 쓰지 않는다. 무료 조건일 때만 서식을 낸다. 요약의 「자세한 내용」에 그렇게 적었다.
 - 바티칸 저작권법은 2011년 3월 19일 법률 제CXXXII호로 고쳐 적었다(2017년은 국무원 성명). 「문화재 복제물을 보호한다」는 확인되지 않은 풀이는 뺐다.
