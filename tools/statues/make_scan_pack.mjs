@@ -24,6 +24,9 @@ const { build } = await import(require.resolve('esbuild'));
 const cfg = JSON.parse(fs.readFileSync(path.join(here, 'scan_packs.json'), 'utf8'));
 const SRC = process.env.SCAN_SRC || [path.join(repo, 'art/statue_handoff/received'), '/home/user/rosary-app/art/statue_handoff/received'].find((d) => fs.existsSync(d));
 const OUT = process.env.SCAN_OUT || path.join(repo, 'assets/church');
+// staged(scan_packs.json 의 "staged"): 받아서 줄였지만 아직 빌더 자리·앱 출처 화면에 넣지 않은 묶음 → art/statue_handoff/packs/ (앱 용량·시험 표 밖).
+//   이름을 인자로 줄 때만 만든다. 자리를 정하면 "packs" 로 옮기고 scan3d.js PACKS·art_credits.dart·licenses 에 넣는다.
+const STAGE_OUT = process.env.SCAN_STAGE_OUT || path.join(repo, 'art/statue_handoff/packs');
 await MeshoptEncoder.ready; await MeshoptSimplifier.ready; await MeshoptDecoder.ready;
 
 // ---------------------------------------------------------------- 읽기
@@ -35,7 +38,7 @@ function readStl(file) {
   const I = new Uint32Array(nt * 3); for (let i = 0; i < I.length; i++) I[i] = i;
   return { P, I, C: null };
 }
-async function readGlb(file, wantColor) {
+async function readGlb(file, wantColor, keepMat = null) {   // keepMat: 이 재질 이름의 프리미티브만(함께 스캔된 진열장·벽 빼기)
   const { NodeIO } = await import(require.resolve('@gltf-transform/core'));
   const { ALL_EXTENSIONS } = await import(require.resolve('@gltf-transform/extensions'));
   const sharp = (await import(require.resolve('sharp'))).default;
@@ -60,6 +63,7 @@ async function readGlb(file, wantColor) {
     const mesh = node.getMesh(); if (!mesh) continue;
     const M = node.getWorldMatrix();
     for (const prim of mesh.listPrimitives()) {
+      if (keepMat && !(prim.getMaterial() && prim.getMaterial().getName() === keepMat)) continue;
       const pa = prim.getAttribute('POSITION'), n = pa.getCount(), v = [0, 0, 0];
       const P = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) {
@@ -216,7 +220,7 @@ async function decoder() {
 }
 async function makePack(e) {
   const t0 = Date.now(), file = path.join(SRC, e.src), color = e.kind === 'color';
-  let m = e.src.endsWith('.stl') ? readStl(file) : await readGlb(file, color);
+  let m = e.src.endsWith('.stl') ? readStl(file) : await readGlb(file, color, e.keepMat || null);
   console.log(`[${e.key}] read`, e.src, 'tris', m.I.length / 3);
   rotate(m.P, e.rot);
   let w = weld(m.P, m.I, m.C);
@@ -319,7 +323,8 @@ async function makePack(e) {
   ((window.ChurchArt = window.ChurchArt || {}).scans3d = window.ChurchArt.scans3d || {})[M.key] = { mesh: true, meta: M, load: load };
 })();
 `;
-  const out = path.join(OUT, `scan3d_${e.key}.js`);
+  if (e._staged) fs.mkdirSync(STAGE_OUT, { recursive: true });
+  const out = path.join(e._staged ? STAGE_OUT : OUT, `scan3d_${e.key}.js`);
   fs.writeFileSync(out, js);
   console.log(`[${e.key}] wrote`, path.relative(repo, out), (js.length / 1024).toFixed(0) + 'KB', 'bytes', JSON.stringify(bytes), 'size', [meta.w, meta.h, meta.d].join('x'), (Date.now() - t0) + 'ms');
 }
@@ -329,4 +334,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const want = process.argv.slice(2);
   if (!SRC) { console.error('원본 폴더가 없다(art/statue_handoff/received). SCAN_SRC 로 지정'); process.exit(1); }
   for (const e of cfg.packs) if (!want.length || want.includes(e.key)) await makePack(e);
+  for (const e of cfg.staged || []) if (want.includes(e.key)) await makePack({ ...e, _staged: true });
 }

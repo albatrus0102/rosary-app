@@ -415,3 +415,74 @@ draw call 은 그대로(피에타 close 81 → 80, 나머지 같음), 삼각형�
 - "Taufbecken" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/93811784ac6a480d977cb9be3138728a — 수정함(삼각형 수 줄임, 재질 변경)
 - "Pulpit of Mendoza, Sigüenza" by Global Digital Heritage and GDH-Afrika — CC BY-NC 4.0 — https://sketchfab.com/3d-models/6ae513013b3d4802baabe88ba6346c5b — 수정함(삼각형 수 줄임, 재질 변경)
 - "Madonna and Child in stone" by The Hunt Museum — CC BY 4.0 — https://sketchfab.com/3d-models/1eab9e29e5b74f5686c0d17fe58d90c4 — 수정함(삼각형 수 줄임, 재질 변경)
+
+## 10. 스케치팹 1~20번 처리 (2026-11-23)
+
+사용자가 스케치팹 API 토큰을 이 환경에 넣어 주어(값은 기록하지 않음) `GET /v3/models/{uid}` 로 **라이선스를 다시 확인**하고 `/download` 의 glb 를 받았다. 20점 모두 지금도 CC BY 4.0 또는 CC BY-NC 4.0, 내려받기 가능(2026-11-23).
+원본은 저장소 밖(/tmp)에서만 처리하고 묶음을 만든 뒤 지웠다 — 커밋하지 않는다. 다시 만들려면 다시 받는다.
+
+**결과: 받음 14 · 보류 5 · 제외 1.**
+
+### 받음 → 휴대폰용 묶음 (`art/statue_handoff/packs/`, 아직 앱에 넣지 않음)
+
+만드는 법은 §8 과 같다(`make_scan_pack.mjs`: `simplifyWithUpdate` 법선 가중 0.05, 얼굴 구 `detail` 에 따로 몫, 법선은 load() 에서 다시 계산). 예산도 기존 묶음 기준 그대로:
+흰 대리석 근거리 36k / 원거리 5k(머리 30%, 얼굴 둘이면 35%), 정점 색 26k / 4k(얼굴 25%) — 묶음 하나 209–216KB(기존 기준 ≤ 230KB).
+설정은 `tools/statues/scan_packs.json` 의 **`staged`**(새 배열; `packs` 와 `assets/church/` 의 앱 묶음·`scan3d.test.mjs` 는 손대지 않음).
+앱 묶음 합계 예산(`scan3d.test`: raw ≤ 1.4MB, 지금 1.32MB)이 거의 찼으므로, 자리를 정해 앱에 넣을 때는 성당별로 필요한 것만 `packs` 로 옮기고 그 예산을 함께 정한다
+(옮길 때 `scan3d.js` PACKS · `lib/domain/art_credits.dart` · `licenses/STATUE_SCANS.md` 에도 넣어야 시험이 통과한다).
+
+얼굴 확인: 헤드리스 Chromium(중립 회색 배경, 무광 재질, 왼쪽 위 앞 열쇠 빛)에서 정면·45°·얼굴 근접 정면·45° 를 찍었다(`art/statue_handoff/packs/checks/<키>.jpg`).
+14점 모두 눈·코·입이 읽힌다. 바오로·유다·두 요셉·슈트론스도르프 천사는 얼굴이 무르게 보여 **원본(줄이기 전) 얼굴을 같은 카메라로** 찍어 비교했다 — 원본도 같은 모양(야외 사암의 풍화·스캔 해상도)이고 단순화가 지운 곳은 없다.
+란첸도르프 천사는 1차에서 얼굴 구가 머리카락 윗부분을 비켜 각이 졌다 → 구를 키워(r 0.11 → 0.13) 다시 만들었다.
+
+| 번호 | 키 | 모델 | 만든이 | 라이선스 | 내용 | 원본 → 근거리 / 원거리 삼각형 | 묶음 | 얼굴 |
+|---|---|---|---|---|---|---|---|---|
+| 01 | `st_peter_enthroned` | San Pietro in cattedra | Daniele Madella | CC BY 4.0 | 성 베드로 좌상(14세기 중반, 이탈리아) — 스캔은 앞면만 있는 껍질(뒷면 열림): 벽감·벽 앞에만. 흰 대리석 재질. | 921,599 → 35,988 / 4,996 | 210KB | 얼굴 읽힘 (`checks/st_peter_enthroned.jpg`) |
+| 03 | `angel_kneeling` | Engel | noe-3d.at | CC BY-NC 4.0 | 무릎 꿇고 합장한 천사(18세기 초, 마리아 란첸도르프 갈바리아) — 제대·감실 옆 천사 대용, 흰 대리석 재질. | 444,854 → 36,000 / 5,000 | 212KB | 얼굴 읽힘 (`checks/angel_kneeling.jpg`) |
+| 04 | `st_paul_stone` | Hl. Paulus | noe-3d.at | CC BY-NC 4.0 | 성 바오로 입상(1724, 미스텔바흐 성당 계단, 금속 후광 포함) — 흰 대리석 재질. | 784,094 → 35,997 / 4,997 | 211KB | 얼굴 읽힘 (`checks/st_paul_stone.jpg`) |
+| 07 | `st_helena` | Hl. Helena | noe-3d.at | CC BY-NC 4.0 | 성녀 헬레나(십자가, 1731년 이후 하일리겐크로이츠 사암상) — 대용, 흰 대리석 재질. | 536,653 → 35,990 / 4,998 | 210KB | 얼굴 읽힘 (`checks/st_helena.jpg`) |
+| 10 | `crucifix_gothic` | Gothic crucifix | Virtual Museums of Małopolska | CC BY 4.0 | 고딕 십자고상(16세기 초, 1771 금박 보완, 미에후프 성묘 대성당) — 아치형 배경판째, 뒷면 평평: 벽·제대 뒤. 정점 색. | 287,022 → 25,996 / 3,996 | 213KB | 얼굴 읽힘 (`checks/crucifix_gothic.jpg`) |
+| 11 | `madonna_kruzlowa` | Madonna of Krużlowa | Virtual Museums of Małopolska | CC BY 4.0 | 크루즐로바의 성모(1410년경 채색 목조, 아름다운 양식) — 진열장은 뺐다(keepMat). 정점 색. | 564,120 → 26,000 / 3,998 | 214KB | 얼굴 읽힘 (`checks/madonna_kruzlowa.jpg`) |
+| 12 | `angel_kneeling_stronsdorf` | Engel | noe-3d.at | CC BY-NC 4.0 | 무릎 꿇은 천사(1826, 슈트론스도르프 흑사병 기둥) — 제대 양옆 경배 천사, 흰 대리석 재질. | 567,806 → 35,993 / 4,998 | 212KB | 얼굴 읽힘 (`checks/angel_kneeling_stronsdorf.jpg`) |
+| 13 | `st_joseph_child` | Hl. Josef | noe-3d.at | CC BY-NC 4.0 | 아기 예수를 안은 성 요셉(1727, 볼커스도르프 성당 계단) — 흰 대리석 재질. | 622,794 → 35,998 / 5,000 | 212KB | 얼굴 읽힘 (`checks/st_joseph_child.jpg`) |
+| 14 | `st_francis` | Hl. Franziskus | noe-3d.at | CC BY-NC 4.0 | 아시시의 성 프란치스코(십자가, 18세기 전반 하일리겐크로이츠 십자가의 길) — 흰 대리석 재질. | 621,322 → 35,987 / 4,998 | 211KB | 얼굴 읽힘 (`checks/st_francis.jpg`) |
+| 15 | `apostle_clay` | Nürnberger Tonapostel, um 1420 | Pl.O.234 | Germanisches Nationalmuseum | CC BY 4.0 | 앉은 사도(뉘른베르크 점토 사도상, 1420년경) — 정점 색(구운 점토). | 630,083 → 25,991 / 3,999 | 216KB | 얼굴 읽힘 (`checks/apostle_clay.jpg`) |
+| 17 | `st_teresa` | Hl. Theresia | noe-3d.at | CC BY 4.0 | 아빌라의 성녀 데레사(18세기 전반, 요제프 슈니처, 하일리겐크로이츠) — 흰 대리석 재질. | 496,782 → 35,999 / 5,000 | 211KB | 얼굴 읽힘 (`checks/st_teresa.jpg`) |
+| 18 | `st_joseph_lily` | Hl. Joseph | noe-3d.at | CC BY-NC 4.0 | 백합을 든 성 요셉(18세기 전반, 요제프 슈니처 작으로 전함, 하일리겐크로이츠) — 흰 대리석 재질. | 651,768 → 35,997 / 4,998 | 213KB | 얼굴 읽힘 (`checks/st_joseph_lily.jpg`) |
+| 19 | `madonna_levoca` | Madona Sculpture | jan.zachar | CC BY 4.0 | 왕관 쓴 성모상(후기 고딕, 슬로바키아 레보차, 연도 미상 — 후기 고딕 양식) — 흰 대리석 재질. | 375,409 → 35,996 / 4,999 | 209KB | 얼굴 읽힘 (`checks/madonna_levoca.jpg`) |
+| 20 | `st_jude` | Hl. Judas Thaddäus | noe-3d.at | CC BY-NC 4.0 | 사도 유다 타대오(18세기 전반, 클라인슈바인바르트) — 흰 대리석 재질. | 594,962 → 35,998 / 4,998 | 211KB | 얼굴 읽힘 (`checks/st_jude.jpg`) |
+
+모델별 주의:
+- 01 성 베드로 좌상: 사진측량 스캔이 **앞면만 있는 껍질**(뒷면이 열림) — 벽감·벽 앞에만 세운다. 원래 계획(청동 좌상 대용)대로라면 어두운 청동 재질을 따로 정한다.
+- 10 고딕 십자고상: 십자가가 아치형 배경판(제단 감실)에 붙은 채 스캔됨 — 판째 쓰고 뒷면은 평평(벽·제대 뒤). 그리스도의 얼굴은 원작대로 깊이 숙여 가시관 아래에 있다.
+- 11 크루즐로바 성모: 박물관 진열장(벽·받침·안내판)이 함께 스캔돼 있어 재질 이름으로 성상만 읽었다(`keepMat: defaultMat.004`, 도구에 새로 넣은 설정). 아기 예수는 원작대로 나체(아기) — 성인 나체상 기준과는 다르다고 보아 받음.
+- 15 점토 사도: 앉은 상(높이 약 1m, 받침·의자 포함).
+- 19 레보차 성모: 스케치팹 설명에 연도가 없고 「후기 고딕 양식」만 있다(§9 표와 같음).
+
+### 보류 · 제외
+
+| 번호 | 모델 | 결정 | 까닭 |
+|---|---|---|---|
+| 02 | St. Bartholomew (밀라노) | **제외** | 받아 보니 성상 하나가 아니라 대성당 벽·제단 일부를 통째 스캔한 장면이고 성상은 그 안의 작은 부분. 또 살가죽 벗겨진 해부학적 **나체상**이라 기준상 성당 안에 쓰지 않음(§4-3). 원본 지움 |
+| 05 | Hl. Petrus (술츠 임 비너발트) | 보류 | 조각 제작 연도 미확인(설명·검색에 없음, 성당 건축 1783년은 성상 연도가 아님) — §4 기준. 받지 않음 |
+| 06 | Hl. Veronika (팔켄슈타인) | 보류 | 제작 연도 미확인 — §4 기준. 받지 않음 |
+| 08 | Hl. Josef (핀카펠트) | 보류 | 1912년 작, 작가 미상 — §4-1 그대로. 받지 않음 |
+| 09 | Pieta' MICHELANGELO (leone.giorgio) | 보류 | §8 에서 「질감 있는 대안 필요 없음」으로 정함. 실물인지 복제품인지 설명에 없음. 받지 않음 |
+| 16 | Portal Votivkirche | 보류 | 라이선스·연도(1856~79)는 통과. 높이 8m 정문 전체에 인물 수십 — 휴대폰 예산(군상도 ≤ 120k)에서는 인물 얼굴을 살릴 수 없다. 정면 자리가 정해지면 인물 몇을 잘라 쓰는 방식으로 다시 본다. 원본 지움 |
+
+### 출처 문구 (받은 14점 — 앱에 넣을 때 그대로 쓴다)
+
+- "San Pietro in cattedra" by Daniele Madella — CC BY 4.0 — https://sketchfab.com/3d-models/2e11ebf282d24879a0a8f4960ac23363 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Engel" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/bd6261224279427685fd1c486e3c4240 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Paulus" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/7455a9981c7a46c4992d88c8caa78521 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Helena" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/15a4ee895e5447e09f8ea980df03fefd — 수정함(삼각형 수 줄임, 재질 변경)
+- "Gothic crucifix" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/35fde9ce3c734d29ab8813072732d27a — 수정함(삼각형 수 줄임, 질감을 정점 색으로)
+- "Madonna of Krużlowa" by Virtual Museums of Małopolska — CC BY 4.0 — https://sketchfab.com/3d-models/597d14d7e6ec46a8a0becdf57dd6dbec — 수정함(삼각형 수 줄임, 질감을 정점 색으로)
+- "Engel" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/4da4a29f59e142af86b8fbdc7aff818c — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Josef" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/067f62dda6ac4348a94581ade6e9f274 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Franziskus" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/3eb9029e6a45485aa25425b10f4b5a3f — 수정함(삼각형 수 줄임, 재질 변경)
+- "Nürnberger Tonapostel, um 1420 | Pl.O.234" by Germanisches Nationalmuseum — CC BY 4.0 — https://sketchfab.com/3d-models/418484f48ef14723865d76dcbcad45fb — 수정함(삼각형 수 줄임, 질감을 정점 색으로)
+- "Hl. Theresia" by noe-3d.at — CC BY 4.0 — https://sketchfab.com/3d-models/7d9a15d5495c40dc9548ead778422f67 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Joseph" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/38098e2ebcef4e998d1ab62154e57b68 — 수정함(삼각형 수 줄임, 재질 변경)
+- "Madona Sculpture" by jan.zachar — CC BY 4.0 — https://sketchfab.com/3d-models/5e16f3cd478e4c8cb32dede7446a83fb — 수정함(삼각형 수 줄임, 재질 변경)
+- "Hl. Judas Thaddäus" by noe-3d.at — CC BY-NC 4.0 — https://sketchfab.com/3d-models/2cb9b7c61cea469b9628d62c9fe289aa — 수정함(삼각형 수 줄임, 재질 변경)
