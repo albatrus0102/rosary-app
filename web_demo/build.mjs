@@ -109,7 +109,7 @@ const escJson = (o) => JSON.stringify(o).replace(/</g, '\\u003c').replace(/[\u20
 function pageHtml(r) {
   const I = require_i18n();
   const name = (I.names[r.church] || {})[r.lang] || r.church;
-  const cfg = { church: r.church, lang: r.lang, scripts: sceneScripts(r.church), captions: captionsFor(r.church, r.lang) };
+  const cfg = { church: r.church, lang: r.lang, scripts: sceneScripts(r.church), captions: Object.fromEntries(LANGS.map((l) => [l, captionsFor(r.church, l)])) };   // 언어마다(방문자가 ?lang= 으로 바꿀 수 있다). video_plan 은 한 언어뿐이라 나머지는 {} → 기본 자막
   return `<!doctype html>
 <html lang="${r.lang}">
 <head>

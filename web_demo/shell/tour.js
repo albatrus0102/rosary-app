@@ -1,11 +1,11 @@
 /* tour.js — 둘러보기(약 60~90초): 입구에서 걸어 들어와 → 천장을 올려다보고 → 제대 쪽으로 가다 제단 경계에서 멈추고 →
    (성수대가 있는 모형만) 성호 → 초 켜기(정해진 지향) → 앉아 기도 → 마침 넓은 시점. 끝나면 자유롭게 걷는다.
-   자막은 페이지가 넘긴 D.captions(video_plan.md 의 자막 줄, 받는 분의 언어와 같을 때만)를 쓰고, 없는 줄은 i18n 기본 자막.
+   자막은 페이지가 넘긴 D.captions({언어: {역할: 글}}; video_plan.md 의 자막 줄, 그 계획의 언어에만 있다)를 쓰고, 없는 줄은 i18n 기본 자막.
    장면을 몰기만 한다(ChurchAPI). 사용자의 아무 입력(키·누름·휠·단추)이 오면 바로 멈추고 자유 모드로 넘어간다. */
 (function (root) {
   'use strict';
   var S = root.DemoShell, I = root.DemoI18N, D = root.DEMO, L = S.L, doc = root.document;
-  var caps = D.captions || {}, gen = I.captions[S.lang] || I.captions.en;
+  var caps = I.pickCaptions(D.captions, S.lang), gen = I.captions[S.lang] || I.captions.en;
   function cap(k) { return caps[k] || gen[k] || ''; }
   function ease(k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; }
 
