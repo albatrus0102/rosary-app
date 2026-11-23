@@ -1,4 +1,4 @@
-<!-- 제작 메모(PDF·첨부에 넣지 않음): 편지에 붙이는 「쓰려는 기도문」 첨부. 스페인 주교회의(CEE) · es-ES. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
+<!-- 제작 메모(PDF·첨부에 넣지 않음): 2026-11-23 3차 개정: 파티마 기도와 마침 기도는 이 주교회의가 낸 본문으로 확인하지 못했다(사용자가 ChatGPT 웹 검색으로 확인해 전달) — 파티마 기도는 비워 두고, 마침 기도는 Compendium 본문임을 밝히고 권하는 형태를 여쭌다. 편지에 붙이는 「쓰려는 기도문」 첨부. 스페인 주교회의(CEE) · es-ES. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
 
 # Rosarium — textos que pienso usar (España)
 
@@ -159,6 +159,8 @@ Misterios gloriosos
 Fuente: copiado palabra por palabra el 23 de noviembre de 2026 del Compendio del Catecismo de la Iglesia Católica, edición española (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_sp.html
 
 El Compendio añade después una segunda oración («Oremos (tradición española)»), que no he incluido: 〔확인 필요〕 les ruego que me digan cuál de las dos se usa.
+
+〔확인 필요〕 No he encontrado esta oración final publicada por la Conferencia Episcopal Española; el texto de abajo es el del Compendio (vatican.va). Les ruego que me indiquen la forma que recomiendan.
 
 ```text
 Ruega por nosotros,

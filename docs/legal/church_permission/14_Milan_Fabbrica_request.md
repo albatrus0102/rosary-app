@@ -6,7 +6,7 @@
 
 | 받는 곳 | 전자우편 | 확인 |
 |---|---|---|
-| **밀라노 대성당 관리 재단(Veneranda Fabbrica del Duomo di Milano) — 기관 홍보실 + 기록 보관소** | **comunicazione@duomomilano.it · archivio@duomomilano.it** | 이전 조사(`docs/church/MILAN_GLASS_RESEARCH.md` §5.2·§6, duomomilano.it 「Stampa e Permessi」에서 확인): 촬영·이미지 허가와 언론은 `comunicazione@duomomilano.it`(Ufficio Stampa e Comunicazione Istituzionale), 아카이브 이미지 사용은 `archivio@duomomilano.it`. 신청은 영업일 10일 안에 위원회가 처리, 8월 중단. 2026-11-23 에는 누리집 주소가 바뀌어(301) 그 쪽을 다시 열지 못했다 〔확인 필요: 보내기 전에 누리집에서 주소 재확인〕. 한 통을 두 주소에 함께 보낸다 |
+| **밀라노 대성당 관리 재단(Veneranda Fabbrica del Duomo di Milano) — 기관 홍보실 + 기록 보관소** | **받는 사람(To) comunicazione@duomomilano.it** · 참조(Cc) archivio@duomomilano.it | 이전 조사(`docs/church/MILAN_GLASS_RESEARCH.md` §5.2·§6, duomomilano.it 「Stampa e Permessi」에서 확인): 촬영·이미지 허가와 언론은 `comunicazione@duomomilano.it`(Ufficio Stampa e Comunicazione Istituzionale), 아카이브 이미지 사용은 `archivio@duomomilano.it`. 신청은 영업일 10일 안에 위원회가 처리, 8월 중단. 2026-11-23 에는 누리집 주소가 바뀌어(301) 그 쪽을 다시 열지 못했다 〔확인 필요: 보내기 전에 누리집에서 주소 재확인〕. 한 통을 홍보실에 보내고 기록 보관소는 참조(Cc)로 넣는다(2026-11-23) |
 
 - **근거 분류: (c)** — 건물은 수백 년 된 것이라 건축 저작권이 남아 있지 않다. 그래서 저작권 이용 허락이 아니라 **이의 없음·이름 사용 동의(예의)** 와 **복제 규칙의 확인**을 구한다. 소유·관리: 이탈리아 영토, 소유·관리는 Veneranda Fabbrica(교회 쪽 재단, 지방 공공단체 아님) — 문화유산법 107조는 직접 적용되지 않고 소유자 규칙(출판·홍보용 촬영물에 사전 허가·수수료)이 문제다(법률 검토 §1.3).
 - 전자우편 한 통으로 보낸다(전화 없음). 이탈리아어판이 본문이고, 한국어 요약은 사용자가 내용을 확인하는 용도다.
@@ -17,26 +17,36 @@
 
 ## (가) 이탈리아어판 (보낼 본문)
 
-A: comunicazione@duomomilano.it · archivio@duomomilano.it
+A: comunicazione@duomomilano.it
+Cc: archivio@duomomilano.it
 Oggetto: App di preghiera gratuita «Rosarium»: una domanda sul Duomo di Milano (basta rispondere con un numero)
 
-Spettabile Veneranda Fabbrica del Duomo di Milano, Ufficio Stampa e Comunicazione Istituzionale e Archivio,
+Spettabile Veneranda Fabbrica del Duomo di Milano,
+alla cortese attenzione dell’Ufficio Stampa e Comunicazione Istituzionale e dell’Archivio,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario, anche all’interno di modelli 3D semplificati di alcune chiese. Non è ancora pubblicata.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕), fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud.
 
-Uno dei modelli rappresenta il Duomo di Milano. L’edificio ha molti secoli e non Vi chiedo una licenza di diritto d’autore: per rispetto verso chi lo custodisce, Vi chiedo se avete obiezioni all’uso del nome e di un modello semplificato, che l’app dichiara diverso dall’originale e non approvato da Voi. La riverenza è una regola dell’app: nel presbiterio non si entra, e nulla imita la Messa o i Sacramenti.
+A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale, senza pubblicità né pagamenti, che aiuta a pregare il Rosario anche all’interno di modelli 3D semplificati di alcune chiese. L’app non è ancora stata pubblicata.
 
-Basta rispondere a questa e-mail con un numero:
+Uno dei modelli rappresenta il Duomo di Milano.
+
+Pur trattandosi di un edificio storico di molti secoli, non Vi chiedo una licenza di diritto d’autore sull’edificio stesso. Desidero invece conoscere il Vostro parere sull’utilizzo del nome e di una rappresentazione semplificata, per rispetto verso l’istituzione che ne cura la conservazione.
+
+L’app precisa che il modello non corrisponde esattamente al Duomo reale e non è stato approvato dalla Veneranda Fabbrica. Il presbiterio non è accessibile e non vengono simulate la Messa o le celebrazioni dei Sacramenti.
+
+Se possibile, potreste indicare una delle seguenti opzioni:
 
 ① Nessuna obiezione.
 ② Sì, a queste condizioni o con queste correzioni: ______
 ③ Preferiamo che il Duomo non compaia nell’app (lo toglierò).
 
-Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+Sarò lieto di apportare ogni modifica che riterrete opportuna.
 
-In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, com’è fatto il modello, le immagini di opere reali oggi presenti e la loro fonte, le voci più specifiche su opere, fotografie e link), 6 schermate e il link a un breve video: 〔YouTube 링크〕
+Allego una scheda dettagliata (presentazione personale, finalità dell’app, caratteristiche del modello, immagini di opere reali attualmente presenti e relative fonti, questioni specifiche su opere, fotografie e link), 6 schermate e il link a un breve video: 〔YouTube 링크〕
 
-Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi.
+Qualora la richiesta fosse di competenza di un altro ufficio, Vi sarei grato se poteste inoltrarla.
+
+Vi ringrazio sentitamente per l’attenzione.
 
 Con viva gratitudine e un ricordo nella preghiera,
 
@@ -48,6 +58,10 @@ Con viva gratitudine e un ricordo nella preghiera,
 
 ## (나) 한국어 요약 (사용자 확인용)
 
+- **3차 개정(2026-11-23, 원어민 교정)**: 보낼 본문을, 사용자가 ChatGPT 에 원어민 편집자 역할을 맡겨 다듬은 글로 바꿨다(사용자 요청). 제목·받는 곳·붙임 수와 선택지 ①②③ 은 그대로다. 「허락에 필요하면 고치겠다」는 문장은 교정본의 한 문장(「Sarò lieto di apportare ogni modifica che riterrete opportuna.」)만 남겼다(이전의 긴 문장은 뺐다). 기계 교정이므로 **사람 원어민 검토는 여전히 권한다.** 위 「2차 개정」의 낱말 수는 이전 본문 기준이다.
+- **「제단에 들어갈 수 없다」(Il presbiterio non è accessibile) 확인(2026-11-23)**: `assets/church/reverence.js` 가 모든 성당에 제단 출입 금지 구역을 일반 규칙으로 만들고, `assets/church/reverence_places.js` 에 이 성당(`milan`) 보정이 있다 — 제단과 성가대석(합창석 뒷벽까지)이 막힌다. 그 뒤 주보랑은 실제로 방문객이 걷는 길이라 열려 있다. `tools/church_web/reverence.test.mjs`(모든 성당) 47개 통과. 문장은 사실과 같다.
+- **붙임 설명의 「지금 들어 있는 실제 작품 이미지와 출처」(immagini di opere reali attualmente presenti e relative fonti) 확인**: 이 성당에는 실제로 들어 있다(아래 「모형에 들어 있는 실제 작품 이미지」, `docs/church/ASSET_LICENSES.md`) — 그대로 둔다.
+- **받는 사람(To)은 홍보실 `comunicazione@duomomilano.it`, 참조(Cc)는 기록 보관소 `archivio@duomomilano.it`**(교정자 지적 — 허락 창구는 홍보실이고, 기록 보관소는 이미지 허가 창구로 확인되지 않았다).
 - **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 237 낱말로 줄였다(이전 약 1834 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/milan/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
 - 맺음 인사를 「Pace e bene」(프란치스코회 인사)에서 중립적인 「Con viva gratitudine e un ricordo nella preghiera」로 바꿨다(원어민 검토 때 확인).
 - 받는 곳: 밀라노 대성당 관리 재단(Veneranda Fabbrica del Duomo di Milano) — 기관 홍보실 + 기록 보관소 · `comunicazione@duomomilano.it · archivio@duomomilano.it`
@@ -66,5 +80,5 @@ Con viva gratitudine e un ricordo nella preghiera,
 ## 보내기 전에 확인할 것
 
 - 편지의 사실(축척 47%, 짓지 않은 곳, 실제 작품 이미지 목록)이 그때의 앱 고지 글(`church_catalog.dart` `milan` `modelNote`)·`docs/church/ASSET_LICENSES.md` 와 같은지
-- 이탈리아어 본문을 이탈리아어를 아는 사람이 한 번 읽어 보았는지 〔확인 필요: 원어민 검토 전〕
+- 이탈리아어 본문을 이탈리아어를 아는 사람이 한 번 읽어 보았는지 〔2026-11-23 ChatGPT 원어민 교정 반영(사용자 요청). 사람 원어민 검토는 아직 — 권장〕
 - 받는 주소가 그날에도 공식 누리집에 그대로 있는지
