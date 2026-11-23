@@ -89,19 +89,20 @@ const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
-page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-await page.addInitScript(() => { window.__raf = null; window.requestAnimationFrame = (cb) => { window.__raf = cb; return 1; }; });
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); else if (m.text().startsWith('[VIDERR]')) console.log(m.text()); });
+await page.addInitScript(() => { window.__raf = null; window.requestAnimationFrame = (cb) => { window.__raf = cb; return 1; }; window.__vtOn = false; window.__vt = 0; const real = performance.now.bind(performance); window.__realNow = real; performance.now = () => (window.__vtOn ? window.__vt : real()); });   // 시계도 가짜(프레임당 1/30초): 느린 프레임 중에 실제 시계가 흘러 dt 가 음수가 되는 것을 막는다
 await page.goto(`file://${assets}/test.html?church=${id}&hideui=1&autotier=0&quality=${opt('quality', 'high')}&pace=0&markers=0&idle=0`);
 await page.waitForFunction(() => window.__church && window.__church.world && window.__church.started, null, { timeout: 600000, polling: 500 });
 
 await page.evaluate(async ({ fonts, W, H }) => {
   for (const [n, w, d] of fonts) { const f = new FontFace(n, `url(${d})`, { weight: w }); await f.load(); document.fonts.add(f); }
   const A = window.__church, PI = Math.PI;
+  window.__vt = window.__realNow() + 5000; window.__vtOn = true;   // 이 시점부터 시계는 가짜(적재가 끝난 뒤)
   A.meAv.showTag = false; if (A.meAv.tag) { A.meAv.root.remove(A.meAv.tag); A.meAv.tag = null; }   // 이름표(세례명)는 영상에 넣지 않는다
   const out = document.createElement('canvas'); out.width = W; out.height = H;
   const g = out.getContext('2d');
   const wrap = (a) => { a = (a + PI) % (PI * 2); if (a < 0) a += PI * 2; return a - PI; };
-  const V = window.__vid = { n: 0, tw: null, hold: false, rel: 0, spin: 0 };
+  const V = window.__vid = { base: window.__realNow() + 5000, n: 0, tw: null, hold: false, rel: 0, spin: 0 };
   const ease = (t) => t * t * (3 - 2 * t);
   function lines(text, maxW, font) {
     g.font = font; const words = text.split(/(\s+)/), res = []; let cur = '';
@@ -143,7 +144,7 @@ await page.evaluate(async ({ fonts, W, H }) => {
   }
   // 한 프레임: 가짜 rAF 고리를 한 번 돌리고(그리기), 합성해 JPEG 데이터 URL 을 돌려준다.
   V.step = (c) => {
-    const t = 5000 + (V.n++) * 1000 / 30, me = A.me, ctl = A.ctl;
+    const t = (window.__vt = V.base + (++V.n) * 1000 / 30), me = A.me, ctl = A.ctl;
     if (c.cardOnly) { card(c.card); return { url: out.toDataURL('image/jpeg', 0.92) }; }
     if (c.camTo && c.camTo.auto) {   // 벽·기둥에 가리지 않는 쪽을 고른다(카메라 가드로 아바타 → 카메라 선이 면에 닿는지 본다)
       const k = c.camTo, gd = A.world.camGuard, D = k.dist || 3.2; let pick = k.auto[k.auto.length - 1];
@@ -173,6 +174,7 @@ await page.evaluate(async ({ fonts, W, H }) => {
     g.drawImage(A.renderer.domElement, 0, 0, W, H);
     if (c.cap) caption(c.cap.text, c.cap.a);
     if (c.black > 0) { g.fillStyle = 'rgba(28,24,48,' + Math.min(1, c.black) + ')'; g.fillRect(0, 0, W, H); }
+    if ((A.frameErrN || 0) > (V.lastErr || 0)) { V.lastErr = A.frameErrN; console.log('[VIDERR] n=' + V.n + ' zoom=' + ctl.zoom + ' zoomS=' + ctl.zoomS + ' zoomV=' + ctl.zoomV + ' pitch=' + ctl.pitch + ' look=' + ctl.look + ' yaw=' + ctl.yaw + ' part=' + A.frameErrPart + ' fpLin=' + A.fpLin + ' sitF=' + A.sitF + ' t=' + A.t + ' view=' + A.camCfg.view); }
     const L = A.logic;
     return { url: out.toDataURL('image/jpeg', 0.92), st: { mode: me.mode, walking: !!A.walkSt, x: me.x, z: me.z, yaw: me.yaw, nearCandle: A.near.candle, aoPending: !!(A.world.aoPending && A.world.aoPending()), spd: me.speed, kneel: A.meAv.kneelAmt, err: A.frameErrN || 0, vErr: window.__vidErr || null, cy: +ctl.yaw.toFixed(2), hold: V.hold, tw: !!V.tw, spot: !!A.spot, view: A.camCfg.view || 'auto' } };
   };
@@ -314,7 +316,7 @@ const st = await page.evaluate(() => ({ err: window.__church.frameErrN || 0, vEr
 await browser.close();
 const dur = frames / FPS;
 console.log(`영상 ${dur.toFixed(1)}s (${frames}프레임), 렌더 ${((Date.now() - t0) / 1000).toFixed(0)}s, 앱 프레임 오류 ${st.err}, 스크립트 오류 ${st.vErr}, 페이지 오류 ${errors.length}`);
-errors.slice(0, 5).forEach((e) => console.log('  !', e.slice(0, 200)));
+[...new Set(errors.map((e) => e.slice(0, 160)))].slice(0, 8).forEach((e) => console.log('  !', e.slice(0, 200)));
 fs.writeFileSync(path.join(scratch, `${id}_${lang}.captions.json`), JSON.stringify(caps, null, 1));
 
 // ---------------------------------------------------------------- 소리(오르간 한 곡을 아주 작게, 페이드) + 마무리
