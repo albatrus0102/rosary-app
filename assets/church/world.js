@@ -270,6 +270,20 @@
       g.putImageData(img, 0, 0);
     }, false, true);
     var beamMat = new T.MeshBasicMaterial({ map: noiseTex, vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false, opacity: 1 });
+    // 가산 빛줄기 판(low 판 · 감상실): 판은 창 높이만 한 큰 사각형이라, 카메라가 판 가까이·판 속에 있거나 판을 거의 정면으로 마주 보면(아시시 상부 신랑에서 정면 창을 볼 때) 여러 장이 화면을 덮어 하얗게 날아간다.
+    // 그래서 조각마다 ① 카메라 거리(1.5~7m 에서 서서히 사라짐) ② 카메라가 판의 면에서 4m 안이면 사라짐 ③ 시선이 판의 수직에 가까울수록(cos 0.3~0.75) 8분의 1까지 줄임 ④ 가산 세기 상한(0.5)을 건다.
+    // 판을 비스듬히·옆에서 보는 평소 시선(빛줄기가 리본으로 보이는 구도)은 그대로다.
+    beamMat.extensions = { derivatives: true };
+    beamMat.onBeforeCompile = function (sh) {
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vBmW;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvBmW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vBmW;')
+        .replace('#include <color_fragment>', '#include <color_fragment>\n' +
+          '{ vec3 bmV = cameraPosition - vBmW; float bmD = length(bmV);\n' +
+          '  float bmC = abs(dot(normalize(cross(dFdx(vBmW), dFdy(vBmW))), bmV / max(bmD, 1e-3)));\n' +
+          '  diffuseColor.rgb = min(diffuseColor.rgb, vec3(0.5));\n' +
+          '  diffuseColor.a *= smoothstep(1.5, 7.0, bmD) * smoothstep(1.0, 4.0, bmC * bmD) * mix(1.0, 0.12, smoothstep(0.3, 0.75, bmC)); }');
+    };
     var patchMat = new T.MeshBasicMaterial({ map: patchTex, vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false, opacity: 1, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
     var beamList = [], SHEETS = low ? 1 : 3;
     S.beams.forEach(function (b, bi) {
