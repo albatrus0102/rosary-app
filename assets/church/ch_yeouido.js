@@ -18,8 +18,8 @@
    - 천장: 제단 쪽으로 높아지는 **피라미드식 경사 천장**(벽 머리 8m → 드럼 앞 12.6m, 평면 삼각 면), 뒤쪽 면에 네모 천창 8(한 장 한 색).
    - 옆벽: 아래가 넓고 위로 좁아지며 안으로 눕는 **돌 버팀기둥**(가로 줄눈 0.6m) + 틈마다 **호박빛 슬릿 창**, 피어마다 흰 갓 2개 벽등.
    - 신자석: **부채꼴 4덩이** 140석(파란 방석). 스포트 샹들리에 6(검은 고리 + 원통 등).
-   - 성가대석(3층, z 12~21): 앞 난간 = 흰 벽 + **십자가의 길 14처 자리의 중립 부조 판 14**(인물 없음, 처 번호만 — layout.crossWay.plaques,
-     panels:false) + 둥근 환기구 + 붉은 숫자 표시판 → 나무 띠 → 쇠 난간. 밑 = 짙은 격자 천장(3.25m) + 흰 각기둥 3(천장까지).
+   - 성가대석(3층, z 12~21): 앞 난간 = 흰 벽 + **십자가의 길 14처 자리의 중립 부조 판 14**(인물 없음, 처 번호만 — 장식, 누르지 않음.
+     앱의 14처 그림 판은 신랑 벽 버팀기둥 앞면 14곳 — layout.crossWay, 2026-11-23 사용자) + 둥근 환기구 + 붉은 숫자 표시판 → 나무 띠 → 쇠 난간. 밑 = 짙은 격자 천장(3.25m) + 흰 각기둥 3(천장까지).
      **계단식 5단 + 일자형 긴 의자**(오른쪽 덩이 'C' 15석은 앉을 수 있다), 앞 오른쪽 일반 형태 오르간, 뒤 위 감실 3, 옆 감실.
    - 로비(성당 문 밖): 흰 우물 천장 + 네모 빛판, 옅은 회색 대리석 바닥, 베이지 세로 벽돌 타일 벽, 흰 공 벽등, 흰 원기둥, 책자 꽂이,
      유리 정면(밖은 밝은 빛만), 색유리 벽 자리 = **추상 색면**(최영심 2024 작품을 옮기지 않음), 액자 = 무늬 없는 판, 성모상 **벽감 + 나무 초 받침**.
@@ -89,9 +89,25 @@
   var GAL = { x0: HW, x1: XG, z0: LZ + 0.15, ent: FRONT1 };   // (2026-11-23) 오른쪽 옆 갤러리(옆 감실 자리, 바닥 YG0 = LT): 계단참 → 성가대석 맨 앞 오른쪽 입구(z GAL.z0…ent)
   var SKY = [[-3.2, 15.5], [3.2, 15.5], [-7.6, 13.0], [7.6, 13.0], [-3.0, 8.0], [3.0, 8.0], [-9.4, 5.0], [9.4, 5.0]];   // 뒤쪽 경사면 천창 8 [추정 자리]
   var CHAND = [[-4.6, -2.0], [4.6, -2.0], [-6.4, 4.5], [6.4, 4.5], [-3.2, 9.0], [3.2, 9.0]];   // 스포트 샹들리에 6
-  // 성가대석 앞 난간의 십자가의 길 부조 판 14(사진 9·10: 난간에 한 줄로) — 판 중심 x, 높이, 크기. 이 자리가 앱의 14처다
+  // 성가대석 앞 난간의 십자가의 길 부조 판 14(사진 9·10: 난간에 한 줄로) — 판 중심 x, 높이, 크기. 실제 14처 자리지만 앱에서는 장식(누르지 않음, 2026-11-23)
   var RELIEF_W = 0.5, RELIEF_H = 0.6, RELIEF_Y = 3.72;
-  var RELIEF = []; (function () { for (var q = 0; q < 14; q++) RELIEF.push(+(HW - 0.85 - (2 * HW - 1.7) * q / 13).toFixed(3)); })();   // 1처 = 신랑에서 성가대석을 볼 때 왼쪽(+x) 끝 [순서 미확인]
+  var RELIEF = []; (function () { for (var q = 0; q < 14; q++) RELIEF.push(+(HW - 0.85 - (2 * HW - 1.7) * q / 13).toFixed(3)); })();   // 장식(누르지 않음) — 앱의 14처는 아래 CROSS
+  // 앱의 십자가의 길 14처 그림 판(2026-11-23 사용자: '신랑 벽의 그림 판을 되살려'): 신랑 벽 버팀기둥 앞면 14곳(한쪽 7 = 앞 비스듬한 벽 기둥 4 + 뒤 비스듬한 벽 기둥 3).
+  // 곧은 옆벽 기둥 2(z 8·10)는 신자석 줄 끝이 기둥 앞을 막아 서는 자리가 없어 쓰지 않는다. 기둥 앞면 2.35m 에 벽등이 있어 판(위 십자가 끝까지 1.42m)을 그 아래(바닥 0.85m)에 건다.
+  // 순서(crossWay.start 'L'): 왼쪽(−x) 벽 제대 쪽 1처 → 입구 쪽 7처, 오른쪽 벽 입구 쪽 8처 → 제대 쪽 14처
+  var PIER_FC = [3.6, 6.4, 9.2, 12.0], PIER_CB = [2.0, 4.8, 7.4];   // 피어 중심(벽 시작점에서 거리): 앞 비스듬한 벽(F → C) · 뒤 비스듬한 벽(C → B) — 아래 pierWall 과 같은 값
+  var CROSS_BOTTOM = 0.85, CROSS_TOP = CROSS_BOTTOM + 0.7 * 504 / 248;   // 판 아래 끝 · 위 끝(way_cross.js 판 높이 P.quadH)
+  var CROSS = (function () {
+    var D = 0.6 + 0.75 * CROSS_TOP / WH + 0.02 + 0.05 + 0.004;   // 판 앞면 = 기둥 앞면(위 끝 높이, 안으로 눕는 면) + way_cross.js 벽 틈·판 두께
+    function at(s, wall, t) {
+      var A = wall === 'FC' ? PLAN.F : PLAN.C, Bp = wall === 'FC' ? PLAN.C : PLAN.B, n = wall === 'FC' ? [-SQ, SQ] : [-SQ, -SQ];
+      var L = Math.hypot(Bp[0] - A[0], Bp[1] - A[1]), ux = (Bp[0] - A[0]) / L, uz = (Bp[1] - A[1]) / L;
+      return { x: +(s * (A[0] + ux * t + n[0] * D)).toFixed(3), z: +(A[1] + uz * t + n[1] * D).toFixed(3), face: [s * n[0], n[1]], side: s > 0 ? 'R' : 'L', bottom: CROSS_BOTTOM, fy: 0, pier: { wall: wall, t: t } };
+    }
+    var left = PIER_FC.map(function (t) { return at(-1, 'FC', t); }).concat(PIER_CB.map(function (t) { return at(-1, 'CB', t); }));
+    var right = left.map(function (p) { return at(1, p.pier.wall, p.pier.t); }).reverse();
+    return left.concat(right);
+  })();
   var UCOL = [-6.6, -2.4, 3.6];                       // 성가대석 밑 흰 각기둥 3(사진 8·10, 조사 §4.5) — 위층을 뚫고 천장까지
   var BACKBAY = [[-10.4, -6.85], [-5.95, -2.55], [-1.65, 1.2]];   // 성가대석 뒤 위 감실(뒷벽을 판 칸, x 범위) — 오른쪽은 계단 홀이라 없다
   var GLASS_CLEAR = [0xeef2f0, 0xe6ecea, 0xf4f6f2, 0xe9eeea];               // 로비 유리 정면: 무색 맑은 유리(밖은 밝은 빛)
@@ -125,9 +141,10 @@
     ],
     // 봉헌초: 성모상 앞(shrine.js 가 맨 끝 스탠드로 붙인다 — 자리는 shrine_places.js, 로비 벽감 앞 나무 초 받침). 여기 스탠드는 비워 둔다.
     candles: { stands: [] },
-    // 십자가의 길: 실제 14처 = 성가대석 앞 난간의 부조 판 14(사진 9·10). 앱은 그 자리를 14처 자리(걸어가는 곳·누르는 곳)로 쓰고,
-    // 그림 판은 그리지 않는다(panels: false — 3D 에는 빌더의 중립 부조만). 누르면 그 판 아래(신랑 바닥)로 걸어가 앱의 대체 연작 묵상 시트가 열린다.
-    crossWay: { start: 'L', panels: false, plaques: RELIEF.map(function (x) { return { x: x, side: x > 0 ? 'R' : 'L', z: LZ - 0.2, y: RELIEF_Y, w: RELIEF_W + 0.12, h: RELIEF_H + 0.12, face: [0, -1], fy: 0, stand: { x: x, z: LZ - 0.65 } }; }) },
+    // 십자가의 길(2026-11-23 사용자: '신랑 벽의 그림 판을 되살려', yeouido.md §4.1·§7): 앱의 14처 그림 판(대체 연작 — 푸겔)을 신랑 벽 버팀기둥 앞면 14곳(CROSS)에 건다.
+    // 누르면 그 판 앞으로 걸어가 묵상 시트가 열린다. 성가대석 앞 난간의 중립 부조 판 14(실제 14처 자리, 사진 9·10)는 장식으로만 남는다(누르지 않음).
+    // (2026-11-22 ~ 11-23 에는 난간 부조를 14처 자리로 쓰고 그림 판을 그리지 않았다(panels: false) — 판이 보이지 않아 되돌림)
+    crossWay: { start: 'L', plaques: CROSS.map(function (p) { return { x: p.x, z: p.z, face: p.face, side: p.side, bottom: p.bottom, fy: p.fy }; }) },
     info: { name: '여의도동성당', place: '서울 영등포구 여의동로 257', builtYear: 1984 }
   };
   ChurchLayouts.register(layout);
@@ -293,7 +310,7 @@
     skylights: SKY, chandeliers: CHAND, plan: PLAN, wallHead: WH, ceilTop: CH, frontWindow: FWIN, pier: PIER,   // 시험이 14처 판·창·피어 자리를 견줄 때 쓴다
     // 로비·계단·성가대석(시험: 걸어서 로비 → 계단 → 계단참 → 성가대석, 벽감 앞 봉헌초)
     lobby: LOB, stairHall: SH, stair: STR, landing: { th0: LANDA, th1: STR.th1, y: LT }, loft: { z: LZ, y: LT, top: LTOP, y0: LY, front1: FRONT1, rows: NROW, rowDepth: TDEP, aisle: LAISLE, entrance: { x: HW, z0: GAL.z0, z1: GAL.ent }, tiers: TIER },
-    niche: NICHE, darkDoor: DARK, relief: { x: RELIEF, y: RELIEF_Y, w: RELIEF_W, h: RELIEF_H }, underColumns: UCOL, backBays: BACKBAY, gallery: { y0: YG0, y1: YG1, x: XG, x0: GAL.x0, x1: GAL.x1, z0: GAL.z0, ent: GAL.ent },
+    niche: NICHE, darkDoor: DARK, relief: { x: RELIEF, y: RELIEF_Y, w: RELIEF_W, h: RELIEF_H }, cross: CROSS, crossBottom: CROSS_BOTTOM, crossTop: CROSS_TOP, underColumns: UCOL, backBays: BACKBAY, gallery: { y0: YG0, y1: YG1, x: XG, x0: GAL.x0, x1: GAL.x1, z0: GAL.z0, ent: GAL.ent },
     // 3차(여러 층): 1층 로비 바닥·2층 바닥 판, 1층 → 2층 곡선 계단, 층별 충돌체 높이 범위
     floors: { F1: F1, F2: 0, slab: SLAB }, stairDown: DN, ranges: { R1F: R1F, R2F: R2F, RLOFT: RLOFT },
     thumb: { x: 0, z: 9.0, yaw: 0, pitch: 7, zoom: 1.0, hour: 11 },
@@ -408,7 +425,7 @@
         concB.addQuad([A[0], y0, A[1]], [B[0], y0, B[1]], [B[0], y1, B[1]], [A[0], y1, A[1]], col, [(A[0] + B[0]) / 2 + n[0] * 3, (y0 + y1) / 2, (A[1] + B[1]) / 2 + n[1] * 3], { vary: 0 },
           [0, y0 / 2, L / 2, y0 / 2, L / 2, y1 / 2, 0, y1 / 2]);
       }
-      function pierWall(A, B, n, ts) {   // ts: 피어 중심(A 에서 B 쪽으로 거리, m)
+      function pierWall(A, B, n, ts, cross) {   // ts: 피어 중심(A 에서 B 쪽으로 거리, m). cross: 기둥 앞면에 14처 판이 걸린다(layout.crossWay — 판 뒤 기둥 앞면 충돌체)
         var L = Math.hypot(B[0] - A[0], B[1] - A[1]), u = [(B[0] - A[0]) / L, (B[1] - A[1]) / L];
         function P(t, d) { return [A[0] + u[0] * t + n[0] * d, A[1] + u[1] * t + n[1] * d]; }
         wallStrip(A, B, n, 0, WH, CONC_LOW);
@@ -426,6 +443,7 @@
             solid.addQuad([j0[0], yj, j0[1]], [j1[0], yj, j1[1]], [j1[0], yj + 0.025, j1[1]], [j0[0], yj + 0.025, j0[1]], 0x6e685e, [cen[0] + n[0] * 5, yj, cen[1] + n[1] * 5], { vary: 0 });
           }
           [-0.5, 0.5].forEach(function (f) { var c = P(t + f, 0.35); ctx.addCollider({ x: c[0], z: c[1], r: 0.5 }); });
+          if (cross) { var cc = P(t, 0.45); ctx.addCollider({ x: cc[0], z: cc[1], r: 0.38 }); }   // 판이 걸린 기둥 앞면 가운데(두 원 사이 틈): 판을 뚫고 기둥 속으로 걸어 들어가지 않게
           ctx.aoDecalCircle({ x: cen[0] + n[0] * 0.0, z: cen[1] + n[1] * 0.0, r: 1.0, y: 0, pad: 0.3 });
           // 흰 갓 2개 벽등(피어 앞면, 2.5m)
           var lp = P(t, d0 + (d1 - d0) * 2.5 / WH + 0.06);
@@ -440,8 +458,8 @@
       }
       [-1, 1].forEach(function (s) {
         var S = function (p) { return [s * p[0], p[1]]; };
-        pierWall(S(PLAN.F), S(PLAN.C), S([-SQ, SQ]), [3.6, 6.4, 9.2, 12.0]);        // 앞 비스듬한 벽(제단 쪽 → 옆 모서리)
-        pierWall(S(PLAN.C), S(PLAN.B), S([-SQ, -SQ]), [2.0, 4.8, 7.4]);            // 뒤 비스듬한 벽
+        pierWall(S(PLAN.F), S(PLAN.C), S([-SQ, SQ]), PIER_FC, true);                // 앞 비스듬한 벽(제단 쪽 → 옆 모서리) — 기둥 앞면마다 14처 판
+        pierWall(S(PLAN.C), S(PLAN.B), S([-SQ, -SQ]), PIER_CB, true);               // 뒤 비스듬한 벽 — 기둥 앞면마다 14처 판
         pierWall(S(PLAN.B), S([HW, LZ]), [-s, 0], [1.6, 3.6]);                      // 곧은 옆벽 앞부분(성가대석 앞)
       });
       // 곧은 옆벽 뒷부분(성가대석 옆): 아래층 벽 + 위층 높이의 깊은 감실 2(어두운 격자 천장 + 작은 등, 나무 살 뒷벽, 흰 난간 + 나무 손잡이) + 위 벽
@@ -630,7 +648,7 @@
       ctx.boxAABB({ x0: -HW, x1: HW, z0: LZ - 0.03, z1: LZ + 0.03, y0: LT + 1.0, y1: LT + 1.04, color: 0x8a8a86, mat: 'metal' });
       for (var xpst = -HW + 1.25; xpst < HW; xpst += 1.6) ctx.boxAABB({ x0: xpst - 0.02, x1: xpst + 0.02, z0: LZ - 0.03, z1: LZ + 0.03, y0: PY1 + 0.07, y1: LT + 1.0, color: 0x6a6a66, mat: 'metal' });
       // 십자가의 길 부조 판 14(사진 9·10: 짙은 녹청 청동, 세로로 긴 네모, 작가 미확인) → 인물·장면 없는 중립 부조(납작한 둥근 덩이) + 처 번호(로마 숫자 막대)만.
-      // 이 자리가 앱의 14처(걸어가는 곳·누르는 곳)다 — layout.crossWay.plaques(아래 RELIEF), 앱 그림 판은 그리지 않는다(panels: false, yeouido.md §4.1·§7)
+      // 실제 14처 자리지만 앱에서는 장식이다(누르지 않음) — 앱의 14처 그림 판은 신랑 벽 버팀기둥 앞면(CROSS, layout.crossWay, 2026-11-23 사용자 · yeouido.md §4.1·§7)
       (function () {
         var BR = 0x3c4a3e, BRL = 0x55665a, ROM = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV'], rr = ctx.rng(907), zp = LZ - 0.15;
         function bar(x0, y0, x1, y1) { ctx.beam3([x0, y0, zp - 0.034], [x1, y1, zp - 0.034], 0.012, 0.008, 0xc8b88a, metal); }

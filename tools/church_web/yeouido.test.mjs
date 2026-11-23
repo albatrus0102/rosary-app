@@ -298,20 +298,58 @@ test('yeouido: 스테이션 — 봉헌초 = 로비 벽감의 성모상(Meshy 3D 
   assert.ok(free(-7.6, -6.6), '예전 자리(신랑 제단 앞 왼쪽)에는 받침이 없다');
 });
 
-test('yeouido: 십자가의 길 14곳 = 성가대석 앞 난간의 부조 판 자리(그림 판은 그리지 않음), 서는 자리는 난간 아래 신랑 바닥, 푸겔 연작', () => {
+test('yeouido: 십자가의 길 14처 그림 판 = 신랑 벽 버팀기둥 앞면 14곳(2026-11-23 사용자: 그림 판을 되살려), 벽등·슬릿 창과 안 겹침, 스폰에서 걸어서 닿음, 난간 부조는 장식', () => {
   const r = WayCross.derive({ layout: lay, logic: L, stations: S, walls: c.walls, windows: c.windows, roses: c.roses, glassSlots: c.glassSlots });
   assert.equal(r.why, 'ok');
   assert.equal(r.plaques.length, 14);
-  assert.equal(lay.crossWay.panels, false);
-  const R = Bd.relief;
+  assert.notEqual(lay.crossWay.panels, false, '그림 판(연작 아틀라스)을 그린다');
+  assert.equal(lay.crossWay.start, 'L');
+  const X = Bd.cross, PL = Bd.plan, SQ = Math.SQRT1_2;
+  assert.equal(X.length, 14);
+  // 피어 자리(pierWall 과 같은 값): 한쪽 = 앞 비스듬한 벽 4 + 뒤 비스듬한 벽 3
+  const pierPt = (s, wall, t) => {
+    const A = wall === 'FC' ? PL.F : PL.C, E = wall === 'FC' ? PL.C : PL.B, l = Math.hypot(E[0] - A[0], E[1] - A[1]);
+    return { x: s * (A[0] + (E[0] - A[0]) * t / l), z: A[1] + (E[1] - A[1]) * t / l, n: wall === 'FC' ? [-s * SQ, SQ] : [-s * SQ, -SQ], u: [s * (E[0] - A[0]) / l, (E[1] - A[1]) / l] };
+  };
+  const WH = Bd.wallHead, depthAt = (y) => 0.6 + 0.75 * y / WH;   // 기둥 앞면 깊이(아래 0.6 → 벽 머리 1.35, 안으로 눕는다)
   r.plaques.forEach((p, i) => {
-    assert.ok(near(p.x, R.x[i]) && near(p.z, Bd.loft.z - 0.2) && near(p.y, R.y), p.n + '처 자리');
-    assert.ok(p.nz < -0.99, p.n + '처 신랑 쪽을 본다');
-    assert.ok(S.free(p.stand.x, p.stand.z) && S.isReachable(p.stand.x, p.stand.z), p.n + '처 서는 자리');
-    assert.ok(near(L.floorY(p.stand.x, p.stand.z), 0), p.n + '처 서는 자리 = 신랑 바닥');
+    const q = X[i], s = p.side === 'R' ? 1 : -1, w = pierPt(s, q.pier.wall, q.pier.t);
+    assert.equal(p.side, i < 7 ? 'L' : 'R', p.n + '처 쪽');
+    assert.ok(near(p.x, q.x) && near(p.z, q.z), p.n + '처 자리');
+    // 판 법선 = 그 벽 안쪽 법선, 판 중심은 피어 중심선 위(옆으로 0), 기둥 앞면 바로 앞(위 끝에서 1~12cm, 아래 끝에서 25cm 안)
+    assert.ok(p.nx * w.n[0] + p.nz * w.n[1] > 0.999, p.n + '처 방향');
+    const along = (p.x - w.x) * w.u[0] + (p.z - w.z) * w.u[1], across = (p.x - w.x) * w.n[0] + (p.z - w.z) * w.n[1];
+    assert.ok(Math.abs(along) < 0.005, p.n + '처 기둥 가운데 ' + along);
+    const yb = p.y - p.h / 2, yt = p.y + p.h / 2;
+    assert.ok(near(yb, Bd.crossBottom, 1e-6) && near(yt, Bd.crossTop, 1e-6), p.n + '처 높이');
+    const back = across - 0.054;   // 액자 뒤판 뒷면(way_cross.js depth + quadGap)
+    assert.ok(back - depthAt(yt) > 0.005 && back - depthAt(yt) < 0.12, p.n + '처 위 끝이 기둥 앞면에 붙음 ' + (back - depthAt(yt)).toFixed(3));
+    assert.ok(back - depthAt(yb) < 0.25, p.n + '처 아래 끝이 기둥 앞면에서 뜨지 않음');
+    // 기둥 앞면 폭 안(그 높이의 폭 2.0 → 1.2), 벽등(2.35m 위)보다 아래
+    assert.ok(p.w / 2 < 1.0 + (0.6 - 1.0) * yt / WH - 0.1, p.n + '처 기둥 폭 안');
+    assert.ok(yt < 2.35 - 0.03, p.n + '처 벽등 아래');
+    // 슬릿 창(피어 사이 가운데, 폭 0.4, 2~6m)과 겹치지 않음: 같은 벽의 이웃 피어 사이 가운데에서 판 끝까지 ≥ 0.2 + 0.3
+    const ts = q.pier.wall === 'FC' ? [3.6, 6.4, 9.2, 12.0] : [2.0, 4.8, 7.4];
+    for (let k = 0; k < ts.length - 1; k++) assert.ok(Math.abs((ts[k] + ts[k + 1]) / 2 - q.pier.t) - p.w / 2 > 0.5, p.n + '처 슬릿 창');
+    // 서는 자리: 신랑 바닥(층 0), 충돌 없음, 스폰(성당 바닥)에서 누르기 이동으로 걸어서 닿는다
+    assert.ok(near(L.floorY(p.stand.x, p.stand.z, 0), 0), p.n + '처 서는 자리 = 신랑 바닥');
+    assert.ok(free(p.stand.x, p.stand.z) && S.isReachable(p.stand.x, p.stand.z), p.n + '처 서는 자리');
+    const wk = walkTo(SPAWN, { x: p.stand.x, z: p.stand.z, y: 0 });
+    assert.ok(wk.ok, p.n + '처 스폰에서 걸어서 ' + wk.why);
+    assert.ok(wk.maxY < 0.05 && wk.minY > -0.05, p.n + '처 가는 길은 성당 바닥만(계단·층을 오르내리지 않음)');
+    // 성가대석 밑·계단(로비)·제단 금지 구역과 떨어져 있다
+    assert.ok(p.z < Bd.loft.z - 3 && p.stand.z < Bd.loft.z - 3, p.n + '처 성가대석 밑이 아님');
+    assert.ok(!rv.inZone(p.stand.x, p.stand.z, 0.3), p.n + '처 서는 자리가 제단 금지 구역 밖');
   });
-  assert.ok(r.plaques[0].x > r.plaques[13].x, '1처 = 신랑에서 볼 때 왼쪽(+x) 끝');
-  for (let i = 1; i < 14; i++) assert.ok(r.plaques[i].x < r.plaques[i - 1].x);
+  // 판끼리 겹치지 않음(가장 가까운 두 판 ≥ 2m)
+  for (let i = 0; i < 14; i++) for (let j = i + 1; j < 14; j++) assert.ok(Math.hypot(r.plaques[i].x - r.plaques[j].x, r.plaques[i].z - r.plaques[j].z) >= 2.0, `${i + 1}·${j + 1}처`);
+  // 순서: 왼쪽 벽 제대 쪽(1처) → 입구 쪽(7처) → 오른쪽 벽 입구 쪽(8처) → 제대 쪽(14처), 좌우 거울
+  for (let i = 1; i < 7; i++) assert.ok(r.plaques[i].z > r.plaques[i - 1].z, (i + 1) + '처가 입구 쪽으로');
+  for (let i = 8; i < 14; i++) assert.ok(r.plaques[i].z < r.plaques[i - 1].z, (i + 1) + '처가 제대 쪽으로');
+  for (let i = 0; i < 7; i++) assert.ok(near(r.plaques[i].x, -r.plaques[13 - i].x, 1e-6) && near(r.plaques[i].z, r.plaques[13 - i].z, 1e-6), '좌우 거울 ' + (i + 1));
+  // 난간 부조 판 14 는 장식으로 남는다(14처 자리가 아님)
+  assert.equal(Bd.relief.x.length, 14);
+  assert.ok(r.plaques.every((p) => p.z < Bd.loft.z - 3), '난간 자리에 14처가 없다');
   assert.equal(CrossData.series.churches.yeouido, 'fugel');
 });
 
