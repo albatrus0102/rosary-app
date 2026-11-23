@@ -95,6 +95,7 @@
   "default": "fugel",
   "churches": {
    "basic": "fugel",
+   "light": "fugel",
    "stpeter": "previati",
    "lateran": "oreilly",
    "maggiore": "corot",

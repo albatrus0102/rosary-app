@@ -156,7 +156,14 @@
     return out;
   }
 
+  // 충돌체 세 가지: k 0 = 축 정렬 상자 {x0,x1,z0,z1}, k 1 = 원 {x,z,r}, k 2 = 두께 있는 선분(캡슐) {ax,az,bx,bz,r}
+  // — 비스듬한 벽(둥근 성당의 방사형 칸막이·현). 상자로 감싸면 외접 상자가 통로를 막아서 선분으로 둔다(빛의 성당 ch_light.js).
   function normCollider(c) {
+    if (c.ax !== undefined && c.bx !== undefined) {
+      var sg = { k: 2, ax: c.ax, az: c.az, bx: c.bx, bz: c.bz, r: c.r || 0.25 };
+      if (c.y0 !== undefined || c.y1 !== undefined) { sg.y0 = c.y0 === undefined ? -1e9 : c.y0; sg.y1 = c.y1 === undefined ? 1e9 : c.y1; }
+      return sg;
+    }
     var n = (c.r !== undefined && c.x0 === undefined) ? { k: 1, x: c.x, z: c.z, r: c.r }
       : { k: 0, x0: Math.min(c.x0, c.x1), x1: Math.max(c.x0, c.x1), z0: Math.min(c.z0, c.z1), z1: Math.max(c.z0, c.z1) };
     // 여러 층: 높이 범위(y0..y1)가 있는 충돌체는 그 높이에 몸이 걸칠 때만 막는다. 없으면 모든 층에서 막는다(한 층 성당은 늘 이쪽)
@@ -179,6 +186,10 @@
     // 여러 층(layout.levels): 같은 (x,z) 에 바닥이 여럿 — floorY(x,z,yRef) 는 yRef + STEP 아래의 가장 높은 바닥, 충돌체는 높이 범위를 본다.
     // levels 가 없는 성당(한 층)은 예전 그대로(아래 함수들이 yRef·y 인자를 무시한다).
     var multi = !!(layout.levels && layout.levels.length);
+    // 걷기 최고 속도(m/s): 성당마다 layout.walkSpeed 로 바꿀 수 있다(빛의 성당 1.1 — 순례 걸음, 문 → 제단 약 3분). 없으면 C.WALK_SPEED.
+    // 조이스틱(joyToVelocity)과 누르기 이동(stations.js stepWalk)이 이 값을 쓴다. 걸음 값(main.js setWalk = 속도 / WALK_SPEED)은 그대로라
+    // 느린 성당에서는 다리도 실제 속도에 맞게 천천히 걷는다(WALK_GAIT.md: 다리는 실제 이동량으로 움직인다).
+    var walkTop = layout.walkSpeed > 0 ? Math.min(C.WALK_SPEED, layout.walkSpeed) : C.WALK_SPEED;
     var ground = layout.ground !== false;
     var groupY = {}, groupDy = {};
     for (i = 0; i < layout.seatGroups.length; i++) if (layout.seatGroups[i].y !== undefined) { groupY[layout.seatGroups[i].g] = layout.seatGroups[i].y; groupDy[layout.seatGroups[i].g] = layout.seatGroups[i].rowDy || 0; }
@@ -200,7 +211,7 @@
     function atLevel(c, y) { return y === undefined || y === null || c.y0 === undefined || (c.y1 >= y + C.BODY0 && c.y0 <= y + C.BODY1); }
     var L = {
       multi: multi, levels: multi ? layout.levels : null,
-      layout: layout, C: C, PEW: PEW, seats: seats, seatIds: seats.map(function (s) { return s.id; }),
+      layout: layout, C: C, PEW: PEW, walkSpeed: walkTop, seats: seats, seatIds: seats.map(function (s) { return s.id; }),
       bands: bands, slots: slots, colliders: colliders, bounds: walk, spawn: layout.spawn,
       seatInfo: function (id) { return byId[id] || null; },
       setColliders: function (list) { rebuild(list || []); },
@@ -347,6 +358,15 @@
                 else if (m === tp) p.z = c.z0 - r; else p.z = c.z1 + r;
               }
               any = true;
+            } else if (c.k === 2) {
+              var sx = c.bx - c.ax, sz = c.bz - c.az, sl2 = sx * sx + sz * sz;
+              var tt = sl2 > 1e-12 ? ((p.x - c.ax) * sx + (p.z - c.az) * sz) / sl2 : 0;
+              tt = tt < 0 ? 0 : (tt > 1 ? 1 : tt);
+              var qx = c.ax + sx * tt, qz = c.az + sz * tt, e3x = p.x - qx, e3z = p.z - qz, rs = c.r + r, d3 = e3x * e3x + e3z * e3z;
+              if (d3 >= rs * rs) continue;
+              if (d3 > 1e-10) { var d3l = Math.sqrt(d3); p.x = qx + e3x / d3l * rs; p.z = qz + e3z / d3l * rs; }
+              else { var sln = Math.sqrt(sl2) || 1; p.x = qx - sz / sln * rs; p.z = qz + sx / sln * rs; }
+              any = true;
             } else {
               var ex2 = p.x - c.x, ez2 = p.z - c.z, rr = c.r + r, dd = ex2 * ex2 + ez2 * ez2;
               if (dd >= rr * rr) continue;
@@ -376,7 +396,7 @@
         var dx = fx * jy + rx * jx, dz = fz * jy + rz * jx;
         var dl = Math.sqrt(dx * dx + dz * dz) || 1;
         dx /= dl; dz /= dl;
-        out.speed = C.WALK_SPEED * m; out.vx = dx * out.speed; out.vz = dz * out.speed;
+        out.speed = walkTop * m; out.vx = dx * out.speed; out.vz = dz * out.speed;
         out.yaw = Math.atan2(-dx, -dz);
         return out;
       }

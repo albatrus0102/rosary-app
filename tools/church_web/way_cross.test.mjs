@@ -175,7 +175,8 @@ test('series: every church maps to a bundled atlas pack; default is fugel', () =
   // 성당마다 다른 그림: 같은 연작을 두 성당이 쓰지 않는다. 예외: 여의도동(yeouido)은 번들된 9개 연작이 모두 배정된 뒤에 들어와
   // 기본 연작(푸겔, 우리 본당과 같음)을 함께 쓴다(docs/church/interiors/yeouido.md §7 — 새 자유 라이선스 연작이 오면 바꾼다)
   // 아시시(assisi)는 14처 판을 걸지 않지만(crossWay.none) 묵상 시트를 위해 기본 연작에 묶어 둔다(docs/church/interiors/assisi.md §6)
-  const SHARED = { yeouido: 'fugel', assisi: 'fugel' };
+  // 빛의 성당(light, 가상)도 1단계에서는 판을 걸지 않고(crossWay.none) 기본 연작에 묶어 둔다(2단계에서 주보랑 바깥벽에 건다)
+  const SHARED = { yeouido: 'fugel', assisi: 'fugel', light: 'fugel' };
   for (const [c, sid] of Object.entries(SHARED)) assert.equal(S.churches[c], sid, c);
   const own = Object.entries(S.churches).filter(([c]) => !SHARED[c]).map(([, sid]) => sid);
   assert.equal(new Set(own).size, own.length);

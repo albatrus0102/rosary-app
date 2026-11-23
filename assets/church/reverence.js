@@ -43,6 +43,12 @@
         var cx = x < c.x0 ? c.x0 : (x > c.x1 ? c.x1 : x), cz = z < c.z0 ? c.z0 : (z > c.z1 ? c.z1 : z);
         var ex = x - cx, ez = z - cz;
         if (ex * ex + ez * ez < r * r) return false;
+      } else if (c.k === 2) {   // 두께 있는 선분(scene_logic normCollider)
+        var sx = c.bx - c.ax, sz = c.bz - c.az, sl2 = sx * sx + sz * sz;
+        var t = sl2 > 1e-12 ? ((x - c.ax) * sx + (z - c.az) * sz) / sl2 : 0;
+        t = t < 0 ? 0 : (t > 1 ? 1 : t);
+        var qx = x - (c.ax + sx * t), qz = z - (c.az + sz * t), rs = c.r + r;
+        if (qx * qx + qz * qz < rs * rs) return false;
       } else {
         var dx = x - c.x, dz = z - c.z, rr = c.r + r;
         if (dx * dx + dz * dz < rr * rr) return false;

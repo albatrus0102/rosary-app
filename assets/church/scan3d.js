@@ -11,7 +11,7 @@
   // 앱에 들어간 묶음(시험이 출처·예산을 이 표로 확인한다). kind = 재질 종류. churches = 쓰는 성당(문서·시험용).
   var PACKS = {
     pieta: { kind: 'marble', churches: ['stpeter'], label: '피에타(미켈란젤로)' },
-    crucifix: { kind: 'color', churches: ['basic', 'florence', 'myeongdong', 'stpaul'], label: '십자고상' },
+    crucifix: { kind: 'color', churches: ['basic', 'florence', 'light', 'myeongdong', 'stpaul'], label: '십자고상' },
     st_peter: { kind: 'marble', churches: ['lateran', 'stpaul'], label: '성 베드로 상' },
     st_paul: { kind: 'marble', churches: ['lateran', 'stpaul'], label: '성 바오로 상' },
     angel: { kind: 'marble', churches: ['myeongdong'], label: '천사상' }

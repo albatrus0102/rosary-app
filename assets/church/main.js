@@ -521,6 +521,8 @@
     if (!path) { failWalk(kind, 'nopath'); return; }
     App.walkSt = S.startWalk(path, tg, kind, tg.index);
     App.walkSt.seat = tg.id;
+    // 걷기 시간 상한: 예전 90초. 느리게 걷는 성당(빛의 성당 1.1 m/s, layout.walkSpeed)의 긴 길이 도중에 끊기지 않게 길이·속도로 늘린다
+    App.walkSt.tMax = Math.max(90, path.len / ((App.logic && App.logic.walkSpeed) || 4) * 1.6 + 10);
     App.turn = null;
     post({ e: 'walkStart', kind: kind, m: Math.round(path.len) });
   }
@@ -593,11 +595,11 @@
       if (W) {
         App.stations.stepWalk(W, me, dt, wv);
         if (wv.done) { walked = { kind: W.kind, index: W.index, seat: W.seat, yaw: W.target.yaw }; App.walkSt = null; W = null; }
-        else if (wv.stuck || W.t > 90) {
+        else if (wv.stuck || W.t > (W.tMax || 90)) {
           // 끼었다: 지금 자리에서 길을 다시 찾는다(두 번까지). 안 되면 실패.
-          var np = W.t > 90 || W.replans >= 2 ? null : App.stations.findPath(me, W.target);
+          var np = W.t > (W.tMax || 90) || W.replans >= 2 ? null : App.stations.findPath(me, W.target);
           if (!np) { failWalk(W.kind, 'stuck'); W = null; }
-          else { var nw = App.stations.startWalk(np, W.target, W.kind, W.index); nw.replans = W.replans + 1; nw.seat = W.seat; nw.t = W.t; App.walkSt = W = nw; }
+          else { var nw = App.stations.startWalk(np, W.target, W.kind, W.index); nw.replans = W.replans + 1; nw.seat = W.seat; nw.t = W.t; nw.tMax = W.tMax; App.walkSt = W = nw; }
         }
       }
       if (W) { vel.vx = wv.vx; vel.vz = wv.vz; vel.speed = wv.speed; vel.yaw = wv.yaw; }

@@ -882,7 +882,7 @@
         clouds.rotation.y += dt * 0.0015;
         if (seatRing.visible) { var pl = 0.85 + 0.15 * Math.sin(t * 5); seatRing.scale.set(pl, pl, 1); }
         if (candleRing.visible) { var pl2 = 0.45 + 0.08 * Math.sin(t * 6); candleRing.scale.set(pl2, pl2, 1); }
-        for (var h2 = 0; h2 < S.updateHooks.length; h2++) S.updateHooks[h2](dt, t);
+        for (var h2 = 0; h2 < S.updateHooks.length; h2++) S.updateHooks[h2](dt, t, camera);   // camera: 구역 보이기·가까운 창 고르기(빛의 성당 ch_light.js)
         if (camera) api.setSkyCenter(camera.position);
         if (levelVis && camera) applyLevelVis(camera.position.y);
       },

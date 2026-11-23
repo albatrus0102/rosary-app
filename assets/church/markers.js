@@ -54,6 +54,7 @@
   }
 
   function create(group, stationsApi, logic, opts) {
+    var range = (logic && logic.layout && logic.layout.markerRange) || 0;   // m. 0(기본) = 거리와 상관없이 보인다(예전 그대로)
     opts = opts || {};
     var st = stationsApi.stations();
     var items = [];
@@ -109,6 +110,7 @@
           var d = Math.sqrt((me.x - s.x) * (me.x - s.x) + (me.z - s.z) * (me.z - s.z));
           var want = on ? smooth((d - 1.0) / 1.6) : 0;           // 서 있는 자리에 가까우면 사라진다
           if (s.y !== undefined && me.y !== undefined && Math.abs(s.y - me.y) > 1.6) want = 0;   // 여러 층: 다른 층(천장 너머·바닥 밑)의 표식은 숨긴다
+          if (range > 0) want *= smooth((range - d) / 6);   // 아주 큰 성당(layout.markerRange, 빛의 성당): 먼 표식(벽 너머 경당의 촛불대 등)은 숨긴다
           if (active) want *= (active.kind === it.kind && active.index === it.index) ? 1 : 0.35;
           it.a += (want - it.a) * k;
           var vis = it.a > 0.01;

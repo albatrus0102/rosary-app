@@ -56,7 +56,7 @@ test('normalize: 모르는 값은 안전한 기본값으로', () => {
 
 test('모든 성당에 장식 자리 표가 있다', () => {
   for (const c of churches) assert.ok(Liturgy.PLACES[c.id], c.id + ': PLACES 에 없음');
-  assert.equal(churches.length, 11);
+  assert.equal(churches.length, 12);   // 2026-11-24: 빛의 성당(light, 가상) 추가
 });
 
 test('시기별 장식 구성', () => {

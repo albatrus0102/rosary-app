@@ -18,7 +18,8 @@ function simulate(L, S, from, path, target) {
   const w = S.startWalk(path, target, 'x');
   const dt = 1 / 30;
   let t = 0, stuck = 0;
-  while (t < 150) {
+  const tMax = Math.max(150, (path.len || 0) / (L.walkSpeed || Logic.C.WALK_SPEED) * 1.6 + 10);   // 느린 성당(빛의 성당 1.1 m/s)의 긴 길
+  while (t < tMax) {
     S.stepWalk(w, me, dt, out);
     if (out.stuck) stuck++;
     if (out.done) return { ok: true, t, pos: { x: me.x, z: me.z }, stuck };
@@ -76,7 +77,7 @@ for (const c of churches) {
       const sim = simulate(L, S, sp, path, tg);
       assert.ok(sim.ok, `${c.id} ${name}: walk did not arrive (${JSON.stringify(sim)})`);
       assert.ok(Math.hypot(sim.pos.x - tg.x, sim.pos.z - tg.z) < 0.3);
-      assert.ok(sim.t < path.len / 2.0 + 6, `${c.id} ${name}: too slow ${sim.t} for ${path.len}`);
+      assert.ok(sim.t < path.len / Math.min(2.0, L.walkSpeed * 0.9) + 6, `${c.id} ${name}: too slow ${sim.t} for ${path.len}`);   // 느린 성당(layout.walkSpeed)은 그 속도 기준
       rows.push({ church: c.id, station: name, 'path m': +path.len.toFixed(1), waypoints: path.pts.length, 'walk s': +sim.t.toFixed(1), cell: path.cell });
     }
   });

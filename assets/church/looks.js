@@ -67,7 +67,9 @@
     assisi: { keyK: 0.92, keyTint: 0xffdcb0, keyTintK: 0.3, ambK: 0.68, ambTint: 0xffe2bc, ambTintK: 0.3, expK: 0.92, envK: 0.75, beamK: 0.85, lampK: 1.8, candleK: 1.5, fogTint: 0x5a4636, fogTintK: 0.25, dust: 90,
       glassK: 2.1, sat: 1.0, warm: 0.07, vig: 0.28, con: 0.22, bloomT: 0.82, bloomS: 0.42, night: { lampK: 2.0, ambK: 0.95, expK: 1.0, glassK: 1.4 } },
     // 우리 본당: 소박한 밝은 성당. 거의 예전 그대로, 난색·비네트만 조금
-    basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 }
+    basic: { ambK: 0.85, expK: 0.95, warm: 0.05, vig: 0.22, con: 0.12, bloomT: 0.88, bloomS: 0.34 },
+    // 빛의 성당(가상): 밝은 석회암과 파란 별 궁륭, 금빛 리브. 우리 본당과 비슷하게 소박한 룩 + 난색 조금
+    light: { ambK: 0.88, expK: 0.95, warm: 0.07, vig: 0.24, con: 0.16, bloomT: 0.86, bloomS: 0.4 }
   };
   // 개발용: ?looks=off 이면 모든 룩을 끈다(전/후 비교·회귀 기준 화면). ?looks=stpeter 처럼 id 를 주면 그 성당 룩만 남긴다.
   var DRAFTS = {};   // 새 성당 룩 초안은 여기에 넣고 ?looks=all 로 확인한 뒤 LOOKS 로 옮긴다

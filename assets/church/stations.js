@@ -393,7 +393,8 @@
         var tg = pts[w.i], dx = tg.x - me.x, dz = tg.z - me.z, d = Math.sqrt(dx * dx + dz * dz);
         while (w.i < last && d < 0.4) { w.i++; tg = pts[w.i]; dx = tg.x - me.x; dz = tg.z - me.z; d = Math.sqrt(dx * dx + dz * dz); }
         if (w.i === last && d < 0.15) { out.done = true; return out; }
-        var sp = w.i === last ? Math.min(C.WALK_SPEED, 0.8 + d * 3.2) : C.WALK_SPEED;
+        var top = logic.walkSpeed || C.WALK_SPEED;   // 성당별 걷기 속도(scene_logic layout.walkSpeed)
+        var sp = w.i === last ? Math.min(top, 0.8 + d * 3.2) : top;
         out.vx = dx / d * sp; out.vz = dz / d * sp; out.speed = sp; out.yaw = Math.atan2(-dx, -dz);
         w.t += dt; w.refT += dt;
         if (w.refT >= 1.0) {
@@ -728,7 +729,7 @@
 
   // 걷기 상태(startWalk·stepWalk)는 층과 무관하다(경로 점의 xz 를 따라가고 높이는 걷기 물리가 정한다): 한 층 구현을 그대로 붙인다
   function withWalk(S, logic) {
-    var tpl = create({ multi: false, layout: { seatGroups: [], bounds: { x0: 0, x1: 1, z0: 0, z1: 1 }, spawn: { x: 0, z: 0 } }, C: logic.C, seats: [], slots: [], moveCircle: function () { return false; }, floorY: function () { return 0; } });
+    var tpl = create({ multi: false, layout: { seatGroups: [], bounds: { x0: 0, x1: 1, z0: 0, z1: 1 }, spawn: { x: 0, z: 0 } }, C: logic.C, walkSpeed: logic.walkSpeed, seats: [], slots: [], moveCircle: function () { return false; }, floorY: function () { return 0; } });
     S.startWalk = tpl.startWalk; S.stepWalk = tpl.stepWalk;
     return S;
   }
