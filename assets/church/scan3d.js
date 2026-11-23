@@ -37,7 +37,7 @@
     marbleLit: { color: 0xd8d2c8, roughness: 0.66, metalness: 0, envMapIntensity: 0.22, key: { dir: [-0.5, 0.72, 0.62], color: 0xfff1dc, intensity: 3.2, wrap: 0.2 } },
     color: { vertexColors: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.7 },
     // colorWarm: 금박 채색 목조(빛의 성당 메달 홀 성모자상) — 따뜻한 열쇠 빛을 더해 금박·채색이 벽감 안에서도 읽히게
-    colorWarm: { vertexColors: true, roughness: 0.5, metalness: 0, envMapIntensity: 0.9, key: { dir: [-0.35, 0.7, 0.7], color: 0xffd9a0, intensity: 1.5, wrap: 0.3 } }
+    colorWarm: { vertexColors: true, roughness: 0.42, metalness: 0.15, envMapIntensity: 1.0, key: { dir: [-0.3, 0.65, 0.75], color: 0xffc27a, intensity: 2.4, wrap: 0.35 } }
   };
   // 열쇠 빛 셰이더 조각: 정점에서 지역 방향을 시야 공간으로(modelViewMatrix — 거울 성상은 빛도 거울), 조각에서 람베르트(wrap)로 더한다.
   function keyLight(m, key) {
@@ -99,7 +99,7 @@
     return st.geos[key];
   }
   // o: key, x, y(바닥), z, ry(지역 +Z 가 바라볼 쪽, 라디안), h(높이 m; 없으면 묶음 높이), mirror(좌우 뒤집기), mat(재질 종류 바꾸기: MAT 의 키),
-  //    backAt(선택: 모형 뒷면을 기준점 뒤 이 거리에 맞춘다 — 벽에 붙는 십자고상), lodFar(선택), name
+  //    backAt(선택: 모형 뒷면을 기준점 뒤 이 거리에 맞춘다 — 벽에 붙는 십자고상), lodFar(선택), lodHide(선택: 이 거리 밖에서는 숨김), name
   function place(ctx, o, onFail) {
     var def = o && packDef(o.key);
     if (!def || !able(ctx)) return false;
@@ -127,6 +127,7 @@
         var m = new T.Mesh(g[k], mat); m.name = lod.name + '_' + k; m.userData.noCam = true; m.userData.noAO = true;
         lod.addLevel(m, i ? (o.lodFar || Math.max(LOD_MIN, h * LOD_K)) : 0);
       });
+      if (o.lodHide) lod.addLevel(new T.Object3D(), o.lodHide);   // 선택: 이 거리 밖에서는 그리지 않는다(멀리서 몇 픽셀인 성상 — 빛의 성당 제단 천사)
       var back = o.backAt === undefined ? 0 : -o.backAt - M.min[2] * s, sa = Math.sin(lod.rotation.y), ca = Math.cos(lod.rotation.y);
       lod.position.set(o.x + sa * back, (o.y || 0) - M.min[1] * s, o.z + ca * back);
       lod.scale.set(o.mirror ? -s : s, s, s);
