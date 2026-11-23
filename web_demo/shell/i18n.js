@@ -8,9 +8,10 @@
 
   var UI = {
     ko: {
-      tagline: '로사리움(Rosarium) — 광고·결제 없는 무료 묵주기도 앱',
+      tagline: '로사리움(Rosarium) — 광고·결제 없는 무료 묵주기도 안드로이드 앱 · 이 화면은 웹 미리보기입니다',
       noteReal: '이 3D 성당({name})은 실제 모습과 같지 않은, 단순하게 본뜬 가상 모형입니다. 실제 미술 작품은 싣지 않았습니다. {approver}',
       noteFict: '이 3D 성당은 실제로 있는 어느 성당과도 같지 않은, 앱이 지어낸 가상의 본당입니다. 실제 미술 작품은 싣지 않았습니다. {approver}',
+      langLabel: '언어',
       tour: '▶ 둘러보기', free: '직접 걸어 보기',
       loading: '불러오는 중… {p}%', building: '성당을 짓는 중입니다…', ready: '준비되었습니다',
       loadFail: '불러오지 못했습니다. 새로 고침해 주세요.',
@@ -28,9 +29,10 @@
       foot: 'Rosarium은 광고·결제·후원이 없는 비상업 앱입니다.'
     },
     it: {
-      tagline: 'Rosarium — app gratuita e non commerciale per la preghiera del Rosario',
+      tagline: 'Rosarium — app Android gratuita e non commerciale per la preghiera del Rosario · questa è un’anteprima web',
       noteReal: 'Questo modello 3D è una versione virtuale semplificata e non è uguale alla chiesa reale ({name}). Le opere d’arte reali non sono incluse. {approver}',
       noteFict: 'Questa chiesa 3D non è uguale a nessuna chiesa reale: è una parrocchia virtuale inventata dall’app. Le opere d’arte reali non sono incluse. {approver}',
+      langLabel: 'Lingua',
       tour: '▶ Visita guidata', free: 'Esplora da solo',
       loading: 'Caricamento… {p}%', building: 'Costruzione della chiesa…', ready: 'Pronto',
       loadFail: 'Caricamento non riuscito. Ricarica la pagina.',
@@ -48,9 +50,10 @@
       foot: 'Rosarium è un’app non commerciale: nessuna pubblicità, nessun pagamento, nessuna raccolta fondi.'
     },
     en: {
-      tagline: 'Rosarium — free, non-commercial rosary prayer app',
+      tagline: 'Rosarium — free, non-commercial Android app for praying the Rosary · this is a web preview',
       noteReal: 'This is a simplified virtual model; it differs from the real {name}. Real artworks are not included. {approver}',
       noteFict: 'This 3D church is not like any real church: it is a fictional parish invented by the app. Real artworks are not included. {approver}',
+      langLabel: 'Language',
       tour: '▶ Guided tour', free: 'Explore on your own',
       loading: 'Loading… {p}%', building: 'Building the church…', ready: 'Ready',
       loadFail: 'Loading failed. Please reload the page.',
@@ -68,9 +71,10 @@
       foot: 'Rosarium is a non-commercial app: no ads, no payments, no donations.'
     },
     es: {
-      tagline: 'Rosarium — aplicación gratuita y sin fines comerciales para rezar el Rosario',
+      tagline: 'Rosarium — aplicación Android gratuita y sin fines comerciales para rezar el Rosario · esta es una vista previa web',
       noteReal: 'Este es un modelo virtual simplificado y no es igual a la iglesia real ({name}). No se incluyen obras de arte reales. {approver}',
       noteFict: 'Esta iglesia 3D no se parece a ninguna iglesia real: es una parroquia ficticia inventada por la aplicación. No se incluyen obras de arte reales. {approver}',
+      langLabel: 'Idioma',
       tour: '▶ Visita guiada', free: 'Explorar por mi cuenta',
       loading: 'Cargando… {p}%', building: 'Construyendo la iglesia…', ready: 'Listo',
       loadFail: 'No se pudo cargar. Vuelve a cargar la página.',
@@ -88,9 +92,10 @@
       foot: 'Rosarium es una aplicación sin fines comerciales: sin anuncios, sin pagos, sin donaciones.'
     },
     pt: {
-      tagline: 'Rosarium — aplicativo gratuito e não comercial para rezar o Rosário',
+      tagline: 'Rosarium — aplicativo Android gratuito e não comercial para rezar o Rosário · esta é uma prévia na web',
       noteReal: 'Este é um modelo virtual simplificado e não é igual à igreja real ({name}). Obras de arte reais não estão incluídas. {approver}',
       noteFict: 'Esta igreja 3D não é igual a nenhuma igreja real: é uma paróquia fictícia inventada pelo aplicativo. Obras de arte reais não estão incluídas. {approver}',
+      langLabel: 'Idioma',
       tour: '▶ Visita guiada', free: 'Explorar por conta própria',
       loading: 'Carregando… {p}%', building: 'Construindo a igreja…', ready: 'Pronto',
       loadFail: 'Não foi possível carregar. Recarregue a página.',
@@ -208,6 +213,19 @@
   };
   var CHURCH_APPROVER = { basic: 'any', stpeter: 'pope', lateran: 'pope', maggiore: 'pope', stpaul: 'pope', milan: 'milan', florence: 'florence', assisi: 'assisi', myeongdong: 'seoul', danggogae: 'shrine', yeouido: 'parish' };
 
-  root.DemoI18N = { langs: LANGS, ui: UI, intentions: INTENTIONS, captions: CAPTIONS, names: NAMES, labels: LABELS, approver: APPROVER, churchApprover: CHURCH_APPROVER };
+  // 언어 이름(각자의 말로) · 주소의 ?lang= 덮어쓰기(올바른 값만; 아니면 페이지 기본 언어)
+  var LANG_NAMES = { ko: '한국어', en: 'English', it: 'Italiano', es: 'Español', pt: 'Português' };
+  function pickLang(search, pageLang) {
+    var m = /[?&]lang=([a-z]{2})(?:&|#|$)/.exec(String(search || ''));
+    return m && LANGS.indexOf(m[1]) >= 0 ? m[1] : (LANGS.indexOf(pageLang) >= 0 ? pageLang : 'en');
+  }
+  // 자막: 페이지가 {언어: {역할: 글}} 로 주면 그 언어 것, 없으면 빈 객체(i18n 기본 자막으로 채워진다). 예전 평평한 모양({역할: 글})도 받는다.
+  function pickCaptions(caps, lang) {
+    if (!caps || typeof caps !== 'object') return {};
+    var any = false; LANGS.forEach(function (l) { if (caps[l] && typeof caps[l] === 'object') any = true; });
+    return any ? (caps[lang] || {}) : caps;
+  }
+
+  root.DemoI18N = { langs: LANGS, langNames: LANG_NAMES, pickLang: pickLang, pickCaptions: pickCaptions, ui: UI, intentions: INTENTIONS, captions: CAPTIONS, names: NAMES, labels: LABELS, approver: APPROVER, churchApprover: CHURCH_APPROVER };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.DemoI18N;
 })(typeof window !== 'undefined' ? window : globalThis);

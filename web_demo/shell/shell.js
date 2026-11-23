@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   var D = root.DEMO, I = root.DemoI18N, doc = root.document;
-  var lang = I.ui[D.lang] ? D.lang : 'en', L = I.ui[lang];
+  var lang = I.pickLang(root.location.search, D.lang), L = I.ui[lang];   // 주소의 ?lang=(올바른 값만)이 페이지 기본 언어보다 먼저
   var touch = false;
   try { touch = !!(root.matchMedia && root.matchMedia('(pointer: coarse)').matches) || ('ontouchstart' in root && (navigator.maxTouchPoints || 0) > 0); } catch (e) { touch = false; }
   if (/[?&]touch=1/.test(root.location.search)) touch = true;   // 시험용: 데스크톱에서 터치 배치 보기
@@ -72,6 +72,8 @@
   ui.id = 'demoRoot';
   ui.innerHTML =
     '<div id="start"><div class="card">' +
+      '<div class="langrow"><label for="langSel">' + esc(L.langLabel) + '</label><select id="langSel" aria-label="' + esc(L.langLabel) + '">' +
+        I.langs.map(function (l) { return '<option value="' + l + '" lang="' + l + '"' + (l === lang ? ' selected' : '') + '>' + esc(I.langNames[l]) + '</option>'; }).join('') + '</select></div>' +
       '<p class="kicker">Rosarium</p><h1>' + esc(name) + '</h1>' +
       '<p class="tag">' + esc(L.tagline) + '</p>' +
       '<p class="note">' + esc(note) + '</p>' +
@@ -147,6 +149,12 @@
       setTimeout(function () { var h = $('help'); if (h) h.style.opacity = '0'; }, 14000);
     }, 30); });
   }
+  // 언어 바꾸기: 같은 쪽을 ?lang=xx 로 다시 연다(replace 라서 뒤로 가기가 되풀이되지 않는다). 장면 이름표·자막 처리는 시작할 때만 정해지므로 다시 열어야 한다.
+  $('langSel').addEventListener('change', function () {
+    var v = this.value; if (I.langs.indexOf(v) < 0 || v === lang) return;
+    var q = root.location.search.replace(/([?&])lang=[^&#]*&?/, '$1').replace(/[?&]$/, '');
+    root.location.replace(root.location.pathname + (q ? q + '&' : '?') + 'lang=' + v + root.location.hash);
+  });
   $('btnTour').addEventListener('click', function () { enter(true); });
   $('btnFree').addEventListener('click', function () { enter(false); });
 

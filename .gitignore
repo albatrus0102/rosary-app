@@ -83,3 +83,6 @@ art/statue_handoff/*.part
 
 # 웹 데모의 비밀 링크 대응표(받는 곳 id -> 토큰). 절대 올리지 않는다.
 /web_demo/links.local.json
+
+# Kotlin 빌드 캐시(Gradle이 빌드 중에 만든다)
+/android/.kotlin/

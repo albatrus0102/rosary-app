@@ -33,7 +33,17 @@ test('빌드: 받는 곳마다 v/<토큰>/index.html, 루트는 중립 페이지
     assert.ok(html.includes('<meta name="robots" content="noindex,nofollow'), id + ' noindex meta');
     assert.ok(html.includes('ch_' + x.church + '.js'), id + ' 빌더');
   }
-  assert.deepEqual(fs.readdirSync(path.join(out, 'v')).sort(), toks.slice().sort());
+  // 만든 사람 확인용 목록 쪽(owner 토큰)도 하나 더 있고, 받는 곳 전부로 이어진다
+  const owner = JSON.parse(fs.readFileSync(links, 'utf8')).owner;
+  assert.match(owner, TOKEN_RE);
+  assert.ok(!toks.includes(owner));
+  assert.deepEqual(fs.readdirSync(path.join(out, 'v')).sort(), toks.concat(owner).sort());
+  const oh = fs.readFileSync(path.join(out, 'v', owner, 'index.html'), 'utf8');
+  assert.match(oh, /noindex/);
+  for (const t of toks) assert.ok(oh.includes('../' + t + '/'), 'owner 목록에 ' + t);
+  // 다시 지어도 owner 토큰은 그대로
+  build({ linksFile: links, outDir: out, quiet: true });
+  assert.equal(JSON.parse(fs.readFileSync(links, 'utf8')).owner, owner);
   // 루트와 404 는 같은 중립 페이지(토큰·성당 이름 없음)
   const root = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
   assert.equal(root, fs.readFileSync(path.join(out, '404.html'), 'utf8'));
@@ -114,3 +124,44 @@ test('토큰이 저장소(추적되는 파일)에 없다', () => {
 });
 
 test.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
+
+// ---- 방문자가 언어를 고른다: 모든 언어의 자막이 페이지에 실리고, 셸이 ?lang= 을 올바르게 읽는다 ----
+import { createRequire } from 'node:module';
+const I18N = createRequire(import.meta.url)('./shell/i18n.js');
+const LANGS_ALL = ['ko', 'it', 'en', 'es', 'pt'];
+
+test('페이지에 모든 언어의 자막 칸이 있고 받는 곳 언어의 자막은 그대로다', () => {
+  build({ linksFile: links, outDir: out, quiet: true });
+  const rec = JSON.parse(fs.readFileSync(links, 'utf8')).recipients;
+  for (const [id, x] of Object.entries(rec)) {
+    const html = fs.readFileSync(path.join(out, 'v', x.token, 'index.html'), 'utf8');
+    const cfg = JSON.parse(/window\.DEMO=(\{.*?\});<\/script>/s.exec(html)[1]);
+    assert.deepEqual(Object.keys(cfg.captions).sort(), LANGS_ALL.slice().sort(), id + ' 자막 언어 칸');
+    assert.deepEqual(cfg.captions[x.lang], captionsFor(x.church, x.lang), id + ' 기본 언어 자막');
+  }
+});
+
+test('셸: ?lang= 은 올바른 값만 받고, 아니면 페이지 언어 → en', () => {
+  assert.equal(I18N.pickLang('?lang=en', 'ko'), 'en');
+  assert.equal(I18N.pickLang('?q=low&lang=ko#x', 'it'), 'ko');
+  assert.equal(I18N.pickLang('?lang=xx', 'it'), 'it');
+  assert.equal(I18N.pickLang('?lang=', 'pt'), 'pt');
+  assert.equal(I18N.pickLang('', 'zz'), 'en');
+  assert.equal(I18N.pickLang('?xlang=ko', 'es'), 'es');
+});
+
+test('셸: 자막은 고른 언어 것, 없으면 빈 객체, 예전 평평한 모양도 받는다', () => {
+  assert.deepEqual(I18N.pickCaptions({ it: { walk: 'a' }, ko: {} }, 'it'), { walk: 'a' });
+  assert.deepEqual(I18N.pickCaptions({ it: { walk: 'a' }, ko: {} }, 'en'), {});
+  assert.deepEqual(I18N.pickCaptions({ walk: 'a' }, 'it'), { walk: 'a' });
+  assert.deepEqual(I18N.pickCaptions(undefined, 'it'), {});
+});
+
+test('모든 언어에 화면 문구가 빠짐없고 언어 선택 문구·언어 이름이 있다', () => {
+  const ko = Object.keys(I18N.ui.ko);
+  for (const l of LANGS_ALL) {
+    assert.deepEqual(Object.keys(I18N.ui[l]).sort(), ko.slice().sort(), l + ' 문구 키');
+    assert.ok(I18N.ui[l].langLabel && I18N.langNames[l], l);
+    if (l !== 'ko') assert.ok(!/[가-힣]/.test(JSON.stringify(I18N.ui[l])), l + ' 에 한글이 섞임');
+  }
+});
