@@ -20,23 +20,31 @@
 A: basilica@laterano.va
 Oggetto: App di preghiera gratuita «Rosarium»: una domanda sull’Arcibasilica di San Giovanni in Laterano (basta rispondere con un numero)
 
-Spettabile Arcibasilica Papale di San Giovanni in Laterano,
+Alla cortese attenzione della Segreteria dell’Arcibasilica Papale di San Giovanni in Laterano,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario, anche all’interno di modelli 3D semplificati di alcune chiese. Non è ancora pubblicata.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕), fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud.
 
-Uno dei modelli rappresenta l’Arcibasilica Papale di San Giovanni in Laterano. L’edificio ha molti secoli e non Vi chiedo una licenza di diritto d’autore: per rispetto verso chi lo custodisce, Vi chiedo se avete obiezioni all’uso del nome e di un modello semplificato, che l’app dichiara diverso dall’originale e non approvato da Voi. La riverenza è una regola dell’app: nel presbiterio non si entra, e nulla imita la Messa o i Sacramenti.
+A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale, senza pubblicità né pagamenti, che aiuta a pregare il Rosario anche all’interno di modelli 3D semplificati di alcune chiese. L’app non è ancora stata pubblicata.
 
-Basta rispondere a questa e-mail con un numero:
+Uno di questi modelli rappresenta l’Arcibasilica Papale di San Giovanni in Laterano.
+
+Poiché si tratta di un edificio storico di molti secoli, non Vi scrivo per chiedere una licenza di diritto d’autore sull’edificio, ma per conoscere il Vostro parere sull’utilizzo del nome e di una sua rappresentazione semplificata.
+
+L’app precisa che il modello non corrisponde esattamente alla Basilica reale e non è stato approvato dalla Vostra istituzione. La rappresentazione è concepita con rispetto per la sacralità del luogo: il presbiterio non è accessibile e non vengono simulate la Messa o le celebrazioni dei Sacramenti.
+
+Se possibile, potreste indicare una delle seguenti opzioni:
 
 ① Nessuna obiezione.
 ② Sì, a queste condizioni o con queste correzioni: ______
 ③ Preferiamo che la Basilica non compaia nell’app (la toglierò).
 
-Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+Sarò lieto di effettuare le modifiche che riterrete necessarie.
 
-In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, com’è fatto il modello, le immagini di opere reali oggi presenti e la loro fonte, le voci più specifiche su opere, fotografie e link), 6 schermate e il link a un breve video: 〔YouTube 링크〕
+Allego una scheda dettagliata (presentazione personale, finalità dell’app, caratteristiche del modello, precisazione che il modello non contiene fotografie della Basilica né delle sue opere, questioni specifiche su opere, fotografie e link), 6 schermate e il link a un breve video: 〔YouTube 링크〕
 
-Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi.
+Se la richiesta fosse di competenza di un altro ufficio, Vi sarei grato se poteste inoltrarla.
+
+Vi ringrazio sinceramente per l’attenzione.
 
 Con viva gratitudine e un ricordo nella preghiera,
 
@@ -48,6 +56,9 @@ Con viva gratitudine e un ricordo nella preghiera,
 
 ## (나) 한국어 요약 (사용자 확인용)
 
+- **3차 개정(2026-11-23, 원어민 교정)**: 보낼 본문을, 사용자가 ChatGPT 에 원어민 편집자 역할을 맡겨 다듬은 글로 바꿨다(사용자 요청). 제목·받는 곳·붙임 수와 선택지 ①②③ 은 그대로다. 「허락에 필요하면 고치겠다」는 문장은 교정본의 한 문장(「Sarò lieto di effettuare le modifiche che riterrete necessarie.」)만 남겼다(이전의 긴 문장은 뺐다). 기계 교정이므로 **사람 원어민 검토는 여전히 권한다.** 위 「2차 개정」의 낱말 수는 이전 본문 기준이다.
+- **「제단에 들어갈 수 없다」(Il presbiterio non è accessibile) 확인(2026-11-23)**: `assets/church/reverence.js` 가 모든 성당에 제단 출입 금지 구역을 일반 규칙으로 만들고, `assets/church/reverence_places.js` 에 이 성당(`lateran`) 보정이 있다 — 교황 제대 단과 그 둘레, 성가대석과 후진(교황좌)이 막힌다. 제대 뒤 익랑을 건너는 길과 주보랑은 열려 있다. `tools/church_web/reverence.test.mjs`(모든 성당) 47개 통과. 문장은 사실과 같다.
+- **붙임 설명을 앱과 맞췄다(교정자 지적)**: 라테라노 모형에는 대성전과 그 작품의 사진이 없다(아래 「모형에 들어 있는 실제 작품 이미지: 없음」, `package/lateran/summary.md` 「Nessuna fotografia」). 그래서 교정본의 「immagini di opere reali attualmente presenti e relative fonti」를 「precisazione che il modello non contiene fotografie della Basilica né delle sue opere」로 바꿨다.
 - **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 240 낱말로 줄였다(이전 약 1792 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/lateran/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
 - 맺음 인사를 「Pace e bene」(프란치스코회 인사)에서 중립적인 「Con viva gratitudine e un ricordo nella preghiera」로 바꿨다(원어민 검토 때 확인).
 - 교황청 기관에 이탈리아 법 조문(633/1941 제25조)을 드는 문장은 뺐다. 「건물이 수백 년 되어 저작권이 아니라 예의로 여쭙는다」만 남겼다. 바티칸 저작권법은 2011년 3월 19일 법률 제CXXXII호로 고쳐 적었다(2017년은 국무원 성명).
@@ -67,5 +78,5 @@ Con viva gratitudine e un ricordo nella preghiera,
 ## 보내기 전에 확인할 것
 
 - 편지의 사실(축척 53%, 짓지 않은 곳, 실제 작품 이미지 목록)이 그때의 앱 고지 글(`church_catalog.dart` `lateran` `modelNote`)·`docs/church/ASSET_LICENSES.md` 와 같은지
-- 이탈리아어 본문을 이탈리아어를 아는 사람이 한 번 읽어 보았는지 〔확인 필요: 원어민 검토 전〕
+- 이탈리아어 본문을 이탈리아어를 아는 사람이 한 번 읽어 보았는지 〔2026-11-23 ChatGPT 원어민 교정 반영(사용자 요청). 사람 원어민 검토는 아직 — 권장〕
 - 받는 주소가 그날에도 공식 누리집에 그대로 있는지

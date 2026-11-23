@@ -1,10 +1,10 @@
-<!-- 제작 메모(PDF·첨부에 넣지 않음): 편지에 붙이는 「쓰려는 기도문」 첨부. 포르투갈 주교회의(CEP) 전국 전례 사무국 · pt-PT. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
+<!-- 제작 메모(PDF·첨부에 넣지 않음): 편지에 붙이는 「쓰려는 기도문」 첨부. 포르투갈 주교회의(CEP) 전국 전례 사무국 · pt-PT. 2026-11-23 3차 개정: 파티마 기도는 파티마 성지 누리집의 두 형태(신심 기도 쪽·묵주기도 안내 쪽)를 주소와 첫 구절로 적었다(사용자가 ChatGPT 웹 검색으로 확인해 전달). 전문은 지어내지 않았다 — 〔원문 그대로 옮겨 붙일 것 — 출처 URL〕 자리에 보내기 전에 그 쪽 본문을 글자 그대로 복사해 붙인다. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
 
 # Rosarium — textos que tenciono usar (Portugal)
 
 Estes são os textos que a aplicação mostraria, apenas como texto e sem alterações. Cada um vem com a sua fonte. Peço que os confirmem ou corrijam: usarei exatamente a redação que aprovarem, com a menção de direitos que indicarem. Onde um texto traz a marca 〔확인 필요〕 («a confirmar»), não pude verificá-lo e peço que mo indiquem ou confirmem. As quebras de linha e a grafia são copiadas tal como publicadas, incluindo eventuais gralhas.
 
-**Nota sobre a verificação.** Não pude verificar eu próprio a redação em uso em Portugal (Missal Romano, terceira edição, 2022). Todos os textos vêm do Compêndio em vatican.va, exceto a oração de Fátima, que fica em branco. A aplicação em português só será publicada depois da vossa resposta.
+**Nota sobre a verificação.** Não pude verificar eu próprio a redação em uso em Portugal (Missal Romano, terceira edição, 2022). Todos os textos vêm do Compêndio em vatican.va, exceto a oração de Fátima, para a qual apresento as duas formas publicadas pelo Santuário de Fátima. A aplicação em português só será publicada depois da vossa resposta.
 
 ### Sinal da Cruz
 
@@ -89,10 +89,20 @@ agora e sempre.
 
 ### Oração de Fátima
 
-Fonte: nenhuma verificada. **Estado: 〔확인 필요〕** Conheço apenas o começo («Ó meu Jesus, perdoai-nos…»). Peço que me indiquem o texto em uso em Portugal; não o reconstruirei por minha conta.
+O Santuário de Fátima publica duas formas. Peço que me indiquem qual devo usar.
+
+Forma A (orações de Fátima) — fonte: Santuário de Fátima, https://www.santuario-fatima.pt/pt/pages/oracoes-de-fatima. Começa assim:
 
 ```text
-〔확인 필요: texto completo da oração de Fátima na forma usada em Portugal〕
+Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno…
+〔원문 그대로 옮겨 붙일 것 — https://www.santuario-fatima.pt/pt/pages/oracoes-de-fatima〕
+```
+
+Forma B (guia do terço) — fonte: Santuário de Fátima, https://www.santuario-fatima.pt/pt/pages/terco. Começa assim:
+
+```text
+Ó meu Jesus, perdoai-nos e livrai-nos do fogo do inferno…
+〔원문 그대로 옮겨 붙일 것 — https://www.santuario-fatima.pt/pt/pages/terco〕
 ```
 
 ### Salve-Rainha

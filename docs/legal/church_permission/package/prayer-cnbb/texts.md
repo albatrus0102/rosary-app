@@ -1,10 +1,10 @@
-<!-- 제작 메모(PDF·첨부에 넣지 않음): 편지에 붙이는 「쓰려는 기도문」 첨부. 브라질 주교회의(CNBB) · pt-BR. vatican.va 포르투갈어판은 유럽 포르투갈어 표기라 브라질 본문은 전부 〔확인 필요〕. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
+<!-- 제작 메모(PDF·첨부에 넣지 않음): 편지에 붙이는 「쓰려는 기도문」 첨부. 브라질 주교회의(CNBB) · pt-BR. 2026-11-23 3차 개정: 사도신경·주님의 기도·성모송·영광송·성모 찬송과 신비 20단은 CNBB 청소년 위원회의 「Como rezar o Terço?」(https://jovensconectados.org.br/como-rezar-o-terco.html)를 출처로 바꿨다(사용자가 ChatGPT 웹 검색으로 확인해 전달 — CNBB 위원회의 공식 자료이나 공포된 전례서는 아니다). 전달받은 것은 주소와 신비 이름·첫 구절뿐이라 **신비 이름과 첫 구절만 글자 그대로 옮기고 기도 전문은 지어내지 않았다** — 〔원문 그대로 옮겨 붙일 것 — 출처 URL〕 자리에, 보내기 전에 사용자가 그 쪽을 열어 본문을 글자 그대로 복사해 붙인다. 파티마 기도는 CNBB 의 두 형태를 모두 적었다. 성호경과 마침 기도는 아직 vatican.va 포르투갈어판(유럽 표기)이라 〔확인 필요〕. 아래 설명 가운데 Compendium 을 옮겼다는 말은 성호경·마침 기도에만 해당한다. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
 
 # Rosarium — textos que pretendo usar (Brasil)
 
-Estes são os textos que o aplicativo mostraria, apenas como texto e sem alterações. Cada um vem com a sua fonte. Peço que os confirmem ou corrijam: usarei exatamente a redação que aprovarem, com a menção de direitos que indicarem. Onde um texto traz a marca 〔확인 필요〕 («a confirmar»), não pude verificá-lo e peço que o indiquem ou confirmem. As quebras de linha e a grafia são copiadas como publicadas, inclusive eventuais erros de impressão. Atenção: a edição consultada está em português europeu («Ámen», «baptismo», «há-de»); não pude conferir a redação em uso no Brasil, e peço que a corrijam para a forma brasileira.
+Estes são os textos que o aplicativo mostraria, apenas como texto e sem alterações. Cada um vem com a sua fonte. Peço que os confirmem ou corrijam: usarei exatamente a redação que aprovarem, com a menção de direitos que indicarem. Onde um texto traz a marca 〔확인 필요〕 («a confirmar»), não pude verificá-lo e peço que o indiquem ou confirmem.
 
-**Nota sobre a verificação.** Não pude conferir eu mesmo a redação em uso no Brasil (Missal Romano, terceira edição, 2023). Todos os textos vêm do Compêndio em vatican.va, exceto a oração de Fátima, que fica em branco. O aplicativo em português só será publicado depois da sua resposta.
+**Nota sobre a verificação.** As orações (Creio, Pai-Nosso, Ave-Maria, Glória ao Pai, Salve Rainha) e os nomes dos vinte mistérios vêm da página «Como rezar o Terço?», da Comissão Episcopal para a Juventude da CNBB (https://jovensconectados.org.br/como-rezar-o-terco.html). Para a oração de Fátima encontrei duas formas em páginas da CNBB e apresento ambas. O Sinal da Cruz e a oração final ainda vêm do Compêndio em vatican.va (português europeu) e ficam a confirmar. O aplicativo em português só será publicado depois da sua resposta.
 
 ### Sinal da Cruz
 
@@ -19,149 +19,94 @@ e do Espírito Santo. Ámen.
 
 ### Creio (Símbolo dos Apóstolos)
 
-Fonte: copiado palavra por palavra em 23 de novembro de 2026 do Compêndio do Catecismo da Igreja Católica, edição portuguesa (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_po.html
-
-〔확인 필요〕 Redação em português europeu; não pude conferir a forma em uso no Brasil.
+Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-Creio em Deus, Pai todo-poderoso, Criador do Céu e da Terra
-E em Jesus Cristo, seu único Filho, nosso Senhor
-que foi concebido pelo poder do Espírito Santo;
-nasceu da Virgem Maria;
-padeceu sob Pôncio Pilatos,
-foi crucificado, morto e sepultado;
-desceu à mansão dos mortos;
-ressuscitou ao terceiro dia;
-subiu aos Céus;
-está sentado à direita de Deus Pai todo-poderoso,
-de onde há-de vir a julgar os vivos e os mortos.
-Creio no Espírito Santo;
-na santa Igreja Católica;
-na comunhão dos Santos;
-na remissão dos pecados;
-na ressurreição da carne;
-e na vida eterna. Amen
+〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
 ```
 
 ### Pai-Nosso
 
-Fonte: copiado palavra por palavra em 23 de novembro de 2026 do Compêndio do Catecismo da Igreja Católica, edição portuguesa (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_po.html
-
-〔확인 필요〕 Redação em português europeu; não pude conferir a forma em uso no Brasil.
+Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-Pai Nosso que estais nos Céus,
-santificado seja o vosso Nome,
-venha a nós o vosso Reino,
-seja feita a vossa vontade
-assim na terra como no Céu.
-O pão nosso de cada dia nos dai hoje,
-perdoai-nos as nossas ofensas
-assim como nós perdoamos
-a quem nos tem ofendido,
-e não nos deixeis cair em tentação,
-mas livrai-nos do Mal.
+〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
 ```
 
 ### Ave-Maria
 
-Fonte: copiado palavra por palavra em 23 de novembro de 2026 do Compêndio do Catecismo da Igreja Católica, edição portuguesa (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_po.html
-
-〔확인 필요〕 Redação em português europeu; não pude conferir a forma em uso no Brasil.
+Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-Avé Maria, cheia de graça,
-o Senhor é convosco,
-bendita sois vós entre as mulheres
-e bendito é o fruto do vosso ventre, Jesus.
-Santa Maria, Mãe de Deus,
-rogai por nós pecadores,
-agora e na hora da nossa morte. Ámen
+〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
 ```
 
 ### Glória ao Pai
 
-Fonte: copiado palavra por palavra em 23 de novembro de 2026 do Compêndio do Catecismo da Igreja Católica, edição portuguesa (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_po.html
-
-〔확인 필요〕 Redação em português europeu; não pude conferir a forma em uso no Brasil.
+Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-Glória ao Pai e ao Filho
-e ao Espírito Santo.
-Como era, no princípio,
-agora e sempre.
-Ámen.
+〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
 ```
 
 ### Oração de Fátima
 
-Fonte: nenhuma verificada. **Situação: 〔확인 필요〕** Conheço apenas o começo («Ó meu Jesus, perdoai-nos…»). Peço que me indiquem o texto em uso no Brasil; não o reconstruirei por conta própria.
+Encontrei duas formas em páginas da CNBB, com finais diferentes. Peço que me indiquem qual devo usar.
+
+Forma A — fonte: https://www.cnbb.org.br/nossa-senhora-de-fatima-4/. Começa assim:
 
 ```text
-〔확인 필요: texto completo da oração de Fátima na forma usada no Brasil〕
+Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno…
+〔원문 그대로 옮겨 붙일 것 — https://www.cnbb.org.br/nossa-senhora-de-fatima-4/〕
+```
+
+Forma B — fonte: https://www.cnbb.org.br/nossa-senhora-de-fatima-3/. Começa assim:
+
+```text
+Ó Meu Jesus, perdoai-nos e livrai-nos do fogo do Inferno…
+〔원문 그대로 옮겨 붙일 것 — https://www.cnbb.org.br/nossa-senhora-de-fatima-3/〕
 ```
 
 ### Salve-Rainha
 
-Fonte: copiado palavra por palavra em 23 de novembro de 2026 do Compêndio do Catecismo da Igreja Católica, edição portuguesa (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_po.html
-
-〔확인 필요〕 Redação em português europeu; não pude conferir a forma em uso no Brasil.
+Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-Salve, Rainha,
-mãe de misericórdia,
-vida, doçura, esperança nossa, salve!
-A Vós bradamos,
-os degredados filhos de Eva.
-A Vós suspiramos, gemendo e chorando
-neste vale de lágrimas.
-Eia, pois, advogada nossa,
-esses Vossos olhos misericordiosos
-a nós volvei.
-E, depois deste desterro,
-nos mostrai Jesus, bendito fruto
-do Vosso ventre.
-Ó clemente, ó piedosa,
-ó doce Virgem Maria.
+〔원문 그대로 옮겨 붙일 것 — https://jovensconectados.org.br/como-rezar-o-terco.html〕
 ```
 
-### Mistérios do Terço
+### Mistérios do Rosário
 
-Fonte: copiado palavra por palavra em 23 de novembro de 2026 do Compêndio do Catecismo da Igreja Católica, edição portuguesa (© 2005 Libreria Editrice Vaticana), https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_po.html
-
-〔확인 필요〕 Redação em português europeu; não pude conferir a forma em uso no Brasil.
+Fonte: «Como rezar o Terço?», Comissão Episcopal para a Juventude da CNBB, https://jovensconectados.org.br/como-rezar-o-terco.html
 
 ```text
-Mistérios Gozosos
-(Segundas e Sábados)
-A anunciação do Anjo à Virgem Maria.
-A visita de Maria a Santa Isabel.
-O nascimento de Jesus em Belém.
-A apresentação de Jesus no Templo.
-A perda e encontro de Jesus no Templo.
-Mistérios da Luz
-(Quintas Feiras)
-O baptismo de Jesus no Jordão.
-A auto-revelação de Jesus nas bodas de Caná.
-O anúncio do Reino e o convite à conversão.
-A transfiguração de Jesus no Tabor.
-A instituição da Eucaristia.
-Mistérios Dolorosos
-(Terças e Sextas)
-Agonia de Jesus no Horto das Oliveiras.
-Flagelação de Jesus, preso à coluna.
-Coroação de espinhos.
-Jesus carrega a cruz a caminho do Calvário.
-Jesus é crucificado e morre na cruz.
-Mistérios Gloriosos
-(Quartas e Domingo )
-A ressurreição de Jesus.
-A ascensão de Jesus ao céu.
-A descida do Espírito Santo.
-A assunção da Santíssima Virgem ao céu.
-A coroação de Nossa Senhora,
-como Rainha do céu e da terra.
+Mistérios da alegria
+Anunciação do anjo a Maria
+Visitação de Maria a Santa Isabel
+Nascimento do Menino Deus
+Apresentação de Jesus no Templo
+Perda e encontro de Jesus
+Mistérios da dor
+Oração e agonia de Jesus no Getsémani
+Flagelação de Cristo
+A coroação de espinhos
+A subida ao Calvário
+A morte na cruz
+Mistérios da glória
+Ressurreição do Senhor
+A ascensão de Jesus
+Pentecostes – A vinda do Espírito sobre Maria e os apóstolos
+Maria assunta aos céus
+Maria coroada Rainha dos anjos e dos santos
+Mistérios da luz
+Batismo de Jesus no Jordão
+Milagre de Jesus nas bodas de Caná
+Anúncio do Reino de Deus com um convite à conversão
+Transfiguração do Senhor
+Instituição da Eucaristia
 ```
+
+〔확인 필요〕 Os quatro títulos de grupo acima são formulações minhas a partir dos nomes usados na página (alegria, dor, glória, luz); peço que me indiquem os títulos que preferem.
 
 ### Versículo e oração final
 

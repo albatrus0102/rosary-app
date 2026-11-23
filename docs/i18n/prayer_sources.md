@@ -3,6 +3,7 @@
 > 작성: Claude Opus 5.5 (웹 검색·가져오기, 2026-11-23 UTC). 접속 제한을 우회하지 않았다(USCCB 누리집은 403 응답이라 본문을 가져오지 못했다 → 해당 항목은 「추정」).
 > 표시: **확인** = 이번에 해당 URL을 직접 열어 내용을 봤거나, 검색 결과에서 그 페이지와 문구를 확인함 · **추정** = 일반 지식이나 간접 근거뿐이라 착수 때 원문 대조 필요.
 > **법률 의견이 아니다.** 저작권 판단은 변호사·저작권자 회신으로 확정한다.
+> **2026-11-23 추가(§10)**: 사용자가 ChatGPT 웹 검색으로 확인해 전달한 공식 출처 주소를 맨 아래 §10 표에 모았다. 위 §2~§7 의 「추정」 가운데 §10 에 있는 항목은 §10 이 우선한다.
 
 ## 0. 앱이 쓰는 기도 목록(바꿔야 할 단위)
 
@@ -97,6 +98,8 @@
 | **파티마 기도** | **교회가 공표한 라틴어 공식본이 없다**는 2차 자료가 여럿이다(wdtprs.com 2018 「Ask Father: Official Latin of Fatima Rosary Prayer」, prayinglatin.com, Musica Sacra 포럼 — 검색 결과 **확인**). 「Domine Iesu, dimitte nobis debita nostra…」, 「O mi Iesu…」 등 비공식 라틴 번역이 돈다 | 비공식 번역은 각 번역자의 것 | 「공식본 없음」은 2차 자료 기준이라 **추정**. 파티마 성지·교황청 확인 필요 |
 | 십자가의 길 계응 | 「Adoramus te, Christe, et benedicimus tibi. Quia per sanctam crucem tuam redemisti mundum.」 | 전통문 | 추정 |
 
+**라틴어 표기는 한 판으로 통일한다(2026-11-23).** vatican.va 에 두 표기가 모두 있다 — 「in saecula saeculórum」(스페인어판 Compendium 부록), 「in saecula saeculorum」(Enchiridion Indulgentiarum), 「in sæ´cula sæculórum」(영어판 Compendium 부록의 영광송 — 강세 자리가 어긋남), 「in sæcula sæculórum」(같은 부록의 마니피캇). 판을 섞지 않고 **이미 쓰고 있는 영어판 Compendium 부록 한 판의 표기를 글자 그대로** 따른다(권장). 영광송의 어긋난 강세 한 곳은 LEV 에 바른 표기를 여쭌다(`docs/legal/church_permission/package/prayer-lev/texts.md`). 파티마 기도의 라틴어 공식본은 이번에도 찾지 못했다.
+
 ## 8. 한국어 — ko-KR(이미 출시 중, 참고)
 
 - 출처: 한국천주교주교회의 『가톨릭 기도서』 개정판(2017 추계 총회 승인, 2018-04-01). 대조 기록은 `docs/church/PRAYER_VERIFICATION.md`(2026-11-15)에 있다.
@@ -121,3 +124,31 @@
   - CEE·CELAM·CEM·CNBB 허락 절차와 연락처
   - 아일랜드
   - 교회 인가(임프리마투르)가 앱에 적용되는지
+
+## 10. 2026-11-23 에 확인된 공식 출처 주소 (사용자가 ChatGPT 웹 검색으로 확인해 전달)
+
+> 표시: **확인** = 그 쪽에 본문이 실려 있음을 확인 · **부분** = 교회 쪽 문서에 있으나 그 주교회의가 낸(인준한) 본문인지는 확인되지 않음 · **없음** = 찾지 못함.
+> 전달받은 것은 주소, 신비 이름, 기도의 첫 구절이다. **기도 전문은 이 저장소에 지어내어 적지 않는다** — 쓸 때 그 쪽에서 글자 그대로 옮긴다.
+> 교회 누리집에 실려 있다는 것은 제3자 앱의 저작권 이용 허락이 아니다. 허락은 `docs/legal/church_permission/16_Prayer_text_authorities.md` 의 편지로 따로 구한다.
+
+| 변종 | 항목 | 주소 | 표시 |
+|---|---|---|---|
+| en-US | 성호경 | https://www.usccb.org/local-celebrations-consecration-united-states-america-most-sacred-heart-jesus | 확인 |
+| en-US | 사도신경·주님의 기도·성모송·영광송·성모 찬송 | https://www.usccb.org/prayers/prayers-rosary | 확인 |
+| en-US | 마침 기도(「O God, whose Only Begotten Son…」)·신비 20단 이름·파티마 기도(「O my Jesus, forgive us our sins…」, 단마다 선택) | https://www.usccb.org/how-to-pray-the-rosary | 확인 |
+| es-ES | 파티마 기도 | 스페인 주교회의가 낸 본문으로는 찾지 못함(CEE 서버에 실린 제3자 Movimiento Laudato Si' 기도서에만) | 부분 |
+| es-ES | 묵주기도 마침 기도 | 스페인 주교회의 본문으로 찾지 못함 | 없음 |
+| es-ES | 성모 찬송 | 교황청 본문: https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_sp.html (CEE 쪽은 제3자 기도서뿐 — 부분) | 확인(교황청 본문) |
+| es-419(멕시코) | 파티마 기도 | 멕시코 주교회의 본문 찾지 못함 | 없음 |
+| it-IT | 현행 주님의 기도(「e non abbandonarci alla tentazione, ma liberaci dal male」) | 전국 전례국 2026년 전례 자료 https://liturgico.chiesacattolica.it/wp-content/uploads/sites/8/2026/04/21/SUSSIDIO-ASCENSIONE-2026.pdf (끝의 Amen 없음) · Amen 이 붙은 단독 본문: 산미니아토 교구 https://sanminiato.chiesacattolica.it/la-diocesi-di-san-miniato/anno-giubilare-nel-iv-centenario-della-diocesi/indulgenza-giubilare/ | 확인 |
+| it-IT | 파티마 기도(「Gesù mio, perdona le nostre colpe…」) | 교황청 새복음화촉진평의회 2020년 묵주기도 책자(CEI 누리집에 실림) https://chiciseparera.chiesacattolica.it/wp-content/uploads/sites/59/2020/05/Rosario-Santo-Padre-liturgia.pdf | 부분 |
+| pt-BR | 주님의 기도·성모송·영광송·성모 찬송·사도신경 전문과 신비 20단 | CNBB 청소년 위원회 「Como rezar o Terço?」 https://jovensconectados.org.br/como-rezar-o-terco.html (CNBB 위원회의 공식 자료, 공포된 전례서는 아님) | 확인 |
+| pt-BR | 파티마 기도 A(「Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno…」) | https://www.cnbb.org.br/nossa-senhora-de-fatima-4/ | 확인 |
+| pt-BR | 파티마 기도 B(「Ó Meu Jesus, perdoai-nos e livrai-nos do fogo do Inferno…」 — 끝이 A 와 다름) | https://www.cnbb.org.br/nossa-senhora-de-fatima-3/ | 확인 |
+| pt-PT | 파티마 기도, 신심 기도 쪽(「Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno…」) | 파티마 성지 https://www.santuario-fatima.pt/pt/pages/oracoes-de-fatima | 확인 |
+| pt-PT | 파티마 기도, 묵주기도 안내 쪽(「Ó meu Jesus, perdoai-nos e livrai-nos do fogo do inferno…」) | 파티마 성지 https://www.santuario-fatima.pt/pt/pages/terco | 확인 |
+| la | 파티마 기도 | 교황청 라틴어본 없음 | 없음 |
+| la | 영광송 표기 | vatican.va 에 saecula·sæcula 둘 다 있음 → 영어판 Compendium 부록 한 판으로 통일(§7) | 확인 |
+
+- 미사 경본 권리자(이탈리아): 「Fondazione di Religione Santi Francesco d’Assisi e Caterina da Siena」(§5) — CEI 편지(16-7)에 이름을 적었다.
+- 브라질 신비 이름(위 「Como rezar o Terço?」 표기 그대로)과 미국 신비 이름(usccb.org 표기 그대로)은 `docs/legal/church_permission/package/prayer-cnbb/texts.md`·`prayer-usccb/texts.md` 에 옮겨 두었다.

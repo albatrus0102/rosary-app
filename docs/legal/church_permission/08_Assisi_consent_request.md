@@ -81,21 +81,29 @@ Oggetto: App di preghiera gratuita «Rosarium»: una domanda sulla Basilica di S
 
 Reverendi Padri e gentili collaboratori della Custodia Generale del Sacro Convento,
 
-mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕) e sono un fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud. A titolo personale sto preparando «Rosarium», un’app gratuita e non commerciale (senza pubblicità né pagamenti) che aiuta a pregare il Rosario, anche all’interno di modelli 3D semplificati di alcune chiese. Non è ancora pubblicata.
+mi chiamo 〔성명〕 (nome di battesimo: 〔세례명〕), fedele laico cattolico della parrocchia 〔소속 본당〕, 〔교구명〕, Corea del Sud.
 
-Uno dei modelli rappresenta la Basilica di San Francesco in Assisi. L’edificio ha molti secoli e non Vi chiedo una licenza di diritto d’autore: per rispetto verso chi lo custodisce, Vi chiedo se avete obiezioni all’uso del nome e di un modello semplificato, che l’app dichiara diverso dall’originale e non approvato da Voi. La riverenza è una regola dell’app: nel presbiterio non si entra, e nulla imita la Messa o i Sacramenti.
+Sto preparando a titolo personale «Rosarium», un’app gratuita e non commerciale, senza pubblicità né pagamenti, che aiuta a pregare il Rosario anche all’interno di modelli tridimensionali semplificati di alcune chiese. L’app non è ancora stata pubblicata.
 
-Basta rispondere a questa e-mail con un numero:
+Uno di questi modelli rappresenta la Basilica di San Francesco in Assisi.
+
+Trattandosi di un edificio storico di molti secoli, non Vi chiedo una licenza di diritto d’autore sull’edificio stesso, ma desidero conoscere il Vostro parere sull’utilizzo del suo nome e di una rappresentazione semplificata, per rispetto verso la comunità che ne ha cura.
+
+L’app precisa che il modello differisce dalla Basilica reale e non è stato approvato dalla Vostra istituzione. Il carattere sacro del luogo viene rispettato: il presbiterio non è accessibile e non vengono simulate la Messa o le celebrazioni dei Sacramenti.
+
+Se possibile, potreste rispondere indicando una delle seguenti opzioni:
 
 ① Nessuna obiezione.
 ② Sì, a queste condizioni o con queste correzioni: ______
 ③ Preferiamo che la Basilica non compaia nell’app (la toglierò).
 
-Se, per concedere il permesso, ritenete che qualcosa debba essere corretto o modificato, Vi prego di indicarmelo: lo farò volentieri.
+Sarò lieto di apportare le modifiche che riterrete opportune.
 
-In allegato trovate una scheda con tutti i dettagli (chi sono e perché ho fatto l’app, com’è fatto il modello, le immagini di opere reali oggi presenti e la loro fonte, le voci più specifiche su opere, fotografie e link), 5 schermate e il link a un breve video: 〔YouTube 링크〕
+Allego una scheda dettagliata (presentazione personale, finalità dell’app, caratteristiche del modello, precisazione che il modello non contiene fotografie della Basilica né delle sue opere (affreschi e vetrate sono resi con semplici campiture di colore), questioni specifiche riguardanti opere, fotografie e link), 5 schermate e il link a un breve video: 〔YouTube 링크〕
 
-Se questa richiesta spetta a un altro ufficio, Vi sarei grato se voleste inoltrarla. Grazie di cuore per il tempo che vorrete dedicarmi.
+Qualora la richiesta fosse di competenza di un altro ufficio, Vi sarei grato se poteste inoltrarla.
+
+Vi ringrazio di cuore per l’attenzione.
 
 Pace e bene.
 
@@ -107,6 +115,10 @@ Pace e bene.
 
 ## (라) 한국어 요약 — 2026-11-23 개정(사용자 확인용)
 
+- **3차 개정(2026-11-23, 원어민 교정)**: 보낼 본문을, 사용자가 ChatGPT 에 원어민 편집자 역할을 맡겨 다듬은 글로 바꿨다(사용자 요청). 제목·받는 곳·붙임 수와 선택지 ①②③ 은 그대로다. 「허락에 필요하면 고치겠다」는 문장은 교정본의 한 문장(「Sarò lieto di apportare le modifiche che riterrete opportune.」)만 남겼다(이전의 긴 문장은 뺐다). 기계 교정이므로 **사람 원어민 검토는 여전히 권한다.** 위 「2차 개정」의 낱말 수는 이전 본문 기준이다.
+- **붙임 설명을 앱과 맞췄다(교정자 지적)**: 교정본의 「immagini di opere reali attualmente presenti e relative fonti」는 실제 벽화 사진이 들어 있는 것처럼 읽힌다. 아시시 모형에는 대성당과 그 작품의 사진이 한 장도 없다(벽화·유리는 절차 생성한 색 면 — `docs/church/interiors/assisi.md`, `ASSET_LICENSES.md`, `package/assisi/summary.md` 「Nessuna fotografia」). 그래서 「precisazione che il modello non contiene fotografie della Basilica né delle sue opere (affreschi e vetrate sono resi con semplici campiture di colore)」로 바꿨다.
+- **「제단에 들어갈 수 없다」(Il presbiterio non è accessibile) 확인(2026-11-23)**: `assets/church/reverence.js` 가 모든 성당에 제단 출입 금지 구역을 일반 규칙으로 만들고, `assets/church/reverence_places.js` 에 이 성당(`assisi`) 보정이 있다 — 상부 성당 주제대 단과 후진(교황좌·성가대석)을 막고, 하부 성당 제대와 묘소 무덤은 난간·격자 충돌체가 막는다. 교차부 양옆(트란셉트로 가는 길)은 열려 있다. `tools/church_web/reverence.test.mjs`(모든 성당) 47개 통과. 문장은 사실과 같다.
+- 맺음 인사는 교정본대로 「Pace e bene」(프란치스코회 인사 — 받는 곳이 꼰벤뚜알 프란치스코회라 알맞다)다.
 - **2차 개정(2026-11-23, 짧은 편지)**: 보낼 본문을 약 235 낱말로 줄였다(이전 약 1749 낱말). 본문에는 누구인지 · 앱 한 문장(무료·비상업, 경건함 한 줄) · 무엇을 왜 여쭙는지 · **선택지 셋**(① 이의 없음·허락 ② 조건·고칠 점 ③ 싣지 않기를 원함) · 붙임만 있다. 아래 항목 가운데 「앱을 만든 까닭」「경건함을 지키기 위해 한 일」「근거」「자세한 설명」「세부 선택지(요약에서는 D1, D2 …)」「답에 따라 하는 일」「답이 없을 때」는 **편지가 아니라 붙이는 요약 `package/assisi/summary.md` 의 「자세한 내용」** 에 옮겨 두었다(빠진 것 없음). 불교계·다른 앱 이야기는 뺐다(「최근 종교 메타버스 앱들이 주목받으면서 … 경건함을 지키며 기도문을 정확히 담은 앱이 필요하다고 느꼈다」로 바꿈).
 - **답이 없을 때(2026-11-23 2차 개정)**: 다른 (c) 성당과 같은 규칙으로 맞췄다 — 지금의 단순 모형과 고지 글을 그대로 두고 실제 작품·사진은 더하지 않는다. 이전 규칙(「배포판에서 계속 닫아 둔다」)과 아래 「기다리는 동안」의 닫아 두기 설명은 이전 판이다. `lib/app/release_gate.dart` 의 `pendingConsentChurchIds` 에서 `assisi` 를 빼는 코드 변경은 아직 하지 않았다 〔사용자 결정·별도 작업〕.
 - 받는 곳: 사크로 콘벤토 쿠스토디아 정보실 · `info@sanfrancescoassisi.org`

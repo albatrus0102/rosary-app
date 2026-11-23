@@ -1,4 +1,4 @@
-<!-- 제작 메모(PDF·첨부에 넣지 않음): 편지에 붙이는 「쓰려는 기도문」 첨부. 교황청 출판사(LEV) · 신비 이름(en·es·it·pt), 부록 공통 기도, 라틴어 강세 표기. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
+<!-- 제작 메모(PDF·첨부에 넣지 않음): 2026-11-23 3차 개정(라틴어 표기): vatican.va 에 saecula(스페인어판 부록·Enchiridion Indulgentiarum)와 sæcula(영어판 부록) 표기가 모두 있다. 앱은 **영어판 Compendium 부록 한 판의 표기만** 글자 그대로 따른다(이미 쓰는 판 — 판을 섞지 않는다). 영광송의 「sæ´cula」는 그 판의 어긋난 강세 자리라 LEV 에 여쭌다(같은 부록의 마니피캇에는 「sæcula sæculórum」). 편지에 붙이는 「쓰려는 기도문」 첨부. 교황청 출판사(LEV) · 신비 이름(en·es·it·pt), 부록 공통 기도, 라틴어 강세 표기. 본문은 2026-11-23(UTC) 에 vatican.va 의 『가톨릭 교회 교리서 요약(Compendium)』 해당 언어판을 직접 내려받아 글자 그대로 옮겼다(줄 나눔 포함, 원문의 오자도 고치지 않음). 변종 선택은 docs/i18n/prayer_sources.md 를 따랐다. 〔확인 필요〕 는 저장소에서 원문을 확인하지 못한 본문이며 지어내지 않았다 — 보내기 전에 사용자가 채우거나, 빈 채로 보내 받는 쪽이 알려 주게 한다. 십자가의 길 외국어 본문은 이 첨부에 없다(편지가 여쭙지 않는다). 자리 표시는 보내기 직전에 채운다. -->
 
 # Rosarium — testi che intendo usare (Libreria Editrice Vaticana)
 
@@ -406,7 +406,7 @@ do Vosso ventre.
 
 ## C. Grafia latina con gli accenti del Compendio (richiesta c)
 
-Per l’opzione «Pregare in latino». Testi copiati dall’edizione inglese del Compendio su vatican.va (https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_en.html), dove il latino è stampato accanto alla traduzione. Nella riga «et in sæ´cula sæculórum» l’accento compare così nella pagina web: 〔확인 필요〕 Vi prego di indicarmi la grafia corretta. Della preghiera di Fatima non mi risulta un testo latino ufficiale, e non la riporto in latino.
+Per l’opzione «Pregare in latino». Testi copiati dall’edizione inglese del Compendio su vatican.va (https://www.vatican.va/archive/compendium_ccc/documents/archive_2005_compendium-ccc_en.html), dove il latino è stampato accanto alla traduzione. Su vatican.va compaiono entrambe le grafie, «saecula» (Appendice dell’edizione spagnola del Compendio, Enchiridion Indulgentiarum) e «sæcula» (Appendice dell’edizione inglese): per coerenza seguo una sola edizione, quella inglese, lettera per lettera. Nella riga «et in sæ´cula sæculórum» l’accento compare così nella pagina web: 〔확인 필요〕 Vi prego di indicarmi la grafia corretta. Della preghiera di Fatima non mi risulta un testo latino ufficiale, e non la riporto in latino.
 
 ### Signum Crucis
 
