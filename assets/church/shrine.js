@@ -116,12 +116,33 @@
   // Meshy 3D 성모상(statue3d_<mesh>.js — tools/statues/make_statue_meshy_pack.mjs: 739k → 36k 삼각형 + 원거리 8k, meshopt 압축).
   // 한 성당에 한 자리뿐이라 그리기 호출 1(THREE.LOD 두 단계 중 하나만 그려진다). 재질 하나(흰 대리석), 월드 해제 때 기하·재질이 함께 놓인다.
   // 원본 앞 = +Z, 아래 y = -0.952(팔각 받침 포함 — 따로 받침 얹지 않는다). 묶음이 없거나 풀기에 실패하면 fail() 로 그림 변위(imageStatue) 성상을 세운다.
-  var MESH = { S: 0.8, Y_MIN: -0.952, LOD_FAR: 7 };
+  // FWD: 받침(깊이 0.5) 위에서 성상을 4cm 앞으로 — 성상 뒤 옷자락(깊이 0.41m의 뒤 절반)이 벽 굽도리·띠(기본·성 바오로)를 파고들지 않게(받침 앞 끝 안쪽).
+  var MESH = { S: 0.8, Y_MIN: -0.952, LOD_FAR: 7, FWD: 0.04 };
+  // 입체 성상이 서는 자리(받침 바닥 가운데 x·z·높이 y, 배율 s, 바라보는 쪽 f) — build 와 시험(shrine.test.mjs 성상 부피 검사)이 같은 값을 쓴다.
+  function meshSpot(p) {
+    var f = face(p), y = baseY(p);
+    if (p.kind === 'existing') { var ad = p.altar_d || -0.9; return { x: p.x + f[0] * ad, z: p.z + f[1] * ad, y: y + (p.altar_h || 0), s: p.mesh_s || MESH.S, f: f }; }
+    return { x: p.x + f[0] * MESH.FWD, z: p.z + f[1] * MESH.FWD, y: y + 0.85, s: p.mesh_s || MESH.S, f: f };
+  }
+  // 성상 키 라이트(구운 정점 음영): 하부 성당·경당처럼 창이 없고 반구광(층별 룩 ambK)만 센 자리에서는 흰 대리석이 평평한 크림색 덩이로 보였다
+  // (2026-11-23 아시시 제보 — 주름·얼굴 윤곽이 안 읽힘). 실시간 빛은 더하지 않는다(모든 재질 재컴파일·조각 비용) — 성상 지역 좌표의 앞·위·왼쪽
+  // (성모 자리 등이 비추는 쪽) 방향과 정점 법선의 각으로 밝기(KEY.MIN..1, 반 램버트 제곱 — 그늘 쪽도 부드럽게 이어진다)를 정점 색에 한 번 굽는다.
+  // 정점 색은 1 을 넘지 않는다(바탕색을 조금 밝혀 빛 받는 면이 예전 흰 대리석 밝기쯤, 그늘 면이 더 어둡다).
+  var KEY = { DIR: [-0.36, 0.7, 0.62], MIN: 0.55 };
+  function keyShade(nor, n) {
+    var d = KEY.DIR, l = Math.hypot(d[0], d[1], d[2]), lx = d[0] / l, ly = d[1] / l, lz = d[2] / l, out = new Uint8Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      var k = 0.5 + 0.5 * (nor[i * 3] * lx + nor[i * 3 + 1] * ly + nor[i * 3 + 2] * lz), v = KEY.MIN + (1 - KEY.MIN) * k * k;
+      out[i * 3] = out[i * 3 + 1] = out[i * 3 + 2] = Math.round(v * 255);
+    }
+    return out;
+  }
   function meshable(ctx) { var T = ctx.THREE; return !!(T && T.BufferGeometry && T.LOD && typeof document !== 'undefined' && document.head && document.head.appendChild); }
   function meshStatue(ctx, p, f, x, z, y0, fail) {
     var T = ctx.THREE; if (!meshable(ctx)) return false;
     var s = p.mesh_s || MESH.S;
-    var mat = new T.MeshStandardMaterial({ color: 0xb0aba2, roughness: 0.55, metalness: 0, envMapIntensity: 0.8 });
+    // 무광 대리석: 거칠기 0.72·환경 반사 0.6(예전 0.55·0.8 — 반짝임이 표면을 하얗게 덮었다) + 구운 키 라이트(정점 색). 불투명·깊이 쓰기·앞면만(잘라내기 noCam)
+    var mat = new T.MeshStandardMaterial({ color: 0xbdb8af, roughness: 0.72, metalness: 0, envMapIntensity: 0.6, vertexColors: true });
     var lod = new T.LOD(); lod.name = 'shrine_statue'; lod.visible = false; lod.userData.noCam = true; lod.userData.noAO = true;
     lod.position.set(x, y0 - MESH.Y_MIN * s, z); lod.rotation.y = Math.atan2(f[0], f[1]); lod.scale.setScalar(s);
     var dead = false; mat.addEventListener('dispose', function () { dead = true; });
@@ -133,6 +154,8 @@
       var pr; try { pr = a.load(T); } catch (e) { return bad(); }
       pr.then(function (r) {
         if (dead) return;
+        var pn = r.near.attributes.normal, ca = new T.BufferAttribute(keyShade(pn.array, pn.count), 3, true);
+        r.near.setAttribute('color', ca); r.far.setAttribute('color', ca);   // 두 LOD 는 정점 버퍼를 나눠 쓴다
         [[r.near, 0, 'near'], [r.far, MESH.LOD_FAR, 'far']].forEach(function (L) {
           var m = new T.Mesh(L[0], mat); m.name = 'shrine_statue_' + L[2]; m.userData.noCam = true; m.userData.noAO = true; lod.addLevel(m, L[1]);
         });
@@ -160,7 +183,8 @@
       var plain = p.kind === 'plain' || p.kind === 'pond', m3 = p.mesh && meshable(ctx);   // 3D 성상은 제 받침이 있어 윗판을 얹지 않는다
       if (!m3) B(0, 0, 0.85, 0.56, 0.7, 0.06, STONE, 'gloss');
       var relief = function () { return p.img && imageStatue(ctx, p, f, y + (m3 ? 0.85 : 0.91)); };
-      if (!(m3 && meshStatue(ctx, p, f, p.x, p.z, y + 0.85, relief)) && !relief()) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
+      var ms = meshSpot(p);
+      if (!(m3 && meshStatue(ctx, p, f, ms.x, ms.z, ms.y, relief)) && !relief()) ctx.statue({ x: p.x, z: p.z, y: y + 0.91, h: 1.35, ry: Math.atan2(f[0], f[1]) + Math.PI, kind: plain ? 'saint' : 'mary', robe: plain ? 0xe4ddd0 : undefined, mantle: plain ? 0xe4ddd0 : undefined, skin: plain ? 0xe4ddd0 : undefined, halo: !plain });
     }
     if (p.kind === 'existing' && p.img && p.altar_h) {   // 제대 위 성모상(성 베드로): 뒤 제단화 앞, 제대 윗면에 받침 + 입체 성모상
       var ad = p.altar_d || -0.9, sp = { x: p.x + f[0] * ad, z: p.z + f[1] * ad, img: p.img };
@@ -205,7 +229,7 @@
     ctx.addCollider(lvC(p, fp));
     return sh;
   }
-  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, MESH: MESH, statueMesh: statueMesh, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
+  var S = { SLOTS: SLOTS, POND: POND, STATUE: STATUE, MESH: MESH, KEY: KEY, keyShade: keyShade, meshSpot: meshSpot, statueMesh: statueMesh, placeOf: placeOf, standOf: standOf, footprint: footprint, applyLayout: applyLayout, build: build, face: face };
   // 레이아웃 등록을 감싼다: 이미 등록된 것 + 앞으로 등록될 것 모두
   var L = root.ChurchLayouts;
   if (L && !L._shrineWrapped) {

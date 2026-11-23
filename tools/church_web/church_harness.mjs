@@ -88,6 +88,9 @@ export function loadChurches(opts = {}) {
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(assets, f), 'utf8'), sb, { filename: f });
   // photos(앱과 같은 지오메트리): scan3d.js 도 싣는다 — 실물 스캔 성상을 세우면 대체 도형(절차 십자가 등)을 그리지 않는다.
   ['three.min.js', 'three_extras.js', 'palette.js', 'layouts.js', 'shrine_places.js', 'shrine.js', ...(opts.photos ? ['scan3d.js'] : []), 'scene_logic.js', 'stations.js', 'geo.js', 'photos.js', 'kit_tex.js', 'glass_gen.js', 'kit.js', 'glass_placements.js', 'cross_data.js', 'way_cross.js', 'liturgy.js'].forEach(run);
+  // meshStatues(photos 와 함께): 입체 성모상 묶음(statue3d_mary_meshy.js — meshopt 디코더 동봉)을 미리 실어 성모 자리가 실제 성상 LOD 를 세우게 한다
+  // (풀기는 비동기 — 시험은 shrine_statue 가 보일 때까지 기다린다).
+  if (opts.meshStatues) { sb.atob = (s) => Buffer.from(s, 'base64').toString('binary'); run('statue3d_mary_meshy.js'); }
   fs.readdirSync(assets).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort().forEach(run);
   const out = [];
   for (const id of Object.keys(sb.ChurchBuilders)) {
