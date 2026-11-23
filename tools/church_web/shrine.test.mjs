@@ -192,3 +192,88 @@ for (const id of READY) test(`shrine ${id}: 실제 성모상(또는 성화 사�
   const want = Math.atan2(-(p.x - tg.x), -(p.z - tg.z)), dy = Math.atan2(Math.sin(tg.yaw - want), Math.cos(tg.yaw - want));
   assert.ok(Math.abs(dy) < 0.01, 'faces the statue');
 });
+
+// 2026-11-23 사용자 제보(아시시 「성모상 왜 이래」): 성상이 하부 트란셉트의 경당 사이 돌덩이(x 3.6~5.6, z −0.45~0.45, 충돌체 없음)에 반쯤
+// 묻혀, 돌 면보다 앞으로 튀어나온 옷 주름만 보였다 — 얼굴·목이 빠져 머리가 떠 보이고 가장자리가 들쭉날쭉(잘라내기·재질 문제가 아님).
+// 충돌체만 보던 위 시험은 충돌체 없는 장식 덩이를 못 잡았다 → 성상이 차지하는 부피와 빌더가 그린 모든 불투명 삼각형이 겹치지 않는지 본다.
+// 부피 = 입체 성모상 경계상자(meta: 너비 0.60·깊이 0.515·높이 1.9025 × 배율, Shrine.meshSpot 자리) — 받침 바닥에서 4cm 위부터(제대 위 성상은 제대보 두께만큼
+// 받침이 묻혀도 보이지 않는다), 뒤쪽은 실제 몸통 뒤 끝(메시 z ≥ −0.21, 굽도리 높이 −0.17 안팎)까지만(경계상자의 뒤 모서리는 메시가 비어 있다).
+// 성모 자리 자체의 받침·뒤판·옆 날개는 부피 밖이다.
+function triBox(a, b, c, h) {   // 삼각형(상자 중심 기준 좌표)과 축 정렬 상자(반 크기 h)의 분리축 판정(Akenine-Möller)
+  const v = [a, b, c], e = [[b[0] - a[0], b[1] - a[1], b[2] - a[2]], [c[0] - b[0], c[1] - b[1], c[2] - b[2]], [a[0] - c[0], a[1] - c[1], a[2] - c[2]]];
+  for (let k = 0; k < 3; k++) if (Math.min(a[k], b[k], c[k]) > h[k] || Math.max(a[k], b[k], c[k]) < -h[k]) return false;
+  const axes = [[e[0][1] * e[1][2] - e[0][2] * e[1][1], e[0][2] * e[1][0] - e[0][0] * e[1][2], e[0][0] * e[1][1] - e[0][1] * e[1][0]]];
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { const u = [0, 0, 0]; u[j] = 1; axes.push([e[i][1] * u[2] - e[i][2] * u[1], e[i][2] * u[0] - e[i][0] * u[2], e[i][0] * u[1] - e[i][1] * u[0]]); }
+  for (const ax of axes) {
+    if (Math.abs(ax[0]) + Math.abs(ax[1]) + Math.abs(ax[2]) < 1e-12) continue;
+    const p = v.map((q) => q[0] * ax[0] + q[1] * ax[1] + q[2] * ax[2]), r = h[0] * Math.abs(ax[0]) + h[1] * Math.abs(ax[1]) + h[2] * Math.abs(ax[2]);
+    if (Math.min(...p) > r || Math.max(...p) < -r) return false;
+  }
+  return true;
+}
+function statueClearance(c, p) {
+  const M = { x: 0.301, z0: -0.19, z1: 0.257, h: 1.9025 }, sp = Shrine.meshSpot(p), s = sp.s, f = sp.f;
+  const hy = (M.h * s - 0.04) / 2, cy = sp.y + 0.04 + hy, zc = (M.z0 + M.z1) / 2 * s;
+  const h = [M.x * s, hy, (M.z1 - M.z0) / 2 * s];   // 지역 x = 옆, z = 앞(성상이 바라보는 쪽)
+  const loc = (q) => { const dx = q[0] - sp.x, dz = q[2] - sp.z; return [dx * f[1] - dz * f[0], q[1] - cy, dx * f[0] + dz * f[1] - zc]; };
+  const items = c.prepare(), hits = [];
+  const test3 = (A, B, C, name) => { if (triBox(loc(A), loc(B), loc(C), h)) hits.push(name + (process.env.DBG ? JSON.stringify([loc(A), loc(B), loc(C)].map((q) => q.map((v) => +v.toFixed(2)))) : '')); };
+  items.forEach((it) => {
+    const m = it.material;
+    if (it.decal || /^(glass|glassRefl|glow|outside|aodecal)$/.test(it.name) || (m && (m.transparent || m.depthWrite === false))) return;
+    const P = it.batch.p;
+    for (let i = 0; i + 8 < P.length; i += 9) test3([P[i], P[i + 1], P[i + 2]], [P[i + 3], P[i + 4], P[i + 5]], [P[i + 6], P[i + 7], P[i + 8]], 'batch:' + it.name);
+  });
+  const root = c.ctx.root; root.updateMatrixWorld(true);
+  root.traverseVisible((o) => {
+    if (!o.isMesh || o.isInstancedMesh || !o.geometry || !o.geometry.attributes.position) return;
+    const m = Array.isArray(o.material) ? o.material[0] : o.material;
+    if (!m || m.transparent || m.depthWrite === false || m.blending === 2) return;
+    const pos = o.geometry.attributes.position, ix = o.geometry.index, n = ix ? ix.count : pos.count, e = o.matrixWorld.elements;
+    const W = (k) => { const i = ix ? ix.getX(k) : k, x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i); return [e[0] * x + e[4] * y + e[8] * z + e[12], e[1] * x + e[5] * y + e[9] * z + e[13], e[2] * x + e[6] * y + e[10] * z + e[14]]; };
+    for (let i = 0; i + 2 < n; i += 3) test3(W(i), W(i + 1), W(i + 2), 'mesh:' + (o.name || (o.parent && o.parent.name) || '?'));
+  });
+  return hits;
+}
+// 앱과 같은 지오메트리(높음 화질 + 사진 팩 '있음' → 입체 성상 자리: kit 대체 성상·윗판을 짓지 않는다 — 성상 LOD 는 묶음을 읽기 전이라 숨김)
+const MESHED = READY.filter((k) => Places[k].mesh), byApp = Object.fromEntries(loadChurches({ photos: true, quality: 'high', only: MESHED }).churches.map((c) => [c.id, c]));
+for (const id of MESHED) test(`shrine ${id}: 입체 성모상이 벽·기둥·장식 덩이에 묻히지 않는다(성상 부피와 겹치는 빌더 삼각형 0)`, () => {
+  const hits = statueClearance(byApp[id], Places[id]), uniq = [...new Set(hits)];
+  assert.equal(hits.length, 0, `${hits.length} tris inside the statue volume: ${uniq.join(', ')}`);
+});
+
+// 같은 제보의 나머지 후보(잘라내기·재질)를 기계로 막는다: 아시시에 실제 입체 성상(묶음을 풀어 세운 LOD)을 세우고 카메라 잘라내기(cam_guard)를 지은 뒤
+// ① 성상 메시는 잘라내기 대상이 아니다(seeThru 속성·셰이더 패치 없음 — 디더로 녹지 않는다) ② 불투명·깊이 쓰기·alphaTest 없음·앞면만(반투명·찢김 없음)
+// ③ 무광 대리석 + 구운 키 라이트(정점 색 ≤ 1 — 더 밝아지는 곳 없음, 앞·위 면이 뒤·아래 면보다 밝다).
+test('shrine assisi: 실제 입체 성모상 — 잘라내기 제외(noCam)·불투명·무광 + 구운 키 라이트', async () => {
+  const Guard = require('../../assets/church/cam_guard.js');
+  const { churches, THREE: T } = loadChurches({ photos: true, meshStatues: true, quality: 'high', only: ['assisi'] }), c = churches[0];
+  let st = null;
+  for (let i = 0; i < 200 && !(st && st.visible); i++) { await new Promise((r) => setTimeout(r, 50)); st = c.ctx.root.getObjectByName('shrine_statue'); }
+  assert.ok(st && st.visible && st.levels.length === 2, '입체 성상이 풀려 섰다');
+  const sp = Shrine.meshSpot(Places.assisi);
+  assert.ok(Math.hypot(st.position.x - sp.x, st.position.z - sp.z) < 1e-6 && Math.abs(st.position.y - (sp.y - Shrine.MESH.Y_MIN * sp.s)) < 0.01, 'meshSpot 자리');
+  // world.js 와 같은 조립(cam_sim.makeEnv): 빌더 묶음 + 합친 배치를 한 뿌리에 넣고 여러 층 가드(잘라내기 셰이더 표시 포함)를 짓는다
+  if (c.ret && c.ret.group) c.ctx.root.add(c.ret.group);
+  c.prepare().forEach((it) => c.ctx.root.add(it.batch.build(it.material, it.name, { spatial: true })));
+  const L = Logic.create(c.layout, { colliders: c.colliders, zones: c.zones }), so = Guard.spaceOpts(L, c.layout, c.zones);
+  const guard = Guard.build(c.ctx.root, { ...so, bounds: c.layout.bounds, yLow: so.levelLow + 1.05, THREE: T });
+  assert.ok(guard && guard.see && guard.see.materials > 3, 'guard + cutaway shader marks built over the church');
+  for (const L of st.levels) {
+    const m = L.object, mt = m.material;
+    assert.equal(m.geometry.attributes.seeThru, undefined, '잘라내기 표시 없음 ' + m.name);
+    assert.ok(!mt.userData.seePatched, '잘라내기 셰이더 패치 없음');
+    assert.ok(m.userData.noCam, 'noCam ' + m.name);
+    assert.equal(mt.transparent, false); assert.equal(mt.opacity, 1); assert.equal(mt.alphaTest, 0); assert.equal(mt.depthWrite, true); assert.equal(mt.side, T.FrontSide);
+    assert.ok(mt.roughness >= 0.7 && mt.envMapIntensity <= 0.6 && mt.metalness === 0, '무광 대리석');
+    assert.ok(mt.vertexColors && m.geometry.attributes.color, '구운 키 라이트(정점 색)');
+  }
+  const col = st.levels[0].object.geometry.attributes.color, nor = st.levels[0].object.geometry.attributes.normal;
+  let lo = 255, hi = 0, up = [0, 0], dn = [0, 0];
+  for (let i = 0; i < col.count; i++) {
+    const v = col.array[i * 3]; lo = Math.min(lo, v); hi = Math.max(hi, v);
+    const k = nor.getY(i) + nor.getZ(i); if (k > 0.8) { up[0] += v; up[1]++; } else if (k < -0.8) { dn[0] += v; dn[1]++; }
+  }
+  assert.ok(hi <= 255 && hi >= 240 && lo >= Math.round(Shrine.KEY.MIN * 255) - 1 && lo <= 140, `음영 폭 ${lo}..${hi}`);
+  assert.ok(up[0] / up[1] > dn[0] / dn[1] + 60, '앞·위 면이 뒤·아래 면보다 밝다');
+});
