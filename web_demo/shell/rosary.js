@@ -82,7 +82,7 @@
     var html = '', c = R.i;
     for (var k = -2; k <= 2; k++) {
       var j = c + k; if (j < 0 || j >= R.steps.length) continue;
-      html += '<i class="b ' + bead(R.steps[j]) + (k === 0 ? ' cur' : '') + '" style="top:' + (50 + k * 21) + '%"></i>';
+      html += '<i class="b ' + bead(R.steps[j]) + (k === 0 ? ' cur' : '') + '" style="top:' + (45 + k * 19) + '%"></i>';
     }
     var s = R.steps[c], dots = '';
     for (var d = 1; d <= 5; d++) dots += '<i class="' + (s.d && d < s.d || s.k === 'closing' ? 'done' : s.d === d ? 'now' : '') + '"></i>';
