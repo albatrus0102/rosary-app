@@ -8,7 +8,8 @@ import http from 'node:http';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { generate, OUT, SOURCES, SKIP, IDS, SETS, REPO } from './gen_prayers.mjs';
+import { generate, OUT, SOURCES, SKIP, IDS, SETS, REPO, computeSkips, mdSectionInfo, levExcluded, LEV_REASON } from './gen_prayers.mjs';
+const SKIPS = computeSkips();   // 손으로 뺀 것 + LEV 거절로 뺀 것
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -46,24 +47,57 @@ test('다른 언어: 본문은 texts.md 의 ```text 묶음과 바이트까지 �
     const md = src(l), bl = blocks(md);
     for (const id of IDS) {
       const p = P[l].prayers[id];
-      if (SKIP[l] && SKIP[l][id]) { assert.ok(p && p.pending && p.x === undefined && p.t, l + ' ' + id + ' 는 이름만(본문 없음)'); continue; }
+      if (SKIPS[l][id]) { assert.ok(p && p.pending && p.x === undefined && p.t, l + ' ' + id + ' 는 이름만(본문 없음)'); continue; }
       assert.ok(p && typeof p.x === 'string', l + ' ' + id);
       assert.ok(bl.includes(p.x), l + ' ' + id + ' 본문이 출처 묶음과 다르다');
       assert.ok(!p.x.includes('〔'), l + ' ' + id + ' 자리 표시');
       assert.ok(md.includes('### ' + p.t + '\n'), l + ' 제목 ' + p.t);
     }
-    const lev = src('lev');
     for (const s of SETS) {
       const g = P[l].sets[s];
       assert.equal(g.m.length, 5);
-      assert.ok(md.includes(g.name) || lev.includes(g.name), l + ' 묶음 이름 ' + g.name);
-      for (const m of g.m) assert.ok(bl.some((b) => b.includes(m.t)), l + ' 신비 ' + m.t);
+      assert.equal(g.name, '', l + ' 신비 묶음 이름은 출처가 「제가 붙인 이름」이라 싣지 않는다');
+      for (const m of g.m) {
+        if (SKIPS[l].myst) assert.deepEqual(m, { pending: true }, l + ' 신비 이름은 자리만');
+        else assert.ok(bl.some((b) => b.includes(m.t)), l + ' 신비 ' + m.t);
+      }
     }
   }
   // en 은 USCCB 의 공식 파티마 기도가 있다 — 자리 표시를 쓰면 안 된다
   assert.ok(P.en.prayers.fatima.x && !P.en.prayers.fatima.pending);
   // it 현행 주님의 기도(「non abbandonarci alla tentazione」)
   assert.match(P.it.prayers.our.x, /non abbandonarci alla tentazione/);
+});
+
+test('LEV 거절(2026-11-24): 싣는 본문·신비 이름·출처 줄 어디에도 Compendium/LEV 출처가 없다', () => {
+  const RE = /comp[eê]nd|libreria\s+editrice|\bLEV\b|vatican\.va/i;
+  assert.ok(!('lev' in SOURCES), 'prayer-lev 는 출처 목록에 없어야 한다');
+  const gen = fs.readFileSync(path.join(here, 'gen_prayers.mjs'), 'utf8');
+  assert.ok(!/SOURCES\.lev|LEV_SET_NAMES|prayer-lev\/texts/.test(gen), 'gen_prayers 가 prayer-lev 를 읽는다');
+  for (const l of ['en', 'it', 'es', 'pt']) {
+    const info = mdSectionInfo(src(l));
+    for (const id of IDS) {
+      const p = P[l].prayers[id];
+      if (p.pending) continue;
+      const sec = info[p.t];
+      assert.ok(sec && sec.source, l + ' ' + id + ' 출처를 찾을 수 없다');
+      assert.ok(!levExcluded(sec.source) && !RE.test(sec.source), l + ' ' + id + ' 출처가 LEV/Compendium: ' + sec.source);
+    }
+  }
+  // 알려진 것: Compendium 출처 절은 자리만, 현행 주님의 기도(CEI 전국 전례국)·USCCB·CNBB 쪽 본문은 남는다
+  for (const id of ['sign', 'creed', 'hail', 'glory']) assert.ok(P.it.prayers[id].pending, 'it ' + id);
+  for (const id of IDS) assert.ok(P.es.prayers[id].pending, 'es ' + id);
+  assert.ok(P.pt.prayers.sign.pending && P.pt.prayers.creed.x && P.pt.prayers.our.x);
+  assert.ok(P.it.prayers.our.x && !P.it.prayers.our.pending);
+  assert.equal(SKIPS.it.sign, LEV_REASON); assert.equal(SKIPS.it.myst, LEV_REASON); assert.equal(SKIPS.es.myst, LEV_REASON);
+  assert.ok(!SKIPS.en.myst && !SKIPS.pt.myst);
+  // 만들어진 prayers.js 와 화면 문구(rSource)
+  const gen_js = fs.readFileSync(OUT, 'utf8');
+  assert.ok(!RE.test(gen_js), 'prayers.js 에 Compendium/LEV 흔적');
+  for (const l of LANGS) assert.ok(!RE.test(I18N.ui[l].rSource), l + ' rSource 가 LEV/Compendium 를 적는다: ' + I18N.ui[l].rSource);
+  assert.ok(!/Compendi|Compêndi|LEV/.test(fs.readFileSync(path.join(here, 'shell/i18n.js'), 'utf8')), 'i18n.js 에 Compendium/LEV');
+  // 이름도 싣지 않는 언어는 안내 문장만(출처를 거짓으로 적지 않는다)
+  assert.match(I18N.ui.es.rSource, /oficiales se añadirán/);
 });
 
 test('모든 언어에 묵주 문구·자막이 있고, 한국어가 아닌 언어에 한글이 없다', () => {
@@ -148,9 +182,9 @@ test('브라우저(가짜 장면): 둘러보기가 묵주 화면까지 가고, �
       for (const m of ['sit', 'rosary', 'rosary-sign', 'rosary-creed', 'rosary-decade', 'rosary-hand', 'end']) assert.ok(st.log.includes(m), lang + ' 둘러보기 ' + m + ' ' + st.log);
       assert.equal(st.seated, true); assert.equal(st.panel, true); assert.equal(st.acts, true, '앉은 동안 걷기 단추는 숨는다');
       assert.deepEqual([st.step.k, st.step.d, st.step.n], ['hail', 1, 3], lang + ' 1단 성모송 3');
-      assert.equal(st.text, P[lang].prayers.hail.x);
+      assert.equal(st.text, P[lang].prayers.hail.pending ? I18N.ui[lang].rPending : P[lang].prayers.hail.x);
       const today = P.weekday[new Date().getDay()], m1 = P[lang].sets[SETS[today]].m[0];
-      assert.equal(st.myst, m1.med || m1.t, lang + ' 오늘의 신비 1단');
+      assert.equal(st.myst, m1.pending ? '' : (m1.med || m1.t), lang + ' 오늘의 신비 1단');
       assert.deepEqual(await page.evaluate(LAYOUT), [], lang + ' 344px 배치');
       // 손으로: 일어나기 → 다시 앉기 → 이어서(1단 성모송 3) → 다음 → 다음 단 → … → 마침 → 일어나기
       await page.click('#rStand');

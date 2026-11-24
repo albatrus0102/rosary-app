@@ -73,6 +73,7 @@
  "def": "fugel",
  "assign": {
   "basic": "fugel",
+  "light": "fugel",
   "stpeter": "oreilly",
   "lateran": "oreilly",
   "maggiore": "corot",

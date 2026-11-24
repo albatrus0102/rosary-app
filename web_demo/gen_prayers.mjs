@@ -3,11 +3,13 @@
 //   node web_demo/gen_prayers.mjs --check   # 지금 파일이 출처와 같은지만 본다(다르면 종료 코드 1)
 // 출처(손으로 옮겨 적지 않는다 — 기도문을 기억으로 쓰지 않는다):
 //   ko  lib/domain/prayer_data.dart (앱의 기도문·신비 20단·요일 배분 그대로)
-//   en  docs/legal/church_permission/package/prayer-usccb/texts.md (신비 묶음 이름은 그 파일이 「제가 붙인 이름」이라 밝혀서 prayer-lev 의 영어판 Compendium 것)
-//   it  prayer-cei/texts.md (현행 주님의 기도 = 그 절의 첫 본문)
+//   en  docs/legal/church_permission/package/prayer-usccb/texts.md (신비 묶음 이름은 그 파일이 「제가 붙인 이름」이라 밝혀서 싣지 않는다 — 단 이름 20개만)
+//   it  prayer-cei/texts.md (현행 주님의 기도 = 그 절의 첫 본문, 출처는 CEI 전국 전례국 자료)
 //   es  prayer-cee/texts.md
-//   pt  prayer-cnbb/texts.md (신비 묶음 이름은 그 파일이 「제가 붙인 이름」이라 밝혀서 prayer-lev 의 포르투갈어판 Compendium 것)
-// 싣지 않는 본문: 자리 표시(〔…〕)만 있는 것, 형태가 둘이라 아직 고르지 않은 것, 「일부만 확인」이라 적힌 것(SKIP 표).
+//   pt  prayer-cnbb/texts.md (신비 묶음 이름은 그 파일이 「제가 붙인 이름」이라 밝혀서 싣지 않는다)
+// 🚩 2026-11-24 LEV(Libreria Editrice Vaticana)가 사용 허락을 거절했다 — Compendium(© 2005 LEV) 출처 본문은 하나도 싣지 않고 prayer-lev 도 쓰지 않는다.
+//   절의 출처 줄(Fonte/Fuente/Source) 또는 본문 묶음 바로 아래 「가져옴」 주석이 Compendium/Compêndio/LEV/vatican.va 를 가리키면 자동으로 자리만 남긴다(levExcluded).
+// 싣지 않는 본문: 자리 표시(〔…〕)만 있는 것, 형태가 둘이라 아직 고르지 않은 것, 「일부만 확인」이라 적힌 것(SKIP 표), LEV 거절로 뺀 것.
 // 그 기도는 순서에서 빼지 않고 이름만 싣는다(pending) — 화면은 그 자리에 「공식 본문을 받는 대로 넣습니다」를 보인다(사용자 지시 2026-11-23).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,9 +24,12 @@ export const SOURCES = {
   en: PKG + '/prayer-usccb/texts.md',
   it: PKG + '/prayer-cei/texts.md',
   es: PKG + '/prayer-cee/texts.md',
-  pt: PKG + '/prayer-cnbb/texts.md',
-  lev: PKG + '/prayer-lev/texts.md'
+  pt: PKG + '/prayer-cnbb/texts.md'
 };
+export const LEV_REASON = 'LEV 거절 2026-11-24';
+// 출처가 Compendium/Compêndio/Compendio 또는 LEV(Libreria Editrice Vaticana)·vatican.va 의 Compendium 주소면 참
+export const LEV_RE = /comp[eê]nd|libreria\s+editrice|\bLEV\b|vatican\.va\/archive\/compendium/i;
+export function levExcluded(source) { return LEV_RE.test(source || ''); }
 export const IDS = ['sign', 'creed', 'our', 'hail', 'glory', 'fatima'];
 export const SETS = ['joyful', 'luminous', 'sorrowful', 'glorious'];   // 앱 MysterySet 순서(서버 ms 0..3)
 
@@ -41,21 +46,42 @@ export const SKIP = {
   es: { fatima: 'prayer-cee: 본문이 비어 있음(〔확인 필요〕 자리 표시)' },
   pt: { fatima: 'prayer-cnbb: CNBB 쪽에 형태가 둘(A·B)이고 아직 고르지 않음' }
 };
-// 신비 묶음 이름을 prayer-lev(Compendium 각 언어판)에서 가져오는 언어
-const LEV_SET_NAMES = { en: 'Inglese — The mysteries of the Rosary', pt: 'Portoghese — Mistérios do Rosário' };
 
 function read(rel) { return fs.readFileSync(path.join(REPO, rel), 'utf8'); }
 
 // ---- texts.md: ### 절마다 첫 ```text 묶음 ----
 export function mdSections(md) {
   const out = {};
+  for (const [h, v] of Object.entries(mdSectionInfo(md))) out[h] = v.block;
+  return out;
+}
+// 절마다 첫 본문 묶음과 그 출처: 묶음 바로 아래 「<!-- 가져옴: 주소」 주석이 있으면 그것(본문을 실제로 가져온 곳), 없으면 절의 Fonte/Fuente/Source 줄
+export function mdSectionInfo(md) {
+  const out = {};
   const parts = md.split(/^### /m).slice(1);
   for (const p of parts) {
     const head = p.slice(0, p.indexOf('\n')).trim();
     const m = /```text\n([\s\S]*?)\n```/.exec(p);
-    if (m && !(head in out)) out[head] = m[1];
+    if (!m || head in out) continue;
+    const after = p.slice(m.index + m[0].length).replace(/^\n/, '');
+    const c = /^<!--\s*(?:가져옴|출처):([^\n]*?)-->/.exec(after);
+    const f = /^(?:Fonte|Fuente|Source)\b[^\n]*/m.exec(p.slice(0, m.index));
+    out[head] = { block: m[1], source: c ? c[1].trim() : f ? f[0] : '' };
   }
   return out;
+}
+// 언어마다 자리만 남기는 기도와 까닭(SKIP 손으로 + LEV 거절 자동). id 'myst' = 신비 20단 이름 전체
+export function computeSkips() {
+  const res = {};
+  for (const l of ['en', 'it', 'es', 'pt']) {
+    res[l] = { ...(SKIP[l] || {}) };
+    const info = mdSectionInfo(read(SOURCES[l]));
+    for (const [head, id] of Object.entries(HEADS[l])) {
+      const sec = info[head];
+      if (sec && levExcluded(sec.source)) res[l][id] = LEV_REASON;
+    }
+  }
+  return res;
 }
 function setOf(heading) {
   const h = heading.toLowerCase();
@@ -140,31 +166,33 @@ export function parseDart(src) {
 export function generate() {
   const ko = parseDart(read(SOURCES.ko));
   const data = { ko: { prayers: ko.prayers, sets: ko.sets }, weekday: ko.weekday, skipped: {} };
-  const lev = mdSections(read(SOURCES.lev));
+  const skips = computeSkips();
   for (const l of ['en', 'it', 'es', 'pt']) {
     const sec = mdSections(read(SOURCES[l]));
     const prayers = {};
     let myst = null;
     for (const [head, id] of Object.entries(HEADS[l])) {
       const block = sec[head];
-      if (id === 'myst') { myst = parseMysteries(block); continue; }
-      if (SKIP[l] && SKIP[l][id]) { prayers[id] = { t: head, pending: true }; continue; }   // 자리는 남기고(이름 + 「공식 본문을 받는 대로 넣습니다」) 본문은 싣지 않는다
+      if (id === 'myst') {
+        if (skips[l].myst) { myst = Object.fromEntries(SETS.map((s) => [s, { name: '', m: [1, 2, 3, 4, 5].map(() => ({ pending: true })) }])); continue; }   // 20단 이름이 LEV 출처: 전부 자리만
+        myst = parseMysteries(block);
+        for (const s of SETS) myst[s].name = '';   // 묶음 이름은 출처가 「제가 붙인 이름」이라 밝힌 것 — 싣지 않는다(20단 이름만)
+        continue;
+      }
+      if (skips[l][id]) { prayers[id] = { t: head, pending: true }; continue; }   // 자리는 남기고(이름 + 「공식 본문을 받는 대로 넣습니다」) 본문은 싣지 않는다
       if (block === undefined) throw new Error(l + ': 절 없음 ' + head);
       if (block.includes('〔')) throw new Error(l + ': 자리 표시가 남은 본문 ' + head);
       prayers[id] = { t: head, x: block };
     }
-    if (LEV_SET_NAMES[l]) {
-      const names = parseMysteries(lev[LEV_SET_NAMES[l]]);
-      for (const s of SETS) myst[s].name = names[s].name;
-    }
     data[l] = { prayers, sets: myst };
-    if (SKIP[l]) data.skipped[l] = Object.keys(SKIP[l]);
+    data.skipped[l] = Object.keys(skips[l]).filter((k) => k !== 'myst');
+    if (skips[l].myst) data.skipped[l].push('myst');
   }
   for (const l of ['ko', 'en', 'it', 'es', 'pt']) for (const id of ['sign', 'creed', 'our', 'hail', 'glory']) if (!data[l].prayers[id]) throw new Error(l + ': 꼭 있어야 하는 기도 없음 ' + id);
   const json = JSON.stringify(data, null, 1).replace(/[\u2028\u2029]/g, (c) => '\\u' + c.charCodeAt(0).toString(16));
   return `/* prayers.js — 만든 파일(손대지 마세요): node web_demo/gen_prayers.mjs. 묵주기도 기도문·신비를 확인된 출처에서 글자 그대로 옮겼다.
    ko = lib/domain/prayer_data.dart · en = prayer-usccb · it = prayer-cei · es = prayer-cee · pt = prayer-cnbb (docs/legal/church_permission/package/<id>/texts.md);
-   en·pt 신비 묶음 이름 = prayer-lev(Compendium). skipped·pending = 확인된 본문이 없어 이름과 안내만 보이는 기도. weekday = getDay()(0=일) → 신비(0 환희 · 1 빛 · 2 고통 · 3 영광). */
+   교황청 출판국 출처 본문과 신비 묶음 이름은 싣지 않는다(2026-11-24 사용 허락 거절). skipped·pending = 확인된 본문이 없어 이름과 안내만 보이는 기도('myst' = 신비 20단 이름). weekday = getDay()(0=일) → 신비(0 환희 · 1 빛 · 2 고통 · 3 영광). */
 (function (root) { root.DemoPrayers = ${json}; if (typeof module !== 'undefined' && module.exports) module.exports = root.DemoPrayers; })(typeof window !== 'undefined' ? window : globalThis);
 `;
 }

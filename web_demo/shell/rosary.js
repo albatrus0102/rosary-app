@@ -34,7 +34,7 @@
   function stepTitle(s) { var p = D.prayers[s.k === 'closing' ? 'sign' : s.k]; return s.k === 'closing' ? tr(L.rClosingTitle, { t: p.t }) : p.t; }
   function stepText(s) { var p = D.prayers[s.k === 'closing' ? 'sign' : s.k]; return p.pending ? null : p.x; }
   function where(s) { return s.k === 'closing' ? L.rClosing : s.d ? tr(L.rDecade, { n: s.d }) : L.rIntro; }
-  function mystery(s) { if (!s.d || s.k === 'closing') return null; var m = D.sets[R.set].m[s.d - 1]; return m.med || m.t; }   // ko 는 묵상 문구, 다른 언어는 신비 이름
+  function mystery(s) { if (!s.d || s.k === 'closing') return null; var m = D.sets[R.set].m[s.d - 1]; return m.pending ? null : (m.med || m.t); }   // 확인된 신비 이름이 없으면 줄을 비운다   // ko 는 묵상 문구, 다른 언어는 신비 이름
   function bead(s) { return s.k === 'hail' ? 'bs' : s.k === 'our' ? 'bb' : (s.k === 'glory' || s.k === 'fatima') ? 'bl' : 'bc'; }
 
   // ---- 화면 ----
@@ -95,12 +95,12 @@
     $('rMenu').hidden = R.finished;
     $('rPause').textContent = R.paused ? L.rResume : L.rPause;
     $('rDone').hidden = !R.finished; $('rMain').hidden = R.finished;
-    $('rDone').textContent = tr(L.rFinished, { name: R.setName() });
+    $('rDone').textContent = tr(L.rFinished, { name: R.setName() }).replace(/\s*\(\)/, '');   // 묶음 이름이 없으면 「()」를 지운다
     $('rStand').className = 'btn ' + (R.finished ? 'fill' : 'tonal');
     if (!R.finished) {
       var cnt = s.k === 'hail' ? ' <b>' + s.n + '/' + s.of + '</b>' : '';
       $('rStep').innerHTML = esc(stepTitle(s)) + cnt;
-      $('rLine').textContent = R.setName() + ' · ' + where(s);
+      $('rLine').textContent = (R.setName() ? R.setName() + ' · ' : '') + where(s);
       var my = mystery(s); $('rMyst').textContent = my || ''; $('rMyst').hidden = !my;
       var tx = stepText(s);
       $('rPrayer').textContent = tx === null ? L.rPending : tx;   // 공식 본문을 아직 받지 못한 기도: 자리와 이름만, 본문은 지어내지 않는다
@@ -121,7 +121,7 @@
   function show() {
     var on = S.seated && R.active, sb = S.seated && !R.active;
     $('rosary').hidden = !on; $('seatbar').hidden = !sb;
-    if (sb) $('sbToday').textContent = tr(L.rToday, { name: R.setName() });
+    if (sb) { $('sbToday').textContent = R.setName() ? tr(L.rToday, { name: R.setName() }) : ''; $('sbToday').hidden = !R.setName(); }   // 묶음 이름이 없으면 「오늘의 신비」 줄을 감춘다
     doc.body.classList.toggle('rosary-on', on || sb);
     if (on) render(); else requestAnimationFrame(inset);
   }

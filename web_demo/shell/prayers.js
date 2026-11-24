@@ -1,6 +1,6 @@
 /* prayers.js — 만든 파일(손대지 마세요): node web_demo/gen_prayers.mjs. 묵주기도 기도문·신비를 확인된 출처에서 글자 그대로 옮겼다.
    ko = lib/domain/prayer_data.dart · en = prayer-usccb · it = prayer-cei · es = prayer-cee · pt = prayer-cnbb (docs/legal/church_permission/package/<id>/texts.md);
-   en·pt 신비 묶음 이름 = prayer-lev(Compendium). skipped·pending = 확인된 본문이 없어 이름과 안내만 보이는 기도. weekday = getDay()(0=일) → 신비(0 환희 · 1 빛 · 2 고통 · 3 영광). */
+   교황청 출판국 출처 본문과 신비 묶음 이름은 싣지 않는다(2026-11-24 사용 허락 거절). skipped·pending = 확인된 본문이 없어 이름과 안내만 보이는 기도('myst' = 신비 20단 이름). weekday = getDay()(0=일) → 신비(0 환희 · 1 빛 · 2 고통 · 3 영광). */
 (function (root) { root.DemoPrayers = {
  "ko": {
   "prayers": {
@@ -142,14 +142,27 @@
   0
  ],
  "skipped": {
+  "en": [],
   "it": [
-   "fatima"
+   "fatima",
+   "sign",
+   "creed",
+   "hail",
+   "glory",
+   "myst"
   ],
   "es": [
-   "fatima"
+   "fatima",
+   "sign",
+   "creed",
+   "our",
+   "hail",
+   "glory",
+   "myst"
   ],
   "pt": [
-   "fatima"
+   "fatima",
+   "sign"
   ]
  },
  "en": {
@@ -181,7 +194,7 @@
   },
   "sets": {
    "joyful": {
-    "name": "The Joyful Mysteries",
+    "name": "",
     "m": [
      {
       "t": "The Annunciation"
@@ -201,7 +214,7 @@
     ]
    },
    "luminous": {
-    "name": "The Mysteries of Light",
+    "name": "",
     "m": [
      {
       "t": "The Baptism of Christ in the Jordan"
@@ -221,7 +234,7 @@
     ]
    },
    "sorrowful": {
-    "name": "The Sorrowful Mysteries",
+    "name": "",
     "m": [
      {
       "t": "The Agony in the Garden"
@@ -241,7 +254,7 @@
     ]
    },
    "glorious": {
-    "name": "The Glorious Mysteries",
+    "name": "",
     "m": [
      {
       "t": "The Resurrection"
@@ -266,11 +279,11 @@
   "prayers": {
    "sign": {
     "t": "Segno della Croce",
-    "x": "Nel nome del Padre\ne del Figlio\ne dello Spirito Santo. Amen."
+    "pending": true
    },
    "creed": {
     "t": "Simbolo degli Apostoli",
-    "x": "Io credo in Dio, Padre onnipotente, Creatore del cielo e della terra.\nE in Gesù Cristo, Suo unico Figlio, nostro Signore, il quale fu concepito di Spirito Santo nacque da Maria Vergine, patì sotto Ponzio Pilato, fu crocifisso, mori e fu sepolto; discese agli inferi; il terzo giorno risuscitò da morte; salì al cielo, siede alla destra di Dio Padre onnipotente: di là verrà a giudicare i vivi e i morti.\nCredo nello Spirito Santo,\nla santa Chiesa cattolica,\nla comunione dei santi,\nla remissione dei peccati,\nla risurrezione della carne,\nla vita eterna.."
+    "pending": true
    },
    "our": {
     "t": "Padre nostro",
@@ -278,11 +291,11 @@
    },
    "hail": {
     "t": "Ave Maria",
-    "x": "Ave, o Maria, piena di grazia,\nil Signore è con te.\nTu sei benedetta fra le donne\ne benedetto è il frutto del tuo seno,\nGesù.\nSanta Maria, Madre di Dio,\nprega per noi peccatori,\nadesso e nell'ora della nostra morte.\nAmen."
+    "pending": true
    },
    "glory": {
     "t": "Gloria al Padre",
-    "x": "Gloria al Padre\ne al Figlio\ne allo Spirito Santo.\nCome era nel principio,\nora e sempre,\nnei secoli dei secoli. Amen."
+    "pending": true
    },
    "fatima": {
     "t": "Preghiera di Fatima",
@@ -291,82 +304,82 @@
   },
   "sets": {
    "joyful": {
-    "name": "Misteri della gioia",
+    "name": "",
     "m": [
      {
-      "t": "L'annuncio dell' Angelo a Maria."
+      "pending": true
      },
      {
-      "t": "La visita di Maria a Elisabetta."
+      "pending": true
      },
      {
-      "t": "La nascita di Gesù a Betlemme."
+      "pending": true
      },
      {
-      "t": "La presentazione di Gesù al Tempio."
+      "pending": true
      },
      {
-      "t": "Il ritrovamento di Gesù nel Tempio."
+      "pending": true
      }
     ]
    },
    "luminous": {
-    "name": "Misteri della luce",
+    "name": "",
     "m": [
      {
-      "t": "Il battesimo di Gesù al Giordano."
+      "pending": true
      },
      {
-      "t": "L'auto-rivelazione di Gesù\nalle nozze di Cana."
+      "pending": true
      },
      {
-      "t": "L'annuncio del Regno di Dio\ncon l'invito alla conversione."
+      "pending": true
      },
      {
-      "t": "La trasfigurazione di Gesù\nsul Tabor."
+      "pending": true
      },
      {
-      "t": "L'istituzione dell'Eucaristia."
+      "pending": true
      }
     ]
    },
    "sorrowful": {
-    "name": "Misteri del dolore",
+    "name": "",
     "m": [
      {
-      "t": "Gesù nell'orto degli ulivi."
+      "pending": true
      },
      {
-      "t": "Gesù flagellato alla colonna."
+      "pending": true
      },
      {
-      "t": "Gesù è coronato di spine."
+      "pending": true
      },
      {
-      "t": "Gesù sale al Calvario."
+      "pending": true
      },
      {
-      "t": "Gesù muore in Croce."
+      "pending": true
      }
     ]
    },
    "glorious": {
-    "name": "Misteri della gloria",
+    "name": "",
     "m": [
      {
-      "t": "Gesù risorge da morte."
+      "pending": true
      },
      {
-      "t": "Gesù ascende al cielo."
+      "pending": true
      },
      {
-      "t": "La discesa dello Spirito Santo."
+      "pending": true
      },
      {
-      "t": "L'assunzione di Maria al cielo."
+      "pending": true
      },
      {
-      "t": "Maria, Regina del cielo e della terra."
+      "pending": true
      }
     ]
    }
@@ -376,23 +389,23 @@
   "prayers": {
    "sign": {
     "t": "Señal de la Cruz",
-    "x": "En el nombre del Padre\ny del Hijo\ny del Espíritu Santo. Amén."
+    "pending": true
    },
    "creed": {
     "t": "Símbolo de los Apóstoles",
-    "x": "Creo en Dios, Padre Todopoderoso,\nCreador del cielo y de la tierra.\nCreo en Jesucristo, su único Hijo,\nNuestro Señor,\nQue fue concebido por obra y gracia del Espíritu Santo, nació de Santa María Virgen, padeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado, descendió a los infiernos, al tercer día resucitó de entre los muertos, subió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso. Desde allí ha de venir\na juzgar a vivos y muertos.\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna.\nAmén."
+    "pending": true
    },
    "our": {
     "t": "Padre nuestro",
-    "x": "Padre nuestro que estás en el cielo,\nsantificado sea tu Nombre;\nvenga a nosotros tu Reino;\nhágase tu voluntad\nen la tierra como en el cielo.\nDanos hoy\nnuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal. Amén."
+    "pending": true
    },
    "hail": {
     "t": "Avemaría",
-    "x": "Dios te salve, María,\nllena eres de gracia;\nel Señor es contigo.\nBendita Tú eres\nentre todas las mujeres,\ny bendito es el fruto de tu vientre, Jesús.\nSanta María, Madre de Dios,\nruega por nosotros, pecadores,\nahora y en la hora de nuestra muerte. Amén"
+    "pending": true
    },
    "glory": {
     "t": "Gloria al Padre",
-    "x": "Gloria al Padre\ny al Hijo\ny al Espíritu Santo.\nComo era en el principio,\nahora y siempre,\npor los siglos de los siglos. Amén."
+    "pending": true
    },
    "fatima": {
     "t": "Oración de Fátima",
@@ -401,82 +414,82 @@
   },
   "sets": {
    "joyful": {
-    "name": "Misterios gozosos",
+    "name": "",
     "m": [
      {
-      "t": "La encarnación del Hijo de Dios."
+      "pending": true
      },
      {
-      "t": "La visitación de Nuestra Señora a su prima Santa Isabel."
+      "pending": true
      },
      {
-      "t": "El nacimiento del Hijo de Dios."
+      "pending": true
      },
      {
-      "t": "La Presentación de Jesús en el templo."
+      "pending": true
      },
      {
-      "t": "El Niño Jesús perdido y hallado en el templo."
+      "pending": true
      }
     ]
    },
    "luminous": {
-    "name": "Misterios luminosos",
+    "name": "",
     "m": [
      {
-      "t": "El Bautismo de Jesús en el Jordán."
+      "pending": true
      },
      {
-      "t": "La autorrevelación de Jesús en las bodas de Caná."
+      "pending": true
      },
      {
-      "t": "El anuncio del Reino de Dios invitando a la conversión."
+      "pending": true
      },
      {
-      "t": "La Transfiguración."
+      "pending": true
      },
      {
-      "t": "La Institución de la Eucaristía."
+      "pending": true
      }
     ]
    },
    "sorrowful": {
-    "name": "Misterios dolorosos",
+    "name": "",
     "m": [
      {
-      "t": "La Oración de Jesús en el Huerto."
+      "pending": true
      },
      {
-      "t": "La Flagelación del Señor."
+      "pending": true
      },
      {
-      "t": "La Coronación de espinas."
+      "pending": true
      },
      {
-      "t": "Jesús con la Cruz a cuestas camino del Calvario."
+      "pending": true
      },
      {
-      "t": "La Crucifixión y Muerte de Nuestro Señor."
+      "pending": true
      }
     ]
    },
    "glorious": {
-    "name": "Misterios gloriosos",
+    "name": "",
     "m": [
      {
-      "t": "La Resurrección del Hijo de Dios."
+      "pending": true
      },
      {
-      "t": "La Ascensión del Señor a los Cielos."
+      "pending": true
      },
      {
-      "t": "La Venida del Espíritu Santo sobre los Apóstoles."
+      "pending": true
      },
      {
-      "t": "La Asunción de Nuestra Señora a los Cielos."
+      "pending": true
      },
      {
-      "t": "La Coronación de la Santísima Virgen como Reina de Cielos y Tierra."
+      "pending": true
      }
     ]
    }
@@ -486,7 +499,7 @@
   "prayers": {
    "sign": {
     "t": "Sinal da Cruz",
-    "x": "Em nome do Pai e do Filho\ne do Espírito Santo. Ámen."
+    "pending": true
    },
    "creed": {
     "t": "Creio (Símbolo dos Apóstolos)",
@@ -511,7 +524,7 @@
   },
   "sets": {
    "joyful": {
-    "name": "Mistérios Gozosos",
+    "name": "",
     "m": [
      {
       "t": "Anunciação do anjo a Maria"
@@ -531,7 +544,7 @@
     ]
    },
    "sorrowful": {
-    "name": "Mistérios Dolorosos",
+    "name": "",
     "m": [
      {
       "t": "Oração e agonia de Jesus no Getsémani"
@@ -551,7 +564,7 @@
     ]
    },
    "glorious": {
-    "name": "Mistérios Gloriosos",
+    "name": "",
     "m": [
      {
       "t": "Ressurreição do Senhor"
@@ -571,7 +584,7 @@
     ]
    },
    "luminous": {
-    "name": "Mistérios da Luz",
+    "name": "",
     "m": [
      {
       "t": "Batismo de Jesus no Jordão"

@@ -133,28 +133,28 @@
       rTitle: 'Rosario', rSeatedNote: 'Sei seduto. Inizia il Rosario quando vuoi.', rToday: 'Misteri del giorno: {name}', rSit: 'Seduto', rKneel: 'In ginocchio',
       rStart: 'Inizia il Rosario', rOn: 'Rosario in corso', rPausedState: 'Rosario · in pausa', rDone: 'Preghiera conclusa', rMore: 'Altro', rPause: 'Pausa', rResume: 'Riprendi la preghiera', rEnd: 'Termina',
       rPrev: 'Indietro', rNext: 'Avanti', rTextOpen: 'Mostra il testo', rTextClose: 'Nascondi il testo', rNextDecade: 'Decina successiva ›', rIntro: 'Inizio', rClosing: 'Conclusione', rDecade: 'Decina {n}', rClosingTitle: 'Conclusione: {t}',
-      rFinished: 'Hai pregato tutto il Rosario ({name}). La pace sia con te.', rTextOnly: 'In questa anteprima web le preghiere sono mostrate solo come testo (senza audio).', rSource: 'Testi: Compendio del Catechismo della Chiesa Cattolica (LEV); Padre nostro nella formulazione oggi in uso (Ufficio Liturgico Nazionale, CEI).',
+      rFinished: 'Hai pregato tutto il Rosario ({name}). La pace sia con te.', rTextOnly: 'In questa anteprima web le preghiere sono mostrate solo come testo (senza audio).', rSource: 'Testi: Padre nostro nella formulazione oggi in uso (Ufficio Liturgico Nazionale, CEI). Gli altri testi ufficiali saranno inseriti appena li riceveremo.',
       rPending: 'Questa preghiera sarà inserita appena riceveremo il testo ufficiale.', tourEndRosary: 'La visita è finita. Tocca «Avanti» per continuare a pregare o «Alzati» per camminare di nuovo.'
     },
     en: {
       rTitle: 'Rosary', rSeatedNote: 'You are seated. Start the Rosary whenever you wish.', rToday: 'Mysteries of the day: {name}', rSit: 'Sitting', rKneel: 'Kneeling',
       rStart: 'Start the Rosary', rOn: 'Praying the Rosary', rPausedState: 'Rosary · paused', rDone: 'Prayer finished', rMore: 'More', rPause: 'Pause', rResume: 'Continue praying', rEnd: 'End',
       rPrev: 'Previous', rNext: 'Next', rTextOpen: 'Show prayer text', rTextClose: 'Hide prayer text', rNextDecade: 'Next decade ›', rIntro: 'Opening', rClosing: 'Closing', rDecade: 'Decade {n}', rClosingTitle: 'Closing: {t}',
-      rFinished: 'You have prayed the whole Rosary ({name}). Peace be with you.', rTextOnly: 'In this web preview the prayers are shown as text only (no audio).', rSource: 'Texts: as published on usccb.org (USCCB); names of the mystery groups: Compendium of the Catechism (LEV).',
+      rFinished: 'You have prayed the whole Rosary ({name}). Peace be with you.', rTextOnly: 'In this web preview the prayers are shown as text only (no audio).', rSource: 'Texts: as published on usccb.org (USCCB).',
       rPending: 'This prayer will be added as soon as we receive the official text.', tourEndRosary: 'The tour is over. Tap “Next” to keep praying, or “Stand up” to walk again.'
     },
     es: {
       rTitle: 'Rosario', rSeatedNote: 'Estás sentado. Empieza el Rosario cuando quieras.', rToday: 'Misterios del día: {name}', rSit: 'Sentado', rKneel: 'De rodillas',
       rStart: 'Empezar el Rosario', rOn: 'Rezando el Rosario', rPausedState: 'Rosario · en pausa', rDone: 'Oración terminada', rMore: 'Más', rPause: 'Pausa', rResume: 'Seguir rezando', rEnd: 'Terminar',
       rPrev: 'Anterior', rNext: 'Siguiente', rTextOpen: 'Mostrar el texto', rTextClose: 'Ocultar el texto', rNextDecade: 'Siguiente decena ›', rIntro: 'Inicio', rClosing: 'Final', rDecade: 'Decena {n}', rClosingTitle: 'Final: {t}',
-      rFinished: 'Has rezado todo el Rosario ({name}). La paz esté contigo.', rTextOnly: 'En esta vista previa web las oraciones se muestran solo como texto (sin audio).', rSource: 'Textos: Compendio del Catecismo de la Iglesia Católica (LEV).',
+      rFinished: 'Has rezado todo el Rosario ({name}). La paz esté contigo.', rTextOnly: 'En esta vista previa web las oraciones se muestran solo como texto (sin audio).', rSource: 'Los textos oficiales se añadirán en cuanto los recibamos.',
       rPending: 'Esta oración se añadirá en cuanto recibamos el texto oficial.', tourEndRosary: 'La visita ha terminado. Toca «Siguiente» para seguir rezando o «Levantarse» para volver a caminar.'
     },
     pt: {
       rTitle: 'Rosário', rSeatedNote: 'Você está sentado. Comece o Rosário quando quiser.', rToday: 'Mistérios do dia: {name}', rSit: 'Sentado', rKneel: 'De joelhos',
       rStart: 'Começar o Rosário', rOn: 'Rezando o Rosário', rPausedState: 'Rosário · em pausa', rDone: 'Oração concluída', rMore: 'Mais', rPause: 'Pausa', rResume: 'Continuar rezando', rEnd: 'Encerrar',
       rPrev: 'Anterior', rNext: 'Próximo', rTextOpen: 'Mostrar o texto', rTextClose: 'Ocultar o texto', rNextDecade: 'Próxima dezena ›', rIntro: 'Início', rClosing: 'Final', rDecade: 'Dezena {n}', rClosingTitle: 'Final: {t}',
-      rFinished: 'Você rezou o Rosário inteiro ({name}). A paz esteja com você.', rTextOnly: 'Nesta prévia na web as orações aparecem só como texto (sem áudio).', rSource: 'Textos: CNBB («Como rezar o Terço?»); Sinal da Cruz e nomes dos grupos de mistérios: Compêndio do Catecismo (LEV).',
+      rFinished: 'Você rezou o Rosário inteiro ({name}). A paz esteja com você.', rTextOnly: 'Nesta prévia na web as orações aparecem só como texto (sem áudio).', rSource: 'Textos: CNBB («Como rezar o Terço?»). Os demais textos oficiais serão incluídos assim que os recebermos.',
       rPending: 'Esta oração será incluída assim que recebermos o texto oficial.', tourEndRosary: 'A visita terminou. Toque em «Próximo» para continuar rezando ou «Levantar» para andar de novo.'
     }
   };

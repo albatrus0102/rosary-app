@@ -8,7 +8,7 @@
 |---|---|
 | `web_demo/shell/` | 웹 껍데기(앱의 Flutter 자리): `shell.js`(불러오기·단추·손잡이·이벤트), `tour.js`(둘러보기), `i18n.js`(ko·it·en·es·pt 문구), `shell.css` |
 | `web_demo/shell/rosary.js` | 앉은 자리 묵주기도(앱 `ChurchSeatedBar` → `ChurchRosaryPanel`): 앉은 줄(자세 · 「묵주기도 시작」 · 「일어나기」) → 묵주 패널(묵주알 · 제목 n/10 · 신비 · 기도문 · 이전/다음 · 미리 보기용 「다음 단으로」 · ⋮ 잠깐 쉬기/끝내기). 신비는 오늘 요일로. **소리 없음**(어느 언어든 글로만) |
-| `web_demo/shell/prayers.js` | **만든 파일**(`node web_demo/gen_prayers.mjs`): ko = `lib/domain/prayer_data.dart`, en = `prayer-usccb`, it = `prayer-cei`, es = `prayer-cee`, pt = `prayer-cnbb` 의 `texts.md` 에서 글자 그대로(en·pt 신비 묶음 이름은 `prayer-lev`). 공식 본문을 아직 못 받은 기도(it·es·pt 파티마)는 자리와 이름만 두고 「공식 본문을 받는 대로 넣습니다」 |
+| `web_demo/shell/prayers.js` | **만든 파일**(`node web_demo/gen_prayers.mjs`): ko = `lib/domain/prayer_data.dart`, en = `prayer-usccb`, it = `prayer-cei`, es = `prayer-cee`, pt = `prayer-cnbb` 의 `texts.md` 에서 글자 그대로. 교황청 출판국(LEV)이 2026-11-24 사용 허락을 거절해 그 출처(Compendium) 본문·신비 묶음 이름은 싣지 않는다(`prayer-lev` 도 쓰지 않음). 공식 본문을 아직 못 받은 기도(it 대부분·es 전부·pt 성호경·파티마)는 자리와 이름만 두고 「공식 본문을 받는 대로 넣습니다」 |
 | `web_demo/shell/cross.js` | 십자가의 길(앱 `ChurchCrossChip` · 순례 모드 `stations_sheet.dart`): 판 앞 칩 「십자가의 길 n처 · 명칭 — 묵상하기」, 판에 닿으면 그 처의 시트(그림 · 제n처 · 성경 근거 · 1처 시작 기도 · 공식 기도문 ┼◎○ · 출처 · 접힌 묵상 · 그림 출처와 대체 성화 안내 · 닫기 / 다음 처로 = 다음 판까지 걷기 · 마치며), 「십자가의 길」 단추 = 1처로 걷기. 14처 판·근접·판 누르기는 장면(`way_cross.js`) 그대로. 그림은 장면의 `cross_pack*.js` 를 다시 쓴다. 한국어가 아닌 언어는 그림·처 번호와 「공식 본문을 받는 대로 넣습니다」 |
 | `web_demo/shell/stations.js` | **만든 파일**(`gen_prayers.mjs`): `data/stations_prayers.json`·`stations_of_cross.json`·`stations_series.json`, 연작은 `release_gate.dart` 출시 규칙(프레비아티 숨김 → 성 베드로는 오라일리) |
 | `web_demo/stations.test.mjs` | 십자가의 길: 원본과 같음 · 숨긴 연작 없음 · 문구 · 가짜 장면으로 단추→시트→다음 처로→칩→마치며(344px·48px) |
