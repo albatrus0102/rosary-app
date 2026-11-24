@@ -152,10 +152,17 @@ await check('M4 corrects C-12 / G-01 / G-29 / U-33 but keeps what the admin edit
 // ---- DB B: untouched server with every migration
 const B = await boot(M4);
 await B.db.exec(sqlOf(M4));
+// 뒤에 온 마이그레이션(M5~: 손으로 더한 T 과제, 예 20261124000000_roadmap_items_5.sql)도 적용 — 정적 사본은 '모든 마이그레이션 뒤'와 같아야 한다
+// (정적 사본 비교는 따로 만든 DB C 에서 — B 는 M4 직후 상태로 아래 시험들이 쓴다)
+const C = await boot(M4);
+await C.db.exec(sqlOf(M4));
+const LATER = readdirSync(migDir).filter((f) => /_roadmap_items_\d+\.sql$/.test(f) && f > M4).sort();
+for (const f of LATER) await C.db.exec(sqlOf(f));
+const LATER_N = LATER.length ? (await C.sudo(`select count(*)::int as n from public.roadmap_items where sort_order > ${BASE + T.length}`)).rows[0].n : 0;
 await check('static fallback admin/roadmap_seed.json equals the DB after all migrations', async () => {
-  const rows = (await B.sudo(`select id, title, category, release, priority, effort, risk, depends, evidence, value, status, owner_note, sort_order from public.roadmap_items order by sort_order, id`)).rows;
+  const rows = (await C.sudo(`select id, title, category, release, priority, effort, risk, depends, evidence, value, status, owner_note, sort_order from public.roadmap_items order by sort_order, id`)).rows;
   eq(SEED.items.length, rows.length);
-  eq(SEED.items.length, BASE + T.length);
+  eq(SEED.items.length, BASE + T.length + LATER_N);
   eq(SEED.items.map((i) => i.id), rows.map((r) => r.id), 'same order');
   for (const r of rows) {
     const s = SEED.items.find((i) => i.id === r.id);

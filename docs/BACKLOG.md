@@ -17,6 +17,8 @@
 | 새 3D 캐릭터(사실적 인물) | 현재 코드 아바타 유지. 변환 도구·새 아바타 모듈·이미지 프롬프트는 준비됨. 유료 3D 서비스는 쓰지 않기로 함(무료 대안: Mixamo 기본 캐릭터 / 코드 모델링 / Hugging Face TRELLIS 시험) | docs/art/CHARACTER_3D_PIPELINE.md, CHARACTER_IMAGE_PROMPTS.md |
 | 앱 아이콘 | 기본 아이콘 상태. 로사리움(장미 정원 + 스테인드글라스) 아이콘 제작 여부 미정 | — |
 | 3D 엔진 변경 검토 | 지금은 three.js r149(WebView) 유지. **Babylon.js → Godot → Unity 순**으로 검토하되, 품질 향상(룩 프리셋·ChatGPT 질감·성능) 결과를 본 뒤에 다시 판단한다(2026-11-15 사용자 결정: 지금은 엔진을 바꾸지 않음). 판정 기준 초안은 PERF_SCALE.md §8 | docs/church/PERF_SCALE.md §8, docs/church/LOOK_DEV.md |
+| 빛의 성당 재설계 검토(로드맵 T-95, 2026-11-24) | 사용자: 「제대 뒤로 못 가고 구조가 단순하고 볼 것이 적다 — 나중에 설계부터 다시 제대로 검토」. 후보: 제대 뒤 주보랑·빠진 다섯 곳·로툰다 2층 회랑·경당 스무 칸 차별화 | docs/church/LIGHT_CATHEDRAL_NEXT.md, art/light_cathedral/map_2026-11-24.webp |
+| 빛의 성당 별 궁륭 그림·재질(로드맵 T-96, 2026-11-24) | 사용자: 「별빛 그림은 그림도 재질도 너무 별로, 애들 장난한 그림 같다」 — T-95 때 함께 | art/light_cathedral/ref/c3_dome_interior.webp |
 
 ## 구현 대기(조사·설계 완료)
 | 항목 | 내용 | 자료 |
