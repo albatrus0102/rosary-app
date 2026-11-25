@@ -165,3 +165,24 @@ test('모든 언어에 화면 문구가 빠짐없고 언어 선택 문구·언�
     if (l !== 'ko') assert.ok(!/[가-힣]/.test(JSON.stringify(I18N.ui[l])), l + ' 에 한글이 섞임');
   }
 });
+
+test('철회(2026-11-25 마조레): 그 받는 곳은 장면 없이 이탈리아어 안내만, 장면·그림 파일은 배포 폴더에 없다', () => {
+  const l2 = path.join(tmp, 'links_w.json'), o2 = path.join(tmp, 'site_w');
+  fs.writeFileSync(l2, JSON.stringify({ recipients: { maggiore: { church: 'maggiore', lang: 'it' }, 'test-a': { church: 'stpeter', lang: 'it' } } }));
+  build({ linksFile: l2, outDir: o2, quiet: true });
+  const rec = JSON.parse(fs.readFileSync(l2, 'utf8')).recipients;
+  const html = fs.readFileSync(path.join(o2, 'v', rec.maggiore.token, 'index.html'), 'utf8');
+  assert.ok(html.includes('Come richiesto, la Basilica è stata rimossa dall’app.'));
+  assert.ok(html.includes('<meta name="robots" content="noindex,nofollow'));
+  assert.ok(!/<script|ch_maggiore|Maggiore|Santa Maria|canvas/i.test(html), '장면·이름이 없어야 한다');
+  // 다른 받는 곳은 그대로
+  assert.ok(fs.readFileSync(path.join(o2, 'v', rec['test-a'].token, 'index.html'), 'utf8').includes('ch_stpeter.js'));
+  // 배포 폴더 어디에도 마조레 전용 파일이 없다
+  const bad = walk(o2).filter((f) => /maggiore/i.test(f.rel));
+  assert.deepEqual(bad.map((f) => f.rel), []);
+  // 다른 성당의 빌더는 그대로 실린다
+  assert.ok(fs.existsSync(path.join(o2, 'assets/church/ch_lateran.js')));
+  // 장면 쪽 문구 표에도 이름이 없다
+  const I = fs.readFileSync(path.join(REPO, 'web_demo/shell/i18n.js'), 'utf8');
+  assert.ok(!/maggiore|Maggiore/.test(I.replace(/withdrawn[^\n]*/g, '')));
+});

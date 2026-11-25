@@ -11,6 +11,7 @@
       tagline: '로사리움(Rosarium) — 광고·결제 없는 무료 묵주기도 안드로이드 앱 · 이 화면은 웹 미리보기입니다',
       noteReal: '이 3D 성당({name})은 실제 모습과 같지 않은, 단순하게 본뜬 가상 모형입니다. 실제 미술 작품은 싣지 않았습니다. {approver}',
       noteFict: '이 3D 성당은 실제로 있는 어느 성당과도 같지 않은, 앱이 지어낸 가상의 본당입니다. 실제 미술 작품은 싣지 않았습니다. {approver}',
+      withdrawn: '요청하신 대로 대성전을 앱에서 뺐습니다.',
       langLabel: '언어',
       tour: '▶ 둘러보기', free: '직접 걸어 보기',
       loading: '불러오는 중… {p}%', building: '성당을 짓는 중입니다…', ready: '준비되었습니다',
@@ -33,6 +34,7 @@
       tagline: 'Rosarium — app Android gratuita e non commerciale per la preghiera del Rosario · questa è un’anteprima web',
       noteReal: 'Questo modello 3D è una versione virtuale semplificata e non è uguale alla chiesa reale ({name}). Le opere d’arte reali non sono incluse. {approver}',
       noteFict: 'Questa chiesa 3D non è uguale a nessuna chiesa reale: è una parrocchia virtuale inventata dall’app. Le opere d’arte reali non sono incluse. {approver}',
+      withdrawn: 'Come richiesto, la Basilica è stata rimossa dall’app.',
       langLabel: 'Lingua',
       tour: '▶ Visita guidata', free: 'Esplora da solo',
       loading: 'Caricamento… {p}%', building: 'Costruzione della chiesa…', ready: 'Pronto',
@@ -55,6 +57,7 @@
       tagline: 'Rosarium — free, non-commercial Android app for praying the Rosary · this is a web preview',
       noteReal: 'This is a simplified virtual model; it differs from the real {name}. Real artworks are not included. {approver}',
       noteFict: 'This 3D church is not like any real church: it is a fictional parish invented by the app. Real artworks are not included. {approver}',
+      withdrawn: 'As requested, the Basilica has been removed from the app.',
       langLabel: 'Language',
       tour: '▶ Guided tour', free: 'Explore on your own',
       loading: 'Loading… {p}%', building: 'Building the church…', ready: 'Ready',
@@ -77,6 +80,7 @@
       tagline: 'Rosarium — aplicación Android gratuita y sin fines comerciales para rezar el Rosario · esta es una vista previa web',
       noteReal: 'Este es un modelo virtual simplificado y no es igual a la iglesia real ({name}). No se incluyen obras de arte reales. {approver}',
       noteFict: 'Esta iglesia 3D no se parece a ninguna iglesia real: es una parroquia ficticia inventada por la aplicación. No se incluyen obras de arte reales. {approver}',
+      withdrawn: 'Según lo solicitado, la Basílica ha sido retirada de la aplicación.',
       langLabel: 'Idioma',
       tour: '▶ Visita guiada', free: 'Explorar por mi cuenta',
       loading: 'Cargando… {p}%', building: 'Construyendo la iglesia…', ready: 'Listo',
@@ -99,6 +103,7 @@
       tagline: 'Rosarium — aplicativo Android gratuito e não comercial para rezar o Rosário · esta é uma prévia na web',
       noteReal: 'Este é um modelo virtual simplificado e não é igual à igreja real ({name}). Obras de arte reais não estão incluídas. {approver}',
       noteFict: 'Esta igreja 3D não é igual a nenhuma igreja real: é uma paróquia fictícia inventada pelo aplicativo. Obras de arte reais não estão incluídas. {approver}',
+      withdrawn: 'Conforme solicitado, a Basílica foi removida do aplicativo.',
       langLabel: 'Idioma',
       tour: '▶ Visita guiada', free: 'Explorar por conta própria',
       loading: 'Carregando… {p}%', building: 'Construindo a igreja…', ready: 'Pronto',
@@ -256,7 +261,6 @@
     basic: { ko: '우리 본당', it: 'La nostra parrocchia', en: 'Our Parish', es: 'Nuestra parroquia', pt: 'Nossa paróquia' },
     stpeter: { ko: '성 베드로 대성전', it: 'Basilica di San Pietro', en: 'St. Peter’s Basilica', es: 'Basílica de San Pedro', pt: 'Basílica de São Pedro' },
     lateran: { ko: '라테라노 성 요한 대성전', it: 'Basilica di San Giovanni in Laterano', en: 'Basilica of St. John Lateran', es: 'Basílica de San Juan de Letrán', pt: 'Basílica de São João de Latrão' },
-    maggiore: { ko: '성 마리아 마조레 대성전', it: 'Basilica di Santa Maria Maggiore', en: 'Basilica of St. Mary Major', es: 'Basílica de Santa María la Mayor', pt: 'Basílica de Santa Maria Maior' },
     stpaul: { ko: '성 밖의 성 바오로 대성전', it: 'Basilica di San Paolo fuori le Mura', en: 'Basilica of St. Paul Outside the Walls', es: 'Basílica de San Pablo Extramuros', pt: 'Basílica de São Paulo Fora dos Muros' },
     milan: { ko: '밀라노 대성당', it: 'Duomo di Milano', en: 'Milan Cathedral', es: 'Catedral de Milán', pt: 'Catedral de Milão' },
     florence: { ko: '피렌체 대성당', it: 'Cattedrale di Santa Maria del Fiore', en: 'Florence Cathedral', es: 'Catedral de Santa María del Fiore', pt: 'Catedral de Santa Maria del Fiore' },
@@ -277,7 +281,7 @@
     shrine: { ko: '성지가 만들거나 승인한 모형이 아닙니다.', it: 'Non è un modello realizzato o approvato dal santuario.', en: 'It was not made or approved by the shrine.', es: 'No ha sido hecho ni aprobado por el santuario.', pt: 'Não foi feito nem aprovado pelo santuário.' },
     parish: { ko: '본당이 만들거나 승인한 모형이 아닙니다.', it: 'Non è un modello realizzato o approvato dalla parrocchia.', en: 'It was not made or approved by the parish.', es: 'No ha sido hecho ni aprobado por la parroquia.', pt: 'Não foi feito nem aprovado pela paróquia.' }
   };
-  var CHURCH_APPROVER = { basic: 'any', stpeter: 'pope', lateran: 'pope', maggiore: 'pope', stpaul: 'pope', milan: 'milan', florence: 'florence', assisi: 'assisi', myeongdong: 'seoul', danggogae: 'shrine', yeouido: 'parish' };
+  var CHURCH_APPROVER = { basic: 'any', stpeter: 'pope', lateran: 'pope', stpaul: 'pope', milan: 'milan', florence: 'florence', assisi: 'assisi', myeongdong: 'seoul', danggogae: 'shrine', yeouido: 'parish' };
 
   // 언어 이름(각자의 말로) · 주소의 ?lang= 덮어쓰기(올바른 값만; 아니면 페이지 기본 언어)
   var LANG_NAMES = { ko: '한국어', en: 'English', it: 'Italiano', es: 'Español', pt: 'Português' };

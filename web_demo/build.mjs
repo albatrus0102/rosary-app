@@ -14,9 +14,12 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(here, '..');
 export const CHURCH_DIR = path.join(REPO, 'assets/church');
 export const LANGS = ['ko', 'it', 'en', 'es', 'pt'];
-export const CHURCHES = ['basic', 'stpeter', 'lateran', 'maggiore', 'stpaul', 'milan', 'florence', 'assisi', 'myeongdong', 'danggogae', 'yeouido'];
+export const CHURCHES = ['basic', 'stpeter', 'lateran', 'stpaul', 'milan', 'florence', 'assisi', 'myeongdong', 'danggogae', 'yeouido'];
+// 성당 측이 「앱에 싣지 말아 달라」고 해서 데모에서 뺀 성당(2026-11-25 성 마리아 마조레 대성전 회신 ③, docs/legal/church_permission/README.md §8-1).
+// 이 성당의 받는 곳 링크는 장면 없이 짧은 안내 쪽만 보인다. 장면 스크립트·그림 파일은 배포 폴더에 싣지 않는다.
+export const WITHDRAWN = ['maggiore'];
 // 성당 → 허락 서류 묶음(자막 줄을 가져올 video_plan.md 가 있는 곳)
-const PACKAGE_OF = { basic: null, stpeter: 'stpeter', lateran: 'lateran', maggiore: 'maggiore', stpaul: 'stpaul', milan: 'milan', florence: 'florence', assisi: 'assisi', myeongdong: 'seoul-archdiocese', danggogae: 'danggogae', yeouido: 'yeouido' };
+const PACKAGE_OF = { basic: null, stpeter: 'stpeter', lateran: 'lateran', stpaul: 'stpaul', milan: 'milan', florence: 'florence', assisi: 'assisi', myeongdong: 'seoul-archdiocese', danggogae: 'danggogae', yeouido: 'yeouido' };
 const LANG_NAME = { '한국어': 'ko', '영어': 'en', '스페인어': 'es', '이탈리아어': 'it', '포르투갈어': 'pt' };
 export const TOKEN_RE = /^[a-z2-7]{26,}$/;   // base32 소문자, 26자 = 130비트 이상
 
@@ -77,7 +80,7 @@ export function loadLinks(file, { create } = {}) {
   const seen = new Set();
   for (const [id, r] of Object.entries(rec)) {
     if (!/^[a-z0-9-]+$/.test(id)) throw new Error('받는 곳 id 는 영문 소문자·숫자·붙임표만: ' + id);
-    if (!CHURCHES.includes(r.church)) throw new Error(id + ': 알 수 없는 성당 ' + r.church + ' (' + CHURCHES.join(', ') + ')');
+    if (!CHURCHES.includes(r.church) && !WITHDRAWN.includes(r.church)) throw new Error(id + ': 알 수 없는 성당 ' + r.church + ' (' + CHURCHES.join(', ') + ')');
     if (!LANGS.includes(r.lang)) throw new Error(id + ': 알 수 없는 언어 ' + r.lang + ' (' + LANGS.join(', ') + ')');
     if (r.token !== undefined && !TOKEN_RE.test(r.token)) throw new Error(id + ': 토큰 모양이 틀립니다(소문자 base32 26자 이상)');
     if (r.token) { if (seen.has(r.token)) throw new Error(id + ': 토큰이 겹칩니다'); seen.add(r.token); }
@@ -106,7 +109,29 @@ export function sceneScripts(church) {
 
 const escJson = (o) => JSON.stringify(o).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, (c) => '\\u' + c.charCodeAt(0).toString(16));
 
+// 뺀 성당의 받는 곳: 장면도 이름도 그림도 없이 안내 한 줄만(받는 분의 언어).
+function withdrawnHtml(r) {
+  const I = require_i18n();
+  const msg = (I.ui[r.lang] || I.ui.en).withdrawn;
+  return `<!doctype html>
+<html lang="${r.lang}">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#15110c">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rosarium</title>
+<style>html,body{height:100%;margin:0;background:#15110c;color:#f6ecda;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}body{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box}p{margin:0;max-width:30em;font-size:18px;line-height:1.6}</style>
+</head>
+<body><p id="withdrawn">${msg}</p></body>
+</html>
+`;
+}
+
 function pageHtml(r) {
+  if (WITHDRAWN.includes(r.church)) return withdrawnHtml(r);
   const I = require_i18n();
   const name = (I.names[r.church] || {})[r.lang] || r.church;
   const cfg = { church: r.church, lang: r.lang, scripts: sceneScripts(r.church), captions: Object.fromEntries(LANGS.map((l) => [l, captionsFor(r.church, l)])) };   // 언어마다(방문자가 ?lang= 으로 바꿀 수 있다). video_plan 은 한 언어뿐이라 나머지는 {} → 기본 자막
@@ -194,7 +219,7 @@ export function build({ linksFile, outDir, base = '', quiet = false } = {}) {
   fs.rmSync(outDir, { recursive: true, force: true });   // 폐기(철회)는 링크 파일에서 지우고 다시 짓는 것 — 옛 v/ 폴더는 여기서 사라진다
   fs.mkdirSync(outDir, { recursive: true });
   // 공용 자산: 장면 스크립트·질감 묶음·창 사진(개발용 dev/ · 창 원본 glass_src/ · 시험 페이지 제외)
-  copyDir(CHURCH_DIR, path.join(outDir, 'assets/church'), (f) => /\.(js|webp)$/.test(f) || f === 'glass_catalog.json');
+  copyDir(CHURCH_DIR, path.join(outDir, 'assets/church'), (f) => (/\.(js|webp)$/.test(f) || f === 'glass_catalog.json') && !WITHDRAWN.some((id) => new RegExp('(^|_)' + id + '\\.').test(f)));
   copyDir(path.join(here, 'shell'), path.join(outDir, 'assets/shell'));
   for (const [id, r] of Object.entries(rec)) {
     const d = path.join(outDir, 'v', r.token);
@@ -246,7 +271,7 @@ export function ensureOwnerToken(file, rec) {
   fs.writeFileSync(file, JSON.stringify(j, null, 2) + '\n', { mode: 0o600 });
   return t;
 }
-const OWNER_LABELS = { cbck: '한국천주교주교회의', danggogae: '당고개 순교성지', yeouido: '여의도동 성당', 'seoul-archdiocese': '서울대교구 (명동 장면)', 'seoul-archdiocese-danggogae': '서울대교구 (당고개 장면)', 'seoul-archdiocese-yeouido': '서울대교구 (여의도동 장면)', stpeter: '성 베드로 대성당', 'vatican-museums': '바티칸 박물관', lateran: '라테라노 대성당', maggiore: '산타 마리아 마조레', stpaul: '성 바오로 대성당', assisi: '아시시 성 프란치스코', milan: '밀라노 대성당', florence: '피렌체 대성당', 'prayer-lev': '바티칸 출판사 LEV', 'prayer-icel': 'ICEL(영어 전례)', 'prayer-usccb': '미국 주교회의', 'prayer-cbcew': '잉글랜드·웨일스 주교회의', 'prayer-cee': '스페인 주교회의', 'prayer-cem': '멕시코 주교회의', 'prayer-cei': '이탈리아 주교회의', 'prayer-cnbb': '브라질 주교회의', 'prayer-cep': '포르투갈 주교회의' };
+const OWNER_LABELS = { cbck: '한국천주교주교회의', danggogae: '당고개 순교성지', yeouido: '여의도동 성당', 'seoul-archdiocese': '서울대교구 (명동 장면)', 'seoul-archdiocese-danggogae': '서울대교구 (당고개 장면)', 'seoul-archdiocese-yeouido': '서울대교구 (여의도동 장면)', stpeter: '성 베드로 대성당', 'vatican-museums': '바티칸 박물관', lateran: '라테라노 대성당', maggiore: '산타 마리아 마조레 (요청으로 뺌)', stpaul: '성 바오로 대성당', assisi: '아시시 성 프란치스코', milan: '밀라노 대성당', florence: '피렌체 대성당', 'prayer-lev': '바티칸 출판사 LEV', 'prayer-icel': 'ICEL(영어 전례)', 'prayer-usccb': '미국 주교회의', 'prayer-cbcew': '잉글랜드·웨일스 주교회의', 'prayer-cee': '스페인 주교회의', 'prayer-cem': '멕시코 주교회의', 'prayer-cei': '이탈리아 주교회의', 'prayer-cnbb': '브라질 주교회의', 'prayer-cep': '포르투갈 주교회의' };
 const LANG_KO = { ko: '한국어', en: '영어', it: '이탈리아어', es: '스페인어', pt: '포르투갈어', la: '라틴어' };
 function ownerHtml(rec) {
   const e = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

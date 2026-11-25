@@ -205,6 +205,7 @@ export function releaseGate(src) {
   const ov = /stationSeriesOverrides = \{([^}]*)\}/.exec(src)[1];
   return {
     hidden: [...hid.matchAll(/'([^']+)'/g)].map((m) => m[1]),
+    withdrawn: [...(/withdrawnChurchIds = \{([^}]*)\}/.exec(src)?.[1] || '').matchAll(/'([^']+)'/g)].map((m) => m[1]),   // 성당 측 요청으로 뺀 성당(2026-11-25 마조레)
     overrides: Object.fromEntries([...ov.matchAll(/'([^']+)':\s*'([^']+)'/g)].map((m) => [m[1], m[2]]))
   };
 }
@@ -224,7 +225,7 @@ export function generateStations() {
     series[s.id] = { pack: packs[s.id], ko: `${s.title}, ${s.year}, ${s.place}. 사진·스캔 ${s.photographer}. ${s.license_label}. ${s.changes}.`, artist: s.artist_latin, year: s.year, photo: /[가-힣]/.test(s.photographer) ? '' : s.photographer, license: s.license_label };
   }
   const assign = {};
-  for (const [c, id] of Object.entries(se.assignments)) assign[c] = gate.hidden.includes(id) ? (gate.overrides[c] || se.default) : id;
+  for (const [c, id] of Object.entries(se.assignments)) if (!gate.withdrawn.includes(c)) assign[c] = gate.hidden.includes(id) ? (gate.overrides[c] || se.default) : id;
   const byN = Object.fromEntries(pr.stations.map((x) => [x.n, x]));
   const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV'];
   const data = {

@@ -76,7 +76,6 @@
   "light": "fugel",
   "stpeter": "oreilly",
   "lateran": "oreilly",
-  "maggiore": "corot",
   "stpaul": "fahnroth",
   "milan": "hermann_paul",
   "florence": "mosler",
