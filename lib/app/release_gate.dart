@@ -46,7 +46,7 @@ abstract final class ReleaseGate {
   /// ([churchListed]). 이름·썸네일·장면·성화 출처 줄이 하나도 보이지 않는다.
   /// 성 마리아 마조레 대성전(`maggiore`): 2026-11-25 회신 ③ 「La Basilica … ha deciso di non comparire nella app.
   /// Le chiedo quindi di toglierla.」 — 허락 요청 편지에서 뺀다고 약속했다(`docs/legal/church_permission/README.md` §8-1).
-  /// 개발용 빌드에서 남길지는 사용자가 아직 정하지 않았다(그동안은 개발용 빌드에서만 열린다).
+  /// 개발용 빌드에는 남긴다(사용자 결정 2026-11-25: 개인용으로만 쓰고 배포판·웹 데모에는 넣지 않는다).
   /// 번들에서 뺀 자산은 `tools/release_hidden_assets.txt`의 '2-2' 항목.
   /// 풀리는 조건: 없음(성당 측이 다시 허락해 줄 때만).
   static const Set<String> withdrawnChurchIds = {'maggiore'};
