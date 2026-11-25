@@ -210,6 +210,8 @@ CC-BY 5점(glass_alabaster_stpaul_1/2, glass_alabaster_slab, glass_rose_notredam
 
 ## 성당 안 진본 성화 (assets/church/art_<성당>.js, 2026-11-15 추가)
 
+> 2026-11-25: 성 마리아 마조레 대성전이 앱에서 빼 달라고 요청해(`docs/legal/church_permission/STATUS.md` F4) 아래 `art_maggiore.js`(〈로마 백성의 구원〉 사진)는 일반(배포) 빌드 번들과 웹 데모에 싣지 않는다(`tools/release_hidden_assets.txt` 2-2). 개발용 빌드에서만 남아 있고, 앱 안 「성화 출처」 줄도 일반 빌드에서는 숨긴다. 이 파일의 기록은 이력으로 둔다.
+
 | 파일 | 출처 URL | 작가 · 사진 | 라이선스 | 쓰는 곳 · 변경 |
 |---|---|---|---|---|
 | assets/church/art_maggiore.js (원본 art/images_src/maggiore/salus_populi_romani.webp, 49KB) | https://commons.wikimedia.org/wiki/File:Salus_Populi_Romani_after_restoration.jpg | 〈로마 백성의 구원(Salus Populi Romani)〉 작가 미상, 7~13세기 · 사진 LossRom(Commons) | 원작 Public domain · 사진 CC0 1.0 (PD-Art) | 성 마리아 마조레 대성전 파올리나 경당 제단 · 여백을 잘라 내고 크기를 줄임 · 상세 `licenses/maggiore.md` · 권리 확인: 확인(Commons 표기 기준) |
