@@ -221,14 +221,17 @@ void main() {
     ]) {
       await _pumpSelect(tester, holder: h, size: size);
       final first = tester.getTopLeft(_card('stpeter')).dy;
-      final inRow = ChurchCatalog.inGroup('로마·바티칸')
+      final rome = ChurchCatalog.listed
+          .where((c) => c.group == '로마·바티칸')
+          .toList();
+      final inRow = rome
           .take(cols)
           .where((c) => tester.any(_card(c.id)))
           .where((c) => tester.getTopLeft(_card(c.id)).dy == first)
           .length;
       expect(
         inRow,
-        ChurchCatalog.inGroup('로마·바티칸').length >= cols ? cols : inRow,
+        rome.length >= cols ? cols : inRow,
       );
       expect(tester.takeException(), isNull);
     }

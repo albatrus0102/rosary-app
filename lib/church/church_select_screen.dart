@@ -61,11 +61,11 @@ class ChurchSelectScreen extends StatefulWidget {
   });
 
   /// 내부 3D 모형이 준비된 성당 id(일반 출시 빌드). 새 성당 내부가 들어올 때마다 늘린다.
+  /// 성당 측 요청으로 뺀 성당([ReleaseGate.withdrawnChurchIds])은 여기에 없다.
   static const Set<String> releaseIds = {
     'basic',
     'stpeter',
     'lateran',
-    'maggiore',
     'stpaul',
     'milan',
     'florence',

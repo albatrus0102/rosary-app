@@ -36,15 +36,15 @@ if grep -q 'assets/church/dev' pubspec.yaml; then
   exit 1
 fi
 
-# 1) pubspec.yaml 의 '- assets/church/' 바로 뒤에 개발용 폴더와 검수용 빌드에서 뺀 자산을 임시로 더한다.
+# 1) pubspec.yaml 의 '- assets/church/light/' 바로 뒤에 개발용 폴더와 검수용 빌드에서 뺀 자산을 임시로 더한다.
 ADDF="$(mktemp)"
 echo "$LINE" > "$ADDF"
 while IFS= read -r l; do
   case "$l" in ''|'#'*) continue ;; esac
   echo "    - $l" >> "$ADDF"
 done < tools/release_hidden_assets.txt
-awk -v addf="$ADDF" '{ print } $0 ~ /^    - assets\/church\/$/ { while ((getline x < addf) > 0) print x; close(addf); n++ } END { if (n != 1) exit 3 }' "$BAK" > pubspec.yaml \
-  || { echo "pubspec.yaml 에서 '- assets/church/' 줄을 찾지 못했습니다." >&2; exit 1; }
+awk -v addf="$ADDF" '{ print } $0 ~ /^    - assets\/church\/light\/$/ { while ((getline x < addf) > 0) print x; close(addf); n++ } END { if (n != 1) exit 3 }' "$BAK" > pubspec.yaml \
+  || { echo "pubspec.yaml 에서 '- assets/church/light/' 줄을 찾지 못했습니다." >&2; exit 1; }
 
 # 2) 빌드. 백엔드 값은 환경 변수로 넘기면 일반 빌드와 같이 들어간다(없으면 '백엔드 미설정' 빌드).
 DEFINES=(--dart-define=ROSARIUM_DEV_GLASS=true)

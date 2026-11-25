@@ -56,7 +56,8 @@ void main() {
           .map((l) => l.trim())
           .where((l) => l.startsWith('- assets/'))
           .toList();
-      expect(lines, contains('- assets/church/'));
+      expect(lines, contains('- assets/church/main.js'));
+      expect(lines, contains('- assets/church/light/'));
       expect(
         lines.where(
           (l) =>

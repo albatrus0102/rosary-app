@@ -142,6 +142,15 @@ const ArtCredit stationsArtCredit = ArtCredit(
   license: 'Public domain',
 );
 
+/// 성당 안에 걸린 진본 성화 출처 줄 중 지금 빌드에서 보이는 것(성당 측 요청으로 뺀 성당의 줄은
+/// [ReleaseGate.withdrawnChurchArtCreditUses]라 일반 빌드에서 제외).
+List<ArtCredit> get visibleChurchArtCredits => [
+  for (final c in churchArtCredits)
+    if (ReleaseGate.showAll ||
+        !ReleaseGate.withdrawnChurchArtCreditUses.contains(c.use))
+      c,
+];
+
 /// 성당 안에 걸린 진본 성화(가상 성당의 그 자리에 실제로 모셔진 작품의 사진).
 const List<ArtCredit> churchArtCredits = [
   ArtCredit(

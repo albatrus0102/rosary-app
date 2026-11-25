@@ -53,7 +53,31 @@ flutter:
     # tools/build_dev_apk.sh 가 개발용 빌드 때만 그 목록을 임시로 더한다(개발용 유리 폴더와 같은 방식).
     # 성당 입구 화면 그림 슬롯(배경·레일 장식, 성당별 대표 그림·썸네일, 3D 렌더 샷).
     # 대체 규칙은 lib/church/church_entry_art.dart, 만드는 법은 docs/church/ENTRY_ART.md.
-    - assets/images/church_entry/
+    # ※ 이 폴더와 아래 assets/church/·assets/church_thumbs/ 는 폴더째가 아니라 파일을 하나씩 적는다: 성당 측 요청으로 뺀 성당
+    #   (ReleaseGate.withdrawnChurchIds)의 파일만 번들에서 빼기 위해서다(목록은 tools/release_hidden_assets.txt '2-2').
+    #   새 파일을 이 폴더에 넣으면 여기에도 적어야 한다(test/release_gate_test.dart 가 빠짐을 잡는다).
+    - assets/images/church_entry/bg_glow.webp
+    - assets/images/church_entry/hero_milan.webp
+    - assets/images/church_entry/rail_decor.webp
+    - assets/images/church_entry/render_assisi.webp
+    - assets/images/church_entry/render_basic.webp
+    - assets/images/church_entry/render_danggogae.webp
+    - assets/images/church_entry/render_florence.webp
+    - assets/images/church_entry/render_lateran.webp
+    - assets/images/church_entry/render_light.webp
+    - assets/images/church_entry/render_myeongdong.webp
+    - assets/images/church_entry/render_stpaul.webp
+    - assets/images/church_entry/render_stpeter.webp
+    - assets/images/church_entry/render_yeouido.webp
+    - assets/images/church_entry/thumb_assisi.webp
+    - assets/images/church_entry/thumb_basic.webp
+    - assets/images/church_entry/thumb_florence.webp
+    - assets/images/church_entry/thumb_lateran.webp
+    - assets/images/church_entry/thumb_light.webp
+    - assets/images/church_entry/thumb_milan.webp
+    - assets/images/church_entry/thumb_myeongdong.webp
+    - assets/images/church_entry/thumb_stpaul.webp
+    - assets/images/church_entry/thumb_stpeter.webp
     # 앱 소개(첫 실행) 그림. 경로는 lib/ui/app_intro.dart 의 AppIntroArt.
     - assets/images/onboarding/
     # 십자가의 길 14처(묵상 시트·고통의 신비 배경)와 신비 배경 17점. 원본은 번들 밖 art/images_unused/
@@ -81,12 +105,149 @@ flutter:
     # 1k 사진 팩(gpack_*_1k.js; 3D·평면 보기 공용). 나머지 38점·2k·1k WebP 원본은 번들 밖
     # (art/glass_unbundled/, art/glass_2k/, art/glass_1k/; tools/glass_bundle/glass_bundle.py).
     # 4096 마스터는 art/glass_masters/에 있고 번들하지 않는다(G2에서 CDN으로 내려받는다).
-    - assets/church/
+    - assets/church/ao_assisi.js
+    - assets/church/ao_basic.js
+    - assets/church/ao_danggogae.js
+    - assets/church/ao_florence.js
+    - assets/church/ao_fx.js
+    - assets/church/ao_lateran.js
+    - assets/church/ao_light.js
+    - assets/church/ao_milan.js
+    - assets/church/ao_myeongdong.js
+    - assets/church/ao_stpaul.js
+    - assets/church/ao_stpeter.js
+    - assets/church/ao_yeouido.js
+    - assets/church/art_florence.js
+    - assets/church/art_stpaul.js
+    - assets/church/art_stpeter.js
+    - assets/church/audio.js
+    - assets/church/avatar.js
+    - assets/church/avatar_glb.js
+    - assets/church/baptismal_names.js
+    - assets/church/bridge.js
+    - assets/church/cam_guard.js
+    - assets/church/ch_assisi.js
+    - assets/church/ch_basic.js
+    - assets/church/ch_danggogae.js
+    - assets/church/ch_florence.js
+    - assets/church/ch_glass.js
+    - assets/church/ch_lateran.js
+    - assets/church/ch_light.js
+    - assets/church/ch_milan.js
+    - assets/church/ch_myeongdong.js
+    - assets/church/ch_stpaul.js
+    - assets/church/ch_stpeter.js
+    - assets/church/ch_yeouido.js
+    - assets/church/controls.js
+    - assets/church/cross_data.js
+    - assets/church/cross_pack.js
+    - assets/church/cross_pack_corot.js
+    - assets/church/cross_pack_fahnroth.js
+    - assets/church/cross_pack_fugel_munich.js
+    - assets/church/cross_pack_hermann_paul.js
+    - assets/church/cross_pack_mosler.js
+    - assets/church/cross_pack_oreilly.js
+    - assets/church/cross_pack_tiepolo.js
+    - assets/church/env_church.js
+    - assets/church/frame_pace.js
+    - assets/church/geo.js
+    - assets/church/gi_assisi.js
+    - assets/church/gi_basic.js
+    - assets/church/gi_danggogae.js
+    - assets/church/gi_florence.js
+    - assets/church/gi_fx.js
+    - assets/church/gi_lateran.js
+    - assets/church/gi_light.js
+    - assets/church/gi_milan.js
+    - assets/church/gi_myeongdong.js
+    - assets/church/gi_stpaul.js
+    - assets/church/gi_stpeter.js
+    - assets/church/gi_yeouido.js
+    - assets/church/glass_alabaster_slab_th.webp
+    - assets/church/glass_alabaster_stpaul_1_th.webp
+    - assets/church/glass_alabaster_stpaul_2_th.webp
+    - assets/church/glass_catalog.js
+    - assets/church/glass_catalog.json
+    - assets/church/glass_dove_stpeter_th.webp
+    - assets/church/glass_gen.js
+    - assets/church/glass_math.js
+    - assets/church/glass_milan_apse_lower_th.webp
+    - assets/church/glass_oculus_florence_donatello_th.webp
+    - assets/church/glass_oculus_florence_ghiberti_1_th.webp
+    - assets/church/glass_oculus_florence_ghiberti_2_th.webp
+    - assets/church/glass_place.js
+    - assets/church/glass_placements.js
+    - assets/church/glass_stream.js
+    - assets/church/glass_view.js
+    - assets/church/gpack_alabaster_slab_1k.js
+    - assets/church/gpack_alabaster_stpaul_1_1k.js
+    - assets/church/gpack_alabaster_stpaul_2_1k.js
+    - assets/church/gpack_dove_stpeter_1k.js
+    - assets/church/gpack_far_florence.js
+    - assets/church/gpack_far_milan.js
+    - assets/church/gpack_far_stpaul.js
+    - assets/church/gpack_far_stpeter.js
+    - assets/church/gpack_milan_apse_lower_1k.js
+    - assets/church/gpack_oculus_florence_donatello_1k.js
+    - assets/church/gpack_oculus_florence_ghiberti_1_1k.js
+    - assets/church/gpack_oculus_florence_ghiberti_2_1k.js
+    - assets/church/index.html
+    - assets/church/kit.js
+    - assets/church/kit_tex.js
+    - assets/church/label_fit.js
+    - assets/church/layouts.js
+    - assets/church/light_pilgrim.js
+    - assets/church/liturgy.js
+    - assets/church/looks.js
+    - assets/church/main.js
+    - assets/church/markers.js
+    - assets/church/net_view.js
+    - assets/church/palette.js
+    - assets/church/perf_hud.js
+    - assets/church/photos.js
+    - assets/church/probe_fx.js
+    - assets/church/probe_places.js
+    - assets/church/render.js
+    - assets/church/reverence.js
+    - assets/church/reverence_places.js
+    - assets/church/rosary_looks.js
+    - assets/church/scan3d.js
+    - assets/church/scan3d_angel.js
+    - assets/church/scan3d_crucifix.js
+    - assets/church/scan3d_pieta.js
+    - assets/church/scan3d_st_paul.js
+    - assets/church/scan3d_st_peter.js
+    - assets/church/scene_logic.js
+    - assets/church/shaft_fx.js
+    - assets/church/shrine.js
+    - assets/church/shrine_places.js
+    - assets/church/stations.js
+    - assets/church/statue3d_hanbok_rosary.js
+    - assets/church/statue3d_immaculate_blue.js
+    - assets/church/statue3d_mary_meshy.js
+    - assets/church/statue3d_plain_white.js
+    - assets/church/test.html
+    - assets/church/tex_pack.js
+    - assets/church/tex_pack_assisi.js
+    - assets/church/three.min.js
+    - assets/church/three_extras.js
+    - assets/church/way_cross.js
+    - assets/church/world.js
     # 빛의 성당(가상, 2026-11-24 공개): 창·모자이크 그림 팩, 메달 홀 바닥, 실물 성상 스캔 묶음.
     - assets/church/light/
     # 기도 화면 3D 묵주(T-81): 묵주 전용 경량 페이지. three.min.js·three_extras.js 는 assets/church/ 것을 상대 경로로 쓴다.
     - assets/rosary3d/
-    - assets/church_thumbs/
+    # (성당 목록 썸네일: 위 설명과 같다)
+    - assets/church_thumbs/assisi.webp
+    - assets/church_thumbs/basic.webp
+    - assets/church_thumbs/danggogae.webp
+    - assets/church_thumbs/florence.webp
+    - assets/church_thumbs/lateran.webp
+    - assets/church_thumbs/milan.webp
+    - assets/church_thumbs/myeongdong.webp
+    - assets/church_thumbs/stpaul.webp
+    - assets/church_thumbs/stpeter.webp
+    - assets/church_thumbs/yeouido.webp
     - assets/sounds/
     # 기도 배경 성가(오르간 4곡, AAC). tools/music/make_organ_tracks.py 가 만든다(출처 licenses/MUSIC.md).
     - assets/music/

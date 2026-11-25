@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rosary_app/app/app_services.dart';
+import 'package:rosary_app/app/release_gate.dart';
 import 'package:rosary_app/app/settings.dart';
 import 'package:rosary_app/app/theme.dart';
 import 'package:rosary_app/church/church_catalog.dart';
@@ -19,7 +20,7 @@ import 'package:rosary_app/ui/app_shell.dart';
 import 'church_screen_fakes.dart';
 import 'glass_test_support.dart';
 
-const _ids = {'basic', 'stpeter', 'maggiore', 'milan', 'myeongdong'};
+const _ids = {'basic', 'stpeter', 'lateran', 'milan', 'myeongdong'};
 
 Finder _thumb(String id) => find.byKey(ValueKey('entry-thumb-$id'));
 
@@ -40,6 +41,7 @@ Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _pumpShell(
   bool avatarChosen = true,
   String last = 'milan',
   EdgeInsets padding = EdgeInsets.zero,
+  Set<String> ids = _ids,
 }) async {
   setView(tester, size);
   if (padding != EdgeInsets.zero) {
@@ -78,7 +80,7 @@ Future<(AppSettings, FakeChurchNet, FakeChurchSceneController)> _pumpShell(
             settings: settings,
             net: net,
             scene: scene,
-            availableIds: _ids,
+            availableIds: ids,
           ),
         ),
       ),
@@ -220,6 +222,15 @@ void main() {
   });
 
   group('큰 카드와 캐러셀', () {
+    testWidgets('성당 측 요청으로 뺀 마조레는 가용 목록에 들어 있어도 일반 빌드 캐러셀에 없다(개발용 빌드는 있다)', (
+      tester,
+    ) async {
+      await _pumpShell(tester, ids: {..._ids, 'maggiore'});
+      expect(_thumb('maggiore').evaluate().length, ReleaseGate.showAll ? 1 : 0);
+      expect(find.text('성 마리아 마조레 대성전'), ReleaseGate.showAll ? findsWidgets : findsNothing);
+      expect(_thumb('lateran'), findsOneWidget);
+    });
+
     testWidgets('캐러셀은 들어갈 수 있는 성당을 카탈로그에서 가져오고, 고른 성당이 선택됨으로 읽힌다', (
       tester,
     ) async {
@@ -228,7 +239,7 @@ void main() {
       for (final c in ChurchCatalog.all) {
         expect(
           _thumb(c.id).evaluate().length,
-          _ids.contains(c.id) ? 1 : 0,
+          _ids.contains(c.id) && ReleaseGate.churchListed(c.id) ? 1 : 0,
           reason: c.id,
         );
       }
@@ -298,8 +309,8 @@ void main() {
     testWidgets("세그먼트로 '창'에 다녀와도 성당 탭 상태(고른 성당)가 그대로다", (tester) async {
       await _pumpShell(tester);
       final tab = tester.state(find.byKey(const ValueKey('church-tab')));
-      await _tapThumb(tester, 'maggiore');
-      expect(_name(tester), '성 마리아 마조레 대성전');
+      await _tapThumb(tester, 'lateran');
+      expect(_name(tester), '라테라노 성 요한 대성전');
       await tester.ensureVisible(find.byKey(const ValueKey('glass-segment')));
       await tester.tap(_segment('창'));
       await tester.pumpAndSettle();
@@ -308,7 +319,7 @@ void main() {
       await tester.tap(_segment('성당'));
       await tester.pumpAndSettle();
       expect(tester.state(find.byKey(const ValueKey('church-tab'))), same(tab));
-      expect(_name(tester), '성 마리아 마조레 대성전');
+      expect(_name(tester), '라테라노 성 요한 대성전');
       expect(find.text('선택한 성당'), findsOneWidget);
       // 다른 탭에 다녀와도 같다.
       await tester.tap(
@@ -326,7 +337,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.state(find.byKey(const ValueKey('church-tab'))), same(tab));
-      expect(_name(tester), '성 마리아 마조레 대성전');
+      expect(_name(tester), '라테라노 성 요한 대성전');
     });
 
     testWidgets('책갈피 버튼은 즐겨찾기를 켜고 끈다(고른 성당 기준)', (tester) async {
@@ -532,6 +543,8 @@ void main() {
       );
       final assets = manifest!.listAssets().toSet();
       for (final id in ChurchSelectScreen.availableIds) {
+        // 성당 측 요청으로 뺀 성당의 그림은 번들에 없다(개발용 APK 빌드 때만 더해진다 — tools/release_hidden_assets.txt)
+        if (ReleaseGate.withdrawnChurchIds.contains(id)) continue;
         expect(
           assets,
           contains(ChurchEntryArt.pick(ChurchEntryArt.heroCandidates(id))),

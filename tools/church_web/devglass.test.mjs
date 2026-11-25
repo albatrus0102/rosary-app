@@ -197,7 +197,7 @@ test('release gate (JS): without the dev flag nothing unapproved is placed', () 
 test('release gate (packaging): assets/church/dev is not in pubspec, nothing outside dev/ carries or statically loads the placeholders', () => {
   const pub = fs.readFileSync(path.join(repo, 'pubspec.yaml'), 'utf8');
   const listed = pub.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('- assets/'));
-  assert.ok(listed.includes('- assets/church/'));
+  assert.ok(listed.includes('- assets/church/main.js') && listed.includes('- assets/church/light/'));
   assert.ok(!listed.some((l) => /church\/dev|_devbundle|glass_milan55/.test(l)), 'dev assets must not be listed in pubspec.yaml');
   assert.ok(!/glass_milan55|gpack_dev/.test(pub));
   // Flutter 는 'assets/church/' 항목으로 그 폴더의 파일만 싣는다(하위 폴더 제외) → dev/ 아래에만 있어야 한다

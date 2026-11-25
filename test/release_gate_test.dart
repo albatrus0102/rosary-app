@@ -121,6 +121,93 @@ void main() {
     });
   });
 
+  group('2-2. church that asked not to appear (Maggiore, 2026-11-25)', () {
+    test('withdrawn: not in releaseIds, not listed at all in release, open in dev', () {
+      expect(ReleaseGate.withdrawnChurchIds, {'maggiore'});
+      expect(ChurchSelectScreen.releaseIds, isNot(contains('maggiore')));
+      expect(ReleaseGate.churchListed('maggiore'), _dev);
+      expect(ChurchSelectScreen.availableIds.contains('maggiore'), _dev);
+      expect(
+        ChurchCatalog.listed.map((c) => c.id).contains('maggiore'),
+        _dev,
+      );
+      // 다른 성당은 그대로다
+      expect(ReleaseGate.churchListed('lateran'), isTrue);
+      expect(ChurchSelectScreen.availableIds, contains('lateran'));
+      // 카탈로그 자체(저장된 id 해석)에는 남아 있어 옛 저장값이 앱을 깨지 않는다
+      expect(ChurchCatalog.byId.containsKey('maggiore'), isTrue);
+    });
+
+    test('its photo credit line and series credit name are hidden in release', () {
+      final uses = visibleChurchArtCredits.map((c) => c.use).toList();
+      for (final u in ReleaseGate.withdrawnChurchArtCreditUses) {
+        expect(churchArtCredits.map((c) => c.use), contains(u));
+        expect(uses.contains(u), _dev, reason: u);
+      }
+      if (!_dev) {
+        expect(
+          visibleChurchArtCredits.any(
+            (c) => c.credit.contains('Salus Populi Romani'),
+          ),
+          isFalse,
+        );
+      }
+    });
+
+    test('Maggiore-only files are in the hidden list, not in pubspec, and nothing else is hidden by mistake', () {
+      const only = [
+        'assets/church/ch_maggiore.js',
+        'assets/church/art_maggiore.js',
+        'assets/church/ao_maggiore.js',
+        'assets/church/gi_maggiore.js',
+        'assets/images/church_entry/thumb_maggiore.webp',
+        'assets/images/church_entry/render_maggiore.webp',
+        'assets/church_thumbs/maggiore.webp',
+      ];
+      final pub = File('pubspec.yaml').readAsStringSync();
+      for (final f in only) {
+        expect(_hiddenEntries(), contains(f), reason: f);
+        expect(pub, isNot(contains('- $f')), reason: f);
+        expect(File(f).existsSync(), isTrue, reason: f);
+      }
+      // 공유 파일은 번들에 남는다
+      for (final f in [
+        'assets/church/looks.js',
+        'assets/church/liturgy.js',
+        'assets/church/ch_lateran.js',
+        'assets/church/glass_catalog.json',
+      ]) {
+        expect(pub, contains('- $f'), reason: f);
+      }
+    });
+
+    test('these folders are listed file by file: every file is listed or hidden', () {
+      final pub = File('pubspec.yaml').readAsStringSync();
+      final listed = {
+        for (final l in pub.split('\n'))
+          if (l.trim().startsWith('- assets/')) l.trim().substring(2),
+      };
+      final hidden = _hiddenEntries().toSet();
+      for (final d in [
+        'assets/church',
+        'assets/church_thumbs',
+        'assets/images/church_entry',
+      ]) {
+        expect(listed, isNot(contains('$d/')), reason: '$d 는 폴더째 적지 않는다');
+        for (final e in Directory(d).listSync().whereType<File>()) {
+          final name = e.uri.pathSegments.last;
+          if (name.startsWith('.')) continue;
+          final f = '$d/$name';
+          expect(
+            listed.contains(f) != hidden.contains(f),
+            isTrue,
+            reason: '$f: pubspec.yaml 과 tools/release_hidden_assets.txt 중 한 곳에만 있어야 한다',
+          );
+        }
+      }
+    });
+  });
+
   group('3. Previati series', () {
     test('not listed, St Peter uses another bundled public-domain series', () {
       final ids = StationsSeriesCatalog.all.map((s) => s.id);

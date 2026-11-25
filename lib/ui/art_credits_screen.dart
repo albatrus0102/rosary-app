@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app/release_gate.dart';
 import '../app/theme.dart';
 import '../church/church_catalog.dart';
 import '../domain/art_credits.dart';
@@ -64,7 +65,7 @@ class ArtCreditsScreen extends StatelessWidget {
                   margin: EdgeInsets.zero,
                   color: scheme.surfaceContainerLow,
                   child: Column(
-                    children: [for (final c in churchArtCredits) tile(c)],
+                    children: [for (final c in visibleChurchArtCredits) tile(c)],
                   ),
                 ),
                 const SectionHeader('성당 안 성상(3D 스캔)'),
@@ -133,7 +134,7 @@ class _SeriesCard extends StatelessWidget {
     );
     final churches = [
       for (final id in StationsSeriesCatalog.churchesOf(series))
-        ChurchCatalog.byId[id]?.nameKo ?? id,
+        if (ReleaseGate.churchListed(id)) ChurchCatalog.byId[id]?.nameKo ?? id,
     ];
     final death = series.artistDeath;
     Widget row(String label, String value) => Padding(

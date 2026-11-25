@@ -12,6 +12,20 @@
 assets/leader_voice/sister/
 assets/leader_voice/priest/
 
+# 2-2. 성 마리아 마조레 대성전(`maggiore`) — 성당 측이 2026-11-25 「앱에 싣지 말아 달라」고 회신했다(ReleaseGate.withdrawnChurchIds).
+#    이 성당만의 파일: 3D 장면 만드는 JS, 그림자·빛 번짐 굽기, 〈로마 백성의 구원(Salus Populi Romani)〉 성화 사진(art_maggiore.js 안),
+#    입구 화면 썸네일·렌더, 성당 목록 썸네일. 공유 파일(looks.js·liturgy.js·glass_catalog 등)은 그대로 둔다.
+#    ※ 이 파일들이 든 폴더(assets/church/·assets/church_thumbs/·assets/images/church_entry/)는 pubspec.yaml 에 폴더째가 아니라
+#      파일을 하나씩 적어, 이 항목들만 번들에서 빠진다. index.html 의 ch_maggiore.js <script> 줄은 파일이 없으면 그냥 건너뛴다
+#      (ao_/gi_/art_ 는 성당에 들어올 때만 읽고, 일반 빌드는 이 성당에 들어갈 길이 없다).
+assets/church/ch_maggiore.js
+assets/church/art_maggiore.js
+assets/church/ao_maggiore.js
+assets/church/gi_maggiore.js
+assets/images/church_entry/thumb_maggiore.webp
+assets/images/church_entry/render_maggiore.webp
+assets/church_thumbs/maggiore.webp
+
 # 3. 프레비아티 〈십자가의 길〉 그림(바티칸 박물관 소장품 사진). 3D 장면용 팩은 assets/church/dev/cross_pack_previati.js
 #    (assets/church/dev/ 는 개발용 빌드만 담는다).
 assets/images/stations/previati/

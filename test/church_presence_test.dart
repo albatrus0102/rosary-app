@@ -607,7 +607,7 @@ void main() {
           dark: dark,
           count: 6,
           selfName: AvatarConfig(name: longest).nameText,
-          loads: _loads({'stpeter': 6, 'maggiore': 12, 'myeongdong': 3}),
+          loads: _loads({'stpeter': 6, 'lateran': 12, 'myeongdong': 3}),
         );
         net.emit(
           _who([(longest, 'p'), (1, 's'), (2, 'w'), (3, 'w'), (4, 'p')]),
@@ -835,7 +835,7 @@ void main() {
             'myeongdong': 23,
             'basic': 4,
             'milan': 11,
-            'maggiore': 2,
+            'lateran': 2,
           }),
         );
         net.emit(

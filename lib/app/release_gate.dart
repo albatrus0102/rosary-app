@@ -41,13 +41,34 @@ abstract final class ReleaseGate {
   /// 빛의 성당(`light`)은 2026-11-24 사용자 결정으로 공개했다 — `ChurchSelectScreen.releaseIds`로 옮기고 창 팩 폴더를 번들에 넣었다.
   static const Set<String> unreleasedChurchIds = {};
 
+  // ── 2-2. 성당 측이 「앱에 싣지 말아 달라」고 한 성당 ──────────────────────────────────────
+  /// 성당(관리 주체)이 앱에 나오지 않기를 요청해 일반(배포) 빌드·웹 데모에서 **목록에도 '준비 중'으로도 나오지 않게** 뺀 성당
+  /// ([churchListed]). 이름·썸네일·장면·성화 출처 줄이 하나도 보이지 않는다.
+  /// 성 마리아 마조레 대성전(`maggiore`): 2026-11-25 회신 ③ 「La Basilica … ha deciso di non comparire nella app.
+  /// Le chiedo quindi di toglierla.」 — 허락 요청 편지에서 뺀다고 약속했다(`docs/legal/church_permission/README.md` §8-1).
+  /// 개발용 빌드에서 남길지는 사용자가 아직 정하지 않았다(그동안은 개발용 빌드에서만 열린다).
+  /// 번들에서 뺀 자산은 `tools/release_hidden_assets.txt`의 '2-2' 항목.
+  /// 풀리는 조건: 없음(성당 측이 다시 허락해 줄 때만).
+  static const Set<String> withdrawnChurchIds = {'maggiore'};
+
+  /// 위 성당의 실제 작품 사진 출처 줄(`ArtCredit.use`). 성당을 뺐으므로 출처 줄도 뺀다.
+  static const Set<String> withdrawnChurchArtCreditUses = {
+    '성 마리아 마조레 대성전 · 파올리나 경당의 성화',
+  };
+
   /// 이 성당을 지금 빌드의 목록(성당 고르기·입구 캐러셀)에 보여도 되는가.
   static bool churchListed(String id) =>
-      showAll || !unreleasedChurchIds.contains(id);
+      showAll ||
+      !(unreleasedChurchIds.contains(id) || withdrawnChurchIds.contains(id));
 
   /// [releaseIds]에 더해 지금 빌드에서 열리는 성당 id.
   static Set<String> openChurchIds(Set<String> releaseIds) => showAll
-      ? {...releaseIds, ...pendingConsentChurchIds, ...unreleasedChurchIds}
+      ? {
+          ...releaseIds,
+          ...pendingConsentChurchIds,
+          ...unreleasedChurchIds,
+          ...withdrawnChurchIds,
+        }
       : releaseIds;
 
   // ── 3. 프레비아티 〈십자가의 길〉(바티칸 박물관 소장품 사진) ────────────────────────────
