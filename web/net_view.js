@@ -139,7 +139,7 @@
     opts = opts || {};
     var T3 = root.THREE, Av = root.RoomAvatar && root.RoomAvatar.Avatar;
     var logic = null, mySeat = null, table = createTable(opts), views = new Map(), pool = [], tmp = {};
-    var MAXV = opts.maxVisible || DEF.MAX_VISIBLE, focus = { x: 0, z: 0 }, selT = 99;
+    var MAXV = opts.maxVisible || DEF.MAX_VISIBLE, focus = { x: 0, z: 0 }, selT = 99, seatOff = null;
     function walkTop() { return (logic && logic.walkSpeed) || (root.RoomLogic && root.RoomLogic.C.WALK_SPEED) || 2.2; }
     function seatId(seat) { if (seat === null || seat === undefined || !logic) return null; return typeof seat === 'number' ? logic.seatAt(seat) : seat; }
     function acquire(cfg) {
@@ -169,6 +169,7 @@
     var api = {
       table: table,
       setLogic: function (l) { logic = l; },
+      setSeatOffset: function (fn) { seatOff = typeof fn === 'function' ? fn : null; },   // 흔들리는 자리(그네): 앉은 아바타를 같은 만큼 옮긴다
       setMySeat: function (s) { mySeat = s; },
       count: function () { return table.peers.size; },
       visibleCount: function () { return views.size; },
@@ -211,6 +212,7 @@
             if (v.anim > 0 && !v.fresh) { v.anim -= dt; var k = 1 - Math.max(0, v.anim) / 0.7, ks = k * k * (3 - 2 * k); x = v.ax + (sp.x - v.ax) * ks; z = v.az + (sp.z - v.az) * ks; }
             else { x = sp.x; z = sp.z; }
             r = sp.yaw; v.sid = sid;
+            var so = seatOff ? seatOff(sid) : null; if (so) { x += so.x; z += so.z; fl += so.y; }
             av.setSeated(true);
             if (v.fresh) { av.setPose(x, fl, z, r); av.snapPose(); }
           } else {

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>3D 공방 시험</title>
+<style>
+  html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#222;touch-action:none;font:12px/1.35 sans-serif}
+  canvas{display:block;position:fixed;left:0;top:0;width:100%;height:100%;touch-action:none}
+  #dbg{position:fixed;left:6px;top:6px;color:#fff;background:rgba(0,0,0,.45);padding:4px 6px;border-radius:6px;white-space:pre;pointer-events:none}
+  #btns{position:fixed;right:6px;top:6px;display:flex;flex-wrap:wrap;gap:4px;max-width:280px;justify-content:flex-end}
+  #btns button{font-size:12px;padding:4px 6px;border-radius:6px;border:0;background:rgba(255,255,255,.85)}
+  body.hideui #btns,body.hideui #dbg{display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="dbg"></div>
+<div id="btns"></div>
+<script>
+window.RoomNoAutoStart = true;
+// gpt=<경로>: 독서공방 저장소의 ChatGPT 색 질감(이 패키지에 없음)을 칸에 끼워 본다. 예: gpt=../../reading-journal/docs/handover/2026-11-26-metaverse-shop/gpt/
+(function () {
+  var g = new URLSearchParams(location.search).get('gpt');
+  if (!g) return;
+  window.RoomPhotoMap = { wood_floor: g + 'tex/T01-floor-oak.png', wood_dark: g + 'tex/T02-wood-furniture.png', plaster: g + 'tex/T03-plaster.png', stucco: g + 'tex/T03-plaster.png',
+    cork: g + 'tex/T04-cork.png', jute: g + 'tex/T05-rug.png', paving: g + 'tex/T06-paving.png', asphalt: g + 'tex/T07-asphalt.png', soil: g + 'tex/T08-soil.png', grass: g + 'tex/T09-grass.png' };
+  window.RoomBackdrop = { day: g + 'P-01-alley-day.png', night: g + 'P-01-alley-night.png' };
+})();
+</script>
+<script src="three.min.js"></script>
+<script src="three_extras.js"></script>
+<script src="palette.js"></script>
+<script src="layouts.js"></script>
+<script src="scan3d.js"></script>
+<script src="scene_logic.js"></script>
+<script src="geo.js"></script>
+<script src="photos.js"></script>
+<script src="kit_tex.js"></script>
+<script src="kit.js"></script>
+<script src="audio.js"></script>
+<script src="looks.js"></script>
+<script src="ao_fx.js"></script>
+<script src="gi_fx.js"></script>
+<script src="frame_pace.js"></script>
+<script src="cam_guard.js"></script>
+<script src="world.js"></script>
+<script src="render.js"></script>
+<script src="perf_hud.js"></script>
+<script src="label_fit.js"></script>
+<script src="markers.js"></script>
+<script src="avatar.js"></script>
+<script src="controls.js"></script>
+<script src="net_view.js"></script>
+<script src="bridge.js"></script>
+<script src="ch_house.js"></script>
+<script src="main.js"></script>
+<script>
+/* 시험 페이지: 호스트 흉내. URL: room, hour, quality(low|mid|high), autotier(0), frames(N 프레임 뒤 정지), thumb(0|1), sit(좌석 번호),
+   peers(걷는 사람 수), peerseat(앉아 있는 한 사람의 좌석), view(앉은 뒤 시점 yaw,pitch,zoom), x,z,yaw,pitch,zoom(시작 자세), hideui(1), fixed(0: 시계 흐름). 이벤트는 window.__roomEvents 와 콘솔에. */
+(function () {
+  var qs = new URLSearchParams(location.search), R = window.Room3D;
+  if (qs.get('hideui')) document.body.classList.add('hideui');
+  window.__roomLog = !qs.get('quiet');
+  var me = { g: 0, skin: 1, style: 2, hair: 3, outfit: 7, label: '나' };
+  function init() {
+    R.init({ room: qs.get('room') || 'house', avatar: me, hour: qs.get('hour') !== null ? +qs.get('hour') : 14, quality: qs.get('quality') || 'high', fixedClock: qs.get('fixed') !== '0' });
+    var n = +(qs.get('peers') || 0);
+    if (n) simPeers(n);
+    if (window.RoomBackdrop) R.setPanel({ id: 'backdrop', data: window.RoomBackdrop });
+    if (qs.get('sit') !== null) setTimeout(function () { R.sit({ i: +qs.get('sit') }); }, 200);
+    // peerseat=N: 다른 한 사람이 좌석 N 에 앉아 있다(1초마다 다시 보냄 — 서버 스냅숏 흉내)
+    if (qs.get('peerseat') !== null && !n) {
+      var sitter = function () { R.setPeers([{ id: 'friend', x: 0, z: 0, yaw: 0, state: 'sit', seat: +qs.get('peerseat'), avatar: { g: 1, skin: 2, style: 1, hair: 1, outfit: 4, label: '친구' } }]); };
+      sitter(); setInterval(sitter, 1000);
+    }
+    // view=yaw,pitch,zoom(도·도·배율): 앉은 뒤 사용자가 시점을 끈 것처럼 카메라를 옮긴다(앉은 자리 시점을 놓는다)
+    if (qs.get('view')) R.on(function (e) {
+      if (e.e !== 'sat') return;
+      var v = qs.get('view').split(',').map(Number), a = window.__room;
+      a.ctl.yaw = v[0] * Math.PI / 180; a.ctl.pitch = v[1] * Math.PI / 180; if (v[2]) a.ctl.zoom = v[2]; a.ctl.lastDragT = a.t + 0.001; a.spot = null;
+    });
+  }
+  // 걷는 사람 흉내: 길을 따라 걷는 자세를 3Hz 로 setPeers(실제 서버 대신). 조금씩 늦게·고르지 않게 보내 보간을 시험한다.
+  var simT = null;
+  var ROUTES = [
+    [[0.3, 2.6], [0.45, 0.4], [0.1, -2.4], [0.45, 0.4]],
+    [[0.9, 1.6], [1.1, -0.2], [0.6, -2.3], [-0.4, -1.0], [-0.5, 1.4], [0.9, 1.6]],
+    [[0.7, 5.2], [0.7, 3.0], [0.2, 1.2], [0.7, 3.0]]
+  ];
+  function simPeers(n) {
+    if (simT) clearInterval(simT);
+    var peers = [], t0 = performance.now();
+    for (var i = 0; i < n; i++) peers.push({ id: 'p' + i, route: ROUTES[i % ROUTES.length], speed: 0.9 + 0.2 * i, avatar: { g: i % 2, skin: (i * 2 + 1) % 4, style: (i * 3) % 4, hair: (i * 5 + 1) % 10, outfit: (i * 4 + 2) % 12, label: ['책벌레', '오늘도 한 장', '고양이 독자'][i % 3] } });
+    function posAt(p, t) {
+      var R0 = p.route, segs = [], L = 0;
+      for (var k = 0; k < R0.length - 1; k++) { var a = R0[k], b = R0[k + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]); segs.push([a, b, l]); L += l; }
+      var d = (t * p.speed) % L;
+      for (k = 0; k < segs.length; k++) { if (d <= segs[k][2]) { var s = segs[k], f = d / s[2]; return { x: s[0][0] + (s[1][0] - s[0][0]) * f, z: s[0][1] + (s[1][1] - s[0][1]) * f, yaw: Math.atan2(-(s[1][0] - s[0][0]), -(s[1][1] - s[0][1])) }; } d -= segs[k][2]; }
+      return { x: R0[0][0], z: R0[0][1], yaw: 0 };
+    }
+    function send() {
+      var t = (performance.now() - t0) / 1000;
+      R.setPeers(peers.map(function (p) { var q = posAt(p, t + 1.2); return { id: p.id, x: q.x, z: q.z, yaw: q.yaw, state: 'walk', seat: null, avatar: p.avatar }; }));
+    }
+    send(); simT = setInterval(send, 333);
+    window.__simPeers = { stop: function () { clearInterval(simT); }, posAt: posAt, peers: peers };
+  }
+  window.simPeers = simPeers;
+  var btns = document.getElementById('btns');
+  function B(label, fn) { var b = document.createElement('button'); b.textContent = label; b.onclick = fn; btns.appendChild(b); }
+  B('앉기', function () { R.sit({}); });
+  B('일어나기', function () { R.stand({}); });
+  [[10, '아침'], [14, '낮'], [18.6, '노을'], [21, '밤']].forEach(function (h) { B(h[1], function () { R.setHour({ hour: h[0] }); }); });
+  B('걷는 사람 2', function () { simPeers(2); });
+  B('정원 바꾸기', function () { var l = []; for (var i = 0; i < 16; i++) l.push({ flower: (Math.random() * 8) | 0, stage: (Math.random() * 4) | 0, pot: Math.random() < 0.2 ? 1 : 0 }); R.setGarden(l); });
+  B('타이머', function () { var s = (Math.random() * 25) | 0; R.setTimerText({ text: (s < 10 ? '0' : '') + s + ':00' }); });
+  B('자리 2 찼음', function () { R.setSeats([{ i: 1, taken: true }]); });
+  B('그네', function () { R.sit({ i: 4 }); });
+  B('성능 표시', function () { R.setPerfHud({ on: true }); });
+  B('발소리', function () { R.setSteps({ on: true, vol: 0.4 }); });
+  var dbg = document.getElementById('dbg');
+  setInterval(function () {
+    var a = window.__room; if (!a || !a.me || !a.world) return;
+    var ev = (window.__roomEvents || []).filter(function (e) { return e.e !== 'myPose' && e.e !== 'hb' && e.e !== 'perf'; }).slice(-4).map(function (e) { return JSON.stringify(e); }).join('\n');
+    dbg.textContent = 'fps ' + a.fps + '  ' + a.world.id + '  ' + a.me.mode + '\npos ' + a.me.x.toFixed(2) + ', ' + a.me.z.toFixed(2) + '  near ' + a.near.seat + '\nverts ' + a.world.stats.vertices + ' meshes ' + a.world.stats.meshes + '\n' + ev;
+  }, 300);
+  setTimeout(init, 30);
+})();
+</script>
+</body>
+</html>

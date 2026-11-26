@@ -442,7 +442,7 @@
       S.physMats.forEach(function (p) { if (aoMats.indexOf(p.m) < 0) aoMats.push(p.m); });
       items.forEach(function (it) { if (it.material && aoMats.indexOf(it.material) < 0) aoMats.push(it.material); });
       // 빛 번짐(gi_fx.js, RENDER_GI.md): 높음·보통(TIERS.gi > 0). triIds(배치 → 메시 정점 대응)를 AO 와 같이 쓰므로 둘 다 붙인 뒤에 놓는다.
-      var giWant = !!root.RoomGIFx && !!(tierCfg && tierCfg[tier].gi > 0) && !/[?&]gi=0/.test((root.location && root.location.search) || '');
+      var giWant = builder.gi === true && !!root.RoomGIFx && !!(tierCfg && tierCfg[tier].gi > 0) && !/[?&]gi=0/.test((root.location && root.location.search) || '');
       if (giWant) items.forEach(function (it) { if (it.ao && it.group) it.group.children.forEach(function (m) { if (m.userData.triIds) m.userData.triUsers = 2; }); });
       try { aoFx = root.RoomAOFx.attach({ id: id, items: items, mats: aoMats, aoOpts: S.aoOpts }); } catch (e) { if (root.console) console.warn('[room] aofx', e); aoFx = null; }
       if (giWant && aoFx) { try { giFx = root.RoomGIFx.attach({ id: id, items: items, mats: aoMats, root: world }); } catch (e) { if (root.console) console.warn('[room] gifx', e); giFx = null; } }
@@ -457,7 +457,9 @@
     }
     var api = {
       id: id, layout: layout, logic: logic, group: world, env: env, look: look, ctx: ctx, builder: builder, stats: stats, tier: tier, scene: scene,
-      hooks: (ret && ret.hooks) || null, taps: S.taps || [],   // 빌더 고리(garden·panel·skin)·누르기 자리(ctx.addTapTarget)
+      hooks: (ret && ret.hooks) || null, taps: S.taps || [],
+      setOccupied: function (m) { ctx.occupied = m || {}; },
+      seatOffset: function (id) { var h = ret && ret.hooks; return h && h.seatOffset ? h.seatOffset(id) : null; },   // 빌더 고리(garden·panel·skin)·누르기 자리(ctx.addTapTarget)
       cameraBounds: { x0: cb.x0 !== undefined ? cb.x0 : bnd.x0, x1: cb.x1 !== undefined ? cb.x1 : bnd.x1, z0: cb.z0 !== undefined ? cb.z0 : bnd.z0, z1: cb.z1 !== undefined ? cb.z1 : bnd.z1, yMax: cb.yMax || 9, pitchMax: cb.pitchMax, tight: cb.tight },
       // 카메라 가림 잘라내기(cam_guard.js, ): 카메라는 벽을 개의치 않고, 카메라 쪽 가림물(원뿔·단면·위층·카메라 둘레)을 셰이더가 지운다
       camGuard: (function () {

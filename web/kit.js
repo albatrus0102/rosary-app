@@ -62,6 +62,7 @@
     };
     var stats = { meshes: 0 };
     ctx.stats = stats;
+    ctx.occupied = {};   // 지금 앉은 사람이 있는 좌석 id 표(main.js 가 매 프레임 world.setOccupied 로 채운다 — 빌더 onUpdate 가 읽는다)
 
     // ---- 배치(정점색 합친 지오메트리). 재질별로 따로 모인다 ----
     var B_ = {

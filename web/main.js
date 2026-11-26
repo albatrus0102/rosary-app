@@ -71,9 +71,11 @@
   function seatSpots(w) {
     return w.logic.seats.map(function (s, i) { return { kind: 'seat', index: i, x: s.x, z: s.z, y: w.logic.seatFloor(s.id), label: (w.layout.seatLabels && w.layout.seatLabels[i]) || ('자리 ' + (i + 1)), labelY: 1.35 }; });
   }
+  // 표식 숨김: 찬 자리·내 자리, 그리고 나와 다른 쪽(실내/바깥)에 있는 자리(벽 너머로 이름표가 떠 보이지 않게)
   function refreshMarkers() {
     if (!App.markers || !App.logic) return;
-    App.logic.seats.forEach(function (s, i) { App.markers.setHidden(i, isTaken(s.id) || (App.me && App.me.seat === s.id)); });
+    var meIn = App.me ? roomDepth(App.me.x, App.me.z) > -0.2 : true;
+    App.logic.seats.forEach(function (s, i) { App.markers.setHidden(i, isTaken(s.id) || (App.me && App.me.seat === s.id) || (roomDepth(s.x, s.z) > 0) !== meIn); });
   }
 
   function loadWorld(id) {
@@ -130,6 +132,7 @@
       App.scene.add(App.meAv.root);
       root.RoomRenderUtil.markCaster(App.meAv.root);
       App.net = root.RoomNetView.create(App.scene);
+      App.net.setSeatOffset(function (id) { return App.world ? App.world.seatOffset(id) : null; });
       App.pose = root.RoomNetView.createPoseSender({ hz: o.poseHz || 3, send: function (p) { p.e = 'myPose'; post(p); } });
       App.rafOn = true; App.loopT = performance.now();
       resize();
@@ -301,6 +304,16 @@
     }
   }
 
+  // 앉은 사람이 있는 좌석 id 표(나·보이는 사람·호스트가 알려 준 점유)
+  var occMap = {};
+  function occupiedMap() {
+    for (var k in occMap) delete occMap[k];
+    var me = App.me, lg = App.logic;
+    if (me && me.seat && (me.mode === 'seated' || me.mode === 'sitting')) occMap[me.seat] = 1;
+    App.net.table.peers.forEach(function (r) { if (r.st === 'sit') { var id = typeof r.seat === 'number' ? lg.seatAt(r.seat) : r.seat; if (id) occMap[id] = 1; } });
+    for (var i in App.hostSeats) if (App.hostSeats[i].taken) { var sid = lg.seatAt(+i); if (sid) occMap[sid] = 1; }
+    return occMap;
+  }
   var joy = { x: 0, y: 0 }, vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 };
   var CTL = root.RoomControls;
 
@@ -351,7 +364,8 @@
         }
       }
     } else av.setWalk(0);
-    av.setPose(me.x, me.y, me.z, me.yaw);
+    var so = (me.mode === 'seated' || me.mode === 'sitting') && me.seat ? App.world.seatOffset(me.seat) : null;   // 흔들리는 자리(그네)
+    if (so) av.setPose(me.x + so.x, me.y + so.y, me.z + so.z, me.yaw); else av.setPose(me.x, me.y, me.z, me.yaw);
     av.update(dt, t);
     var stepEv = av.takeStep ? av.takeStep() : null;
     if (stepEv) root.RoomAudio.footstep(stepEv.side > 0, stepEv.v, Math.max(0, dt - (stepEv.lag || 0)));
@@ -582,10 +596,10 @@
       App.camera.matrixWorldInverse.copy(App.camera.matrixWorld).invert();
       root.RoomAvatar.setView(App.camera, vh);
     } catch (e) { frameErr('view', e); }
+    try { App.world.setOccupied(occupiedMap()); } catch (e) { frameErr('occ', e); }
     try { App.net.setFocus(App.me.x, App.me.z); App.net.update(dt, App.t, performance.now()); } catch (e) { frameErr('net', e); }
     try { App.world.update(dt, App.t, App.me, App.camera); } catch (e) { frameErr('world', e); }
-    // 좌석 표식은 실내(지붕 아래)에 들어왔을 때만(밖에서 벽 너머로 이름표가 떠 보이지 않게)
-    try { if (App.markers) App.markers.update(dt, App.t, App.me, App.camera, null, App.me.mode === 'walk' && roomDepth(App.me.x, App.me.z) > -0.2, { w: vw, h: vh, avoid: myTagRect(vw, vh) }); } catch (e) { frameErr('markers', e); }
+    try { if (App.markers) { refreshMarkers(); App.markers.update(dt, App.t, App.me, App.camera, null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) }); } } catch (e) { frameErr('markers', e); }
     try {
       if (App.R.dof) {
         var dm = App.me.mode, dofWant = qs.dof !== '0' && (dm === 'seated' || dm === 'sitting') ? 1 : 0;   // 앉아 있으면 먼 배경을 살짝 흐린다(초점 = 아바타)
