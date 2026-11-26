@@ -56,7 +56,7 @@ test('피어 표: 멈춘 사람은 표본을 더하지 않지만 살아 있음�
   assert.equal(T.peers.get('a').interp.count(), 1);
 });
 test('내 자세 내보내기: hz 박자·움직일 때만·상태 바뀌면 바로·keepAlive', () => {
-  const out = [], S = NV.createPoseSender({ hz: 4, keepAliveMs: 2000, send: (p) => out.push(p) });
+  const out = [], S = NV.createPoseSender({ hz: 4, keepAliveMs: 2000, seatedIdleMs: 2000, send: (p) => out.push(p) });   // 앉은 박동은 기본 0 — 여기서는 켜서 시험
   let x = 0;
   for (let t = 0; t <= 1000; t += 16) { x += 0.02; S.tick(t, { x, z: 0, yaw: 0, state: 'walk', seat: null }); }
   assert.ok(out.length >= 4 && out.length <= 6, 'sent ' + out.length);   // 1초에 약 4번(+처음)

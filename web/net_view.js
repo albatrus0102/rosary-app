@@ -2,7 +2,7 @@
    들어오는 것: setPeers([{id, x, z, yaw, state, seat, avatar}], {partial}) — 지금 보이는 사람 목록(스냅숏).
      state: 'walk'(서서 다님) | 'sit'(앉음). seat: 좌석 번호(0..) 또는 null. avatar: {g, skin, style, hair, outfit, label}. cup: 든 음료(coffee.js 종류) 또는 null.
      partial: true 면 목록에 없는 사람을 지우지 않는다(일부만 보낸 갱신). 기본 false = 목록에 없는 사람은 GRACE_MS 뒤 지운다.
-   나가는 것: createPoseSender({hz, send}) — 내 자세를 hz(기본 3, 2~4 권장)로 보낸다. 움직이지 않으면 보내지 않고, keepAliveMs 마다 한 번(살아 있음).
+   나가는 것: createPoseSender({hz, idleMs, seatedIdleMs, send}) — 걷는 동안 hz(기본 3)로(5 cm·0.05 rad 넘게 움직였을 때만), 서서 가만히 있으면 idleMs(기본 10초)마다 한 번, 앉아 있으면 seatedIdleMs(기본 0 = 보내지 않음). 상태 바뀜은 바로.
    보간: 사람마다 받은 표본(받은 시각·x·z·yaw)을 4개까지 두고, 지금보다 delay(받는 간격의 약 1.6배, 180~900ms) 앞의 자리를 그린다.
      순간 이동(한 표본에 TELEPORT_M 넘게 뜀, 또는 SNAP_GAP_MS 넘게 끊겼다 다시 옴)은 보간하지 않고 그 자리로 옮긴다.
      STALE_MS 동안 새 표본이 없는 사람은 지운다(연결이 끊긴 채 남은 유령 방지).
@@ -56,8 +56,8 @@
 
   // ---- 피어 표(누가 있나·좌석 점유·오래된 사람 지우기). 그리기와 따로(순수). ----
   // 들고 있는 음료(coffee.js 종류) — 모르는 값은 없음(null)
-  var CUPS = ['americano', 'latte', 'iced', 'tea'];
-  function cupOf(c) { return typeof c === 'string' && CUPS.indexOf(c) >= 0 ? c : null; }
+  var CUPS = ['americano', 'latte', 'iced', 'tea'], CUPN = { 1: 'americano', 2: 'latte', 3: 'americano', 4: 'latte', 5: 'tea', 6: 'latte', 7: 'iced' };   // 음료 번호(coffee.js NUM 과 같다)
+  function cupOf(c) { if (typeof c === 'number' || (typeof c === 'string' && /^\d+$/.test(c))) return CUPN[+c] || null; return typeof c === 'string' && CUPS.indexOf(c) >= 0 ? c : null; }
   function createTable(o) {
     o = o || {};
     var STALE = num(o.staleMs, DEF.STALE_MS), GRACE = num(o.graceMs, DEF.GRACE_MS);
@@ -111,14 +111,27 @@
   }
 
   // ---- 내 자세 내보내기(onMyPose) ----
-  // createPoseSender({hz: 3, minMove: 0.05 m, minTurn: 0.05 rad, keepAliveMs: 2000, send(pose)}). tick(now, pose) 를 매 프레임 부른다.
+  // createPoseSender({hz: 3, minMove: 0.05 m, minTurn: 0.05 rad, idleMs: 10000(옛 이름 keepAliveMs), seatedIdleMs: 0, send(pose)}). tick(now, pose) 를 매 프레임 부른다.
   // pose = {x, z, yaw, state, seat}. 상태(앉음·일어남·좌석)가 바뀌면 박자를 기다리지 않고 바로 보낸다.
   function createPoseSender(o) {
     o = o || {};
-    var hz = Math.max(0.5, Math.min(10, num(o.hz, 3))), minMove = num(o.minMove, 0.05), minTurn = num(o.minTurn, 0.05), keep = num(o.keepAliveMs, 2000);
+    // 박동(독서공방 기본): 걷는 중 hz(3)로 — 5 cm·0.05 rad 넘게 움직였을 때만, 서서 가만히 있으면 idleMs(10초)마다 한 번, 앉아 있으면 seatedIdleMs(0 = 없음). 상태 바뀜은 바로.
+    var hz = Math.max(0.5, Math.min(10, num(o.hz, 3))), minMove = num(o.minMove, 0.05), minTurn = num(o.minTurn, 0.05), idleMs = num(o.idleMs, num(o.keepAliveMs, 10000)), seatedIdleMs = num(o.seatedIdleMs, 0);
     var last = null, lastT = -1e9, sent = 0;
     var S = {
-      setRate: function (h) { hz = Math.max(0.5, Math.min(10, num(h, hz))); },
+      // setRate(3) 또는 setRate({hz, idleSec|idleMs, seatedIdleSec|seatedIdleMs, minMove, minTurn}) — 0 이면 그 박동 없음
+      setRate: function (h) {
+        if (h && typeof h === 'object') {
+          if (h.hz !== undefined) hz = Math.max(0.5, Math.min(10, num(h.hz, hz)));
+          if (h.idleSec !== undefined) idleMs = Math.max(0, num(h.idleSec, idleMs / 1000) * 1000); else if (h.idleMs !== undefined) idleMs = Math.max(0, num(h.idleMs, idleMs));
+          if (h.seatedIdleSec !== undefined) seatedIdleMs = Math.max(0, num(h.seatedIdleSec, seatedIdleMs / 1000) * 1000); else if (h.seatedIdleMs !== undefined) seatedIdleMs = Math.max(0, num(h.seatedIdleMs, seatedIdleMs));
+          if (h.minMove !== undefined) minMove = Math.max(0, num(h.minMove, minMove));
+          if (h.minTurn !== undefined) minTurn = Math.max(0, num(h.minTurn, minTurn));
+          return;
+        }
+        hz = Math.max(0.5, Math.min(10, num(h, hz)));
+      },
+      config: function () { return { hz: hz, idleMs: idleMs, seatedIdleMs: seatedIdleMs, minMove: minMove, minTurn: minTurn }; },
       rate: function () { return hz; },
       sent: function () { return sent; },
       tick: function (now, p) {
@@ -126,7 +139,8 @@
         var stateChg = !last || last.state !== p.state || last.seat !== p.seat;
         var due = now - lastT >= 1000 / hz;
         var moved = !last || Math.hypot(p.x - last.x, p.z - last.z) > minMove || Math.abs(angDiff(last.yaw, p.yaw)) > minTurn;
-        if (stateChg || (due && moved) || now - lastT >= keep) {
+        var sitting = p.state === 'sit', keep = sitting ? seatedIdleMs : idleMs;
+        if (stateChg || (!sitting && due && moved) || (keep > 0 && now - lastT >= keep)) {
           last = { x: Math.round(p.x * 100) / 100, z: Math.round(p.z * 100) / 100, yaw: Math.round(p.yaw * 100) / 100, state: p.state, seat: p.seat === undefined ? null : p.seat };
           lastT = now; sent++;
           if (o.send) { try { o.send({ x: last.x, z: last.z, yaw: last.yaw, state: last.state, seat: last.seat, t: Math.round(now) }); } catch (e) { /* 보내는 쪽 오류는 고리를 막지 않는다 */ } }

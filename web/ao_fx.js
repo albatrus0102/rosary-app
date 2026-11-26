@@ -157,7 +157,7 @@
         img.onerror = function () { st.done = true; };
         img.src = f.png;
       } else st.done = true;
-      if (st.stale && root.console) console.warn('[room] ao_' + o.id + '.js 가 지금 지오메트리와 다릅니다(' + st.stale + '개 배치) — node tools/room_web/ao_bake.mjs ' + o.id);
+      if (st.stale && root.console) console.warn('[room] ao_' + o.id + '.js does not match the current geometry (' + st.stale + ' batches) — re-run node tools/ao_bake.mjs ' + o.id);
       st.ms = Math.round(((root.performance || Date).now() - t0) * 10) / 10;
     }
     if (!targets.length) { st.done = true; } else loadScript(o.id, apply);

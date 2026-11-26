@@ -17,6 +17,14 @@ test('브라우저: 장면이 열리고 브리지 이벤트가 오간다', { tim
     await p.goto(url + 'test.html?hideui=1&autotier=0&quiet=1&quality=low&hour=14');
     const ev = (name, extra = '') => p.waitForFunction(([n, x]) => (window.__roomEvents || []).some((e) => e.e === n && (!x || JSON.stringify(e).includes(x))), [name, extra], { timeout: 90000 });
     await ev('ready'); await ev('firstFrame');
+    // sceneReady: firstFrame 뒤, 사진 질감이 다 올라오고 구운 AO 가 붙은 다음 한 번
+    await ev('sceneReady');
+    const rd = await p.evaluate(() => { const E = window.__roomEvents.map((e) => e.e); return { order: E.indexOf('firstFrame') < E.indexOf('sceneReady'), n: E.filter((e) => e === 'sceneReady').length, photos: window.RoomPhotos.pending(), ao: window.__room.world.aoPending() }; });
+    assert.deepEqual(rd, { order: true, n: 1, photos: 0, ao: false });
+    // 화면 글자: test.html 이 setStrings 로 준 한국어 좌석 이름 → 바꾸면 표식이 새 이름으로
+    assert.equal(await p.evaluate(() => window.RoomStrings.seatLabel(3, window.__room.world.layout.seatLabels)), '카운터');
+    await p.evaluate(() => window.Room3D.setStrings({ seatLabels: ['A1', 'A2', 'A3', 'Bar', 'S1', 'S2'], signTitle: 'Hello' }));
+    assert.equal(await p.evaluate(() => window.RoomStrings.seatLabel(3)), 'Bar');
     const st = await p.evaluate(() => ({ seats: window.__room.logic.seats.length, verts: window.__room.world.stats.vertices }));
     assert.equal(st.seats, 6);
     // 앉기·서기(카운터 바 스툴 3, 그네 4)
@@ -76,8 +84,9 @@ test('브라우저: 커피 주문 → 만들기 → coffeeReady → 집기 → �
     await p.evaluate(() => { const a = window.__room; a.me.x = 0.95; a.me.z = 0.1; });
     await ev('nearCounter', 'true');
     await ev('coffeePicked', 'latte');
-    const held = await p.evaluate(() => { const a = window.__room; let up = null; a.scene.traverse((o) => { if (o.userData.cup === 'latte') { up = o; } }); let anchor = false; for (let q = up; q; q = q.parent) if (q.name === 'holdAnchor') anchor = true; return { hold: a.meAv.holdTarget, anchor }; });
-    assert.deepEqual(held, { hold: 1, anchor: true });
+    await p.waitForTimeout(400);
+    const held = await p.evaluate(() => { const a = window.__room, T = window.THREE; let up = null; a.scene.traverse((o) => { if (o.userData.cup === 'latte') { up = o; } }); const h = a.meAv.holdAnchor().getWorldPosition(new T.Vector3()); return { hold: a.meAv.holdTarget, byHand: up.userData.held === a.meAv && up.position.distanceTo(h) < 0.15 }; });
+    assert.deepEqual(held, { hold: 1, byHand: true });
     await p.evaluate(() => window.Room3D.sit({ i: 3 }));
     await ev('sat', '"i":3');
     const st = await p.evaluate(() => { const a = window.__room, s = a.coffee.state(); let pos = null; a.scene.traverse((o) => { if (o.userData.cup === 'latte' && o.parent === a.scene) pos = o.position.toArray(); }); return { s, pos, hold: a.meAv.holdTarget }; });
@@ -89,7 +98,7 @@ test('브라우저: 커피 주문 → 만들기 → coffeeReady → 집기 → �
     // 다른 사람: 걷는 사람은 손에 아이스, 앉은 사람(좌석 0)은 책상 위 홍차
     await p.evaluate(() => window.Room3D.setPeers([{ id: 'w', x: -0.3, z: 1.5, yaw: 0, state: 'walk', cup: 'iced' }, { id: 's', state: 'sit', seat: 0, cup: 'tea' }]));
     await p.waitForFunction(() => { let n = 0; window.__room.scene.traverse((o) => { if (o.userData.cup === 'iced' || o.userData.cup === 'tea') n++; }); return n === 2; }, null, { timeout: 30000 });
-    const pc = await p.evaluate(() => { const a = window.__room, out = {}; a.scene.traverse((o) => { if (o.userData.cup === 'iced' || o.userData.cup === 'tea') { let inHand = false; for (let q = o; q; q = q.parent) if (q.name === 'holdAnchor') inHand = true; out[o.userData.cup] = { inHand, y: +o.position.y.toFixed(2) }; } }); return out; });
+    const pc = await p.evaluate(() => { const a = window.__room, out = {}; a.scene.traverse((o) => { if (o.userData.cup === 'iced' || o.userData.cup === 'tea') out[o.userData.cup] = { inHand: !!o.userData.held, y: +o.position.y.toFixed(2) }; }); return out; });
     assert.equal(pc.iced.inHand, true); assert.equal(pc.tea.inHand, false);
     // 바리스타는 통로 안에
     const bp = await p.evaluate(() => window.__room.coffee.barista.root.position.toArray());

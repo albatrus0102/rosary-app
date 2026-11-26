@@ -34,7 +34,7 @@ function makeSandbox() {
 export function loadRooms(opts = {}) {
   const sb = makeSandbox();
   const run = (f) => vm.runInContext(fs.readFileSync(path.join(WEB, f), 'utf8'), sb, { filename: f });
-  ['three.min.js', 'palette.js', 'layouts.js', 'scan3d.js', 'scene_logic.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'plants.js'].forEach(run);
+  ['three.min.js', 'strings.js', 'palette.js', 'layouts.js', 'scan3d.js', 'scene_logic.js', 'geo.js', 'photos.js', 'kit_tex.js', 'kit.js', 'plants.js'].forEach(run);
   fs.readdirSync(WEB).filter((f) => /^ch_[a-z]+\.js$/.test(f)).sort().forEach(run);
   const out = [];
   for (const id of Object.keys(sb.RoomBuilders)) {

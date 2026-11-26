@@ -1469,7 +1469,7 @@
       var hA = this.holdAmt;
       if (side > 0 && hA > 0.001) {
         // 든 컵: 오른손을 가슴 앞(팔꿈치 약 90°)으로, 손바닥이 안쪽을 보게 세워 쥔다
-        arm2(1, 0.13, -0.02, -0.25, 0.7, -0.7, 0.25, qs.hU, qs.hF);
+        arm2(1, 0.12, 0.04, -0.27, 0.7, -0.7, 0.25, qs.hU, qs.hF);
         handQ(1, 0.05, 0.25, -1, -1, 0, 0, _q1);
         qs.hH.copy(_q2.copy(qs.hU).multiply(qs.hF).invert()).multiply(_q1);
         qU.slerp(qs.hU, hA); qF.slerp(qs.hF, hA); qH.slerp(qs.hH, hA);

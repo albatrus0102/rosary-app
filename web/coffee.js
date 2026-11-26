@@ -12,7 +12,12 @@
 (function (root) {
   'use strict';
   var KINDS = ['americano', 'latte', 'iced', 'tea'];
-  function kindOf(k) { k = typeof k === 'string' ? k.toLowerCase() : ''; if (k === 'black tea' || k === 'blacktea') k = 'tea'; return KINDS.indexOf(k) >= 0 ? k : null; }
+  // 독서공방 음료 번호: 3 아메리카노(머그) · 2 라떼 · 5 홍차(찻잔) · 7 아이스 커피(유리잔). 다른 번호의 모양 대체: 1 → 머그, 4·6 → 라떼 잔.
+  var NUM = { 1: 'americano', 2: 'latte', 3: 'americano', 4: 'latte', 5: 'tea', 6: 'latte', 7: 'iced' };
+  function kindOf(k) {
+    if (typeof k === 'number' || (typeof k === 'string' && /^\d+$/.test(k))) return NUM[+k] || null;
+    k = typeof k === 'string' ? k.toLowerCase() : ''; if (k === 'black tea' || k === 'blacktea') k = 'tea'; return KINDS.indexOf(k) >= 0 ? k : null;
+  }
 
   // ---- 순수 로직 ----
   // cfg: {near:{x0,x1,z0,z1}, pickup:{x,y,z}, cupSpots:[{x,y,z}|null], brewSec, pickR}
@@ -126,11 +131,22 @@
     return g;
   }
 
-  // 손에 든 컵: 받침이 있는 잔(latte·tea)은 잔만 든다(받침은 들지 않는 게 자연스럽지만 하나로 다룬다 — 작게 기울이지 않음)
-  function attachToHand(av, cup) {
-    var a = av.holdAnchor ? av.holdAnchor() : null; if (!a) return false;
-    cup.position.set(0, -0.045, 0); cup.rotation.set(0, 0, 0);
-    a.add(cup); return true;
+  // 손에 든 컵: 손 뼈(holdAnchor)의 월드 자리에서 아바타 앞쪽으로 조금, 아래로 조금 — 컵은 늘 곧게 선다(손 뼈 방향을 따라 기울지 않게).
+  // 장면에 두고 매 프레임 옮긴다(몸을 바꿔 끼워도 holdAnchor 만 있으면 된다). cup.userData.held = 그 아바타.
+  var _hv = null;
+  function followHand(av, cup) {
+    var T = root.THREE, a = av.holdAnchor ? av.holdAnchor() : null; if (!a) return false;
+    _hv = _hv || new T.Vector3();
+    a.updateWorldMatrix(true, false); a.getWorldPosition(_hv);
+    var yaw = av.root.rotation.y, fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    cup.position.set(_hv.x + fx * 0.035, _hv.y - 0.075, _hv.z + fz * 0.035);
+    cup.rotation.set(0, yaw, 0);
+    cup.userData.held = av;
+    return true;
+  }
+  function attachToHand(av, cup, scene) {
+    if (cup.parent !== scene) { if (cup.parent) cup.parent.remove(cup); scene.add(cup); }
+    return followHand(av, cup);
   }
 
   // ---- 실행(장면·바리스타·내 컵·다른 사람 컵) ----
@@ -154,8 +170,8 @@
       var st = L.cupState();
       if (st.where === 'none') { if (myCup && myCup.parent) myCup.parent.remove(myCup); if (app.meAv) app.meAv.setHold(false); return; }
       if (!myCup || myKind !== st.kind) { if (myCup && myCup.parent) myCup.parent.remove(myCup); myCup = makeCup(T, st.kind); myKind = st.kind; }
-      if (st.where === 'hand') { if (myCup.parent !== (app.meAv && app.meAv.holdAnchor())) attachToHand(app.meAv, myCup); app.meAv.setHold(true); }
-      else { if (myCup.parent !== scene) { if (myCup.parent) myCup.parent.remove(myCup); scene.add(myCup); } myCup.position.set(st.pos.x, st.pos.y, st.pos.z); myCup.rotation.set(0, 0.6, 0); if (app.meAv) app.meAv.setHold(false); }
+      if (st.where === 'hand') { attachToHand(app.meAv, myCup, scene); app.meAv.setHold(true); }
+      else { if (myCup.parent !== scene) { if (myCup.parent) myCup.parent.remove(myCup); scene.add(myCup); } myCup.userData.held = null; myCup.position.set(st.pos.x, st.pos.y, st.pos.z); myCup.rotation.set(0, 0.6, 0); if (app.meAv) app.meAv.setHold(false); }
     }
     function emit(list) { list.forEach(function (e) { post(e); }); }
     var api = {
@@ -173,6 +189,7 @@
         var me = app.me, seated = me.mode !== 'walk';
         var ev = L.tick(dt, { x: me.x, z: me.z, seated: seated });
         if (ev.length) { placeMyCup(); emit(ev); }
+        if (myCup && myCup.userData.held) followHand(myCup.userData.held, myCup);
         if (bar) {
           // 바리스타 방향: 만드는 중이면 기계(+x) 쪽, 내가 3 m 안이면 나를, 아니면 손님 쪽(기본)
           var want = bc.yaw, dx = me.x - bc.x, dz = me.z - bc.z;
@@ -195,15 +212,15 @@
         var k = kindOf(kind), where = peerCupWhere(k, seatIdx, cfg.cupSpots);
         if (where === 'none') { if (v.cup && v.cup.parent) v.cup.parent.remove(v.cup); v.cup = null; v.cupKind = null; if (av) av.setHold(false); return; }
         if (!v.cup || v.cupKind !== k) { if (v.cup && v.cup.parent) v.cup.parent.remove(v.cup); v.cup = makeCup(T, k); v.cupKind = k; }
-        if (where === 'hand') { if (v.cup.parent !== av.holdAnchor()) attachToHand(av, v.cup); av.setHold(true); }
-        else { var s = cfg.cupSpots[seatIdx]; if (v.cup.parent !== scene) { if (v.cup.parent) v.cup.parent.remove(v.cup); scene.add(v.cup); } v.cup.position.set(s.x, s.y, s.z); av.setHold(false); }
+        if (where === 'hand') { attachToHand(av, v.cup, scene); av.setHold(true); }
+        else { var s = cfg.cupSpots[seatIdx]; if (v.cup.parent !== scene) { if (v.cup.parent) v.cup.parent.remove(v.cup); scene.add(v.cup); } v.cup.userData.held = null; v.cup.position.set(s.x, s.y, s.z); av.setHold(false); }
       },
       state: function () { return L.cupState(); }
     };
     return api;
   }
 
-  var C = { KINDS: KINDS, kindOf: kindOf, Logic: Logic, peerCupWhere: peerCupWhere, makeCup: makeCup, create: create };
+  var C = { KINDS: KINDS, NUM: NUM, kindOf: kindOf, Logic: Logic, peerCupWhere: peerCupWhere, makeCup: makeCup, create: create };
   root.RoomCoffee = C;
   if (typeof module === 'object' && module.exports) module.exports = C;
 })(typeof window !== 'undefined' ? window : this);

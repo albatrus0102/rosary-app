@@ -173,7 +173,7 @@
         var P = targets[k].batch.p, e = data.b[k];
         if (e.n !== P.length / 3 || (C && Math.abs(C(P) - e.s) > 1e-6 * Math.max(1, Math.abs(e.s)))) { st.stale++; }
       }
-      if (st.stale) { if (root.console) console.warn('[room] gi_' + o.id + '.js 가 지금 지오메트리와 다릅니다(' + st.stale + '개 배치) — node tools/room_web/gi_bake.mjs ' + o.id); finish('stale'); return; }
+      if (st.stale) { if (root.console) console.warn('[room] gi_' + o.id + '.js does not match the current geometry (' + st.stale + ' batches) — re-run node tools/gi_bake.mjs ' + o.id); finish('stale'); return; }
       inflate(data.z, function (raw) {
         if (disposed) { finish('disposed'); return; }
         var t0 = (root.performance || Date).now();
@@ -192,7 +192,7 @@
           }
           msAll += (root.performance || Date).now() - t1;
           if (k2 < targets.length) { setTimeout(step, 0); return; }
-          if (M.count !== data.nR) { if (root.console) console.warn('[room] gi_' + o.id + '.js 점 수가 다릅니다(' + M.count + ' != ' + data.nR + ')'); st.applied = 0; targets.forEach(function (it3) { it3.group.children.forEach(function (m) { if (m.geometry) m.geometry.deleteAttribute('aoGI'); }); }); finish('recv'); return; }
+          if (M.count !== data.nR) { if (root.console) console.warn('[room] gi_' + o.id + '.js point count differs (' + M.count + ' != ' + data.nR + ')'); st.applied = 0; targets.forEach(function (it3) { it3.group.children.forEach(function (m) { if (m.geometry) m.geometry.deleteAttribute('aoGI'); }); }); finish('recv'); return; }
           st.recv = M.count;
           var t2 = (root.performance || Date).now(), f = data.f;
           floorTex = new T.DataTexture(up.flo, f.w, f.h, T.RGBAFormat, T.UnsignedByteType);

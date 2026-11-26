@@ -5,8 +5,8 @@
 순수 three.js(r149) 단일 HTML 앱에 넣을 수 있는 3D 장면 엔진 축소판과, 독서공방 「공방 가게」 예시 장면(`ch_house.js`)이다.
 WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없다. 오프라인 동작(사진 질감·구운 AO 도 파일로 함께 있다).
 
-- 코드 크기: 약 1.33 MB(`web/*.js` + `test.html`, 질감 제외; 그중 three.min.js 608 KB, 구운 AO·빛 번짐 데이터 약 80 KB) — 목표 1.5 MB 이하
-- 질감: `web/tex/` — 소유자 제공 PBR 15벌(색 + 법선 + ORM, 이음매 없앰) + 식물 오림 카드 7장 + CC0 4벌(아스팔트·콘크리트·코르크·황마). 합계는 5절 표
+- 코드 크기: **1.35 MB**(`web/*.js` + `test.html`, 질감 제외; 그중 three.min.js 608 KB, 구운 AO·빛 번짐 데이터 91 KB) — 목표 1.5 MB 이하
+- 질감: `web/tex/` — 소유자 제공 PBR 15벌(색 + 법선 + ORM, 이음매 없앰) + 식물 오림 카드 7장 + CC0 4벌(아스팔트·콘크리트·코르크·황마) = 64장 **5.0 MB**(실제로 샘플되는 크기로 미리 줄여 실음 — 2차 첫 판 16.3 MB)
 - 사진: `docs/shots/` 10장(960×540, deviceScaleFactor 1) + 그네 마당 참고 그림과 나란히 1장
 - 사실감(2차, 2026-11-26): 소유자가 ChatGPT 로 만든 PBR 질감(T01~T60)을 이음매 없이 고쳐 모든 표면에(색·법선·거칠기·AO), 장난감 같던 잎·꽃을 사진 오림
   식물 카드(P01~P07)로, 나무는 껍질 PBR 줄기·가지 + 잎 카드로, 해 길을 돌려 오후 햇빛이 비스듬히(그림자가 보이게), 해:하늘빛 비율을 사진 쪽으로.
@@ -33,6 +33,7 @@ WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없�
 | `web/kit.js` | 빌더 도구 `ctx.*`(벽·창(실제 구멍 + 투명 유리 + 창살·창턱)·바닥·천장·상자·원기둥·계단·바닥 구역·충돌체·점광원(최대 3)·빛 무리·누르기 자리·PBR 표면 `surf`) | 자작 |
 | `web/kit_tex.js` | 절차 생성 질감(나무·회반죽·돌·체크 등 — 사진이 없을 때의 대체) | 자작 |
 | `web/photos.js` | 사진 질감 읽기(`tex/<이름>.jpg` + `_n` + `_orm`(또는 CC0 `_r`), 식물 `plant_<종류>.webp`), 색 sRGB·나머지 선형, 비등방 8, 올리기 전 크기 줄이기, 칸 바꿔 끼우기(`RoomPhotoMap`) | 자작 |
+| `web/strings.js` | 화면 글자(간판·쪽지·태블릿·캘린더·좌석 이름·표식) — 호스트 `setStrings`, 없으면 중립 영어 | 자작 |
 | `web/plants.js` | 사진 오림 식물을 교차 알파 카드로(포기 = 판 2~3장, alphaTest + alpha-to-coverage, 둥근 법선, 종류마다 메시 1) · 잎 카드 · 벽에 붙인 판(담쟁이) | 자작 |
 | `web/coffee.js` | 커피: 컵 4종(3D) · 주문 흐름 순수 로직 · 바리스타 NPC(앞치마) · 내 컵/다른 사람 컵 | 자작 |
 | `web/world.js` | 월드 코어: 빌더 실행, 시간대 조명(반구광 + 해/달 그림자 + 빌더 점광원), 하늘·구름·별, 창 햇빛 무늬, 바닥 반사, 구운 AO 연결 | 자작 |
@@ -60,6 +61,7 @@ WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없�
 | `web/tex/{asphalt,concrete,cork,jute}{,_n,_r}.jpg` | CC0 사진 질감 1k(색·법선·거칠기) | **CC0 1.0** — ambientCG(아래 표) |
 | `web/tex/<칸>{,_n,_orm}.jpg`(15벌) · `web/tex/plant_*.webp`(7장) | 소유자 제공 PBR 질감 1k(색·법선 OpenGL·ORM) · 식물 오림 카드(알파) | **owner-supplied, generated with ChatGPT** — 소유자 소유 그림, 이 공유 패키지 안에서 쓰도록 제공됨 |
 | `tools/tex_build.py` | 소유자 원본(T·P 번호 파일) → `web/tex`: 이음매 없애기·ORM 묶기·색조·바닥 판재·식물 카드 + `docs/seams.json` | 자작 |
+| `tools/tex_shrink.py` | `web/tex` 를 photos.js `maxOf` 와 같은 크기로 미리 줄인다(반복 질감은 둘레를 감싸 줄여 이음매 유지, 데이터 지도 4:4:4) | 자작 |
 | `tools/perf.mjs` | 시점별 draw·삼각형·질감 MB(헤드리스) | 자작 |
 | `tools/serve.mjs` · `shot.mjs` · `shots.mjs` | 정적 서버, 한 장/열 장 찍기(Playwright) | 자작 |
 | `tools/ao_bake.mjs` · `gi_bake.mjs` · `ao_bvh.mjs` · `harness.mjs` | AO·빛 번짐 굽기(광선 추적, 결정적 — 원본 엔진과 같은 굽기 파이프라인) · BVH · Node 에서 빌더 돌리기 | 자작 |
@@ -127,10 +129,13 @@ T10·T11·T14·T15·T16 은 질감이 아니라 장면 그림이라 쓰지 않�
 | wood_oak · metal | 1.24 · 1.18(고치지 않음) | | | |
 
 (소유자가 잰 1.6~3.3배는 다른 셈법 — 같은 경향이다.) 색조: ChatGPT 색 지도는 채도·밝기가 높아(오크 평균 167,97,34 — 주황) 조명을 받으면 플라스틱처럼 보여
-오크·잔디·회벽·테라코타·벽돌·흙의 채도와 평균을 실제 반사율 쪽으로 낮췄다(`TONE` 표). 다시 만들기: `python3 -I tools/tex_build.py <base_zip> <pbr_zip> <pbr_zip2> <plants_cut>`.
+오크·잔디·회벽·테라코타·벽돌·흙의 채도와 평균을 실제 반사율 쪽으로 낮췄다(`TONE` 표). 다시 만들기: `python3 -I tools/tex_build.py <base_zip> <pbr_zip> <pbr_zip2> <plants_cut>` 다음 `python3 -I tools/tex_shrink.py`.
 
 **PBR 연결(kit.js `physMat`).** 소유자 칸은 `map`(sRGB) + `normalMap`(선형) + ORM 한 장을 `roughnessMap`(.g)과 `aoMap`(.r) 둘 다로. three r149 의 aoMap 은 둘째 UV(uv2)를 읽는데
 배치 지오메트리에는 uv2 가 없어 셰이더에서 `#define vUv2 vUv` 로 첫 UV 를 쓰게 했다(같은 반복). 질감 AO(`aoK` 세기)는 구운 AO(ao_fx — 접촉 그늘)와 곱해진다(간접광에만).
+**싣는 크기 = 샘플 크기**(`tools/tex_shrink.py`, photos.js `maxOf` 와 같은 규칙 — 시험이 맞춰 본다): 바닥·벽(HERO) 색 1024, 다른 색·법선 512, 작은 물건(밧줄·방석·금속·나이테·화분·코르크·경계석) 법선 256,
+아주 작은 것(밧줄·금속·나이테) 색 256, ORM·거칠기 256(바닥·벽 512), 식물 카드 512(나무 1024). 질감 파일 16.3 → **5.0 MB**. 같은 카메라 전후 비교(헤드리스, 960×540): 외관 낮 PSNR 42.8 dB(평균 차 1.1/255),
+마당 그네 37.7 dB(1.4/255 — 그네가 흔들려 프레임이 조금 다르다) — 눈으로 구별되지 않는다. 바닥·벽 색만 1024 가 필요하다(앉은 시점·실내에서 1 m 안쪽에 크게 보인다). 같은 그림은 GPU 에 한 번만 올린다(photos.js 가 three `Source` 를 나눠 쓴다 — 반복만 다른 질감이 따로 올라가 GPU 메모리가 늘던 것을 고침).
 UV 는 월드 박스 투영(미터) — `tile` = 질감 한 장이 덮는 미터(벽 1.6, 바닥 1.2, 벽돌 1.3, 잔디 1.1, 흙 0.7, 밧줄 0.22 …). 비등방 8(기기 최대치로 잘림). 리넨은 천 광택(sheen 0.6).
 
 ### 1-1. 질감 칸 바꿔 끼우기(독서공방 저장소의 ChatGPT 질감 — 이 패키지에 없음)
@@ -172,13 +177,17 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 | `setPanel` | `{id, data}` | 판 다시 그리기: `sign{title,sub}` · `timer{text}` · `board{notes:[…]}` · `tablet{title,lines}` · `calendar{month,marks}` · `backdrop{url | day,night}` |
 | `setGarden` | `[{flower:0..7, stage:0..3, pot:0|1|2}]` | 화단 16자리(앞 화단 6 + 옆마당 화단 5+5). stage 0 씨앗·1 새싹·2 봉오리·3 꽃 |
 | `setSkin` | `{skin:'oak'|'walnut'|'white'}` | 바닥 나무 색조(자리 표시용) |
-| `orderCoffee` | `{kind:'americano'|'latte'|'iced'|'tea'}` | 커피 주문(무료·가상). 바리스타가 약 3초 만들고 카운터에 컵 → 다가가면 집는다(3절) |
-| `setMyCup` | `{kind}` 또는 `{kind:null}` | 들고 있는 컵 되돌리기(다시 열었을 때 호스트가 기억한 컵 — 앉아 있으면 그 좌석 컵 자리에) |
+| `orderCoffee` | `{kind}` — `'americano'|'latte'|'iced'|'tea'` 또는 **음료 번호** | 커피 주문(무료·가상). 바리스타가 약 3초 만들고 카운터에 컵 → 다가가면 집는다(3절) |
+| `setMyCup` | `{kind}` 또는 `{kind:null}` | 컵을 바로 쥐여 준다/없앤다: 앉은 자리에서 주문했을 때(호스트가 만들기를 건너뜀)·다시 열었을 때 — 앉아 있으면 그 좌석 컵 자리에 바로 놓인다 |
+| `setStrings` | `{signTitle, signSub, boardNotes:[…], tabletTitle, seatLabels:[…], seatPrefix, seatFree, monthNames:[12], weekdays:[7]}` | **화면 글자는 모두 호스트가 준다**(엔진 JS 에는 한글 글자가 없다 — 시험이 막는다). 없으면 중립 영어 기본값(`strings.js`). 바뀌면 판·좌석 표식을 다시 그린다(호스트가 `setPanel` 로 채운 판은 그대로) |
+
+**음료 번호**(독서공방 음료 id → 컵 모양): `3` 아메리카노(머그) · `2` 라떼(잔 + 받침 + 라떼 아트) · `5` 홍차(찻잔 + 받침) · `7` 아이스 커피(유리잔).
+모양 대체: `1` → 머그, `4`·`6` → 라떼 잔. 숫자·숫자 문자열 모두 받는다 — `orderCoffee`·`setMyCup`·`setPeers` 의 `cup` 모두 같다(coffee.js `NUM`, net_view.js `CUPN`).
 | `pause` / `resume` / `dispose` | — | 그리기·소리 멈춤/재개 / WebGL 문맥까지 정리 |
 | `setPeers` | `[{id, x, z, yaw, state:'walk'|'sit', seat, avatar, cup}]`, `{partial}` | 다른 사람(4절). `cup` = 든 음료 종류(걷는 사람은 손에, 컵 자리가 있는 좌석에 앉은 사람은 그 자리에) |
 | `sit` / `stand` | `{i}` / — | 앉기(번호 없으면 가까운 빈자리) / 일어서기 |
 | `setJoystick` | `{x, y}` | 호스트가 그린 이동 손잡이(-1..1) |
-| `setQuality` · `setPerfHud` · `setSteps` · `setPoseRate` · `setViewInset` · `setCamera` · `tapAt` | | 화질 · 성능 표시 · 발소리 `{on, vol}` · 내 자세 보내기 빈도 `{hz}` · 아래 패널 비율 `{bottom}` · 카메라 `{dist, follow, view:'tp'|'fp'}` · 화면 좌표 누르기 `{x, y}` |
+| `setQuality` · `setPerfHud` · `setSteps` · `setPoseRate` · `setViewInset` · `setCamera` · `tapAt` | | 화질 · 성능 표시 · 발소리 `{on, vol}` · 내 자세 보내기 박동 `{hz, idleSec, seatedIdleSec, minMove, minTurn}`(4절) · 아래 패널 비율 `{bottom}` · 카메라 `{dist, follow, view:'tp'|'fp'}` · 화면 좌표 누르기 `{x, y}` |
 
 ### 나가는 이벤트(장면 → 호스트) — `{e:'이름', …}`
 있는 길로 모두 보낸다: ① `window.Room3DHost.postMessage(JSON 문자열)`(네이티브 셸이 심은 객체) ② iframe 이면 `parent.postMessage({room3d:'event', …})`
@@ -187,7 +196,8 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 | 이벤트 | 내용 |
 |---|---|
 | `ready` | 스크립트 준비(init 을 부를 수 있다) |
-| `firstFrame` | 첫 그림(입장 화면을 걷을 때) |
+| `firstFrame` | 첫 그림 — 아직 절차 생성 대체 질감이 보일 수 있다(호스트는 이때 화면을 드러내지 말 것) |
+| `sceneReady {ms}` | **한 번**: 사진 질감이 다 올라오고(`RoomPhotos.whenReady`, 20초 상한), 구운 AO·빛 번짐이 붙고, 그 뒤 3 프레임을 그린 다음. **호스트는 이때 화면을 드러낸다**(질감이 바뀌는 깜빡임 0) |
 | `seatTap {i}` | 좌석(표식·의자)을 누름 — 자리 잡기는 호스트가 정하고 `sit({i})` 로 앉힌다 |
 | `sat {i}` / `stood {i}` | 앉기·일어서기 완료 |
 | `perf {fps, tier}` | 4초 뒤 첫 표본, 이후 5초마다(구간 평균) |
@@ -196,7 +206,7 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 | `contextLost` / `contextRestored` | WebGL 문맥 잃음/되찾음 |
 | `myPose {x, z, yaw, state, seat, t}` | 내 자세(onMyPose, 4절) |
 | `nearCounter {on}` | 카운터 앞(주문 안내 구역 `layout.coffee.near`)에 서면 `true`, 벗어나거나 앉으면 `false` — 호스트가 메뉴(주문 안내)를 띄우고 닫는다 |
-| `coffeeOrdered {kind}` · `coffeeReady {kind}` · `coffeePicked {kind}` | 주문 받음 · 다 만들어 카운터에 놓음 · 내가 집어 듦(호스트는 `cup` 을 내 자세와 함께 다른 사람에게 보내면 된다) |
+| `coffeeOrdered {kind}` · `coffeeReady {kind}` · `coffeePicked {kind}` | 주문 받음 · 다 만들어 카운터에 놓음 · **집어 드는 그 순간** `coffeePicked`(호스트는 이때 서버에 쓰고, `cup` 을 다른 사람에게 보낸다). `kind` 는 문자열 종류 |
 | `tap {id}` | 빌더 누르기 자리(`innerDoor` = 복도 끝 나무 문 → 앱 서재 화면으로) |
 | `error {kind, msg}` · `hb {f, st}` · `perfReport {text}` | 오류 · 1초 심장 박동 · 성능 기록 |
 
@@ -233,7 +243,7 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 - 들어오기: `setPeers([{id, x, z, yaw, state, seat, avatar}])` 를 받는 대로(2~4 Hz 권장). 목록에 없는 사람은 1.5초 뒤, 소식이 8초 없으면 지운다(`partial:true` 면 빠진 사람을 지우지 않음).
 - 보간: 사람마다 표본 4개, 지금보다 delay(받는 간격 × 1.6, 180~900 ms) 앞의 자리를 그린다. 끝 표본을 앞지르지 않는다(멈춘 사람이 미끄러지지 않게).
   한 번에 2.5 m 넘게 뛰거나 2.5초 넘게 끊겼다 오면 보간 없이 그 자리로 옮긴다. 앉은 사람은 좌석 자리로(0.7초 앉는 동작).
-- 내보내기(onMyPose): `myPose` 이벤트를 `hz`(기본 3, `setPoseRate`)로 — 5 cm·0.05 rad 이상 움직였을 때만, 앉기/서기 같은 상태 변화는 바로, 멈춰 있으면 2초마다 한 번(살아 있음).
+- 내보내기(onMyPose): `myPose` 이벤트를 — **걷는 중** `hz`(기본 3)로, 5 cm·0.05 rad 넘게 움직였을 때만 · **서서 가만히** `idleSec`(기본 10초)마다 한 번(살아 있음) · **앉아 있으면** `seatedIdleSec`(기본 0 = 보내지 않음) · 앉기/서기 같은 상태 변화는 바로. 모두 `setPoseRate({hz, idleSec, seatedIdleSec, minMove, minTurn})` 로 바꾼다(0 = 그 박동 없음).
 - **원본(로사리움) 현장감 설계에서 가져온 것**(rosary-app `docs/church/SPEC.md` §3·§6·§12, `server/church/src/room_logic.ts` — 원본 서버는 설계·시험까지이고 실서비스 배포 기록은 없어 실측이 아니라 설계 판단이다):
   내 위치는 클라이언트가 권위이고 **움직이는 동안만 5 Hz 이하**로 보내며 멈추면 '멈춤'(m:0)을 한 번 보낸다 — 받는 메시지가 과금 대상이라 멈춘 사람(대부분 앉아 있다)은 보내지 않는다.
   서버는 바뀐 사람만 **5 Hz 스냅숏 하나로 묶어** 내려보내고, 받는 쪽은 스냅숏 사이를 **200 ms 지연 보간**한다. 앉기·일어서기는 위치와 따로 이벤트로 보내 좌석은 서버가 권위(이미 찼으면 거절)다.
@@ -246,19 +256,31 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 node --test test/*.test.mjs          # 단위(scene_logic·집 충돌/빠져나가기/갈 수 있는 곳·좌석·그네·net_view·bridge·AO 최신·커피·질감·식물 카드) + 브라우저 끝까지(e2e 2: 브리지·커피 흐름)
 node tools/shots.mjs                  # docs/shots/*.jpg 10장(외관 낮·밤, 실내, 앉은 시점, 마당 그네, 걷는 두 사람, 화단 가까이, 커피 카운터, 책상 위 라떼, 손에 든 아이스)
 node tools/perf.mjs                   # 시점별 draw·삼각형·질감 MB(6절 표)
-python3 -I tools/tex_build.py <base_zip> <pbr_zip> <pbr_zip2> <plants_cut>   # 소유자 원본 → web/tex(이음매·ORM·식물 카드) + docs/seams.json
+python3 -I tools/tex_build.py <base_zip> <pbr_zip> <pbr_zip2> <plants_cut> && python3 -I tools/tex_shrink.py   # 소유자 원본 → web/tex(이음매·ORM·식물 카드, 1k) → 샘플 크기로 줄이기 + docs/seams.json
 node tools/shot.mjs "thumb=1&hour=21" /tmp/a.png    # 한 장
 node tools/serve.mjs 8123             # 브라우저로 http://127.0.0.1:8123/test.html (사진 질감은 http 로 열어야 올라간다)
 node tools/ao_bake.mjs house && node tools/gi_bake.mjs house   # 지오메트리를 바꾼 뒤 다시 굽기(--check 로 최신인지만; test/bake.test.mjs 가 어긋나면 실패)
 ```
 - 필요: Node 22, `playwright`(Chromium), 질감 다시 만들기는 Python 3 + Pillow + numpy. 브라우저 시험·사진은 소프트웨어 렌더(swiftshader)라 느리다(사진 10장 약 15분).
-- `test.html` URL: `room hour quality autotier frames thumb sit peerseat view peers route x z yaw pitch zoom look hideui fixed gpt cup coffee camturn`.
+- `test.html` URL: `room hour quality autotier frames thumb sit peerseat view peers route x z yaw pitch zoom look hideui fixed gpt cup coffee camturn strings`. test.html 은 호스트 흉내로 한국어 글자를 `setStrings` 로 준다(`strings=en` 이면 영어 기본값).
   `route=street` 걷는 사람이 가게 앞 보도를 마주 오간다 · `cup=종류` 컵을 든 채 시작 · `coffee=종류` 시작하자마자 주문 · `camturn=도` 카메라를 아바타 둘레로 돌린다.
   카운터 앞에 서면 화면 아래에 메뉴 4(호스트 흉내)가 뜬다.
-- 시험 수: 단위 47 + 브라우저 2 = **49**(`test/coffee`·`textures`·`plants` 가 2차에서 늘었다 — 질감 파일·1024²·이음매 ≤1.3·식물 비율·알파 카드 재질·땅에 선 높이·ORM 연결·컵 모양·주문 흐름·좌석별 컵 자리·바리스타 충돌체·다른 사람 컵).
+- 시험 수: 단위 49 + 브라우저 2 = **51**(`test/coffee`·`textures`·`plants`·`integration` 이 2차에서 늘었다 — 엔진 JS 한글 글자 없음·setStrings·박동 설정·싣는 크기 = 샘플 크기·음료 번호·sceneReady(e2e)·질감 파일·이음매 ≤1.3·식물 비율·알파 카드 재질·땅에 선 높이·ORM 연결·컵 모양·주문 흐름·좌석별 컵 자리·바리스타 충돌체·다른 사람 컵).
 
 ## 6. 성능 예산(중급 안드로이드)과 30초 벤치
-- 예산: **보이는 삼각형 약 170k · draw call 약 260 · 질감 80 MB 이하**. 지금 공방(960×540, 헤드리스 측정): 본 그리기 한 번(간단 단계 — 그림자·반사 없음) 삼각형 **71k(외관)·95k(실내)·113k(사람 셋)**, draw **49~56**. 높음 단계는 그림자 맵·바닥 반사 패스까지 더해 프레임 합계 190k~254k 삼각형·draw 104~156. 정적 장면 111k 삼각형(잎 수천 장 포함). 질감 파일은 1k 지만 `photos.js` 가 올리기 전에 줄인다(가까이 크게 보이는 바닥·벽 색 1024, 다른 색·법선 512, 거칠기 256; 같은 그림은 한 번만 올림) → 장면 재질 질감 합계 **약 80 MB**(밉맵 포함 추정, 렌더 타깃 제외 — 헤드리스 측정). 고사양은 `window.RoomPhotoMax = 1024`.
+- 예산: **보이는 삼각형 약 170k · draw call 약 260 · 질감 80 MB 이하**. 2차 측정(`node tools/perf.mjs`, 960×540 헤드리스, 높음 단계 한 프레임 — 그림자 맵은 캐시라 빠짐, 바닥 반사·후처리 포함;
+  질감 = 장면 재질 질감 RGBA8 × 밉맵 4/3, 같은 그림은 한 번, 렌더 타깃 제외):
+
+| 시점 | draw | 삼각형 | 질감 MB |
+|---|---|---|---|
+| 외관 낮 | 179 | 67k | 72.9 |
+| 실내 | 142 | 67k | 72.9 |
+| 마당 그네(두 사람) | 135 | 76k | 73.5 |
+| 커피 카운터(바리스타) | 111 | 62k | 72.9 |
+| 걷는 두 사람(보도) | 173 | 94k | 73.6 |
+
+  모두 예산 안. 식물 카드는 종류마다 draw 1(7종 + 앱 정원 꽃 최대 5)이고 카드 합계 삼각형 8k 아래(시험). 질감은 사진 질감이 반복만 달라도 GPU 에 따로 올라가던 것을
+  three `Source` 공유로 고쳐 113 → 94 MB, 작은 물건 법선·색을 256 으로 줄여 73 MB. 고사양은 `window.RoomPhotoMax`(파일보다 크게는 못 올린다 — 원본 1k 는 `tools/tex_build.py` 로 다시 만든다).
 - 화질 자동 하향: 높음 → 보통 → 간단(3초 평균 45 ms 초과). 앉아 가만히 있으면 30 fps 로 쉰다.
 - **30초 벤치(기기에서)**: 서 있는 상태에서 `setPerfHud({on:true})`(또는 `?perfhud=1`) → 오른쪽 위 「30초 벤치」. `layout.benchPath`(스폰 → 데크 → 실내 → 복도 끝)를 따라 12초 걷고(카메라 ±60° 흔듦) 6초 제자리 한 바퀴, 12초 되돌아온다.
   끝나면 평균·1% low fps, 50/100 ms 넘는 프레임 수, 해상도·draw·삼각형 최대, 질감 MB, GPU 이름을 보여 주고 `perfReport` 이벤트로 넘긴다(클립보드 복사도 시도). 같은 기기에서 화질 단계별로 한 번씩.

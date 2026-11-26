@@ -100,7 +100,7 @@
       { x: SWING.x - 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x - 0.3, z: SWING.z + 0.82 } },
       { x: SWING.x + 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x + 0.3, z: SWING.z + 0.82 } }
     ],
-    seatLabels: ['창가 1', '창가 2', '창가 3', '카운터', '그네 왼쪽', '그네 오른쪽'],
+    seatLabels: ['Window 1', 'Window 2', 'Window 3', 'Counter', 'Swing left', 'Swing right'],   // 영어 기본 — 화면 글자는 호스트 setStrings({seatLabels})
     // 커피(coffee.js): 주문 안내가 뜨는 곳(near), 컵이 나오는 자리(pickup), 바리스타 자리, 앉으면 컵을 내려놓는 자리(좌석 번호 순, 없으면 null = 계속 든다)
     coffee: {
       near: { x0: 0.35, x1: 1.3, z0: -1.9, z1: 0.85 },
@@ -121,7 +121,7 @@
     floorZones: [{ x0: -2.6, x1: 2.6, z0: -3.5, z1: 3.5, y: FL }, { x0: -0.7, x1: 0.7, z0: -5.85, z1: -3.3, y: FL }, { x0: -0.15, x1: 2.6, z0: 3.3, z1: 4.45, y: FL }],
     benchPath: [{ x: 0.72, z: 4.2 }, { x: 0.72, z: 2.4 }, { x: 0.1, z: 0.6 }, { x: 0.0, z: -2.2 }, { x: 0.0, z: -4.9 }],
     plan: PLAN,
-    info: { name: '독서공방', note: 'DESIGN.md 안 A' }
+    info: { name: 'Reading Room', note: 'DESIGN.md plan A' }
   };
   root.RoomLayouts.register(layout);
 
@@ -311,6 +311,8 @@
       // == 간판·벽등(바깥) ==
       ctx.boxAABB({ x0: 1.36, x1: 2.36, z0: 3.5, z1: 3.55, y0: 1.5, y1: 2.18, color: 0x8a5a34, mat: 'wood' });
       var panels = {};
+      // 화면 글자: 호스트가 setStrings 로 준다(strings.js). 없으면 중립 영어 기본값
+      function STR(k, d) { var R = root.RoomStrings, v = R ? R.get(k) : null; return v == null ? d : v; }
       function panel(id, o) {
         var cw = o.px || 512, chh = Math.round(cw * o.h / o.w), cv = G.makeCanvas(cw, chh), tx = new T.CanvasTexture(cv);
         tx.encoding = T.sRGBEncoding; tx.anisotropy = 4;
@@ -325,7 +327,7 @@
         return P;
       }
       var FONT = '"Pretendard","Noto Sans KR","Apple SD Gothic Neo","WenQuanYi Zen Hei",sans-serif';
-      panel('sign', { x: 1.86, y: 1.84, z: 3.556, w: 0.9, h: 0.58, px: 512, data: { title: '독서공방', sub: 'SINCE 2026' }, draw: function (g, w, h, d) {
+      panel('sign', { x: 1.86, y: 1.84, z: 3.556, w: 0.9, h: 0.58, px: 512, data: { title: STR('signTitle', 'Reading Room'), sub: STR('signSub', 'SINCE 2026') }, draw: function (g, w, h, d) {
         g.fillStyle = '#f4ecdc'; g.fillRect(0, 0, w, h);
         g.fillStyle = '#3b2a1e'; g.textAlign = 'center'; g.textBaseline = 'middle';
         g.font = '700 ' + Math.round(h * 0.34) + 'px ' + FONT; g.fillText(d.title || '', w / 2, h * 0.42);
@@ -574,7 +576,7 @@
       for (var sb = 0; sb < 7; sb++) ctx.box({ x: 1.0 + sb * 0.07, y: FL + 0.86, z: -3.1, w: 0.05, h: 0.2 + rnd() * 0.06, d: 0.18, color: [0x2f4a6a, 0xe8dcc6, 0x8a3b2e, 0x5d7a52][sb % 4] });
       panel('calendar', { x: 1.62, y: FL + 1.62, z: -3.288, w: 0.62, h: 0.62, px: 384, data: { month: 11, marks: [3, 4, 7, 12, 13, 18, 21, 25, 26] }, draw: function (g, w, h, d) {
         g.fillStyle = '#fbf8f1'; g.fillRect(0, 0, w, h);
-        g.fillStyle = '#3b2a1e'; g.font = '700 ' + Math.round(h * 0.11) + 'px ' + FONT; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText((d.month || 11) + '월', w * 0.08, h * 0.06);
+        g.fillStyle = '#3b2a1e'; g.font = '700 ' + Math.round(h * 0.11) + 'px ' + FONT; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText(d.monthName || (STR('monthNames', []) || [])[(d.month || 11) - 1] || String(d.month || 11), w * 0.08, h * 0.06);
         var cs = w * 0.84 / 7, ox = w * 0.08, oy = h * 0.24, marks = d.marks || [];
         for (var day = 1; day <= 30; day++) {
           var c = (day + 5) % 7, r2 = Math.floor((day + 5) / 7);
@@ -657,7 +659,7 @@
       [[0.11, 0.11], [-0.11, 0.11], [0.11, -0.11], [-0.11, -0.11]].forEach(function (p) { ctx.beam3([s3.x + p[0] * 0.8, SY - 0.05, s3.z + p[1] * 0.8], [s3.x + p[0] * 1.4, FL, s3.z + p[1] * 1.4], 0.02, 0.02, 0x2a2a2c, ctx.metalB); });
       ctx.add(new T.Mesh(new T.TorusGeometry(0.17, 0.01, 6, 24).rotateX(PI / 2).translate(s3.x, FL + 0.3, s3.z), ctx.mats.metal));
       var B = { top: K.top };
-      panel('tablet', { x: 1.52, y: B.top + 0.005, z: -1.25, w: 0.3, h: 0.22, rx: -PI / 2 + 0.12, ry: -PI / 2, px: 384, screen: true, data: { title: '읽는 중', lines: 9 }, draw: function (g, w, h, d) {
+      panel('tablet', { x: 1.52, y: B.top + 0.005, z: -1.25, w: 0.3, h: 0.22, rx: -PI / 2 + 0.12, ry: -PI / 2, px: 384, screen: true, data: { title: STR('tabletTitle', 'Now reading'), lines: 9 }, draw: function (g, w, h, d) {
         g.fillStyle = '#f6f2ea'; g.fillRect(0, 0, w, h);
         g.fillStyle = '#20252a'; g.fillRect(0, 0, w, h * 0.05); g.fillRect(0, h * 0.95, w, h * 0.05); g.fillRect(0, 0, w * 0.04, h); g.fillRect(w * 0.96, 0, w * 0.04, h);
         g.fillStyle = '#3b2a1e'; g.font = '700 ' + Math.round(h * 0.09) + 'px ' + FONT; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText(d.title || '', w * 0.1, h * 0.1);
@@ -666,7 +668,7 @@
       ctx.boxAABB({ x0: 2.45, x1: 2.5, z0: -0.55, z1: 0.42, y0: FL + 1.3, y1: FL + 2.12, surf: 'cork', color: 0xe8c9a0 });
       [[FL + 1.27, FL + 1.3], [FL + 2.12, FL + 2.15]].forEach(function (yy) { ctx.boxAABB({ x0: 2.43, x1: 2.5, z0: -0.58, z1: 0.45, y0: yy[0], y1: yy[1], color: 0x8a5d38, mat: 'wood' }); });
       [-0.58, 0.42].forEach(function (zz) { ctx.boxAABB({ x0: 2.43, x1: 2.5, z0: zz, z1: zz + 0.03, y0: FL + 1.27, y1: FL + 2.15, color: 0x8a5d38, mat: 'wood' }); });
-      panel('board', { x: 2.442, y: FL + 1.71, z: -0.07, w: 0.94, h: 0.78, ry: -PI / 2, px: 768, alpha: true, data: { notes: ['이번 주 3권', '되새김 10장', '오늘 30분', '추천: 산문집', '읽고 싶은 책'] }, draw: function (g, w, h, d) {
+      panel('board', { x: 2.442, y: FL + 1.71, z: -0.07, w: 0.94, h: 0.78, ry: -PI / 2, px: 768, alpha: true, data: { notes: STR('boardNotes', ['3 books this week', '10 review cards', '30 min today', 'Pick: essays', 'Want to read']) }, draw: function (g, w, h, d) {
         var cols = ['#fff3a8', '#ffd2c4', '#d8f0c8', '#cfe3ff', '#fbe2f0'], notes = d.notes || [];
         notes.forEach(function (n, i) {
           var nx = w * (0.05 + (i % 3) * 0.32), ny = h * (0.08 + Math.floor(i / 3) * 0.48), nw = w * 0.27, nh = h * 0.38, a = ((i * 53) % 9 - 4) * 0.01;
@@ -772,9 +774,17 @@
               bdUrls = { day: data.day || data.url, night: data.night || data.url }; bdApply(true);
               return;
             }
-            if (panels[id]) panels[id].redraw(data || {});
+            if (panels[id]) { panels[id].host = true; panels[id].redraw(data || {}); }   // 호스트가 준 판은 글자 바꾸기(strings)로 덮지 않는다
           },
           skin: skin,
+          // 화면 글자가 바뀌면(setStrings) 호스트가 따로 채우지 않은 판을 새 글자로 다시 그린다
+          strings: function () {
+            var P;
+            if ((P = panels.sign) && !P.host) P.redraw({ title: STR('signTitle', 'Reading Room'), sub: STR('signSub', 'SINCE 2026') });
+            if ((P = panels.tablet) && !P.host) P.redraw({ title: STR('tabletTitle', 'Now reading'), lines: P.data.lines || 9 });
+            if ((P = panels.board) && !P.host) P.redraw({ notes: STR('boardNotes', []) });
+            if ((P = panels.calendar)) P.redraw();
+          },
           // 앉은 자리 옮김(흔들리는 그네): {x, y, z} 또는 null. main.js·net_view.js 가 앉은 아바타에 더한다
           seatOffset: function (id) {
             if ((id !== 'S4' && id !== 'S5') || !swingTheta) return null;

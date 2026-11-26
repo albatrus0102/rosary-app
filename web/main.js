@@ -69,7 +69,7 @@
     return App.net.isTaken(id);
   }
   function seatSpots(w) {
-    return w.logic.seats.map(function (s, i) { return { kind: 'seat', index: i, x: s.x, z: s.z, y: w.logic.seatFloor(s.id), label: (w.layout.seatLabels && w.layout.seatLabels[i]) || ('자리 ' + (i + 1)), labelY: 1.35 }; });
+    return w.logic.seats.map(function (s, i) { return { kind: 'seat', index: i, x: s.x, z: s.z, y: w.logic.seatFloor(s.id), label: seatName(w, i), labelY: 1.35 }; });
   }
   // 표식 숨김: 찬 자리·내 자리, 그리고 나와 다른 쪽(실내/바깥)에 있는 자리(벽 너머로 이름표가 떠 보이지 않게)
   function refreshMarkers() {
@@ -98,12 +98,15 @@
     // 커피 카운터(coffee.js — 장면 layout.coffee 가 있을 때만): 바리스타·내 컵·다른 사람 컵
     App.coffee = null;
     try { if (root.RoomCoffee && w.layout.coffee) { App.coffee = root.RoomCoffee.create(App, post); if (App.coffee && App.net.setCupHook) App.net.setCupHook(App.coffee.syncPeer); } } catch (e) { frameErr('coffee', e); }
+    if (App.coffee && App.coffeePending) { var cpd = App.coffeePending; App.coffeePending = null; if (cpd.give !== undefined) App.coffee.give(cpd.give); if (cpd.order) App.coffee.order(cpd.order); }   // 장면이 서기 전에 온 주문·컵
     refreshMarkers();
     if (App.pending) { var pd = App.pending; App.pending = null; if (pd.garden) hook('garden', pd.garden); if (pd.skin) hook('skin', pd.skin); Object.keys(pd.panels || {}).forEach(function (k) { hook('panel', k, pd.panels[k]); }); }
     kick();
     if (console && console.log && qs.verbose) console.log('[room] world ' + w.id + ' stats', JSON.stringify(w.stats));
   }
   // 빌더 고리(builder.hooks: garden(list) · panel(id, data) · skin(name)): 장면이 없으면 기억해 두었다가 지은 뒤 적용
+  // 좌석 이름: 호스트 글자(setStrings seatLabels) → 장면 layout 의 영어 이름 → 'Seat N'
+  function seatName(w, i) { var S = root.RoomStrings; return S ? S.seatLabel(i, w.layout.seatLabels) : ((w.layout.seatLabels && w.layout.seatLabels[i]) || ('Seat ' + (i + 1))); }
   function hook(name, a, b) {
     var hk = App.world && App.world.hooks;
     if (!hk) { var P = App.pending = App.pending || { panels: {} }; if (name === 'panel') P.panels[a] = b; else P[name] = a; return; }
@@ -267,7 +270,16 @@
     setQuality: function (o) { setQMode(o && (o.quality || o.value)); if (App.R) { App.R.autoTier = autoOn(); App.R.setTier(App.quality, App.world); } resize(); },
     setPerfHud: function (o) { if (root.RoomPerfHud) root.RoomPerfHud.set(!!(o && (o.on || o.value)), App); },
     setSteps: function (o) { root.RoomAudio.setSteps(o || {}); },
-    setPoseRate: function (o) { if (App.pose) App.pose.setRate(o.hz !== undefined ? o.hz : o.value); },
+    // 내 자세 보내기 박동: 숫자(hz) 또는 {hz, idleSec, seatedIdleSec, minMove, minTurn} — 기본 3 Hz · 서 있음 10초 · 앉음 없음(net_view.js)
+    setPoseRate: function (o) { if (App.pose) App.pose.setRate(o.value !== undefined ? o.value : o); },
+    // 화면 글자(호스트가 준다 — 엔진에는 중립 영어 기본값만): {signTitle, signSub, boardNotes, tabletTitle, seatLabels, seatPrefix, seatFree, monthNames, weekdays}
+    setStrings: function (o) {
+      if (!root.RoomStrings) return;
+      var ch = root.RoomStrings.set(o || {}); if (!ch.length) return;
+      hook('strings', ch);
+      if (App.markers && App.world) { App.markers.dispose(); App.markers = root.RoomMarkers.create(App.world.group, seatSpots(App.world), App.world.logic); refreshMarkers(); }
+      kick();
+    },
     setViewInset: function (o) {
       App.inset = Math.max(0, Math.min(0.6, +(o && (o.bottom !== undefined ? o.bottom : o.value)) || 0));
       if (App.camera) { applyInset(root.innerWidth || 360, root.innerHeight || 640); App.camera.updateProjectionMatrix(); kick(); }
@@ -275,9 +287,9 @@
     setCamera: function (o) { applyCamCfg(o); },
     tapAt: function (o) { tapAt(+o.x, +o.y); },
     // 커피 주문(무료·가상): {kind:'americano'|'latte'|'iced'|'tea'} → 약 3초 뒤 {e:'coffeeReady', kind}, 카운터에서 집으면 {e:'coffeePicked'}
-    orderCoffee: function (o) { if (App.coffee) App.coffee.order(o && (o.kind || o.value)); kick(); },
+    orderCoffee: function (o) { var k = o && (o.kind || o.value); if (App.coffee) App.coffee.order(k); else (App.coffeePending = App.coffeePending || {}).order = k; kick(); },
     // 들고 있는 컵 되돌리기(다시 열었을 때 호스트가 기억한 컵): {kind} 또는 {kind:null}(없앰)
-    setMyCup: function (o) { if (App.coffee) App.coffee.give(o && (o.kind !== undefined ? o.kind : o.value)); kick(); }
+    setMyCup: function (o) { var k = o && (o.kind !== undefined ? o.kind : o.value); if (App.coffee) App.coffee.give(k); else (App.coffeePending = App.coffeePending || {}).give = k; kick(); }
   };
   App.api = api;
 
@@ -629,6 +641,15 @@
     Pace.work(performance.now() - tw0);
     if (PH) { PH.gpuEnd(gq); PH.frame(raw, performance.now() - tj, performance.now() - tr); }
     if (!App.firstFramePosted) { App.firstFramePosted = true; post({ e: 'firstFrame' }); }
+    // sceneReady(한 번): 사진 질감이 다 올라오고(RoomPhotos.whenReady), 구운 AO·빛 번짐이 붙고, 그 뒤 3 프레임을 그린 다음.
+    // firstFrame 은 절차 생성 대체 질감이 보이는 첫 그림이라 호스트는 sceneReady 에 화면을 드러내야 바뀜(깜빡임)이 보이지 않는다.
+    if (!App.sceneReadyPosted && !App.glLost) {
+      var RW = App.readyWatch;
+      if (!RW) { RW = App.readyWatch = { photos: !root.RoomPhotos, frames: 0, t0: performance.now() }; if (root.RoomPhotos) root.RoomPhotos.whenReady(function () { RW.photos = true; kick(); }, 20000); }
+      var aoWait = App.world && App.world.aoPending && App.world.aoPending();
+      if (RW.photos && !aoWait) { if (++RW.frames >= 3) { App.sceneReadyPosted = true; post({ e: 'sceneReady', ms: Math.round(performance.now() - RW.t0) }); } }
+      else { RW.frames = 0; kick(); }
+    }
     if (chg) { App.quality = chg; post({ e: 'tierDown', tier: App.R.tier, fps: Math.round(1 / Math.max(raw, 0.001)) }); }
     App.frames++; App.perfT += Math.min(raw, 1);
     if (App.perfT >= (App.perfSent ? 5 : 4)) {

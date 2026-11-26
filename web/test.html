@@ -34,6 +34,7 @@ window.RoomNoAutoStart = true;
 <script src="three.min.js"></script>
 <script src="three_extras.js"></script>
 <script src="palette.js"></script>
+<script src="strings.js"></script>
 <script src="layouts.js"></script>
 <script src="scan3d.js"></script>
 <script src="scene_logic.js"></script>
@@ -70,6 +71,11 @@ window.RoomNoAutoStart = true;
   var me = { g: 0, skin: 1, style: 2, hair: 3, outfit: 7, label: '나' };
   function init() {
     R.init({ room: qs.get('room') || 'house', avatar: me, hour: qs.get('hour') !== null ? +qs.get('hour') : 14, quality: qs.get('quality') || 'high', fixedClock: qs.get('fixed') !== '0' });
+    // 호스트 글자(한국어): 엔진에는 영어 기본값만 있고 화면 글자는 호스트가 준다. ?strings=en 이면 주지 않는다(영어 기본 확인)
+    if (qs.get('strings') !== 'en') R.setStrings({ signTitle: '독서공방', signSub: 'SINCE 2026', tabletTitle: '읽는 중', seatFree: '빈자리', seatPrefix: '자리 ',
+      boardNotes: ['이번 주 3권', '되새김 10장', '오늘 30분', '추천: 산문집', '읽고 싶은 책'],
+      seatLabels: ['창가 1', '창가 2', '창가 3', '카운터', '그네 왼쪽', '그네 오른쪽'],
+      monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'], weekdays: ['일', '월', '화', '수', '목', '금', '토'] });
     var n = +(qs.get('peers') || 0);
     if (n) simPeers(n);
     if (window.RoomBackdrop) R.setPanel({ id: 'backdrop', data: window.RoomBackdrop });
@@ -102,8 +108,8 @@ window.RoomNoAutoStart = true;
   ];
   // route=street: 가게 앞 보도(트인 곳)를 서로 마주 보며 오가는 길 — 사진 「걷는 두 사람」
   var STREET = [
-    [[3.2, 4.85], [-3.6, 4.85], [3.2, 4.85]],
-    [[-2.6, 5.65], [4.6, 5.65], [-2.6, 5.65]]
+    [[0.4, 4.85], [-3.4, 4.85], [0.4, 4.85]],
+    [[-3.0, 5.7], [0.9, 5.7], [-3.0, 5.7]]
   ];
   function simPeers(n) {
     if (simT) clearInterval(simT);

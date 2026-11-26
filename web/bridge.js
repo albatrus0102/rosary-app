@@ -51,7 +51,7 @@
   }
 
   var METHODS = ['init', 'setSeats', 'setMe', 'setHour', 'setTimerText', 'setPanel', 'setGarden', 'setSkin', 'pause', 'resume', 'dispose',
-    'setPeers', 'sit', 'stand', 'setJoystick', 'setQuality', 'setPerfHud', 'setSteps', 'setPoseRate', 'setViewInset', 'tapAt', 'orderCoffee', 'setMyCup'];
+    'setPeers', 'sit', 'stand', 'setJoystick', 'setQuality', 'setPerfHud', 'setSteps', 'setPoseRate', 'setViewInset', 'tapAt', 'orderCoffee', 'setMyCup', 'setStrings'];
   var NO_QUEUE = { setJoystick: 1, tapAt: 1 };   // 오래되면 의미 없는 입력은 쌓지 않는다
   var API = {};
   function invoke(m, a) {

@@ -259,14 +259,14 @@ for name, (pc, pn, pr, pa, fix) in MATS.items():
     print('%-14s color %.2f -> %.2f  normal %.2f -> %.2f  rough %.2f -> %.2f  ao %.2f -> %.2f' % (name, before['color'], after['color'], before['normal'], after['normal'], before['rough'], after['rough'], before['ao'], after['ao']))
     save(col, os.path.join(OUT, name + '.jpg'), 86)
     save(nor, os.path.join(OUT, name + '_n.jpg'), 90)
-    save(orm(ao, rgh), os.path.join(OUT, name + '_orm.jpg'), 86)
+    save(orm(ao, rgh), os.path.join(OUT, name + '_orm.jpg'), 92)   # 데이터 지도: 색 하위 표본 없이(4:4:4) — 가장자리 이음매가 다시 생기지 않게
     if name == 'wood_oak':
         fc, fn, fr, fa = floor_planks(col, nor, rgh, ao)
         report['materials']['floor_oak'] = {'fixed': 'derived', 'after': {'color': round(seam_metric(fc), 2)}}
         print('floor_oak      color %.2f (planks from wood_oak)' % seam_metric(fc))
         save(fc, os.path.join(OUT, 'floor_oak.jpg'), 86)
         save(fn, os.path.join(OUT, 'floor_oak_n.jpg'), 90)
-        save(orm(fa, fr), os.path.join(OUT, 'floor_oak_orm.jpg'), 86)
+        save(orm(fa, fr), os.path.join(OUT, 'floor_oak_orm.jpg'), 92)
 
 for name, f in PLANTS_MAP.items():
     im = Image.open(os.path.join(PLANTS, f)).convert('RGBA')

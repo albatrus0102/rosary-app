@@ -26,11 +26,10 @@ function webpInfo(buf) {
   return { alpha: false, w: buf.readUInt16LE(26) & 0x3fff, h: buf.readUInt16LE(28) & 0x3fff };
 }
 
-test('사진 질감: 목록의 모든 파일이 있고 1024², 소유자 PBR 은 색·법선·ORM 세 장', () => {
+test('사진 질감: 목록의 모든 파일이 있고 정사각형(실제 샘플 크기로 미리 줄임), 소유자 PBR 은 색·법선·ORM 세 장', () => {
   for (const n of Ph.LIST) for (const s of ['', '_n', '_r']) { const f = path.join(TEX, n + s + '.jpg'); assert.ok(fs.existsSync(f), f); }
   for (const n of Ph.OWNER) {
-    const sz = ['', '_n', '_orm'].map((s) => jpegSize(fs.readFileSync(path.join(TEX, n + s + '.jpg'))));
-    for (const z of sz) assert.deepEqual(z, { w: 1024, h: 1024 }, n);
+    for (const s of ['', '_n', '_orm']) { const z = jpegSize(fs.readFileSync(path.join(TEX, n + s + '.jpg'))); assert.equal(z.w, z.h, n + s); assert.equal(z.w, Ph.maxOf(n + s), n + s); }
     assert.ok(Ph.has(n) && Ph.has(n + '_n') && Ph.has(n + '_orm'));
   }
   // 목록에 없는 질감 파일이 남아 있지 않다(쓰지 않는 파일로 패키지가 커지지 않게)
@@ -40,9 +39,10 @@ test('사진 질감: 목록의 모든 파일이 있고 1024², 소유자 PBR 은
   for (const n of Ph.PLANTS) known.add('plant_' + n + '.webp');
   for (const f of fs.readdirSync(TEX)) assert.ok(known.has(f), 'unlisted texture ' + f);
 });
-test('색 공간·올리는 크기: 색 sRGB, 법선·ORM·거칠기 선형 / HERO 색 1024·나머지 512·ORM 256', () => {
-  assert.equal(Ph.maxOf('floor_oak'), 1024); assert.equal(Ph.maxOf('rope'), 512); assert.equal(Ph.maxOf('rope_n'), 512);
-  assert.equal(Ph.maxOf('rope_orm'), 256); assert.equal(Ph.maxOf('lawn_orm'), 512); assert.equal(Ph.maxOf('asphalt_r'), 256);
+test('올리는 크기: HERO(바닥·벽) 색 1024 · 색·법선 512 · 작은 물건 법선 256 · 아주 작은 것 색 256 · ORM 256(HERO 512)', () => {
+  assert.equal(Ph.maxOf('floor_oak'), 1024); assert.equal(Ph.maxOf('plaster_cream_orm'), 512); assert.equal(Ph.maxOf('lawn'), 512);
+  assert.equal(Ph.maxOf('rope'), 256); assert.equal(Ph.maxOf('rope_n'), 256); assert.equal(Ph.maxOf('linen_a'), 512); assert.equal(Ph.maxOf('linen_a_n'), 256);
+  assert.equal(Ph.maxOf('rope_orm'), 256); assert.equal(Ph.maxOf('lawn_orm'), 256); assert.equal(Ph.maxOf('asphalt_r'), 256); assert.equal(Ph.maxOf('brick_n'), 512);
   assert.equal(Ph.extOf('plant_rose'), '.webp'); assert.equal(Ph.extOf('rope'), '.jpg');
 });
 test('이음매: 고친 재질은 가장자리 차이가 안쪽의 1.3배 이하(고치기 전 최대 2.4)', () => {
@@ -59,11 +59,11 @@ test('식물 카드: 모든 종류의 webp 가 있고 알파가 있으며 KINDS 
   for (const k of Ph.PLANTS) {
     const info = webpInfo(fs.readFileSync(path.join(TEX, 'plant_' + k + '.webp')));
     assert.ok(info.alpha, k + ' alpha');
-    assert.ok(Math.max(info.w, info.h) <= 1024 && Math.max(info.w, info.h) >= 512, k);
+    assert.equal(Math.max(info.w, info.h), Ph.maxOf('plant_' + k), k);
     assert.ok(Math.abs(info.w / info.h - KINDS[k].aspect) < 0.01, k + ' aspect ' + info.w / info.h);
   }
 });
-test('질감 파일 합계는 25 MB 이하', () => {
+test('질감 파일 합계는 6 MB 이하', () => {
   let sum = 0; for (const f of fs.readdirSync(TEX)) sum += fs.statSync(path.join(TEX, f)).size;
-  assert.ok(sum < 25e6, 'tex MB ' + (sum / 1e6).toFixed(1));
+  assert.ok(sum < 6e6, 'tex MB ' + (sum / 1e6).toFixed(1));
 });

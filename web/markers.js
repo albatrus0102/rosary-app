@@ -8,7 +8,7 @@
 (function (root) {
   'use strict';
   var T = root.THREE, G = root.RoomGeo;
-  var LABELS = { seat: '빈자리' };
+  var LABELS = { seat: 'Free seat' };   // 기본값만 — 호스트 글자는 RoomStrings seatFree
   var FONT = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
 
   function smooth(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
@@ -73,7 +73,7 @@
       var hit = new T.Mesh(hitGeo, hitMat);
       hit.rotation.x = -Math.PI / 2; hit.position.set(s.x, floor + 0.06, s.z);
       var lk = s.label || kind;
-      var lt = labelTexs[lk] || (labelTexs[lk] = labelTexture(s.label || LABELS[kind] || kind));
+      var lt = labelTexs[lk] || (labelTexs[lk] = labelTexture(s.label || (kind === 'seat' && root.RoomStrings ? root.RoomStrings.get('seatFree') : LABELS[kind]) || kind));
       var spMat = new T.SpriteMaterial({ map: lt.tex, transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0, toneMapped: false });
       var sp = new T.Sprite(spMat);
       var tx = s.x, tz = s.z;

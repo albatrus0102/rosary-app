@@ -14,15 +14,15 @@
   function build() {
     if (H.el) return;
     var d = document.createElement('div');
-    d.id = 'perfhud'; d.setAttribute('role', 'region'); d.setAttribute('aria-label', '성능 표시'); d.style.cssText = css();
+    d.id = 'perfhud'; d.setAttribute('role', 'region'); d.setAttribute('aria-label', 'Performance'); d.style.cssText = css();
     var t = document.createElement('div'); t.setAttribute('aria-live', 'off'); d.appendChild(t);
     var b = document.createElement('button');
-    b.textContent = '10초 기록'; b.setAttribute('aria-label', '10초 동안 성능 기록하기');
+    b.textContent = 'Record 10 s'; b.setAttribute('aria-label', 'Record performance for 10 seconds');
     b.style.cssText = 'margin-top:6px;min-height:36px;padding:0 14px;border:0;border-radius:18px;background:#e8c27a;color:#2a1f10;font:600 13px system-ui,sans-serif;';
     b.addEventListener('click', function (e) { e.stopPropagation(); startRec(); });
     d.appendChild(b);
     var bb = document.createElement('button');
-    bb.textContent = '30초 벤치'; bb.setAttribute('aria-label', '30초 동안 자동으로 걷고 돌며 성능 재기');
+    bb.textContent = '30 s bench'; bb.setAttribute('aria-label', 'Walk and turn automatically for 30 seconds to measure performance');
     bb.style.cssText = b.style.cssText + 'margin-left:6px;';
     bb.addEventListener('click', function (e) { e.stopPropagation(); startBench(); });
     d.appendChild(bb);
@@ -111,23 +111,23 @@
     if (now - H.texT > 2000) { H.texT = now; H.texMb = texEstimate(); if (!H.gpuName) H.gpuName = gpuName(); }
     var s = state(), fps = 1000 / Math.max(1, avg(H.buf)), low = 1000 / Math.max(1, pct(H.buf, 0.99));
     var worst = Math.max(H.secCur, H.secMax.length ? Math.max.apply(null, H.secMax) : 0), Pd = H.App && H.App.place ? H.App.place.debug() : null;
-    var g = H.gpu.length ? 'GPU ' + avg(H.gpu).toFixed(1) + ' ms' : 'GPU 대기(추정) ' + Math.max(0, avg(H.buf) - avg(H.js)).toFixed(1) + ' ms';
+    var g = H.gpu.length ? 'GPU ' + avg(H.gpu).toFixed(1) + ' ms' : 'GPU wait (est.) ' + Math.max(0, avg(H.buf) - avg(H.js)).toFixed(1) + ' ms';
     H.txt.textContent = 'FPS ' + fps.toFixed(0) + ' (1% low ' + low.toFixed(0) + ')\n' +
-      '프레임 ' + avg(H.buf).toFixed(1) + ' ms · JS ' + avg(H.js).toFixed(1) + ' ms\n' +
-      '그리기 호출(JS) ' + avg(H.rd).toFixed(1) + ' ms\n' + g + '\n' +
-      '해상도 ' + s.w + '×' + s.h + ' (×' + s.pr + ')\n' +
-      '화질 ' + s.tier + (s.mode === 'auto' ? ' (자동)' : '') + '\n' +
-      'draw ' + s.calls + ' · 삼각형 ' + (s.tris / 1000).toFixed(0) + 'k\n' +
-      '최악 프레임(60초) ' + worst.toFixed(0) + ' ms\n' +
-      '질감 ' + s.texMb.toFixed(0) + 'MB + 타깃 ' + (H.rtMb || 0).toFixed(0) + 'MB (추정)\n' +
-      (Pd ? '창 ' + Pd.slots + '자리 · 1k ' + Pd.stats.resident + '장 · ' + Pd.stats.texMb + 'MB\n' : '') +
+      'frame ' + avg(H.buf).toFixed(1) + ' ms · JS ' + avg(H.js).toFixed(1) + ' ms\n' +
+      'draw calls (JS) ' + avg(H.rd).toFixed(1) + ' ms\n' + g + '\n' +
+      'resolution ' + s.w + '×' + s.h + ' (×' + s.pr + ')\n' +
+      'tier ' + s.tier + (s.mode === 'auto' ? ' (auto)' : '') + '\n' +
+      'draw ' + s.calls + ' · tris ' + (s.tris / 1000).toFixed(0) + 'k\n' +
+      'worst frame (60 s) ' + worst.toFixed(0) + ' ms\n' +
+      'textures ' + s.texMb.toFixed(0) + 'MB + targets ' + (H.rtMb || 0).toFixed(0) + 'MB (est.)\n' +
+      (Pd ? 'window ' + Pd.slots + ' slots · 1k ' + Pd.stats.resident + ' · ' + Pd.stats.texMb + 'MB\n' : '') +
       'GPU ' + (s.gpu || '?');
-    H.el.setAttribute('aria-label', '성능 표시: 초당 ' + fps.toFixed(0) + '프레임, 화질 ' + s.tier);
+    H.el.setAttribute('aria-label', 'Performance: ' + fps.toFixed(0) + ' fps, tier ' + s.tier);
   }
   function startRec() {
     if (H.rec) return;
     H.rec = { t0: performance.now(), f: [], js: [], tier0: H.App && H.App.R ? H.App.R.tier : '?' };
-    H.btn.textContent = '기록 중…'; H.btn.disabled = true; H.out.textContent = '10초 동안 평소처럼 걷고 돌려 보세요.';
+    H.btn.textContent = 'Recording…'; H.btn.disabled = true; H.out.textContent = 'Walk and look around normally for 10 seconds.';
   }
   function endRec() {
     var r = H.rec; H.rec = null;
@@ -136,14 +136,14 @@
     var minFps = 1e9, acc = 0, n = 0;
     for (i = 0; i < f.length; i++) { acc += f[i]; n++; if (acc >= 1000) { minFps = Math.min(minFps, n * 1000 / acc); acc = 0; n = 0; } }
     if (minFps === 1e9) minFps = f.length ? f.length * 1000 / tot : 0;
-    var text = '[3D 공간 성능 10초]\n' +
-      '장면 ' + s.room + ' · 화질 ' + r.tier0 + (r.tier0 !== s.tier ? '→' + s.tier : '') + (s.mode === 'auto' ? ' (자동)' : '') + '\n' +
-      '평균 ' + (f.length * 1000 / Math.max(1, tot)).toFixed(1) + ' fps · 최저(1초) ' + minFps.toFixed(1) + ' fps · 1% low ' + (1000 / Math.max(1, pct(f, 0.99))).toFixed(1) + ' fps\n' +
-      '프레임 중앙 ' + pct(f, 0.5).toFixed(1) + ' ms · 90% ' + pct(f, 0.9).toFixed(1) + ' ms · JS ' + avg(r.js).toFixed(1) + ' ms' + (H.gpu.length ? ' · GPU ' + avg(H.gpu).toFixed(1) + ' ms' : '') + '\n' +
-      '해상도 ' + s.w + '×' + s.h + ' (pixel ratio ' + s.pr + ') · draw ' + s.calls + ' · 삼각형 ' + s.tris + '\n' +
-      '기기 ' + uaShort();
-    H.out.textContent = text + '\n(복사했어요)';
-    H.btn.textContent = '10초 기록'; H.btn.disabled = false;
+    var text = '[3D room performance, 10 s]\n' +
+      'scene ' + s.room + ' · tier ' + r.tier0 + (r.tier0 !== s.tier ? '→' + s.tier : '') + (s.mode === 'auto' ? ' (auto)' : '') + '\n' +
+      'mean ' + (f.length * 1000 / Math.max(1, tot)).toFixed(1) + ' fps · min (1 s) ' + minFps.toFixed(1) + ' fps · 1% low ' + (1000 / Math.max(1, pct(f, 0.99))).toFixed(1) + ' fps\n' +
+      'frame median ' + pct(f, 0.5).toFixed(1) + ' ms · 90% ' + pct(f, 0.9).toFixed(1) + ' ms · JS ' + avg(r.js).toFixed(1) + ' ms' + (H.gpu.length ? ' · GPU ' + avg(H.gpu).toFixed(1) + ' ms' : '') + '\n' +
+      'resolution ' + s.w + '×' + s.h + ' (pixel ratio ' + s.pr + ') · draw ' + s.calls + ' · tris ' + s.tris + '\n' +
+      'device ' + uaShort();
+    H.out.textContent = text + '\n(copied)';
+    H.btn.textContent = 'Record 10 s'; H.btn.disabled = false;
     try { if (root.RoomBridge) root.RoomBridge.post({ e: 'perfReport', text: text }); } catch (e) { /* ignore */ }
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () {}); } catch (e) { /* ignore */ }
     H.lastReport = text;
@@ -151,11 +151,11 @@
   // 걷기는 가상 손잡이(ctl.setJoystick)로 한다 — 실제 사용자 입력과 같은 길(충돌·발소리·아바타 걸음)을 탄다.
   function startBench() {
     var A = H.App;
-    if (H.bench || !A || !A.api || !A.me || A.me.mode !== 'walk') { if (H.out) H.out.textContent = '서 있을 때(걷기 상태) 시작할 수 있어요.'; return; }
+    if (H.bench || !A || !A.api || !A.me || A.me.mode !== 'walk') { if (H.out) H.out.textContent = 'Start while standing (walk mode).'; return; }
     var path = (A.logic && A.logic.layout && A.logic.layout.benchPath) || [{ x: A.me.x, z: A.me.z - 3 }];
     H.bench = { t0: performance.now(), t: 0, f: [], js: [], calls: 0, tris: 0, phase: 0, tier0: A.R.tier, yaw0: A.ctl.yaw, texMax: 0, spikes50: 0, spikes100: 0, path: path, wi: 0, dir: 1 };
-    H.bbtn.textContent = '벤치 중…'; H.bbtn.disabled = true; H.btn.disabled = true;
-    H.out.textContent = '30초 동안 자동으로 걷고 돌아요. 화면을 만지지 마세요.';
+    H.bbtn.textContent = 'Benchmarking…'; H.bbtn.disabled = true; H.btn.disabled = true;
+    H.out.textContent = 'Walking and turning automatically for 30 seconds. Do not touch the screen.';
   }
   function steer(B, A) {
     var p = B.path[B.wi], me = A.me, ctl = A.ctl;
@@ -189,16 +189,16 @@
     A.ctl.setJoystick(0, 0);
     var s = state(), f = B.f, tot = 0, i;
     for (i = 0; i < f.length; i++) tot += f[i];
-    var text = '[3D 공간 30초 벤치]\n' +
-      '장면 ' + s.room + ' · 화질 ' + B.tier0 + (B.tier0 !== s.tier ? '→' + s.tier : '') + (s.mode === 'auto' ? ' (자동)' : '') + '\n' +
-      '평균 ' + (f.length * 1000 / Math.max(1, tot)).toFixed(1) + ' fps · 1% low ' + (1000 / Math.max(1, pct(f, 0.99))).toFixed(1) + ' fps · 최악 ' + Math.max.apply(null, f.length ? f : [0]).toFixed(0) + ' ms\n' +
-      '프레임 중앙 ' + pct(f, 0.5).toFixed(1) + ' · 90% ' + pct(f, 0.9).toFixed(1) + ' · 99% ' + pct(f, 0.99).toFixed(1) + ' ms · JS ' + avg(B.js).toFixed(1) + ' ms' + (H.gpu.length ? ' · GPU ' + avg(H.gpu).toFixed(1) + ' ms' : '') + '\n' +
-      '50ms 넘는 프레임 ' + B.spikes50 + ' · 100ms 넘는 프레임 ' + B.spikes100 + ' (총 ' + f.length + ')\n' +
-      '해상도 ' + s.w + '×' + s.h + ' (pixel ratio ' + s.pr + ') · draw 최대 ' + B.calls + ' · 삼각형 최대 ' + B.tris + '\n' +
-      '질감 ' + texEstimate().toFixed(0) + 'MB + 타깃 ' + (H.rtMb || 0).toFixed(0) + 'MB (추정) · GL 질감 ' + s.glTex + ' · 셰이더 ' + s.progs + '\n' +
-      'GPU ' + (s.gpu || gpuName()) + '\n기기 ' + uaShort();
-    H.out.textContent = text + '\n(복사했어요)';
-    H.bbtn.textContent = '30초 벤치'; H.bbtn.disabled = false; H.btn.disabled = false;
+    var text = '[3D room 30 s bench]\n' +
+      'scene ' + s.room + ' · tier ' + B.tier0 + (B.tier0 !== s.tier ? '→' + s.tier : '') + (s.mode === 'auto' ? ' (auto)' : '') + '\n' +
+      'mean ' + (f.length * 1000 / Math.max(1, tot)).toFixed(1) + ' fps · 1% low ' + (1000 / Math.max(1, pct(f, 0.99))).toFixed(1) + ' fps · worst ' + Math.max.apply(null, f.length ? f : [0]).toFixed(0) + ' ms\n' +
+      'frame median ' + pct(f, 0.5).toFixed(1) + ' · 90% ' + pct(f, 0.9).toFixed(1) + ' · 99% ' + pct(f, 0.99).toFixed(1) + ' ms · JS ' + avg(B.js).toFixed(1) + ' ms' + (H.gpu.length ? ' · GPU ' + avg(H.gpu).toFixed(1) + ' ms' : '') + '\n' +
+      'frames over 50 ms ' + B.spikes50 + ' · over 100 ms ' + B.spikes100 + ' (of ' + f.length + ')\n' +
+      'resolution ' + s.w + '×' + s.h + ' (pixel ratio ' + s.pr + ') · max draw ' + B.calls + ' · max tris ' + B.tris + '\n' +
+      'textures ' + texEstimate().toFixed(0) + 'MB + targets ' + (H.rtMb || 0).toFixed(0) + 'MB (est.) · GL textures ' + s.glTex + ' · shaders ' + s.progs + '\n' +
+      'GPU ' + (s.gpu || gpuName()) + '\ndevice ' + uaShort();
+    H.out.textContent = text + '\n(copied)';
+    H.bbtn.textContent = '30 s bench'; H.bbtn.disabled = false; H.btn.disabled = false;
     try { if (root.RoomBridge) root.RoomBridge.post({ e: 'perfReport', text: text }); } catch (e) { /* ignore */ }
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () {}); } catch (e) { /* ignore */ }
     H.lastReport = text;

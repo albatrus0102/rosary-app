@@ -23,15 +23,21 @@
   function extOf(name) { return /^plant_/.test(name) ? '.webp' : '.jpg'; }
   function mapOf(n) { var M = root.RoomPhotoMap; return M && typeof M[n] === 'string' && M[n] ? M[n] : null; }
   var base = root.RoomPhotoBase || 'tex/', imgs = {}, waiting = 0, readyCbs = [], cache = {};
-  // GPU 질감 메모리 예산(약 80 MB, 중급 안드로이드): 파일은 1k 지만 올리기 전에 줄인다 — 가까이 크게 보이는 표면(HERO)의 색만 1024,
-  // 다른 색·법선은 512, ORM·거칠기는 256(HERO 는 512), 식물 카드 512(나무 1024). window.RoomPhotoMax = 1024 면 전부 원본 크기(고사양).
-  var HERO = { floor_oak: 1, plaster_cream: 1, lawn: 1, paving: 1, plant_tree: 1 };
+  var srcs = {};
+  function shared(name, r) { if (!T.Source) return null; return srcs[name] || (srcs[name] = new T.Source(r.src || r.img)); }
+  // GPU 질감 메모리 예산(약 80 MB, 중급 안드로이드). 파일은 이미 이 크기로 줄여 싣는다(tools/tex_shrink.py — 같은 규칙):
+  // 가까이 크게 보이는 표면(HERO: 바닥·벽)의 색 1024, 다른 색·법선 512, 작은 물건(SMALL: 밧줄·방석·금속·나이테·화분·코르크·경계석)의 법선 256,
+  // 아주 작은 것(TINY: 밧줄·금속·나이테)은 색도 256, ORM·거칠기 256(HERO 512), 식물 카드 512(나무 1024).
+  // window.RoomPhotoMax = N 이면 그보다 큰 것만 N 으로(파일보다 크게 올리지는 않는다).
+  var HERO = { floor_oak: 1, plaster_cream: 1, plant_tree: 1 };
+  var SMALL = { rope: 1, linen_a: 1, linen_b: 1, metal: 1, wood_end: 1, terracotta: 1, cork: 1, concrete: 1 };
+  var TINY = { rope: 1, metal: 1, wood_end: 1 };
   function maxOf(name) {
     var M = +root.RoomPhotoMax; if (M > 0) return M;
     var b = name.replace(/_(n|r|orm)$/, '');
     if (/_(r|orm)$/.test(name)) return HERO[b] ? 512 : 256;
-    if (/_n$/.test(name)) return 512;
-    return HERO[name] ? 1024 : 512;
+    if (/_n$/.test(name)) return SMALL[b] ? 256 : 512;
+    return HERO[name] ? 1024 : (TINY[name] ? 256 : 512);
   }
   function fit(img, name) {
     var m = maxOf(name), w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
@@ -59,7 +65,7 @@
   }
   function done() { if (waiting > 0) return; var c = readyCbs; readyCbs = []; c.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); }
   var P = {
-    LIST: LIST, OWNER: OWNER, PLANTS: PLANTS, NORMAL_OF: NORMAL_OF, maxOf: maxOf, extOf: extOf,
+    LIST: LIST, OWNER: OWNER, PLANTS: PLANTS, NORMAL_OF: NORMAL_OF, maxOf: maxOf, extOf: extOf, HERO: HERO, SMALL: SMALL, TINY: TINY,
     has: function (name) { var m = /^(.*)_(n|r|orm)$/.exec(name); if (m && mapOf(m[1])) return false; return !!idx[name]; },
     // get(name, {repeat:[rx,ry], enc:'srgb'|'linear', fallbackCanvas}) -> THREE.Texture (그림은 읽히면 바뀐다)
     get: function (name, o) {
@@ -77,7 +83,9 @@
       if (!o.repeat) cache[ck] = t;
       if (!idx[name]) return t;
       var r = load(name);
-      function put() { t.dispose(); t.image = r.src || r.img; t.needsUpdate = true; }   // 크기가 바뀌므로 GPU 질감을 놓고 새로 올린다(WebGL2 고정 크기 저장소)
+      // 읽히면: 대체 그림의 GPU 질감을 놓고(크기가 바뀌므로 — WebGL2 고정 크기 저장소) 그 그림의 '공유 원본(Source)'을 꽂는다.
+      // 같은 그림을 쓰는 질감(반복만 다름)이 모두 같은 Source 를 가리키므로 GPU 에는 한 번만 올라간다(three r149 는 Source 로 GL 질감을 나눈다).
+      function put() { t.dispose(); var sh = shared(name, r); if (sh && sh.isSource) t.source = sh; else t.image = r.src || r.img; t.needsUpdate = true; }
       if (r.ok) put(); else if (!r.failed) r.cbs.push(put);
       return t;
     },
