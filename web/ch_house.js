@@ -236,7 +236,7 @@
       [[-2.81, -2.75], [2.75, 2.81]].forEach(function (f) { ctx.boxAABB({ x0: f[0], x1: f[1], z0: -3.61, z1: 4.51, y0: 2.96, y1: 3.2, color: CHAR, mat: 'metal' }); });
       ctx.boxAABB({ x0: -0.8, x1: 0.8, z0: -5.95, z1: -3.5, y0: 2.68, y1: 2.82, color: 0xe9e4dc });
       // 처마 아래 다운라이트 3
-      [-1.6, 0.72, 1.9].forEach(function (x) { ctx.glow.add(Geo.cyl(12, 1), hdr(0xffe2b0, 2.2), { x: x, y: 2.955, z: 4.0, sx: 0.07, sy: 0.02, sz: 0.07, flat: true, vary: 0 }); ctx.addGlow({ x: x, y: 2.9, z: 4.0, size: 0.7, color: 0xffd9a0, kind: 'lamp' }); });
+      [-1.6, 0.72, 1.9].forEach(function (x) { ctx.glow.add(Geo.cyl(12, 1), hdr(0xffe2b0, 2.2), { x: x, y: 2.955, z: 4.0, sx: 0.07, sy: 0.02, sz: 0.07, flat: true, vary: 0 }); ctx.addGlow({ x: x, y: 2.9, z: 4.0, size: 0.7, color: 0xffd9a0, kind: 'lamp', bake: { type: 'eave', y: 2.94 } }); });
 
       // 식물: 소유자 제공 사진 오림(P01~P07, plants.js) — 교차 알파 카드. 잎 덩어리는 나무 그림(P06)의 잎 부분을 여러 방향으로 놓은 잎 카드.
       // 종류마다 메시 1(카드 수백 장이 draw call 7 안팎). 그림자를 받고 드리운다. AO 는 굽지 않는다(잎이 굽기 파일을 키우지 않게).
@@ -337,7 +337,7 @@
       ctx.box({ x: 1.86, y: 2.45, z: 3.56, w: 0.08, h: 0.08, d: 0.12, color: CHAR, mat: 'metal' });
       ctx.cone({ x: 1.86, y: 2.38, z: 3.68, r: 0.13, h: 0.14, seg: 14, color: CHAR, mat: 'metal' });
       ctx.glow.add(Geo.sph(10, 6), hdr(0xffd79a, 2.6), { x: 1.86, y: 2.36, z: 3.68, sx: 0.06, sy: 0.04, sz: 0.06, flat: false, vary: 0 });
-      ctx.addGlow({ x: 1.86, y: 2.3, z: 3.72, size: 1.1, color: 0xffcf8a, kind: 'lamp' });
+      ctx.addGlow({ x: 1.86, y: 2.3, z: 3.72, size: 1.1, color: 0xffcf8a, kind: 'lamp', bake: { type: 'wall', y: 2.34 } });
       ctx.addLight({ x: 1.86, y: 2.2, z: 3.95, color: 0xffc27a, intensity: 0.55, distance: 6, kind: 'lamp' });
 
       // == 앞 화단(정면 창 아래) + 옆마당 화단 2 + 디딤돌 + 낮은 울타리 ==
@@ -395,7 +395,7 @@
         ctx.beam3([x - 0.04, y, z], [x - 0.3, y + 0.06, z], 0.025, 0.025, 0x2a2a2c, ctx.metalB);
         ctx.cyl({ x: x - 0.32, y: y - 0.12, z: z, r: 0.17, rTop: 0.05, h: 0.15, seg: 20, surf: 'metal', color: 0x2a2a2c, flat: false });
         ctx.glow.add(Geo.sph(10, 6), hdr(0xffd79a, 2.4), { x: x - 0.32, y: y - 0.12, z: z, sx: 0.07, sy: 0.04, sz: 0.07, flat: false, vary: 0 });
-        ctx.addGlow({ x: x - 0.32, y: y - 0.18, z: z, size: 0.9, color: 0xffcf8a, kind: 'lamp' });
+        ctx.addGlow({ x: x - 0.32, y: y - 0.18, z: z, size: 0.9, color: 0xffcf8a, kind: 'lamp', bake: { type: 'barn', y: y - 0.1 } });
       })(-2.7, 2.35, -1.6);
       // 테라코타 화분 덤불(화단 옆)
       ctx.cyl({ x: -3.2, y: 0, z: -2.0, r: 0.16, rTop: 0.2, h: 0.34, seg: 20, surf: 'terracotta', color: 0xffffff, flat: false });
@@ -498,7 +498,7 @@
       ctx.beam3([-6.2, 4.5, 6.1], [-5.4, 4.62, 6.1], 0.06, 0.06, 0x3a3d42);
       ctx.box({ x: -5.35, y: 4.5, z: 6.1, w: 0.36, h: 0.1, d: 0.2, color: 0x3a3d42, mat: 'metal' });
       ctx.glow.add(Geo.box(), hdr(0xffe6b8, 2.0), { x: -5.35, y: 4.48, z: 6.1, sx: 0.3, sy: 0.02, sz: 0.16, flat: true, vary: 0 });
-      ctx.addGlow({ x: -5.35, y: 4.4, z: 6.1, size: 2.6, color: 0xffdca0, kind: 'lamp' });
+      ctx.addGlow({ x: -5.35, y: 4.4, z: 6.1, size: 2.6, color: 0xffdca0, kind: 'lamp', bake: { type: 'street', y: 4.46 } });
 
       // == 실내: 창가 책상 3 + 의자 ==
       PLAN.desks.forEach(function (zc, i) {
@@ -517,7 +517,7 @@
           ctx.cyl({ x: -2.32, y: top, z: zc + 0.3, r: 0.07, h: 0.02, seg: 12, color: BRASS, mat: 'metal' });
           ctx.cyl({ x: -2.32, y: top + 0.02, z: zc + 0.3, r: 0.012, h: 0.3, seg: 6, color: BRASS, mat: 'metal' });
           ctx.glow.add(Geo.cyl(16, 0.62), hdr(0xfff0d0, 1.5), { x: -2.32, y: top + 0.28, z: zc + 0.3, sx: 0.13, sy: 0.17, sz: 0.13, flat: false, vary: 0 });
-          ctx.addGlow({ x: -2.32, y: top + 0.36, z: zc + 0.3, size: 0.9, color: 0xffd8a0, kind: 'lamp' });
+          ctx.addGlow({ x: -2.32, y: top + 0.36, z: zc + 0.3, size: 0.9, color: 0xffd8a0, kind: 'lamp', bake: 'desk' });
           ctx.box({ x: -2.12, y: top, z: zc - 0.08, w: 0.26, h: 0.02, d: 0.36, ry: 0.15, color: 0xf8f3e8 });
           ctx.box({ x: -2.12, y: top + 0.02, z: zc - 0.08, w: 0.005, h: 0.004, d: 0.34, ry: 0.15, color: 0xb8ab95, vary: 0 });
           ctx.cyl({ x: -2.33, y: top, z: zc - 0.38, r: 0.04, h: 0.09, seg: 10, color: 0xf2efe8, mat: 'gloss' });
@@ -593,7 +593,7 @@
       ctx.cyl({ x: -2.2, y: FL, z: -2.5, r: 0.16, h: 0.03, seg: 14, color: CHAR, mat: 'metal' });
       ctx.cyl({ x: -2.2, y: FL + 0.03, z: -2.5, r: 0.015, h: 1.3, seg: 6, color: BRASS, mat: 'metal' });
       ctx.glow.add(Geo.cyl(18, 0.7), hdr(0xfff1d6, 1.4), { x: -2.2, y: FL + 1.28, z: -2.5, sx: 0.22, sy: 0.3, sz: 0.22, flat: false, vary: 0 });
-      ctx.addGlow({ x: -2.2, y: FL + 1.4, z: -2.5, size: 0.8, color: 0xffd39a, kind: 'lamp' });
+      ctx.addGlow({ x: -2.2, y: FL + 1.4, z: -2.5, size: 0.8, color: 0xffd39a, kind: 'lamp', bake: 'floor' });
 
       // == 오른쪽 벽: 전시 선반(낮은 책장 + 표지 선반) · 작업대 + 스툴 + 태블릿 · 코르크 보드 ==
       ctx.boxAABB({ x0: 2.14, x1: 2.48, z0: 0.72, z1: 2.08, y0: FL, y1: FL + 0.9, surf: 'wood_light', color: 0xd6ae80 });
@@ -652,7 +652,7 @@
       ctx.beam3([1.6, CEIL, -0.55], [1.6, FL + 1.85, -0.55], 0.008, 0.008, 0x1a1a1a, ctx.metalB);
       ctx.cyl({ x: 1.6, y: FL + 1.68, z: -0.55, r: 0.16, rTop: 0.05, h: 0.17, seg: 22, surf: METAL, color: 0x3a3b3d, flat: false });
       ctx.glow.add(Geo.sph(10, 6), hdr(0xffd9a0, 2.6), { x: 1.6, y: FL + 1.69, z: -0.55, sx: 0.06, sy: 0.035, sz: 0.06, flat: false, vary: 0 });
-      ctx.addGlow({ x: 1.6, y: FL + 1.62, z: -0.55, size: 0.8, color: 0xffcf8a, kind: 'lamp' });
+      ctx.addGlow({ x: 1.6, y: FL + 1.62, z: -0.55, size: 0.8, color: 0xffcf8a, kind: 'lamp', bake: { type: 'counter', y: FL + 1.71 } });
       // 바 스툴(좌석 3): 둥근 오크 좌판(높이 0.75) + 검은 금속 다리 4 + 발 받침 고리
       var s3 = layout.seats[3], SY = FL + 0.75;
       ctx.cyl({ x: s3.x, y: SY - 0.05, z: s3.z, r: 0.18, h: 0.05, seg: 20, surf: 'wood_oak', color: 0xe8d2b4, flat: false });
@@ -699,14 +699,14 @@
         ctx.cyl({ x: p[0], y: y + 0.12, z: p[1], r: 0.006, h: CEIL - y - 0.12, seg: 4, color: 0x222222 });
         ctx.cyl({ x: p[0], y: y, z: p[1], r: 0.19, rTop: 0.05, h: 0.16, seg: 18, color: 0x27302a, mat: 'gloss', flat: false });
         ctx.glow.add(Geo.sph(10, 6), hdr(0xffe0a8, 3.0), { x: p[0], y: y + 0.01, z: p[1], sx: 0.06, sy: 0.05, sz: 0.06, flat: false, vary: 0 });
-        ctx.addGlow({ x: p[0], y: y - 0.05, z: p[1], size: 0.6, color: 0xffd08a, kind: 'lamp' });
+        ctx.addGlow({ x: p[0], y: y - 0.05, z: p[1], size: 0.6, color: 0xffd08a, kind: 'lamp', bake: { type: 'pendant', y: y + 0.03 } });
         ctx.addLight({ x: p[0], y: y - 0.15, z: p[1], color: 0xffc58a, intensity: 0.6, distance: 7.5, kind: 'lamp' });   // 약 3000K
       });
       [[-1.5, 2.3], [1.5, 2.3], [-1.5, 0.0], [1.5, 0.0], [-1.5, -2.3], [1.5, -2.3], [0, -4.5]].forEach(function (p) {
         var y = p[1] < -3.3 ? FL + 2.4 : CEIL;
         ctx.glow.add(Geo.cyl(14, 1), hdr(0xfff0d6, 2.4), { x: p[0], y: y - 0.006, z: p[1], sx: 0.06, sy: 0.005, sz: 0.06, flat: true, vary: 0 });
         ctx.cyl({ x: p[0], y: y - 0.004, z: p[1], r: 0.08, h: 0.004, seg: 14, color: 0xd8d2c8 });
-        ctx.addGlow({ x: p[0], y: y - 0.06, z: p[1], size: 0.32, color: 0xffe2b0, kind: 'lamp' });
+        ctx.addGlow({ x: p[0], y: y - 0.06, z: p[1], size: 0.32, color: 0xffe2b0, kind: 'lamp', bake: { type: 'down', y: y - 0.02 } });
       });
 
       if (PLT) PLT.build();   // 식물 카드: 종류마다 메시 1

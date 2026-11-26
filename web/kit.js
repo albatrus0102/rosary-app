@@ -399,7 +399,8 @@
       var s = o.size || 1.5;
       sp.position.set(o.x, o.y, o.z); sp.scale.set(s, s, 1);
       ctx.root.add(sp);
-      S_.glows.push({ sp: sp, size: s, pulse: o.pulse || 0, phase: rand() * 6.28, base: 0.6, kind: o.kind || 'lamp', level: o.level });   // level: 여러 층 장면에서 그 층(levelVis id)을 볼 때만 그린다
+      S_.glows.push({ sp: sp, size: s, pulse: o.pulse || 0, phase: rand() * 6.28, base: 0.6, kind: o.kind || 'lamp', level: o.level, bake: o.bake });   // level: 여러 층 장면에서 그 층(levelVis id)을 볼 때만 그린다
+      // bake: PC 라이트맵 굽기(pc_bake)용 등 종류 — 'pendant' 또는 {type, y}(전구 자리). 화면에는 쓰지 않는다(tools/lm_export.mjs 가 읽는다)
       return sp;
     };
     ctx.addWindowBeam = function (o) { S_.beams.push(o); };

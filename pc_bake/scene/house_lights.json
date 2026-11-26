@@ -1,0 +1,590 @@
+{
+ "format": "room-lightmap-lights",
+ "v": 1,
+ "scene": "house",
+ "units": "three.js physicallyCorrectLights: point/spot intensity = candela-like (irradiance I/d^2), key.irradiance = W/m^2-like, world = radiance (irradiance/pi). Coordinates: three/glTF Y-up metres.",
+ "times": {
+  "day": {
+   "hour": 11,
+   "lampK": 0.3,
+   "key": {
+    "type": "sun",
+    "mode": "realtime",
+    "dir": [
+     0.114457,
+     0.790432,
+     0.601761
+    ],
+    "irradiance": [
+     9.982813,
+     9.215107,
+     8.084201
+    ],
+    "angleDeg": 1.5
+   },
+   "world": {
+    "up": [
+     0.576601,
+     0.584195,
+     0.601122
+    ],
+    "down": [
+     0.532896,
+     0.52131,
+     0.502344
+    ]
+   }
+  },
+  "night": {
+   "hour": 22,
+   "lampK": 1.3,
+   "key": {
+    "type": "moon",
+    "mode": "realtime",
+    "dir": [
+     -0.643046,
+     0.501122,
+     -0.57911
+    ],
+    "irradiance": [
+     0.175129,
+     0.178518,
+     0.213882
+    ],
+    "angleDeg": 3
+   },
+   "world": {
+    "up": [
+     0.098042,
+     0.10145,
+     0.112141
+    ],
+    "down": [
+     0.087468,
+     0.088308,
+     0.092603
+    ]
+   }
+  }
+ },
+ "lamps": [
+  {
+   "name": "eave_0",
+   "type": "eave",
+   "light": "spot",
+   "label": "eave downlight",
+   "pos": [
+    -1.6,
+    2.94,
+    4
+   ],
+   "color": [
+    0.991102,
+    0.693872,
+    0.351533
+   ],
+   "intensity": {
+    "day": 0.9,
+    "night": 3.9
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 100,
+   "blend": 0.5
+  },
+  {
+   "name": "eave_1",
+   "type": "eave",
+   "light": "spot",
+   "label": "eave downlight",
+   "pos": [
+    0.72,
+    2.94,
+    4
+   ],
+   "color": [
+    0.991102,
+    0.693872,
+    0.351533
+   ],
+   "intensity": {
+    "day": 0.9,
+    "night": 3.9
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 100,
+   "blend": 0.5
+  },
+  {
+   "name": "eave_2",
+   "type": "eave",
+   "light": "spot",
+   "label": "eave downlight",
+   "pos": [
+    1.9,
+    2.94,
+    4
+   ],
+   "color": [
+    0.991102,
+    0.693872,
+    0.351533
+   ],
+   "intensity": {
+    "day": 0.9,
+    "night": 3.9
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 100,
+   "blend": 0.5
+  },
+  {
+   "name": "wall_0",
+   "type": "wall",
+   "light": "point",
+   "label": "wall lamp (sign)",
+   "pos": [
+    1.86,
+    2.34,
+    3.72
+   ],
+   "color": [
+    0.991102,
+    0.62396,
+    0.254152
+   ],
+   "intensity": {
+    "day": 3.63,
+    "night": 15.73
+   },
+   "radius": 0.04
+  },
+  {
+   "name": "barn_0",
+   "type": "barn",
+   "light": "spot",
+   "label": "barn lamp (yard)",
+   "pos": [
+    -3.02,
+    2.25,
+    -1.6
+   ],
+   "color": [
+    0.991102,
+    0.62396,
+    0.254152
+   ],
+   "intensity": {
+    "day": 2.4,
+    "night": 10.4
+   },
+   "radius": 0.04,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 130,
+   "blend": 0.6
+  },
+  {
+   "name": "street_0",
+   "type": "street",
+   "light": "spot",
+   "label": "street lamp",
+   "pos": [
+    -5.35,
+    4.46,
+    6.1
+   ],
+   "color": [
+    0.991102,
+    0.715694,
+    0.351533
+   ],
+   "intensity": {
+    "day": 9,
+    "night": 39
+   },
+   "radius": 0.08,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 120,
+   "blend": 0.6
+  },
+  {
+   "name": "desk_0",
+   "type": "desk",
+   "light": "point",
+   "label": "desk lamp",
+   "pos": [
+    -2.32,
+    1.26,
+    2.45
+   ],
+   "color": [
+    0.991102,
+    0.686685,
+    0.351533
+   ],
+   "intensity": {
+    "day": 0.9,
+    "night": 3.9
+   },
+   "radius": 0.03
+  },
+  {
+   "name": "floor_0",
+   "type": "floor",
+   "light": "point",
+   "label": "floor lamp",
+   "pos": [
+    -2.2,
+    1.56,
+    -2.5
+   ],
+   "color": [
+    0.991102,
+    0.651406,
+    0.323143
+   ],
+   "intensity": {
+    "day": 1.5,
+    "night": 6.5
+   },
+   "radius": 0.08
+  },
+  {
+   "name": "counter_0",
+   "type": "counter",
+   "light": "point",
+   "label": "counter pendant",
+   "pos": [
+    1.6,
+    1.87,
+    -0.55
+   ],
+   "color": [
+    0.991102,
+    0.62396,
+    0.254152
+   ],
+   "intensity": {
+    "day": 2.4,
+    "night": 10.4
+   },
+   "radius": 0.03
+  },
+  {
+   "name": "pendant_0",
+   "type": "pendant",
+   "light": "point",
+   "label": "pendant (table)",
+   "pos": [
+    0,
+    2.29,
+    1
+   ],
+   "color": [
+    0.991102,
+    0.630757,
+    0.254152
+   ],
+   "intensity": {
+    "day": 3.96,
+    "night": 17.16
+   },
+   "radius": 0.03
+  },
+  {
+   "name": "pendant_1",
+   "type": "pendant",
+   "light": "point",
+   "label": "pendant (table)",
+   "pos": [
+    0,
+    2.29,
+    -1.35
+   ],
+   "color": [
+    0.991102,
+    0.630757,
+    0.254152
+   ],
+   "intensity": {
+    "day": 3.96,
+    "night": 17.16
+   },
+   "radius": 0.03
+  },
+  {
+   "name": "down_0",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    -1.5,
+    2.84,
+    2.3
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  },
+  {
+   "name": "down_1",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    1.5,
+    2.84,
+    2.3
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  },
+  {
+   "name": "down_2",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    -1.5,
+    2.84,
+    0
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  },
+  {
+   "name": "down_3",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    1.5,
+    2.84,
+    0
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  },
+  {
+   "name": "down_4",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    -1.5,
+    2.84,
+    -2.3
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  },
+  {
+   "name": "down_5",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    1.5,
+    2.84,
+    -2.3
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  },
+  {
+   "name": "down_6",
+   "type": "down",
+   "light": "spot",
+   "label": "ceiling downlight",
+   "pos": [
+    0,
+    2.54,
+    -4.5
+   ],
+   "color": [
+    0.991102,
+    0.760525,
+    0.434154
+   ],
+   "intensity": {
+    "day": 1.05,
+    "night": 4.55
+   },
+   "radius": 0.03,
+   "dir": [
+    0,
+    -1,
+    0
+   ],
+   "angle": 110,
+   "blend": 0.5
+  }
+ ],
+ "portals": [
+  {
+   "name": "window_0",
+   "center": [
+    -2.5,
+    1.51,
+    0.35
+   ],
+   "size": [
+    5.9,
+    2
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "axis": "z"
+  },
+  {
+   "name": "window_1",
+   "center": [
+    -1.3,
+    1.56,
+    3.3
+   ],
+   "size": [
+    2.4,
+    1.9
+   ],
+   "normal": [
+    0,
+    0,
+    -1
+   ],
+   "axis": "x"
+  },
+  {
+   "name": "door_2",
+   "center": [
+    0.725,
+    1.18,
+    3.4
+   ],
+   "size": [
+    0.95,
+    2.36
+   ],
+   "normal": [
+    0,
+    0,
+    -1
+   ],
+   "axis": "x"
+  }
+ ]
+}

@@ -62,9 +62,11 @@
     '\t        aoV = mix( aoV, fs.r, fw ); aoFW = fw;\n' +
     '\t      }\n\t    }\n\t  }\n' +
     '\t  float aoT = clamp( mix( 1.0, aoV, uAOK ), 0.12, 1.0 );\n' +
+    '#ifndef LM_ON\n' +   // PC 라이트맵(lightmap.js)이 붙은 재질: 가림·번짐이 이미 라이트맵에 있다 → 확산에는 곱하지 않는다(반사 가림만)
     '\t  reflectedLight.indirectDiffuse *= aoT;\n' +
     '\t  /*gifx*/\n' +   // 빛 번짐(gi_fx.js)이 이 자리에 간접 확산광 곱하기를 넣는다(aoFW = 바닥 지도 무게를 같이 쓴다)
     '\t  reflectedLight.directDiffuse *= mix( 1.0, aoT, uAODir );\n' +
+    '#endif\n' +
     '\t  float aoNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n' +
     '\t  float aoSO = saturate( pow( aoNV + aoT, exp2( - 16.0 * material.roughness - 1.0 ) ) - 1.0 + aoT );\n' +
     '\t  reflectedLight.indirectSpecular *= aoSO;\n' +

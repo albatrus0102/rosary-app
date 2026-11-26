@@ -434,13 +434,19 @@
       }
       updateBeams(env);
       if (giFx) giFx.onEnv(env, tierCfg ? tierCfg[tier].gi : 1, look && look.giK !== undefined ? look.giK : 1);
+      if (lmFx) lmFx.onEnv(env, look && look.lmK !== undefined ? look.lmK : 1);   // 낮/밤 라이트맵 섞기(env.night) — setHour 도 여기로 온다
       for (var hI = 0; hI < S.hourHooks.length; hI++) { try { S.hourHooks[hI](env); } catch (e) { /* ignore */ } }
     }
 
     var cb = S.cameraBounds || { x0: bnd.x0, x1: bnd.x1, z0: bnd.z0, z1: bnd.z1, yMax: 9 };
 
     // 구운 AO·바닥 AO 지도·반사 가림·반짝임 줄이기(ao_fx.js). cam_guard 가 재질을 잇기 전에 붙인다(프로그램 캐시 키 순서).
-    var aoFx = null, giFx = null;
+    var aoFx = null, giFx = null, lmFx = null;
+    // PC 라이트맵(lightmap.js, pc_bake/bake.py 로 구운 lightmaps/<장면>/): 높음·보통. 없으면 아무것도 바꾸지 않는다(아래 AO·빛 번짐 그대로).
+    // 구운 AO 보다 먼저 붙여야 배치→메시 정점 대응(triIds)을 잡아 둘 수 있다(ao_fx 가 다 쓰면 놓는다).
+    if (!low && root.RoomLightmap && builder.lightmap !== false) {
+      try { lmFx = root.RoomLightmap.attach({ id: id, ctx: ctx, items: items, base: opts.lightmapBase }); } catch (e) { if (root.console) console.warn('[room] lightmap', e); lmFx = null; }
+    }
     if (aoDefer) {
       var aoMats = [];
       S.physMats.forEach(function (p) { if (aoMats.indexOf(p.m) < 0) aoMats.push(p.m); });
@@ -552,13 +558,15 @@
       },
       aoFx: aoFx,
       giFx: giFx,
+      lightmap: lmFx,
       probePending: function () { return false; },
       probeStep: function () { return false; },
       // 구운 AO 가 아직 붙지 않았는가(main.js 가 장면에 들어온 직후 잠깐(≤0.5초) 그리기를 미룬다: AO 없는 한 프레임이 번쩍이지 않게)
-      aoPending: function () { return !!(aoFx && aoFx.pending()) || !!(giFx && giFx.pending()); },
+      aoPending: function () { return !!(aoFx && aoFx.pending()) || !!(giFx && giFx.pending()) || !!(lmFx && lmFx.pending()); },
       dispose: function () {
         if (aoFx) aoFx.dispose();
         if (giFx) giFx.dispose();
+        if (lmFx) lmFx.dispose();
         disposeReflectors();
         var texs = new Set();
         function texOf(m) {
