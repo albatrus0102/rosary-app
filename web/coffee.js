@@ -177,7 +177,7 @@
           // 바리스타 방향: 만드는 중이면 기계(+x) 쪽, 내가 3 m 안이면 나를, 아니면 손님 쪽(기본)
           var want = bc.yaw, dx = me.x - bc.x, dz = me.z - bc.z;
           if (brewT > 0) { brewT -= dt; want = Math.atan2(-(bc.machine.x - bc.x), -(bc.machine.z - bc.z)); }
-          else if (dx * dx + dz * dz < 9) want = Math.atan2(-dx, -dz);
+          else if (dx * dx + dz * dz < 9 && app.meAv && app.meAv.root.visible) want = Math.atan2(-dx, -dz);   // 썸네일(내 몸 숨김)에서는 손님 쪽 그대로
           var d = want - barYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
           barYaw += d * Math.min(1, dt * 3);
           // 통로 밖으로 나가지 않게(제자리 + 살짝 좌우 — 만들 때 기계 앞으로 반 걸음)

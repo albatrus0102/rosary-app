@@ -105,7 +105,7 @@
     coffee: {
       near: { x0: 0.35, x1: 1.3, z0: -1.9, z1: 0.85 },
       pickup: { x: 1.42, y: FL + 1.05, z: 0.2 },
-      barista: { x: 1.95, z: -0.55, yaw: -PI / 2, x0: 1.78, x1: 2.12, z0: -1.4, z1: 0.3, machine: { x: 2.3, z: -1.0 } },
+      barista: { x: 1.95, z: -0.55, yaw: PI / 2, x0: 1.78, x1: 2.12, z0: -1.4, z1: 0.3, machine: { x: 2.3, z: -1.0 } },
       cupSpots: [
         { x: -2.03, y: FL + 0.74, z: 2.15 + 0.32 }, { x: -2.03, y: FL + 0.74, z: 0.55 - 0.32 }, { x: -2.03, y: FL + 0.74, z: -1.05 - 0.3 },
         { x: 1.42, y: FL + 1.05, z: -0.5 + 0.12 },
@@ -113,7 +113,7 @@
       ],
       brewSec: 3
     },
-    sunRot: 117,                                                    // 오후 해가 왼편(마당 쪽)에서 비스듬히: 정면 벽에 결이 살고 그림자가 옆으로 길게, 마당 그네는 역광 — world.js
+    sunRot: 100,                                                    // 오후 해가 왼편(마당 쪽)에서 비스듬히: 정면 벽에 결이 살고 그림자가 옆으로 길게, 마당 그네는 역광 — world.js
     camDist: 4.2,                                                   // 좁은 실내: 카메라 팔 기본 길이(m)
     seatView: { side: 0.6 },
     markerRange: 3.2,                                               // 좌석 표식은 3.2 m 안에서만                                        // 앉으면 뒤에서 0.6 rad 비켜 본다(창·벽을 마주 보는 좌석)
@@ -147,7 +147,8 @@
     thumbs: [
       { x: -0.4, z: 4.9, yaw: -24, pitch: 5, zoom: 0.95, look: 6, hour: 15 },
       { x: 0.25, z: -1.3, yaw: 10, pitch: 9, zoom: 1.0, look: 7, hour: 20.5 },
-      { x: -3.3, z: 2.0, yaw: -90, pitch: 20, zoom: 0.42, hour: 16.5 }   // 2 = 옆마당 화단 가까이(꽃 카드 확인)
+      { x: -3.3, z: 2.0, yaw: -90, pitch: 20, zoom: 0.42, hour: 16.5 },   // 2 = 옆마당 화단 가까이(꽃 카드 확인)
+      { x: 0.95, z: 0.15, yaw: -72, pitch: 7, zoom: 0.5, look: 4, hour: 19 }   // 3 = 커피 카운터와 바리스타
     ],
     build: function (ctx) {
       var T = ctx.THREE, G = root.RoomGeo, Geo = G.Geo;
@@ -205,7 +206,7 @@
       }
       ctx.boxAABB({ x0: 3.4, x1: 6.0, z0: 3.5, z1: 3.53, y0: 0.0, y1: 2.6, color: 0xb9bcbf, mat: 'solid' });   // 이웃 셔터
       for (var sh = 0; sh < 12; sh++) ctx.box({ x: 4.7, y: 0.12 + sh * 0.2, z: 3.535, w: 2.6, h: 0.012, d: 0.01, color: 0x8e9295, vary: 0 });
-      ctx.boxAABB({ x0: -16, x1: 12, z0: -16, z1: -7, y0: 0, y1: 6.0, surf: 'plaster_cream', color: 0xc9c0b2 });   // 뒤 건물(먼 덩어리)
+      ctx.boxAABB({ x0: -16, x1: 12, z0: -16, z1: -7, y0: 0, y1: 5.2, surf: 'plaster_cream', color: 0xb0a698 });   // 뒤 건물(먼 덩어리)
       ctx.floor({ x0: -16, x1: -6.56, z0: -7, z1: 3.5, y: -0.02, surf: 'lawn', color: 0xb8c0a0, gloss: 0, reflect: false });   // 울타리 너머 풀밭
       var farTrees = [];   // 울타리 너머 나무(잎 덩어리 — 아래 leafClump 를 정의한 뒤 짓는다)
 

@@ -113,8 +113,9 @@ test('정원 자리 16 · 기본 꽃 목록과 맞다', () => {
   assert.equal(s.length, 16);
   for (const g of s) assert.ok(!free(g.x, g.z, 0.01), 'flower slot sits in a bed/planter');
 });
-test('썸네일 카메라 3: 외관(밖)·실내(안)·화단 가까이(옆마당 화단 옆)', () => {
-  assert.equal(B.thumbs.length, 3);
+test('썸네일 카메라 4: 외관(밖)·실내(안)·화단 가까이(옆마당 화단 옆)·커피 카운터(안)', () => {
+  assert.equal(B.thumbs.length, 4);
+  assert.ok(inRoom(B.thumbs[3].x, B.thumbs[3].z));
   assert.ok(!inRoom(B.thumbs[0].x, B.thumbs[0].z) && inRoom(B.thumbs[1].x, B.thumbs[1].z));
   const t2 = B.thumbs[2], bed = P.garden.beds[0];
   assert.ok(Math.abs(t2.x - (bed.x0 + bed.x1) / 2) < 0.6 && t2.z > bed.z0 && t2.z < bed.z1);

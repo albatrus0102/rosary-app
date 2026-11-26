@@ -108,8 +108,8 @@
         var map = Ph ? Ph.get('plant_' + kind, { enc: 'srgb' }) : null;
         var m = new T.MeshStandardMaterial({ map: map, vertexColors: true, alphaTest: 0.45, side: T.DoubleSide, roughness: 0.78, metalness: 0, envMapIntensity: 0.8 });
         // 잎을 비쳐 나오는 빛(얇은 잎·꽃잎은 그늘에서도 까맣지 않다): 낮에만 아주 약한 자체 밝기(밤에는 0)
-        m.emissive = new T.Color(0xffffff); m.emissiveMap = map; m.emissiveIntensity = 0.05;
-        if (ctx.onHour) ctx.onHour(function (env) { m.emissiveIntensity = 0.06 * (1 - (env.night || 0)); });
+        m.emissive = new T.Color(0xffffff); m.emissiveMap = map; m.emissiveIntensity = 0.12;
+        if (ctx.onHour) ctx.onHour(function (env) { m.emissiveIntensity = 0.16 * (1 - (env.night || 0)) + 0.02; });
         m.alphaToCoverage = true;
         m.userData.plantCard = kind;
         // 양면이 같은 둥근 법선을 쓰게(뒷면 뒤집기 끔) + 잎 사이로 비치는 빛(뒤에서 오는 햇빛을 조금 통과)

@@ -17,7 +17,7 @@
   var LOOKS = {
     house: { keyK: 1.55, keyTint: 0xffe2bc, keyTintK: 0.3, ambK: 0.55, ambTint: 0xdfe8f5, ambTintK: 0.2, expK: 0.86, envK: 0.6, beamK: 0.5, lampK: 1.0,
       dust: 0, sat: 1.0, warm: 0.06, vig: 0.2, con: 0.14, bloomT: 0.86, bloomS: 0.36, reflK: 0.5,
-      night: { lampK: 1.4, keyK: 0.45, ambK: 0.22, expK: 0.85, warm: 0.08, bloomT: 0.84, bloomS: 0.38 } }
+      night: { lampK: 1.3, keyK: 0.45, ambK: 0.22, expK: 0.74, warm: 0.08, bloomT: 0.84, bloomS: 0.38 } }
   };
   var DRAFTS = {};   // 새 장면 룩 초안은 여기에 넣고 ?looks=all 로 확인한 뒤 LOOKS 로 옮긴다
   try {

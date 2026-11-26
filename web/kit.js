@@ -31,14 +31,14 @@
   // photo: tex_<photo>.jpg(+_n,_r) ; tile: 질감 한 번이 덮는 미터
   var SURFACES = {
     // 소유자 제공 PBR(색 + 법선 + ORM, README 「질감」) — tile = 질감 한 장이 덮는 미터. aoK = 질감 AO 세기(구운 AO 에 곱해진다), roughK = ORM 거칠기에 곱
-    plaster_cream: { photo: 'plaster_cream', tile: 1.6, roughK: 1.0, normalScale: 0.9, aoK: 0.6, envK: 0.8, fb: 'plaster' },
-    plaster: { photo: 'plaster_cream', tile: 1.6, roughK: 1.0, normalScale: 0.9, aoK: 0.6, envK: 0.8, fb: 'plaster' },
+    plaster_cream: { tintSat: 0.25, photo: 'plaster_cream', tile: 1.6, roughK: 1.0, normalScale: 0.9, aoK: 0.6, envK: 0.8, fb: 'plaster' },
+    plaster: { tintSat: 0.25, photo: 'plaster_cream', tile: 1.6, roughK: 1.0, normalScale: 0.9, aoK: 0.6, envK: 0.8, fb: 'plaster' },
     stucco: { photo: 'brick', tile: 1.3, roughK: 1.0, normalScale: 1.0, aoK: 0.9, envK: 0.6, fb: 'brick' },
     brick: { photo: 'brick', tile: 1.3, roughK: 1.0, normalScale: 1.0, aoK: 0.9, envK: 0.6, fb: 'brick' },
-    wood_floor: { photo: 'floor_oak', tile: 1.2, roughK: 0.75, clearcoat: 0.18, ccRough: 0.4, normalScale: 0.7, aoK: 0.8, envK: 0.9, fb: 'wood' },
-    wood_oak: { photo: 'wood_oak', tile: 1.0, roughK: 0.85, clearcoat: 0.12, ccRough: 0.45, normalScale: 0.6, aoK: 0.6, envK: 0.8, fb: 'woodLight' },
-    wood_light: { photo: 'wood_oak', tile: 1.0, roughK: 0.85, clearcoat: 0.12, ccRough: 0.45, normalScale: 0.6, aoK: 0.6, envK: 0.8, fb: 'woodLight' },
-    wood_dark: { photo: 'wood_oak', tile: 1.0, roughK: 0.7, clearcoat: 0.3, ccRough: 0.3, normalScale: 0.5, aoK: 0.6, envK: 0.9, fb: 'wood' },
+    wood_floor: { tintSat: 0.25, photo: 'floor_oak', tile: 1.2, roughK: 0.75, clearcoat: 0.18, ccRough: 0.4, normalScale: 0.7, aoK: 0.8, envK: 0.9, fb: 'wood' },
+    wood_oak: { tintSat: 0.25, photo: 'wood_oak', tile: 1.0, roughK: 0.85, clearcoat: 0.12, ccRough: 0.45, normalScale: 0.6, aoK: 0.6, envK: 0.8, fb: 'woodLight' },
+    wood_light: { tintSat: 0.25, photo: 'wood_oak', tile: 1.0, roughK: 0.85, clearcoat: 0.12, ccRough: 0.45, normalScale: 0.6, aoK: 0.6, envK: 0.8, fb: 'woodLight' },
+    wood_dark: { tintSat: 0.25, photo: 'wood_oak', tile: 1.0, roughK: 0.7, clearcoat: 0.3, ccRough: 0.3, normalScale: 0.5, aoK: 0.6, envK: 0.9, fb: 'wood' },
     wood_end: { photo: 'wood_end', tile: 0.12, roughK: 1.0, normalScale: 0.8, aoK: 0.8, envK: 0.6, fb: 'woodLight' },
     rope: { photo: 'rope', tile: 0.22, roughK: 1.0, normalScale: 1.2, aoK: 1.0, envK: 0.4, fb: 'jute' },
     linen_a: { photo: 'linen_a', tile: 0.35, roughK: 1.0, normalScale: 0.8, aoK: 0.8, envK: 0.4, sheen: 0.6, fb: 'jute' },
@@ -250,7 +250,14 @@
       if (!m && isGold(o.color)) m = 'metal';
       return B_[m] || B_.solid;
     }
-    function colOf(o, d) { return o.color === undefined ? ((o.surf || (o.tex && o.tex.isTexture)) ? 0xffffff : d) : o.color; }
+    // 사진 질감 표면의 색은 '밝기 조절'로만 쓴다: 소유자 질감은 이미 제 색이 있어, 예전(밝은 CC0 그림용) 주황 색조를 곱하면 다시 주황이 된다 → 채도를 tintSat 배로
+    var _tc = new T.Color(), _hsl = {};
+    function colOf(o, d) {
+      if (o.color === undefined) return (o.surf || (o.tex && o.tex.isTexture)) ? 0xffffff : d;
+      var sd = typeof o.surf === 'string' ? SURFACES[o.surf] : null;
+      if (sd && sd.tintSat !== undefined) { _tc.set(o.color); _tc.getHSL(_hsl); _tc.setHSL(_hsl.h, _hsl.s * sd.tintSat, _hsl.l); return _tc.getHex(); }
+      return o.color;
+    }
 
     // ---- 개별 면(질감, 각각 draw call 1) ----
     function planeMat(o, w, h) {

@@ -19,7 +19,7 @@ const SHOTS = [
   { name: 'yard-swing', q: 'sit=4&peerseat=5&hour=17.6&view=28,8,0.95', frames: 120 },
   { name: 'peers-walking', q: 'peers=2&route=street&hour=16&x=-4.6&z=5.25&yaw=-100&pitch=8&zoom=0.85', frames: 60 },
   { name: 'flower-bed', q: 'thumb=2&hour=16.5', frames: 40 },
-  { name: 'counter-barista', q: 'coffee=americano&hour=19&x=0.7&z=0.55&yaw=-90&pitch=6&zoom=0.75&camturn=28', frames: 90 },
+  { name: 'counter-barista', q: 'thumb=3&coffee=americano&hour=19', frames: 90 },
   { name: 'seat-latte', q: 'cup=latte&sit=0&hour=19&view=118,20,0.55', frames: 140 },
   { name: 'held-iced', q: 'cup=iced&hour=15&x=0.1&z=1.6&yaw=-20&pitch=4&zoom=0.5&camturn=200', frames: 60 }
 ];
