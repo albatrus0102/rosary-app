@@ -61,6 +61,8 @@
     var P = PLAN.garden.planter; C.push({ x0: P.x0, x1: P.x1, z0: P.z0, z1: P.z1, tag: 'planter' });
     PLAN.garden.beds.forEach(function (b, i) { C.push({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1, tag: 'bed' + i }); });
     C.push({ x: 2.32, z: 3.9, r: 0.3, tag: 'deckTree' });
+    C.push({ x: 0.02, z: 3.8, r: 0.18, tag: 'rosePot' });
+    C.push({ x0: -6.44, x1: -2.8, z0: -3.7, z1: -3.36, tag: 'wallBed' });   // 담 앞 좁은 화단
     C.push({ x: 1.55, z: 4.15, r: 0.28, tag: 'aframe' });
     C.push({ x0: -3.75, x1: -2.2, z0: 4.25, z1: 4.6, tag: 'bicycle' });
     C.push({ x: -6.2, z: 6.1, r: 0.2, tag: 'streetlight' });
@@ -92,6 +94,7 @@
       { x: SWING.x + 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x + 0.3, z: SWING.z + 0.82 } }
     ],
     seatLabels: ['창가 1', '창가 2', '창가 3', '작업대', '그네 왼쪽', '그네 오른쪽'],
+    sunRot: 117,                                                    // 오후 해가 왼편(마당 쪽)에서 비스듬히: 정면 벽에 결이 살고 그림자가 옆으로 길게, 마당 그네는 역광 — world.js
     camDist: 4.2,                                                   // 좁은 실내: 카메라 팔 기본 길이(m)
     seatView: { side: 0.6 },
     markerRange: 3.2,                                               // 좌석 표식은 3.2 m 안에서만                                        // 앉으면 뒤에서 0.6 rad 비켜 본다(창·벽을 마주 보는 좌석)
@@ -123,7 +126,7 @@
     gardenSlots: gardenSlots,
     // 썸네일 카메라 2: 0 = 외관(골목에서), 1 = 실내(입구 쪽에서). ?thumb=0|1
     thumbs: [
-      { x: -1.0, z: 4.75, yaw: -32, pitch: 10, zoom: 1.3, hour: 15 },
+      { x: -0.4, z: 4.9, yaw: -24, pitch: 5, zoom: 0.95, look: 6, hour: 15 },
       { x: 0.25, z: -1.3, yaw: 10, pitch: 9, zoom: 1.0, look: 7, hour: 20.5 }
     ],
     build: function (ctx) {
@@ -134,7 +137,7 @@
 
       // == 땅·골목 ==
       ctx.ground({ color: 0x55574f, y: -0.14, size: 400 });
-      ctx.floor({ x0: -7.5, x1: 9, z0: 3.5, z1: 6.3, y: 0, surf: 'paving', gloss: 0.15, reflect: false });           // 보도
+      ctx.floor({ x0: -7.5, x1: 9, z0: 3.5, z1: 6.3, y: 0, surf: 'paving', color: 0xd2cdc4, gloss: 0.15, reflect: false });           // 보도
       ctx.boxAABB({ x0: -14, x1: 14, z0: 6.3, z1: 6.45, y0: -0.13, y1: 0.0, surf: 'concrete' });                       // 경계석
       ctx.floor({ x0: -14, x1: 14, z0: 6.45, z1: 16, y: -0.12, surf: 'asphalt', color: 0x8d97a3, gloss: 0.2, reflect: false });         // 골목 바닥
       for (var li = 0; li < 6; li++) ctx.box({ x: -10 + li * 4.2, y: -0.118, z: 10.4, w: 1.6, h: 0.004, d: 0.12, color: 0xd8d2c0, vary: 0 });   // 가운데 점선
@@ -182,7 +185,8 @@
       }
       ctx.boxAABB({ x0: 3.4, x1: 6.0, z0: 3.5, z1: 3.53, y0: 0.0, y1: 2.6, color: 0xb9bcbf, mat: 'solid' });   // 이웃 셔터
       for (var sh = 0; sh < 12; sh++) ctx.box({ x: 4.7, y: 0.12 + sh * 0.2, z: 3.535, w: 2.6, h: 0.012, d: 0.01, color: 0x8e9295, vary: 0 });
-      ctx.boxAABB({ x0: -16, x1: 12, z0: -16, z1: -7, y0: 0, y1: 8.5, color: 0xb9b4ac });
+      ctx.boxAABB({ x0: -16, x1: 12, z0: -16, z1: -7, y0: 0, y1: 6.0, surf: 'plaster_cream', color: 0xc9c0b2 });   // 뒤 건물(먼 덩어리)
+      ctx.floor({ x0: -16, x1: -6.56, z0: -7, z1: 3.5, y: -0.02, surf: 'lawn', color: 0xb8c0a0, gloss: 0, reflect: false });   // 울타리 너머 풀밭
       var farTrees = [];   // 울타리 너머 나무(잎 덩어리 — 아래 leafClump 를 정의한 뒤 짓는다)
 
       // == 집: 벽(PLAN.walls) + 창 ==
@@ -213,21 +217,46 @@
       // 처마 아래 다운라이트 3
       [-1.6, 0.72, 1.9].forEach(function (x) { ctx.glow.add(Geo.cyl(12, 1), hdr(0xffe2b0, 2.2), { x: x, y: 2.955, z: 4.0, sx: 0.07, sy: 0.02, sz: 0.07, flat: true, vary: 0 }); ctx.addGlow({ x: x, y: 2.9, z: 4.0, size: 0.7, color: 0xffd9a0, kind: 'lamp' }); });
 
-      // 잎(·꽃잎·담쟁이)은 'outside' 묶음: 그림자는 받지만 AO 를 굽지 않는다(잎 수천 장이 굽기 파일을 키우지 않게)
-      // 잎 덩어리: 작은 잎 뭉치 여럿(부드러운 음영·색 흔들림)으로 나무·덤불·화분 식물을 만든다(한 덩어리 구가 아니라)
+      // 식물: 소유자 제공 사진 오림(P01~P07, plants.js) — 교차 알파 카드. 잎 덩어리는 나무 그림(P06)의 잎 부분을 여러 방향으로 놓은 잎 카드.
+      // 종류마다 메시 1(카드 수백 장이 draw call 7 안팎). 그림자를 받고 드리운다. AO 는 굽지 않는다(잎이 굽기 파일을 키우지 않게).
+      var PLT = root.RoomPlants ? root.RoomPlants.create(ctx) : null;
+      function leafTint(base, outer) {   // 사진 잎 색에 아주 조금만 곱한다(밝기 흔들림 + 바깥쪽 조금 밝고 노랗게)
+        var v = 0.72 + rnd() * 0.26 + outer * 0.1, c = new T.Color(base || 0x5f8a45), g = c.g || 1;
+        return new T.Color(v * (0.92 + 0.08 * c.r / g), v, v * (0.88 + 0.12 * c.b / g + outer * -0.06));
+      }
       function leafClump(cx, cy, cz, R, n, base, sy) {
-        var k = sy || 1, b0 = base || 0x5f8a45, m = n * 5;
+        if (!PLT) return;
+        var k = sy || 1, m = Math.max(4, Math.round(n * 0.45));
         for (var i = 0; i < m; i++) {
-          var u = rnd() * 2 - 1, a = rnd() * PI * 2, rr = Math.pow(rnd(), 0.35) * R, sq = Math.sqrt(1 - u * u);
-          var x = cx + Math.cos(a) * sq * rr, y = cy + u * rr * 0.8 * k, z = cz + Math.sin(a) * sq * rr, outer = rr / R;
-          var cl = ctx.mix(ctx.shade(b0, 0.55 + 0.3 * outer + rnd() * 0.2), 0xa4bf62, rnd() * 0.3 * outer);
-          var L = Math.max(0.03, R * (0.13 + rnd() * 0.08));   // 잎 한 장(납작한 다면체)
-          ctx.outsideB.add(Geo.ico(0), cl, { x: x, y: y, z: z, sx: L * 0.55, sy: L * 0.12, sz: L, rx: (rnd() - 0.5) * 1.6, ry: rnd() * 6.3, rz: (rnd() - 0.5) * 1.2, flat: true, vary: 0.08 });
+          var u = rnd() * 2 - 1, a = rnd() * PI * 2, rr = Math.pow(rnd(), 0.5) * R * 0.72, sq = Math.sqrt(1 - u * u);
+          PLT.leaf('tree', { x: cx + Math.cos(a) * sq * rr, y: cy + u * rr * 0.8 * k, z: cz + Math.sin(a) * sq * rr, size: R * (0.8 + rnd() * 0.4), center: [cx, cy - R * 0.3, cz], tint: leafTint(base, rr / R) });
         }
       }
+      // 나무 줄기·가지: 껍질 PBR(bark) 원기둥 — 줄기는 조금 휘고 위로 갈수록 가늘다. 가지 끝에 잎 덩어리
+      var barkB = ctx.surfBatch('bark'), _up = new T.Vector3(0, 1, 0), _dv = new T.Vector3(), _qt = new T.Quaternion();
+      function limb(p0, p1, r0, r1, seg) {
+        _dv.set(p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]); var L = _dv.length(); _dv.normalize(); _qt.setFromUnitVectors(_up, _dv);
+        barkB.add(new T.CylinderGeometry(r1, r0, L * 1.02, seg || 8, 1, true), 0xcdc4ba, { x: (p0[0] + p1[0]) / 2, y: (p0[1] + p1[1]) / 2, z: (p0[2] + p1[2]) / 2, q: _qt, flat: false, vary: 0.03 });
+      }
+      function tree(x, z, H, R, nLeaf, base, y0) {
+        var y = y0 || 0, r0 = 0.035 + H * 0.016, bend = (rnd() - 0.5) * 0.25, p = [x, y - 0.05, z], tips = [];
+        for (var s2 = 1; s2 <= 4; s2++) {   // 줄기 4 마디
+          var t = s2 / 4, q = [x + Math.sin(t * 2.2) * bend * H * 0.12, y + H * 0.62 * t, z + Math.cos(t * 1.7) * bend * H * 0.08];
+          limb(p, q, r0 * (1 - 0.45 * (t - 0.25)), r0 * (1 - 0.45 * t), 9); p = q;
+        }
+        var nb = 4 + Math.floor(rnd() * 2);
+        for (var b2 = 0; b2 < nb; b2++) {   // 가지: 줄기 위쪽에서 바깥·위로
+          var a = b2 / nb * PI * 2 + rnd() * 0.6, hy = y + H * (0.42 + rnd() * 0.2), base0 = [x + bend * 0.05, hy, z];
+          var tip = [x + Math.cos(a) * R * 0.75, hy + H * (0.18 + rnd() * 0.15), z + Math.sin(a) * R * 0.75];
+          var mid = [(base0[0] + tip[0]) / 2, (base0[1] + tip[1]) / 2 + 0.08, (base0[2] + tip[2]) / 2];
+          limb(base0, mid, r0 * 0.45, r0 * 0.3, 6); limb(mid, tip, r0 * 0.3, r0 * 0.12, 6); tips.push(tip);
+        }
+        tips.push([p[0], p[1] + H * 0.15, p[2]]);
+        tips.forEach(function (tp) { leafClump(tp[0], tp[1] + R * 0.1, tp[2], R * 0.62, Math.round(nLeaf / tips.length), base); });
+        leafClump(x, y + H * 0.78, z, R * 0.85, Math.round(nLeaf * 0.5), base);
+      }
       [[-8.2, -2.5, 4.2], [-9.6, 1.0, 5.0], [-8.4, 4.4, 3.6], [-11.5, -1.0, 5.6], [-12.0, 3.2, 4.8]].forEach(function (t) {
-        ctx.cyl({ x: t[0], y: -0.1, z: t[1], r: 0.12, rTop: 0.07, h: t[2] * 0.7, seg: 7, color: 0x5e4a3a });
-        leafClump(t[0], t[2] * 0.72, t[1], t[2] * 0.3, 36, [0x5a8640, 0x6b8f45, 0x4f7a3a][Math.floor(rnd() * 3)]);
+        tree(t[0], t[1], t[2], t[2] * 0.36, 46, [0x5a8640, 0x6b8f45, 0x4f7a3a][Math.floor(rnd() * 3)], -0.1);
       });
       // == 입구: 유리 낀 나무 문(안쪽으로 열림) + 데크 한 단 ==
       ctx.boxAABB({ x0: 0.22, x1: 1.23, z0: 3.28, z1: 3.52, y0: 2.33, y1: 2.4, surf: 'wood_oak', color: 0xd8b890 });          // 문틀 위
@@ -245,11 +274,16 @@
       })();
       ctx.boxAABB({ x0: -0.15, x1: 2.6, z0: 3.5, z1: 4.45, y0: 0, y1: FL, surf: 'wood_light', color: 0xcfa77a });        // 데크
       for (var dk = 0; dk < 9; dk++) ctx.box({ x: 1.225, y: FL - 0.002, z: 3.55 + dk * 0.105, w: 2.74, h: 0.004, d: 0.008, color: 0x6e4a2c, vary: 0 });   // 데크 판 이음
+      // 문 왼쪽 테라코타 화분 장미(참고 그림: 문 가까이 장미)
+      ctx.cyl({ x: 0.02, y: FL, z: 3.8, r: 0.13, rTop: 0.17, h: 0.3, seg: 20, surf: 'terracotta', color: 0xffffff, flat: false });
+      ctx.cyl({ x: 0.02, y: FL + 0.27, z: 3.8, r: 0.18, rTop: 0.18, h: 0.045, seg: 20, surf: 'terracotta', color: 0xf0e4dc, flat: false });
+      ctx.cyl({ x: 0.02, y: FL + 0.3, z: 3.8, r: 0.15, h: 0.012, seg: 16, surf: 'soil' });
+      if (PLT) PLT.add('rose', { x: 0.02, y: FL + 0.3, z: 3.8, h: 0.7, planes: 3 });
       // 화분 나무(데크) + 세로 입간판
       ctx.cyl({ x: 2.32, y: FL, z: 3.9, r: 0.24, rTop: 0.27, h: 0.5, seg: 16, color: 0xe8e4dc, mat: 'gloss', flat: false });
       ctx.cyl({ x: 2.32, y: FL + 0.48, z: 3.9, r: 0.22, h: 0.03, seg: 14, surf: 'soil' });
-      ctx.cyl({ x: 2.32, y: FL + 0.5, z: 3.9, r: 0.025, h: 1.0, seg: 6, color: 0x6a5240 });
-      leafClump(2.32, FL + 1.6, 3.9, 0.42, 28, 0x6f8f45);
+      limb([2.32, FL + 0.48, 3.9], [2.33, FL + 1.25, 3.91], 0.028, 0.02, 7); limb([2.33, FL + 1.25, 3.91], [2.3, FL + 1.55, 3.88], 0.02, 0.012, 6);
+      leafClump(2.32, FL + 1.5, 3.9, 0.42, 34, 0x6f8f45);
       ctx.box({ x: 1.55, y: FL, z: 4.08, w: 0.46, h: 0.95, d: 0.04, rx: 0.16, surf: 'wood_dark', color: 0xb98a5c });
       ctx.box({ x: 1.55, y: FL, z: 4.24, w: 0.46, h: 0.95, d: 0.04, rx: -0.16, surf: 'wood_dark', color: 0xb98a5c });
 
@@ -296,22 +330,15 @@
           if (d < w) { px = b.x0 + d; pz = b.z0; } else if (d < w + l) { px = b.x1; pz = b.z0 + d - w; } else if (d < 2 * w + l) { px = b.x1 - (d - w - l); pz = b.z1; } else { px = b.x0; pz = b.z1 - (d - 2 * w - l); }
           ctx.ico({ x: px, y: 0.06, z: pz, sx: 0.11 + rnd() * 0.03, sy: 0.08 + rnd() * 0.03, sz: 0.1 + rnd() * 0.03, surf: 'stone', color: 0xe0dcd4, detail: 1, flat: false });
         }
-        hydrangea(b.x0 + 0.42, b.z0 + 0.28, bi ? 0xf4f1ea : 0xe6a7c4); hydrangea(b.x0 + 0.42, b.z1 - 0.28, bi ? 0xe9b4cf : 0xf6f3ec);
-        lavender(b.x0 + 0.2, (b.z0 + b.z1) / 2 - 0.35); lavender(b.x0 + 0.2, (b.z0 + b.z1) / 2 + 0.35);
+        // 참고 그림처럼: 벽 쪽 뒤줄에 수국, 앞 가장자리에 라벤더·데이지(앱 꽃 자리는 가운데 — drawGarden)
+        var bl = b.z1 - b.z0;
+        for (var hq = 0; hq < 3; hq++) bedPlant('hydrangea', b.x1 - 0.16, b.z0 + 0.22 + hq * (bl - 0.44) / 2, b.h - 0.03, 0.62 + rnd() * 0.16);
+        for (var lq = 0; lq < 4; lq++) bedPlant(lq % 2 ? 'daisy' : 'lavender', b.x0 + 0.15, b.z0 + 0.18 + lq * (bl - 0.36) / 3, b.h - 0.03, 0.36 + rnd() * 0.1);
       });
-      function hydrangea(x, z, col) {   // 수국 덤불: 잎 + 동그란 꽃송이(작은 꽃잎 여러 장)
-        leafClump(x, 0.42, z, 0.28, 10, 0x4e7a3a, 0.8);
-        for (var h = 0; h < 5; h++) {
-          var cx = x + (rnd() - 0.5) * 0.34, cy = 0.55 + rnd() * 0.18, cz = z + (rnd() - 0.5) * 0.34;
-          for (var q = 0; q < 26; q++) { var a = rnd() * PI * 2, u = rnd() * 2 - 1, rr = 0.07 * Math.sqrt(rnd()); ctx.outsideB.add(Geo.ico(0), ctx.shade(col, 0.88 + rnd() * 0.2), { x: cx + Math.cos(a) * rr, y: cy + u * 0.05 + 0.03, z: cz + Math.sin(a) * rr, sx: 0.022, sy: 0.008, sz: 0.022, rx: rnd(), ry: rnd() * 6, flat: true, vary: 0.05 }); }
-        }
-      }
-      function lavender(x, z) {   // 라벤더: 가는 줄기 + 보라 이삭
-        for (var q = 0; q < 14; q++) {
-          var a = rnd() * PI * 2, r = rnd() * 0.12, h = 0.35 + rnd() * 0.18, bx0 = x + Math.cos(a) * r, bz0 = z + Math.sin(a) * r, tx = bx0 + (rnd() - 0.5) * 0.08, tz = bz0 + (rnd() - 0.5) * 0.08;
-          ctx.beam3([bx0, 0.2, bz0], [tx, 0.2 + h, tz], 0.006, 0.006, 0x6f8a5a, ctx.solid);
-          ctx.beam3([tx, 0.2 + h - 0.1, tz], [tx, 0.2 + h + 0.02, tz], 0.022, 0.022, ctx.shade(0x8a72b8, 0.85 + rnd() * 0.25), ctx.solid);
-        }
+      function bedPlant(kind, x, z, y, h, tint) {
+        if (!PLT) return;
+        var v = 0.88 + rnd() * 0.16;
+        PLT.add(kind, { x: x + (rnd() - 0.5) * 0.05, y: y, z: z + (rnd() - 0.5) * 0.05, h: h, planes: kind === 'lavender' || kind === 'daisy' ? 2 : 3, tint: tint || new T.Color(v, v, v * (0.96 + rnd() * 0.06)) });
       }
       // 둥근 디딤돌: 골목 쪽 입구에서 그네 앞까지
       for (var st = 0; st < 7; st++) { var sz2 = 3.1 - st * 0.72; ctx.cyl({ x: -4.4 - st * 0.04 + (st % 2 ? 0.1 : -0.08), y: 0.0, z: sz2, r: 0.25 + rnd() * 0.04, h: 0.045, seg: 20, surf: 'stone', color: 0xffffff, flat: false }); }
@@ -324,18 +351,20 @@
       // 마당 뒤 회벽 담(높이 1.7) + 담쟁이 + 위 돌림띠
       ctx.boxAABB({ x0: -6.56, x1: -2.7, z0: -3.9, z1: -3.7, y0: 0, y1: 1.7, surf: 'plaster_cream', color: 0xe6d8c0 });
       ctx.boxAABB({ x0: -6.6, x1: -2.7, z0: -3.94, z1: -3.66, y0: 1.7, y1: 1.76, surf: 'stone', color: 0xece6dc });
-      // 담쟁이: 담 앞면에 붙어 위에서 늘어진 줄기 — 잎은 벽면(z -3.69) 바로 앞에 납작하게
-      for (var iv = 0; iv < 7; iv++) {
-        var ix = -6.1 + iv * 0.55 + rnd() * 0.2, len = 0.6 + rnd() * 0.8;
-        for (var lv = 0; lv < 60; lv++) {
-          var t = rnd(), lx = ix + Math.sin(t * 5 + iv) * 0.12 + (rnd() - 0.5) * 0.2, ly = 1.72 - t * len, Lf = 0.028 + rnd() * 0.022;
-          ctx.outsideB.add(Geo.ico(0), ctx.shade(0x4f7a3a, 0.7 + rnd() * 0.45), { x: lx, y: ly, z: -3.675 + rnd() * 0.03, sx: Lf, sy: Lf * 0.9, sz: 0.012, rz: rnd() * 6, flat: true, vary: 0.06 });
-        }
+      // 담쟁이(P07 사진 오림): 담 앞면(z -3.69)에 붙어 담 위에서 늘어진 줄기 판 — 왼쪽 모서리에 몰리고 오른쪽에 조금(참고 그림)
+      [[-6.38, 1.25], [-6.2, 0.95], [-6.02, 1.4], [-5.82, 0.8], [-5.55, 1.1], [-5.3, 0.6], [-4.6, 0.7], [-4.25, 1.05], [-3.9, 0.75], [-3.15, 1.2], [-2.95, 0.9]].forEach(function (v, i) {
+        if (PLT) PLT.flat('ivy', { x: v[0] + (rnd() - 0.5) * 0.06, y: 1.78, z: -3.69, h: v[1] + 0.25, nrm: [0, 0, 1], flip: i % 2 === 1, tint: new T.Color(0.85 + rnd() * 0.15, 0.9 + rnd() * 0.1, 0.85 + rnd() * 0.1) });
+      });
+      // 담을 따라 좁은 화단(흙) — 수국·라벤더·데이지(참고 그림의 담 앞 꽃줄)
+      ctx.boxAABB({ x0: -6.38, x1: -2.8, z0: -3.69, z1: -3.36, y0: 0, y1: 0.05, surf: 'soil' });
+      for (var wq = 0; wq < 9; wq++) {
+        var wx = -6.2 + wq * 0.42;
+        if (wx > -5.45 && wx < -4.05) { bedPlant(wq % 2 ? 'daisy' : 'lavender', wx, -3.5, 0.04, 0.34 + rnd() * 0.08); continue; }   // 그네 뒤는 낮게
+        bedPlant(['hydrangea', 'lavender', 'echinacea', 'hydrangea', 'daisy'][wq % 5], wx, -3.52, 0.04, 0.5 + rnd() * 0.2);
       }
       // 담 너머 나무(배경)
       [[-5.6, -5.2, 4.6], [-3.6, -5.6, 5.4], [-1.6, -6.3, 4.4]].forEach(function (t) {
-        ctx.cyl({ x: t[0], y: 0, z: t[1], r: 0.11, rTop: 0.07, h: t[2] * 0.65, seg: 7, color: 0x5e4a3a });
-        leafClump(t[0], t[2] * 0.72, t[1], t[2] * 0.3, 40, 0x5d8a40);
+        tree(t[0], t[1], t[2], t[2] * 0.34, 48, 0x5d8a40);
       });
       // 집 옆벽 바깥 검은 벽등(갓 달린 헛간 등)
       (function barnLamp(x, y, z) {
@@ -346,11 +375,12 @@
         ctx.addGlow({ x: x - 0.32, y: y - 0.18, z: z, size: 0.9, color: 0xffcf8a, kind: 'lamp' });
       })(-2.7, 2.35, -1.6);
       // 테라코타 화분 덤불(화단 옆)
-      ctx.cyl({ x: -3.2, y: 0, z: -2.0, r: 0.16, rTop: 0.2, h: 0.34, seg: 16, color: 0xb86a45, flat: false });
-      leafClump(-3.2, 0.62, -2.0, 0.26, 12, 0x5f8a45);
+      ctx.cyl({ x: -3.2, y: 0, z: -2.0, r: 0.16, rTop: 0.2, h: 0.34, seg: 20, surf: 'terracotta', color: 0xffffff, flat: false });
+      ctx.cyl({ x: -3.2, y: 0.3, z: -2.0, r: 0.21, rTop: 0.21, h: 0.05, seg: 20, surf: 'terracotta', color: 0xf0e4dc, flat: false });   // 화분 테
+      ctx.cyl({ x: -3.2, y: 0.33, z: -2.0, r: 0.18, h: 0.012, seg: 16, surf: 'soil' });
+      bedPlant('rose', -3.2, -2.0, 0.33, 0.62);
       // 마당 나무 + 울타리 쪽 덤불
-      ctx.cyl({ x: -6.0, y: 0, z: -0.7, r: 0.1, rTop: 0.06, h: 2.4, seg: 8, color: 0x5e4a3a });
-      leafClump(-6.0, 2.8, -0.7, 1.05, 80, 0x5d8a40); leafClump(-5.7, 2.3, -0.5, 0.5, 20, 0x678f45);
+      tree(-6.0, -0.7, 3.6, 1.25, 90, 0x5d8a40);
       for (var hb = 0; hb < 11; hb++) leafClump(-6.15 + rnd() * 0.2, 0.3, -3.4 + hb * 0.62, 0.38, 9, 0x557f3d, 0.75);
       // 옆마당 2인 그네: A 자 나무 틀(고정) + 밧줄 둘에 매달린 좌석(높이 0.45 — 아바타 앉는 높이와 같다).
       // 매달린 부분(밧줄·좌석·등받이·팔걸이)은 따로 한 묶음(draw call 1)으로 틀 윗보에 매달려, 누가 앉아 있을 때만 아주 작게 흔들린다(±1.6°, 3.6초 주기).
@@ -599,36 +629,44 @@
         ctx.addGlow({ x: p[0], y: y - 0.06, z: p[1], size: 0.32, color: 0xffe2b0, kind: 'lamp' });
       });
 
+      if (PLT) PLT.build();   // 식물 카드: 종류마다 메시 1
+
       // == 카메라·하늘 ==
       ctx.setCameraBounds({ x0: -8, x1: 8, z0: -7, z1: 12, yMax: CEIL - 0.72 });   // 실내 카메라는 펜던트 아래
       ctx.setSky({ outside: true });
 
       // == 정원(앱 정원 꽃): setGarden([{flower, stage, pot}]) — 슬롯 순서는 gardenSlots() ==
+      // 꽃(봉오리·꽃 단계)은 사진 오림 카드(plants.js): 앱 꽃 색 8 → 비슷한 사진 꽃 + 색조. 씨앗·새싹은 작은 3D 도형.
+      var GARDEN_KIND = [['rose', 0xffffff], ['daisy', 0xfff2b8], ['rose', 0xff8a8a], ['daisy', 0xffffff], ['lavender', 0xffffff], ['echinacea', 0xffc79a], ['hydrangea', 0xffffff], ['echinacea', 0xffffff]];
       var gardenGroup = null, gMat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 });
       function drawGarden(list) {
         if (gardenGroup) { ctx.root.remove(gardenGroup); gardenGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); gardenGroup = null; }
-        var slots = gardenSlots(), b = new G.Batch(77), r = ctx.rng(5);
+        var slots = gardenSlots(), b = new G.Batch(77), r = ctx.rng(5), grp = new T.Group();
+        grp.name = 'garden';
+        var GP = root.RoomPlants ? root.RoomPlants.create({ THREE: T, rng: ctx.rng, add: function (m) { grp.add(m); } }) : null;
         (list || []).slice(0, slots.length).forEach(function (it, i) {
           if (!it) return;
-          var s = slots[i], y = s.y, K = 1.7, col = GARDEN_COLORS[((it.flower | 0) % GARDEN_COLORS.length + GARDEN_COLORS.length) % GARDEN_COLORS.length], stage = Math.max(0, Math.min(3, it.stage | 0)), pot = it.pot | 0;
+          var s = slots[i], y = s.y, fl = ((it.flower | 0) % GARDEN_COLORS.length + GARDEN_COLORS.length) % GARDEN_COLORS.length, stage = Math.max(0, Math.min(3, it.stage | 0)), pot = it.pot | 0;
           if (pot) {
             var pc = pot === 1 ? 0xc5784c : 0xece7de;
-            b.add(Geo.cyl(12, 1.2), pc, { x: s.x, y: y, z: s.z, sx: 0.09, sy: 0.14, sz: 0.09, flat: false });
-            b.add(Geo.cyl(12, 1), 0x4a3424, { x: s.x, y: y + 0.13, z: s.z, sx: 0.1, sy: 0.012, sz: 0.1, flat: true });
-            y += 0.14;
+            b.add(Geo.cyl(16, 1.2), pc, { x: s.x, y: y - 0.02, z: s.z, sx: 0.09, sy: 0.14, sz: 0.09, flat: false });
+            b.add(Geo.cyl(16, 1), 0x3a2a1e, { x: s.x, y: y + 0.11, z: s.z, sx: 0.1, sy: 0.012, sz: 0.1, flat: true });
+            y += 0.12;
           }
-          if (stage === 0) { b.add(Geo.sph(8, 5), 0x5a4330, { x: s.x, y: y + 0.01, z: s.z, sx: 0.06, sy: 0.025, sz: 0.06, flat: false }); b.add(Geo.sph(6, 4), 0xd8c080, { x: s.x, y: y + 0.035, z: s.z, s: 0.012, flat: false }); return; }
-          var hgt = [0, 0.1, 0.24, 0.32][stage] * K;
-          b.add(Geo.cyl(5, 0.8), 0x4f7a3a, { x: s.x, y: y, z: s.z, sx: 0.012, sy: hgt, sz: 0.012, flat: false });
-          for (var lf = 0; lf < 2 + stage; lf++) { var a = lf * 2.4 + r(); b.add(Geo.sph(6, 4), 0x5f9a45, { x: s.x + Math.cos(a) * 0.04, y: y + hgt * (0.25 + lf * 0.15), z: s.z + Math.sin(a) * 0.04, sx: 0.045 * K, sy: 0.012 * K, sz: 0.022 * K, ry: -a, flat: false }); }
-          if (stage === 2) b.add(Geo.sph(8, 6), 0x6f9a4e, { x: s.x, y: y + hgt + 0.02, z: s.z, sx: 0.025, sy: 0.04, sz: 0.025, flat: false });
-          if (stage === 3) {
-            for (var pt = 0; pt < 6; pt++) { var pa = pt / 6 * PI * 2; b.add(Geo.sph(8, 5), col, { x: s.x + Math.cos(pa) * 0.04 * K, y: y + hgt + 0.01, z: s.z + Math.sin(pa) * 0.04 * K, sx: 0.038 * K, sy: 0.014 * K, sz: 0.026 * K, ry: -pa, flat: false }); }
-            b.add(Geo.sph(8, 5), 0xf2c94c, { x: s.x, y: y + hgt + 0.02, z: s.z, s: 0.018 * K, flat: false });
+          if (stage === 0) { b.add(Geo.sph(8, 5), 0x4a3526, { x: s.x, y: y - 0.01, z: s.z, sx: 0.06, sy: 0.025, sz: 0.06, flat: false }); b.add(Geo.sph(6, 4), 0xd8c080, { x: s.x, y: y + 0.012, z: s.z, s: 0.012, flat: false }); return; }
+          if (stage === 1 || !GP) {   // 새싹: 줄기 + 떡잎
+            var hgt = 0.12;
+            b.add(Geo.cyl(5, 0.8), 0x4f7a3a, { x: s.x, y: y - 0.02, z: s.z, sx: 0.008, sy: hgt, sz: 0.008, flat: false });
+            for (var lf = 0; lf < 3; lf++) { var a = lf * 2.1 + r(); b.add(Geo.sph(6, 4), 0x5f9a45, { x: s.x + Math.cos(a) * 0.03, y: y + hgt * (0.55 + lf * 0.15), z: s.z + Math.sin(a) * 0.03, sx: 0.035, sy: 0.008, sz: 0.016, ry: -a, flat: false }); }
+            return;
           }
+          var K = GARDEN_KIND[fl], h = (stage === 2 ? 0.55 : 0.85) * root.RoomPlants.KINDS[K[0]].h * (pot ? 0.7 : 1);
+          var tint = new T.Color(K[1]); if (stage === 2) tint.lerp(new T.Color(0x9fc08a), 0.55);   // 봉오리: 꽃색이 덜 든 초록빛
+          GP.add(K[0], { x: s.x, y: y - 0.02, z: s.z, h: h, planes: 3, tint: tint, rot: i * 1.3 });
         });
-        if (!b.p.length) return;
-        gardenGroup = b.build(gMat, 'garden', { cast: true, receive: true });
+        if (b.p.length) grp.add(b.build(gMat, 'garden_small', { cast: true, receive: true }));
+        if (GP) GP.build();
+        gardenGroup = grp;
         ctx.root.add(gardenGroup);
       }
       drawGarden(DEFAULT_GARDEN);

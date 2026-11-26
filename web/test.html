@@ -23,8 +23,8 @@ window.RoomNoAutoStart = true;
 (function () {
   var g = new URLSearchParams(location.search).get('gpt');
   if (!g) return;
-  window.RoomPhotoMap = { wood_floor: g + 'tex/T01-floor-oak.png', wood_dark: g + 'tex/T02-wood-furniture.png', plaster: g + 'tex/T03-plaster.png', stucco: g + 'tex/T03-plaster.png',
-    cork: g + 'tex/T04-cork.png', jute: g + 'tex/T05-rug.png', paving: g + 'tex/T06-paving.png', asphalt: g + 'tex/T07-asphalt.png', soil: g + 'tex/T08-soil.png', grass: g + 'tex/T09-grass.png' };
+  window.RoomPhotoMap = { floor_oak: g + 'tex/T01-floor-oak.png', plaster_cream: g + 'tex/T03-plaster.png',
+    cork: g + 'tex/T04-cork.png', jute: g + 'tex/T05-rug.png', paving: g + 'tex/T06-paving.png', asphalt: g + 'tex/T07-asphalt.png', soil: g + 'tex/T08-soil.png', lawn: g + 'tex/T09-grass.png' };
   window.RoomBackdrop = { day: g + 'P-01-alley-day.png', night: g + 'P-01-alley-night.png' };
 })();
 </script>
@@ -38,6 +38,7 @@ window.RoomNoAutoStart = true;
 <script src="photos.js"></script>
 <script src="kit_tex.js"></script>
 <script src="kit.js"></script>
+<script src="plants.js"></script>
 <script src="audio.js"></script>
 <script src="looks.js"></script>
 <script src="ao_fx.js"></script>
@@ -57,7 +58,7 @@ window.RoomNoAutoStart = true;
 <script src="main.js"></script>
 <script>
 /* 시험 페이지: 호스트 흉내. URL: room, hour, quality(low|mid|high), autotier(0), frames(N 프레임 뒤 정지), thumb(0|1), sit(좌석 번호),
-   peers(걷는 사람 수), peerseat(앉아 있는 한 사람의 좌석), view(앉은 뒤 시점 yaw,pitch,zoom), x,z,yaw,pitch,zoom(시작 자세), hideui(1), fixed(0: 시계 흐름). 이벤트는 window.__roomEvents 와 콘솔에. */
+   peers(걷는 사람 수), route(street: 보도를 걷는 길), peerseat(앉아 있는 한 사람의 좌석), view(앉은 뒤 시점 yaw,pitch,zoom), x,z,yaw,pitch,zoom(시작 자세), hideui(1), fixed(0: 시계 흐름). 이벤트는 window.__roomEvents 와 콘솔에. */
 (function () {
   var qs = new URLSearchParams(location.search), R = window.Room3D;
   if (qs.get('hideui')) document.body.classList.add('hideui');
@@ -88,10 +89,15 @@ window.RoomNoAutoStart = true;
     [[0.9, 1.6], [1.1, -0.2], [0.6, -2.3], [-0.4, -1.0], [-0.5, 1.4], [0.9, 1.6]],
     [[0.7, 5.2], [0.7, 3.0], [0.2, 1.2], [0.7, 3.0]]
   ];
+  // route=street: 가게 앞 보도(트인 곳)를 서로 마주 보며 오가는 길 — 사진 「걷는 두 사람」
+  var STREET = [
+    [[3.2, 4.85], [-3.6, 4.85], [3.2, 4.85]],
+    [[-2.6, 5.65], [4.6, 5.65], [-2.6, 5.65]]
+  ];
   function simPeers(n) {
     if (simT) clearInterval(simT);
-    var peers = [], t0 = performance.now();
-    for (var i = 0; i < n; i++) peers.push({ id: 'p' + i, route: ROUTES[i % ROUTES.length], speed: 0.9 + 0.2 * i, avatar: { g: i % 2, skin: (i * 2 + 1) % 4, style: (i * 3) % 4, hair: (i * 5 + 1) % 10, outfit: (i * 4 + 2) % 12, label: ['책벌레', '오늘도 한 장', '고양이 독자'][i % 3] } });
+    var peers = [], t0 = performance.now(), RT = new URLSearchParams(location.search).get('route') === 'street' ? STREET : ROUTES;
+    for (var i = 0; i < n; i++) peers.push({ id: 'p' + i, route: RT[i % RT.length], speed: 0.9 + 0.2 * i, avatar: { g: i % 2, skin: (i * 2 + 1) % 4, style: (i * 3) % 4, hair: (i * 5 + 1) % 10, outfit: (i * 4 + 2) % 12, label: ['책벌레', '오늘도 한 장', '고양이 독자'][i % 3] } });
     function posAt(p, t) {
       var R0 = p.route, segs = [], L = 0;
       for (var k = 0; k < R0.length - 1; k++) { var a = R0[k], b = R0[k + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]); segs.push([a, b, l]); L += l; }

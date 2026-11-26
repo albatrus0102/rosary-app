@@ -394,6 +394,10 @@
 
     function applyEnv() {
       sampleEnv(curHour, env);
+      if (layout && layout.sunRot) {   // 장면별 해 길 돌리기(도, 위에서 볼 때 +x→+z 쪽으로): 집 방향에 맞춰 오후 해가 정면 비스듬히 오게
+        var sa = layout.sunRot * PI / 180, sx0 = env.sunDir[0], sz0 = env.sunDir[2];
+        env.sunDir[0] = sx0 * Math.cos(sa) - sz0 * Math.sin(sa); env.sunDir[2] = sx0 * Math.sin(sa) + sz0 * Math.cos(sa);
+      }
       if (S.envOverride) { try { S.envOverride(env, curHour); } catch (e) { if (root.console) console.warn('[room] envOverride', e); } }
       applyLook();
       var hiT = tier !== 'low';   // 후처리(톤·블룸)가 있는 단계

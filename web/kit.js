@@ -30,28 +30,32 @@
   // ---- 표면(사진/절차 질감 + PBR 파라미터) 기본 사전 ----
   // photo: tex_<photo>.jpg(+_n,_r) ; tile: 질감 한 번이 덮는 미터
   var SURFACES = {
-    plaster: { photo: 'plaster', tile: 2.0, roughness: 0.95, normalScale: 0.5, envK: 0.9, fb: 'plaster' },
-    stucco: { photo: 'stucco', tile: 1.6, roughness: 0.95, normalScale: 0.8, envK: 0.8, fb: 'plaster' },
-    wood_floor: { photo: 'wood_floor', tile: 2.0, clearcoat: 0.25, ccRough: 0.3, normalScale: 0.4, envK: 0.9, fb: 'wood' },
-    wood_dark: { photo: 'wood_dark', tile: 1.2, clearcoat: 0.45, ccRough: 0.25, normalScale: 0.3, envK: 0.9, fb: 'wood' },
-    wood_light: { photo: 'wood_light', tile: 1.2, clearcoat: 0.3, ccRough: 0.3, normalScale: 0.3, envK: 0.9, fb: 'woodLight' },
-    paving: { photo: 'paving', tile: 2.4, roughness: 0.9, normalScale: 0.8, envK: 0.6, fb: 'stone' },
+    // 소유자 제공 PBR(색 + 법선 + ORM, README 「질감」) — tile = 질감 한 장이 덮는 미터. aoK = 질감 AO 세기(구운 AO 에 곱해진다), roughK = ORM 거칠기에 곱
+    plaster_cream: { photo: 'plaster_cream', tile: 1.6, roughK: 1.0, normalScale: 0.9, aoK: 0.6, envK: 0.8, fb: 'plaster' },
+    plaster: { photo: 'plaster_cream', tile: 1.6, roughK: 1.0, normalScale: 0.9, aoK: 0.6, envK: 0.8, fb: 'plaster' },
+    stucco: { photo: 'brick', tile: 1.3, roughK: 1.0, normalScale: 1.0, aoK: 0.9, envK: 0.6, fb: 'brick' },
+    brick: { photo: 'brick', tile: 1.3, roughK: 1.0, normalScale: 1.0, aoK: 0.9, envK: 0.6, fb: 'brick' },
+    wood_floor: { photo: 'floor_oak', tile: 1.2, roughK: 0.75, clearcoat: 0.18, ccRough: 0.4, normalScale: 0.7, aoK: 0.8, envK: 0.9, fb: 'wood' },
+    wood_oak: { photo: 'wood_oak', tile: 1.0, roughK: 0.85, clearcoat: 0.12, ccRough: 0.45, normalScale: 0.6, aoK: 0.6, envK: 0.8, fb: 'woodLight' },
+    wood_light: { photo: 'wood_oak', tile: 1.0, roughK: 0.85, clearcoat: 0.12, ccRough: 0.45, normalScale: 0.6, aoK: 0.6, envK: 0.8, fb: 'woodLight' },
+    wood_dark: { photo: 'wood_oak', tile: 1.0, roughK: 0.7, clearcoat: 0.3, ccRough: 0.3, normalScale: 0.5, aoK: 0.6, envK: 0.9, fb: 'wood' },
+    wood_end: { photo: 'wood_end', tile: 0.12, roughK: 1.0, normalScale: 0.8, aoK: 0.8, envK: 0.6, fb: 'woodLight' },
+    rope: { photo: 'rope', tile: 0.22, roughK: 1.0, normalScale: 1.2, aoK: 1.0, envK: 0.4, fb: 'jute' },
+    linen_a: { photo: 'linen_a', tile: 0.35, roughK: 1.0, normalScale: 0.8, aoK: 0.8, envK: 0.4, sheen: 0.6, fb: 'jute' },
+    linen_b: { photo: 'linen_b', tile: 0.35, roughK: 1.0, normalScale: 0.8, aoK: 0.8, envK: 0.4, sheen: 0.6, fb: 'jute' },
+    lawn: { photo: 'lawn', tile: 1.1, roughK: 1.0, normalScale: 1.0, aoK: 1.0, envK: 0.35, fb: 'grass' },
+    grass: { photo: 'lawn', tile: 1.1, roughK: 1.0, normalScale: 1.0, aoK: 1.0, envK: 0.35, fb: 'grass' },
+    stone: { photo: 'stone', tile: 0.8, roughK: 1.0, normalScale: 1.0, aoK: 0.9, envK: 0.5, fb: 'stone' },
+    soil: { photo: 'soil', tile: 0.7, roughK: 1.0, normalScale: 1.0, aoK: 1.0, envK: 0.35, fb: 'soil' },
+    terracotta: { photo: 'terracotta', tile: 0.5, roughK: 1.0, normalScale: 0.8, aoK: 0.8, envK: 0.5, fb: 'soil' },
+    bark: { photo: 'bark', tile: 0.7, roughK: 1.0, normalScale: 1.4, aoK: 1.0, envK: 0.3, fb: 'wood' },
+    paving: { photo: 'paving', tile: 1.6, roughK: 1.0, normalScale: 1.0, aoK: 1.0, envK: 0.6, fb: 'stone' },
+    metal: { photo: 'metal', tile: 0.4, metalness: 0.9, roughK: 0.9, normalScale: 0.4, aoK: 0.6, envK: 1.0, fb: 'plaster' },
+    // CC0(ambientCG): 색 + 법선 + 거칠기
     asphalt: { photo: 'asphalt', tile: 4.0, roughness: 0.95, normalScale: 0.6, envK: 0.5, fb: 'asphalt' },
-    grass: { photo: 'grass', tile: 2.0, roughness: 1.0, normalScale: 0.8, envK: 0.4, fb: 'grass' },
-    soil: { photo: 'soil', tile: 1.5, roughness: 1.0, normalScale: 0.8, envK: 0.4, fb: 'soil' },
     concrete: { photo: 'concrete', tile: 2.0, roughness: 0.9, normalScale: 0.6, envK: 0.6, fb: 'plaster' },
     cork: { photo: 'cork', tile: 0.8, roughness: 0.95, normalScale: 0.6, envK: 0.5, fb: 'cork' },
     jute: { photo: 'jute', tile: 0.8, roughness: 1.0, normalScale: 0.7, envK: 0.4, fb: 'jute' },
-    // 소유자 제공 색 지도(README 「질감」) — 법선은 photos.js NORMAL_OF 가 빌려 온다
-    plaster_cream: { photo: 'plaster_cream', tile: 1.8, roughness: 0.95, normalScale: 0.7, envK: 0.8, fb: 'plaster' },
-    wood_oak: { photo: 'wood_oak', tile: 1.0, clearcoat: 0.2, ccRough: 0.35, roughness: 0.62, normalScale: 0.3, envK: 0.8, fb: 'woodLight' },
-    wood_end: { photo: 'wood_end', tile: 0.25, roughness: 0.8, normalScale: 0.3, envK: 0.6, fb: 'woodLight' },
-    rope: { photo: 'rope', tile: 0.12, roughness: 1.0, normalScale: 0.9, envK: 0.4, fb: 'jute' },
-    linen_a: { photo: 'linen_a', tile: 0.6, roughness: 1.0, normalScale: 0.5, envK: 0.4, fb: 'jute' },
-    linen_b: { photo: 'linen_b', tile: 0.6, roughness: 1.0, normalScale: 0.5, envK: 0.4, fb: 'jute' },
-    lawn: { photo: 'lawn', tile: 1.6, roughness: 1.0, normalScale: 0.8, envK: 0.4, fb: 'grass' },
-    stone: { photo: 'stone', tile: 0.9, roughness: 0.92, normalScale: 0.6, envK: 0.5, fb: 'stone' },
-    metal: { photo: 'metal', tile: 0.4, metalness: 0.85, roughness: 0.42, normalScale: 0, envK: 1.0, fb: 'plaster' }
   };
 
   function createContext(opts) {
@@ -146,13 +150,23 @@
     }
     function surfKey(s) { return typeof s === 'string' ? s : (s.isTexture ? 'tex' + s.uuid : (s.__key || (s.__key = 'def' + Math.random().toString(36).slice(2)))); }
     function tileOf(def) { var t = def.tile || 2; return Array.isArray(t) ? t : [t, t]; }
+    // aoMap(질감 AO)을 둘째 UV 대신 첫 UV(vUv)로 읽게 한다 — 배치 지오메트리에 uv2 를 따로 만들지 않아도 된다.
+    // 구운 AO(ao_fx)는 이 뒤에 이어 붙어 indirectDiffuse 에 한 번 더 곱해진다(접촉 그늘 × 재질 결 그늘).
+    function useUvForAo(m) {
+      var prev = m.onBeforeCompile;
+      m.onBeforeCompile = function (sh, r) {
+        if (prev) prev.call(this, sh, r);
+        sh.fragmentShader = sh.fragmentShader.replace('#include <aomap_fragment>', '#define vUv2 vUv\n#include <aomap_fragment>');
+      };
+      m.customProgramCacheKey = function () { return 'aoUv1'; };
+    }
     function physMat(def, o) {
       o = o || {};
-      var hasR = def.photo && Ph && Ph.has(def.photo + '_r'), hasN = def.photo && Ph && Ph.has(def.photo + '_n');
+      var hasO = def.photo && Ph && Ph.has(def.photo + '_orm'), hasR = hasO || (def.photo && Ph && Ph.has(def.photo + '_r')), hasN = def.photo && Ph && Ph.has(def.photo + '_n');
       var rep = o.repeat;
       var m = new T.MeshPhysicalMaterial({
         color: def.color === undefined ? 0xffffff : def.color,
-        roughness: hasR ? 1 : num(def.roughness, 0.7), metalness: num(def.metalness, 0),
+        roughness: hasR ? num(def.roughK, 1) : num(def.roughness, 0.7), metalness: num(def.metalness, 0),
         clearcoat: low ? 0 : num(def.clearcoat, 0), clearcoatRoughness: num(def.ccRough, 0.1), envMapIntensity: num(def.envK, 1),
         vertexColors: !!o.vertex, side: def.side === undefined ? T.FrontSide : def.side
       });
@@ -163,7 +177,12 @@
         var fb = fallbackFor(def.fb);
         m.map = (def.decal && Ph.getDecal) ? Ph.getDecal(def.photo, def.decal, { repeat: rep, fallbackCanvas: fb.image }) : Ph.get(def.photo, { repeat: rep, fallbackCanvas: fb.image });
         if (hasN) { m.normalMap = Ph.get(def.photo + '_n', { repeat: rep, enc: 'linear' }); m.normalScale = new T.Vector2(num(def.normalScale, 0.5), num(def.normalScale, 0.5)); }
-        if (hasR) m.roughnessMap = Ph.get(def.photo + '_r', { repeat: rep, enc: 'linear' });
+        if (hasO) {   // ORM 한 장: 거칠기(.g) + 질감 AO(.r). aoMap 은 three r149 에서 uv2 를 읽으므로 셰이더에서 uv 를 쓰게 바꾼다(같은 반복)
+          var orm = Ph.get(def.photo + '_orm', { repeat: rep, enc: 'linear' });
+          m.roughnessMap = orm; m.aoMap = orm; m.aoMapIntensity = num(def.aoK, 0.7);
+          useUvForAo(m);
+        } else if (hasR) m.roughnessMap = Ph.get(def.photo + '_r', { repeat: rep, enc: 'linear' });
+        if (def.sheen && !low) { m.sheen = def.sheen; m.sheenRoughness = 0.8; m.sheenColor = new T.Color(0xfff4e0); }
       } else if (def.tex) {
         var t0 = def.tex.clone(); t0.needsUpdate = true; t0.wrapS = t0.wrapT = T.RepeatWrapping; if (rep) t0.repeat.set(rep[0], rep[1]);
         m.map = t0;

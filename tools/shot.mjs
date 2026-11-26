@@ -17,7 +17,7 @@ await p.goto(url + 'test.html?hideui=1&autotier=0&quiet=1&' + q);
 await p.waitForFunction(() => (window.__roomEvents || []).some((e) => e.e === 'firstFrame'), null, { timeout: 60000 });
 await p.waitForTimeout(wait);
 if (/[?&]frames=/.test('&' + q)) await p.waitForFunction(() => window.__room && window.__room.done, null, { timeout: 180000 });
-await p.screenshot({ path: out });
+await p.screenshot({ path: out, timeout: 120000 });
 const info = await p.evaluate(() => { const a = window.__room; const r = a.R.renderer.info.render; return { calls: r.calls, tris: r.triangles, verts: a.world.stats.vertices, meshes: a.world.stats.meshes, fps: a.fps, tier: a.R.tier }; });
 console.log(out, JSON.stringify(info), errs.length ? 'ERRORS:\n' + errs.join('\n') : 'errors 0');
 await b.close(); srv.close();

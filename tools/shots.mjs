@@ -12,12 +12,12 @@ const outDir = path.resolve(args[0] && !args[0].startsWith('--') ? args[0] : pat
 const si = args.indexOf('--size'), [W, H] = (si >= 0 ? args[si + 1] : '960x540').split('x').map(Number);
 fs.mkdirSync(outDir, { recursive: true });
 const SHOTS = [
-  { name: 'exterior-day', q: 'thumb=0&hour=14', frames: 40 },
+  { name: 'exterior-day', q: 'thumb=0  { name: 'exterior-day', q: 'thumb=0&hour=14', frames: 40 },hour=15.5', frames: 40 },
   { name: 'exterior-night', q: 'thumb=0&hour=21.5', frames: 40 },
   { name: 'interior', q: 'thumb=1&hour=20.5', frames: 40 },
   { name: 'seat-view', q: 'sit=0&hour=20.5', frames: 140 },
   { name: 'yard-swing', q: 'sit=4&peerseat=5&hour=17.6&view=28,8,0.95', frames: 120 },
-  { name: 'peers-walking', q: 'peers=2&hour=16&x=0.25&z=-2.2&yaw=180&pitch=12&zoom=0.8', frames: 60 }
+  { name: 'peers-walking', q: 'peers=2&route=street&hour=16&x=-4.6&z=5.25&yaw=-100&pitch=8&zoom=0.85', frames: 60 }
 ];
 const oi = args.indexOf('--only'), only = oi >= 0 ? args[oi + 1].split(',') : null;   // --only exterior-day,yard-swing
 const { srv, url } = await serve();

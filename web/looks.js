@@ -15,7 +15,7 @@
   };
   // 장면별 룩. 낮 값 + night(밤에 덮어쓰기). 공방(house): 낮은 밝고 부드럽게, 밤은 따뜻한 실내등이 주인공.
   var LOOKS = {
-    house: { keyK: 0.85, keyTint: 0xffe6c4, keyTintK: 0.25, ambK: 0.9, ambTint: 0xfff0dc, ambTintK: 0.25, expK: 0.92, envK: 0.8, beamK: 0.5, lampK: 1.0,
+    house: { keyK: 1.55, keyTint: 0xffe2bc, keyTintK: 0.3, ambK: 0.55, ambTint: 0xdfe8f5, ambTintK: 0.2, expK: 0.86, envK: 0.6, beamK: 0.5, lampK: 1.0,
       dust: 0, sat: 1.0, warm: 0.06, vig: 0.2, con: 0.14, bloomT: 0.86, bloomS: 0.36, reflK: 0.5,
       night: { lampK: 1.4, keyK: 0.45, ambK: 0.22, expK: 0.85, warm: 0.08, bloomT: 0.84, bloomS: 0.38 } }
   };

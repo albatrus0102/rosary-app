@@ -1,0 +1,272 @@
+{
+ "metric": "edge/inner luminance step ratio (1.0 = edge indistinguishable from interior)",
+ "materials": {
+  "wood_oak": {
+   "fixed": false,
+   "before": {
+    "color": 1.24,
+    "normal": 0.92,
+    "rough": 1.27,
+    "ao": 1.23
+   },
+   "after": {
+    "color": 1.24,
+    "normal": 0.92,
+    "rough": 1.27,
+    "ao": 1.23
+   }
+  },
+  "floor_oak": {
+   "fixed": "derived",
+   "after": {
+    "color": 2.16
+   }
+  },
+  "rope": {
+   "fixed": true,
+   "before": {
+    "color": 2.43,
+    "normal": 0.98,
+    "rough": 1.31,
+    "ao": 2.58
+   },
+   "after": {
+    "color": 1.03,
+    "normal": 0.96,
+    "rough": 0.98,
+    "ao": 1.26
+   }
+  },
+  "linen_a": {
+   "fixed": true,
+   "before": {
+    "color": 1.56,
+    "normal": 1.07,
+    "rough": 1.18,
+    "ao": 1.62
+   },
+   "after": {
+    "color": 0.86,
+    "normal": 0.97,
+    "rough": 0.88,
+    "ao": 0.97
+   }
+  },
+  "metal": {
+   "fixed": false,
+   "before": {
+    "color": 1.18,
+    "normal": 0.82,
+    "rough": 0.96,
+    "ao": 1.16
+   },
+   "after": {
+    "color": 1.18,
+    "normal": 0.82,
+    "rough": 0.96,
+    "ao": 1.16
+   }
+  },
+  "wood_end": {
+   "fixed": false,
+   "before": {
+    "color": 1.35,
+    "normal": 1.01,
+    "rough": 1.0,
+    "ao": 1.33
+   },
+   "after": {
+    "color": 1.35,
+    "normal": 1.01,
+    "rough": 1.0,
+    "ao": 1.33
+   }
+  },
+  "lawn": {
+   "fixed": true,
+   "before": {
+    "color": 1.56,
+    "normal": 0.94,
+    "rough": 4.07,
+    "ao": 2.45
+   },
+   "after": {
+    "color": 0.94,
+    "normal": 1.01,
+    "rough": 0.99,
+    "ao": 1.02
+   }
+  },
+  "stone": {
+   "fixed": true,
+   "before": {
+    "color": 1.34,
+    "normal": 0.94,
+    "rough": 1.16,
+    "ao": 2.17
+   },
+   "after": {
+    "color": 1.0,
+    "normal": 0.98,
+    "rough": 1.1,
+    "ao": 0.98
+   }
+  },
+  "plaster_cream": {
+   "fixed": true,
+   "before": {
+    "color": 1.31,
+    "normal": 1.0,
+    "rough": 1.44,
+    "ao": 2.08
+   },
+   "after": {
+    "color": 1.02,
+    "normal": 1.01,
+    "rough": 1.0,
+    "ao": 1.04
+   }
+  },
+  "bark": {
+   "fixed": true,
+   "before": {
+    "color": 1.85,
+    "normal": 0.87,
+    "rough": 7.83,
+    "ao": 2.61
+   },
+   "after": {
+    "color": 1.08,
+    "normal": 0.94,
+    "rough": 1.06,
+    "ao": 1.19
+   }
+  },
+  "soil": {
+   "fixed": true,
+   "before": {
+    "color": 1.92,
+    "normal": 0.89,
+    "rough": 1.14,
+    "ao": 1.96
+   },
+   "after": {
+    "color": 1.13,
+    "normal": 1.14,
+    "rough": 1.11,
+    "ao": 1.07
+   }
+  },
+  "terracotta": {
+   "fixed": true,
+   "before": {
+    "color": 1.55,
+    "normal": 0.91,
+    "rough": 0.99,
+    "ao": 1.5
+   },
+   "after": {
+    "color": 0.94,
+    "normal": 1.06,
+    "rough": 0.97,
+    "ao": 0.94
+   }
+  },
+  "brick": {
+   "fixed": true,
+   "before": {
+    "color": 1.96,
+    "normal": 2.05,
+    "rough": 2.08,
+    "ao": 3.77
+   },
+   "after": {
+    "color": 0.79,
+    "normal": 0.89,
+    "rough": 0.84,
+    "ao": 0.94
+   }
+  },
+  "paving": {
+   "fixed": true,
+   "before": {
+    "color": 1.4,
+    "normal": 0.82,
+    "rough": 0.94,
+    "ao": 1.4
+   },
+   "after": {
+    "color": 1.2,
+    "normal": 0.96,
+    "rough": 1.13,
+    "ao": 1.07
+   }
+  },
+  "linen_b": {
+   "fixed": true,
+   "before": {
+    "color": 1.56,
+    "normal": 0.99,
+    "rough": 1.17,
+    "ao": 1.56
+   },
+   "after": {
+    "color": 0.93,
+    "normal": 0.98,
+    "rough": 0.95,
+    "ao": 0.93
+   }
+  }
+ },
+ "plants": {
+  "rose": {
+   "size": [
+    416,
+    512
+   ],
+   "aspect": 0.812
+  },
+  "echinacea": {
+   "size": [
+    384,
+    512
+   ],
+   "aspect": 0.75
+  },
+  "daisy": {
+   "size": [
+    473,
+    512
+   ],
+   "aspect": 0.924
+  },
+  "lavender": {
+   "size": [
+    512,
+    499
+   ],
+   "aspect": 1.026
+  },
+  "hydrangea": {
+   "size": [
+    512,
+    503
+   ],
+   "aspect": 1.018
+  },
+  "tree": {
+   "size": [
+    703,
+    1024
+   ],
+   "aspect": 0.687
+  },
+  "ivy": {
+   "size": [
+    107,
+    512
+   ],
+   "aspect": 0.209
+  }
+ }
+}
