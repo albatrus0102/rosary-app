@@ -7,7 +7,7 @@
 (function (root) {
   'use strict';
   var FL = 0.16, CEIL = FL + 2.7, WALL_TOP = 3.0, T_W = 0.2;
-  var SWING = { x: -5.6, z: 0.85 };   // 옆마당 2인 그네의 가운데(좌석 4·5)
+  var SWING = { x: -4.75, z: -2.5 };   // 옆마당 2인 그네의 가운데(좌석 4·5) — 마당 안쪽에서 골목(+z) 쪽을 본다(소유자 참고 그림 ref_swing_yard)
   var PI = Math.PI;
 
   // ---- (A) 평면 계획 ----
@@ -64,11 +64,11 @@
     C.push({ x: 1.55, z: 4.15, r: 0.28, tag: 'aframe' });
     C.push({ x0: -3.75, x1: -2.2, z0: 4.25, z1: 4.6, tag: 'bicycle' });
     C.push({ x: -6.2, z: 6.1, r: 0.2, tag: 'streetlight' });
-    C.push({ x: -5.3, z: -2.6, r: 0.3, tag: 'yardTree' });
-    C.push({ x0: -6.5, x1: SWING.x + 0.48, z0: SWING.z - 1.02, z1: SWING.z + 1.02, tag: 'swing' });   // 그네 틀 전체(앉은 자리 포함 — 앉기는 물리 이동이 아니다)
+    C.push({ x: -6.0, z: -0.7, r: 0.3, tag: 'yardTree' });
+    C.push({ x0: SWING.x - 1.02, x1: SWING.x + 1.02, z0: SWING.z - 0.48, z1: SWING.z + 0.48, tag: 'swing' });   // 그네 틀 전체(앉은 자리 포함 — 앉기는 물리 이동이 아니다)
     // 울타리(앞쪽은 x -5.0 부터 집까지 열려 있다 — 디딤돌 입구)
     C.push({ x0: -6.56, x1: -6.44, z0: -3.86, z1: 3.56, tag: 'fenceW' });
-    C.push({ x0: -6.56, x1: -2.7, z0: -3.86, z1: -3.74, tag: 'fenceN' });
+    C.push({ x0: -6.56, x1: -2.7, z0: -3.9, z1: -3.7, tag: 'gardenWall' });   // 마당 뒤 회벽 담(담쟁이)
     C.push({ x0: -6.56, x1: -5.0, z0: 3.44, z1: 3.56, tag: 'fenceS1' });
     // 이웃 건물(오른쪽)·집 뒤(들어갈 수 없음)
     C.push({ x0: 2.7, x1: 12, z0: -12, z1: 3.5, tag: 'neighbor' });
@@ -88,8 +88,8 @@
       { x: -1.55, z: -1.05, yaw: PI / 2, stand: { x: -0.95, z: -1.05 } },
       { x: 1.62, z: -0.5, yaw: -PI / 2, y: FL + 0.2, stand: { x: 1.05, z: -0.5 } },
       // 옆마당 2인 그네(A 자 틀): 나란히 두 자리, 집·화단 쪽(+x)을 본다
-      { x: SWING.x, z: SWING.z - 0.3, yaw: -PI / 2, stand: { x: SWING.x + 0.82, z: SWING.z - 0.3 } },
-      { x: SWING.x, z: SWING.z + 0.3, yaw: -PI / 2, stand: { x: SWING.x + 0.82, z: SWING.z + 0.3 } }
+      { x: SWING.x - 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x - 0.3, z: SWING.z + 0.82 } },
+      { x: SWING.x + 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x + 0.3, z: SWING.z + 0.82 } }
     ],
     seatLabels: ['창가 1', '창가 2', '창가 3', '작업대', '그네 왼쪽', '그네 오른쪽'],
     camDist: 4.2,                                                   // 좁은 실내: 카메라 팔 기본 길이(m)
@@ -138,7 +138,7 @@
       ctx.boxAABB({ x0: -14, x1: 14, z0: 6.3, z1: 6.45, y0: -0.13, y1: 0.0, surf: 'concrete' });                       // 경계석
       ctx.floor({ x0: -14, x1: 14, z0: 6.45, z1: 16, y: -0.12, surf: 'asphalt', color: 0x8d97a3, gloss: 0.2, reflect: false });         // 골목 바닥
       for (var li = 0; li < 6; li++) ctx.box({ x: -10 + li * 4.2, y: -0.118, z: 10.4, w: 1.6, h: 0.004, d: 0.12, color: 0xd8d2c0, vary: 0 });   // 가운데 점선
-      ctx.floor({ x0: -6.5, x1: -2.6, z0: -3.8, z1: 3.5, y: 0.005, surf: 'grass', gloss: 0, reflect: false });           // 옆마당 잔디
+      ctx.floor({ x0: -6.5, x1: -2.6, z0: -3.8, z1: 3.5, y: 0.005, surf: 'lawn', gloss: 0, reflect: false });           // 옆마당 잔디
 
       // == 배경 판(backdrop slot): 길 건너 건물 줄. setPanel('backdrop', {url}) 로 그림을 바꿀 수 있다 ==
       var bdCanvas = G.makeCanvas(1024, 384), bdTex = new T.CanvasTexture(bdCanvas); bdTex.encoding = T.sRGBEncoding;
@@ -183,15 +183,15 @@
       ctx.boxAABB({ x0: 3.4, x1: 6.0, z0: 3.5, z1: 3.53, y0: 0.0, y1: 2.6, color: 0xb9bcbf, mat: 'solid' });   // 이웃 셔터
       for (var sh = 0; sh < 12; sh++) ctx.box({ x: 4.7, y: 0.12 + sh * 0.2, z: 3.535, w: 2.6, h: 0.012, d: 0.01, color: 0x8e9295, vary: 0 });
       ctx.boxAABB({ x0: -16, x1: 12, z0: -16, z1: -7, y0: 0, y1: 8.5, color: 0xb9b4ac });
-      ctx.scatterTrees({ x0: -15, x1: -7.2, z0: -6, z1: 5, count: 7, seed: 11, minH: 3, maxH: 5.5, y: -0.1 });
+      var farTrees = [];   // 울타리 너머 나무(잎 덩어리 — 아래 leafClump 를 정의한 뒤 짓는다)
 
       // == 집: 벽(PLAN.walls) + 창 ==
-      PLAN.walls.forEach(function (w) { ctx.wall({ x0: w.x0, z0: w.z0, x1: w.x1, z1: w.z1, y: w.y || 0, h: w.h, t: T_W, surf: 'stucco', color: 0xfbf6ee, collide: false, plinth: false, crown: false }); });
+      PLAN.walls.forEach(function (w) { ctx.wall({ x0: w.x0, z0: w.z0, x1: w.x1, z1: w.z1, y: w.y || 0, h: w.h, t: T_W, surf: 'plaster_cream', color: 0xffffff, collide: false, plinth: false, crown: false }); });
       planColliders().forEach(function (c) { var o = {}; for (var k in c) if (k !== 'tag') o[k] = c[k]; ctx.addCollider(o); });
       layout.floorZones.forEach(function (z) { ctx.floorZone(z); });
       // 왼쪽 벽 통창(바닥 가까이부터 천장 가까이까지) + 정면 창: 모서리에서 만난다(모서리 기둥만 남음)
-      ctx.window({ x: -2.6, z: 0.35, y: FL + 0.35, face: [1, 0], w: 5.9, h: 2.0, mullions: [-1.475, 0, 1.475], frameColor: WOOD_D, frameW: 0.07, sill: true });
-      ctx.window({ x: -1.3, z: 3.4, y: FL + 0.45, face: [0, -1], w: 2.4, h: 1.9, mullions: [0], transoms: [1.45], frameColor: WOOD_D, frameW: 0.07, sill: true });
+      ctx.window({ x: -2.6, z: 0.35, y: FL + 0.35, face: [1, 0], w: 5.9, h: 2.0, mullions: [-1.475, 0, 1.475], frameSurf: 'wood_oak', frameColor: 0xffffff, frameW: 0.08, sill: true });
+      ctx.window({ x: -1.3, z: 3.4, y: FL + 0.45, face: [0, -1], w: 2.4, h: 1.9, mullions: [0], transoms: [1.45], frameSurf: 'wood_oak', frameColor: 0xffffff, frameW: 0.08, sill: true });
       ctx.window({ x: 0.725, z: 3.4, y: 0, face: [0, -1], w: 0.95, h: 2.36, opening: true });
       // 바닥·천장
       ctx.floor({ x0: -2.5, x1: 2.5, z0: -3.3, z1: 3.3, y: FL, surf: 'wood_floor', color: 0xe9ddcd, gloss: 0.45, reflect: 0.25 });
@@ -213,6 +213,7 @@
       // 처마 아래 다운라이트 3
       [-1.6, 0.72, 1.9].forEach(function (x) { ctx.glow.add(Geo.cyl(12, 1), hdr(0xffe2b0, 2.2), { x: x, y: 2.955, z: 4.0, sx: 0.07, sy: 0.02, sz: 0.07, flat: true, vary: 0 }); ctx.addGlow({ x: x, y: 2.9, z: 4.0, size: 0.7, color: 0xffd9a0, kind: 'lamp' }); });
 
+      // 잎(·꽃잎·담쟁이)은 'outside' 묶음: 그림자는 받지만 AO 를 굽지 않는다(잎 수천 장이 굽기 파일을 키우지 않게)
       // 잎 덩어리: 작은 잎 뭉치 여럿(부드러운 음영·색 흔들림)으로 나무·덤불·화분 식물을 만든다(한 덩어리 구가 아니라)
       function leafClump(cx, cy, cz, R, n, base, sy) {
         var k = sy || 1, b0 = base || 0x5f8a45, m = n * 5;
@@ -221,19 +222,23 @@
           var x = cx + Math.cos(a) * sq * rr, y = cy + u * rr * 0.8 * k, z = cz + Math.sin(a) * sq * rr, outer = rr / R;
           var cl = ctx.mix(ctx.shade(b0, 0.55 + 0.3 * outer + rnd() * 0.2), 0xa4bf62, rnd() * 0.3 * outer);
           var L = Math.max(0.03, R * (0.13 + rnd() * 0.08));   // 잎 한 장(납작한 다면체)
-          ctx.solid.add(Geo.ico(0), cl, { x: x, y: y, z: z, sx: L * 0.55, sy: L * 0.12, sz: L, rx: (rnd() - 0.5) * 1.6, ry: rnd() * 6.3, rz: (rnd() - 0.5) * 1.2, flat: true, vary: 0.08 });
+          ctx.outsideB.add(Geo.ico(0), cl, { x: x, y: y, z: z, sx: L * 0.55, sy: L * 0.12, sz: L, rx: (rnd() - 0.5) * 1.6, ry: rnd() * 6.3, rz: (rnd() - 0.5) * 1.2, flat: true, vary: 0.08 });
         }
       }
+      [[-8.2, -2.5, 4.2], [-9.6, 1.0, 5.0], [-8.4, 4.4, 3.6], [-11.5, -1.0, 5.6], [-12.0, 3.2, 4.8]].forEach(function (t) {
+        ctx.cyl({ x: t[0], y: -0.1, z: t[1], r: 0.12, rTop: 0.07, h: t[2] * 0.7, seg: 7, color: 0x5e4a3a });
+        leafClump(t[0], t[2] * 0.72, t[1], t[2] * 0.3, 36, [0x5a8640, 0x6b8f45, 0x4f7a3a][Math.floor(rnd() * 3)]);
+      });
       // == 입구: 유리 낀 나무 문(안쪽으로 열림) + 데크 한 단 ==
-      ctx.boxAABB({ x0: 0.22, x1: 1.23, z0: 3.28, z1: 3.52, y0: 2.33, y1: 2.4, color: WOOD_D, mat: 'wood' });          // 문틀 위
-      ctx.boxAABB({ x0: 0.2, x1: 0.26, z0: 3.28, z1: 3.52, y0: 0, y1: 2.4, color: WOOD_D, mat: 'wood' });
-      ctx.boxAABB({ x0: 1.19, x1: 1.25, z0: 3.28, z1: 3.52, y0: 0, y1: 2.4, color: WOOD_D, mat: 'wood' });
+      ctx.boxAABB({ x0: 0.22, x1: 1.23, z0: 3.28, z1: 3.52, y0: 2.33, y1: 2.4, surf: 'wood_oak', color: 0xd8b890 });          // 문틀 위
+      ctx.boxAABB({ x0: 0.2, x1: 0.26, z0: 3.28, z1: 3.52, y0: 0, y1: 2.4, surf: 'wood_oak', color: 0xd8b890 });
+      ctx.boxAABB({ x0: 1.19, x1: 1.25, z0: 3.28, z1: 3.52, y0: 0, y1: 2.4, surf: 'wood_oak', color: 0xd8b890 });
       (function door() {   // 경첩 x=1.2, 안쪽(-z)으로 90° 열려 오른쪽 벽 쪽에 붙음: 문짝 x 1.17..1.25, z 2.4..3.3
         var x0 = 1.17, x1 = 1.24, z0 = 2.38, z1 = 3.3, y0 = FL + 0.01, y1 = FL + 2.17;
-        ctx.boxAABB({ x0: x0, x1: x1, z0: z0, z1: z0 + 0.12, y0: y0, y1: y1, surf: 'wood_light', color: 0xd9b58a });
-        ctx.boxAABB({ x0: x0, x1: x1, z0: z1 - 0.12, z1: z1, y0: y0, y1: y1, surf: 'wood_light', color: 0xd9b58a });
-        ctx.boxAABB({ x0: x0, x1: x1, z0: z0, z1: z1, y0: y0, y1: y0 + 0.62, surf: 'wood_light', color: 0xd9b58a });
-        ctx.boxAABB({ x0: x0, x1: x1, z0: z0, z1: z1, y0: y1 - 0.12, y1: y1, surf: 'wood_light', color: 0xd9b58a });
+        ctx.boxAABB({ x0: x0, x1: x1, z0: z0, z1: z0 + 0.12, y0: y0, y1: y1, surf: 'wood_oak', color: 0xffffff });
+        ctx.boxAABB({ x0: x0, x1: x1, z0: z1 - 0.12, z1: z1, y0: y0, y1: y1, surf: 'wood_oak', color: 0xffffff });
+        ctx.boxAABB({ x0: x0, x1: x1, z0: z0, z1: z1, y0: y0, y1: y0 + 0.62, surf: 'wood_oak', color: 0xffffff });
+        ctx.boxAABB({ x0: x0, x1: x1, z0: z0, z1: z1, y0: y1 - 0.12, y1: y1, surf: 'wood_oak', color: 0xffffff });
         var gx = (x0 + x1) / 2;
         ctx.glassPane([[gx, y0 + 0.62, z0 + 0.12], [gx, y0 + 0.62, z1 - 0.12], [gx, y1 - 0.12, z1 - 0.12], [gx, y1 - 0.12, z0 + 0.12]]);
         ctx.cyl({ x: x0 - 0.04, y: FL + 0.95, z: z0 + 0.2, r: 0.018, h: 0.32, seg: 8, color: CHAR, mat: 'metal' });   // 세로 손잡이
@@ -282,52 +287,123 @@
       var PL = PLAN.garden.planter;
       ctx.boxAABB({ x0: PL.x0, x1: PL.x1, z0: PL.z0, z1: PL.z1, y0: 0, y1: PL.h, surf: 'concrete', color: 0xd6d2ca });
       ctx.boxAABB({ x0: PL.x0 + 0.06, x1: PL.x1 - 0.06, z0: PL.z0 + 0.06, z1: PL.z1 - 0.06, y0: PL.h - 0.04, y1: PL.h - 0.02, surf: 'soil' });
-      PLAN.garden.beds.forEach(function (b) {
-        ctx.boxAABB({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1, y0: 0, y1: b.h, surf: 'wood_dark', color: 0x9a7350 });
-        ctx.boxAABB({ x0: b.x0 + 0.05, x1: b.x1 - 0.05, z0: b.z0 + 0.05, z1: b.z1 - 0.05, y0: b.h - 0.03, y1: b.h - 0.01, surf: 'soil' });
+      // 집 벽을 따라 놓인 화단: 둥근 돌 테두리 + 흙 + 수국·라벤더·데이지 덤불(앱 꽃 자리는 drawGarden 이 따로)
+      PLAN.garden.beds.forEach(function (b, bi) {
+        ctx.boxAABB({ x0: b.x0 + 0.06, x1: b.x1 - 0.06, z0: b.z0 + 0.06, z1: b.z1 - 0.06, y0: 0, y1: b.h - 0.02, surf: 'soil' });
+        var per = 2 * ((b.x1 - b.x0) + (b.z1 - b.z0)), n = Math.round(per / 0.2);
+        for (var k = 0; k < n; k++) {
+          var d = k / n * per, px, pz, w = b.x1 - b.x0, l = b.z1 - b.z0;
+          if (d < w) { px = b.x0 + d; pz = b.z0; } else if (d < w + l) { px = b.x1; pz = b.z0 + d - w; } else if (d < 2 * w + l) { px = b.x1 - (d - w - l); pz = b.z1; } else { px = b.x0; pz = b.z1 - (d - 2 * w - l); }
+          ctx.ico({ x: px, y: 0.06, z: pz, sx: 0.11 + rnd() * 0.03, sy: 0.08 + rnd() * 0.03, sz: 0.1 + rnd() * 0.03, surf: 'stone', color: 0xe0dcd4, detail: 1, flat: false });
+        }
+        hydrangea(b.x0 + 0.42, b.z0 + 0.28, bi ? 0xf4f1ea : 0xe6a7c4); hydrangea(b.x0 + 0.42, b.z1 - 0.28, bi ? 0xe9b4cf : 0xf6f3ec);
+        lavender(b.x0 + 0.2, (b.z0 + b.z1) / 2 - 0.35); lavender(b.x0 + 0.2, (b.z0 + b.z1) / 2 + 0.35);
       });
-      for (var st = 0; st < 8; st++) { var sz2 = 3.9 - st * 0.95; ctx.cyl({ x: -4.45 + (st % 2 ? 0.12 : -0.1), y: 0.0, z: sz2, r: 0.26 + rnd() * 0.05, h: 0.04, seg: 9, surf: 'concrete', color: 0xcac6be }); }
+      function hydrangea(x, z, col) {   // 수국 덤불: 잎 + 동그란 꽃송이(작은 꽃잎 여러 장)
+        leafClump(x, 0.42, z, 0.28, 10, 0x4e7a3a, 0.8);
+        for (var h = 0; h < 5; h++) {
+          var cx = x + (rnd() - 0.5) * 0.34, cy = 0.55 + rnd() * 0.18, cz = z + (rnd() - 0.5) * 0.34;
+          for (var q = 0; q < 26; q++) { var a = rnd() * PI * 2, u = rnd() * 2 - 1, rr = 0.07 * Math.sqrt(rnd()); ctx.outsideB.add(Geo.ico(0), ctx.shade(col, 0.88 + rnd() * 0.2), { x: cx + Math.cos(a) * rr, y: cy + u * 0.05 + 0.03, z: cz + Math.sin(a) * rr, sx: 0.022, sy: 0.008, sz: 0.022, rx: rnd(), ry: rnd() * 6, flat: true, vary: 0.05 }); }
+        }
+      }
+      function lavender(x, z) {   // 라벤더: 가는 줄기 + 보라 이삭
+        for (var q = 0; q < 14; q++) {
+          var a = rnd() * PI * 2, r = rnd() * 0.12, h = 0.35 + rnd() * 0.18, bx0 = x + Math.cos(a) * r, bz0 = z + Math.sin(a) * r, tx = bx0 + (rnd() - 0.5) * 0.08, tz = bz0 + (rnd() - 0.5) * 0.08;
+          ctx.beam3([bx0, 0.2, bz0], [tx, 0.2 + h, tz], 0.006, 0.006, 0x6f8a5a, ctx.solid);
+          ctx.beam3([tx, 0.2 + h - 0.1, tz], [tx, 0.2 + h + 0.02, tz], 0.022, 0.022, ctx.shade(0x8a72b8, 0.85 + rnd() * 0.25), ctx.solid);
+        }
+      }
+      // 둥근 디딤돌: 골목 쪽 입구에서 그네 앞까지
+      for (var st = 0; st < 7; st++) { var sz2 = 3.1 - st * 0.72; ctx.cyl({ x: -4.4 - st * 0.04 + (st % 2 ? 0.1 : -0.08), y: 0.0, z: sz2, r: 0.25 + rnd() * 0.04, h: 0.045, seg: 20, surf: 'stone', color: 0xffffff, flat: false }); }
       function fence(x0, z0, x1, z1) {
         var dx = x1 - x0, dz = z1 - z0, L = Math.sqrt(dx * dx + dz * dz), n = Math.max(1, Math.round(L / 0.12)), ry = Math.atan2(dx, dz);
         for (var i = 0; i <= n; i++) { var t = i / n; ctx.box({ x: x0 + dx * t, y: 0, z: z0 + dz * t, w: 0.07, h: 0.72 + (i % 2 ? 0 : 0.04), d: 0.025, ry: ry + PI / 2, surf: 'wood_light', color: 0xead9c2 }); }
         [0.22, 0.55].forEach(function (yy) { ctx.box({ x: (x0 + x1) / 2, y: yy, z: (z0 + z1) / 2, w: 0.03, h: 0.06, d: L, ry: ry, surf: 'wood_light', color: 0xd8c3a5 }); });
       }
-      fence(-6.5, -3.8, -6.5, 3.5); fence(-6.5, -3.8, -2.7, -3.8); fence(-6.5, 3.5, -5.0, 3.5);
+      fence(-6.5, -3.7, -6.5, 3.5); fence(-6.5, 3.5, -5.0, 3.5);
+      // 마당 뒤 회벽 담(높이 1.7) + 담쟁이 + 위 돌림띠
+      ctx.boxAABB({ x0: -6.56, x1: -2.7, z0: -3.9, z1: -3.7, y0: 0, y1: 1.7, surf: 'plaster_cream', color: 0xe6d8c0 });
+      ctx.boxAABB({ x0: -6.6, x1: -2.7, z0: -3.94, z1: -3.66, y0: 1.7, y1: 1.76, surf: 'stone', color: 0xece6dc });
+      // 담쟁이: 담 앞면에 붙어 위에서 늘어진 줄기 — 잎은 벽면(z -3.69) 바로 앞에 납작하게
+      for (var iv = 0; iv < 7; iv++) {
+        var ix = -6.1 + iv * 0.55 + rnd() * 0.2, len = 0.6 + rnd() * 0.8;
+        for (var lv = 0; lv < 60; lv++) {
+          var t = rnd(), lx = ix + Math.sin(t * 5 + iv) * 0.12 + (rnd() - 0.5) * 0.2, ly = 1.72 - t * len, Lf = 0.028 + rnd() * 0.022;
+          ctx.outsideB.add(Geo.ico(0), ctx.shade(0x4f7a3a, 0.7 + rnd() * 0.45), { x: lx, y: ly, z: -3.675 + rnd() * 0.03, sx: Lf, sy: Lf * 0.9, sz: 0.012, rz: rnd() * 6, flat: true, vary: 0.06 });
+        }
+      }
+      // 담 너머 나무(배경)
+      [[-5.6, -5.2, 4.6], [-3.6, -5.6, 5.4], [-1.6, -6.3, 4.4]].forEach(function (t) {
+        ctx.cyl({ x: t[0], y: 0, z: t[1], r: 0.11, rTop: 0.07, h: t[2] * 0.65, seg: 7, color: 0x5e4a3a });
+        leafClump(t[0], t[2] * 0.72, t[1], t[2] * 0.3, 40, 0x5d8a40);
+      });
+      // 집 옆벽 바깥 검은 벽등(갓 달린 헛간 등)
+      (function barnLamp(x, y, z) {
+        ctx.box({ x: x - 0.02, y: y - 0.1, z: z, w: 0.04, h: 0.2, d: 0.14, surf: 'metal', color: 0x2a2a2c });
+        ctx.beam3([x - 0.04, y, z], [x - 0.3, y + 0.06, z], 0.025, 0.025, 0x2a2a2c, ctx.metalB);
+        ctx.cyl({ x: x - 0.32, y: y - 0.12, z: z, r: 0.17, rTop: 0.05, h: 0.15, seg: 20, surf: 'metal', color: 0x2a2a2c, flat: false });
+        ctx.glow.add(Geo.sph(10, 6), hdr(0xffd79a, 2.4), { x: x - 0.32, y: y - 0.12, z: z, sx: 0.07, sy: 0.04, sz: 0.07, flat: false, vary: 0 });
+        ctx.addGlow({ x: x - 0.32, y: y - 0.18, z: z, size: 0.9, color: 0xffcf8a, kind: 'lamp' });
+      })(-2.7, 2.35, -1.6);
+      // 테라코타 화분 덤불(화단 옆)
+      ctx.cyl({ x: -3.2, y: 0, z: -2.0, r: 0.16, rTop: 0.2, h: 0.34, seg: 16, color: 0xb86a45, flat: false });
+      leafClump(-3.2, 0.62, -2.0, 0.26, 12, 0x5f8a45);
       // 마당 나무 + 울타리 쪽 덤불
-      ctx.cyl({ x: -5.3, y: 0, z: -2.6, r: 0.08, rTop: 0.05, h: 1.8, seg: 7, color: 0x6a5240 });
-      leafClump(-5.3, 2.25, -2.6, 0.95, 70, 0x5d8a40); leafClump(-5.0, 1.85, -2.3, 0.5, 20, 0x678f45);
+      ctx.cyl({ x: -6.0, y: 0, z: -0.7, r: 0.1, rTop: 0.06, h: 2.4, seg: 8, color: 0x5e4a3a });
+      leafClump(-6.0, 2.8, -0.7, 1.05, 80, 0x5d8a40); leafClump(-5.7, 2.3, -0.5, 0.5, 20, 0x678f45);
       for (var hb = 0; hb < 11; hb++) leafClump(-6.15 + rnd() * 0.2, 0.3, -3.4 + hb * 0.62, 0.38, 9, 0x557f3d, 0.75);
       // 옆마당 2인 그네: A 자 나무 틀(고정) + 밧줄 둘에 매달린 좌석(높이 0.45 — 아바타 앉는 높이와 같다).
       // 매달린 부분(밧줄·좌석·등받이·팔걸이)은 따로 한 묶음(draw call 1)으로 틀 윗보에 매달려, 누가 앉아 있을 때만 아주 작게 흔들린다(±1.6°, 3.6초 주기).
       // 앉은 아바타도 같은 만큼 옮긴다(hooks.seatOffset) — 좌석과 몸이 어긋나지 않는다. 움직임 줄이기 설정이면 흔들지 않는다.
-      var swingPivot = null, swingTheta = 0, swingAmp = 0, SW_TOP = 2.0, SW_SEAT = 0.45;
+      var swingPivot = null, swingTheta = 0, swingAmp = 0, SW_TOP = 2.15, SW_SEAT = 0.45;
       (function swing() {
-        var x = SWING.x, zc = SWING.z, top = SW_TOP, sy = SW_SEAT, z0 = zc - 0.72, z1 = zc + 0.72, frame = 0x7a5232;
-        [zc - 0.92, zc + 0.92].forEach(function (z) {
-          ctx.beam3([x, top, z], [x - 0.45, 0, z], 0.07, 0.07, frame, ctx.woodB);
-          ctx.beam3([x, top, z], [x + 0.45, 0, z], 0.07, 0.07, frame, ctx.woodB);
-          ctx.beam3([x - 0.3, 0.7, z], [x + 0.3, 0.7, z], 0.05, 0.05, frame, ctx.woodB);
+        // 좌표: 앉는 사람은 +z 를 본다. 너비(u)는 x, 앞(f)은 +z. 틀 = 양 끝 A 자 다리(앞뒤로 벌어짐) + 윗보, 매달린 좌석 = 밧줄 둘 + 좌석·등받이·팔걸이·방석
+        var xc = SWING.x, zc = SWING.z, top = SW_TOP, sy = SW_SEAT, W = 1.44, x0 = xc - W / 2, x1 = xc + W / 2;
+        var OAK = 'wood_oak', fw = ctx.surfBatch(OAK);
+        [xc - 0.92, xc + 0.92].forEach(function (x) {
+          fw.addBeam([x, top, zc], [x, -0.02, zc - 0.62], 0.085, 0.085, 0xffffff, { vary: 0.03 });
+          fw.addBeam([x, top, zc], [x, -0.02, zc + 0.62], 0.085, 0.085, 0xffffff, { vary: 0.03 });
+          fw.addBeam([x, 0.72, zc - 0.41], [x, 0.72, zc + 0.41], 0.06, 0.06, 0xffffff, { vary: 0.03 });   // 가로 버팀
+          fw.addBeam([x, top - 0.28, zc - 0.08], [x, top - 0.28, zc + 0.08], 0.05, 0.05, 0xffffff, { vary: 0.03 });
         });
-        ctx.beam3([x, top + 0.04, zc - 1.02], [x, top + 0.04, zc + 1.02], 0.09, 0.09, frame, ctx.woodB);
-        var sb = new G.Batch(91);
-        [z0 + 0.06, z1 - 0.06].forEach(function (z) {
-          [x - 0.16, x + 0.16].forEach(function (rx) { sb.addBeam([x, top, z], [rx, sy + 0.02, z], 0.014, 0.014, 0xd8c9a8, { vary: 0.02 }); });
+        fw.addBeam([xc - 1.06, top + 0.06, zc], [xc + 1.06, top + 0.06, zc], 0.1, 0.12, 0xffffff, { vary: 0.03 });   // 윗보
+        [xc - 1.06, xc + 1.06].forEach(function (x) { ctx.box({ x: x + (x < xc ? -0.003 : 0.003), y: top, z: zc, w: 0.006, h: 0.12, d: 0.1, surf: 'wood_end', color: 0xffffff }); });   // 보 끝 나뭇결
+        // 매달린 부분: 따로 묶음 셋(나무·밧줄·방석) — 같은 축(윗보)에 매달려 함께 흔들린다
+        function sbatch(name, tile) { var bb = new G.Batch(91 + name.length); bb.enableUV(tile, tile); return { b: bb, name: name }; }
+        var BW = sbatch(OAK, ctx.surfaces[OAK].tile), BR = sbatch('rope', ctx.surfaces.rope.tile), BC = sbatch('linen_a', ctx.surfaces.linen_a.tile), BC2 = sbatch('linen_b', ctx.surfaces.linen_b.tile);
+        function bx(B, o) { B.b.add(Geo.box(), 0xffffff, Object.assign({ flat: true, vary: 0.04 }, o)); }
+        // 좌석 판(앞뒤 가로 판 5) + 앞·뒤 틀
+        for (var sl = 0; sl < 5; sl++) bx(BW, { x: xc, y: sy - 0.07, z: zc - 0.2 + sl * 0.095, sx: W, sy: 0.035, sz: 0.08 });
+        bx(BW, { x: xc, y: sy - 0.12, z: zc + 0.22, sx: W, sy: 0.06, sz: 0.05 }); bx(BW, { x: xc, y: sy - 0.12, z: zc - 0.24, sx: W, sy: 0.06, sz: 0.05 });
+        // 등받이: 위아래 가로대 + 세로 살 11
+        bx(BW, { x: xc, y: sy + 0.06, z: zc - 0.27, sx: W, sy: 0.05, sz: 0.045, rx: -0.1 });
+        bx(BW, { x: xc, y: sy + 0.47, z: zc - 0.31, sx: W + 0.04, sy: 0.07, sz: 0.05, rx: -0.1 });
+        for (var vs = 0; vs < 11; vs++) bx(BW, { x: x0 + 0.1 + vs * (W - 0.2) / 10, y: sy + 0.08, z: zc - 0.285, sx: 0.045, sy: 0.4, sz: 0.022, rx: -0.1 });
+        // 팔걸이 + 앞 기둥 + 뒤 기둥
+        [x0 + 0.02, x1 - 0.02].forEach(function (x) {
+          bx(BW, { x: x, y: sy + 0.2, z: zc - 0.02, sx: 0.07, sy: 0.04, sz: 0.56 });
+          bx(BW, { x: x, y: sy - 0.12, z: zc + 0.2, sx: 0.05, sy: 0.33, sz: 0.05 });
+          bx(BW, { x: x, y: sy - 0.12, z: zc - 0.29, sx: 0.05, sy: 0.62, sz: 0.05, rx: -0.1 });
         });
-        function bx(o, c) { sb.add(Geo.box(), c, o); }
-        for (var sl = 0; sl < 5; sl++) bx({ x: x - 0.2 + sl * 0.1, y: sy - 0.04, z: zc, sx: 0.085, sy: 0.04, sz: 1.44, flat: true, vary: 0.05 }, 0xd9b48a);
-        bx({ x: x, y: sy - 0.09, z: z0 + 0.03, sx: 0.5, sy: 0.05, sz: 0.06, flat: true }, frame);
-        bx({ x: x, y: sy - 0.09, z: z1 - 0.03, sx: 0.5, sy: 0.05, sz: 0.06, flat: true }, frame);
-        for (var bs2 = 0; bs2 < 3; bs2++) bx({ x: x - 0.3 - bs2 * 0.02, y: sy + 0.1 + bs2 * 0.15, z: zc, sx: 0.03, sy: 0.1, sz: 1.44, rz: 0.12, flat: true, vary: 0.05 }, 0xd9b48a);   // 등받이 판(뒤 = -x)
-        [z0 + 0.02, z1 - 0.02].forEach(function (z) {
-          bx({ x: x - 0.3, y: sy, z: z, sx: 0.04, sy: 0.52, sz: 0.04, flat: true }, frame);
-          bx({ x: x - 0.04, y: sy + 0.22, z: z, sx: 0.5, sy: 0.035, sz: 0.05, flat: true }, frame);   // 팔걸이
-          bx({ x: x + 0.19, y: sy, z: z, sx: 0.035, sy: 0.22, sz: 0.035, flat: true }, frame);
+        // 밧줄: 양쪽 하나씩 — 팔걸이 바깥 끝에서 윗보까지, 보 위에서 감아 맨 매듭
+        [x0 - 0.02, x1 + 0.02].forEach(function (x) {
+          BR.b.addBeam([x, sy + 0.24, zc + 0.16], [x, top + 0.04, zc + 0.04], 0.03, 0.03, 0xffffff, { vary: 0.02 });
+          BR.b.addBeam([x, sy + 0.24, zc - 0.22], [x, top + 0.04, zc - 0.04], 0.03, 0.03, 0xffffff, { vary: 0.02 });
+          BR.b.add(new T.TorusGeometry(1, 0.32, 6, 14), 0xffffff, { x: x, y: top + 0.06, z: zc, s: 0.085, ry: PI / 2, flat: false, vary: 0 });   // 보에 감은 고리
+          BR.b.add(Geo.sph(10, 8), 0xffffff, { x: x, y: top - 0.08, z: zc, sx: 0.045, sy: 0.06, sz: 0.045, flat: false, vary: 0 });         // 매듭
+          BR.b.add(Geo.sph(8, 6), 0xffffff, { x: x, y: top - 0.2, z: zc, sx: 0.035, sy: 0.05, sz: 0.035, flat: false, vary: 0 });
         });
-        var grp = sb.build(new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }), 'swingSeat', { cast: true, receive: true });
-        grp.position.set(-x, -top, -zc);
-        swingPivot = new T.Group(); swingPivot.name = 'swing'; swingPivot.position.set(x, top, zc); swingPivot.add(grp);
+        // 방석: 앉는 방석(윗면 0.47 — 앉는 높이 0.45 와 맞음) + 등 쿠션 둘
+        BC.b.add(Geo.box(), 0xffffff, { x: xc, y: sy - 0.05, z: zc - 0.01, sx: W - 0.12, sy: 0.07, sz: 0.46, flat: false, vary: 0 });
+        BC.b.add(Geo.sph(16, 10), 0xffffff, { x: xc, y: sy + 0.015, z: zc - 0.01, sx: (W - 0.14) / 2, sy: 0.02, sz: 0.22, flat: false, vary: 0 });
+        [-0.33, 0.33].forEach(function (u) { BC2.b.add(Geo.sph(18, 12), 0xffffff, { x: xc + u, y: sy + 0.25, z: zc - 0.22, sx: 0.27, sy: 0.18, sz: 0.07, rx: -0.15, flat: false, vary: 0 }); });
+        swingPivot = new T.Group(); swingPivot.name = 'swing'; swingPivot.position.set(xc, top, zc);
+        [BW, BR, BC, BC2].forEach(function (B) {
+          var g = B.b.build(ctx.mats.surface(B.name, { vertex: true }), 'swing_' + B.name, { cast: true, receive: true });
+          g.position.set(-xc, -top, -zc); swingPivot.add(g);
+        });
         ctx.add(swingPivot);
-        ctx.aoDecal({ x0: x - 0.5, x1: x + 0.5, z0: zc - 0.98, z1: zc + 0.98, y: 0.006, pad: 0.25 });
+        ctx.aoDecal({ x0: xc - 0.95, x1: xc + 0.95, z0: zc - 0.6, z1: zc + 0.6, y: 0.006, pad: 0.25 });
       })();
       var reduced = false;
       try { reduced = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { reduced = false; }
@@ -335,7 +411,7 @@
         var occ = ctx.occupied || {}, want = (occ.S4 || occ.S5) && !reduced ? 0.028 : 0;
         swingAmp += (want - swingAmp) * Math.min(1, dt * 0.7);
         swingTheta = swingAmp * Math.sin(t * PI * 2 / 3.6);
-        if (swingPivot) swingPivot.rotation.z = swingTheta;
+        if (swingPivot) swingPivot.rotation.x = swingTheta;   // 앞뒤로(좌석이 보는 +z 방향)
       });
       // 노란 자전거(보도, 정면 창 앞)
       (function bike() {
@@ -587,7 +663,7 @@
           seatOffset: function (id) {
             if ((id !== 'S4' && id !== 'S5') || !swingTheta) return null;
             var L = SW_TOP - SW_SEAT;
-            return { x: L * Math.sin(swingTheta), y: L * (1 - Math.cos(swingTheta)), z: 0 };
+            return { x: 0, y: L * (1 - Math.cos(swingTheta)), z: -L * Math.sin(swingTheta) };
           }
         }
       };

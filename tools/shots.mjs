@@ -16,13 +16,15 @@ const SHOTS = [
   { name: 'exterior-night', q: 'thumb=0&hour=21.5', frames: 40 },
   { name: 'interior', q: 'thumb=1&hour=20.5', frames: 40 },
   { name: 'seat-view', q: 'sit=0&hour=20.5', frames: 140 },
-  { name: 'yard-swing', q: 'sit=4&peerseat=5&hour=16.5&view=38,12,0.95', frames: 120 },
+  { name: 'yard-swing', q: 'sit=4&peerseat=5&hour=17.6&view=28,8,0.95', frames: 120 },
   { name: 'peers-walking', q: 'peers=2&hour=16&x=0.25&z=-2.2&yaw=180&pitch=12&zoom=0.8', frames: 60 }
 ];
+const oi = args.indexOf('--only'), only = oi >= 0 ? args[oi + 1].split(',') : null;   // --only exterior-day,yard-swing
 const { srv, url } = await serve();
 const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 let bad = 0;
 for (const s of SHOTS) {
+  if (only && !only.includes(s.name)) continue;
   const p = await b.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   const errs = [];
   p.on('pageerror', (e) => errs.push(e.message));
@@ -30,8 +32,8 @@ for (const s of SHOTS) {
   await p.goto(url + 'test.html?hideui=1&autotier=0&quiet=1&frames=' + s.frames + '&' + s.q);
   await p.waitForFunction(() => (window.__roomEvents || []).some((e) => e.e === 'firstFrame'), null, { timeout: 60000 });
   await p.waitForFunction(() => window.__room && window.__room.done, null, { timeout: 180000 });   // frames=N: N 프레임(카메라 스프링이 자리 잡을 만큼) 그린 뒤 그리기를 멈춘다 → 찍는 동안 페이지가 한가하다
-  const file = path.join(outDir, s.name + '.png');
-  await p.screenshot({ path: file, timeout: 60000 });
+  const file = path.join(outDir, s.name + '.jpg');   // JPEG 90: 6장 합계 3 MB 아래
+  await p.screenshot({ path: file, type: 'jpeg', quality: 90, timeout: 60000 });
   const info = await p.evaluate(() => { const a = window.__room, r = a.R.renderer.info.render; return { calls: r.calls, tris: r.triangles, mode: a.me.mode, peers: a.net.visibleCount() }; });
   console.log(s.name, JSON.stringify(info), errs.length ? 'ERR ' + errs.join(' | ') : 'ok');
   if (errs.length) bad++;

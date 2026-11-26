@@ -41,7 +41,17 @@
     soil: { photo: 'soil', tile: 1.5, roughness: 1.0, normalScale: 0.8, envK: 0.4, fb: 'soil' },
     concrete: { photo: 'concrete', tile: 2.0, roughness: 0.9, normalScale: 0.6, envK: 0.6, fb: 'plaster' },
     cork: { photo: 'cork', tile: 0.8, roughness: 0.95, normalScale: 0.6, envK: 0.5, fb: 'cork' },
-    jute: { photo: 'jute', tile: 0.8, roughness: 1.0, normalScale: 0.7, envK: 0.4, fb: 'jute' }
+    jute: { photo: 'jute', tile: 0.8, roughness: 1.0, normalScale: 0.7, envK: 0.4, fb: 'jute' },
+    // 소유자 제공 색 지도(README 「질감」) — 법선은 photos.js NORMAL_OF 가 빌려 온다
+    plaster_cream: { photo: 'plaster_cream', tile: 1.8, roughness: 0.95, normalScale: 0.7, envK: 0.8, fb: 'plaster' },
+    wood_oak: { photo: 'wood_oak', tile: 1.0, clearcoat: 0.2, ccRough: 0.35, roughness: 0.62, normalScale: 0.3, envK: 0.8, fb: 'woodLight' },
+    wood_end: { photo: 'wood_end', tile: 0.25, roughness: 0.8, normalScale: 0.3, envK: 0.6, fb: 'woodLight' },
+    rope: { photo: 'rope', tile: 0.12, roughness: 1.0, normalScale: 0.9, envK: 0.4, fb: 'jute' },
+    linen_a: { photo: 'linen_a', tile: 0.6, roughness: 1.0, normalScale: 0.5, envK: 0.4, fb: 'jute' },
+    linen_b: { photo: 'linen_b', tile: 0.6, roughness: 1.0, normalScale: 0.5, envK: 0.4, fb: 'jute' },
+    lawn: { photo: 'lawn', tile: 1.6, roughness: 1.0, normalScale: 0.8, envK: 0.4, fb: 'grass' },
+    stone: { photo: 'stone', tile: 0.9, roughness: 0.92, normalScale: 0.6, envK: 0.5, fb: 'stone' },
+    metal: { photo: 'metal', tile: 0.4, metalness: 0.85, roughness: 0.42, normalScale: 0, envK: 1.0, fb: 'plaster' }
   };
 
   function createContext(opts) {
@@ -578,7 +588,7 @@
       S_.panes.push({ x: o.x, z: o.z, y: o.y, w: w, h: h + rs, nx: F.nx, nz: F.nz });
       // 틀: 바깥 테 + 창살(세로 mullions, 가로 transoms). 틀 두께 fw, 깊이 fd(유리 둘레)
       var fc = o.frameColor === undefined ? 0x5e4129 : o.frameColor, fw = o.frameW === undefined ? 0.06 : o.frameW, fd = Math.min(0.12, tdepth * 0.8);
-      var wallAng = Math.atan2(F.nx, F.nz), fb = o.frameMat ? (B_[o.frameMat] || B_.wood) : B_.wood;
+      var wallAng = Math.atan2(F.nx, F.nz), fb = o.frameSurf ? surfBatchFor(o.frameSurf) : (o.frameMat ? (B_[o.frameMat] || B_.wood) : B_.wood);
       function fbox(u, v, bw, bh, d0, dd) { fb.add(Geo.box(), fc, { x: o.x + F.ux * u + F.nx * d0, y: o.y + v, z: o.z + F.uz * u + F.nz * d0, ry: wallAng, sx: bw, sy: bh, sz: dd, flat: true, vary: 0.02 }); }
       if (o.frame !== false) {
         fbox(-w / 2 + fw / 2, 0, fw, h, gd, fd);
@@ -905,7 +915,7 @@
       addItem('glass', B_.glass, mats.glass, false, false, false);
       addItem('glassRefl', B_.glassRefl, mats.glassRefl, false, false, false);
       addItem('glow', B_.glow, mats.glow, false, false, false);
-      addItem('outside', B_.outside, mats.outside, false, true, false);
+      addItem('outside', B_.outside, mats.outside, true, true, false);   // 바깥 풍경·잎: 그림자는 드리우고 AO 는 굽지 않는다
       Object.keys(S_.surfBatches).forEach(function (k) {
         var e = S_.surfBatches[k];
         if (!e.batch.p.length) return;
