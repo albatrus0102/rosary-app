@@ -265,7 +265,7 @@ node tools/ao_bake.mjs house && node tools/gi_bake.mjs house   # 지오메트리
 - `test.html` URL: `room hour quality autotier frames thumb sit peerseat view peers route x z yaw pitch zoom look hideui fixed gpt cup coffee camturn strings`. test.html 은 호스트 흉내로 한국어 글자를 `setStrings` 로 준다(`strings=en` 이면 영어 기본값).
   `route=street` 걷는 사람이 가게 앞 보도를 마주 오간다 · `cup=종류` 컵을 든 채 시작 · `coffee=종류` 시작하자마자 주문 · `camturn=도` 카메라를 아바타 둘레로 돌린다.
   카운터 앞에 서면 화면 아래에 메뉴 4(호스트 흉내)가 뜬다.
-- 시험 수: 단위 49 + 브라우저 2 = **51**(`test/coffee`·`textures`·`plants`·`integration` 이 2차에서 늘었다 — 엔진 JS 한글 글자 없음·setStrings·박동 설정·싣는 크기 = 샘플 크기·음료 번호·sceneReady(e2e)·질감 파일·이음매 ≤1.3·식물 비율·알파 카드 재질·땅에 선 높이·ORM 연결·컵 모양·주문 흐름·좌석별 컵 자리·바리스타 충돌체·다른 사람 컵).
+- 시험 수: 단위 56 + 브라우저 2 = **58**(라이트맵 키트 7 포함, `test/lightmap.test.mjs`)(`test/coffee`·`textures`·`plants`·`integration` 이 2차에서 늘었다 — 엔진 JS 한글 글자 없음·setStrings·박동 설정·싣는 크기 = 샘플 크기·음료 번호·sceneReady(e2e)·질감 파일·이음매 ≤1.3·식물 비율·알파 카드 재질·땅에 선 높이·ORM 연결·컵 모양·주문 흐름·좌석별 컵 자리·바리스타 충돌체·다른 사람 컵).
 
 ## 6. 성능 예산(중급 안드로이드)과 30초 벤치
 - 예산: **보이는 삼각형 약 170k · draw call 약 260 · 질감 80 MB 이하**. 2차 측정(`node tools/perf.mjs`, 960×540 헤드리스, 높음 단계 한 프레임 — 그림자 맵은 캐시라 빠짐, 바닥 반사·후처리 포함;
