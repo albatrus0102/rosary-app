@@ -10,13 +10,16 @@
   #dbg{position:fixed;left:6px;top:6px;color:#fff;background:rgba(0,0,0,.45);padding:4px 6px;border-radius:6px;white-space:pre;pointer-events:none}
   #btns{position:fixed;right:6px;top:6px;display:flex;flex-wrap:wrap;gap:4px;max-width:280px;justify-content:flex-end}
   #btns button{font-size:12px;padding:4px 6px;border-radius:6px;border:0;background:rgba(255,255,255,.85)}
-  body.hideui #btns,body.hideui #dbg{display:none}
+  #menu{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:none;gap:6px;background:rgba(30,26,22,.72);padding:8px;border-radius:12px}
+  #menu button{font-size:14px;padding:8px 10px;border-radius:8px;border:0;background:#f6ecda}
+  body.hideui #btns,body.hideui #dbg,body.hideui #menu{display:none!important}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="dbg"></div>
 <div id="btns"></div>
+<div id="menu"></div>
 <script>
 window.RoomNoAutoStart = true;
 // gpt=<경로>: 독서공방 저장소의 ChatGPT 색 질감(이 패키지에 없음)을 칸에 끼워 본다. 예: gpt=../../reading-journal/docs/handover/2026-11-26-metaverse-shop/gpt/
@@ -39,6 +42,7 @@ window.RoomNoAutoStart = true;
 <script src="kit_tex.js"></script>
 <script src="kit.js"></script>
 <script src="plants.js"></script>
+<script src="coffee.js"></script>
 <script src="audio.js"></script>
 <script src="looks.js"></script>
 <script src="ao_fx.js"></script>
@@ -69,7 +73,14 @@ window.RoomNoAutoStart = true;
     var n = +(qs.get('peers') || 0);
     if (n) simPeers(n);
     if (window.RoomBackdrop) R.setPanel({ id: 'backdrop', data: window.RoomBackdrop });
+    // cup=종류: 이미 컵을 들고 시작(호스트가 다시 열 때 되돌리기와 같다) · coffee=종류: 시작하자마자 주문 · camturn=도: 카메라를 아바타 둘레로 돌린다
+    if (qs.get('cup')) R.setMyCup({ kind: qs.get('cup') });
+    if (qs.get('coffee')) R.orderCoffee({ kind: qs.get('coffee') });
+    if (qs.get('camturn')) R.on(function (e) { if (e.e === 'firstFrame') { var a = window.__room; a.ctl.yaw += (+qs.get('camturn')) * Math.PI / 180; a.ctl.lastDragT = a.t + 0.001; } });
     if (qs.get('sit') !== null) setTimeout(function () { R.sit({ i: +qs.get('sit') }); }, 200);
+    // 호스트 흉내: 카운터 가까이 가면(nearCounter) 메뉴 4 를 띄운다(무료·가상 — 값 없음)
+    var menu = document.getElementById('menu');
+    R.on(function (e) { if (e.e === 'nearCounter' && menu) menu.style.display = e.on ? 'flex' : 'none'; });
     // peerseat=N: 다른 한 사람이 좌석 N 에 앉아 있다(1초마다 다시 보냄 — 서버 스냅숏 흉내)
     if (qs.get('peerseat') !== null && !n) {
       var sitter = function () { R.setPeers([{ id: 'friend', x: 0, z: 0, yaw: 0, state: 'sit', seat: +qs.get('peerseat'), avatar: { g: 1, skin: 2, style: 1, hair: 1, outfit: 4, label: '친구' } }]); };
@@ -124,6 +135,8 @@ window.RoomNoAutoStart = true;
   B('자리 2 찼음', function () { R.setSeats([{ i: 1, taken: true }]); });
   B('그네', function () { R.sit({ i: 4 }); });
   B('성능 표시', function () { R.setPerfHud({ on: true }); });
+  var menuEl = document.getElementById('menu');
+  [['americano', '아메리카노'], ['latte', '라떼'], ['iced', '아이스 커피'], ['tea', '홍차']].forEach(function (m) { var b = document.createElement('button'); b.textContent = m[1]; b.onclick = function () { R.orderCoffee({ kind: m[0] }); }; menuEl.appendChild(b); });
   B('발소리', function () { R.setSteps({ on: true, vol: 0.4 }); });
   var dbg = document.getElementById('dbg');
   setInterval(function () {

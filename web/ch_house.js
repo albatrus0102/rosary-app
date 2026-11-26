@@ -31,7 +31,10 @@
       { id: 'CE', x0: -0.6, z0: -5.8, x1: 0.6, z1: -5.8, h: 2.7 }
     ],
     desks: [2.15, 0.55, -1.05],                                      // 창가 책상 가운데 z
-    bench: { x0: 1.92, x1: 2.48, z0: -1.4, z1: 0.4, top: FL + 0.95 },
+    // 오른쪽 벽 커피 카운터(작업대 자리): 앞 카운터(손님 쪽) + 바리스타 통로 + 뒤 카운터(에스프레소 기계·그라인더·컵 선반)
+    counter: { x0: 1.3, x1: 1.75, z0: -1.55, z1: 0.45, top: FL + 1.05 },
+    back: { x0: 2.15, x1: 2.5, z0: -1.55, z1: 0.45, top: FL + 0.92 },
+    barista: { x: 1.95, z: -0.55, x0: 1.75, x1: 2.15 },
     garden: {
       planter: { x0: -2.6, x1: -0.2, z0: 3.55, z1: 4.05, h: 0.45 },
       beds: [{ x0: -3.75, x1: -2.9, z0: 1.2, z1: 2.9, h: 0.28 }, { x0: -3.75, x1: -2.9, z0: -1.4, z1: 0.3, h: 0.28 }]
@@ -48,7 +51,10 @@
     PLAN.walls.forEach(function (w) { if (w.collide !== false) { var a = wallAABB(w); a.tag = 'wall:' + w.id; C.push(a); } });
     // 실내 가구
     PLAN.desks.forEach(function (z, i) { C.push({ x0: -2.5, x1: -1.9, z0: z - 0.5, z1: z + 0.5, tag: 'desk' + i }); });
-    var B = PLAN.bench; C.push({ x0: B.x0, x1: 2.5, z0: B.z0, z1: B.z1, tag: 'bench' });
+    var K = PLAN.counter, KB = PLAN.back, KS = PLAN.barista;
+    C.push({ x0: K.x0, x1: K.x1, z0: K.z0, z1: K.z1, tag: 'counter' });
+    C.push({ x0: KB.x0, x1: 2.5, z0: KB.z0, z1: KB.z1, tag: 'backCounter' });
+    C.push({ x0: KS.x0, x1: KS.x1, z0: K.z0, z1: K.z1, tag: 'barista' });   // 바리스타 통로 전체(NPC 는 이 안에서만 움직인다 — 아무도 지나가지 못한다)
     C.push({ x0: -2.5, x1: -0.8, z0: -3.3, z1: -2.92, tag: 'bookshelf' });
     C.push({ x0: 0.85, x1: 2.5, z0: -3.3, z1: -2.88, tag: 'cabinet' });
     C.push({ x0: 2.12, x1: 2.5, z0: 0.7, z1: 2.1, tag: 'display' });
@@ -67,6 +73,7 @@
     C.push({ x0: -3.75, x1: -2.2, z0: 4.25, z1: 4.6, tag: 'bicycle' });
     C.push({ x: -6.2, z: 6.1, r: 0.2, tag: 'streetlight' });
     C.push({ x: -6.0, z: -0.7, r: 0.3, tag: 'yardTree' });
+    C.push({ x: SWING.x - 1.32, z: SWING.z, r: 0.26, tag: 'swingTable' });   // 그네 옆 작은 탁자(컵 자리)
     C.push({ x0: SWING.x - 1.02, x1: SWING.x + 1.02, z0: SWING.z - 0.48, z1: SWING.z + 0.48, tag: 'swing' });   // 그네 틀 전체(앉은 자리 포함 — 앉기는 물리 이동이 아니다)
     // 울타리(앞쪽은 x -5.0 부터 집까지 열려 있다 — 디딤돌 입구)
     C.push({ x0: -6.56, x1: -6.44, z0: -3.86, z1: 3.56, tag: 'fenceW' });
@@ -83,17 +90,29 @@
     id: 'house', scalePercent: 100,
     bounds: { x0: -6.45, x1: 6.5, z0: -5.75, z1: 8.0 },
     spawn: { x: 0.72, z: 5.4, r: 0 },
-    // 좌석 4: 창가 책상 3(창을 본다, yaw π/2 = -x) + 작업대 스툴 1(+x 를 본다). stand = 일어서는 자리. y = 발판 높이(스툴)
+    // 좌석: 창가 책상 3(창을 본다, yaw π/2 = -x) + 커피 카운터 바 스툴 1(+x, 카운터를 본다) + 그네 2. stand = 일어서는 자리. y = 발판 높이(스툴)
     seats: [
       { x: -1.55, z: 2.15, yaw: PI / 2, stand: { x: -0.95, z: 2.15 } },
       { x: -1.55, z: 0.55, yaw: PI / 2, stand: { x: -0.95, z: 0.55 } },
       { x: -1.55, z: -1.05, yaw: PI / 2, stand: { x: -0.95, z: -1.05 } },
-      { x: 1.62, z: -0.5, yaw: -PI / 2, y: FL + 0.2, stand: { x: 1.05, z: -0.5 } },
+      { x: 1.0, z: -0.5, yaw: -PI / 2, y: FL + 0.3, stand: { x: 0.45, z: -0.5 } },
       // 옆마당 2인 그네(A 자 틀): 나란히 두 자리, 집·화단 쪽(+x)을 본다
       { x: SWING.x - 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x - 0.3, z: SWING.z + 0.82 } },
       { x: SWING.x + 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x + 0.3, z: SWING.z + 0.82 } }
     ],
-    seatLabels: ['창가 1', '창가 2', '창가 3', '작업대', '그네 왼쪽', '그네 오른쪽'],
+    seatLabels: ['창가 1', '창가 2', '창가 3', '카운터', '그네 왼쪽', '그네 오른쪽'],
+    // 커피(coffee.js): 주문 안내가 뜨는 곳(near), 컵이 나오는 자리(pickup), 바리스타 자리, 앉으면 컵을 내려놓는 자리(좌석 번호 순, 없으면 null = 계속 든다)
+    coffee: {
+      near: { x0: 0.35, x1: 1.3, z0: -1.9, z1: 0.85 },
+      pickup: { x: 1.42, y: FL + 1.05, z: 0.2 },
+      barista: { x: 1.95, z: -0.55, yaw: -PI / 2, x0: 1.78, x1: 2.12, z0: -1.4, z1: 0.3, machine: { x: 2.3, z: -1.0 } },
+      cupSpots: [
+        { x: -2.03, y: FL + 0.74, z: 2.15 + 0.32 }, { x: -2.03, y: FL + 0.74, z: 0.55 - 0.32 }, { x: -2.03, y: FL + 0.74, z: -1.05 - 0.3 },
+        { x: 1.42, y: FL + 1.05, z: -0.5 + 0.12 },
+        { x: SWING.x - 1.38, y: 0.56, z: SWING.z + 0.07 }, { x: SWING.x - 1.26, y: 0.56, z: SWING.z - 0.07 }
+      ],
+      brewSec: 3
+    },
     sunRot: 117,                                                    // 오후 해가 왼편(마당 쪽)에서 비스듬히: 정면 벽에 결이 살고 그림자가 옆으로 길게, 마당 그네는 역광 — world.js
     camDist: 4.2,                                                   // 좁은 실내: 카메라 팔 기본 길이(m)
     seatView: { side: 0.6 },
@@ -127,7 +146,8 @@
     // 썸네일 카메라 2: 0 = 외관(골목에서), 1 = 실내(입구 쪽에서). ?thumb=0|1
     thumbs: [
       { x: -0.4, z: 4.9, yaw: -24, pitch: 5, zoom: 0.95, look: 6, hour: 15 },
-      { x: 0.25, z: -1.3, yaw: 10, pitch: 9, zoom: 1.0, look: 7, hour: 20.5 }
+      { x: 0.25, z: -1.3, yaw: 10, pitch: 9, zoom: 1.0, look: 7, hour: 20.5 },
+      { x: -3.3, z: 2.0, yaw: -90, pitch: 20, zoom: 0.42, hour: 16.5 }   // 2 = 옆마당 화단 가까이(꽃 카드 확인)
     ],
     build: function (ctx) {
       var T = ctx.THREE, G = root.RoomGeo, Geo = G.Geo;
@@ -435,6 +455,13 @@
         ctx.add(swingPivot);
         ctx.aoDecal({ x0: xc - 0.95, x1: xc + 0.95, z0: zc - 0.6, z1: zc + 0.6, y: 0.006, pad: 0.25 });
       })();
+      // 그네 옆 작은 오크 탁자(좌석 4·5 의 컵 자리)
+      (function () {
+        var tx = SWING.x - 1.32, tz = SWING.z;
+        ctx.cyl({ x: tx, y: 0.52, z: tz, r: 0.24, h: 0.04, seg: 24, surf: 'wood_oak', color: 0xf0e0c8, flat: false });
+        ctx.cyl({ x: tx, y: 0.0, z: tz, r: 0.035, h: 0.52, seg: 10, surf: 'wood_oak', color: 0xe0ccb0, flat: false });
+        [0, 2.1, 4.2].forEach(function (a) { ctx.beam3([tx, 0.12, tz], [tx + Math.cos(a) * 0.2, 0.0, tz + Math.sin(a) * 0.2], 0.03, 0.03, 0xffffff, ctx.surfBatch('wood_oak')); });
+      })();
       var reduced = false;
       try { reduced = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { reduced = false; }
       ctx.onUpdate(function (dt, t) {
@@ -571,24 +598,74 @@
       ctx.boxAABB({ x0: 2.2, x1: 2.5, z0: 0.72, z1: 2.08, y0: FL + 1.42, y1: FL + 1.45, surf: 'wood_light', color: 0xd6ae80 });
       ctx.boxAABB({ x0: 2.2, x1: 2.24, z0: 0.72, z1: 2.08, y0: FL + 1.45, y1: FL + 1.49, color: 0x9a6a40, mat: 'wood' });
       for (var cv2 = 0; cv2 < 4; cv2++) ctx.box({ x: 2.4, y: FL + 1.45, z: 0.9 + cv2 * 0.33, w: 0.02, h: 0.3, d: 0.22, rz: 0.18, color: [0xe8b4a0, 0x9fc0d8, 0xf0d890, 0xb8d4a8][cv2] });   // 읽고 싶은 책 표지(자리)
-      var B = PLAN.bench;
-      ctx.boxAABB({ x0: B.x0, x1: B.x1, z0: B.z0, z1: B.z1, y0: B.top - 0.05, y1: B.top, surf: 'wood_dark', color: 0xe2c19a });
-      [[B.x0 + 0.04, B.z0 + 0.04], [B.x0 + 0.04, B.z1 - 0.04]].forEach(function (p) { ctx.box({ x: p[0], y: FL, z: p[1], w: 0.05, h: B.top - FL - 0.05, d: 0.05, color: 0x7a5232, mat: 'wood' }); });
-      ctx.boxAABB({ x0: B.x0 + 0.1, x1: B.x1 - 0.02, z0: B.z0 + 0.05, z1: B.z1 - 0.05, y0: FL + 0.3, y1: FL + 0.33, surf: 'wood_dark', color: 0xd2b08a });
-      var s3 = layout.seats[3];
-      ctx.cyl({ x: s3.x, y: FL + 0.6, z: s3.z, r: 0.17, h: 0.05, seg: 16, color: 0x9a6a40, mat: 'wood' });
-      [[0.11, 0.11], [-0.11, 0.11], [0.11, -0.11], [-0.11, -0.11]].forEach(function (p) { ctx.beam3([s3.x + p[0] * 0.8, FL + 0.6, s3.z + p[1] * 0.8], [s3.x + p[0] * 1.35, FL, s3.z + p[1] * 1.35], 0.025, 0.025, 0x7a5232); });
-      ctx.cyl({ x: s3.x, y: FL + 0.2, z: s3.z, r: 0.15, h: 0.02, seg: 16, color: 0x7a5232, mat: 'wood' });   // 발판
-      panel('tablet', { x: 2.2, y: B.top + 0.005, z: -0.5, w: 0.3, h: 0.22, rx: -PI / 2 + 0.12, ry: -PI / 2, px: 384, screen: true, data: { title: '읽는 중', lines: 9 }, draw: function (g, w, h, d) {
+      // == 커피 카운터(작업대 자리) — 글자·상표 없음 ==
+      var K = PLAN.counter, KB = PLAN.back, METAL = 'metal', BLK = 0x1d1e20;
+      // 앞 카운터: 오크 통판 상판(앞으로 3 cm 내민) + 회벽 앞판 + 아래 걸레받이 + 바 스툴 발 받침 봉
+      ctx.boxAABB({ x0: K.x0 - 0.03, x1: K.x1 + 0.02, z0: K.z0 - 0.03, z1: K.z1 + 0.03, y0: K.top - 0.05, y1: K.top, surf: 'wood_oak', color: 0xf0e2cc });
+      ctx.boxAABB({ x0: K.x0, x1: K.x1, z0: K.z0, z1: K.z1, y0: FL + 0.08, y1: K.top - 0.05, surf: 'plaster_cream', color: 0xf4ede2 });
+      ctx.boxAABB({ x0: K.x0 - 0.01, x1: K.x1, z0: K.z0 - 0.01, z1: K.z1 + 0.01, y0: FL, y1: FL + 0.08, surf: 'wood_oak', color: 0x9a7350 });
+      ctx.beam3([K.x0 - 0.12, FL + 0.28, K.z0 + 0.1], [K.x0 - 0.12, FL + 0.28, K.z1 - 0.1], 0.025, 0.025, 0x2a2a2c, ctx.metalB);
+      [K.z0 + 0.1, K.z1 - 0.1].forEach(function (z) { ctx.beam3([K.x0 - 0.12, FL + 0.28, z], [K.x0, FL + 0.28, z], 0.02, 0.02, 0x2a2a2c, ctx.metalB); });
+      // 뒤 카운터 + 서랍장 + 위 열린 선반 2(병)
+      ctx.boxAABB({ x0: KB.x0, x1: 2.5, z0: KB.z0, z1: KB.z1, y0: KB.top - 0.04, y1: KB.top, surf: 'wood_oak', color: 0xe8d6bc });
+      ctx.boxAABB({ x0: KB.x0 + 0.02, x1: 2.5, z0: KB.z0, z1: KB.z1, y0: FL, y1: KB.top - 0.04, surf: 'wood_light', color: 0xd9c2a2 });
+      for (var dz = 0; dz < 3; dz++) { var zz0 = KB.z0 + 0.04 + dz * 0.66; ctx.boxAABB({ x0: KB.x0, x1: KB.x0 + 0.02, z0: zz0, z1: zz0 + 0.6, y0: FL + 0.08, y1: KB.top - 0.08, surf: 'wood_light', color: 0xe2cdb0 }); ctx.box({ x: KB.x0 - 0.01, y: KB.top - 0.2, z: zz0 + 0.3, w: 0.02, h: 0.015, d: 0.12, color: 0x2a2a2c, mat: 'metal' }); }
+      [FL + 1.38, FL + 1.68].forEach(function (yy) {
+        ctx.boxAABB({ x0: 2.28, x1: 2.5, z0: -1.55, z1: -0.7, y0: yy - 0.03, y1: yy, surf: 'wood_oak', color: 0xe8d6bc });
+        for (var jr = 0; jr < 4; jr++) {   // 병: 유리(거의 투명한 틀) 대신 내용물 + 뚜껑(나무·금속)
+          var jz = -1.45 + jr * 0.2, jh = 0.13 + (jr % 2) * 0.04;
+          ctx.cyl({ x: 2.4, y: yy, z: jz, r: 0.045, h: jh, seg: 14, color: [0x3b2418, 0xd8c8a8, 0x5a3a22, 0x8a6a3a][jr], flat: false });
+          ctx.cyl({ x: 2.4, y: yy + jh, z: jz, r: 0.048, h: 0.025, seg: 14, color: jr % 2 ? 0xb08a60 : 0x9a9ea2, mat: jr % 2 ? 'wood' : 'metal', flat: false });
+        }
+      });
+      // 에스프레소 기계(그룹 헤드 2, 솔질한 금속 몸통 + 검은 옆판·윗판, 포터필터 손잡이, 스팀 막대, 받침, 위에 데우는 잔)
+      var MX = 2.32, MZ = -1.0, MY = KB.top;
+      ctx.box({ x: MX + 0.02, y: MY, z: MZ, w: 0.36, h: 0.4, d: 0.62, surf: METAL, color: 0xd8dadc });
+      [MZ - 0.32, MZ + 0.32].forEach(function (z) { ctx.box({ x: MX + 0.02, y: MY, z: z, w: 0.37, h: 0.41, d: 0.02, color: BLK, mat: 'gloss' }); });
+      ctx.box({ x: MX + 0.02, y: MY + 0.4, z: MZ, w: 0.37, h: 0.02, d: 0.66, color: BLK, mat: 'gloss' });
+      ctx.box({ x: MX - 0.2, y: MY, z: MZ, w: 0.14, h: 0.025, d: 0.5, surf: METAL, color: 0xaeb2b6 });   // 받침
+      [MZ - 0.14, MZ + 0.14].forEach(function (z) {
+        ctx.cyl({ x: MX - 0.19, y: MY + 0.26, z: z, r: 0.04, h: 0.06, seg: 16, surf: METAL, color: 0xc8cacc, flat: false });            // 그룹 헤드
+        ctx.cyl({ x: MX - 0.19, y: MY + 0.22, z: z, r: 0.035, h: 0.04, seg: 16, surf: METAL, color: 0xb8babc, flat: false });            // 포터필터
+        ctx.beam3([MX - 0.19, MY + 0.24, z], [MX - 0.38, MY + 0.23, z], 0.025, 0.03, BLK, ctx.gloss);                                    // 손잡이
+        ctx.cyl({ x: MX - 0.2, y: MY + 0.025, z: z, r: 0.03, rTop: 0.035, h: 0.06, seg: 14, color: 0xf4f1ea, mat: 'gloss', flat: false });   // 받친 잔
+      });
+      ctx.beam3([MX - 0.18, MY + 0.32, MZ + 0.28], [MX - 0.3, MY + 0.1, MZ + 0.27], 0.012, 0.012, 0xc8cacc, ctx.metalB);   // 스팀 막대
+      for (var wc = 0; wc < 4; wc++) ctx.cyl({ x: MX + 0.0 + (wc % 2) * 0.08, y: MY + 0.42, z: MZ - 0.15 + wc * 0.1, r: 0.032, rTop: 0.038, h: 0.055, seg: 12, color: 0xf4f1ea, mat: 'gloss', flat: false });
+      // 그라인더(검은 밑 + 금속 몸통 + 원두 통)
+      var GZ = -0.42;
+      ctx.box({ x: 2.33, y: MY, z: GZ, w: 0.18, h: 0.05, d: 0.18, color: BLK, mat: 'gloss' });
+      ctx.cyl({ x: 2.33, y: MY + 0.05, z: GZ, r: 0.07, rTop: 0.065, h: 0.22, seg: 18, surf: METAL, color: 0xcfd1d3, flat: false });
+      ctx.cyl({ x: 2.33, y: MY + 0.27, z: GZ, r: 0.055, rTop: 0.085, h: 0.14, seg: 18, color: 0x3a2618, mat: 'gloss', flat: false });
+      ctx.cyl({ x: 2.33, y: MY + 0.41, z: GZ, r: 0.088, h: 0.015, seg: 18, color: BLK, mat: 'gloss', flat: false });
+      // 컵 선반(가는 금속 틀 + 머그·잔 거꾸로)
+      var RZ = 0.05;
+      [RZ - 0.2, RZ + 0.2].forEach(function (z) { ctx.beam3([2.38, MY, z], [2.38, MY + 0.42, z], 0.015, 0.015, 0x2a2a2c, ctx.metalB); });
+      [MY + 0.14, MY + 0.3].forEach(function (yy, r2) {
+        ctx.box({ x: 2.38, y: yy - 0.01, z: RZ, w: 0.2, h: 0.01, d: 0.42, color: 0x2a2a2c, mat: 'metal' });
+        for (var cq = 0; cq < 4; cq++) ctx.cyl({ x: 2.38, y: yy, z: RZ - 0.15 + cq * 0.1, r: 0.04 - r2 * 0.006, rTop: 0.034 - r2 * 0.006, h: 0.085 - r2 * 0.02, seg: 12, color: [0xf4f1ea, 0xe8e2d6, 0xd9cbb4, 0xf4f1ea][cq], mat: 'gloss', flat: false });
+      });
+      // 카운터 위 펜던트(점광원 수 한도 3 — 빛은 발광 + 빛 무리, 카운터 위는 구운 빛 번짐이 맡는다)
+      ctx.beam3([1.6, CEIL, -0.55], [1.6, FL + 1.85, -0.55], 0.008, 0.008, 0x1a1a1a, ctx.metalB);
+      ctx.cyl({ x: 1.6, y: FL + 1.68, z: -0.55, r: 0.16, rTop: 0.05, h: 0.17, seg: 22, surf: METAL, color: 0x3a3b3d, flat: false });
+      ctx.glow.add(Geo.sph(10, 6), hdr(0xffd9a0, 2.6), { x: 1.6, y: FL + 1.69, z: -0.55, sx: 0.06, sy: 0.035, sz: 0.06, flat: false, vary: 0 });
+      ctx.addGlow({ x: 1.6, y: FL + 1.62, z: -0.55, size: 0.8, color: 0xffcf8a, kind: 'lamp' });
+      // 바 스툴(좌석 3): 둥근 오크 좌판(높이 0.75) + 검은 금속 다리 4 + 발 받침 고리
+      var s3 = layout.seats[3], SY = FL + 0.75;
+      ctx.cyl({ x: s3.x, y: SY - 0.05, z: s3.z, r: 0.18, h: 0.05, seg: 20, surf: 'wood_oak', color: 0xe8d2b4, flat: false });
+      [[0.11, 0.11], [-0.11, 0.11], [0.11, -0.11], [-0.11, -0.11]].forEach(function (p) { ctx.beam3([s3.x + p[0] * 0.8, SY - 0.05, s3.z + p[1] * 0.8], [s3.x + p[0] * 1.4, FL, s3.z + p[1] * 1.4], 0.02, 0.02, 0x2a2a2c, ctx.metalB); });
+      ctx.add(new T.Mesh(new T.TorusGeometry(0.17, 0.01, 6, 24).rotateX(PI / 2).translate(s3.x, FL + 0.3, s3.z), ctx.mats.metal));
+      var B = { top: K.top };
+      panel('tablet', { x: 1.52, y: B.top + 0.005, z: -1.25, w: 0.3, h: 0.22, rx: -PI / 2 + 0.12, ry: -PI / 2, px: 384, screen: true, data: { title: '읽는 중', lines: 9 }, draw: function (g, w, h, d) {
         g.fillStyle = '#f6f2ea'; g.fillRect(0, 0, w, h);
         g.fillStyle = '#20252a'; g.fillRect(0, 0, w, h * 0.05); g.fillRect(0, h * 0.95, w, h * 0.05); g.fillRect(0, 0, w * 0.04, h); g.fillRect(w * 0.96, 0, w * 0.04, h);
         g.fillStyle = '#3b2a1e'; g.font = '700 ' + Math.round(h * 0.09) + 'px ' + FONT; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText(d.title || '', w * 0.1, h * 0.1);
         g.fillStyle = '#b8ad9c'; for (var l = 0; l < (d.lines || 8); l++) g.fillRect(w * 0.1, h * (0.27 + l * 0.07), w * (0.62 + ((l * 37) % 20) / 100), h * 0.022);
       } });
-      ctx.boxAABB({ x0: 2.45, x1: 2.5, z0: -1.3, z1: 0.3, y0: FL + 1.3, y1: FL + 2.12, surf: 'cork', color: 0xe8c9a0 });
-      [[FL + 1.27, FL + 1.3], [FL + 2.12, FL + 2.15]].forEach(function (yy) { ctx.boxAABB({ x0: 2.43, x1: 2.5, z0: -1.33, z1: 0.33, y0: yy[0], y1: yy[1], color: 0x8a5d38, mat: 'wood' }); });
-      [-1.33, 0.3].forEach(function (zz) { ctx.boxAABB({ x0: 2.43, x1: 2.5, z0: zz, z1: zz + 0.03, y0: FL + 1.27, y1: FL + 2.15, color: 0x8a5d38, mat: 'wood' }); });
-      panel('board', { x: 2.442, y: FL + 1.71, z: -0.5, w: 1.56, h: 0.78, ry: -PI / 2, px: 768, alpha: true, data: { notes: ['이번 주 3권', '되새김 10장', '오늘 30분', '추천: 산문집', '읽고 싶은 책'] }, draw: function (g, w, h, d) {
+      ctx.boxAABB({ x0: 2.45, x1: 2.5, z0: -0.55, z1: 0.42, y0: FL + 1.3, y1: FL + 2.12, surf: 'cork', color: 0xe8c9a0 });
+      [[FL + 1.27, FL + 1.3], [FL + 2.12, FL + 2.15]].forEach(function (yy) { ctx.boxAABB({ x0: 2.43, x1: 2.5, z0: -0.58, z1: 0.45, y0: yy[0], y1: yy[1], color: 0x8a5d38, mat: 'wood' }); });
+      [-0.58, 0.42].forEach(function (zz) { ctx.boxAABB({ x0: 2.43, x1: 2.5, z0: zz, z1: zz + 0.03, y0: FL + 1.27, y1: FL + 2.15, color: 0x8a5d38, mat: 'wood' }); });
+      panel('board', { x: 2.442, y: FL + 1.71, z: -0.07, w: 0.94, h: 0.78, ry: -PI / 2, px: 768, alpha: true, data: { notes: ['이번 주 3권', '되새김 10장', '오늘 30분', '추천: 산문집', '읽고 싶은 책'] }, draw: function (g, w, h, d) {
         var cols = ['#fff3a8', '#ffd2c4', '#d8f0c8', '#cfe3ff', '#fbe2f0'], notes = d.notes || [];
         notes.forEach(function (n, i) {
           var nx = w * (0.05 + (i % 3) * 0.32), ny = h * (0.08 + Math.floor(i / 3) * 0.48), nw = w * 0.27, nh = h * 0.38, a = ((i * 53) % 9 - 4) * 0.01;

@@ -854,6 +854,7 @@
     this.walkTarget = 0; this.walkAmt = 0; this.phase = Math.random() * 6;
     this.sitTarget = 0; this.sitAmt = 0;
     this.emote = -1; this.emoteT = 0;
+    this.holdTarget = 0; this.holdAmt = 0; this.gest = null; this.gestT = 0; this.gestDur = 0;
     this.off = Math.random() * 6.28;
     this.cfg = null; this.key = '';
     this.lod = -1;
@@ -863,7 +864,7 @@
   }
   Avatar.prototype._init = function () {
     var o = this.qs;
-    ['U', 'F', 'H'].forEach(function (k) { o['b' + k] = [new T.Quaternion(), new T.Quaternion()]; o['l' + k] = [new T.Quaternion(), new T.Quaternion()]; o['e' + k] = new T.Quaternion(); });
+    ['U', 'F', 'H'].forEach(function (k) { o['b' + k] = [new T.Quaternion(), new T.Quaternion()]; o['l' + k] = [new T.Quaternion(), new T.Quaternion()]; o['e' + k] = new T.Quaternion(); o['h' + k] = new T.Quaternion(); o['g' + k] = [new T.Quaternion(), new T.Quaternion()]; });
     o.eF2 = new T.Quaternion();
   };
   // 입력(cfg)을 허용 범위의 {g, skin, style, hair, outfit, label}으로 맞춘다. label = 이름표 글자(최대 24자, 없으면 이름표 없음).
@@ -1006,6 +1007,31 @@
   };
   // 부드럽게 끊는다(0.25초에 팔을 원래 자세로).
   Avatar.prototype.cancelGesture = function () { if (this.emote >= 0 && !(this.abortT > 0)) this.abortT = 0.25; };
+  // ---- 손에 든 것·몸짓 고리(커피 컵 등) — 몸(메시)을 바꿔 끼워도 같은 이름으로 쓰도록 몸과 떨어진 작은 약속 ----
+  // setHold(on): 오른손을 가슴 앞으로 들어 무언가를 쥔다(0.35초에 부드럽게). holdAnchor(): 쥔 물건을 붙일 Object3D(오른손 뼈에 붙은 빈 자리 —
+  //   그 원점이 손바닥 가운데, +y 가 위). playGesture('brew', 초): 두 손을 허리 앞에서 움직이는 '음료 만들기'. setApron(색|null): 앞치마.
+  Avatar.prototype.setHold = function (on) { this.holdTarget = on ? 1 : 0; };
+  Avatar.prototype.holdAnchor = function () {
+    if (!this._holdA) {
+      var a = new T.Object3D(); a.name = 'holdAnchor';
+      a.position.set(-0.035, -0.07, -0.02);   // 오른손 뼈 기준: 손바닥 안쪽(-x)·손가락 쪽(-y)
+      this.bones[B.haR].add(a); this._holdA = a;
+    }
+    return this._holdA;
+  };
+  Avatar.prototype.playGesture = function (name, sec) { if (name === 'brew') { this.gest = 'brew'; this.gestT = 0; this.gestDur = Math.max(0.5, +sec || 3); } };
+  Avatar.prototype.setApron = function (color) {
+    if (this._apron) { this._apron.forEach(function (m) { if (m.parent) m.parent.remove(m); }); this._apron = null; }
+    if (color === null || color === undefined || color === false) return;
+    var mat = new T.MeshStandardMaterial({ color: color, roughness: 0.92 }), bs = this.bones;
+    // 가슴판(가슴 뼈) + 치마판(엉덩이 뼈) + 끈. 몸 앞(-z)에 얇게 — 몸통 겉면에서 1~2 cm 띄운다
+    var bib = new T.Mesh(new T.BoxGeometry(0.2, 0.22, 0.012), mat); bib.position.set(0, 0.02, -0.125);
+    var skirt = new T.Mesh(new T.CylinderGeometry(0.17, 0.2, 0.5, 14, 1, true, PI * 0.62, PI * 0.76), mat); skirt.position.set(0, -0.2, -0.02); skirt.scale.set(1, 1, 0.85);
+    var neck = new T.Mesh(new T.TorusGeometry(0.075, 0.006, 4, 16, PI), mat); neck.position.set(0, 0.14, -0.06); neck.rotation.x = -0.4;
+    bs[B.chest].add(bib); bs[B.chest].add(neck); bs[B.hips].add(skirt);
+    [bib, skirt, neck].forEach(function (m) { m.castShadow = true; m.material.side = T.DoubleSide; });
+    this._apron = [bib, skirt, neck];
+  };
   Avatar.prototype.setPose = function (x, y, z, yaw) { this.root.position.set(x, y, z); this.root.rotation.y = yaw; };
   Avatar.prototype.snapPose = function () { this.sitAmt = this.sitTarget; this.walkAmt = this.walkTarget; if (this.gait) this.gait.ok = false; };   // 발도 새로 놓는다
 
@@ -1338,6 +1364,10 @@
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
     this.sitAmt += (this.sitTarget - this.sitAmt) * Math.min(1, dt * 7);
     var sa = this.sitAmt;
+    this.holdAmt += (this.holdTarget - this.holdAmt) * Math.min(1, dt * 6);
+    var gEnv = 0;
+    if (this.gest) { this.gestT += dt; var gu = this.gestT / this.gestDur; if (gu >= 1) { this.gest = null; } else gEnv = Math.min(sm(gu / 0.15), sm((1 - gu) / 0.15)); }
+    this._gEnv = gEnv;
     var emoting = this.emote >= 0, eU = 0, eEnv = 0;
     if (emoting) {
       this.emoteT += dt; eU = this.emoteT / EMOTE_DUR[this.emote];
@@ -1436,6 +1466,23 @@
         qs.eH.copy(_q2.copy(qs.eU).multiply(qs.eF2).invert()).multiply(_q1);
         qU.slerp(qs.eU, eEnv); qF.slerp(qs.eF2, eEnv); qH.slerp(qs.eH, eEnv);
       }
+      var hA = this.holdAmt;
+      if (side > 0 && hA > 0.001) {
+        // 든 컵: 오른손을 가슴 앞(팔꿈치 약 90°)으로, 손바닥이 안쪽을 보게 세워 쥔다
+        arm2(1, 0.13, -0.02, -0.25, 0.7, -0.7, 0.25, qs.hU, qs.hF);
+        handQ(1, 0.05, 0.25, -1, -1, 0, 0, _q1);
+        qs.hH.copy(_q2.copy(qs.hU).multiply(qs.hF).invert()).multiply(_q1);
+        qU.slerp(qs.hU, hA); qF.slerp(qs.hF, hA); qH.slerp(qs.hH, hA);
+      }
+      var gE = this._gEnv;
+      if (gE > 0.001) {
+        // 음료 만들기: 두 손을 허리 앞으로 내밀어 좌우로 조금씩(탬핑·붓기 흉내)
+        var gi = side > 0 ? 1 : 0, gw = Math.sin(this.gestT * 4.2 + side) * 0.05, gy = -0.18 + Math.sin(this.gestT * 2.1) * 0.03;
+        arm2(side, side * 0.1 + gw, gy, -0.32, side * 0.6, -0.8, 0.2, qs.gU[gi], qs.gF[gi]);
+        handQ(side, 0, -0.3, -1, -side, 0, 0, _q1);
+        qs.gH[gi].copy(_q2.copy(qs.gU[gi]).multiply(qs.gF[gi]).invert()).multiply(_q1);
+        qU.slerp(qs.gU[gi], gE); qF.slerp(qs.gF[gi], gE); qH.slerp(qs.gH[gi], gE);
+      }
       ua.quaternion.copy(qU); fa.quaternion.copy(qF); ha.quaternion.copy(qH);
     }
     // 이름표 높이
@@ -1463,7 +1510,14 @@
     this.shadow.position.z = hipZ - SEAT_BACK * sa;
   };
 
+  // 몸 바꿔 끼우기 약속: {gender, face, hair, hairColor, outfit, apron, label} → 지금 몸의 cfg({g, skin, style, hair, outfit, label}).
+  // 다음 몸(반실사 등)은 같은 입력을 받아 자기 cfg 로 바꾸면 된다. 컵 고리(setHold·holdAnchor·playGesture·setSeated)는 몸과 무관하게 같은 이름.
+  function bodyToCfg(o) {
+    o = o || {};
+    return normalizeCfg({ g: o.gender === 'm' || o.gender === 1 ? 1 : 0, skin: o.face | 0, style: o.hair | 0, hair: o.hairColor | 0, outfit: o.outfit | 0, label: o.label || '' });
+  }
   root.RoomAvatar = {
+    bodyToCfg: bodyToCfg,
     _dbg: { SKIRT_WALK: SKIRT_WALK, MB: MB, buildHead: buildHead, buildFace: buildFace, buildNeck: buildNeck, buildHair: buildHair, buildHand: buildHand, buildShoes: buildShoes, buildCoat: buildCoat, buildSleeves: buildSleeves, buildPants: buildPants, buildFar: buildFar },
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK, GAIT_V_TOP: GAIT.V_TOP,
     HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM, EMOTE_DUR: EMOTE_DUR,

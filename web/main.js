@@ -95,6 +95,9 @@
     App.meAv.setSeated(false);
     App.near.seat = undefined;
     if (!qs.thumb && qs.markers !== '0') App.markers = root.RoomMarkers.create(w.group, seatSpots(w), w.logic);
+    // 커피 카운터(coffee.js — 장면 layout.coffee 가 있을 때만): 바리스타·내 컵·다른 사람 컵
+    App.coffee = null;
+    try { if (root.RoomCoffee && w.layout.coffee) { App.coffee = root.RoomCoffee.create(App, post); if (App.coffee && App.net.setCupHook) App.net.setCupHook(App.coffee.syncPeer); } } catch (e) { frameErr('coffee', e); }
     refreshMarkers();
     if (App.pending) { var pd = App.pending; App.pending = null; if (pd.garden) hook('garden', pd.garden); if (pd.skin) hook('skin', pd.skin); Object.keys(pd.panels || {}).forEach(function (k) { hook('panel', k, pd.panels[k]); }); }
     kick();
@@ -270,7 +273,11 @@
       if (App.camera) { applyInset(root.innerWidth || 360, root.innerHeight || 640); App.camera.updateProjectionMatrix(); kick(); }
     },
     setCamera: function (o) { applyCamCfg(o); },
-    tapAt: function (o) { tapAt(+o.x, +o.y); }
+    tapAt: function (o) { tapAt(+o.x, +o.y); },
+    // 커피 주문(무료·가상): {kind:'americano'|'latte'|'iced'|'tea'} → 약 3초 뒤 {e:'coffeeReady', kind}, 카운터에서 집으면 {e:'coffeePicked'}
+    orderCoffee: function (o) { if (App.coffee) App.coffee.order(o && (o.kind || o.value)); kick(); },
+    // 들고 있는 컵 되돌리기(다시 열었을 때 호스트가 기억한 컵): {kind} 또는 {kind:null}(없앰)
+    setMyCup: function (o) { if (App.coffee) App.coffee.give(o && (o.kind !== undefined ? o.kind : o.value)); kick(); }
   };
   App.api = api;
 
@@ -354,12 +361,14 @@
         if (mode === 'sitting') {
           me.mode = 'seated';
           post({ e: 'sat', i: logic.seatIndex(me.seat) });
+          if (App.coffee) App.coffee.onSit(logic.seatIndex(me.seat));
           if (me.pendingStand) { me.pendingStand = false; beginStand(); }
         } else {
           var si = logic.seatIndex(me.seat);
           me.mode = 'walk'; me.seat = null; me.vx = me.vz = 0;
           App.net.setMySeat(null);
           post({ e: 'stood', i: si });
+          if (App.coffee) App.coffee.onStand();
           App.wasMoving = false; App.near.seat = undefined; refreshMarkers();
         }
       }
@@ -599,6 +608,7 @@
     try { App.world.setOccupied(occupiedMap()); } catch (e) { frameErr('occ', e); }
     try { App.net.setFocus(App.me.x, App.me.z); App.net.update(dt, App.t, performance.now()); } catch (e) { frameErr('net', e); }
     try { App.world.update(dt, App.t, App.me, App.camera); } catch (e) { frameErr('world', e); }
+    try { if (App.coffee) App.coffee.update(dt, App.t); } catch (e) { frameErr('coffee', e); }
     try { if (App.markers) { refreshMarkers(); App.markers.update(dt, App.t, App.me, App.camera, null, App.me.mode === 'walk', { w: vw, h: vh, avoid: myTagRect(vw, vh) }); } } catch (e) { frameErr('markers', e); }
     try {
       if (App.R.dof) {

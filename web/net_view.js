@@ -1,6 +1,6 @@
 /* net_view.js — 다른 사람(피어) 아바타 보기 + 내 자세 내보내기. 서버와 무관하다(어떤 전송이든 호스트가 받아 넘긴다).
    들어오는 것: setPeers([{id, x, z, yaw, state, seat, avatar}], {partial}) — 지금 보이는 사람 목록(스냅숏).
-     state: 'walk'(서서 다님) | 'sit'(앉음). seat: 좌석 번호(0..) 또는 null. avatar: {g, skin, style, hair, outfit, label}.
+     state: 'walk'(서서 다님) | 'sit'(앉음). seat: 좌석 번호(0..) 또는 null. avatar: {g, skin, style, hair, outfit, label}. cup: 든 음료(coffee.js 종류) 또는 null.
      partial: true 면 목록에 없는 사람을 지우지 않는다(일부만 보낸 갱신). 기본 false = 목록에 없는 사람은 GRACE_MS 뒤 지운다.
    나가는 것: createPoseSender({hz, send}) — 내 자세를 hz(기본 3, 2~4 권장)로 보낸다. 움직이지 않으면 보내지 않고, keepAliveMs 마다 한 번(살아 있음).
    보간: 사람마다 받은 표본(받은 시각·x·z·yaw)을 4개까지 두고, 지금보다 delay(받는 간격의 약 1.6배, 180~900ms) 앞의 자리를 그린다.
@@ -55,6 +55,9 @@
   }
 
   // ---- 피어 표(누가 있나·좌석 점유·오래된 사람 지우기). 그리기와 따로(순수). ----
+  // 들고 있는 음료(coffee.js 종류) — 모르는 값은 없음(null)
+  var CUPS = ['americano', 'latte', 'iced', 'tea'];
+  function cupOf(c) { return typeof c === 'string' && CUPS.indexOf(c) >= 0 ? c : null; }
   function createTable(o) {
     o = o || {};
     var STALE = num(o.staleMs, DEF.STALE_MS), GRACE = num(o.graceMs, DEF.GRACE_MS);
@@ -74,11 +77,12 @@
           var id = String(p.id), n = norm(p), rec = peers.get(id);
           seen[id] = 1;
           if (!rec) {
-            rec = { id: id, avatar: p.avatar || {}, st: n.st, seat: n.seat, seen: now, upd: now, missing: 0, interp: createInterp(o.interp), x: num(p.x, 0), z: num(p.z, 0), yaw: num(p.yaw, 0) };
+            rec = { id: id, avatar: p.avatar || {}, cup: cupOf(p.cup), st: n.st, seat: n.seat, seen: now, upd: now, missing: 0, interp: createInterp(o.interp), x: num(p.x, 0), z: num(p.z, 0), yaw: num(p.yaw, 0) };
             peers.set(id, rec); ev.added.push(id);
           } else {
             if (p.avatar && JSON.stringify(p.avatar) !== JSON.stringify(rec.avatar)) { rec.avatar = p.avatar; ev.changed.push(id); }
             if (n.st !== rec.st || n.seat !== rec.seat) { rec.st = n.st; rec.seat = n.seat; if (ev.changed.indexOf(id) < 0) ev.changed.push(id); }
+            var cp = cupOf(p.cup); if (cp !== rec.cup) { rec.cup = cp; if (ev.changed.indexOf(id) < 0) ev.changed.push(id); }
             rec.missing = 0; rec.seen = now;
           }
           var x = num(p.x, rec.x), z = num(p.z, rec.z), yaw = num(p.yaw, rec.yaw);
@@ -139,7 +143,7 @@
     opts = opts || {};
     var T3 = root.THREE, Av = root.RoomAvatar && root.RoomAvatar.Avatar;
     var logic = null, mySeat = null, table = createTable(opts), views = new Map(), pool = [], tmp = {};
-    var MAXV = opts.maxVisible || DEF.MAX_VISIBLE, focus = { x: 0, z: 0 }, selT = 99, seatOff = null;
+    var MAXV = opts.maxVisible || DEF.MAX_VISIBLE, focus = { x: 0, z: 0 }, selT = 99, seatOff = null, cupHook = null;
     function walkTop() { return (logic && logic.walkSpeed) || (root.RoomLogic && root.RoomLogic.C.WALK_SPEED) || 2.2; }
     function seatId(seat) { if (seat === null || seat === undefined || !logic) return null; return typeof seat === 'number' ? logic.seatAt(seat) : seat; }
     function acquire(cfg) {
@@ -152,6 +156,7 @@
     }
     function release(id) {
       var v = views.get(id); if (!v) return;
+      if (cupHook) cupHook(v, v.av, null, null);
       scene.remove(v.av.root); pool.push(v.av); views.delete(id);
     }
     function apply(ev) {
@@ -171,6 +176,7 @@
       setLogic: function (l) { logic = l; },
       setSeatOffset: function (fn) { seatOff = typeof fn === 'function' ? fn : null; },   // 흔들리는 자리(그네): 앉은 아바타를 같은 만큼 옮긴다
       setMySeat: function (s) { mySeat = s; },
+      setCupHook: function (fn) { cupHook = typeof fn === 'function' ? fn : null; },   // 다른 사람 컵(coffee.js syncPeer)
       count: function () { return table.peers.size; },
       visibleCount: function () { return views.size; },
       // seat: 좌석 id. 내가 앉은 좌석은 빼고, 남이 앉은 좌석이면 true
@@ -230,6 +236,7 @@
           av.setWalk(walk);
           av.setPose(x, sid ? fl : (v.fresh ? fl : p0y(av, fl, dt)), z, r);
           if (v.fresh) { v.fresh = false; av.root.position.y = fl; av.snapPose(); }
+          if (cupHook) cupHook(v, av, rec.cup, sid && logic ? logic.seatIndex(sid) : null);
           av.update(dt, t);
         });
       }

@@ -22,17 +22,17 @@ test('스폰·좌석 서는 자리는 비어 있고 걷기 영역 안', () => {
     assert.ok(p.x > b.x0 + R && p.x < b.x1 - R && p.z > b.z0 + R && p.z < b.z1 - R);
   }
 });
-test('좌석 6: 창가 셋은 창(-x)을, 작업대 스툴은 +x 를, 마당 그네 둘(4·5)은 집 쪽(+x)을 본다', () => {
+test('좌석 6: 창가 셋은 창(-x)을, 카운터 바 스툴은 +x 를, 마당 그네 둘(4·5)은 집 쪽(+x)을 본다', () => {
   assert.equal(logic.seats.length, 6);
   assert.equal(layout.seatLabels.length, 6);
   const f = (i) => L.fwd(logic.seats[i].yaw);
   for (let i = 0; i < 3; i++) { assert.ok(f(i)[0] < -0.99, 'desk seat faces window'); assert.ok(inRoom(logic.seats[i].x, logic.seats[i].z)); }
   assert.ok(f(3)[0] > 0.99);
-  assert.ok(Math.abs(logic.seatFloor('S3') - 0.36) < 1e-9, 'stool footrest');
+  assert.ok(Math.abs(logic.seatFloor('S3') - 0.46) < 1e-9, 'bar stool footrest (seat 0.75 above floor)');
   assert.ok(Math.abs(logic.seatFloor('S0') - 0.16) < 1e-9, 'room floor');
   // 서는 자리에서 가장 가까운 빈자리 = 그 좌석
   layout.seats.forEach((s, i) => assert.equal(logic.nearestSeat(s.stand.x, s.stand.z), 'S' + i));
-  // 앉은 사람 앞(f 쪽 0.6m)에 책상·작업대가 있다
+  // 앉은 사람 앞(f 쪽 0.6m)에 책상·카운터가 있다
   for (let i = 0; i < 4; i++) { const s = logic.seats[i], v = f(i); assert.ok(!free(s.x + v[0] * 0.6, s.z + v[1] * 0.6, 0.05), 'desk in front of seat ' + i); }
 });
 test('마당 그네: 나란히 두 자리(겹침 없음), 실내 좌석과 따로, 틀은 충돌체', () => {

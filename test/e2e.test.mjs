@@ -19,7 +19,7 @@ test('브라우저: 장면이 열리고 브리지 이벤트가 오간다', { tim
     await ev('ready'); await ev('firstFrame');
     const st = await p.evaluate(() => ({ seats: window.__room.logic.seats.length, verts: window.__room.world.stats.vertices }));
     assert.equal(st.seats, 6);
-    // 앉기·서기(작업대 스툴 3, 그네 4)
+    // 앉기·서기(카운터 바 스툴 3, 그네 4)
     await p.evaluate(() => window.Room3D.sit({ i: 3 }));
     await ev('sat', '"i":3');
     assert.equal(await p.evaluate(() => window.__room.me.seat), 'S3');
@@ -54,5 +54,47 @@ test('브라우저: 장면이 열리고 브리지 이벤트가 오간다', { tim
     assert.deepEqual(errs, []);
     await p.evaluate(() => window.Room3D.dispose());
     assert.equal(await p.evaluate(() => window.__room.started), false);
+  } finally { await b.close(); srv.close(); }
+});
+
+test('브라우저: 커피 주문 → 만들기 → coffeeReady → 집기 → 들기 → 앉으면 카운터에 → 다른 사람 컵', { timeout: 240000 }, async () => {
+  const { srv, url } = await serve();
+  const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  try {
+    const p = await b.newPage({ viewport: { width: 480, height: 270 }, deviceScaleFactor: 1 });
+    const errs = [];
+    p.on('pageerror', (e) => errs.push(e.message));
+    p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+    await p.goto(url + 'test.html?hideui=1&autotier=0&quiet=1&quality=low&hour=14');
+    const ev = (name, extra = '') => p.waitForFunction(([n, x]) => (window.__roomEvents || []).some((e) => e.e === n && (!x || JSON.stringify(e).includes(x))), [name, extra], { timeout: 90000 });
+    await ev('firstFrame');
+    assert.ok(await p.evaluate(() => !!window.__room.coffee && !!window.__room.coffee.barista));
+    await p.evaluate(() => window.Room3D.orderCoffee({ kind: 'latte' }));
+    await ev('coffeeOrdered', 'latte');
+    await ev('coffeeReady', 'latte');
+    assert.equal(await p.evaluate(() => window.__room.coffee.state().where), 'counter');
+    await p.evaluate(() => { const a = window.__room; a.me.x = 0.95; a.me.z = 0.1; });
+    await ev('nearCounter', 'true');
+    await ev('coffeePicked', 'latte');
+    const held = await p.evaluate(() => { const a = window.__room; let up = null; a.scene.traverse((o) => { if (o.userData.cup === 'latte') { up = o; } }); let anchor = false; for (let q = up; q; q = q.parent) if (q.name === 'holdAnchor') anchor = true; return { hold: a.meAv.holdTarget, anchor }; });
+    assert.deepEqual(held, { hold: 1, anchor: true });
+    await p.evaluate(() => window.Room3D.sit({ i: 3 }));
+    await ev('sat', '"i":3');
+    const st = await p.evaluate(() => { const a = window.__room, s = a.coffee.state(); let pos = null; a.scene.traverse((o) => { if (o.userData.cup === 'latte' && o.parent === a.scene) pos = o.position.toArray(); }); return { s, pos, hold: a.meAv.holdTarget }; });
+    assert.equal(st.s.where, 'spot'); assert.equal(st.hold, 0);
+    assert.deepEqual(st.pos.map((v) => +v.toFixed(3)), [st.s.pos.x, st.s.pos.y, st.s.pos.z].map((v) => +v.toFixed(3)));
+    await p.evaluate(() => window.Room3D.stand());
+    await ev('stood', '"i":3');
+    assert.equal(await p.evaluate(() => window.__room.coffee.state().where), 'hand');
+    // 다른 사람: 걷는 사람은 손에 아이스, 앉은 사람(좌석 0)은 책상 위 홍차
+    await p.evaluate(() => window.Room3D.setPeers([{ id: 'w', x: -0.3, z: 1.5, yaw: 0, state: 'walk', cup: 'iced' }, { id: 's', state: 'sit', seat: 0, cup: 'tea' }]));
+    await p.waitForFunction(() => { let n = 0; window.__room.scene.traverse((o) => { if (o.userData.cup === 'iced' || o.userData.cup === 'tea') n++; }); return n === 2; }, null, { timeout: 30000 });
+    const pc = await p.evaluate(() => { const a = window.__room, out = {}; a.scene.traverse((o) => { if (o.userData.cup === 'iced' || o.userData.cup === 'tea') { let inHand = false; for (let q = o; q; q = q.parent) if (q.name === 'holdAnchor') inHand = true; out[o.userData.cup] = { inHand, y: +o.position.y.toFixed(2) }; } }); return out; });
+    assert.equal(pc.iced.inHand, true); assert.equal(pc.tea.inHand, false);
+    // 바리스타는 통로 안에
+    const bp = await p.evaluate(() => window.__room.coffee.barista.root.position.toArray());
+    const B = await p.evaluate(() => window.__room.world.layout.coffee.barista);
+    assert.ok(bp[0] >= B.x0 - 1e-6 && bp[0] <= B.x1 + 1e-6 && bp[2] >= B.z0 - 1e-6 && bp[2] <= B.z1 + 1e-6);
+    assert.deepEqual(errs, []);
   } finally { await b.close(); srv.close(); }
 });
