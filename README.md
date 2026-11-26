@@ -291,9 +291,17 @@ node tools/ao_bake.mjs house && node tools/gi_bake.mjs house   # 지오메트리
 - 원본 앱 전용: Flutter 채널(→ 범용 브리지), 창 감상실, 반사 탐침·부드러운 빛줄기(파일 미포함), 자동 걷기 「가기」 경로 탐색·스테이션 표식(→ 좌석 표식), 혼자 모드 배경 인물(NPC), 터치 기록.
 - 용량: three_extras 에서 Sky·SSAO·SMAA·RGBE 제외.
 
+## 7-1. PC 라이트맵(사실감 ①) — `pc_bake/`
+- 소유자 PC(GPU 없음)에서 Blender(주 대상 5.3, 3.6 이상)로 Cycles CPU 라이트맵을 굽는 키트. 사용법·명령·시간·디스크는 **[pc_bake/README_PC.md](pc_bake/README_PC.md)**.
+- 흐름: `node tools/lm_export.mjs`(이 저장소, Node) → `pc_bake/scene/`(house.glb·빛·대상·uv2, 커밋됨) → PC 에서 `run_bake.ps1`/`run_bake.cmd` → `pc_bake/out/house_<화질>.zip` →
+  채팅으로 받아 zip 안 `house_<화질>/` 를 `web/lightmaps/house/` 로 푼다 → 앱(`web/lightmap.js`)이 붙인다. 폴더가 비어 있으면 지금처럼 구운 AO·빛 번짐.
+- 앱: three `lightMap` + `uv2`(대상마다 uv2.bin), RGBM 풀기, 낮/밤 두 장을 `env.night` 로 섞기(setHour → applyEnv), 라이트맵 재질은 반구광·HDRI 확산·구운 AO·빛 번짐·점광원 확산을 끄고
+  해/달 직사광만 실시간(그림자 맵 — 걷는 사람 그림자). 룩 `lmK`(없으면 1)로 세기. 호스트 앱도 `lightmap.js` 를 `world.js` 앞에 실어야 한다. `?lm=0` 이면 끈다.
+- 지오메트리를 바꾸면 `node tools/lm_export.mjs` 로 다시 내보내고 다시 굽는다(`test/lightmap.test.mjs` 가 막고, 앱은 검사합이 다른 대상만 예전 길로).
+
 ## 8. 아직 없는 것
 - **B** 새 소품 도구(카드·글 판·책장 끼우기·전시 선반 표지·액자 그림 등) — 지금은 단순 대체.
-- **E** 조명 정식판(시간대 연출·노을/새벽 전용 룩·라이트맵) — 지금은 낮/밤 기본 프리셋(ACES, 밤 실내 약 3000K) + 구운 AO·빛 번짐. 빛 번짐 굽기는 원본의 HDRI 대신 RoomEnvironment 평균(고른 0.5)을 쓴다.
+- **E** 조명 정식판(시간대 연출·노을/새벽 전용 룩) — 라이트맵은 7-1(PC 에서 굽기). 굽기 전에는 낮/밤 기본 프리셋(ACES, 밤 실내 약 3000K) + 구운 AO·빛 번짐. 빛 번짐 굽기는 원본의 HDRI 대신 RoomEnvironment 평균(고른 0.5)을 쓴다.
 - **F** 나머지(카메라 경로 재생기·첫 입장 소개·튜토리얼 등), **H**, **I**.
 - 실기기 성능은 재지 않았다(위 30초 벤치로 잰다). 앱 정원 그림(일러스트)과 실사풍 가게가 어울리는지는 앱에서 봐야 한다.
 - 2차에서 남은 것(솔직히): 아바타는 아직 장난감 몸이다(반실사 몸으로 바꾸는 것은 따로 — 몸 약속은 3절). 식물 카드는 가까이서 판이 보일 수 있다(특히 나무 잎 카드 가장자리).

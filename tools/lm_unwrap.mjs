@@ -85,39 +85,44 @@ export function unwrap(P, opts = {}) {
   const { charts, faces } = buildCharts(P, opts.cos || 0.94);
   // 조각마다: 평면 기준(법선 평균, u = 가장 큰 삼각형의 가장 긴 변), 미터 좌표, 거리 밀도
   const C = charts.map((list) => {
-    let nx = 0, ny = 0, nz = 0, big = list[0], bigA = -1, cx = 0, cy = 0, cz = 0, A = 0;
+    let nx = 0, ny = 0, nz = 0, cx = 0, cy = 0, cz = 0, A = 0;
     for (const t of list) {
       const f = faces[t]; nx += f.nx * f.area; ny += f.ny * f.area; nz += f.nz * f.area;
-      if (f.area > bigA) { bigA = f.area; big = t; }
       const i = t * 9; cx += (P[i] + P[i + 3] + P[i + 6]) / 3; cy += (P[i + 1] + P[i + 4] + P[i + 7]) / 3; cz += (P[i + 2] + P[i + 5] + P[i + 8]) / 3; A += f.area;
     }
     let l = Math.hypot(nx, ny, nz); if (l < 1e-12) { const f = faces[list[0]]; nx = f.nx; ny = f.ny; nz = f.nz; l = 1; }
     nx /= l; ny /= l; nz /= l;
-    const i = big * 9; let ux = 0, uy = 0, uz = 0, best = -1;
-    for (let e = 0; e < 3; e++) {
-      const a = e * 3, b = ((e + 1) % 3) * 3;
+    // u 축 후보: 큰 삼각형(최대 4개)의 변 방향(평면에 투영) — 그중 조각 경계 상자 넓이가 가장 작은 것(판의 대각선을 고르지 않게)
+    const bigs = list.slice().sort((a, b) => (faces[b].area - faces[a].area) || (a - b)).slice(0, 4), cands = [];
+    for (const t of bigs) for (let e = 0; e < 3; e++) {
+      const i = t * 9, a = e * 3, b = ((e + 1) % 3) * 3;
       let dx = P[i + b] - P[i + a], dy = P[i + b + 1] - P[i + a + 1], dz = P[i + b + 2] - P[i + a + 2];
       const dn = dx * nx + dy * ny + dz * nz; dx -= dn * nx; dy -= dn * ny; dz -= dn * nz;
-      const dl = Math.hypot(dx, dy, dz); if (dl > best) { best = dl; ux = dx; uy = dy; uz = dz; }
+      const dl = Math.hypot(dx, dy, dz); if (dl > 1e-9) cands.push([dx / dl, dy / dl, dz / dl]);
     }
-    let ul = Math.hypot(ux, uy, uz);
-    if (ul < 1e-9) { if (Math.abs(ny) < 0.9) { ux = nz; uy = 0; uz = -nx; } else { ux = 1; uy = 0; uz = 0; } ul = Math.hypot(ux, uy, uz); }
-    ux /= ul; uy /= ul; uz /= ul;
-    const vx = ny * uz - nz * uy, vy = nz * ux - nx * uz, vz = nx * uy - ny * ux;
-    let u0 = 1e30, u1 = -1e30, v0 = 1e30, v1 = -1e30;
-    for (const t of list) for (let j = 0; j < 3; j++) {
-      const k = t * 9 + j * 3, uu = P[k] * ux + P[k + 1] * uy + P[k + 2] * uz, vv = P[k] * vx + P[k + 1] * vy + P[k + 2] * vz;
-      if (uu < u0) u0 = uu; if (uu > u1) u1 = uu; if (vv < v0) v0 = vv; if (vv > v1) v1 = vv;
+    if (!cands.length) { let ux = 1, uy = 0, uz = 0; if (Math.abs(ny) < 0.9) { ux = nz; uy = 0; uz = -nx; } const l2 = Math.hypot(ux, uy, uz); cands.push([ux / l2, uy / l2, uz / l2]); }
+    let best = null;
+    for (const [ux, uy, uz] of cands) {
+      const vx = ny * uz - nz * uy, vy = nz * ux - nx * uz, vz = nx * uy - ny * ux;
+      let u0 = 1e30, u1 = -1e30, v0 = 1e30, v1 = -1e30;
+      for (const t of list) for (let j = 0; j < 3; j++) {
+        const k = t * 9 + j * 3, uu = P[k] * ux + P[k + 1] * uy + P[k + 2] * uz, vv = P[k] * vx + P[k + 1] * vy + P[k + 2] * vz;
+        if (uu < u0) u0 = uu; if (uu > u1) u1 = uu; if (vv < v0) v0 = vv; if (vv > v1) v1 = vv;
+      }
+      const ar = (u1 - u0) * (v1 - v0);
+      if (!best || ar < best.ar - 1e-12) best = { ar, u: [ux, uy, uz], v: [vx, vy, vz], u0, u1, v0, v1 };
     }
+    const { u0, u1, v0, v1 } = best;
     const n = list.length; cx /= n; cy /= n; cz /= n;
     const d = Math.hypot(cx - focus[0], cy - focus[1], cz - focus[2]);
     const k = Math.max(minK, Math.min(1, near / Math.max(near, d)));
-    return { list, u: [ux, uy, uz], v: [vx, vy, vz], u0, u1, v0, v1, k, area: A };
+    return { list, u: best.u, v: best.v, u0, u1, v0, v1, k, area: A };
   });
   let scale = 1, out = null;
   for (let tries = 0; tries < 40 && !out; tries++) {
     const tpm = tpm0 * scale;
-    const rects = C.map((c) => ({ w: Math.max(1, Math.ceil((c.u1 - c.u0) * tpm * c.k)) + 2 * pad, h: Math.max(1, Math.ceil((c.v1 - c.v0) * tpm * c.k)) + 2 * pad }));
+    const cl = (x) => Math.max(1, Math.ceil(x - 1e-4));   // 부동소수 끝자리(2.0000001 m)로 한 칸 더 잡지 않게
+    const rects = C.map((c) => ({ w: cl((c.u1 - c.u0) * tpm * c.k) + 2 * pad, h: cl((c.v1 - c.v0) * tpm * c.k) + 2 * pad }));
     let area = 0; for (const r of rects) area += r.w * r.h;
     let maxW = 0; for (const r of rects) if (r.w > maxW) maxW = r.w;
     let W = ceilTo(Math.max(maxW, Math.sqrt(area * 1.12)), align);

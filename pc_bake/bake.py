@@ -16,7 +16,6 @@ import argparse
 import json
 import math
 import os
-import shutil
 import sys
 import time
 
@@ -317,7 +316,11 @@ def denoise(px, tmp_dir, log):
         scn = _dn['scene']
         if scn is None:
             scn = bpy.data.scenes.new('lm_denoise')
-            scn.render.engine = 'BLENDER_WORKBENCH'
+            scn.render.engine = 'CYCLES'          # GPU 없는 PC: Workbench/EEVEE 는 GPU(OpenGL/Vulkan)를 연다 — Cycles 는 안 연다
+            set_if(scn.cycles, 'device', 'CPU')
+            set_if(scn.cycles, 'samples', 1)
+            set_if(scn.render, 'compositor_device', 'CPU')   # 4.2+
+            set_if(scn.render, 'use_compositing', True)
             cam = bpy.data.objects.new('lm_cam', bpy.data.cameras.new('lm_cam'))
             scn.collection.objects.link(cam)
             scn.camera = cam
@@ -391,9 +394,13 @@ def main():
         return 2
     log('=== bake %s quality=%s times=%s format=%s blender=%s' % (TJ['scene'], a.quality, ','.join(a.times), a.format, bpy.app.version_string))
     enc = {'encoding': 'rgbm' if a.format == 'rgbm' else 'linear', 'range': lmcodec.RANGE, 'gamma': lmcodec.GAMMA}
+    import hashlib
     with open(os.path.join(a.scene, TJ['glb']), 'rb') as f:
-        import hashlib
         scene_hash = hashlib.sha1(f.read()).hexdigest()[:16]
+    with open(os.path.join(a.scene, TJ['uv2']), 'rb') as f:
+        uv2_bytes = f.read()          # 시작할 때의 uv2(굽는 동안 scene/ 이 바뀌어도 PNG 와 짝이 맞게)
+    with open(os.path.join(out, 'uv2.bin'), 'wb') as f:
+        f.write(uv2_bytes)
     only = [s for s in a.only.split(',') if s] or (TJ['smoke']['targets'] if a.quality == 'smoke' else [])
     targets = [t for t in TJ['targets'] if t['lm'] and (not only or t['id'] in only)]
     objs = reset_and_import(os.path.join(a.scene, TJ['glb']), log)
@@ -462,9 +469,8 @@ def main():
                                                     'mean': [round(float(v), 4) for v in E.reshape(-1, 3).mean(axis=0)]})
         prog.step(wt)
         log(prog.line('%s/%s %dx%d %dspp %s' % (tm, t['id'], w, h, q['samples'], lmcodec.fmt_dur(time.time() - t0))))
-    shutil.copyfile(os.path.join(a.scene, TJ['uv2']), os.path.join(out, 'uv2.bin'))
     man = lmcodec.build_manifest(TJ, L, out, a.quality, a.times, info={'blender': bpy.app.version_string, 'samples': q['samples'], 'scene_hash': scene_hash,
-                                                                    'only': only, 'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, enc=enc)
+                                                                    'only': only, 'made': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, enc=enc, only=only)
     lmcodec.write_json(os.path.join(out, 'manifest.json'), man)
     z = lmcodec.zip_dir(out, os.path.join(a.out, name + '.zip'))
     log('DONE -> %s (%.1f MB) complete=%s' % (z, os.path.getsize(z) / 1e6, man['complete']))

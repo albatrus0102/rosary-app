@@ -215,7 +215,7 @@ def mark_done(out, time_name, tid, sig, rec):
 
 
 # ---------- manifest ----------
-def build_manifest(targets_json, lights_json, out, qname, times, info=None, enc=None):
+def build_manifest(targets_json, lights_json, out, qname, times, info=None, enc=None, only=None):
     """끝난 일감 기록(state/*.json)으로 앱이 읽는 manifest.json 을 만든다. 두 시각 모두 끝난 대상만 files 를 갖는다."""
     enc = enc or {'encoding': 'rgbm', 'range': RANGE, 'gamma': GAMMA}
     rows, done_all = [], True
@@ -235,8 +235,8 @@ def build_manifest(targets_json, lights_json, out, qname, times, info=None, enc=
             row['files'] = files
             row['size'] = None
         rows.append(row)
-        if any(tm not in files for tm in times):
-            done_all = False
+        if (not only or t['id'] in only) and any(tm not in files for tm in times):
+            done_all = False   # 고른 대상(only, smoke) 기준으로 다 끝났나
     for r in rows:
         if 'files' in r:
             rec_p = state_path(out, 'day' if 'day' in r['files'] else 'night', r['id'])
