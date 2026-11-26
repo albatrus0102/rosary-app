@@ -61,6 +61,14 @@
     App.near.seat = seat;
     if (App.world) App.world.setHighlight(seat);
   }
+  // 읽기 자세를 지금 상태에 맞춘다(앉아 있을 때만 — 서면 책을 거둔다)
+  function applyReading() {
+    var me = App.me, av = App.meAv; if (!me || !av || !av.setRead) return;
+    var st = App.reading || 'none';
+    if (me.mode !== 'seated' || !me.seat) { av.setRead('none'); return; }
+    var i = App.logic.seatIndex(me.seat), spot = App.coffee && App.coffee.bookSpot ? App.coffee.bookSpot(i) : ((App.world.layout.bookSpots || [])[i] || null);
+    av.setRead(st, spot);
+  }
   // 좌석이 찼나: 화면에 보이는 사람(net) 또는 호스트가 알려 준 점유(setSeats)
   function isTaken(id) {
     if (!App.logic) return false;
@@ -87,6 +95,8 @@
     if (App.fixedClock) w.setClock(false);
     App.world = w; App.logic = w.logic; App.room = w.id;
     App.net.setLogic(w.logic);
+    App.stations = root.RoomStations ? root.RoomStations.create(w.logic, { cell: 0.2, speed: 1.3 }) : null;   // 좌석까지 걸어가기(성당 「가기」와 같은 길 찾기)
+    App.walkSt = null; App.pendingSit = null;
     if (App.meAv.setGround) App.meAv.setGround(groundFn(w.logic));
     var sp = w.layout.spawn, me = App.me;
     me.x = sp.x; me.z = sp.z; me.yaw = sp.r || 0; me.fy = w.logic.floorY(sp.x, sp.z, sp.y === undefined ? null : sp.y); me.y = me.fy; me.vx = 0; me.vz = 0; me.mode = 'walk'; me.seat = null;
@@ -98,7 +108,7 @@
     // 커피 카운터(coffee.js — 장면 layout.coffee 가 있을 때만): 바리스타·내 컵·다른 사람 컵
     App.coffee = null;
     try { if (root.RoomCoffee && w.layout.coffee) { App.coffee = root.RoomCoffee.create(App, post); if (App.coffee && App.net.setCupHook) App.net.setCupHook(App.coffee.syncPeer); } } catch (e) { frameErr('coffee', e); }
-    if (App.coffee && App.coffeePending) { var cpd = App.coffeePending; App.coffeePending = null; if (cpd.give !== undefined) App.coffee.give(cpd.give); if (cpd.order) App.coffee.order(cpd.order); }   // 장면이 서기 전에 온 주문·컵
+    if (App.coffee && App.coffeePending) { var cpd = App.coffeePending; App.coffeePending = null; if (cpd.give !== undefined) App.coffee.give(cpd.give); if (cpd.order) App.coffee.order(cpd.order, cpd.orderOpt); if (cpd.anchors) App.coffee.setSeatAnchors(cpd.anchors); }   // 장면이 서기 전에 온 주문·컵
     refreshMarkers();
     if (App.pending) { var pd = App.pending; App.pending = null; if (pd.garden) hook('garden', pd.garden); if (pd.skin) hook('skin', pd.skin); Object.keys(pd.panels || {}).forEach(function (k) { hook('panel', k, pd.panels[k]); }); }
     kick();
@@ -176,20 +186,56 @@
   }
 
   // ---- 내 아바타: 앉기·서기 ----
+  // 앉으러 가기(2026-11-26 측정 원인 3·4): 좌석 옆·앞 서는 자리(standPos)까지 걸어서(길 찾기) → 좌석 방향으로 돌아서기 → 뒤로 내려앉기.
+  // 예전: 1.6m 넘으면 순간 이동 + 카메라 끊김, 가까우면 접은 자세로 0.8초에 미끄러져 등받이를 뚫었다.
+  function requestSit(seatId) {
+    var me = App.me, st = App.logic.standPos(seatId);
+    if (!st) return;
+    if (me.mode === 'seated' || me.mode === 'sitting') {
+      if (me.seat === seatId) return;
+      App.pendingSit = seatId;
+      if (me.mode === 'seated') beginStand(); else me.pendingStand = true;
+      return;
+    }
+    if (me.mode !== 'walk') { App.pendingSit = seatId; return; }
+    var d = Math.hypot(st.x - me.x, st.z - me.z), path = d > 0.25 && App.stations ? App.stations.findPath(me, st) : null;
+    if (!path) { beginSit(seatId); return; }
+    App.walkSt = App.stations.startWalk(path, { x: st.x, z: st.z, yaw: st.yaw });
+    App.walkSt.seat = seatId;
+    App.ctl.setJoystick(0, 0);
+    setNear(null);
+    post({ e: 'walkStart', kind: 'seat', i: App.logic.seatIndex(seatId), m: Math.round(path.len * 10) / 10 });
+  }
+  // 바로 앉은 상태로(다시 들어올 때 배정된 자리 되찾기 — 걷지 않고, 카메라도 그 자리에서 시작)
+  function snapSit(seatId) {
+    var me = App.me, sp = App.logic.seatPos(seatId); if (!sp) return;
+    App.walkSt = null;
+    me.x = me.tx = sp.x; me.z = me.tz = sp.z; me.yaw = me.tyaw = sp.yaw; me.fy = me.y = me.y1 = App.logic.seatFloor(seatId);
+    me.mode = 'seated'; me.seat = seatId; me.pendingStand = false; me.vx = me.vz = 0;
+    App.net.setMySeat(seatId);
+    App.meAv.setSeatFit(App.logic.seatFit ? App.logic.seatFit(seatId) : null);
+    App.meAv.setSeated(true); App.meAv.setSitProgress(null); App.meAv.setWalk(0);
+    App.meAv.setPose(me.x, me.y, me.z, me.yaw); App.meAv.snapPose(); App.camInit = false;
+    setNear(null); refreshMarkers();
+    post({ e: 'sat', i: App.logic.seatIndex(seatId) });
+    if (App.coffee) App.coffee.onSit(App.logic.seatIndex(seatId));
+    applyReading();
+  }
+  function cancelWalk(why) { if (!App.walkSt) return; var w = App.walkSt; App.walkSt = null; post({ e: 'walkCancel', kind: 'seat', i: App.logic.seatIndex(w.seat), why: why || '' }); }
   function beginSit(seatId) {
     var me = App.me, sp = App.logic.seatPos(seatId);
     if (!sp) return;
-    // 좌석에서 멀면(1.6m 넘게) 먼저 좌석 옆 서는 자리로 옮긴다(미끄러지듯 먼 거리를 끌려가지 않게)
-    if (Math.hypot(sp.x - me.x, sp.z - me.z) > 1.6) {
-      var st = App.logic.standPos(seatId);
-      me.x = st.x; me.z = st.z; me.yaw = sp.yaw; App.meAv.setPose(me.x, me.y, me.z, me.yaw); App.meAv.snapPose(); App.camInit = false;
-    }
-    App.ctl.setJoystick(0, 0);
-    me.fy = App.logic.seatFloor(seatId);
+    App.walkSt = null; App.ctl.setJoystick(0, 0);
+    me.y0 = me.y; me.y1 = App.logic.seatFloor(seatId);
+    me.fy = me.y1;
     me.mode = 'sitting'; me.seat = seatId; me.t = 0; me.fx = me.x; me.fz = me.z; me.fyaw = me.yaw;
     me.tx = sp.x; me.tz = sp.z; me.tyaw = sp.yaw; me.pendingStand = false;
+    var turn = Math.abs(wrap(sp.yaw - me.yaw));
+    me.turnDur = turn > 0.2 ? 0.3 + 0.45 * turn / PI : 0;   // 제자리에서 돌아서기(발은 걸음이 고쳐 딛는다)
+    me.slideDur = 0.6 + 0.5 * Math.min(1, Math.hypot(sp.x - me.x, sp.z - me.z) / 0.6);
     App.net.setMySeat(seatId);
-    App.meAv.setSeated(true); App.meAv.setWalk(0);
+    App.meAv.setSeatFit(App.logic.seatFit ? App.logic.seatFit(seatId) : null);
+    App.meAv.setSitProgress(0); App.meAv.setWalk(0);
     setNear(null); refreshMarkers();
     me.vx = me.vz = 0;
   }
@@ -197,8 +243,19 @@
     var me = App.me, st = App.logic.standPos(me.seat);
     me.mode = 'standing'; me.t = 0; me.fx = me.x; me.fz = me.z; me.fyaw = me.yaw;
     me.tx = st.x; me.tz = st.z; me.tyaw = st.yaw;
-    App.meAv.setSeated(false);
+    me.y0 = me.y; me.y1 = App.logic.floorY(st.x, st.z, me.y);
+    me.slideDur = 0.6 + 0.5 * Math.min(1, Math.hypot(st.x - me.x, st.z - me.z) / 0.6);
+    App.meAv.setSeated(false); App.meAv.setSitProgress(1);
+    if (App.meAv.setRead) App.meAv.setRead('none');
   }
+  // 앉기 순서의 한 프레임(순수 — 시험이 같은 식을 쓴다): u = 내려앉기 진행(0..1) → {move(옮긴 비율), sit(앉은 정도)}
+  // 앉기: 처음 15%는 몸을 뒤로 옮기기만, 그 뒤 앉으며 계속 뒤로. 일어서기는 반대(먼저 일어나고 나중에 비켜선다).
+  function sitStage(u, up) {
+    if (!up) return { move: sm01(u / 0.85), sit: sm01((u - 0.15) / 0.85) };
+    return { move: sm01((u - 0.3) / 0.7), sit: 1 - sm01(u / 0.75) };
+  }
+  function sm01(t) { t = t < 0 ? 0 : (t > 1 ? 1 : t); return t * t * (3 - 2 * t); }
+  App.sitStage = sitStage;
 
   // ---- 일시정지·재개·정리 ----
   function pause() {
@@ -258,7 +315,7 @@
       var seat = seatIdOf(o);
       if (seat && isTaken(seat)) seat = null;
       if (!seat && !(o && (o.i !== undefined || o.value !== undefined))) seat = App.logic.nearestSeat(App.me.x, App.me.z, isTaken, undefined, App.me.fy);
-      if (seat) beginSit(seat);
+      if (seat) { if (o && o.now) snapSit(seat); else requestSit(seat); }   // {now:true}: 걷지 않고 바로(예전 동작 — 다시 들어올 때 자리 되찾기 등)
     },
     stand: function () {
       var me = App.me;
@@ -287,9 +344,21 @@
     setCamera: function (o) { applyCamCfg(o); },
     tapAt: function (o) { tapAt(+o.x, +o.y); },
     // 커피 주문(무료·가상): {kind:'americano'|'latte'|'iced'|'tea'} → 약 3초 뒤 {e:'coffeeReady', kind}, 카운터에서 집으면 {e:'coffeePicked'}
-    orderCoffee: function (o) { var k = o && (o.kind || o.value); if (App.coffee) App.coffee.order(k); else (App.coffeePending = App.coffeePending || {}).order = k; kick(); },
+    // orderCoffee({kind, seat?}): 서서(카운터 앞) 주문하면 받으러 가기, 앉아 있거나 seat 를 주면 바리스타가 그 좌석으로 가져다 준다
+    orderCoffee: function (o) { var k = o && (o.kind || o.value), op = o && typeof o.seat === 'number' ? { seat: o.seat } : null; if (App.coffee) App.coffee.order(k, op); else { var cp = App.coffeePending = App.coffeePending || {}; cp.order = k; cp.orderOpt = op; } kick(); },
+    // 다른 사람 주문의 배달 재생(호스트가 모든 사람에게 같은 값): {kind, seat, startAt(Date.now ms)}
+    setBaristaJob: function (o) { if (App.coffee) App.coffee.job(o); kick(); },
+    // 좌석 자리 바꾸기(호스트가 탁자를 옮겼을 때): [{i, cup:{x,y,z}, book:{x,y,z}, serve:{x,z}}]
+    setSeatAnchors: function (o) { var l = Array.isArray(o) ? o : (o && (o.list || o.value)) || []; if (App.coffee) App.coffee.setSeatAnchors(l); else (App.coffeePending = App.coffeePending || {}).anchors = l; kick(); },
+    // 앉아서 읽기: {on:bool, paused:bool} — on 이면 편 책을 두 손에(약 20초마다 한 장), paused 면 덮어서 책상(좌석 bookSpots)에, off 면 없음
+    setReading: function (o) { App.reading = o && o.on ? (o.paused ? 'closed' : 'read') : 'none'; applyReading(); kick(); },
     // 들고 있는 컵 되돌리기(다시 열었을 때 호스트가 기억한 컵): {kind} 또는 {kind:null}(없앰)
-    setMyCup: function (o) { var k = o && (o.kind !== undefined ? o.kind : o.value); if (App.coffee) App.coffee.give(k); else (App.coffeePending = App.coffeePending || {}).give = k; kick(); }
+    // setMyCup({kind}): 앉아 있으면 자리로 가져다 준다(배달), {kind, instant:true} 또는 서 있으면 바로 쥐여 준다(다시 열었을 때 되살리기), {kind:null} 은 없앤다
+    setMyCup: function (o) {
+      var k = o && (o.kind !== undefined ? o.kind : o.value), me = App.me;
+      if (App.coffee && k !== null && k !== undefined && !(o && o.instant) && me && me.mode === 'seated') { App.coffee.order(k, { seat: App.logic.seatIndex(me.seat) }); kick(); return; }
+      if (App.coffee) App.coffee.give(k); else (App.coffeePending = App.coffeePending || {}).give = k; kick();
+    }
   };
   App.api = api;
 
@@ -333,7 +402,7 @@
     for (var i in App.hostSeats) if (App.hostSeats[i].taken) { var sid = lg.seatAt(+i); if (sid) occMap[sid] = 1; }
     return occMap;
   }
-  var joy = { x: 0, y: 0 }, vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 };
+  var joy = { x: 0, y: 0 }, vel = { vx: 0, vz: 0, speed: 0, yaw: 0 }, pp = { x: 0, z: 0 }, wv = {};
   var CTL = root.RoomControls;
 
   function updateMe(dt, t) {
@@ -341,9 +410,19 @@
     var mode = me.mode;
     if (mode === 'walk') {
       App.ctl.getMove(joy);
-      if (CTL && CTL.shapeJoy) CTL.shapeJoy(joy.x, joy.y, joy);
-      logic.joyToVelocity(joy.x, joy.y, App.ctl.yaw, vel);
-      if (CTL && CTL.moveStep) CTL.moveStep(me, vel.vx, vel.vz, dt, false);
+      var W = App.walkSt;
+      if (W && joy.x * joy.x + joy.y * joy.y > 0.04) { cancelWalk('input'); W = null; }   // 손잡이를 움직이면 자동 걷기를 끊는다
+      if (W && isTaken(W.seat)) { cancelWalk('taken'); W = null; }
+      if (W) {
+        App.stations.stepWalk(W, me, dt, wv);
+        if (wv.done || (wv.stuck && W.replans >= 2) || W.t > 40) { App.walkSt = null; beginSit(W.seat); updateMe(0, t); return; }
+        if (wv.stuck) { var np = App.stations.findPath(me, W.target); if (np) { var nw = App.stations.startWalk(np, W.target); nw.seat = W.seat; nw.replans = W.replans + 1; nw.t = W.t; App.walkSt = W = nw; } }
+        vel.vx = wv.vx; vel.vz = wv.vz; vel.speed = wv.speed; vel.yaw = wv.yaw;
+      } else {
+        if (CTL && CTL.shapeJoy) CTL.shapeJoy(joy.x, joy.y, joy);
+        logic.joyToVelocity(joy.x, joy.y, App.ctl.yaw, vel);
+      }
+      if (CTL && CTL.moveStep) CTL.moveStep(me, vel.vx, vel.vz, dt, !!W);
       else { var k = 1 - Math.exp(-dt * 12); me.vx += (vel.vx - me.vx) * k; me.vz += (vel.vz - me.vz) * k; me.mvx = me.vx; me.mvz = me.vz; }
       var sp = Math.sqrt(me.vx * me.vx + me.vz * me.vz);
       if (sp > 0.02 || me.mvx * me.mvx + me.mvz * me.mvz > 4e-4) {
@@ -360,28 +439,42 @@
       var byT = sp > 0.05 && logic.bodyY ? logic.bodyY(me.x, me.z, fy, me.vx / sp, me.vz / sp) : fy;
       me.y += (byT - me.y) * (1 - Math.exp(-dt * 14));
       App.wasMoving = sp > 0.05;
-      if (qs.thumb === undefined) setNear(logic.nearestSeat(me.x, me.z, isTaken, undefined, me.fy));
+      if (qs.thumb === undefined && !App.walkSt) setNear(logic.nearestSeat(me.x, me.z, isTaken, undefined, me.fy));
     } else if (mode === 'sitting' || mode === 'standing') {
       me.t += dt;
-      var dur = mode === 'sitting' ? 0.8 : 0.55, u = Math.min(1, me.t / dur), s = u * u * (3 - 2 * u);
-      me.x = me.fx + (me.tx - me.fx) * s; me.z = me.fz + (me.tz - me.fz) * s;
-      me.yaw = me.fyaw + wrap(me.tyaw - me.fyaw) * s;
-      var fy2 = logic.floorY(me.x, me.z, me.fy);
-      me.y += (fy2 - me.y) * (1 - Math.exp(-dt * 14));
+      var up = mode === 'standing', td = up ? 0 : (me.turnDur || 0), u, stg;
+      if (me.t < td) {
+        // 1) 서는 자리에서 좌석 방향으로 돌아선다(아직 서 있음 — 걸음이 발을 고쳐 딛는다)
+        var ut = sm01(me.t / td);
+        me.yaw = me.fyaw + wrap(me.tyaw - me.fyaw) * ut;
+        av.setSeated(false); av.setSitProgress(null); u = 0;
+      } else {
+        // 2) 내려앉기: 몸을 좌석 쪽으로 옮기며 앉는 정도를 올린다(발 높이 — 스툴 발 받침 — 도 앉는 정도로)
+        if (!up && !av.sitTarget) { av.setSeated(true); av.setSitProgress(0); me.fyaw = me.yaw; }
+        u = Math.min(1, (me.t - td) / (me.slideDur || 0.9));
+        stg = sitStage(u, up);
+        me.x = me.fx + (me.tx - me.fx) * stg.move; me.z = me.fz + (me.tz - me.fz) * stg.move;
+        me.yaw = me.fyaw + wrap(me.tyaw - me.fyaw) * (up ? stg.move : sm01(u / 0.5));
+        av.setSitProgress(stg.sit);
+        me.y = me.y0 + (me.y1 - me.y0) * (up ? 1 - stg.sit : stg.sit);   // 원인 1: 앉은 높이(seatFloor)를 버리지 않는다
+      }
       av.setWalk(0);
       if (u >= 1) {
         if (mode === 'sitting') {
-          me.mode = 'seated';
+          me.mode = 'seated'; me.y = me.y1; av.setSitProgress(null);
           post({ e: 'sat', i: logic.seatIndex(me.seat) });
           if (App.coffee) App.coffee.onSit(logic.seatIndex(me.seat));
+          applyReading();
           if (me.pendingStand) { me.pendingStand = false; beginStand(); }
         } else {
+          me.fy = me.y = me.y1; av.setSitProgress(null); av.setSeatFit(null);
           var si = logic.seatIndex(me.seat);
           me.mode = 'walk'; me.seat = null; me.vx = me.vz = 0;
           App.net.setMySeat(null);
           post({ e: 'stood', i: si });
           if (App.coffee) App.coffee.onStand();
           App.wasMoving = false; App.near.seat = undefined; refreshMarkers();
+          if (App.pendingSit) { var ps = App.pendingSit; App.pendingSit = null; requestSit(ps); }
         }
       }
     } else av.setWalk(0);

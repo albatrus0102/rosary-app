@@ -33,7 +33,7 @@ test('브라우저: 장면이 열리고 브리지 이벤트가 오간다', { tim
     assert.equal(await p.evaluate(() => window.__room.me.seat), 'S3');
     await p.evaluate(() => window.Room3D.stand());
     await ev('stood', '"i":3');
-    await p.evaluate(() => window.Room3D.sit({ i: 4 }));
+    await p.evaluate(() => window.Room3D.sit({ i: 4, now: true }));   // 먼 좌석은 바로 앉히기(걸어가기는 seat_deliver 시험이 프레임마다 잰다)
     await ev('sat', '"i":4');
     await p.evaluate(() => window.Room3D.stand());
     await ev('stood', '"i":4');

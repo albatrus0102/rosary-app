@@ -28,7 +28,7 @@ test('좌석 6: 창가 셋은 창(-x)을, 카운터 바 스툴은 +x 를, 마당
   const f = (i) => L.fwd(logic.seats[i].yaw);
   for (let i = 0; i < 3; i++) { assert.ok(f(i)[0] < -0.99, 'desk seat faces window'); assert.ok(inRoom(logic.seats[i].x, logic.seats[i].z)); }
   assert.ok(f(3)[0] > 0.99);
-  assert.ok(Math.abs(logic.seatFloor('S3') - 0.46) < 1e-9, 'bar stool footrest (seat 0.75 above floor)');
+  assert.ok(Math.abs(logic.seatFloor('S3') - 0.38) < 1e-9, 'bar stool footrest ring (FL + 0.22; seat top FL + 0.63)');
   assert.ok(Math.abs(logic.seatFloor('S0') - 0.16) < 1e-9, 'room floor');
   // 서는 자리에서 가장 가까운 빈자리 = 그 좌석
   layout.seats.forEach((s, i) => assert.equal(logic.nearestSeat(s.stand.x, s.stand.z), 'S' + i));

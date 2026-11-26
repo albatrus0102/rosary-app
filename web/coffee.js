@@ -8,6 +8,13 @@
    - 다른 사람: setPeers 의 cup 필드('americano'|'latte'|'iced'|'tea'|null) — 걷는 사람은 손에, 컵 자리가 있는 좌석에 앉은 사람은 그 자리에.
    - 바리스타: avatar.js 몸(앞치마) — 카운터 뒤 통로(layout.coffee.barista 사각형) 안에서만, 숨쉬기·고개 돌림은 몸이 하고,
      손님(나)이 3 m 안이면 그쪽으로 돌아서고, 만드는 동안 기계 쪽으로 돌아 '음료 만들기' 몸짓. 통로 전체가 충돌체(ch_house planColliders 'barista').
+   - 자리로 가져다 주기(2026-11-26, 앱 결정 #1061 ⑥ 「자리로 가져다 드릴게요」): 앉은 채 주문하면(orderCoffee(kind, {seat}) 또는 앉아서 orderCoffee(kind))
+     바리스타가 약 3초 만들고 → 컵을 손에 들고 걸을 수 있는 길(stations.js findPath — 사람이 걷는 길과 같다, 가구를 뚫지 않는다)로 그 좌석까지 →
+     컵 자리에 내려놓는 그 순간 coffeeReady {kind, seat} → 카운터 뒤로 돌아간다. 창가 책상은 책상 옆에 서서 책상 위에, 바 스툴은 통로 안에서 카운터 너머로,
+     그네는 앞문으로 나가 마당 탁자(호스트가 setSeatAnchors 로 옮길 수 있다)에. coffeePicked 는 카운터에서 집을 때만.
+     배달 중에 일어나거나 자리를 떠나도 컵은 그 좌석 자리에 놓는다(되가져가지 않는다) — 그 좌석에 다시 앉으면 내 컵, 그 자리에서 일어서면 다시 든다.
+     가는 길에 사람이 0.5 m 앞에 있으면 멈춰 기다린다(최대 2초, 그 뒤 비켜 간다 — 사람은 충돌체가 아니다).
+     다른 사람 화면: 호스트가 setBaristaJob({kind, seat, startAt}) 를 모두에게 보내면 같은 걸음을 같은 때 재생한다(결정적 — 무작위 없음). 보내지 않으면 내 화면에서만.
    Logic 은 THREE 없이 Node 에서 시험한다(test/coffee.test.mjs). */
 (function (root) {
   'use strict';
@@ -29,30 +36,42 @@
       brewSec: cfg.brewSec || 3, pickR: cfg.pickR || 1.3,
       isNear: function (x, z) { var n = cfg.near; return !!n && x >= n.x0 && x <= n.x1 && z >= n.z0 && z <= n.z1; },
       spotFor: function (seatIdx) { var s = cfg.cupSpots && cfg.cupSpots[seatIdx]; return s || null; },
-      order: function (kind) {
+      sitting: null,   // 지금 앉은 좌석 번호(내 몸)
+      deliverTo: null, // 배달할 좌석 번호(없으면 카운터에서 받기)
+      order: function (kind, o) {
         var k = kindOf(kind); if (!k) return [];
-        L.kind = k; L.phase = 'brewing'; L.t = 0; L.seat = null;
-        return [{ e: 'coffeeOrdered', kind: k }];
+        var seat = o && typeof o.seat === 'number' ? o.seat : null;
+        L.kind = k; L.phase = 'brewing'; L.t = 0; L.seat = null; L.deliverTo = seat !== null && L.spotFor(seat) ? seat : null;
+        var e = { e: 'coffeeOrdered', kind: k }; if (L.deliverTo !== null) e.seat = L.deliverTo;
+        return [e];
+      },
+      // 바리스타가 컵을 좌석 자리에 놓았다(실행 쪽이 부른다)
+      delivered: function () {
+        if (L.phase !== 'carry') return [];
+        L.phase = 'placed'; L.seat = L.deliverTo; L.deliverTo = null;
+        return [{ e: 'coffeeReady', kind: L.kind, seat: L.seat }];
       },
       // me: {x, z, seated(bool), seat(번호|null)}. 반환: 나가는 이벤트 목록
       tick: function (dt, me) {
         var ev = [];
         var nr = !!(me && !me.seated && L.isNear(me.x, me.z));
         if (nr !== L.nearOn) { L.nearOn = nr; ev.push({ e: 'nearCounter', on: nr }); }
-        if (L.phase === 'brewing') { L.t += dt; if (L.t >= L.brewSec) { L.phase = 'ready'; ev.push({ e: 'coffeeReady', kind: L.kind }); } }
+        if (L.phase === 'brewing') { L.t += dt; if (L.t >= L.brewSec) { if (L.deliverTo !== null) L.phase = 'carry'; else { L.phase = 'ready'; ev.push({ e: 'coffeeReady', kind: L.kind }); } } }
         if (L.phase === 'ready' && me && !me.seated && cfg.pickup) {
           var dx = me.x - cfg.pickup.x, dz = me.z - cfg.pickup.z;
           if (dx * dx + dz * dz <= L.pickR * L.pickR) { L.phase = 'held'; ev.push({ e: 'coffeePicked', kind: L.kind }); }
         }
         return ev;
       },
-      give: function (kind) { var k = kindOf(kind); if (!k) { L.phase = 'idle'; L.kind = null; L.seat = null; return; } L.kind = k; L.phase = 'held'; L.seat = null; },
-      onSit: function (seatIdx) { if (L.phase === 'held' && L.spotFor(seatIdx)) { L.phase = 'placed'; L.seat = seatIdx; } },
-      onStand: function () { if (L.phase === 'placed') { L.phase = 'held'; L.seat = null; } },
+      give: function (kind) { var k = kindOf(kind); if (!k) { L.phase = 'idle'; L.kind = null; L.seat = null; return; } L.kind = k; L.phase = 'held'; L.seat = null; L.deliverTo = null; },
+      onSit: function (seatIdx) { L.sitting = seatIdx; if (L.phase === 'held' && L.spotFor(seatIdx)) { L.phase = 'placed'; L.seat = seatIdx; } },
+      // 일어서면 그 좌석에 놓인 내 컵만 다시 든다(다른 좌석에 배달된 컵은 그 자리에 둔다)
+      onStand: function () { if (L.phase === 'placed' && L.seat === L.sitting) { L.phase = 'held'; L.seat = null; } L.sitting = null; },
       // 지금 컵이 어디 있나: {where:'none'|'counter'|'hand'|'spot', kind, pos?}
       cupState: function () {
         if (!L.kind || L.phase === 'idle' || L.phase === 'brewing') return { where: 'none', kind: L.kind };
         if (L.phase === 'ready') return { where: 'counter', kind: L.kind, pos: cfg.pickup };
+        if (L.phase === 'carry') return { where: 'barista', kind: L.kind, seat: L.deliverTo };
         if (L.phase === 'placed') return { where: 'spot', kind: L.kind, pos: L.spotFor(L.seat), seat: L.seat };
         return { where: 'hand', kind: L.kind };
       }
@@ -166,22 +185,128 @@
       if (root.RoomRenderUtil) root.RoomRenderUtil.markCaster(bar.root);
     }
     var fy = layout.floorZones ? layout.floorZones[0].y : 0;
+    // 배달 길 찾기: 사람이 걷는 충돌체에서 바리스타 통로(카운터 뒤)만 뺀 격자 — 통로 끝(exit)으로 나와 사람과 같은 길을 걷는다
+    var nav = null, SL = root.RoomLogic, ST = root.RoomStations;
+    function getNav() {
+      if (nav || !SL || !ST || !app.logic) return nav;
+      var hm0 = cfg.home || bc, keep = app.logic.colliders.filter(function (c) { return !(c.k === 0 && hm0.x > c.x0 && hm0.x < c.x1 && hm0.z > c.z0 && hm0.z < c.z1); });   // 통로 상자 = 집(home)을 품은 상자
+      var lg = SL.create(layout, { colliders: keep, zones: app.logic.layoutZones ? app.logic.layoutZones() : [] });
+      nav = ST.create(lg, { cell: 0.15, radius: 0.25, speed: 1.25 });
+      return nav;
+    }
+    var seatAnchor = [];   // 호스트가 바꾼 자리(setSeatAnchors): [{cup, book, serve}]
+    function cupSpot(i) { var a = seatAnchor[i]; return (a && a.cup) || (cfg.cupSpots && cfg.cupSpots[i]) || null; }
+    function serveSpot(i) { var a = seatAnchor[i]; return (a && a.serve) || (cfg.serve && cfg.serve[i]) || null; }
+    L.spotFor = function (i) { return cupSpot(i); };
+    // 바리스타 일: {kind, seat, mine, cup(Object3D), st:'brew'|'out'|'go'|'place'|'back'|'in', w(걷기), t}
+    var job = null, jobs = [], wv = {}, BAR_V = 1.25;
+    function home() { return cfg.home || { x: bc.x, z: bc.z }; }
+    function pathTo(from, to, inside) {
+      if (inside) return { pts: [{ x: from.x, z: from.z }, { x: to.x, z: to.z }], len: Math.hypot(to.x - from.x, to.z - from.z) };
+      var N = getNav(); return N ? N.findPath(from, to) : null;
+    }
+    function startJob(j) {
+      job = j; j.t = 0; j.st = 'brew';
+      if (bar) bar.playGesture('brew', L.brewSec);
+      brewT = L.brewSec;
+    }
+    // 걷기: 길(w)을 따라 바리스타를 옮긴다. 사람(나·다른 사람)이 0.5m 앞이면 멈춘다(최대 2초)
+    function walkBar(dt) {
+      var p = bar.root.position, me = { x: p.x, z: p.z }, N = getNav() || { stepWalk: ST.create(app.logic).stepWalk };
+      N.stepWalk(job.w, me, dt, wv, BAR_V);
+      if (wv.done) return true;
+      var block = false, fx = wv.vx / (wv.speed || 1), fz = wv.vz / (wv.speed || 1);
+      function near(x, z) { var dx = x - p.x, dz = z - p.z, f = dx * fx + dz * fz; return f > 0 && f < 0.55 && Math.abs(dx * fz - dz * fx) < 0.4; }
+      if (app.me && app.me.mode === 'walk' && near(app.me.x, app.me.z)) block = true;
+      if (app.net && app.net.table) app.net.table.peers.forEach(function (r) { if (r.st !== 'sit' && near(r.x, r.z)) block = true; });
+      job.wait = block ? (job.wait || 0) + dt : 0;
+      var go = !block || job.wait > 2;
+      var nx = p.x + (go ? wv.vx * dt : 0), nz = p.z + (go ? wv.vz * dt : 0);
+      var want = wv.speed > 0.05 ? wv.yaw : barYaw, d = want - barYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+      barYaw += d * Math.min(1, dt * 8);
+      bar.setWalk(go ? Math.min(1, wv.speed / 2.2 * 1.05) : 0);
+      bar.setPose(nx, app.logic ? app.logic.floorY(nx, nz) : fy, nz, barYaw);
+      return false;
+    }
+    function jobCup(j) { if (!j.cup) j.cup = makeCup(T, j.kind); return j.cup; }
+    function updateJob(dt, t) {
+      var j = job, p = bar.root.position;
+      j.t += dt;
+      if (j.st === 'brew') {
+        brewT -= dt;
+        var want = Math.atan2(-(bc.machine.x - p.x), -(bc.machine.z - p.z)), d0 = want - barYaw; while (d0 > Math.PI) d0 -= Math.PI * 2; while (d0 < -Math.PI) d0 += Math.PI * 2;
+        barYaw += d0 * Math.min(1, dt * 3); bar.setPose(p.x, p.y, p.z, barYaw); bar.setWalk(0);
+        if (j.t >= L.brewSec) {
+          var sv = serveSpot(j.seat);
+          if (!sv) { j.st = 'done'; return; }
+          attachToHand(bar, jobCup(j), scene); bar.setHold(true);
+          // 통로 안(바 스툴 — 카운터 너머로 건넨다)이면 바로, 아니면 통로 끝(exit)으로 나간 다음 길 찾기
+          if (sv.across) { j.w = (getNav() || ST.create(app.logic)).startWalk(pathTo(p, sv, true), sv); j.st = 'go'; }
+          else { j.w = (getNav() || ST.create(app.logic)).startWalk(pathTo(p, cfg.exit || p, true), cfg.exit); j.st = 'out'; }
+          j.t = 0;
+        }
+      } else if (j.st === 'out' || j.st === 'go' || j.st === 'back' || j.st === 'in') {
+        if (j.cup && j.cup.userData.held) followHand(bar, j.cup);
+        if (!walkBar(dt) && j.t < 60) return;
+        j.t = 0;
+        if (j.st === 'out') { var sv2 = serveSpot(j.seat), pp = pathTo(p, sv2); if (!pp) { j.st = 'place'; return; } j.w = getNav().startWalk(pp, sv2); j.st = 'go'; }
+        else if (j.st === 'go') j.st = 'place';
+        else if (j.st === 'back') { j.w = (getNav() || ST.create(app.logic)).startWalk(pathTo(p, home(), true), home()); j.st = 'in'; }
+        else { j.st = 'done'; }
+      } else if (j.st === 'place') {
+        // 컵 자리를 보고 내려놓는다(0.7초): 가운데에서 컵이 자리에 놓이고 그 순간 coffeeReady
+        var cs = cupSpot(j.seat);
+        var w2 = Math.atan2(-(cs.x - p.x), -(cs.z - p.z)), d1 = w2 - barYaw; while (d1 > Math.PI) d1 -= Math.PI * 2; while (d1 < -Math.PI) d1 += Math.PI * 2;
+        barYaw += d1 * Math.min(1, dt * 6); bar.setPose(p.x, p.y, p.z, barYaw); bar.setWalk(0);
+        if (j.cup && j.cup.userData.held) followHand(bar, j.cup);
+        if (j.t > 0.45 && !j.put) {
+          j.put = true; bar.setHold(false);
+          if (j.mine) { if (j.cup && j.cup.parent) j.cup.parent.remove(j.cup); emit(L.delivered()); placeMyCup(); }
+          else if (j.cup) { j.cup.userData.held = null; j.cup.position.set(cs.x, cs.y, cs.z); j.cup.rotation.set(0, 0.6, 0); j.leftCup = j.cup; }
+          post({ e: 'baristaPlaced', seat: j.seat, kind: j.kind, mine: !!j.mine });
+        }
+        if (j.t > 0.8) {
+          var cfgSv = serveSpot(j.seat);
+          if (cfgSv && cfgSv.across) { j.w = (getNav() || ST.create(app.logic)).startWalk(pathTo(p, home(), true), home()); j.st = 'in'; }
+          else { var pb = pathTo(p, cfg.exit || home()); j.w = getNav().startWalk(pb || pathTo(p, cfg.exit || home(), true), cfg.exit || home()); j.st = 'back'; }
+          j.t = 0;
+        }
+      }
+    }
     function placeMyCup() {
       var st = L.cupState();
-      if (st.where === 'none') { if (myCup && myCup.parent) myCup.parent.remove(myCup); if (app.meAv) app.meAv.setHold(false); return; }
+      if (st.where === 'none' || st.where === 'barista') { if (myCup && myCup.parent) myCup.parent.remove(myCup); if (app.meAv) app.meAv.setHold(false); return; }
       if (!myCup || myKind !== st.kind) { if (myCup && myCup.parent) myCup.parent.remove(myCup); myCup = makeCup(T, st.kind); myKind = st.kind; }
       if (st.where === 'hand') { attachToHand(app.meAv, myCup, scene); app.meAv.setHold(true); }
       else { if (myCup.parent !== scene) { if (myCup.parent) myCup.parent.remove(myCup); scene.add(myCup); } myCup.userData.held = null; myCup.position.set(st.pos.x, st.pos.y, st.pos.z); myCup.rotation.set(0, 0.6, 0); if (app.meAv) app.meAv.setHold(false); }
     }
     function emit(list) { list.forEach(function (e) { post(e); }); }
+    function mySeatIdx() { return app.me && app.me.mode === 'seated' && app.me.seat ? app.logic.seatIndex(app.me.seat) : null; }
     var api = {
       logic: L,
       barista: bar,
-      order: function (kind) {
-        var ev = L.order(kind); if (!ev.length) return false;
-        brewT = L.brewSec; if (bar) bar.playGesture('brew', L.brewSec);
+      // kind, o: {seat} — 앉아 있으면 seat 를 안 줘도 지금 좌석으로 가져다 준다. 카운터 앞(서서)이면 예전처럼 받으러 가기
+      order: function (kind, o) {
+        var seat = o && typeof o.seat === 'number' ? o.seat : mySeatIdx();
+        var ev = L.order(kind, seat !== null ? { seat: seat } : null); if (!ev.length) return false;
+        if (job && job.mine && job.cup && job.cup.parent) job.cup.parent.remove(job.cup);
+        if (L.deliverTo !== null) { if (bar) { jobs.length = 0; startJob({ kind: L.kind, seat: L.deliverTo, mine: true }); } else { L.phase = 'carry'; emit(L.delivered()); } }
+        else { brewT = L.brewSec; if (bar) bar.playGesture('brew', L.brewSec); }
         placeMyCup(); emit(ev); return true;
       },
+      // 다른 사람 주문의 배달(호스트가 모든 사람에게 같은 일을 보낸다): {kind, seat, startAt(ms, performance.now 기준이 아니라 Date.now)}
+      job: function (o) {
+        var k = kindOf(o && o.kind); if (!k || typeof o.seat !== 'number') return false;
+        var j = { kind: k, seat: o.seat | 0, mine: false, at: +o.startAt || 0 };
+        if (job && job.st !== 'done') jobs.push(j); else if (bar) startJob(j);
+        return true;
+      },
+      setSeatAnchors: function (list) {
+        (Array.isArray(list) ? list : []).forEach(function (a) { if (!a || typeof a.i !== 'number') return; var o = seatAnchor[a.i] || (seatAnchor[a.i] = {}); ['cup', 'book', 'serve'].forEach(function (k) { if (a[k]) o[k] = a[k]; }); });
+        placeMyCup();
+      },
+      bookSpot: function (i) { var a = seatAnchor[i]; return (a && a.book) || (layout.bookSpots && layout.bookSpots[i]) || null; },
+      jobState: function () { return job ? { st: job.st, seat: job.seat, kind: job.kind, x: bar.root.position.x, z: bar.root.position.z } : null; },
       give: function (kind) { L.give(kind); if (app.me && app.me.mode === 'seated' && app.me.seat) L.onSit(app.logic.seatIndex(app.me.seat)); placeMyCup(); },
       onSit: function (i) { L.onSit(i); placeMyCup(); },
       onStand: function () { L.onStand(); placeMyCup(); },
@@ -190,30 +315,32 @@
         var ev = L.tick(dt, { x: me.x, z: me.z, seated: seated });
         if (ev.length) { placeMyCup(); emit(ev); }
         if (myCup && myCup.userData.held) followHand(myCup.userData.held, myCup);
-        if (bar) {
-          // 바리스타 방향: 만드는 중이면 기계(+x) 쪽, 내가 3 m 안이면 나를, 아니면 손님 쪽(기본)
-          var want = bc.yaw, dx = me.x - bc.x, dz = me.z - bc.z;
-          if (brewT > 0) { brewT -= dt; want = Math.atan2(-(bc.machine.x - bc.x), -(bc.machine.z - bc.z)); }
-          else if (dx * dx + dz * dz < 9 && app.meAv && app.meAv.root.visible) want = Math.atan2(-dx, -dz);   // 썸네일(내 몸 숨김)에서는 손님 쪽 그대로
-          var d = want - barYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
-          barYaw += d * Math.min(1, dt * 3);
-          // 통로 밖으로 나가지 않게(제자리 + 살짝 좌우 — 만들 때 기계 앞으로 반 걸음)
-          var bx = brewT > 0 ? bc.x + 0.08 : bc.x, bz = brewT > 0 ? Math.max(bc.z0, Math.min(bc.z1, bc.machine.z + 0.25)) : bc.z;
-          var p = bar.root.position, nx = p.x + (bx - p.x) * Math.min(1, dt * 2), nz = p.z + (bz - p.z) * Math.min(1, dt * 2);
-          nx = Math.max(bc.x0, Math.min(bc.x1, nx)); nz = Math.max(bc.z0, Math.min(bc.z1, nz));
-          var mv = Math.hypot(nx - p.x, nz - p.z) / Math.max(dt, 1e-3);
-          bar.setWalk(Math.min(1, mv / 1.2));
-          bar.setPose(nx, fy, nz, barYaw);
-          bar.update(dt, t);
-        }
+        if (!bar) return;
+        if (job && job.st === 'done') { if (job.leftCup && job.leftCup.parent) job.leftCup.parent.remove(job.leftCup); bar.setHold(false); job = null; }   // 다른 사람 컵은 그 사람의 cup 필드가 이어받는다
+        if (!job && jobs.length && (!jobs[0].at || Date.now() >= jobs[0].at)) startJob(jobs.shift());
+        if (job) { updateJob(dt, t); bar.update(dt, t); return; }
+        // 바리스타 방향: 만드는 중이면 기계(+x) 쪽, 내가 3 m 안이면 나를, 아니면 손님 쪽(기본)
+        var want = bc.yaw, dx = me.x - bc.x, dz = me.z - bc.z;
+        if (brewT > 0) { brewT -= dt; want = Math.atan2(-(bc.machine.x - bc.x), -(bc.machine.z - bc.z)); }
+        else if (dx * dx + dz * dz < 9 && app.meAv && app.meAv.root.visible) want = Math.atan2(-dx, -dz);   // 썸네일(내 몸 숨김)에서는 손님 쪽 그대로
+        var d = want - barYaw; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+        barYaw += d * Math.min(1, dt * 3);
+        // 통로 밖으로 나가지 않게(제자리 + 살짝 좌우 — 만들 때 기계 앞으로 반 걸음)
+        var bx = brewT > 0 ? bc.x + 0.08 : bc.x, bz = brewT > 0 ? Math.max(bc.z0, Math.min(bc.z1, bc.machine.z + 0.25)) : bc.z;
+        var p = bar.root.position, nx = p.x + (bx - p.x) * Math.min(1, dt * 2), nz = p.z + (bz - p.z) * Math.min(1, dt * 2);
+        nx = Math.max(bc.x0, Math.min(bc.x1, nx)); nz = Math.max(bc.z0, Math.min(bc.z1, nz));
+        var mv = Math.hypot(nx - p.x, nz - p.z) / Math.max(dt, 1e-3);
+        bar.setWalk(Math.min(1, mv / 1.2));
+        bar.setPose(nx, fy, nz, barYaw);
+        bar.update(dt, t);
       },
       // 다른 사람 컵(net_view 가 매 프레임 부른다): holder = 보기 기록 v, kind = rec.cup, seatIdx = 앉은 좌석 번호 또는 null
       syncPeer: function (v, av, kind, seatIdx) {
-        var k = kindOf(kind), where = peerCupWhere(k, seatIdx, cfg.cupSpots);
+        var k = kindOf(kind), where = peerCupWhere(k, seatIdx, (cfg.cupSpots || []).map(function (c, i) { return cupSpot(i); }));
         if (where === 'none') { if (v.cup && v.cup.parent) v.cup.parent.remove(v.cup); v.cup = null; v.cupKind = null; if (av) av.setHold(false); return; }
         if (!v.cup || v.cupKind !== k) { if (v.cup && v.cup.parent) v.cup.parent.remove(v.cup); v.cup = makeCup(T, k); v.cupKind = k; }
         if (where === 'hand') { attachToHand(av, v.cup, scene); av.setHold(true); }
-        else { var s = cfg.cupSpots[seatIdx]; if (v.cup.parent !== scene) { if (v.cup.parent) v.cup.parent.remove(v.cup); scene.add(v.cup); } v.cup.userData.held = null; v.cup.position.set(s.x, s.y, s.z); av.setHold(false); }
+        else { var s = cupSpot(seatIdx); if (v.cup.parent !== scene) { if (v.cup.parent) v.cup.parent.remove(v.cup); scene.add(v.cup); } v.cup.userData.held = null; v.cup.position.set(s.x, s.y, s.z); av.setHold(false); }
       },
       state: function () { return L.cupState(); }
     };

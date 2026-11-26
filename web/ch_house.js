@@ -7,6 +7,7 @@
 (function (root) {
   'use strict';
   var FL = 0.16, CEIL = FL + 2.7, WALL_TOP = 3.0, T_W = 0.2;
+  var STOOL = { x: 0.85, top: 0.63, ring: 0.22 };   // 바 스툴: 가운데 x(좌석 3 의 z), 앉는 면 높이 0.63(앱과 같게), 발 받침 고리 높이(바닥 위)
   var SWING = { x: -4.75, z: -2.5 };   // 옆마당 2인 그네의 가운데(좌석 4·5) — 마당 안쪽에서 골목(+z) 쪽을 본다(소유자 참고 그림 ref_swing_yard)
   var PI = Math.PI;
 
@@ -32,7 +33,7 @@
     ],
     desks: [2.15, 0.55, -1.05],                                      // 창가 책상 가운데 z
     // 오른쪽 벽 커피 카운터(작업대 자리): 앞 카운터(손님 쪽) + 바리스타 통로 + 뒤 카운터(에스프레소 기계·그라인더·컵 선반)
-    counter: { x0: 1.3, x1: 1.75, z0: -1.55, z1: 0.45, top: FL + 1.05 },
+    counter: { x0: 1.3, x1: 1.75, z0: -1.55, z1: 0.45, top: FL + 0.92 },   // 카운터 높이 0.92(앱과 같게 — 바 스툴 0.63 과 짝)
     back: { x0: 2.15, x1: 2.5, z0: -1.55, z1: 0.45, top: FL + 0.92 },
     barista: { x: 1.95, z: -0.55, x0: 1.75, x1: 2.15 },
     garden: {
@@ -90,29 +91,38 @@
     id: 'house', scalePercent: 100,
     bounds: { x0: -6.45, x1: 6.5, z0: -5.75, z1: 8.0 },
     spawn: { x: 0.72, z: 5.4, r: 0 },
-    // 좌석: 창가 책상 3(창을 본다, yaw π/2 = -x) + 커피 카운터 바 스툴 1(+x, 카운터를 본다) + 그네 2. stand = 일어서는 자리. y = 발판 높이(스툴)
+    // 좌석: 창가 책상 3(창을 본다, yaw π/2 = -x) + 커피 카운터 바 스툴 1(+x, 카운터를 본다) + 그네 2.
+    // x,z = 앉은 몸(루트) 자리(골반은 그 뒤 SEAT_BACK). y = 발을 두는 높이(스툴 발 받침 고리 — 없으면 바닥). top = 앉는 면 높이(절대).
+    // footFwd = 앉았을 때 발목이 골반 앞으로 나가는 거리(m). stand = 앉으러 서는 자리(좌석 옆·앞 — 의자 등받이를 뚫고 지나가지 않게, 2026-11-26 측정 원인 2).
     seats: [
-      { x: -1.55, z: 2.15, yaw: PI / 2, stand: { x: -0.95, z: 2.15 } },
-      { x: -1.55, z: 0.55, yaw: PI / 2, stand: { x: -0.95, z: 0.55 } },
-      { x: -1.55, z: -1.05, yaw: PI / 2, stand: { x: -0.95, z: -1.05 } },
-      { x: 1.0, z: -0.5, yaw: -PI / 2, y: FL + 0.3, stand: { x: 0.45, z: -0.5 } },
-      // 옆마당 2인 그네(A 자 틀): 나란히 두 자리, 집·화단 쪽(+x)을 본다
-      { x: SWING.x - 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x - 0.3, z: SWING.z + 0.82 } },
-      { x: SWING.x + 0.3, z: SWING.z, yaw: PI, stand: { x: SWING.x + 0.3, z: SWING.z + 0.82 } }
+      { x: -1.61, z: 2.15, yaw: PI / 2, top: FL + 0.45, footFwd: 0.4, stand: { x: -1.6, z: 2.72 } },
+      { x: -1.61, z: 0.55, yaw: PI / 2, top: FL + 0.45, footFwd: 0.4, stand: { x: -1.6, z: 1.12 } },
+      { x: -1.61, z: -1.05, yaw: PI / 2, top: FL + 0.45, footFwd: 0.4, stand: { x: -1.6, z: -0.48 } },
+      { x: 0.95, z: -0.5, yaw: -PI / 2, y: FL + STOOL.ring, top: FL + STOOL.top, footFwd: 0.2, stand: { x: 0.9, z: 0.08 } },
+      // 옆마당 2인 그네(A 자 틀): 나란히 두 자리, 집·화단 쪽(+x)을 본다 — 서는 자리는 그네 앞
+      { x: SWING.x - 0.3, z: SWING.z + 0.07, yaw: PI, top: 0.47, footFwd: 0.42, stand: { x: SWING.x - 0.3, z: SWING.z + 0.82 } },
+      { x: SWING.x + 0.3, z: SWING.z + 0.07, yaw: PI, top: 0.47, footFwd: 0.42, stand: { x: SWING.x + 0.3, z: SWING.z + 0.82 } }
     ],
     seatLabels: ['Window 1', 'Window 2', 'Window 3', 'Counter', 'Swing left', 'Swing right'],   // 영어 기본 — 화면 글자는 호스트 setStrings({seatLabels})
     // 커피(coffee.js): 주문 안내가 뜨는 곳(near), 컵이 나오는 자리(pickup), 바리스타 자리, 앉으면 컵을 내려놓는 자리(좌석 번호 순, 없으면 null = 계속 든다)
     coffee: {
       near: { x0: 0.35, x1: 1.3, z0: -1.9, z1: 0.85 },
-      pickup: { x: 1.42, y: FL + 1.05, z: 0.2 },
+      pickup: { x: 1.42, y: FL + 0.92, z: 0.2 },
       barista: { x: 1.95, z: -0.55, yaw: PI / 2, x0: 1.78, x1: 2.12, z0: -1.4, z1: 0.3, machine: { x: 2.3, z: -1.0 } },
       cupSpots: [
         { x: -2.03, y: FL + 0.74, z: 2.15 + 0.32 }, { x: -2.03, y: FL + 0.74, z: 0.55 - 0.32 }, { x: -2.03, y: FL + 0.74, z: -1.05 - 0.3 },
-        { x: 1.42, y: FL + 1.05, z: -0.5 + 0.12 },
+        { x: 1.42, y: FL + 0.92, z: -0.5 + 0.12 },
         { x: SWING.x - 1.38, y: 0.56, z: SWING.z + 0.07 }, { x: SWING.x - 1.26, y: 0.56, z: SWING.z - 0.07 }
       ],
-      brewSec: 3
+      brewSec: 3,
+      // 자리로 가져다 주기(coffee.js deliver): 바리스타가 서서 컵을 놓는 자리(좌석 번호 순). 바 스툴은 카운터 너머로 건넨다(통로 안).
+      // 호스트가 탁자를 옮기면(그네 앞 탁자 등) Room3D.setSeatAnchors 로 cup·book·serve 를 바꾼다.
+      serve: [{ x: -1.62, z: 2.15 + 0.55 }, { x: -1.62, z: 0.55 - 0.65 }, { x: -1.62, z: -1.05 - 0.65 }, { x: 1.95, z: -0.38, across: true }, { x: SWING.x - 1.32, z: SWING.z + 0.62 }, { x: SWING.x - 1.32, z: SWING.z + 0.62 }],
+      home: { x: 1.95, z: -0.55 },          // 배달이 끝나면 돌아가는 자리(바리스타 통로)
+      exit: { x: 1.95, z: 0.62 }            // 통로 끝(카운터 끝과 진열대 사이) — 통로 안팎을 잇는 곳
     },
+    // 앉아서 읽을 때 덮은 책을 놓는 자리(좌석 번호 순, 없으면 무릎 위)
+    bookSpots: [{ x: -2.08, y: FL + 0.74, z: 2.15 - 0.05 }, { x: -2.08, y: FL + 0.74, z: 0.55 + 0.05 }, { x: -2.08, y: FL + 0.74, z: -1.05 + 0.05 }, { x: 1.45, y: FL + 0.92, z: -0.62 }, { x: SWING.x - 1.32, y: 0.56, z: SWING.z + 0.05 }, { x: SWING.x - 1.32, y: 0.56, z: SWING.z - 0.1 }],
     sunRot: 100,                                                    // 오후 해가 왼편(마당 쪽)에서 비스듬히: 정면 벽에 결이 살고 그림자가 옆으로 길게, 마당 그네는 역광 — world.js
     camDist: 4.2,                                                   // 좁은 실내: 카메라 팔 기본 길이(m)
     seatView: { side: 0.6 },
@@ -506,12 +516,12 @@
         ctx.boxAABB({ x0: x0, x1: x1, z0: zc - 0.5, z1: zc + 0.5, y0: top - 0.04, y1: top, surf: 'wood_dark', color: 0xe2c19a });
         [[x0 + 0.04, zc - 0.46], [x1 - 0.04, zc - 0.46], [x0 + 0.04, zc + 0.46], [x1 - 0.04, zc + 0.46]].forEach(function (p) { ctx.box({ x: p[0], y: FL, z: p[1], w: 0.045, h: 0.70, d: 0.045, color: 0x7a5232, mat: 'wood' }); });
         ctx.boxAABB({ x0: x0 + 0.02, x1: x1 - 0.06, z0: zc - 0.46, z1: zc + 0.46, y0: top - 0.12, y1: top - 0.04, color: 0x8a5d38, mat: 'wood' });
-        var s = layout.seats[i], cx = s.x, cz = s.z, sy = FL + 0.44;
+        var s = layout.seats[i], cx = -1.55, cz = s.z, sy = FL + 0.37;   // 앉는 면(방석 위) FL+0.45 — 예전 0.52 는 허벅지가 8cm 파묻혔다
         ctx.box({ x: cx, y: sy, z: cz, w: 0.44, h: 0.04, d: 0.42, color: 0x9a6a40, mat: 'wood' });
         ctx.box({ x: cx - 0.01, y: sy + 0.04, z: cz, w: 0.38, h: 0.04, d: 0.36, color: 0xe9dcc4 });   // 방석
         [[-0.18, -0.17], [0.18, -0.17], [-0.18, 0.17], [0.18, 0.17]].forEach(function (p) { ctx.box({ x: cx + p[0], y: FL, z: cz + p[1], w: 0.035, h: 0.44, d: 0.035, color: 0x7a5232, mat: 'wood' }); });
-        [-0.17, 0.17].forEach(function (dz) { ctx.box({ x: cx + 0.2, y: sy, z: cz + dz, w: 0.035, h: 0.44, d: 0.035, color: 0x7a5232, mat: 'wood' }); });
-        ctx.box({ x: cx + 0.21, y: sy + 0.24, z: cz, w: 0.03, h: 0.16, d: 0.38, color: 0x9a6a40, mat: 'wood' });
+        [-0.17, 0.17].forEach(function (dz) { ctx.box({ x: cx + 0.24, y: sy, z: cz + dz, w: 0.035, h: 0.5, d: 0.035, color: 0x7a5232, mat: 'wood' }); });   // 등받이 4cm 뒤로(골반이 닿지 않게)
+        ctx.box({ x: cx + 0.25, y: sy + 0.3, z: cz, w: 0.03, h: 0.16, d: 0.38, color: 0x9a6a40, mat: 'wood' });
         // 책상 위 소품
         if (i === 0) {   // 책상 등 + 펼친 책 + 머그 + 타이머 화면
           ctx.cyl({ x: -2.32, y: top, z: zc + 0.3, r: 0.07, h: 0.02, seg: 12, color: BRASS, mat: 'metal' });
@@ -653,11 +663,11 @@
       ctx.cyl({ x: 1.6, y: FL + 1.68, z: -0.55, r: 0.16, rTop: 0.05, h: 0.17, seg: 22, surf: METAL, color: 0x3a3b3d, flat: false });
       ctx.glow.add(Geo.sph(10, 6), hdr(0xffd9a0, 2.6), { x: 1.6, y: FL + 1.69, z: -0.55, sx: 0.06, sy: 0.035, sz: 0.06, flat: false, vary: 0 });
       ctx.addGlow({ x: 1.6, y: FL + 1.62, z: -0.55, size: 0.8, color: 0xffcf8a, kind: 'lamp', bake: { type: 'counter', y: FL + 1.71 } });
-      // 바 스툴(좌석 3): 둥근 오크 좌판(높이 0.75) + 검은 금속 다리 4 + 발 받침 고리
-      var s3 = layout.seats[3], SY = FL + 0.75;
+      // 바 스툴(좌석 3): 둥근 오크 좌판(높이 0.63) + 검은 금속 다리 4 + 발 받침 고리
+      var s3 = { x: STOOL.x, z: layout.seats[3].z }, SY = FL + STOOL.top;
       ctx.cyl({ x: s3.x, y: SY - 0.05, z: s3.z, r: 0.18, h: 0.05, seg: 20, surf: 'wood_oak', color: 0xe8d2b4, flat: false });
       [[0.11, 0.11], [-0.11, 0.11], [0.11, -0.11], [-0.11, -0.11]].forEach(function (p) { ctx.beam3([s3.x + p[0] * 0.8, SY - 0.05, s3.z + p[1] * 0.8], [s3.x + p[0] * 1.4, FL, s3.z + p[1] * 1.4], 0.02, 0.02, 0x2a2a2c, ctx.metalB); });
-      ctx.add(new T.Mesh(new T.TorusGeometry(0.17, 0.01, 6, 24).rotateX(PI / 2).translate(s3.x, FL + 0.3, s3.z), ctx.mats.metal));
+      ctx.add(new T.Mesh(new T.TorusGeometry(0.17, 0.01, 6, 24).rotateX(PI / 2).translate(s3.x, FL + STOOL.ring, s3.z), ctx.mats.metal));   // 발 받침 고리(앉으면 발이 여기)
       var B = { top: K.top };
       panel('tablet', { x: 1.52, y: B.top + 0.005, z: -1.25, w: 0.3, h: 0.22, rx: -PI / 2 + 0.12, ry: -PI / 2, px: 384, screen: true, data: { title: STR('tabletTitle', 'Now reading'), lines: 9 }, draw: function (g, w, h, d) {
         g.fillStyle = '#f6f2ea'; g.fillRect(0, 0, w, h);

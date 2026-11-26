@@ -937,6 +937,49 @@
   Avatar.prototype.seatLift = 0.45;
   Avatar.prototype.setWalk = function (v) { this.walkTarget = v; if (v > 0.05 && this.emote >= 0) this.cancelGesture(); };   // 걷기 입력은 인사를 끊는다
   Avatar.prototype.setSeated = function (b) { this.sitTarget = b ? 1 : 0; };
+  // 앉는 정도를 밖에서 직접(0..1) — 앉기 순서(다가가기 → 돌아서기 → 내려앉기)를 main.js·net_view.js 가 시간에 맞춰 몬다. null 이면 예전처럼 저절로(빠르기 7/s).
+  Avatar.prototype.setSitProgress = function (p) { this.sitDrive = (typeof p === 'number' && isFinite(p)) ? clamp01(p) : null; };
+  // 좌석 맞춤: hip = 골반 관절 높이(루트 = 발 높이 기준, m), foot = 발목이 골반 앞으로 나가는 거리(m). 앉은 다리를 2관절 IK 로 맞춘다(바 스툴 발 받침·낮은 의자).
+  // null 이면 예전 기본 각도(허벅지 1.45, 무릎 -1.65 rad).
+  Avatar.prototype.setSeatFit = function (o) {
+    if (!o || !(o.hip > 0)) { this.seatLeg = null; return; }
+    var h = o.hip - ANKLE, f = o.foot === undefined ? 0.42 : o.foot, d = Math.sqrt(h * h + f * f), dm = LEN_T + LEN_S - 0.002;
+    if (d > dm) { f = Math.sqrt(Math.max(0, dm * dm - h * h)); d = dm; }
+    var phi = Math.atan2(f, h), al = Math.acos(clamp((LEN_T * LEN_T + d * d - LEN_S * LEN_S) / (2 * LEN_T * d), -1, 1));
+    var kn = PI - Math.acos(clamp((LEN_T * LEN_T + LEN_S * LEN_S - d * d) / (2 * LEN_T * LEN_S), -1, 1));
+    this.seatLeg = { t1: phi + al, t2: -kn, hip: o.hip, foot: f };
+  };
+  // 앉아서 읽기(호스트 setReading): state 'read'(두 손에 편 책, 고개 숙임, 약 20초마다 한 장 넘김) | 'closed'(덮은 책을 spot{x,y,z — 세계}에, 없으면 무릎 위) | 'none'
+  Avatar.prototype.setRead = function (state, spot) {
+    this.readState = state === 'read' || state === 'closed' ? state : 'none';
+    this.readSpot = spot && isFinite(spot.x) ? { x: +spot.x, y: +spot.y, z: +spot.z } : null;
+    if (this.readState !== 'none' && !this.book) this.book = makeBook();
+    if (!this.book) return;
+    var bk = this.book;
+    if (this.readState === 'read') { if (bk.parent !== this.bones[B.chest]) { if (bk.parent) bk.parent.remove(bk); this.bones[B.chest].add(bk); } }
+    else if (this.readState === 'closed') { if (bk.parent !== this.root) { if (bk.parent) bk.parent.remove(bk); this.root.add(bk); } }
+    else if (bk.parent) bk.parent.remove(bk);
+    this.readT = 0; this.pageT = -1; this.nextPage = 17 + (this.off * 3) % 6;
+  };
+  // 책(공유 재질): 표지 둘(경첩 = 책등) + 속장 둘 + 넘기는 한 장. 펴면 두 쪽이 V 자(약 150°), 덮으면 겹친다.
+  var bookMats = null;
+  function makeBook() {
+    if (!bookMats) bookMats = { cover: new T.MeshStandardMaterial({ color: 0x5b6f86, roughness: 0.7 }), page: new T.MeshStandardMaterial({ color: 0xf4eee0, roughness: 0.9, side: T.DoubleSide }) };
+    var g = new T.Group(); g.name = 'book';
+    var W = 0.14, H = 0.21;
+    function half(sd) {
+      var h = new T.Group();
+      var c = new T.Mesh(new T.BoxGeometry(W + 0.006, 0.004, H + 0.008), bookMats.cover); c.position.set(sd * (W + 0.006) / 2, -0.002, 0);
+      var pg = new T.Mesh(new T.BoxGeometry(W, 0.012, H), bookMats.page); pg.position.set(sd * W / 2, 0.006, 0);
+      h.add(c); h.add(pg); h.userData.sd = sd; return h;
+    }
+    var L = half(-1), R = half(1), leaf = new T.Mesh(new T.PlaneGeometry(W, H).rotateX(-PI / 2).translate(W / 2, 0.0125, 0), bookMats.page);
+    var leafG = new T.Group(); leafG.add(leaf); leafG.visible = false;
+    g.add(L); g.add(R); g.add(leafG);
+    g.userData = { L: L, R: R, leaf: leafG };
+    g.traverse(function (m) { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+    return g;
+  }
   // 지금 몸(골반)이 좌석 중심에서 앞으로 나가 있는 거리(m). 카메라·이름표가 따라간다.
   // 가까운 카메라용 흐리기(a: 1 불투명 … 0 투명). 공유 재질은 그대로 두고 이 아바타만 복제 재질(처음 한 번 만든다)로 바꿔 opacity 만 바꾼다.
   // 이름표도 함께(이름표 재질은 이름별로 공유되므로 복제본; 이름이 바뀌면 다시 복제). 같은 값이면 아무것도 안 한다(할당 0).
@@ -1362,7 +1405,8 @@
   Avatar.prototype.update = function (dt, t) {
     var k = Math.min(1, dt * 10);
     this.walkAmt += (this.walkTarget - this.walkAmt) * k;
-    this.sitAmt += (this.sitTarget - this.sitAmt) * Math.min(1, dt * 7);
+    if (this.sitDrive !== null && this.sitDrive !== undefined) this.sitAmt = this.sitDrive;
+    else this.sitAmt += (this.sitTarget - this.sitAmt) * Math.min(1, dt * 7);
     var sa = this.sitAmt;
     this.holdAmt += (this.holdTarget - this.holdAmt) * Math.min(1, dt * 6);
     var gEnv = 0;
@@ -1396,8 +1440,9 @@
     var lR = g.leg[1], lL = g.leg[0];
 
     // ---- 다리 각도(서기: IK 보행/대기, 앉기: 90도 굽힘) ----
-    var t1R = lerp(lR.t1, 1.45, sa), t1L = lerp(lL.t1, 1.45, sa);
-    var t2R = lerp(lR.t2, -1.65, sa), t2L = lerp(lL.t2, -1.65, sa);
+    var SLg = this.seatLeg, st1 = SLg ? SLg.t1 : 1.45, st2 = SLg ? SLg.t2 : -1.65;
+    var t1R = lerp(lR.t1, st1, sa), t1L = lerp(lL.t1, st1, sa);
+    var t2R = lerp(lR.t2, st2, sa), t2L = lerp(lL.t2, st2, sa);
     var fR = -(t1R + t2R), fL = -(t1L + t2L);
     // 골반 높이: 서 있으면 두 발이 닿는 높이(IK), 앉기 쪽은 발이 바닥 아래로 가지 않도록(더 낮은 쪽 다리에 맞춤)
     var hjR = ANKLE + LEN_T * Math.cos(t1R) + LEN_S * Math.cos(t1R + t2R), hjL = ANKLE + LEN_T * Math.cos(t1L) + LEN_S * Math.cos(t1L + t2L);
@@ -1437,7 +1482,9 @@
     // 머리·목
     var gaze = Math.sin(t * 0.37 + this.off) * Math.sin(t * 0.11 + this.off * 2);
     setE(bs[B.neck], 0.02, (gaze * 0.12) * (1 - w), Math.sin(ph) * 0.02 * w);
-    setE(bs[B.head], -0.02 + 0.02 * Math.sin(t * 0.9 + this.off), (gaze * 0.2) * (1 - w) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0);
+    var rdA = this.readAmt = (this.readAmt || 0) + (((this.readState === 'read' && this.sitTarget) ? 1 : 0) - (this.readAmt || 0)) * Math.min(1, dt * 3);
+    setE(bs[B.head], -0.02 + 0.02 * Math.sin(t * 0.9 + this.off) + 0.32 * rdA, (gaze * 0.2) * (1 - w) * (1 - rdA) + (-(hipsRy + spineRy + chestRy)) * 0.5, 0.07 * rdA);
+    if (rdA > 0.001) { _e.set(0.02 + 0.12 * rdA, 0, 0, 'YXZ'); bs[B.neck].quaternion.setFromEuler(_e); }
 
     // ---- 팔 ----
     var armA = 0.10 + 0.22 * w + 0.10 * jg + 0.12 * fs, elb = 0.20 + 0.22 * w + 0.85 * jg + 0.95 * fs + 0.04 * br, side, qs = this.qs;   // 팔 흔들기: 보통 걸음(1.2 m/s)에서 위팔 약 30°, 잰걸음은 팔꿈치를 굽힌다
@@ -1483,8 +1530,18 @@
         qs.gH[gi].copy(_q2.copy(qs.gU[gi]).multiply(qs.gF[gi]).invert()).multiply(_q1);
         qU.slerp(qs.gU[gi], gE); qF.slerp(qs.gF[gi], gE); qH.slerp(qs.gH[gi], gE);
       }
+      if (rdA > 0.001 && !(side > 0 && hA > 0.5)) {
+        // 읽기: 두 손으로 편 책의 양 끝을 아래에서 받친다(가슴 앞 30cm, 책은 가슴 뼈에 붙어 있다)
+        var ri = side > 0 ? 1 : 0, turnK = side > 0 ? (this.pageK || 0) : 0;
+        if (!qs.rU) { qs.rU = [new T.Quaternion(), new T.Quaternion()]; qs.rF = [new T.Quaternion(), new T.Quaternion()]; qs.rH = [new T.Quaternion(), new T.Quaternion()]; }
+        arm2(side, side * (0.125 - 0.09 * turnK), -0.075 + 0.03 * turnK, -0.30, side * 0.7, -0.75, 0.1, qs.rU[ri], qs.rF[ri]);
+        handQ(side, side * 0.15, 0.35, -1, -side * 0.55, 0.85, 0, _q1);
+        qs.rH[ri].copy(_q2.copy(qs.rU[ri]).multiply(qs.rF[ri]).invert()).multiply(_q1);
+        qU.slerp(qs.rU[ri], rdA); qF.slerp(qs.rF[ri], rdA); qH.slerp(qs.rH[ri], rdA);
+      }
       ua.quaternion.copy(qU); fa.quaternion.copy(qF); ha.quaternion.copy(qH);
     }
+    if (this.book) this._bookPose(dt, rdA);
     // 이름표 높이
     if (this.tag) {
       var ty = 1.88 + HEAD_UP - 0.35 * sa - 0.015 * w;
@@ -1508,6 +1565,32 @@
     }
     this.shadow.position.y = 0.03;
     this.shadow.position.z = hipZ - SEAT_BACK * sa;
+  };
+
+  // 책 자세: 읽기 = 가슴 뼈 앞(손 사이)에 펴서 얼굴 쪽으로 기울임 + 약 20초마다 한 장 넘김 / 덮음 = 세계 자리(spot)나 무릎 위
+  Avatar.prototype._bookPose = function (dt, rdA) {
+    var bk = this.book, U = bk.userData;
+    if (this.readState === 'read') {
+      bk.visible = rdA > 0.15;
+      bk.position.set(0, SH_Y - 0.31, -0.29); bk.rotation.set(0.95, 0, 0);
+      var op = 0.22 * sm(rdA);   // 펼친 각(반쪽마다 위로 젖힘, rad)
+      U.L.rotation.z = -op; U.R.rotation.z = op; U.R.position.y = 0;
+      this.readT += dt;
+      if (this.pageT < 0 && this.readT > this.nextPage) { this.pageT = 0; this.readT = 0; this.nextPage = 18 + ((this.nextPage * 7.3) % 5); }
+      var k = 0;
+      if (this.pageT >= 0) {
+        this.pageT += dt; var u = this.pageT / 1.1;
+        if (u >= 1) { this.pageT = -1; U.leaf.visible = false; }
+        else { U.leaf.visible = true; U.leaf.rotation.z = op + (PI - 2 * op) * sm(u); k = Math.sin(PI * Math.min(1, u * 1.3)); }
+      }
+      this.pageK = k;
+    } else if (this.readState === 'closed') {
+      bk.visible = true; this.pageK = 0; U.leaf.visible = false;
+      U.L.rotation.z = 0; U.R.rotation.z = PI; U.R.position.y = 0.026;   // 오른쪽 반을 왼쪽 위로 덮는다
+      var sp = this.readSpot, r = this.root;
+      if (sp) { _v.set(sp.x, sp.y, sp.z); r.updateMatrixWorld(); r.worldToLocal(_v); bk.position.set(_v.x - 0.07, _v.y + 0.004, _v.z); bk.rotation.set(0, 0.3, 0); }
+      else { var SLg = this.seatLeg; bk.position.set(-0.07, (SLg ? SLg.hip : 0.53) + 0.1, -0.12); bk.rotation.set(0, 0.1, 0); }
+    }
   };
 
   // 몸 바꿔 끼우기 약속: {gender, face, hair, hairColor, outfit, apron, label} → 지금 몸의 cfg({g, skin, style, hair, outfit, label}).

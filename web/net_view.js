@@ -180,8 +180,14 @@
         if (!v || !rec) return;
         v.av.setConfig(rec.avatar);
         var sid = seatId(rec.seat);
-        if (rec.st === 'sit' && sid && v.sid !== sid) { v.sid = sid; v.anim = 0.7; v.ax = v.av.root.position.x; v.az = v.av.root.position.z; }
-        else if (rec.st !== 'sit' && v.sid) { v.sid = null; v.blend = 0.5; }
+        if (rec.st === 'sit' && sid && v.sid !== sid) {
+          // 앉기(2026-11-26 원인 6): 지금 자리에서 좌석 방향으로 돌아선 뒤(yaw 보간) 뒤로 내려앉는다 — main.js 와 같은 순서
+          var r0 = v.av.root, spq = logic && logic.seatPos(sid), turn = spq ? Math.abs(angDiff(r0.rotation.y, spq.yaw)) : 0;
+          v.sid = sid; v.ax = r0.position.x; v.az = r0.position.z; v.ayaw = r0.rotation.y; v.ay = r0.position.y;
+          v.td = turn > 0.2 ? 0.3 + 0.45 * turn / Math.PI : 0; v.sd = 0.9; v.anim = v.td + v.sd; v.at = 0;
+          if (v.av.setSeatFit && logic && logic.seatFit) v.av.setSeatFit(logic.seatFit(sid));
+        }
+        else if (rec.st !== 'sit' && v.sid) { v.sid = null; v.blend = 0.5; v.anim = 0; if (v.av.setSitProgress) v.av.setSitProgress(null); }
       });
       selT = 99;
     }
@@ -229,11 +235,20 @@
           if (sid && logic && logic.seatInfo(sid)) {
             var sp = logic.seatPos(sid);
             fl = logic.seatFloor(sid);
-            if (v.anim > 0 && !v.fresh) { v.anim -= dt; var k = 1 - Math.max(0, v.anim) / 0.7, ks = k * k * (3 - 2 * k); x = v.ax + (sp.x - v.ax) * ks; z = v.az + (sp.z - v.az) * ks; }
-            else { x = sp.x; z = sp.z; }
-            r = sp.yaw; v.sid = sid;
-            var so = seatOff ? seatOff(sid) : null; if (so) { x += so.x; z += so.z; fl += so.y; }
-            av.setSeated(true);
+            var sitP = 1;
+            if (v.anim > 0 && !v.fresh) {
+              v.anim -= dt; v.at += dt;
+              if (v.at < v.td) { x = v.ax; z = v.az; fl = v.ay; r = v.ayaw + angDiff(v.ayaw, sp.yaw) * sm01(v.at / v.td); sitP = -1; }
+              else {
+                var u = Math.min(1, (v.at - v.td) / v.sd), mv = sm01(u / 0.85); sitP = sm01((u - 0.15) / 0.85);
+                x = v.ax + (sp.x - v.ax) * mv; z = v.az + (sp.z - v.az) * mv; r = v.ayaw + angDiff(v.ayaw, sp.yaw) * sm01(u / 0.5);
+                fl = v.ay + (fl - v.ay) * sitP;
+              }
+            } else { x = sp.x; z = sp.z; r = sp.yaw; }
+            v.sid = sid;
+            var so = seatOff ? seatOff(sid) : null; if (so && sitP >= 1) { x += so.x; z += so.z; fl += so.y; }
+            if (sitP < 0) { av.setSeated(false); if (av.setSitProgress) av.setSitProgress(null); }
+            else { av.setSeated(true); if (av.setSitProgress) av.setSitProgress(v.anim > 0 ? sitP : null); }
             if (v.fresh) { av.setPose(x, fl, z, r); av.snapPose(); }
           } else {
             var o = rec.interp.sample(now - rec.interp.delay(), tmp);
@@ -255,6 +270,7 @@
         });
       }
     };
+    function sm01(t) { t = t < 0 ? 0 : (t > 1 ? 1 : t); return t * t * (3 - 2 * t); }
     function p0y(av, fl, dt) { var y = av.root.position.y; return y + (fl - y) * Math.min(1, dt * 14); }
     return api;
   }

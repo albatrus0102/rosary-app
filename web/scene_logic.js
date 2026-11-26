@@ -31,6 +31,8 @@
       if (s.reach) o.reach = s.reach;
       if (s.y !== undefined) o.fy = s.y;
       if (s.h !== undefined) o.h = s.h;
+      if (s.top !== undefined) o.top = s.top;
+      if (s.footFwd !== undefined) o.footFwd = s.footFwd;
       out.push(o);
     });
     for (var gi = 0; gi < gl.length; gi++) {
@@ -195,6 +197,11 @@
       seatFloor: function (id) {
         var s = byId[id]; if (!s) return 0;
         return s.fy !== undefined && (multi || s.single) ? s.fy : L.floorY(s.x, s.z);   // 낱자리 y: 발판 높이(높은 스툴)
+      },
+      // 앉은 다리 맞춤(avatar.setSeatFit): hip = 골반 관절 높이(발 높이 기준) = 앉는 면 + 0.085(좌골~고관절) - 발 높이, foot = 발목이 골반 앞으로 나가는 거리
+      seatFit: function (id) {
+        var s = byId[id]; if (!s || s.top === undefined) return null;
+        return { hip: s.top + 0.085 - L.seatFloor(id), foot: s.footFwd === undefined ? 0.42 : s.footFwd };
       },
       seatPos: function (id) {
         var s = byId[id]; if (!s) return null;
