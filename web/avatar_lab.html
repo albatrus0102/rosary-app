@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avatar Lab</title>
+<style>html,body{margin:0;height:100%;background:#c9c7cd;overflow:hidden}canvas{display:block}</style>
+</head><body>
+<!-- 아바타 실험실(사진·검수용): ?mode=row(8명 나란히) | face&n=0(얼굴 가까이, 3/4) | one&n=0(한 사람 전신) · &yaw=도 · &walk=1(걷는 자세) · &t=초 -->
+<script src="three.min.js"></script>
+<script src="three_extras.js"></script>
+<script src="palette.js"></script>
+<script src="geo.js"></script>
+<script src="label_fit.js"></script>
+<script src="avatar_human.js"></script>
+<script src="avatar.js"></script>
+<script>
+(function () {
+  var qs = {}; location.search.replace(/^\?/, '').split('&').forEach(function (kv) { if (!kv) return; var p = kv.split('='); qs[p[0]] = decodeURIComponent(p[1] || ''); });
+  var T = THREE, W = innerWidth, H = innerHeight;
+  var R = new T.WebGLRenderer({ antialias: true }); R.setPixelRatio(1); R.setSize(W, H);
+  R.outputEncoding = T.sRGBEncoding; R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.0; R.shadowMap.enabled = true; R.physicallyCorrectLights = true;
+  document.body.appendChild(R.domElement);
+  var S = new T.Scene(); S.background = new T.Color(0xc9c7cd);
+  var pm = new T.PMREMGenerator(R); S.environment = pm.fromScene(new ThreeX.RoomEnvironment(), 0.04).texture;
+  S.add(new T.HemisphereLight(0xf4f2f6, 0x8a8478, 0.9));
+  var key = new T.DirectionalLight(0xfff4e8, 2.2); key.position.set(-1.6, 3.2, -2.6); key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.left = -4; key.shadow.camera.right = 4; key.shadow.camera.top = 3; key.shadow.camera.bottom = -1; S.add(key);
+  var fill = new T.DirectionalLight(0xe8eeff, 0.6); fill.position.set(2.5, 1.5, -1.5); S.add(fill);
+  var floor = new T.Mesh(new T.PlaneGeometry(30, 30).rotateX(-Math.PI / 2), new T.MeshStandardMaterial({ color: 0xc4c2c8, roughness: 0.95 })); floor.receiveShadow = true; S.add(floor);
+  var cam = new T.PerspectiveCamera(qs.mode === 'face' ? 22 : 30, W / H, 0.05, 50);
+  var mode = qs.mode || 'row', avs = [], n0 = +(qs.n || 0), yaw = (+(qs.yaw || 0)) * Math.PI / 180;
+  window.RoomNoTags = true;
+  function make(n, x, z, ry) {
+    var a = new RoomAvatar.Avatar({ n: n, hairColor: qs.hc || undefined, outfitColor: qs.oc || undefined }, { showTag: false });
+    a.setLod(0); a.setPose(x, 0, z, ry); a.snapPose(); a.root.traverse(function (o) { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    S.add(a.root); avs.push(a); return a;
+  }
+  if (mode === 'row') {
+    for (var i = 0; i < 8; i++) make(i, (i - 3.5) * 0.62, 0, Math.PI + yaw);
+    cam.position.set(0, 1.05, 6.6); cam.lookAt(0, 0.88, 0);
+  } else if (mode === 'face') {
+    make(n0, 0, 0, Math.PI + 0.55 + yaw);
+    cam.position.set(0, 1.56, 1.15); cam.lookAt(0, 1.555, 0);
+  } else {
+    make(n0, 0, 0, Math.PI + yaw);
+    cam.position.set(0, 1.0, 3.6); cam.lookAt(0, 0.88, 0);
+  }
+  var t = 0, f = 0, tEnd = +(qs.t || 0.25), walk = qs.walk === '1';
+  window.__lab = { avs: avs, done: false, ready: function () { return RoomHuman.ready(); } };
+  function frame() {
+    var dt = 1 / 60;
+    if (RoomHuman.ready() || RoomHuman.error()) { t += dt; }
+    avs.forEach(function (a, i) {
+      if (walk && t > 0) { var p = a.root.position; a.setWalk(0.5); a.setPose(p.x, 0, p.z - 1.1 * dt * (a.root.rotation.y > 2 ? -1 : 1), a.root.rotation.y); }
+      a.update(dt, t + i * 0.37);
+    });
+    R.render(S, cam); f++;
+    if (t >= tEnd) window.__lab.done = true;
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+</body></html>

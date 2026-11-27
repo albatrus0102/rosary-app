@@ -11,6 +11,8 @@ WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없�
 - 사실감(2차, 2026-11-26): 소유자가 ChatGPT 로 만든 PBR 질감(T01~T60)을 이음매 없이 고쳐 모든 표면에(색·법선·거칠기·AO), 장난감 같던 잎·꽃을 사진 오림
   식물 카드(P01~P07)로, 나무는 껍질 PBR 줄기·가지 + 잎 카드로, 해 길을 돌려 오후 햇빛이 비스듬히(그림자가 보이게), 해:하늘빛 비율을 사진 쪽으로.
 - 커피 카운터(2차): 오른쪽 벽 작업대 → 커피 카운터 + 바리스타 + 주문(받으러 가기) + 컵 4종(3절·2절).
+- **3차(2026-11-27)**: 앉기 고침(걸어가서 돌아서고 내려앉기 — 측정 원인 1~6) · 자리로 가져다 주기(바리스타가 길 따라 좌석까지) · 앉아서 읽기 · PC 라이트맵 낮 세기 3 + 노이즈 제거 ·
+  반실사 아바타 8명(번호 0..7 = F1..F4, M1..M4) **— 솔직한 판정: 참고 그림 수준에 못 미친다. 기본은 예전 몸, 켤 때만(4-1절). 실제 얼굴 닮음은 B 길(소유자 Meshy/Tripo GLB, 4-2절)로.**
 
 ![외관 낮](docs/shots/exterior-day.jpg)
 ![외관 밤](docs/shots/exterior-night.jpg)
@@ -47,7 +49,12 @@ WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없�
 | `web/cam_guard.js` | 카메라 쪽 가림물(벽)을 셰이더로 지우는 인형집 단면, 앉은 시점 쪽 고르기 | 자작 |
 | `web/scene_logic.js` | 순수 로직(THREE 없음): 좌석(낱자리 `seats`·줄 의자)·충돌 미끄러짐·바닥 높이·조이스틱 | 자작 |
 | `web/layouts.js` | 레이아웃 등록부(`RoomLayouts`) | 자작 |
-| `web/avatar.js` | 스킨드 아바타(LOD 3단계, 걷기·앉기·서기·인사, 이름표 `cfg.label`) | 자작 |
+| `web/avatar.js` | 스킨드 아바타(LOD 3단계, 걷기·앉기·서기·인사, 이름표 `cfg.label`) + 좌석 맞춤 다리 IK(`setSeatFit`)·앉는 정도 몰기(`setSitProgress`)·읽기(`setRead`)·번호 cfg(`n`) | 자작 |
+| `web/avatar_human.js` | 반실사 몸 8명 읽기·메시·재질(피부 감싸는 빛/붉은 산란 근사, 머리카락 결 방향 반사, 니트 법선 아틀라스) — `avatar/` 자료 | 자작 |
+| `web/avatar/` | `human.bin`·`human.json`(8명 × 살·눈·머리카락 LOD0/1 + 성별 옷 2벌), `face_<F1..M4>.jpg`(얼굴 그림 — 절차로 칠함, 사진 아님), `iris.jpg`·`hair.png`·`knit_n.jpg`(절차 생성) | 몸 바탕 **MakeHuman 1.x 기본 메시·변형 타깃·뼈대 가중치 = CC0 1.0**(makehumancommunity/makehuman `LICENSE.md` C절), 나머지 자작 |
+| `web/avatar_glb.js` · `web/three_glb.js` | GLB 사람 몸(소유자 이미지→3D 결과)을 우리 뼈로 움직이는 리타깃 · GLTFLoader+SkeletonUtils 묶음(43 KB, GLB 를 쓸 때만 싣는다) | 자작 · MIT(three.js) |
+| `web/stations.js` | 걸을 수 있는 칸 격자 + A* 길 찾기 + 길 따라 걷기(내 아바타의 좌석까지 걷기·바리스타 배달) — 원본 엔진 성당 stations.js 의 한 층 부분 | 자작(같은 소유자 원본) |
+| `web/avatar_lab.html` | 아바타 실험실(8명 나란히·얼굴 가까이) | 자작 |
 | `web/palette.js` | 아바타 색표(피부 4·머리 4×2·머리색 10·옷 12) | 자작 |
 | `web/markers.js` | 좌석 표식(바닥 빛 고리 + 이름표, 누르기 판정) | 자작 |
 | `web/label_fit.js` | 이름표 화면 크기 맞추기 | 자작 |
@@ -63,6 +70,9 @@ WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없�
 | `tools/tex_build.py` | 소유자 원본(T·P 번호 파일) → `web/tex`: 이음매 없애기·ORM 묶기·색조·바닥 판재·식물 카드 + `docs/seams.json` | 자작 |
 | `tools/tex_shrink.py` | `web/tex` 를 photos.js `maxOf` 와 같은 크기로 미리 줄인다(반복 질감은 둘레를 감싸 줄여 이음매 유지, 데이터 지도 4:4:4) | 자작 |
 | `tools/perf.mjs` | 시점별 draw·삼각형·질감 MB(헤드리스) | 자작 |
+| `tools/human_build.py` | 반실사 몸 만들기: MakeHuman CC0 자료를 받아(캐시) 아시아 젊은 여/남 + 얼굴 타깃 → 우리 뼈대 휴식 자세에 맞춤(LBS) → 줄이기 → 옷(몸 둘레 고리 메시)·머리카락 카드·얼굴 그림 → `web/avatar/` | 자작 |
+| `tools/sit_probe.mjs` · `tools/deliver_probe.mjs` | 앉기·배달을 실브라우저에서 프레임마다 재기(골반·발·한 프레임 이동·등받이 / coffeeReady 시각·바리스타 충돌·돌아가기) | 자작 |
+| `tools/shots_avatar.mjs` · `tools/lab_shot.mjs` | 아바타·앉기·배달 사진(`docs/shots/av-*.jpg`) | 자작 |
 | `tools/serve.mjs` · `shot.mjs` · `shots.mjs` | 정적 서버, 한 장/열 장 찍기(Playwright) | 자작 |
 | `tools/ao_bake.mjs` · `gi_bake.mjs` · `ao_bvh.mjs` · `harness.mjs` | AO·빛 번짐 굽기(광선 추적, 결정적 — 원본 엔진과 같은 굽기 파이프라인) · BVH · Node 에서 빌더 돌리기 | 자작 |
 | `tools/build_extras.mjs` · `extras_entry.js` | three_extras 다시 만들기(esbuild + three@0.149.0 필요) | 자작 |
@@ -169,23 +179,26 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 ```
 | 메서드 | 인자 | 뜻 |
 |---|---|---|
-| `init` | `{room:'house', avatar, hour, quality:'auto'|'high'|'mid'|'low', fixedClock, poseHz}` | 장면 시작(호스트가 부르는 페이지는 `window.RoomNoAutoStart = true`) |
+| `init` | `{room:'house', avatar, hour, quality:'auto'|'high'|'mid'|'low', fixedClock, poseHz, body:'human', glb:{번호:URL}}` | 장면 시작(호스트가 부르는 페이지는 `window.RoomNoAutoStart = true`). `body:'human'` = 반실사 몸 켜기(4-1절), `glb` = 번호별 GLB 몸(4-2절) |
 | `setSeats` | `[{i, taken, mine}]` | 좌석 점유(예: RTDB 독서실 자리). 남이 가진 자리는 표식이 숨고, 내 자리를 남이 가져가면 일어선다 |
-| `setMe` | `{avatar:{g, skin, style, hair, outfit, label}}` | 내 아바타 |
+| `setMe` | `{avatar: 번호 0..7}` 또는 `{avatar:{n, hairColor, outfitColor, pantsColor, topColor, label}}` (예전 `{g, skin, style, hair, outfit}` 도 받음 — 번호 = g×4+style) | 내 아바타. 번호가 얼굴·머리 모양·머리색·옷색을 정하고, 색은 `#rrggbb`/숫자로 바꿀 수 있다 |
 | `setHour` | `{hour}` | 시간대(낮 기본·밤 조명 프리셋은 looks.js `house`) |
 | `setTimerText` | `{text:'25:00'}` | 창가 1 책상의 타이머 화면 |
 | `setPanel` | `{id, data}` | 판 다시 그리기: `sign{title,sub}` · `timer{text}` · `board{notes:[…]}` · `tablet{title,lines}` · `calendar{month,marks}` · `backdrop{url | day,night}` |
 | `setGarden` | `[{flower:0..7, stage:0..3, pot:0|1|2}]` | 화단 16자리(앞 화단 6 + 옆마당 화단 5+5). stage 0 씨앗·1 새싹·2 봉오리·3 꽃 |
 | `setSkin` | `{skin:'oak'|'walnut'|'white'}` | 바닥 나무 색조(자리 표시용) |
-| `orderCoffee` | `{kind}` — `'americano'|'latte'|'iced'|'tea'` 또는 **음료 번호** | 커피 주문(무료·가상). 바리스타가 약 3초 만들고 카운터에 컵 → 다가가면 집는다(3절) |
-| `setMyCup` | `{kind}` 또는 `{kind:null}` | 컵을 바로 쥐여 준다/없앤다: 앉은 자리에서 주문했을 때(호스트가 만들기를 건너뜀)·다시 열었을 때 — 앉아 있으면 그 좌석 컵 자리에 바로 놓인다 |
+| `orderCoffee` | `{kind, seat?}` — `'americano'|'latte'|'iced'|'tea'` 또는 **음료 번호** | 커피 주문(무료·가상). 서서(카운터 앞) 주문하면 카운터에 컵 → 다가가면 집는다. **앉아 있거나 `seat` 를 주면 바리스타가 그 좌석으로 가져다 준다**(3절) |
+| `setMyCup` | `{kind}` · `{kind, instant:true}` · `{kind:null}` | **앉아 있으면 자리로 가져다 주기**(바리스타가 만들어 들고 온다), `instant:true` 또는 서 있으면 바로 쥐여 준다(다시 열었을 때 되살리기), null 은 없앤다 |
 | `setStrings` | `{signTitle, signSub, boardNotes:[…], tabletTitle, seatLabels:[…], seatPrefix, seatFree, monthNames:[12], weekdays:[7]}` | **화면 글자는 모두 호스트가 준다**(엔진 JS 에는 한글 글자가 없다 — 시험이 막는다). 없으면 중립 영어 기본값(`strings.js`). 바뀌면 판·좌석 표식을 다시 그린다(호스트가 `setPanel` 로 채운 판은 그대로) |
 
 **음료 번호**(독서공방 음료 id → 컵 모양): `3` 아메리카노(머그) · `2` 라떼(잔 + 받침 + 라떼 아트) · `5` 홍차(찻잔 + 받침) · `7` 아이스 커피(유리잔).
 모양 대체: `1` → 머그, `4`·`6` → 라떼 잔. 숫자·숫자 문자열 모두 받는다 — `orderCoffee`·`setMyCup`·`setPeers` 의 `cup` 모두 같다(coffee.js `NUM`, net_view.js `CUPN`).
 | `pause` / `resume` / `dispose` | — | 그리기·소리 멈춤/재개 / WebGL 문맥까지 정리 |
-| `setPeers` | `[{id, x, z, yaw, state:'walk'|'sit', seat, avatar, cup}]`, `{partial}` | 다른 사람(4절). `cup` = 든 음료 종류(걷는 사람은 손에, 컵 자리가 있는 좌석에 앉은 사람은 그 자리에) |
-| `sit` / `stand` | `{i}` / — | 앉기(번호 없으면 가까운 빈자리) / 일어서기 |
+| `setPeers` | `[{id, x, z, yaw, state:'walk'|'sit', seat, avatar, cup}]`, `{partial}` | 다른 사람(4절). `avatar` = 번호 0..7 또는 `{n, hairColor, outfitColor, …, label}`. 앉을 때도 돌아서기·내려앉기(yaw 보간). `cup` = 든 음료 종류 |
+| `sit` / `stand` | `{i, now?}` / — | 앉기: 그 좌석 옆·앞 서는 자리까지 **걸어가서**(길 찾기, `walkStart`·`walkCancel` 이벤트) 돌아서고 내려앉는다. `now:true` 면 걷지 않고 바로 앉은 상태(다시 들어올 때 배정 자리) / 일어서기 |
+| `setReading` | `{on, paused}` | 앉아서 읽기: 편 책을 두 손에·고개 숙임·약 20초마다 한 장(`on`), 멈추면 덮어서 책상 자리에(`paused`), 끄기(`on:false`) |
+| `setSeatAnchors` | `[{i, cup:{x,y,z}, book:{x,y,z}, serve:{x,z}}]` | 좌석의 컵 자리·책 자리·바리스타가 서는 자리를 바꾼다(호스트가 그네 앞 탁자를 놓을 때) |
+| `setBaristaJob` | `{kind, seat, startAt}` | 다른 사람 주문의 배달을 이 화면에서도 같은 걸음으로 재생(결정적 — startAt = Date.now ms 에 시작) |
 | `setJoystick` | `{x, y}` | 호스트가 그린 이동 손잡이(-1..1) |
 | `setQuality` · `setPerfHud` · `setSteps` · `setPoseRate` · `setViewInset` · `setCamera` · `tapAt` | | 화질 · 성능 표시 · 발소리 `{on, vol}` · 내 자세 보내기 박동 `{hz, idleSec, seatedIdleSec, minMove, minTurn}`(4절) · 아래 패널 비율 `{bottom}` · 카메라 `{dist, follow, view:'tp'|'fp'}` · 화면 좌표 누르기 `{x, y}` |
 
@@ -206,7 +219,9 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 | `contextLost` / `contextRestored` | WebGL 문맥 잃음/되찾음 |
 | `myPose {x, z, yaw, state, seat, t}` | 내 자세(onMyPose, 4절) |
 | `nearCounter {on}` | 카운터 앞(주문 안내 구역 `layout.coffee.near`)에 서면 `true`, 벗어나거나 앉으면 `false` — 호스트가 메뉴(주문 안내)를 띄우고 닫는다 |
-| `coffeeOrdered {kind}` · `coffeeReady {kind}` · `coffeePicked {kind}` | 주문 받음 · 다 만들어 카운터에 놓음 · **집어 드는 그 순간** `coffeePicked`(호스트는 이때 서버에 쓰고, `cup` 을 다른 사람에게 보낸다). `kind` 는 문자열 종류 |
+| `walkStart {kind:'seat', i, m}` · `walkCancel {kind, i, why}` | 좌석까지 걷기 시작(길이 m) · 손잡이를 움직이거나 자리가 차서 멈춤 |
+| `baristaPlaced {seat, kind, mine}` | 바리스타가 좌석 자리에 컵을 놓음(다른 사람 배달 포함) |
+| `coffeeOrdered {kind, seat?}` · `coffeeReady {kind, seat?}` · `coffeePicked {kind}` | 주문 받음 · 다 만들어 카운터에 놓음 · **집어 드는 그 순간** `coffeePicked`(호스트는 이때 서버에 쓰고, `cup` 을 다른 사람에게 보낸다). `kind` 는 문자열 종류 |
 | `tap {id}` | 빌더 누르기 자리(`innerDoor` = 복도 끝 나무 문 → 앱 서재 화면으로) |
 | `error {kind, msg}` · `hb {f, st}` · `perfReport {text}` | 오류 · 1초 심장 박동 · 성능 기록 |
 
@@ -214,7 +229,12 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 - 실내 5.0×6.6 m · 천장 2.7 m(바닥은 데크 한 단 위 0.16 m) + 안쪽 복도 1.2×2.4 m 끝 나무 문(잠긴 장식 문, 누르면 `tap{id:'innerDoor'}`).
 - 왼쪽 벽 통창(바닥 0.35 m~2.35 m, 창살 3) + 정면 창(창살·가로살), 두 창은 앞 왼쪽 모서리에서 만난다(모서리 기둥만 남음). 벽은 두께 0.2 m, 창은 실제 구멍 + 나무 틀·창턱.
 - 유리 낀 나무 문(안으로 열려 있음) + 데크 한 단, 간판(독서공방 SINCE 2026)·벽등·화분 나무·세로 입간판·노란 자전거·가로등.
-- 좌석 **6**: `0~2` 창가 1인 책상(창을 봄) · `3` **커피 카운터 바 스툴**(좌판 0.75 m, 발판 0.3 m, 카운터를 봄) · **`4·5` 옆마당 2인 그네**(옆에 작은 오크 탁자).
+- 좌석 **6**: `0~2` 창가 1인 책상(창을 봄, 앉는 면 0.45) · `3` **커피 카운터 바 스툴**(앉는 면 0.63, 발은 받침 고리 0.22, 카운터 0.92) · **`4·5` 옆마당 2인 그네**(옆에 작은 오크 탁자, 함께 흔들림).
+- **앉기(3차, 측정 원인 1~6 고침)**: 좌석 옆·앞 서는 자리까지 길 찾기로 걸어가서(먼 좌석도 순간 이동 없음) → 좌석 방향으로 돌아서고(발은 걸음이 고쳐 딛는다) → 몸을 좌석 쪽으로 옮기며 내려앉는다
+  (앉는 정도를 이동에 맞춰 몬다 — 처음 15%는 옮기기만). 일어설 때는 먼저 일어나고 나중에 비켜선다. 루트 높이는 좌석 발 높이로 보간(바 스툴 골반이 22 cm 낮던 원인 1),
+  다리는 좌석 맞춤 IK(골반 관절 = 앉는 면 + 0.085, 발목 = 바닥/받침). 다른 사람도 같은 순서(yaw 보간 — 원인 6). 측정 `node tools/sit_probe.mjs`(2026-11-27):
+  좌석 6 모두 골반 관절 − 앉는 면 0.084~0.087 m · 발목 − 발판 −0.001~0.002 m · 한 프레임 최대 이동 0.022~0.024 m · 등받이 넘음 0~0.005 m · 앉기까지 3.1~5.7 s(2.5 m 밖에서 걸어 옴).
+- **앉아서 읽기**(`setReading`): 편 책을 두 손에(가슴 뼈 앞 30 cm, 얼굴 쪽으로 기울임), 고개 0.3 rad 숙임·살짝 갸웃, 약 18~23초마다 한 장 넘김(오른손이 따라감), 멈추면 덮어서 `layout.bookSpots`(책상·카운터·그네 탁자).
   그네는 소유자 참고 그림(`ref_swing_yard`)을 따른다: A 자 오크 틀, 살 등받이·팔걸이, 윗보에 감아 맨 황마 밧줄 둘, 크림 리넨 방석 + 등 쿠션 둘, 둥근 디딤돌이 깔린 잔디,
   집 벽을 따라 돌 테두리 화단(수국·라벤더·앱 꽃), 검은 헛간 벽등, 큰 나무 창틀 창, 담쟁이 낀 회벽 담. 참고 그림과는 좌우가 거울(집이 그네의 오른쪽) — 마당이 집 왼쪽에 있기 때문.
   누가 앉아 있을 때만 앞뒤로 ±1.6°(3.6초 주기) 아주 작게 흔들리고, 앉은 아바타도 같은 만큼 옮겨져(`hooks.seatOffset`) 어긋나지 않는다. 움직임 줄이기 설정이면 흔들지 않는다.
@@ -225,6 +245,11 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
 - **커피 카운터**(오른쪽 벽, 작업대 자리 — 글자·상표 없음): 앞 카운터(오크 통판 상판 1.05 m + 회벽 앞판 + 검은 발 받침 봉), 바리스타 통로(0.4 m, 통로 전체가 충돌체),
   뒤 카운터(서랍 3) 위 에스프레소 기계(솔질 금속 몸통 + 검은 판, 그룹 헤드 2·포터필터·스팀 막대·받침·데운 잔 4), 그라인더, 컵 선반(머그·잔 8), 그 위 열린 선반 2(병 8), 카운터 위 금속 펜던트.
   코르크 보드는 오른쪽으로 좁혀(0.94 m) 남겼고 태블릿 판은 카운터 끝에. 점광원 한도(3) 때문에 카운터 펜던트는 발광 + 빛 무리이고 카운터 위 빛은 구운 빛 번짐이 맡는다.
+- **자리로 가져다 주기(3차, 앱 결정 #1061 ⑥)**: 앉아서 주문하면 바리스타가 약 3초 만들고 컵을 들고 통로 끝으로 나와 사람과 같은 길 찾기(`stations.js`, 몸 반경 0.25)로 —
+  창가 책상은 책상 옆에 서서 책상 위에, 바 스툴은 통로 안에서 카운터 너머로, 그네는 앞문으로 나가 마당 탁자에(`layout.coffee.serve`, 호스트가 `setSeatAnchors` 로 바꿈) —
+  **놓는 순간** `coffeeReady{kind, seat}`, 그다음 카운터 뒤로 돌아간다. 가는 길 0.55 m 앞에 걷는 사람이 있으면 멈춰 기다린다(최대 2초). 배달 중 일어나거나 떠나도 **컵은 그 좌석 자리에 놓는다**
+  (그 좌석에 다시 앉으면 내 컵, 그 자리에서 일어서면 든다). 다른 사람 화면: 호스트가 `setBaristaJob({kind, seat, startAt})` 를 모두에게 보내면 같은 걸음을 재생(결정적), 안 보내면 내 화면에서만.
+  측정 `node tools/deliver_probe.mjs`: 좌석 6 모두 coffeeReady 3.7 s(스툴)·7.7~8.4 s(창가)·17.2 s(그네, 33.5 m) · 가구 파고듦 ≤ 0.014 m · 끝나면 집 0.05 m 안.
 - **커피 주문(받으러 가기, `coffee.js`)**: 카운터 앞에 서면 `nearCounter{on:true}` → 호스트가 메뉴 4(아메리카노·라떼·아이스 커피·홍차, 모두 무료·가상 — 돈은 어디에도 없다)를 띄운다 →
   `orderCoffee({kind})` → 바리스타가 기계 쪽으로 돌아 약 3초 '음료 만들기' 몸짓 → 카운터 끝 픽업 자리에 컵 + `coffeeReady` → 1.3 m 안으로 다가가면 집어 들고 `coffeePicked` →
   오른손을 가슴 앞으로 들어 쥔다 → 아무 좌석에 앉으면 그 좌석의 컵 자리(창가 책상·카운터·그네 옆 탁자)에 내려놓고, 일어서면 다시 든다(컵 자리가 없는 좌석이면 든 채로).
@@ -250,6 +275,35 @@ window.Room3D.call('{"fn":"setHour","args":{"hour":21}}');                    //
   끊기면 그 사람의 좌석·아바타를 **바로** 지우고, 앱은 1·2·4·8·16초(상한 30초) 지수 백오프로 다시 붙는 동안 혼자 모드로 계속 걷게 한다. 받는 메시지는 초당 12개, 속도는 7 m/s 로 막고, 화면에는 가까운 80명만 그린다(서버는 반경 40 m 관심 영역).
   이 패키지는 이를 RTDB(풀 스냅숏 setPeers)에 맞춰 옮겼다: 2~4 Hz 에서는 200 ms 고정 지연이 표본 간격보다 짧아 끊겨 보이므로 지연을 받는 간격의 1.6배로 늘렸고(이 부분은 원본이 아니라 이번 설계 판단),
   RTDB 는 끊김 알림이 늦을 수 있어 '스냅숏에서 빠진 지 1.5초'·'소식 없음 8초' 두 단계로 지운다. 3 Hz·소수점 2자리(한 번 약 40바이트)면 4명 방에서 초당 0.5 KB 남짓이다.
+
+## 4-1. 반실사 아바타(A 길 — 이 컨테이너에서 만든 몸) — 솔직한 판정과 켜는 법
+- **판정(2026-11-27, Opus 5.5 가 사진을 참고 그림 옆에 두고 봄): 참고 그림(Zepeto 풍 한국 드라마 미남·미녀)에 못 미친다.** 7등신 비율·사람 몸의 위상·손가락·
+  어깨/목은 장난감 몸보다 훨씬 사람답지만, ① 머리카락이 납작한 카드가 겹친 가발처럼 보이고(가닥 결·볼륨·앞머리가 참고 그림과 다르다) ② 얼굴은 MakeHuman 바탕에
+  절차로 칠한 눈썹·아이라인·입술이라 그 사람을 알아볼 만큼 닮지 않았고(밋밋·창백) ③ 카디건 깃 둘레가 뭉쳐 보인다. 그래서 **기본은 예전 몸이고, 켤 때만**
+  (`init({body:'human'})`, test.html `?body=human`) 반실사 몸을 입는다. 번호(0..7)는 두 몸 모두에 통한다(예전 몸은 그 사람에 가까운 머리 모양·머리색·옷색).
+- 만든 길: MakeHuman 1.x 기본 메시 hm08·타깃·기본 뼈대 가중치(**CC0**)를 `tools/human_build.py` 가 받아 아시아 젊은 여/남 + 얼굴 타깃(눈 크게·코 좁게·V 턱·입꼬리)
+  → 163 뼈 가중치를 우리 뼈 18개로 합치고 우리 휴식 자세(팔 내림)에 맞춤 → 살(머리·손)을 줄이고(fast-simplification) → 옷은 몸을 잘라 잰 둘레로 만든 고리 메시
+  (카디건 V 넥·단추·고무뜨기·바지·운동화), 머리카락은 두피 덮개 + 가닥 띠 카드(8가지: 긴 생머리·어깨 웨이브·뱅 단발·낮은 묶음 / 덮은 앞머리·짧은 단정·긴 웨이브+수염 자국·둥근 안경),
+  얼굴 그림은 3D 위치를 UV 에 래스터해서 거리로 칠한다(사진을 붙이지 않는다). 재질: 피부 감싸는 빛 + 붉은 산란 근사, 머리카락 결 방향 반사(Kajiya-Kay 근사), 니트 법선 아틀라스.
+- 걷기·앉기·읽기·컵·인사는 **뼈대가 그대로라 손대지 않았다**(걷기 고침 없음 — 소유자 「그냥 걷는 건 그냥 두자」).
+- 비용: 한 사람 LOD0 **13.7k~14.6k 삼각형**(살 4.2k + 눈 0.3k + 옷 5.3k + 머리카락 3.9~4.7k, M4 안경 +0.4k), LOD1 **약 3.1k~3.5k**, LOD2 = 예전 임포스터(약 300).
+  6명 가까이 ≤ 88k(장면 62k~94k 와 더해도 예산 170k 안). 그리기 호출: 한 사람 4~5. 파일: `web/avatar/` **2.78 MB**(묶음 2.46 MB + 얼굴 그림 8장 0.21 MB + 공유 질감 0.1 MB) + JS 23 KB.
+
+## 4-2. B 길 — 소유자가 Meshy/Tripo 로 만든 GLB 를 넣는 법(얼굴을 참고 그림처럼 닮게 하는 현실적인 길)
+- 엔진 쪽은 끝나 있다: `avatar_glb.js` 가 번호별 GLB 의 휴머노이드 뼈(Mixamo 이름 등)를 찾아 **우리 뼈 회전을 매 프레임 옮긴다**(T 자·A 자 휴식 자세 모두 — 뼈 방향 맞춤).
+  걷기·앉기(바 스툴 발 받침·그네)·읽기·컵·바리스타 앞치마가 그대로 된다. 시험: `test/avatar_human.test.mjs` 「GLB 몸 리타깃」(T 자 Mixamo 뼈대가 앉아 읽는 자세에서 손·발·머리 1.5 cm 안).
+- 넣기: 8개 파일을 `web/avatar/glb/F1.glb … M4.glb` 에 두고, 페이지에 `three_glb.js`·`avatar_glb.js` 를 `avatar.js` 앞에 싣고,
+  `Room3D.init({…, glb:{0:'avatar/glb/F1.glb', 1:'avatar/glb/F2.glb', …, 7:'avatar/glb/M4.glb'}})`. 못 읽으면 그 번호는 반실사/예전 몸으로 남는다.
+- 소유자가 할 일(사람마다 한 번, 참고 그림 F1~M4 의 **왼쪽 전신 정면** 부분을 잘라서 넣는다):
+  1. Meshy → Image to 3D → 이미지 올리기 → 아래 프롬프트 → Generate → **Rig(Humanoid 자동 리깅)** → Download **GLB**(텍스처 포함, 애니메이션 없이 휴식 자세면 된다).
+     (Tripo 도 같다: Image to 3D → Auto Rig → Export GLB.)
+  2. 프롬프트(그대로 복사):
+```
+Semi-realistic stylized young Korean adult, full body, natural 7-head proportions, standing in A-pose, arms slightly away from the body, facing forward, neutral relaxed face with a soft smile, game-ready character, clean topology, PBR textures, cable-knit cardigan, trousers and white sneakers exactly as in the image, no background, no props
+```
+  3. 받은 GLB 를 `F1.glb`(번호 0) … `M4.glb`(번호 7) 로 이름 바꿔 채팅으로 주면, 크기를 줄여(목표 한 사람 15k 삼각형·질감 1k·한 파일 0.7 MB 이하) 넣고 사진을 다시 찍는다.
+- 라이선스(생성 시점에 각 서비스 요금제 페이지에서 꼭 다시 확인): Meshy·Tripo 의 무료 요금제 결과물은 **CC BY 4.0(공개, 출처 표시 필요 — 예: 「3D model generated with Meshy」)**,
+  유료 요금제는 사용자 소유(비공개)로 알려져 있다. 이 패키지 규칙(자작·CC0·CC BY·MIT 만)에 맞으려면 무료 결과물은 README·앱 정보 화면에 출처를 적는다.
 
 ## 5. 시험·사진
 ```sh
@@ -296,7 +350,8 @@ node tools/ao_bake.mjs house && node tools/gi_bake.mjs house   # 지오메트리
 - 흐름: `node tools/lm_export.mjs`(이 저장소, Node) → `pc_bake/scene/`(house.glb·빛·대상·uv2, 커밋됨) → PC 에서 `run_bake.ps1`/`run_bake.cmd` → `pc_bake/out/house_<화질>.zip` →
   채팅으로 받아 zip 안 `house_<화질>/` 를 `web/lightmaps/house/` 로 푼다 → 앱(`web/lightmap.js`)이 붙인다. 폴더가 비어 있으면 지금처럼 구운 AO·빛 번짐.
 - 앱: three `lightMap` + `uv2`(대상마다 uv2.bin), RGBM 풀기, 낮/밤 두 장을 `env.night` 로 섞기(setHour → applyEnv), 라이트맵 재질은 반구광·HDRI 확산·구운 AO·빛 번짐·점광원 확산을 끄고
-  해/달 직사광만 실시간(그림자 맵 — 걷는 사람 그림자). 룩 `lmK`(없으면 1)로 세기. 호스트 앱도 `lightmap.js` 를 `world.js` 앞에 실어야 한다. `?lm=0` 이면 끈다.
+  해/달 직사광만 실시간(그림자 맵 — 걷는 사람 그림자). 룩 `lmK` 로 세기 — **공방 낮 3 · 밤 1**(소유자 PC 굽기 실측: 실내 낮이 1.0 에서 58 → 3 에서 118, 밤 그대로), 밤 정도로 섞는다.
+  **노이즈 제거(선택)**: 표본이 적은 굽기(manifest `info.samples` < 256, 모르면 켬)의 모래알 반점을 5×5 양방향 필터(거리 σ 1.6 px·밝기 σ 40%, 빈 텍셀은 건드리지 않음)로 — `init` 전에 `window.RoomLMDenoise = false|true` 로 끄고 켠다. 호스트 앱도 `lightmap.js` 를 `world.js` 앞에 실어야 한다. `?lm=0` 이면 끈다.
 - 지오메트리를 바꾸면 `node tools/lm_export.mjs` 로 다시 내보내고 다시 굽는다(`test/lightmap.test.mjs` 가 막고, 앱은 검사합이 다른 대상만 예전 길로).
 
 ## 8. 아직 없는 것

@@ -434,7 +434,7 @@
       }
       updateBeams(env);
       if (giFx) giFx.onEnv(env, tierCfg ? tierCfg[tier].gi : 1, look && look.giK !== undefined ? look.giK : 1);
-      if (lmFx) lmFx.onEnv(env, look && look.lmK !== undefined ? look.lmK : 1);   // 낮/밤 라이트맵 섞기(env.night) — setHour 도 여기로 온다
+      if (lmFx) lmFx.onEnv(env, look ? root.RoomLooks.blend(look, env.night, lookV).lmK : 1);   // 낮/밤 라이트맵 섞기(env.night) + 세기(룩 lmK — 낮 3·밤 1 을 밤 정도로 섞음)   // 낮/밤 라이트맵 섞기(env.night) — setHour 도 여기로 온다
       for (var hI = 0; hI < S.hourHooks.length; hI++) { try { S.hourHooks[hI](env); } catch (e) { /* ignore */ } }
     }
 
@@ -445,7 +445,7 @@
     // PC 라이트맵(lightmap.js, pc_bake/bake.py 로 구운 lightmaps/<장면>/): 높음·보통. 없으면 아무것도 바꾸지 않는다(아래 AO·빛 번짐 그대로).
     // 구운 AO 보다 먼저 붙여야 배치→메시 정점 대응(triIds)을 잡아 둘 수 있다(ao_fx 가 다 쓰면 놓는다).
     if (!low && root.RoomLightmap && builder.lightmap !== false) {
-      try { lmFx = root.RoomLightmap.attach({ id: id, ctx: ctx, items: items, base: opts.lightmapBase }); } catch (e) { if (root.console) console.warn('[room] lightmap', e); lmFx = null; }
+      try { lmFx = root.RoomLightmap.attach({ id: id, ctx: ctx, items: items, base: opts.lightmapBase, denoise: opts.lightmapDenoise !== undefined ? opts.lightmapDenoise : (root.RoomLMDenoise !== undefined ? root.RoomLMDenoise : 'auto') }); } catch (e) { if (root.console) console.warn('[room] lightmap', e); lmFx = null; }
     }
     if (aoDefer) {
       var aoMats = [];

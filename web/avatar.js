@@ -859,6 +859,11 @@
     this.cfg = null; this.key = '';
     this.lod = -1;
     this.qs = {}; this._init();
+    this.bones[B.head].userData.rest = BABS[B.head];
+    var self = this;
+    if (root.RoomHuman && root.RoomHumanOn && !root.RoomNoHuman) {
+      if (!root.RoomHuman.ready()) { root.RoomHuman.load(root.RoomHumanBase); allAv.push(this); if (allAv.length === 1) root.RoomHuman.onReady(function () { allAv.splice(0).forEach(function (a) { a.key = ''; var l = a.lod; a.lod = -1; a._applyGeom(); a.setLod(l); }); }); }
+    }
     this.setConfig(cfg);
     this.setLod(0);
   }
@@ -868,17 +873,33 @@
     o.eF2 = new T.Quaternion();
   };
   // 입력(cfg)을 허용 범위의 {g, skin, style, hair, outfit, label}으로 맞춘다. label = 이름표 글자(최대 24자, 없으면 이름표 없음).
+  // 반실사 몸(avatar_human.js): cfg.n = 아바타 번호 0..7(F1..F4, M1..M4 — 얼굴·머리 모양·머리색·옷색이 정해진다) + 바꾸기 hairColor·outfitColor·pantsColor·topColor.
+  // 숫자 하나(3)나 {n:3} 도 받는다. n 이 없으면 예전 cfg(g·style)에서 번호를 고른다(g*4 + style) — 예전 호스트도 반실사 몸을 받는다.
   function normalizeCfg(cfg) {
+    if (typeof cfg === 'number' || (typeof cfg === 'string' && /^\d+$/.test(cfg))) cfg = { n: +cfg };
     cfg = cfg || {};
     function iv(v) { v = v | 0; return v < 0 ? 0 : v; }
     var label = typeof cfg.label === 'string' ? cfg.label : (typeof cfg.name === 'string' ? cfg.name : '');
-    return { g: cfg.g === 1 ? 1 : 0, skin: iv(cfg.skin) % 4, style: iv(cfg.style) % 4, hair: iv(cfg.hair) % 10, outfit: iv(cfg.outfit) % 12, label: label.slice(0, 24) };
+    var hasN = cfg.n !== undefined && cfg.n !== null && isFinite(+cfg.n);
+    var g = hasN ? (((+cfg.n | 0) % 8 + 8) % 8 >= 4 ? 1 : 0) : (cfg.g === 1 ? 1 : 0);
+    var c = { g: g, skin: iv(cfg.skin) % 4, style: iv(cfg.style) % 4, hair: iv(cfg.hair) % 10, outfit: iv(cfg.outfit) % 12, label: label.slice(0, 24) };
+    c.n = hasN ? (((+cfg.n | 0) % 8) + 8) % 8 : g * 4 + c.style;
+    // 번호만 준 경우 장난감 몸(반실사 몸을 켜지 않았을 때)도 그 사람에 가까운 머리 모양·머리색·옷색으로
+    if (hasN) { var tn = TOY_N[c.n]; ['style', 'hair', 'outfit', 'skin'].forEach(function (k) { if (cfg[k] === undefined) c[k] = tn[k]; }); }
+    ['hairColor', 'outfitColor', 'pantsColor', 'topColor'].forEach(function (k) { if (cfg[k] !== undefined && cfg[k] !== null) c[k] = cfg[k]; });
+    return c;
   }
+  var TOY_N = [{ style: 1, hair: 0, outfit: 7, skin: 0 }, { style: 1, hair: 2, outfit: 8, skin: 0 }, { style: 0, hair: 1, outfit: 3, skin: 0 }, { style: 2, hair: 1, outfit: 7, skin: 0 },
+    { style: 2, hair: 0, outfit: 0, skin: 1 }, { style: 1, hair: 0, outfit: 1, skin: 1 }, { style: 2, hair: 1, outfit: 0, skin: 1 }, { style: 3, hair: 1, outfit: 9, skin: 1 }];
+  // 반실사 몸은 켤 때만(window.RoomHumanOn = true — 호스트 init({body:'human'}) · test.html ?body=human). 2026-11-27 지금 판은 머리카락·옷깃이 참고 그림 수준이 아니라 기본은 장난감 몸(README 4-1).
+  var HUM = function () { var h = root.RoomHuman; return root.RoomHumanOn && h && h.ready() ? h : null; };
+  var allAv = [];   // 반실사 자료가 늦게 오면 이미 만든 아바타를 다시 맞춘다
   Avatar.prototype.setConfig = function (cfg) {
     var c = normalizeCfg(cfg);
     this.cfg = c;
-    this.key = c.g + '_' + c.skin + '_' + c.style + '_' + c.hair + '_' + c.outfit;
+    this.key = c.g + '_' + c.skin + '_' + c.style + '_' + c.hair + '_' + c.outfit + '_' + c.n + '_' + [c.hairColor, c.outfitColor, c.pantsColor, c.topColor].join(',');
     this._applyGeom();
+    if (HUM() && this.tag) this.tag.position.y = this.tagY = HUM().meta().avatars[c.n].top + 0.16;
     if (this.showTag) {
       if (!this.tag) { this.tag = new T.Sprite(tagMaterial(c.label)); this.tag.scale.set(0.78, 0.195, 1); this.tag.position.y = 1.9 + HEAD_UP; this.tag.renderOrder = 8; this.root.add(this.tag); this.tag.visible = this.lod <= 0; }
       else this.tag.material = tagMaterial(c.label);
@@ -894,9 +915,35 @@
     }
     return set[kind];
   };
+  // 반실사 몸: 단계(0|1)마다 메시 묶음(살·눈·옷·머리카락·안경)을 한 번 만들어 두고 보이기만 바꾼다
+  Avatar.prototype._human = function (l) {
+    var Hm = HUM(), c = this.cfg; if (!Hm) return false;
+    var hk = c.n + '|' + [c.hairColor, c.outfitColor, c.pantsColor, c.topColor].join(',');
+    this.hum = this.hum || {};
+    if (this.humKey !== hk) {
+      var old = this.hum; this.hum = {}; this.humKey = hk;
+      for (var k in old) old[k].forEach(function (m) { if (m.parent) m.parent.remove(m); });
+    }
+    if (!this.hum[l]) {
+      var hc = Hm.cfgFor(c.n, c), bs = this.bones, list = Hm.meshes(this.skeleton, bs[B.head], hc, l, IDENT);
+      list.forEach(function (m) { if (m.userData.rigid) bs[B.head].add(m); else this.body.add(m); }, this);
+      this.hum[l] = list;
+    }
+    for (var k2 in this.hum) { var on = +k2 === l; this.hum[k2].forEach(function (m) { m.visible = on; }); }
+    var nm = this.meshes;
+    ['near', 'mid'].forEach(function (lv) { ['smooth', 'cloth'].forEach(function (kk) { if (nm[lv][kk]) nm[lv][kk].visible = false; }); });
+    return true;
+  };
   Avatar.prototype._applyGeom = function () {
     var c = this.cfg, tab = colors(c), l = this.lod;
     if (l < 0) return;
+    if (l <= 1 && root.RoomGlb && root.RoomGlb.dress(this, c.n) && this.glb) {   // 번호에 GLB 묶음이 있으면(4절 B 길) 그 몸을 입는다
+      var hm = this.hum || {}; for (var hk in hm) hm[hk].forEach(function (m) { m.visible = false; });
+      ['near', 'mid'].forEach(function (lv) { ['smooth', 'cloth'].forEach(function (kk) { var mm = this.meshes[lv][kk]; if (mm) mm.visible = false; }, this); }, this);
+      this.glb.group.visible = true; return;
+    }
+    if (this.glb) this.glb.group.visible = false;
+    if (l <= 1 && this._human(l)) return;
     if (l <= 1) {
       var level = l === 0 ? 'near' : 'mid';
       var ps = getPack(level, 'smooth', c.g, c.style), pc = getPack(level, 'cloth', c.g, 0);
@@ -928,9 +975,9 @@
       if (!this.body.parent) this.root.add(this.body);
       if (this.imp) this.imp.visible = false;
       this._applyGeom();
-      var near = this.meshes.near, mid = this.meshes.mid;
-      if (near.smooth) near.smooth.visible = near.cloth.visible = l === 0;
-      if (mid.smooth) mid.smooth.visible = mid.cloth.visible = l === 1;
+      var near = this.meshes.near, mid = this.meshes.mid, hum = !!(this.hum && this.hum[l]);
+      if (near.smooth) near.smooth.visible = near.cloth.visible = l === 0 && !hum;
+      if (mid.smooth) mid.smooth.visible = mid.cloth.visible = l === 1 && !hum;
     }
   };
   Avatar.prototype.lod = 0;
@@ -1001,6 +1048,16 @@
     for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
       var m = this.meshes[FADE_LV[i]][FADE_K[j]];
       if (m) m.material = on ? fm[FADE_K[j]] : M[FADE_K[j]];
+    }
+    if (this.hum) {
+      var self = this; this._hf = this._hf || new Map();
+      for (var hk in this.hum) this.hum[hk].forEach(function (m) {
+        if (!m.userData.mat0) m.userData.mat0 = m.material;
+        if (!on) { m.material = m.userData.mat0; return; }
+        var m0 = m.userData.mat0, arr = Array.isArray(m0) ? m0 : [m0];
+        var cl = arr.map(function (mm) { var f = self._hf.get(mm); if (!f) { f = fadeClone(mm); self._hf.set(mm, f); } f.opacity = a; return f; });
+        m.material = Array.isArray(m0) ? cl : cl[0];
+      });
     }
     if (this.shadow) this.shadow.visible = this.lod < 2 && a > 0.3;
     var tg = this.tag;
@@ -1534,7 +1591,7 @@
         // 읽기: 두 손으로 편 책의 양 끝을 아래에서 받친다(가슴 앞 30cm, 책은 가슴 뼈에 붙어 있다)
         var ri = side > 0 ? 1 : 0, turnK = side > 0 ? (this.pageK || 0) : 0;
         if (!qs.rU) { qs.rU = [new T.Quaternion(), new T.Quaternion()]; qs.rF = [new T.Quaternion(), new T.Quaternion()]; qs.rH = [new T.Quaternion(), new T.Quaternion()]; }
-        arm2(side, side * (0.125 - 0.09 * turnK), -0.075 + 0.03 * turnK, -0.30, side * 0.7, -0.75, 0.1, qs.rU[ri], qs.rF[ri]);
+        arm2(side, side * (0.125 - 0.09 * turnK), -0.04 + 0.03 * turnK, -0.29, side * 0.7, -0.75, 0.1, qs.rU[ri], qs.rF[ri]);
         handQ(side, side * 0.15, 0.35, -1, -side * 0.55, 0.85, 0, _q1);
         qs.rH[ri].copy(_q2.copy(qs.rU[ri]).multiply(qs.rF[ri]).invert()).multiply(_q1);
         qU.slerp(qs.rU[ri], rdA); qF.slerp(qs.rF[ri], rdA); qH.slerp(qs.rH[ri], rdA);
@@ -1542,9 +1599,10 @@
       ua.quaternion.copy(qU); fa.quaternion.copy(qF); ha.quaternion.copy(qH);
     }
     if (this.book) this._bookPose(dt, rdA);
+    if (this.glb && this.glb.group.visible) this.glb.sync();   // GLB 몸: 우리 뼈 회전을 옮긴다(avatar_glb.js)
     // 이름표 높이
     if (this.tag) {
-      var ty = 1.88 + HEAD_UP - 0.35 * sa - 0.015 * w;
+      var ty = (HUM() ? HUM().meta().avatars[this.cfg.n].top + 0.2 : 1.88 + HEAD_UP) - 0.35 * sa - 0.015 * w;
       this.tagY = ty;
       this.tag.position.y = ty;
       this.tag.position.z = hipZ - SEAT_BACK * sa;
@@ -1572,7 +1630,7 @@
     var bk = this.book, U = bk.userData;
     if (this.readState === 'read') {
       bk.visible = rdA > 0.15;
-      bk.position.set(0, SH_Y - 0.31, -0.29); bk.rotation.set(0.95, 0, 0);
+      bk.position.set(0, SH_Y - 0.25, -0.3); bk.rotation.set(0.95, 0, 0);
       var op = 0.22 * sm(rdA);   // 펼친 각(반쪽마다 위로 젖힘, rad)
       U.L.rotation.z = -op; U.R.rotation.z = op; U.R.position.y = 0;
       this.readT += dt;
@@ -1605,6 +1663,9 @@
     Avatar: Avatar, tagMaterial: tagMaterial, setView: setView, HEIGHT: HEIGHT, SEAT_BACK: SEAT_BACK, GAIT_V_TOP: GAIT.V_TOP,
     HEAD: { S: HEAD_S, PIV: HEAD_PIV, UP: HEAD_UP }, HEM: HEM, RIM: RIM, EMOTE_DUR: EMOTE_DUR,
     // 삼각형 수(검증용). near/mid['g<성별>s<모양>'] = 8가지 조합별, style<i> = 성별 중 최댓값
+    // 반실사 몸 삼각형(번호 n, 단계 0|1) — 자료가 아직 없으면 0
+    humanTris: function (n, lod) { var h = HUM(); return h ? h.tris(n, lod) : 0; },
+    normalizeCfg: normalizeCfg,
     stats: function () {
       var out = { near: {}, mid: {}, far: [] }, s, g;
       for (s = 0; s < 4; s++) {

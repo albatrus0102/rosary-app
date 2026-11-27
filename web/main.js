@@ -125,7 +125,9 @@
 
   function start(o) {
     o = o || {};
-    if (o.avatar) App.cfg = o.avatar;
+    if (o.avatar !== undefined) App.cfg = o.avatar;
+    if (o.body === 'human') root.RoomHumanOn = true;   // 반실사 몸(avatar_human.js) — 아바타를 만들기 전에
+    if (o.glb) { if (root.RoomGlb) root.RoomGlb.setPack(o.glb); }   // 번호별 GLB 몸 {0:'avatar/glb/F1.glb', …}(avatar_glb.js + three_glb.js)
     if (o.quality) setQMode(o.quality);
     App.hourInit = o.hour === undefined ? (new Date().getHours() + new Date().getMinutes() / 60) : +o.hour;
     var room = o.room || qs.room || 'house';
@@ -302,7 +304,8 @@
       }
       refreshMarkers();
     },
-    setMe: function (o) { var a = o.avatar || o; App.cfg = a; if (App.meAv) App.meAv.setConfig(a); },
+    // setMe({avatar: 번호 0..7 | {n, hairColor, outfitColor, pantsColor, topColor, label} | 예전 {g, skin, style, hair, outfit}})
+    setMe: function (o) { var a = o.avatar !== undefined ? o.avatar : o; App.cfg = a; if (App.meAv) App.meAv.setConfig(a); },
     setHour: function (o) { var h = o.hour !== undefined ? o.hour : o.value; if (App.world && isFinite(+h)) { App.world.setHour(+h); kick(); } else if (isFinite(+h)) App.hourInit = +h; },
     setTimerText: function (o) { hook('panel', 'timer', { text: o.text !== undefined ? String(o.text) : String(o.value || '') }); },
     setPanel: function (o) { if (o && o.id) hook('panel', String(o.id), o.data || {}); },

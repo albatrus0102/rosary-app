@@ -19,3 +19,9 @@ await build({ entryPoints: [path.join(here, 'extras_entry.js')], bundle: true, f
   nodePaths: [nm], plugins: [globalThree], outfile: out, legalComments: 'none',
   banner: { js: '/* three_extras.js — three@0.149.0 examples/jsm (MIT, Copyright 2010-2023 Three.js Authors). Requires global THREE r149. */' } });
 console.log('built', out, (fs.statSync(out).size / 1024).toFixed(0) + 'KB');
+// GLB 아바타 읽기(GLTFLoader)만 따로: web/three_glb.js (window.ThreeGLB)
+const outG = path.resolve(here, '../web/three_glb.js');
+await build({ entryPoints: [path.join(here, 'glb_entry.js')], bundle: true, format: 'iife', globalName: 'ThreeGLB', minify: true, target: 'es2019',
+  nodePaths: [nm], plugins: [globalThree], outfile: outG, legalComments: 'none',
+  banner: { js: '/* three_glb.js — three@0.149.0 examples/jsm GLTFLoader (MIT, Copyright 2010-2023 Three.js Authors). Requires global THREE r149. */' } });
+console.log('built', outG, (fs.statSync(outG).size / 1024).toFixed(0) + 'KB');

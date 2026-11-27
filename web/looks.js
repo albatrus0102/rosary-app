@@ -6,7 +6,7 @@
      midBloomS 보통 단계 블룸 · reflK 바닥 반사 · glassK 발광 유리 밝기 · aoK aoDir giK 구운 AO·빛 번짐(있을 때만). */
 (function (root) {
   'use strict';
-  var DEFAULT = {
+  var DEFAULT = { lmK: 1,
     keyK: 1, keyTint: 0xffffff, keyTintK: 0, ambK: 1, ambTint: 0xffffff, ambTintK: 0, expK: 1, envK: 1, lampK: 1, beamK: 1,
     fogTint: 0xffffff, fogTintK: 0, dust: 40, dustK: 1, dustNight: 0,
     sat: 0.94, warm: 0.03, vig: 0.16, con: 0, bloomT: 0.92, bloomS: 0.3, bloomR: 0.55, midBloomS: 0.8, reflK: 1, aoK: 1, aoDir: 0.6,
@@ -15,9 +15,10 @@
   };
   // 장면별 룩. 낮 값 + night(밤에 덮어쓰기). 공방(house): 낮은 밝고 부드럽게, 밤은 따뜻한 실내등이 주인공.
   var LOOKS = {
-    house: { keyK: 1.55, keyTint: 0xffe2bc, keyTintK: 0.3, ambK: 0.55, ambTint: 0xdfe8f5, ambTintK: 0.2, expK: 0.86, envK: 0.6, beamK: 0.5, lampK: 1.0,
+    // lmK: PC 라이트맵 세기(낮 3 — 소유자 PC 굽기 실측: 실내 낮이 1.0 에서 58 → 3 에서 118, 밤은 1 — 밤은 그대로 좋았다)
+    house: { lmK: 3.0, keyK: 1.55, keyTint: 0xffe2bc, keyTintK: 0.3, ambK: 0.55, ambTint: 0xdfe8f5, ambTintK: 0.2, expK: 0.86, envK: 0.6, beamK: 0.5, lampK: 1.0,
       dust: 0, sat: 1.0, warm: 0.06, vig: 0.2, con: 0.14, bloomT: 0.86, bloomS: 0.36, reflK: 0.5,
-      night: { lampK: 1.3, keyK: 0.45, ambK: 0.22, expK: 0.74, warm: 0.08, bloomT: 0.84, bloomS: 0.38 } }
+      night: { lmK: 1.0, lampK: 1.3, keyK: 0.45, ambK: 0.22, expK: 0.74, warm: 0.08, bloomT: 0.84, bloomS: 0.38 } }
   };
   var DRAFTS = {};   // 새 장면 룩 초안은 여기에 넣고 ?looks=all 로 확인한 뒤 LOOKS 로 옮긴다
   try {
@@ -27,7 +28,7 @@
       else { var keep = qm[1].split(','); for (var lk in LOOKS) if (keep.indexOf(lk) < 0) delete LOOKS[lk]; }   // 'off' 는 어떤 id 도 아니므로 전부 지워진다
     }
   } catch (e) { /* ignore */ }
-  var NUM = ['keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS', 'glassK', 'bloomKnee'];
+  var NUM = ['lmK', 'keyK', 'keyTintK', 'ambK', 'ambTintK', 'expK', 'envK', 'lampK', 'beamK', 'fogTintK', 'dustK', 'dustNight', 'sat', 'warm', 'vig', 'con', 'bloomT', 'bloomS', 'bloomR', 'midBloomS', 'glassK', 'bloomKnee'];
 
   function get(id) {
     var src = LOOKS[id] || {}, out = {}, k;

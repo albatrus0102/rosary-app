@@ -70,6 +70,52 @@
     return [R * Math.pow(rgba[0] * k, g), R * Math.pow(rgba[1] * k, g), R * Math.pow(rgba[2] * k, g)];
   }
 
+  // ---- 가벼운 노이즈 제거(선택): 표본이 적은 굽기의 「모래알」 반점을 5×5 양방향(bilateral) 필터로 — 경계(빛·그늘 가장자리)는 지킨다 ----
+  // data: RGBA Uint8 (RGBM 또는 선형), 밝기 L 로 디코드해서 섞고 다시 같은 방식으로 담는다. 빈 텍셀(RGBM a=0·완전 검정)은 건드리지도 섞지도 않는다.
+  // sigmaS: 거리(px), sigmaR: 밝기 차이(상대 — 0.4 = 40% 차이에서 무게 e^-0.5; 빛·그늘 경계는 보통 2배 넘게 차이 나서 남는다)
+  function denoise(data, w, h, enc, o) {
+    o = o || {};
+    var sS = o.sigmaS || 1.6, sR = o.sigmaR || 0.4, R = 2, rgbm = enc.encoding === 'rgbm', G = enc.gamma || 1, RG = enc.range || 1;
+    var n = w * h, L = new Float32Array(n * 3), ok = new Uint8Array(n), i, k;
+    for (i = 0; i < n; i++) {
+      var a = rgbm ? data[i * 4 + 3] / 255 : 1;
+      if (rgbm ? data[i * 4 + 3] === 0 : (data[i * 4] | data[i * 4 + 1] | data[i * 4 + 2]) === 0) continue;
+      ok[i] = 1;
+      for (k = 0; k < 3; k++) L[i * 3 + k] = RG * Math.pow(data[i * 4 + k] / 255 * a, G);
+    }
+    var ws = []; for (var dy = -R; dy <= R; dy++) for (var dx = -R; dx <= R; dx++) ws.push(Math.exp(-(dx * dx + dy * dy) / (2 * sS * sS)));
+    var out = new Uint8ClampedArray(data), x, y;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      i = y * w + x; if (!ok[i]) continue;
+      var l0 = (L[i * 3] + L[i * 3 + 1] * 2 + L[i * 3 + 2]) / 4 + 1e-4, sr = 0, sg = 0, sb = 0, sw = 0, q = 0;
+      for (dy = -R; dy <= R; dy++) for (dx = -R; dx <= R; dx++, q++) {
+        var xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+        var j = yy * w + xx; if (!ok[j]) continue;
+        var lj = (L[j * 3] + L[j * 3 + 1] * 2 + L[j * 3 + 2]) / 4, d = (lj - l0) / (l0 * sR + 1e-4), wt = ws[q] * Math.exp(-0.5 * d * d);
+        sr += L[j * 3] * wt; sg += L[j * 3 + 1] * wt; sb += L[j * 3 + 2] * wt; sw += wt;
+      }
+      var c = [sr / sw, sg / sw, sb / sw], v = c.map(function (t) { return Math.pow(Math.max(0, t) / RG, 1 / G); });
+      if (rgbm) {
+        var m = Math.min(1, Math.max(v[0], v[1], v[2], 1e-6)), aa = Math.max(1, Math.ceil(m * 255)) / 255;
+        for (k = 0; k < 3; k++) out[i * 4 + k] = Math.round(Math.min(1, v[k] / aa) * 255);
+        out[i * 4 + 3] = Math.round(aa * 255);
+      } else for (k = 0; k < 3; k++) out[i * 4 + k] = Math.round(Math.min(1, v[k]) * 255);
+    }
+    return out;
+  }
+  // 그림(Image)을 캔버스로 읽어 노이즈를 지운 캔버스를 돌려준다(캔버스가 없으면 그대로)
+  function denoiseImage(im, enc, o) {
+    try {
+      var d = root.document; if (!d || !im || !im.width) return im;
+      var c = d.createElement('canvas'); c.width = im.width; c.height = im.height;
+      var g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+      var id = g.getImageData(0, 0, c.width, c.height);
+      id.data.set(denoise(id.data, c.width, c.height, enc, o));
+      g.putImageData(id, 0, 0);
+      return c;
+    } catch (e) { return im; }   // 교차 출처 등 — 그대로
+  }
+
   var LM_PARS = 'uniform sampler2D uLMNight;\nuniform float uLMMix;\nuniform vec2 uLMEnc;\nuniform float uLMK;\nuniform float uLMKey;\n' +
     'vec3 lmDecode( vec4 t ) {\n#ifdef LM_RGBM\n\tvec3 v = t.rgb * t.a;\n#else\n\tvec3 v = t.rgb;\n#endif\n\treturn uLMEnc.x * pow( max( v, vec3( 0.0 ) ), vec3( uLMEnc.y ) );\n}\n';
   // lights_fragment_maps 대신: 간접 확산 = 라이트맵(낮·밤 섞기) × 세기 — 반구광·주변광·HDRI 확산은 버린다
@@ -187,6 +233,9 @@
         st.targets = jobs.length;
         if (!jobs.length) { fail(st.stale ? 'stale' : 'none'); return; }
         var enc = { encoding: man.encoding || 'rgbm', range: man.range || 1, gamma: man.gamma || 1 };
+        // 노이즈 제거: o.denoise true/false, 아니면(기본 'auto') 굽기 표본이 256 보다 적을 때(manifest info.samples — 모르면 켠다). 캔버스(2D) 비용은 기기에서 0.3~0.6초쯤
+        var dn = o.denoise === undefined || o.denoise === null || o.denoise === 'auto' ? !(man.info && man.info.samples >= 256) : !!o.denoise;
+        st.denoise = dn;
         U.uLMEnc.value.set(enc.range, enc.gamma);
         keyK = [man.times.day.key === 'baked' ? 0 : 1, man.times.night.key === 'baked' ? 0 : 1];
         var left = jobs.length;
@@ -199,6 +248,7 @@
               if (!disposed && got.day && got.night) {
                 var uv = new Float32Array(j.e.n * 2);
                 for (var i = 0; i < uv.length; i++) uv[i] = u16[j.e.off + i] / 65535;
+                if (dn) { got.day = denoiseImage(got.day, enc); got.night = denoiseImage(got.night, enc); }
                 var td = texOf(got.day), tn = texOf(got.night); texs.push(td, tn);
                 // 재질마다 밤 지도가 다르므로 균일 변수를 재질마다 복제(세기·섞기는 공용 값을 가리킨다)
                 var UM = { uLMNight: { value: tn }, uLMMix: U.uLMMix, uLMEnc: U.uLMEnc, uLMK: U.uLMK, uLMKey: U.uLMKey };
@@ -214,5 +264,5 @@
     return api;
   }
 
-  root.RoomLightmap = { attach: attach, collectTargets: collectTargets, decode: decode, checksum: checksum, soupLocal: soupLocal, lightsBegin: lightsBegin, LM_MAPS: LM_MAPS, LM_PARS: LM_PARS };
+  root.RoomLightmap = { attach: attach, denoise: denoise, collectTargets: collectTargets, decode: decode, checksum: checksum, soupLocal: soupLocal, lightsBegin: lightsBegin, LM_MAPS: LM_MAPS, LM_PARS: LM_PARS };
 })(typeof window !== 'undefined' ? window : this);
