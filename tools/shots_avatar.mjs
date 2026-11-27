@@ -12,11 +12,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), O
 const REF = process.env.REF_DIR || path.resolve(ROOT, '../faces');
 const want = process.argv.slice(2);
 const { srv, url } = await serve();
-const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+let b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 async function page(q, W, H, prep, settle = 1500) {
   const p = await b.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-  await p.goto(url + q);
+  await p.goto(url + q, { timeout: 180000 });
   if (prep) await prep(p);
   await p.waitForTimeout(settle);
   return { p, errs };
@@ -27,7 +27,7 @@ const wait = (p, fn, ms = 240000) => p.waitForFunction(fn, null, { timeout: ms }
 function py(code) { execFileSync('python3', ['-c', code], { stdio: 'inherit' }); }
 const jobs = {
   async row() {
-    const { p, errs } = await lab('mode=row', 1600, 700); const tmp = path.join(OUT, '_row.png'); await p.screenshot({ path: tmp }); await p.close();
+    const { p, errs } = await lab('mode=row', 1280, 560); const tmp = path.join(OUT, '_row.png'); await p.screenshot({ path: tmp, timeout: 180000 }); await p.close();
     py(`
 from PIL import Image
 import os
@@ -47,19 +47,19 @@ os.remove(${JSON.stringify(tmp)})`);
   async faceM4() { return face(7, 'M4'); },
   async deskRead() {
     const { p, errs } = await scene('sit=0&sitnow=1&read=1&view=40,14,0.55');
-    await p.waitForTimeout(4000); await p.screenshot({ path: path.join(OUT, 'av-desk-read.jpg'), quality: 86 }); await p.close(); return errs;
+    await p.waitForTimeout(4000); await p.screenshot({ path: path.join(OUT, 'av-desk-read.jpg'), quality: 86, timeout: 180000 }); await p.close(); return errs;
   },
   async stool() {
     const { p, errs } = await scene('sit=3&sitnow=1&view=-150,10,0.6');
-    await p.waitForTimeout(3000); await p.screenshot({ path: path.join(OUT, 'av-stool.jpg'), quality: 86 }); await p.close(); return errs;
+    await p.waitForTimeout(3000); await p.screenshot({ path: path.join(OUT, 'av-stool.jpg'), quality: 86, timeout: 180000 }); await p.close(); return errs;
   },
   async swingTwo() {
     const { p, errs } = await scene('sit=4&sitnow=1&peerseat=5&peern=6&read=1&view=180,12,0.75');
-    await p.waitForTimeout(5000); await p.screenshot({ path: path.join(OUT, 'av-swing-two.jpg'), quality: 86 }); await p.close(); return errs;
+    await p.waitForTimeout(5000); await p.screenshot({ path: path.join(OUT, 'av-swing-two.jpg'), quality: 86, timeout: 180000 }); await p.close(); return errs;
   },
   async walking() {
     const { p, errs } = await scene('peers=2&route=street&thumb=0&hour=15');
-    await p.waitForTimeout(5000); await p.screenshot({ path: path.join(OUT, 'av-walking.jpg'), quality: 86 }); await p.close(); return errs;
+    await p.waitForTimeout(5000); await p.screenshot({ path: path.join(OUT, 'av-walking.jpg'), quality: 86, timeout: 180000 }); await p.close(); return errs;
   },
   async baristaSwing() {
     const { p, errs } = await scene('sit=4&sitnow=1&view=150,18,1.25');
@@ -67,11 +67,11 @@ os.remove(${JSON.stringify(tmp)})`);
     // 바리스타가 마당에 들어와 그네 탁자로 가는 중(go, 탁자 4 m 안)
     await wait(p, () => { const j = window.__room.coffee.jobState(); return j && j.st === 'go' && Math.hypot(j.x + 6.07, j.z + 1.88) < 4.5; }, 600000);
     await p.waitForTimeout(200);
-    await p.screenshot({ path: path.join(OUT, 'av-barista-swing.jpg'), quality: 86 }); await p.close(); return errs;
+    await p.screenshot({ path: path.join(OUT, 'av-barista-swing.jpg'), quality: 86, timeout: 180000 }); await p.close(); return errs;
   }
 };
 async function face(n, id) {
-  const { p, errs } = await lab('mode=face&n=' + n, 640, 640); const tmp = path.join(OUT, '_f.png'); await p.screenshot({ path: tmp }); await p.close();
+  const { p, errs } = await lab('mode=face&n=' + n, 640, 640); const tmp = path.join(OUT, '_f.png'); await p.screenshot({ path: tmp, timeout: 180000 }); await p.close();
   py(`
 from PIL import Image
 import os
@@ -86,5 +86,7 @@ for (const [k, f] of Object.entries(jobs)) {
   const t0 = Date.now();
   try { const e = await f(); console.log(k, ((Date.now() - t0) / 1000).toFixed(0) + 's', e && e.length ? 'ERR ' + e.slice(0, 3).join(' | ') : 'ok'); }
   catch (e) { console.log(k, 'FAIL', e.message.split('\n')[0]); }
+  // 사진마다 브라우저를 새로(실패한 장이 남아 CPU 를 먹지 않게)
+  await b.close(); b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 }
 await b.close(); srv.close();

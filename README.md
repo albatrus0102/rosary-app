@@ -25,6 +25,16 @@ WebView·브라우저 어디서나 돌고 Flutter 등 특정 틀이 필요 없�
 ![책상 위 라떼](docs/shots/seat-latte.jpg)
 ![손에 든 아이스 커피](docs/shots/held-iced.jpg)
 
+3차 사진(`node tools/shots_avatar.mjs`, 반실사 몸을 켠 상태 — 4-1절 판정 그대로 보이도록 고치지 않고 찍음):
+![8명 + 참고 그림](docs/shots/av-row-vs-ref.jpg)
+![F1 얼굴 vs 참고](docs/shots/av-face-F1-vs-ref.jpg)
+![M4 얼굴 vs 참고](docs/shots/av-face-M4-vs-ref.jpg)
+![책상에서 읽기](docs/shots/av-desk-read.jpg)
+![바 스툴](docs/shots/av-stool.jpg)
+![그네 둘](docs/shots/av-swing-two.jpg)
+![걷기](docs/shots/av-walking.jpg)
+![바리스타가 그네 탁자로 배달](docs/shots/av-barista-swing.jpg)
+
 ## 1. 파일
 
 | 파일 | 하는 일 | 라이선스 |
@@ -308,6 +318,9 @@ Semi-realistic stylized young Korean adult, full body, natural 7-head proportion
 ## 5. 시험·사진
 ```sh
 node --test test/*.test.mjs          # 단위(scene_logic·집 충돌/빠져나가기/갈 수 있는 곳·좌석·그네·net_view·bridge·AO 최신·커피·질감·식물 카드) + 브라우저 끝까지(e2e 2: 브리지·커피 흐름)
+node tools/shots_avatar.mjs           # docs/shots/av-*.jpg 8장(8명 + 참고 그림 띠, F1·M4 얼굴 vs 참고, 책상에서 읽기, 바 스툴, 그네 둘, 걷기, 바리스타 그네로 배달) — REF_DIR=참고 그림 폴더
+node tools/sit_probe.mjs && node tools/deliver_probe.mjs   # 앉기·배달 프레임 재기(표)
+python3 tools/human_build.py <캐시 폴더> [--pylib <fast-simplification 폴더>]   # 반실사 몸 다시 만들기(MakeHuman CC0 자료를 받는다, 약 2분)
 node tools/shots.mjs                  # docs/shots/*.jpg 10장(외관 낮·밤, 실내, 앉은 시점, 마당 그네, 걷는 두 사람, 화단 가까이, 커피 카운터, 책상 위 라떼, 손에 든 아이스)
 node tools/perf.mjs                   # 시점별 draw·삼각형·질감 MB(6절 표)
 python3 -I tools/tex_build.py <base_zip> <pbr_zip> <pbr_zip2> <plants_cut> && python3 -I tools/tex_shrink.py   # 소유자 원본 → web/tex(이음매·ORM·식물 카드, 1k) → 샘플 크기로 줄이기 + docs/seams.json
@@ -319,7 +332,9 @@ node tools/ao_bake.mjs house && node tools/gi_bake.mjs house   # 지오메트리
 - `test.html` URL: `room hour quality autotier frames thumb sit peerseat view peers route x z yaw pitch zoom look hideui fixed gpt cup coffee camturn strings`. test.html 은 호스트 흉내로 한국어 글자를 `setStrings` 로 준다(`strings=en` 이면 영어 기본값).
   `route=street` 걷는 사람이 가게 앞 보도를 마주 오간다 · `cup=종류` 컵을 든 채 시작 · `coffee=종류` 시작하자마자 주문 · `camturn=도` 카메라를 아바타 둘레로 돌린다.
   카운터 앞에 서면 화면 아래에 메뉴 4(호스트 흉내)가 뜬다.
-- 시험 수: 단위 56 + 브라우저 2 = **58**(라이트맵 키트 7 포함, `test/lightmap.test.mjs`)(`test/coffee`·`textures`·`plants`·`integration` 이 2차에서 늘었다 — 엔진 JS 한글 글자 없음·setStrings·박동 설정·싣는 크기 = 샘플 크기·음료 번호·sceneReady(e2e)·질감 파일·이음매 ≤1.3·식물 비율·알파 카드 재질·땅에 선 높이·ORM 연결·컵 모양·주문 흐름·좌석별 컵 자리·바리스타 충돌체·다른 사람 컵).
+- 시험 수(3차, 2026-11-27): 단위 68 + 실브라우저 4(e2e 2 · 좌석 6 앉기 재기 · 좌석 6 배달 재기) = **72**. `ROOM_SKIP_BROWSER=1` 이면 실브라우저 재기 둘을 건너뛴다.
+  새로: `test/seat_deliver.test.mjs`(서는 자리·좌석 맞춤·길 찾기 충돌 없음·배달 로직·배달 자리 + 실브라우저 둘), `test/avatar_human.test.mjs`(8).
+- 2차 시험 수: 단위 56 + 브라우저 2 = 58(라이트맵 키트 7 포함, `test/lightmap.test.mjs`)(`test/coffee`·`textures`·`plants`·`integration` 이 2차에서 늘었다 — 엔진 JS 한글 글자 없음·setStrings·박동 설정·싣는 크기 = 샘플 크기·음료 번호·sceneReady(e2e)·질감 파일·이음매 ≤1.3·식물 비율·알파 카드 재질·땅에 선 높이·ORM 연결·컵 모양·주문 흐름·좌석별 컵 자리·바리스타 충돌체·다른 사람 컵).
 
 ## 6. 성능 예산(중급 안드로이드)과 30초 벤치
 - 예산: **보이는 삼각형 약 170k · draw call 약 260 · 질감 80 MB 이하**. 2차 측정(`node tools/perf.mjs`, 960×540 헤드리스, 높음 단계 한 프레임 — 그림자 맵은 캐시라 빠짐, 바닥 반사·후처리 포함;
